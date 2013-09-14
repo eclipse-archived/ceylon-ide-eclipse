@@ -25,6 +25,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -84,20 +85,19 @@ public class FoldingUpdater {
      * @param start        The starting offset of the text range
      * @param len        The length of the text range
      */
-    public ProjectionAnnotation makeAnnotation(int start, int len) {
+    private ProjectionAnnotation makeAnnotation(int start, int len) {
         ProjectionAnnotation annotation= new ProjectionAnnotation();
-        len = advanceToEndOfLine(start, len);
         newAnnotations.put(annotation, new Position(start, len));
         return annotation;
     }
 
-    protected int advanceToEndOfLine(int start, int len) {
+    protected int advanceToEndOfLine(int offset, int len) {
         IDocument doc = sourceViewer.getDocument();
         try {
-            int line = doc.getLineOfOffset(start+len);
-            while (start+len<doc.getLength() && 
-                    Character.isWhitespace(doc.getChar(start+len)) &&
-                    doc.getLineOfOffset(start+len)==line) {
+            int line = doc.getLineOfOffset(offset+len);
+            while (offset+len<doc.getLength() && 
+                    Character.isWhitespace(doc.getChar(offset+len)) &&
+                    doc.getLineOfOffset(offset+len)==line) {
                 len++;
             }
         }
@@ -113,11 +113,10 @@ public class FoldingUpdater {
      * @param start        The starting offset of the text range
      * @param len        The length of the text range
      */
-    public void makeAnnotation(int start, int len, boolean collapsed) {
-        ProjectionAnnotation annotation = new ProjectionAnnotation(collapsed);
-        len = advanceToEndOfLine(start, len);
-        newAnnotations.put(annotation, new Position(start, len));
-    }
+//    public void makeAnnotation(int start, int len, boolean collapsed) {
+//        ProjectionAnnotation annotation = new ProjectionAnnotation(collapsed);
+//        newAnnotations.put(annotation, new Position(start, len));
+//    }
 
     /**
      * Update the folding structure for a source text, where the text and its
@@ -151,7 +150,7 @@ public class FoldingUpdater {
             }
         
             // But, since here we have the AST ...
-            sendVisitorToAST(ast, tokens);
+            createAnnotations(ast, tokens);
             
             /*
             // Update the annotation model if there have been changes
@@ -252,14 +251,14 @@ public class FoldingUpdater {
      *                             a listing of keys to the map of text positions
      * @param ast                An Object that will be taken to represent an AST node
      */
-    public void sendVisitorToAST(Tree.CompilationUnit ast, List<CommonToken> tokens) {
+    public void createAnnotations(Tree.CompilationUnit ast, List<CommonToken> tokens) {
         final boolean autofoldImports;
         final boolean autofoldComments;
         if (firstTime) {
             IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
             store.setDefault(AUTO_FOLD_IMPORTS, true);
             autofoldImports = store.getBoolean(AUTO_FOLD_IMPORTS);
-            store.setDefault(AUTO_FOLD_COMMENTS, true);
+            store.setDefault(AUTO_FOLD_COMMENTS, false);
             autofoldComments = store.getBoolean(AUTO_FOLD_COMMENTS);
             firstTime = false;
         }
@@ -363,8 +362,12 @@ public class FoldingUpdater {
     }
 
     private ProjectionAnnotation makeAnnotation(CommonToken start, CommonToken end) {
-        return makeAnnotation(start.getStartIndex(), 
-                end.getStopIndex()-start.getStartIndex()+1);
+        int offset = start.getStartIndex();
+        int len = end.getStopIndex()-start.getStartIndex()+1;
+        if (end.getType()!=CeylonLexer.LINE_COMMENT) {
+            len = advanceToEndOfLine(offset, len);
+        }
+        return makeAnnotation(offset, len);
     }
     
 }
