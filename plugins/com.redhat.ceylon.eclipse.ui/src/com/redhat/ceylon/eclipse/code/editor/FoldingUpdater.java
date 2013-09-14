@@ -6,12 +6,14 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_COMMENTS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -40,20 +42,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
  */
 public class FoldingUpdater {
     
-    // Maps new annotations to positions
-    private final HashMap<Annotation,Position> newAnnotations = new HashMap<Annotation, Position>();
-
-    // Lists the new annotations, which are the keys for newAnnotations
-    private final List<Annotation> annotations = new ArrayList<Annotation>();
-
     private final CeylonSourceViewer sourceViewer;
 
-    // Used to support checking of whether annotations have
-    // changed between invocations of updateFoldingStructure
-    // (because, if they haven't, then it's probably best not
-    // to update the folding structure)
-    private ArrayList<Annotation> oldAnnotationsList = null;
-    private Annotation[] oldAnnotationsArray;
+    private boolean firstTime = true;
+    
+    // Maps new annotations to positions
+    private final HashMap<Annotation,Position> newAnnotations = new HashMap<Annotation, Position>();
+    private HashMap<Annotation,Position> oldAnnotations = new HashMap<Annotation, Position>();
     
     public FoldingUpdater(CeylonSourceViewer sourceViewer) {
         this.sourceViewer = sourceViewer;
@@ -93,7 +88,6 @@ public class FoldingUpdater {
         ProjectionAnnotation annotation= new ProjectionAnnotation();
         len = advanceToEndOfLine(start, len);
         newAnnotations.put(annotation, new Position(start, len));
-        annotations.add(annotation);
         return annotation;
     }
 
@@ -102,7 +96,7 @@ public class FoldingUpdater {
         try {
             int line = doc.getLineOfOffset(start+len);
             while (start+len<doc.getLength() && 
-                    Character.isWhitespace(doc.get(start+len,1).charAt(0)) &&
+                    Character.isWhitespace(doc.getChar(start+len)) &&
                     doc.getLineOfOffset(start+len)==line) {
                 len++;
             }
@@ -120,10 +114,9 @@ public class FoldingUpdater {
      * @param len        The length of the text range
      */
     public void makeAnnotation(int start, int len, boolean collapsed) {
-        ProjectionAnnotation annotation= new ProjectionAnnotation(collapsed);
+        ProjectionAnnotation annotation = new ProjectionAnnotation(collapsed);
         len = advanceToEndOfLine(start, len);
         newAnnotations.put(annotation, new Position(start, len));
-        annotations.add(annotation);
     }
 
     /**
@@ -158,14 +151,15 @@ public class FoldingUpdater {
             }
         
             // But, since here we have the AST ...
-            sendVisitorToAST(newAnnotations, annotations, ast, tokens);
-
+            sendVisitorToAST(ast, tokens);
+            
+            /*
             // Update the annotation model if there have been changes
             // but not otherwise (since update leads to redrawing of the    
             // source in the editor, which is likely to be unwelcome if
             // there haven't been any changes relevant to folding)
             boolean updateNeeded = false;
-            if (oldAnnotationsList == null) {
+            if (firstTime) {
                 // Should just be the first time through
                 updateNeeded = true;
             } 
@@ -177,30 +171,34 @@ public class FoldingUpdater {
                 // be more or less simple, efficient, correct, etc.  (The
                 // default test provided below is simplistic although quick and
                 // usually effective.)
-                updateNeeded = differ(oldAnnotationsList, annotations);
+                updateNeeded = differ(oldAnnotations, newAnnotations);
             }
-            if (updateNeeded) {
-                // Save the current annotations to compare for changes the next time
-                oldAnnotationsList = new ArrayList<Annotation>();
-                for (int i = 0; i < annotations.size(); i++) {
-                    oldAnnotationsList.add(annotations.get(i));    
-                }
-            } else {
-            }
-        
+            
             // Need to curtail calls to modifyAnnotations() because these lead to calls
             // to fireModelChanged(), which eventually lead to calls to updateFoldingStructure,
             // which lead back here, which would lead to another call to modifyAnnotations()
             // (unless those were curtailed)
-            if (updateNeeded) {
-                annotationModel.modifyAnnotations(oldAnnotationsArray, newAnnotations, null);
+            if (updateNeeded) {*/
+                List<Annotation> deletions = new ArrayList<Annotation>(oldAnnotations.size());
+                for (Map.Entry<Annotation,Position> e: oldAnnotations.entrySet()) {
+                    if (!newAnnotations.containsValue(e.getValue())) {
+                        deletions.add(e.getKey());
+                    }
+                }
+                Map<Annotation, Position> additions = new HashMap<Annotation, Position>(newAnnotations.size());
+                for (Map.Entry<Annotation,Position> e: newAnnotations.entrySet()) {
+                    if (!oldAnnotations.containsValue(e.getValue())) {
+                        additions.put(e.getKey(), e.getValue());
+                    }
+                }
+                annotationModel.modifyAnnotations(deletions.toArray(new Annotation[0]), additions, null);
                 // Capture the latest set of annotations in a form that can be used the next
                 // time that it is necessary to modify the annotations
-                oldAnnotationsArray = (Annotation[]) annotations.toArray(new Annotation[annotations.size()]);
-            }
+                oldAnnotations.clear();
+                oldAnnotations.putAll(newAnnotations);
+            //}
 
-            newAnnotations.clear();
-            annotations.clear();            
+            newAnnotations.clear();        
         } 
         catch (Exception e) {
             e.printStackTrace();
@@ -233,8 +231,8 @@ public class FoldingUpdater {
      *                     two given lists of annotations
      * 
      */
-    protected boolean differ(List<Annotation> list1, List<Annotation> list2) {
-        if (list1.size() != list2.size()) {
+    protected boolean differ(Map<Annotation,Position> old, Map<Annotation,Position> current) {
+        if (old.size() != current.size()) {
             return true;
         }
         return false;
@@ -250,14 +248,21 @@ public class FoldingUpdater {
      *                             a listing of keys to the map of text positions
      * @param ast                An Object that will be taken to represent an AST node
      */
-    public void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, 
-            final List<Annotation> annotations, Tree.CompilationUnit ast,
-            List<CommonToken> tokens) {
-    	IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
-    	store.setDefault(AUTO_FOLD_IMPORTS, true);
-    	final boolean autofoldImports = store.getBoolean(AUTO_FOLD_IMPORTS);
-        store.setDefault(AUTO_FOLD_COMMENTS, true);
-        final boolean autofoldComments = store.getBoolean(AUTO_FOLD_COMMENTS);
+    public void sendVisitorToAST(Tree.CompilationUnit ast, List<CommonToken> tokens) {
+        final boolean autofoldImports;
+        final boolean autofoldComments;
+        if (firstTime) {
+            IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+            store.setDefault(AUTO_FOLD_IMPORTS, true);
+            autofoldImports = store.getBoolean(AUTO_FOLD_IMPORTS);
+            store.setDefault(AUTO_FOLD_COMMENTS, true);
+            autofoldComments = store.getBoolean(AUTO_FOLD_COMMENTS);
+            firstTime = false;
+        }
+        else {
+            autofoldImports = false;
+            autofoldComments = false;
+        }
     	for (int i=0; i<tokens.size(); i++) {
             CommonToken token = tokens.get(i);
             int type = token.getType();
@@ -275,11 +280,15 @@ public class FoldingUpdater {
             }
             if (type==LINE_COMMENT) {
                 CommonToken until = token;
-                CommonToken next = tokens.get(i+1);
+                int j=i+1;
+                CommonToken next = tokens.get(j);
                 while (next.getType()==LINE_COMMENT ||
-                        next.getChannel()==CommonToken.HIDDEN_CHANNEL) {
-                    until = next; i++;
-                    next = tokens.get(i+1);
+                        next.getType()==WS) {
+                    if (next.getType()==LINE_COMMENT) {
+                        until = next;
+                        i = j;
+                    }
+                    next = tokens.get(++j);
                 }
                 ProjectionAnnotation ann = foldIfNecessary(token, until);
                 if (ann!=null && autofoldComments) {
