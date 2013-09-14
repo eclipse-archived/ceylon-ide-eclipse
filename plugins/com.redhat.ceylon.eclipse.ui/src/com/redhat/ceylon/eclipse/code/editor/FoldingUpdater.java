@@ -6,8 +6,6 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_CO
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +24,6 @@ import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
  * FolderBase is an abstract base type for a source-text folding service.
@@ -42,13 +39,12 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 public class FoldingUpdater {
     
     // Maps new annotations to positions
-    protected HashMap<Annotation,Position> newAnnotations = new HashMap<Annotation, Position>();
+    private final HashMap<Annotation,Position> newAnnotations = new HashMap<Annotation, Position>();
 
     // Lists the new annotations, which are the keys for newAnnotations
-    protected List<Annotation> annotations = new ArrayList<Annotation>();
+    private final List<Annotation> annotations = new ArrayList<Annotation>();
 
-    protected CeylonParseController parseController = null;
-    protected CeylonSourceViewer sourceViewer = null;
+    private final CeylonSourceViewer sourceViewer;
 
     // Used to support checking of whether annotations have
     // changed between invocations of updateFoldingStructure
@@ -56,10 +52,7 @@ public class FoldingUpdater {
     // to update the folding structure)
     private ArrayList<Annotation> oldAnnotationsList = null;
     private Annotation[] oldAnnotationsArray;
-
-    // Methods to make annotations will typically be called by visitor methods
-    // in the language-specific concrete subtype
-
+    
     public FoldingUpdater(CeylonSourceViewer sourceViewer) {
         this.sourceViewer = sourceViewer;
     }
@@ -72,9 +65,9 @@ public class FoldingUpdater {
      * 
      * @param n an Object representing a program entity
      */
-    public void makeAnnotation(Object n) {
-        makeAnnotation(n, false);
-    }
+//    public void makeAnnotation(Object n) {
+//        makeAnnotation(n, false);
+//    }
     
     /**
      * Make a folding annotation that corresponds to the extent of text
@@ -84,9 +77,9 @@ public class FoldingUpdater {
      * 
      * @param n an Object representing a program entity
      */
-    public void makeAnnotation(Object n, boolean collapsed) {
-        makeAnnotation(getStartOffset(n), getLength(n), collapsed);
-    }
+//    public void makeAnnotation(Object n, boolean collapsed) {
+//        makeAnnotation(getStartOffset(n), getLength(n), collapsed);
+//    }
 
     /**
      * Make a folding annotation that corresponds to the given range of text.
@@ -147,27 +140,23 @@ public class FoldingUpdater {
      * This can lead to inconsistent calculations resulting in the absence of
      * folding annotations in newly opened files.
      * 
-     * @param parseController        A parse controller through which the AST for
-     *                                the source text can be accessed
+     * @param ast                    The AST for the source text
      * @param annotationModel        A structure of projection annotations that
      *                                represent the foldable elements in the source
      *                                text
      */
-    public synchronized void updateFoldingStructure(CeylonParseController parseController, 
-            ProjectionAnnotationModel annotationModel) {
-        if (parseController != null)
-            this.parseController = parseController;
-        
+    public synchronized void updateFoldingStructure(Tree.CompilationUnit ast, 
+    		List<CommonToken> tokens) {
         try {
-            Node ast = parseController.getRootNode();
-            
-            if (ast == null) {
+        	
+        	ProjectionAnnotationModel annotationModel = sourceViewer.getProjectionAnnotationModel(); 
+            if (ast==null||annotationModel==null) {
                 // We can't create annotations without an AST
                 return;
             }
         
             // But, since here we have the AST ...
-            sendVisitorToAST(newAnnotations, annotations, ast);
+            sendVisitorToAST(newAnnotations, annotations, ast, tokens);
 
             // Update the annotation model if there have been changes
             // but not otherwise (since update leads to redrawing of the    
@@ -260,11 +249,12 @@ public class FoldingUpdater {
      * @param ast                An Object that will be taken to represent an AST node
      */
     public void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, 
-            final List<Annotation> annotations, Object ast) {
+            final List<Annotation> annotations, Tree.CompilationUnit ast,
+            List<CommonToken> tokens) {
     	IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
     	store.setDefault(AUTO_FOLD_IMPORTS, true);
     	final boolean autofold = store.getBoolean(AUTO_FOLD_IMPORTS);
-        for (CommonToken token: getTokens()) {
+        for (CommonToken token: tokens) {
             int type = token.getType();
             if (type==MULTI_COMMENT ||
                 type==STRING_LITERAL ||
@@ -334,10 +324,5 @@ public class FoldingUpdater {
         return makeAnnotation(token.getStartIndex(), 
                 endToken.getStopIndex()-token.getStartIndex()+1);
     }
-
-    private List<CommonToken> getTokens() {
-        return ((CeylonParseController) parseController)
-                .getTokens();
-    }
-
+    
 }
