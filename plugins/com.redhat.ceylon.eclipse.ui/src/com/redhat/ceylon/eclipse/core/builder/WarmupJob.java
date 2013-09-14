@@ -12,8 +12,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 
 final class WarmupJob extends Job {
 	private final TypeChecker typeChecker;
@@ -33,7 +35,19 @@ final class WarmupJob extends Job {
 		    for (Module m: modules) {
 		        List<Package> packages = m.getAllPackages();
 		        for (Package p: packages) {
-		            p.getMembers();
+		            if (p.isShared()) {
+		                for (Declaration d: p.getMembers()) {
+		                    if (d.isShared()) {
+		                        if (d instanceof TypedDeclaration) {
+		                            ((TypedDeclaration) d).getType();
+		                        }
+		                        //this one really slows it down!
+		                        /*if (d instanceof Functional) {
+		                            ((Functional) d).getParameterLists();
+		                        }*/
+		                    }
+		                }
+		            }
 		        }
 		        monitor.worked(90000/max(modules.size(),1));
 		        if (monitor.isCanceled()) {
