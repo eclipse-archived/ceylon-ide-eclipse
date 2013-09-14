@@ -191,7 +191,9 @@ public class FoldingUpdater {
                         additions.put(e.getKey(), e.getValue());
                     }
                 }
-                annotationModel.modifyAnnotations(deletions.toArray(new Annotation[0]), additions, null);
+                if (!deletions.isEmpty() || !additions.isEmpty()) {
+                    annotationModel.modifyAnnotations(deletions.toArray(new Annotation[0]), additions, null);
+                }
                 // Capture the latest set of annotations in a form that can be used the next
                 // time that it is necessary to modify the annotations
                 for (Annotation a: deletions) {
@@ -233,12 +235,12 @@ public class FoldingUpdater {
      *                     two given lists of annotations
      * 
      */
-    protected boolean differ(Map<Annotation,Position> old, Map<Annotation,Position> current) {
-        if (old.size() != current.size()) {
-            return true;
-        }
-        return false;
-    }
+//    protected boolean differ(Map<Annotation,Position> old, Map<Annotation,Position> current) {
+//        if (old.size() != current.size()) {
+//            return true;
+//        }
+//        return false;
+//    }
 
     /**
      * Send a visitor to an AST representing a program in order to construct the
