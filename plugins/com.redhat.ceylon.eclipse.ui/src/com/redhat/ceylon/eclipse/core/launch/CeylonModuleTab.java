@@ -12,8 +12,6 @@ package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
-import java.util.Set;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -28,7 +26,6 @@ import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -41,7 +38,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -102,26 +98,20 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
      * Show a dialog that lists all modules in project
      */
     protected void handleModuleSearchButtonSelected() {
-        LaunchHelper helper = new LaunchHelper(this.fProjText.getText());
-        Set<Module> modules = helper.getModules(true);
+        Module mod = LaunchHelper.chooseModule(this.fProjText.getText(), true);
+        if (mod != null) {
+            if (mod.isDefault()) {
+                fModuleText.setText(Module.DEFAULT_MODULE_NAME);
+            } else {
+                fModuleText.setText(mod.getNameAsString() + "/" + mod.getVersion());
+            }
+            // no need to set project even if the module is from a dependency as this project contains the app
+            
+            Declaration topLevel = LaunchHelper.getDefaultRunnableForModule(mod);
 
-        CeylonModuleSelectionDialog cmsd = new CeylonModuleSelectionDialog(getShell(), modules, "Choose Ceylon Module"); 
-        if (cmsd.open() == Window.CANCEL) {
-            return;
-        }
-        
-        Object[] results = cmsd.getResult(); 
-        if (results != null && results.length > 0) {
-            if (results[0] instanceof Module) {
-                Module mod = (Module)results[0];
-                if (mod != null) {
-                    if (mod.isDefault()) {
-                        fModuleText.setText(Module.DEFAULT_MODULE_NAME);
-                    } else {
-                        fModuleText.setText(mod.getNameAsString() + "/" + mod.getVersion());
-                    }
-                    fProjText.setText(helper.getProject().getName());
-                }
+            // fill the field, else leave blank
+            if (topLevel != null) {
+            	this.fTopLevelText.setText(LaunchHelper.getTopLevelDisplayName(topLevel));
             }
         }
     }
@@ -131,23 +121,17 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
      * Show a dialog that lists all runnable types
      */
     protected void handleSearchButtonSelected() {
-
-        LaunchHelper helper = new LaunchHelper(this.fProjText.getText(), this.fModuleText.getText());
-        FilteredItemsSelectionDialog sd = new CeylonTopLevelSelectionDialog(getShell(), false, 
-            helper.getTopLevelDeclarations());
-        if (sd.open() == Window.CANCEL) {
-            return;
-        }
+    	
+    	Declaration d = LaunchHelper.chooseDeclaration(LaunchHelper.getDeclarationsForModule(
+    			fProjText.getText(), fModuleText.getText()));
         
-        Object[] results = sd.getResult(); 
-        if (results != null && results.length > 0) {
-            if (results[0] instanceof Declaration) {
-                Declaration decl = (Declaration)results[0];
-                if (decl != null) {
-                    fTopLevelText.setText(runnableDeclarationName(decl));
-                    fProjText.setText(helper.getProject().getName());
-                    fModuleText.setText(helper.getModuleFullName(decl));
-                }
+        if (d != null) {
+            fTopLevelText.setText(LaunchHelper.getTopLevelDisplayName(d));
+            
+            // unique situation in which default module was selected but that the type belongs to a module
+            Module mod = LaunchHelper.getModule(d);
+            if (mod != null && !mod.isDefault()) {
+            	fModuleText.setText(LaunchHelper.getModuleFullName(d));
             }
         }
     }   
@@ -198,15 +182,13 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             return false;
         }
 
-        LaunchHelper helper = new LaunchHelper(projectName);
         String moduleName = fModuleText.getText().trim();
         if (moduleName == null || moduleName.length() == 0) {
             setErrorMessage("The Ceylon module is not specified"); 
             return false;
         }
         
-        helper = new LaunchHelper(projectName, moduleName);
-        if (!helper.isProjectContainsModule(project, moduleName)) {
+        if (!LaunchHelper.isProjectContainsModule(project, moduleName)) {
             setErrorMessage("Ceylon module not found in project");
             return false;
         }
@@ -217,8 +199,9 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             return false;
         }
         
-        if (!helper.isModuleContainsTopLevel(project, moduleName, topLevelName)) {
-            setErrorMessage("The top level class not found in module");
+        if (!LaunchHelper.isModuleContainsTopLevel(project, moduleName, 
+        		LaunchHelper.getTopLevelNormalName(moduleName, topLevelName))) {
+            setErrorMessage("The top level class not found in module or is not runnable");
             return false;
         }
         // can't think of anything else
@@ -233,6 +216,12 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, fModuleText.getText().trim());
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, fTopLevelText.getText().trim());
+        
+        // only if apply is pressed - slightly different from JDT behaviour
+        config.rename(fProjText.getText().trim() + " - " 
+        		+ getLaunchConfigurationDialog().generateName(fModuleText.getText().trim()) + " - "  
+        		+ fTopLevelText.getText().trim());
+        
         mapResources(config);
     }
     
@@ -248,18 +237,23 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
         }
         
-        String projectName = null;
+        String projectName = "";
         String moduleName = null;
         String topLevelName = null;
         
-        if (javaElement != null) {
-            projectName = getJavaProject().getProject().getName();
-        } else {
-            return;
+        if (javaElement == null) {
+        	return;
         }
         
-        LaunchHelper helper = new LaunchHelper(projectName);
-        moduleName = helper.getModule().toString();
+        Module module = null;
+        if (getContext().getJavaProject().exists()) {
+        	module = LaunchHelper.getDefaultOrOnlyModule(getContext().getJavaProject().getProject(), true);
+        	projectName = getContext().getJavaProject().getProject().getName();
+        }
+        
+        if (module != null) {
+        	moduleName = LaunchHelper.getFullModuleName(module);
+        }
 
         if (moduleName == null) {
             moduleName = EMPTY_STRING;
@@ -270,7 +264,13 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             
         }
 
-        topLevelName = runnableDeclarationName(helper.getTopLevel());
+        Declaration topLevel = null;
+        if (module != null) {
+        	topLevel = LaunchHelper.getDefaultRunnableForModule(module);
+        }
+        if (topLevel != null) {
+        	topLevelName = LaunchHelper.getRunnableName(topLevel);
+        }
 
         if (topLevelName == null) {
             topLevelName = EMPTY_STRING;
@@ -281,13 +281,8 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
  
         }
 
-        config.rename(getJavaProject().getProject().getName() + " - " + moduleName + " - " + topLevelName);
+        config.rename(projectName + " - " + moduleName + " - " + topLevelName);
     }
-    
-    private String runnableDeclarationName(Declaration decl) {
-        return decl.getQualifiedNameString().replace("::", ".");
-    }
-
 
     protected void createModuleEditor(Composite parent, String text) {
         Group group = SWTFactory.createGroup(parent, text, 2, 1, GridData.FILL_HORIZONTAL); 
