@@ -95,7 +95,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 
     public IContextInformation[] computeContextInformation(final ITextViewer viewer, final int offset) {
     	final List<IContextInformation> infos = new ArrayList<IContextInformation>();
-    	CeylonParseController cpc = editor.getParseController();
+    	final CeylonParseController cpc = editor.getParseController();
 		cpc.parse(viewer.getDocument(), new NullProgressMonitor(), null);
     	cpc.getRootNode().visit(new Visitor() {
     		@Override
@@ -121,7 +121,8 @@ public class CompletionProcessor implements IContentAssistProcessor {
 		    					List<ParameterList> pls = ((Functional) declaration).getParameterLists();
 		    					if (!pls.isEmpty()) {
 		    						infos.add(new ParameterContextInformation(declaration, 
-		    								mte.getTarget(), pls.get(0), that.getStartIndex()));
+		    								mte.getTarget(), cpc.getRootNode().getUnit(), 
+		    								pls.get(0), that.getStartIndex()));
 		    					}
 		    				}
     	                }
