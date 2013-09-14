@@ -422,12 +422,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 	boolean changed = container.resolveClasspath(monitor, true);
                 	if(changed) {
                         buildHook.setAndRefreshClasspathContainer();
-                		JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[]{javaProject}, new IClasspathContainer[]{null} , monitor);
+                		JavaCore.setClasspathContainer(container.getPath(), 
+                		        new IJavaProject[]{javaProject}, 
+                		        new IClasspathContainer[]{null} , monitor);
                 		container.refreshClasspathContainer(monitor, javaProject);
                 	}
                 }
             }
         }
+        
+        boolean mustWarmupCompletionProcessor = false;
         
         try {
 //            startTime = System.nanoTime();
@@ -493,6 +497,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 monitor.worked(1);
                 
                 sourcesForBinaryGeneration = getProjectSources(project);
+                
+                mustWarmupCompletionProcessor = true;
             }
             else
             {
@@ -511,7 +517,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     clearMarkersOn(project);
                     monitor.worked(1);
 
-                    monitor.subTask("Initial typechecking all source  files of project " + project.getName());
+                    monitor.subTask("Initial typechecking all source files of project " + project.getName());
                     modelStates.put(project, ModelState.TypeChecking);
                     builtPhasedUnits = fullTypeCheck(project, typeChecker, 
                             monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK ));
@@ -534,6 +540,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             + project.getName());
                     addProblemAndTaskMarkers(builtPhasedUnits, project);
                     monitor.worked(1);
+                    
+                    mustWarmupCompletionProcessor = true;
                 }
                 
                 monitor.subTask("Incremental Ceylon build of project " + project.getName());
@@ -580,9 +588,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         project.getName());
                 builtPhasedUnits = incrementalBuild(project, sourceToCompile, 
                         monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK));
+                
                 if (builtPhasedUnits.isEmpty() && sourceToCompile.isEmpty()) {
+                    
+                    if (mustWarmupCompletionProcessor) {
+                        warmupCompletionProcessor(project, typeChecker);
+                    }
+
                     return project.getReferencedProjects();
                 }
+                
                 monitor.worked(1);
                 
                 if (monitor.isCanceled()) {
@@ -645,8 +660,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             monitor.done();
             
-            if (mustDoFullBuild.value) {
-            	warmupCompletionProcessor(project, typeChecker);
+            if (mustWarmupCompletionProcessor) {
+                warmupCompletionProcessor(project, typeChecker);
             }
             
             return project.getReferencedProjects();
