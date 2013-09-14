@@ -75,6 +75,17 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                         newArgs.add("--verbose");
                     }
 
+                    String topLevel = launch.getLaunchConfiguration()
+                        .getAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, "");
+                    int def = topLevel.indexOf("default");
+                    if (def != -1) {
+                        topLevel = topLevel.substring(0, def -6);
+                    }
+                    if (!"".equals(topLevel) && def == -1) { // default run not found
+                        newArgs.add("--run");
+                        newArgs.add(topLevel);
+                    }
+                    
                     newArgs.add("--");
                     
                     newArgs.add(launch.getLaunchConfiguration()
