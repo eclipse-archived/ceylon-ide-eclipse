@@ -2100,6 +2100,9 @@ public class CeylonContentProposer {
             else {
                 result.append("(");
                 for (Parameter p: params) {
+                    if (p.isSequenced()) {
+                        result.append("*");
+                    }
                     if (p.getModel() instanceof Functional) {
                     	if (p.isDeclaredVoid()) {
                     		result.append("void ");
@@ -2152,35 +2155,33 @@ public class CeylonContentProposer {
             else {
                 result.append(" { ");
                 for (Parameter p: params) {
-                    if (!p.isSequenced()) {
-                        if (p.getModel() instanceof Functional) {
-                        	if (p.isDeclaredVoid()) {
-                        		result.append("void ");
-                        	}
-                        	else {
-                        		result.append("function ");
-                        	}
-                        	result.append(p.getName());
-                            appendParameters(p.getModel(), pr.getTypedParameter(p), result);
-                            if (descriptionOnly) {
-                                result.append("; ");
-                            }
-                            else if (p.isDeclaredVoid()) {
-                            	result.append(" {} ");
-                            }
-                            else {
-                                result.append(" => ")
-                                //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
-                                .append("nothing")
-                                .append("; ");
-                            }
+                    if (p.getModel() instanceof Functional) {
+                        if (p.isDeclaredVoid()) {
+                            result.append("void ");
                         }
                         else {
-                            result.append(p.getName()).append(" = ")
-                                //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
-                                .append("nothing")
-                                .append("; ");
+                            result.append("function ");
                         }
+                        result.append(p.getName());
+                        appendParameters(p.getModel(), pr.getTypedParameter(p), result);
+                        if (descriptionOnly) {
+                            result.append("; ");
+                        }
+                        else if (p.isDeclaredVoid()) {
+                            result.append(" {} ");
+                        }
+                        else {
+                            result.append(" => ")
+                            //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
+                            .append("nothing")
+                            .append("; ");
+                        }
+                    }
+                    else {
+                        result.append(p.getName()).append(" = ")
+                        //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
+                        .append("nothing")
+                        .append("; ");
                     }
                 }
                 result.append("}");
@@ -2221,7 +2222,7 @@ public class CeylonContentProposer {
         appendDeclarationText(d, null, result);
     }
     
-    private static void appendDeclarationText(Declaration d, ProducedReference pr, 
+    static void appendDeclarationText(Declaration d, ProducedReference pr, 
             StringBuilder result) {
         if (d instanceof Class) {
             if (d.isAnonymous()) {

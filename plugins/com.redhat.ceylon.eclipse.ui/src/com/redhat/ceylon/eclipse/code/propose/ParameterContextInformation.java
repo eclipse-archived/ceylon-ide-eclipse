@@ -7,6 +7,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 
 public class ParameterContextInformation implements IContextInformation {
@@ -47,16 +48,9 @@ public class ParameterContextInformation implements IContextInformation {
 		}
 		StringBuilder sb = new StringBuilder();
 		for (Parameter p: parameterList.getParameters()) {
-			if (p.getModel().isDynamicallyTyped()) {
-				sb.append("dynamic ");
-			}
-			else {
-				sb.append(producedReference.getTypedParameter(p).getFullType()
-						.getProducedTypeName(p.getDeclaration().getUnit()));
-			}
-			sb.append(" ")
-			  .append(p.getName())
-			  .append(", ");
+		    ProducedTypedReference pr = producedReference.getTypedParameter(p);
+		    CeylonContentProposer.appendDeclarationText(p.getModel(), pr, sb);
+			sb.append(", ");
 		}
 		sb.setLength(sb.length()-2);
 		return sb.toString();

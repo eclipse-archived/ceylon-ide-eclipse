@@ -265,6 +265,18 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		int bracePos = text.indexOf('{');
 		return (basicProposal ? anglePos : (bracePos>0&&(bracePos<parenPos||parenPos<0) ? bracePos : parenPos))+1;
 	}
+	
+	private boolean isNamedArgs() {
+        int parenPos = text.indexOf('(');
+        int bracePos = text.indexOf('{');
+        return bracePos>0&&(bracePos<parenPos||parenPos<0);
+	}
+
+    private boolean isPosArgs() {
+        int parenPos = text.indexOf('(');
+        int bracePos = text.indexOf('{');
+        return parenPos>0&&(bracePos>parenPos||bracePos<0);
+    }
 
 	private void addProposals(ParameterList parameterList, final int loc,
 			int first, List<ICompletionProposal> props, final int index) {
@@ -295,7 +307,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 				    ((td instanceof TypeParameter) && 
 						isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
 						    vt.isSubtypeOf(type))) {
-					addProposal(loc, first, props, index, d, false);
+					addProposal(loc, first, props, index, d, false, p.isSequenced()&&isPosArgs());
 				}
 			}
 		}
@@ -326,7 +338,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 						}
 					}
 					if (isInBounds(p.getSatisfiedTypes(), t)) {
-						addProposal(loc, first, props, index, d, true);
+						addProposal(loc, first, props, index, d, true, false);
 					}
 				}
 			}
@@ -364,7 +376,9 @@ class DeclarationCompletionProposal extends CompletionProposal {
 
 	private void addProposal(final int loc, int first,
 			List<ICompletionProposal> props, final int index, 
-			final Declaration d, final boolean basic) {
+			final Declaration d, final boolean basic, 
+			final boolean spread) {
+	    final String op = spread?"*":"";
 		props.add(new ICompletionProposal() {
 			public String getAdditionalProposalInfo() {
 				return null;
@@ -388,7 +402,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 					if (middleOffset>0&&document.getChar(middleOffset)=='>') middleOffset++;
 					while (middleOffset>0&&document.getChar(middleOffset)==' ') middleOffset++;
 					if (middleOffset>offset&&middleOffset<nextOffset) offset = middleOffset;
-					document.replace(offset, nextOffset-offset, d.getName());
+					document.replace(offset, nextOffset-offset, op+d.getName());
 				} 
 				catch (BadLocationException e) {
 					e.printStackTrace();
@@ -400,7 +414,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			}
 			@Override
 			public String getDisplayString() {
-				return d.getName();
+				return op+d.getName();
 			}
 			@Override
 			public Image getImage() {
