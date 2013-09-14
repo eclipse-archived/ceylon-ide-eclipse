@@ -177,7 +177,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	        final LinkedModeModel linkedModeModel = new LinkedModeModel();
 	        final int loc = offset-prefix.length();
 	        int first = getFirstPosition(basicProposal);
-	        if (first<0) return;
+	        if (first<=0) return;
 	        int next = getNextPosition(document, first, basicProposal);
 	        int i=0;
 	        while (next>1 && i<paramCount) {
