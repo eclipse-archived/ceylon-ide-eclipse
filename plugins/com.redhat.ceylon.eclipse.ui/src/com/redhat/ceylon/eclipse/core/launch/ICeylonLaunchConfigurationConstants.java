@@ -18,4 +18,5 @@ public interface ICeylonLaunchConfigurationConstants extends
     public static final String ATTR_JS_NODEPATH = PLUGIN_ID + ".launching.ceylonJsNodePath";
     
     public static final String ATTR_MODULE_NAME = "CEYLON_MODULE";
+    public static final String ATTR_TOPLEVEL_NAME = "CEYLON_TOPLEVEL";
 }
