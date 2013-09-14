@@ -195,8 +195,10 @@ public class CeylonEditor extends TextEditor {
     
     public final static String ENCLOSING_BRACKETS= "enclosingBrackets";
     
-    public final static String EDITOR_SUB_WORD_NAVIGATION= "subWordNavigation";
-    
+    public final static String SUB_WORD_NAVIGATION= "subWordNavigation";
+
+    public final static String AUTO_FOLD_IMPORTS= "autoFoldImports";
+
     private CeylonParserScheduler parserScheduler;
     private ProblemMarkerManager problemMarkerManager;
     private ICharacterPairMatcher bracketMatcher;
@@ -431,7 +433,7 @@ public class CeylonEditor extends TextEditor {
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.SELECT_LINE_START);
         editor.setAction(ITextEditorActionDefinitionIds.SELECT_LINE_START, action);*/
         
-        getPreferenceStore().setDefault(EDITOR_SUB_WORD_NAVIGATION, true);
+        getPreferenceStore().setDefault(SUB_WORD_NAVIGATION, true);
         
         IAction action = new NavigatePreviousSubWordAction();
         action.setActionDefinitionId(WORD_PREVIOUS);
@@ -488,7 +490,7 @@ public class CeylonEditor extends TextEditor {
         public void run() {
             // Check whether we are in a java code partition and the preference is enabled
             final IPreferenceStore store= getPreferenceStore();
-            if (!store.getBoolean(EDITOR_SUB_WORD_NAVIGATION)) {
+            if (!store.getBoolean(SUB_WORD_NAVIGATION)) {
                 super.run();
                 return;
             }
@@ -689,7 +691,7 @@ public class CeylonEditor extends TextEditor {
         public void run() {
             // Check whether we are in a java code partition and the preference is enabled
             final IPreferenceStore store= getPreferenceStore();
-            if (!store.getBoolean(EDITOR_SUB_WORD_NAVIGATION)) {
+            if (!store.getBoolean(SUB_WORD_NAVIGATION)) {
                 super.run();
                 return;
             }

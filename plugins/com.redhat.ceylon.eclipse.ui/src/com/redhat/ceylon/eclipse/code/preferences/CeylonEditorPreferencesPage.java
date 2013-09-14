@@ -1,9 +1,10 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.EDITOR_SUB_WORD_NAVIGATION;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.ENCLOSING_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.MATCHING_BRACKET;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SELECTED_BRACKET;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SUB_WORD_NAVIGATION;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY;
@@ -50,6 +51,7 @@ public class CeylonEditorPreferencesPage
     RadioGroupFieldEditor autoActivationChars;
     BooleanFieldEditor smartCaret;
     BooleanFieldEditor pasteCorrectIndent;
+    BooleanFieldEditor autoFold;
     
     public CeylonEditorPreferencesPage() {
         super(GRID);
@@ -68,6 +70,7 @@ public class CeylonEditorPreferencesPage
         linkedModeRename.store();
         smartCaret.store();
         pasteCorrectIndent.store();
+        autoFold.store();
         return true;
     }
     
@@ -85,13 +88,14 @@ public class CeylonEditorPreferencesPage
         linkedModeRename.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
+        autoFold.loadDefault();
     }
     
     @Override
     public void init(IWorkbench workbench) {
-    	//TODO: is it really right that we're 
-    	//      storing all our preferences
-    	//      in some other plugin's store??
+        //TODO: is it really right that we're 
+        //      storing all our preferences
+        //      in some other plugin's store??
         setPreferenceStore(EditorsPlugin.getDefault().getPreferenceStore());
 //        setDescription("Preferences for the Ceylon editor");
     }
@@ -184,28 +188,33 @@ public class CeylonEditorPreferencesPage
         autoActivationDelay.load();
         addField(autoActivationDelay);
         linkedMode = new BooleanFieldEditor(LINKED_MODE, 
-        		"Use linked mode to complete argument lists", 
-        		getFieldEditorParent());
+                "Use linked mode to complete argument lists", 
+                getFieldEditorParent());
         linkedMode.load();
         addField(linkedMode);
         addField(new SpacerFieldEditor(getFieldEditorParent()));
         addField(new LabelFieldEditor("Other:",
                 getFieldEditorParent()));
         linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
-        		"Use linked mode for rename", 
-        		getFieldEditorParent());
+                "Use linked mode for rename", 
+                getFieldEditorParent());
         linkedModeRename.load();
         addField(linkedModeRename);
-        smartCaret = new BooleanFieldEditor(EDITOR_SUB_WORD_NAVIGATION, 
+        smartCaret = new BooleanFieldEditor(SUB_WORD_NAVIGATION, 
                 "Smart caret positioning inside identifiers", 
                 getFieldEditorParent());
         smartCaret.load();
         addField(smartCaret);
         pasteCorrectIndent = new BooleanFieldEditor(PASTE_CORRECT_INDENTATION, 
-        		"Correct indentation of pasted code", 
-        		getFieldEditorParent());
+                "Correct indentation of pasted code", 
+                getFieldEditorParent());
         pasteCorrectIndent.load();
         addField(pasteCorrectIndent);
+        autoFold = new BooleanFieldEditor(AUTO_FOLD_IMPORTS, 
+                "Automatically fold import lists", 
+                getFieldEditorParent());
+        autoFold.load();
+        addField(autoFold);
     }
 
 }
