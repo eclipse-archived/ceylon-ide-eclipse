@@ -2,9 +2,11 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_COMMENTS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
 
 import java.util.ArrayList;
@@ -253,17 +255,35 @@ public class FoldingUpdater {
             List<CommonToken> tokens) {
     	IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
     	store.setDefault(AUTO_FOLD_IMPORTS, true);
-    	final boolean autofold = store.getBoolean(AUTO_FOLD_IMPORTS);
-        for (CommonToken token: tokens) {
+    	final boolean autofoldImports = store.getBoolean(AUTO_FOLD_IMPORTS);
+        store.setDefault(AUTO_FOLD_COMMENTS, true);
+        final boolean autofoldComments = store.getBoolean(AUTO_FOLD_COMMENTS);
+    	for (int i=0; i<tokens.size(); i++) {
+            CommonToken token = tokens.get(i);
             int type = token.getType();
             if (type==MULTI_COMMENT ||
                 type==STRING_LITERAL ||
-                type==ASTRING_LITERAL||
-                type==VERBATIM_STRING||
+                type==ASTRING_LITERAL ||
+                type==VERBATIM_STRING ||
                 type==AVERBATIM_STRING) {
                 if (isMultilineToken(token)) {
-                    makeAnnotation(token, token);
-                    //TODO: initially collapse copyright notice
+                    ProjectionAnnotation ann = makeAnnotation(token, token);
+                    if (autofoldComments && ann!=null && type==MULTI_COMMENT) {
+                        ann.markCollapsed();
+                    }
+                }
+            }
+            if (type==LINE_COMMENT) {
+                CommonToken until = token;
+                CommonToken next = tokens.get(i+1);
+                while (next.getType()==LINE_COMMENT ||
+                        next.getChannel()==CommonToken.HIDDEN_CHANNEL) {
+                    until = next; i++;
+                    next = tokens.get(i+1);
+                }
+                ProjectionAnnotation ann = foldIfNecessary(token, until);
+                if (ann!=null && autofoldComments) {
+                    ann.markCollapsed();
                 }
             }
         }
@@ -274,7 +294,7 @@ public class FoldingUpdater {
                 super.visit(importList);
                 if (!importList.getImports().isEmpty()) {
                     ProjectionAnnotation ann = foldIfNecessary(importList);
-                    if (autofold && ann!=null) {
+                    if (autofoldImports && ann!=null) {
                         ann.markCollapsed();
                     }
                 }
@@ -315,14 +335,23 @@ public class FoldingUpdater {
         }
     }
     
+    private ProjectionAnnotation foldIfNecessary(CommonToken start, CommonToken end) {
+        if (end.getLine()>start.getLine()) {
+            return makeAnnotation(start, end);
+        }
+        else {
+            return null;
+        }
+    }
+    
     private boolean isMultilineToken(CommonToken token) {
         return token.getText().indexOf('\n')>0 ||
                 token.getText().indexOf('\r')>0;
     }
 
-    private ProjectionAnnotation makeAnnotation(CommonToken token, CommonToken endToken) {
-        return makeAnnotation(token.getStartIndex(), 
-                endToken.getStopIndex()-token.getStartIndex()+1);
+    private ProjectionAnnotation makeAnnotation(CommonToken start, CommonToken end) {
+        return makeAnnotation(start.getStartIndex(), 
+                end.getStopIndex()-start.getStartIndex()+1);
     }
     
 }

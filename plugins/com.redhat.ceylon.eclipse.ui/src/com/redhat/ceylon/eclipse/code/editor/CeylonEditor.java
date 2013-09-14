@@ -185,19 +185,14 @@ public class CeylonEditor extends TextEditor {
     public static final String PARSE_ANNOTATION_TYPE_INFO= PARSE_ANNOTATION_TYPE + 
             ".info";
 
-    /** Preference key for matching brackets */
+    //preference keys
     public final static String MATCHING_BRACKET= "matchingBrackets";
-
-    /** Preference key for matching brackets color */
-    public final static String MATCHING_BRACKETS_COLOR= "matchingBracketsColor";
-    
+    public final static String MATCHING_BRACKETS_COLOR= "matchingBracketsColor";    
     public final static String SELECTED_BRACKET= "highlightBracketAtCaretLocation";
-    
     public final static String ENCLOSING_BRACKETS= "enclosingBrackets";
-    
     public final static String SUB_WORD_NAVIGATION= "subWordNavigation";
-
     public final static String AUTO_FOLD_IMPORTS= "autoFoldImports";
+    public final static String AUTO_FOLD_COMMENTS= "autoFoldComments";
 
     private CeylonParserScheduler parserScheduler;
     private ProblemMarkerManager problemMarkerManager;

@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_COMMENTS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.ENCLOSING_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.MATCHING_BRACKET;
@@ -51,7 +52,8 @@ public class CeylonEditorPreferencesPage
     RadioGroupFieldEditor autoActivationChars;
     BooleanFieldEditor smartCaret;
     BooleanFieldEditor pasteCorrectIndent;
-    BooleanFieldEditor autoFold;
+    BooleanFieldEditor autoFoldImports;
+    BooleanFieldEditor autoFoldComments;
     
     public CeylonEditorPreferencesPage() {
         super(GRID);
@@ -70,7 +72,8 @@ public class CeylonEditorPreferencesPage
         linkedModeRename.store();
         smartCaret.store();
         pasteCorrectIndent.store();
-        autoFold.store();
+        autoFoldImports.store();
+        autoFoldComments.store();
         return true;
     }
     
@@ -88,7 +91,8 @@ public class CeylonEditorPreferencesPage
         linkedModeRename.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
-        autoFold.loadDefault();
+        autoFoldImports.loadDefault();
+        autoFoldComments.loadDefault();
     }
     
     @Override
@@ -193,6 +197,19 @@ public class CeylonEditorPreferencesPage
         linkedMode.load();
         addField(linkedMode);
         addField(new SpacerFieldEditor(getFieldEditorParent()));
+        addField(new LabelFieldEditor("Folding:",
+                getFieldEditorParent()));
+        autoFoldImports = new BooleanFieldEditor(AUTO_FOLD_IMPORTS, 
+                "Automatically fold import lists", 
+                getFieldEditorParent());
+        autoFoldImports.load();
+        addField(autoFoldImports);
+        autoFoldComments = new BooleanFieldEditor(AUTO_FOLD_COMMENTS, 
+                "Automatically fold comments", 
+                getFieldEditorParent());
+        autoFoldComments.load();
+        addField(autoFoldComments);
+        addField(new SpacerFieldEditor(getFieldEditorParent()));
         addField(new LabelFieldEditor("Other:",
                 getFieldEditorParent()));
         linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
@@ -210,11 +227,6 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent());
         pasteCorrectIndent.load();
         addField(pasteCorrectIndent);
-        autoFold = new BooleanFieldEditor(AUTO_FOLD_IMPORTS, 
-                "Automatically fold import lists", 
-                getFieldEditorParent());
-        autoFold.load();
-        addField(autoFold);
     }
 
 }
