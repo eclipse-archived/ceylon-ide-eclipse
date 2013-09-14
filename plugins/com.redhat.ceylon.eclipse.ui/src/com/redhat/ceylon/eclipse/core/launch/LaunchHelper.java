@@ -286,7 +286,7 @@ public class LaunchHelper {
 				}
         	}
         } else {
-			for (com.redhat.ceylon.compiler.typechecker.model.Package pkg : mod.getSharedPackages()) {
+			for (Package pkg : mod.getPackages()) {
 				for (Declaration decl : pkg.getMembers()) {
 					if (getRunnableName(decl).equals(topLevelName)) {
 						return true;
