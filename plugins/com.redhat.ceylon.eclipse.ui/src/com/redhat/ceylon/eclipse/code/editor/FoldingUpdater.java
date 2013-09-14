@@ -1,5 +1,10 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
@@ -7,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -15,6 +21,8 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
@@ -26,8 +34,10 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
  * 
  * @author suttons@us.ibm.com
  * @author rfuhrer@watson.ibm.com
+ * @author Gavin King
  */
-public abstract class FolderBase {
+public class FoldingUpdater {
+	
 	// Maps new annotations to positions
     protected HashMap<Annotation,Position> newAnnotations = new HashMap<Annotation, Position>();
 
@@ -47,7 +57,7 @@ public abstract class FolderBase {
     // Methods to make annotations will typically be called by visitor methods
     // in the language-specific concrete subtype
 
-    public FolderBase(CeylonSourceViewer sourceViewer) {
+    public FoldingUpdater(CeylonSourceViewer sourceViewer) {
 		this.sourceViewer = sourceViewer;
 	}
 
@@ -81,11 +91,12 @@ public abstract class FolderBase {
      * @param start		The starting offset of the text range
      * @param len		The length of the text range
      */
-    public void makeAnnotation(int start, int len) {
+    public ProjectionAnnotation makeAnnotation(int start, int len) {
 		ProjectionAnnotation annotation= new ProjectionAnnotation();
 		len = advanceToEndOfLine(start, len);
 		newAnnotations.put(annotation, new Position(start, len));
 		annotations.add(annotation);
+		return annotation;
     }
 
 	protected int advanceToEndOfLine(int start, int len) {
@@ -245,6 +256,82 @@ public abstract class FolderBase {
 	 * 							a listing of keys to the map of text positions
 	 * @param ast				An Object that will be taken to represent an AST node
 	 */
-	protected abstract void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, List<Annotation> annotations, Object ast);
+	public void sendVisitorToAST(HashMap<Annotation,Position> newAnnotations, 
+	        final List<Annotation> annotations, Object ast) {
+        for (CommonToken token: getTokens()) {
+            int type = token.getType();
+			if (type==MULTI_COMMENT ||
+                type==STRING_LITERAL ||
+                type==ASTRING_LITERAL||
+                type==VERBATIM_STRING||
+                type==AVERBATIM_STRING) {
+                if (isMultilineToken(token)) {
+                    makeAnnotation(token, token);
+                    //TODO: initially collapse copyright notice
+                }
+            }
+        }
+		Tree.CompilationUnit cu = (Tree.CompilationUnit) ast;
+        new Visitor() {
+            @Override 
+            public void visit(Tree.ImportList importList) {
+                super.visit(importList);
+                if (!importList.getImports().isEmpty()) {
+                    ProjectionAnnotation ann = foldIfNecessary(importList);
+					if (ann!=null) {
+                        ann.markCollapsed();
+                    }
+                }
+            }
+            /*@Override 
+            public void visit(Tree.Import that) {
+                super.visit(that);
+                foldIfNecessary(that);
+            }*/
+			@Override 
+			public void visit(Tree.Body that) {
+                super.visit(that);
+                if (that.getToken()!=null) { //for "else if"
+                    foldIfNecessary(that);
+                }
+			}
+            @Override 
+            public void visit(Tree.NamedArgumentList that) {
+                super.visit(that);
+                foldIfNecessary(that);
+            }
+			@Override 
+			public void visit(Tree.ModuleDescriptor that) {
+                super.visit(that);
+                foldIfNecessary(that);
+			}
+		}.visit(cu);
+	}
+
+    private ProjectionAnnotation foldIfNecessary(Node node) {
+        CommonToken token = (CommonToken) node.getToken();
+        CommonToken endToken = (CommonToken) node.getEndToken();
+        if (endToken.getLine()-token.getLine()>0) {
+            return makeAnnotation(token, endToken);
+        }
+        else {
+        	return null;
+        }
+    }
+    
+    private boolean isMultilineToken(CommonToken token) {
+        return token.getText().indexOf('\n')>0 ||
+                token.getText().indexOf('\r')>0;
+    }
+
+    private ProjectionAnnotation makeAnnotation(CommonToken token, CommonToken endToken) {
+        return makeAnnotation(token.getStartIndex(), 
+                endToken.getStopIndex()-token.getStartIndex()+1);
+    }
+
+    private List<CommonToken> getTokens() {
+        return ((CeylonParseController) parseController)
+                .getTokens();
+    }
 
 }
