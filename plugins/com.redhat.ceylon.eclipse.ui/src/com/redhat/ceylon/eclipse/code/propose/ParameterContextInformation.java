@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.appendDeclarationText;
+
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 
@@ -8,6 +10,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 
 public class ParameterContextInformation implements IContextInformation {
@@ -16,12 +19,14 @@ public class ParameterContextInformation implements IContextInformation {
 	private ProducedReference producedReference;
 	private ParameterList parameterList;
 	int offset;
+    private Unit unit;
 		
 	public ParameterContextInformation(Declaration declaration,
-			ProducedReference producedReference,
+			ProducedReference producedReference, Unit unit,
 			ParameterList parameterList, int offset) {
 		this.declaration = declaration;
 		this.producedReference = producedReference;
+        this.unit = unit;
 		this.parameterList = parameterList;
 		this.offset = offset;
 	}
@@ -38,18 +43,18 @@ public class ParameterContextInformation implements IContextInformation {
 	
 	@Override
 	public String getInformationDisplayString() {
-		return getParametersInfo(parameterList, producedReference);
+		return getParametersInfo(parameterList, producedReference, unit);
 	}
 	
 	public static String getParametersInfo(ParameterList parameterList, 
-			ProducedReference producedReference) {
+			ProducedReference producedReference, Unit unit) {
 		if (parameterList.getParameters().isEmpty()) {
 			return "no parameters";
 		}
 		StringBuilder sb = new StringBuilder();
 		for (Parameter p: parameterList.getParameters()) {
 		    ProducedTypedReference pr = producedReference.getTypedParameter(p);
-		    CeylonContentProposer.appendDeclarationText(p.getModel(), pr, sb);
+		    appendDeclarationText(p.getModel(), pr, unit, sb);
 			sb.append(", ");
 		}
 		sb.setLength(sb.length()-2);

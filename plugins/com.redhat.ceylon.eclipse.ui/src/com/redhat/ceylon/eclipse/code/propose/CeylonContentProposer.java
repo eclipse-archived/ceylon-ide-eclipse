@@ -1279,9 +1279,10 @@ public class CeylonContentProposer {
         //TODO: type argument substitution using the ProducedReference of the primary node
         if (d.isParameter()) {
             Parameter p = ((MethodOrValue) d).getInitializerParameter();
+            Unit unit = node.getUnit();
             result.add(new RefinementCompletionProposal(offset, prefix,
-                    getInlineFunctionDescriptionFor(p, null),
-                    getInlineFunctionTextFor(p, null, "\n" + getIndent(node, doc)),
+                    getInlineFunctionDescriptionFor(p, null, unit),
+                    getInlineFunctionTextFor(p, null, unit, "\n" + getIndent(node, doc)),
                     cpc, d));
         }
     }
@@ -1316,8 +1317,8 @@ public class CeylonContentProposer {
             ProducedReference pr = getRefinedProducedReference(scope, d);
             //TODO: if it is equals() or hash, fill in the implementation
             result.add(new RefinementCompletionProposal(offset, prefix,  
-                    getRefinementDescriptionFor(d, pr), 
-                    getRefinementTextFor(d, pr, isInterface, "\n" + getIndent(node, doc)), 
+                    getRefinementDescriptionFor(d, pr, node.getUnit()), 
+                    getRefinementTextFor(d, pr, node.getUnit(), isInterface, "\n" + getIndent(node, doc)), 
                     cpc, d));
         }
     }
@@ -1436,7 +1437,7 @@ public class CeylonContentProposer {
                         if (!pt.getDeclaration().isAnonymous()) {
                             body.append("is ");
                         }
-                        body.append(pt.getProducedTypeName());
+                        body.append(pt.getProducedTypeName(node.getUnit()));
                         body.append(") {}\n");
                     }
                     body.append(indent);
@@ -1476,16 +1477,17 @@ public class CeylonContentProposer {
                     defaulted ++;
                 }
             }
+            Unit unit = cpc.getRootNode().getUnit();
             if (!isAbstractClass || ol==EXTENDS || ol==CLASS_ALIAS) {
                 if (defaulted>0) {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getPositionalInvocationDescriptionFor(dwp, ol, pr, false, null), 
-                            getPositionalInvocationTextFor(dwp, ol, pr, false, null), true,
+                            getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, false, null), 
+                            getPositionalInvocationTextFor(dwp, ol, pr, unit, false, null), true,
                             cpc, d, dwp.isUnimported(), pr, scope));
                 }
                 result.add(new DeclarationCompletionProposal(offset, prefix, 
-                        getPositionalInvocationDescriptionFor(dwp, ol, pr, true, typeArgs), 
-                        getPositionalInvocationTextFor(dwp, ol, pr, true, typeArgs), true,
+                        getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, true, typeArgs), 
+                        getPositionalInvocationTextFor(dwp, ol, pr, unit, true, typeArgs), true,
                         cpc, d, dwp.isUnimported(), pr, scope));
             }
             if (!isAbstractClass && ol!=EXTENDS && ol!=CLASS_ALIAS &&
@@ -1494,14 +1496,14 @@ public class CeylonContentProposer {
                 //suggest a named argument invocation 
                 if (defaulted>0 && ps.size()>defaulted) {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getNamedInvocationDescriptionFor(dwp, pr, false), 
-                            getNamedInvocationTextFor(dwp, pr, false), true,
+                            getNamedInvocationDescriptionFor(dwp, pr, unit, false), 
+                            getNamedInvocationTextFor(dwp, pr, unit, false), true,
                             cpc, d, dwp.isUnimported(), pr, scope));
                 }
                 if (!ps.isEmpty()) {
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getNamedInvocationDescriptionFor(dwp, pr, true), 
-                            getNamedInvocationTextFor(dwp, pr, true), true,
+                            getNamedInvocationDescriptionFor(dwp, pr, unit, true), 
+                            getNamedInvocationTextFor(dwp, pr, unit, true), true,
                             cpc, d, dwp.isUnimported(), pr, scope));
                 }
             }
@@ -1907,7 +1909,7 @@ public class CeylonContentProposer {
     }
     
     public static String getPositionalInvocationTextFor(DeclarationWithProximity d,
-            OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted, 
+            OccurrenceLocation ol, ProducedReference pr, Unit unit, boolean includeDefaulted, 
             String typeArgs) {
         StringBuilder result = new StringBuilder(name(d));
         Declaration dd = d.getDeclaration();
@@ -1917,18 +1919,18 @@ public class CeylonContentProposer {
         else if (forceExplicitTypeArgs(dd, ol)) {
             appendTypeParameters(dd, result);
         }
-        appendPositionalArgs(dd, pr, result, includeDefaulted);
+        appendPositionalArgs(dd, pr, unit, result, includeDefaulted);
         appendSemiToVoidInvocation(result, dd);
         return result.toString();
     }
 
     private static String getNamedInvocationTextFor(DeclarationWithProximity d, 
-            ProducedReference pr, boolean includeDefaulted) {
+            ProducedReference pr, Unit unit, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(name(d));
         Declaration dd = d.getDeclaration();
         if (forceExplicitTypeArgs(dd, null))
             appendTypeParameters(dd, result);
-        appendNamedArgs(dd, pr, result, includeDefaulted, false);
+        appendNamedArgs(dd, pr, unit, result, includeDefaulted, false);
         appendSemiToVoidInvocation(result, dd);
         return result.toString();
     }
@@ -1949,7 +1951,7 @@ public class CeylonContentProposer {
     }
     
     private static String getPositionalInvocationDescriptionFor(DeclarationWithProximity d, 
-            OccurrenceLocation ol, ProducedReference pr, boolean includeDefaulted, 
+            OccurrenceLocation ol, ProducedReference pr, Unit unit, boolean includeDefaulted, 
             String typeArgs) {
         StringBuilder result = new StringBuilder(d.getName());
         if (typeArgs!=null) {
@@ -1958,40 +1960,40 @@ public class CeylonContentProposer {
         else if (forceExplicitTypeArgs(d.getDeclaration(), ol)) {
             appendTypeParameters(d.getDeclaration(), result);
         }
-        appendPositionalArgs(d.getDeclaration(), pr, result, includeDefaulted);
+        appendPositionalArgs(d.getDeclaration(), pr, unit, result, includeDefaulted);
         return result.toString();
     }
     
     private static String getNamedInvocationDescriptionFor(DeclarationWithProximity d, 
-            ProducedReference pr, boolean includeDefaulted) {
+            ProducedReference pr, Unit unit, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(d.getName());
         if (forceExplicitTypeArgs(d.getDeclaration(), null))
             appendTypeParameters(d.getDeclaration(), result);
-        appendNamedArgs(d.getDeclaration(), pr, result, includeDefaulted, true);
+        appendNamedArgs(d.getDeclaration(), pr, unit, result, includeDefaulted, true);
         return result.toString();
     }
     
     public static String getRefinementTextFor(Declaration d, ProducedReference pr, 
-            boolean isInterface, String indent) {
+            Unit unit, boolean isInterface, String indent) {
         StringBuilder result = new StringBuilder("shared actual ");
         if (isVariable(d) && !isInterface) {
             result.append("variable ");
         }
-        appendDeclarationText(d, pr, result);
+        appendDeclarationText(d, pr, unit, result);
         appendTypeParameters(d, result);
-        appendParameters(d, pr, result);
+        appendParameters(d, pr, unit, result);
         if (d instanceof Class) {
             result.append(extraIndent(extraIndent(indent)))
                 .append(" extends super.").append(d.getName());
-            appendPositionalArgs(d, pr, result, true);
+            appendPositionalArgs(d, pr, unit, result, true);
         }
-        appendConstraints(d, pr, indent, result);
-        appendImpl(d, pr, isInterface, indent, result);
+        appendConstraints(d, pr, unit, indent, result);
+        appendImpl(d, pr, isInterface, unit, indent, result);
         return result.toString();
     }
 
     private static void appendConstraints(Declaration d, ProducedReference pr,
-            String indent, StringBuilder result) {
+            Unit unit, String indent, StringBuilder result) {
         if (d instanceof Functional) {
             for (TypeParameter tp: ((Functional) d).getTypeParameters()) {
                 List<ProducedType> sts = tp.getSatisfiedTypes();
@@ -2007,7 +2009,8 @@ public class CeylonContentProposer {
                         else {
                             result.append("&");
                         }
-                        result.append(st.substitute(pr.getTypeArguments()).getProducedTypeName());
+                        result.append(st.substitute(pr.getTypeArguments())
+                                .getProducedTypeName(unit));
                     }
                 }
             }
@@ -2015,11 +2018,11 @@ public class CeylonContentProposer {
     }
 
     private static String getInlineFunctionTextFor(Parameter p, ProducedReference pr, 
-            String indent) {
+            Unit unit, String indent) {
         StringBuilder result = new StringBuilder();
         appendNamedArgumentText(p, pr, result);
         appendTypeParameters(p.getModel(), result);
-        appendParameters(p.getModel(), pr, result);
+        appendParameters(p.getModel(), pr, unit, result);
         if (p.isDeclaredVoid()) {
             result.append(" {}");
         }
@@ -2040,24 +2043,26 @@ public class CeylonContentProposer {
         return result.toString();
     }*/
     
-    private static String getRefinementDescriptionFor(Declaration d, ProducedReference pr) {
+    private static String getRefinementDescriptionFor(Declaration d, ProducedReference pr,
+            Unit unit) {
         StringBuilder result = new StringBuilder("shared actual ");
         if (isVariable(d)) {
             result.append("variable ");
         }
-        appendDeclarationText(d, pr, result);
+        appendDeclarationText(d, pr, unit, result);
         appendTypeParameters(d, result);
-        appendParameters(d, pr, result);
+        appendParameters(d, pr, unit, result);
         /*result.append(" - refine declaration in ") 
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
     }
     
-    private static String getInlineFunctionDescriptionFor(Parameter p, ProducedReference pr) {
+    private static String getInlineFunctionDescriptionFor(Parameter p, ProducedReference pr,
+            Unit unit) {
         StringBuilder result = new StringBuilder();
         appendNamedArgumentText(p, pr, result);
         appendTypeParameters(p.getModel(), result);
-        appendParameters(p.getModel(), pr, result);
+        appendParameters(p.getModel(), pr, unit, result);
         /*result.append(" - refine declaration in ") 
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
@@ -2068,9 +2073,9 @@ public class CeylonContentProposer {
         if (d!=null) {
             if (d.isFormal()) result.append("formal ");
             if (d.isDefault()) result.append("default ");
-            appendDeclarationText(d, result);
+            appendDeclarationText(d, d.getUnit(), result);
             appendTypeParameters(d, result);
-            appendParameters(d, result);
+            appendParameters(d, d.getUnit(), result);
             /*result.append(" - refine declaration in ") 
                 .append(((Declaration) d.getContainer()).getName());*/
         }
@@ -2092,7 +2097,7 @@ public class CeylonContentProposer {
     }
     
     private static void appendPositionalArgs(Declaration d, ProducedReference pr, 
-            StringBuilder result, boolean includeDefaulted) {
+            Unit unit, StringBuilder result, boolean includeDefaulted) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, includeDefaulted);
             if (params.isEmpty()) {
@@ -2108,7 +2113,7 @@ public class CeylonContentProposer {
                     	if (p.isDeclaredVoid()) {
                     		result.append("void ");
                     	}
-                    	appendParameters(p.getModel(), pr.getTypedParameter(p), result);
+                    	appendParameters(p.getModel(), pr.getTypedParameter(p), unit, result);
                     	if (p.isDeclaredVoid()) {
                     		result.append(" {}");
                     	}
@@ -2146,7 +2151,7 @@ public class CeylonContentProposer {
     }
     
     private static void appendNamedArgs(Declaration d, ProducedReference pr, 
-            StringBuilder result, boolean includeDefaulted, 
+            Unit unit, StringBuilder result, boolean includeDefaulted, 
             boolean descriptionOnly) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, includeDefaulted);
@@ -2164,7 +2169,7 @@ public class CeylonContentProposer {
                             result.append("function ");
                         }
                         result.append(p.getName());
-                        appendParameters(p.getModel(), pr.getTypedParameter(p), result);
+                        appendParameters(p.getModel(), pr.getTypedParameter(p), unit, result);
                         if (descriptionOnly) {
                             result.append("; ");
                         }
@@ -2219,12 +2224,12 @@ public class CeylonContentProposer {
         }
     }
     
-    private static void appendDeclarationText(Declaration d, StringBuilder result) {
-        appendDeclarationText(d, null, result);
+    private static void appendDeclarationText(Declaration d, Unit unit, StringBuilder result) {
+        appendDeclarationText(d, null, unit, result);
     }
     
     static void appendDeclarationText(Declaration d, ProducedReference pr, 
-            StringBuilder result) {
+            Unit unit, StringBuilder result) {
         if (d instanceof Class) {
             if (d.isAnonymous()) {
                 result.append("object");
@@ -2251,7 +2256,7 @@ public class CeylonContentProposer {
             if (isSequenced) {
                 type = d.getUnit().getIteratedType(type);
             }
-            String typeName = type.getProducedTypeName();
+            String typeName = type.getProducedTypeName(unit);
             if (td.isDynamicallyTyped()) {
                 result.append("dynamic");
             }
@@ -2364,11 +2369,11 @@ public class CeylonContentProposer {
   }*/
     
     private static void appendImpl(Declaration d, ProducedReference pr, boolean isInterface, 
-            String indent, StringBuilder result) {
+            Unit unit, String indent, StringBuilder result) {
         if (d instanceof Method) {
             if (!d.isFormal()) {
                 result.append(" => super.").append(d.getName());
-                appendPositionalArgs(d, pr, result, true);
+                appendPositionalArgs(d, pr, unit, result, true);
                 result.append(";");
                 
             }
@@ -2412,12 +2417,12 @@ public class CeylonContentProposer {
         return indent.contains("\n") ?  indent + getDefaultIndent() : indent;
     }
     
-    private static void appendParameters(Declaration d, StringBuilder result) {
-        appendParameters(d, null, result);
+    private static void appendParameters(Declaration d, Unit unit, StringBuilder result) {
+        appendParameters(d, null, unit, result);
     }
     
     public static void appendParameters(Declaration d, ProducedReference pr, 
-            StringBuilder result) {
+            Unit unit, StringBuilder result) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
             if (plists!=null) {
@@ -2434,21 +2439,21 @@ public class CeylonContentProposer {
                                 result.append(p.getName());
                             }
                             else {
-                                appendDeclarationText(p.getModel(), ppr, result);
-                                appendParameters(p.getModel(), ppr, result);
+                                appendDeclarationText(p.getModel(), ppr, unit, result);
+                                appendParameters(p.getModel(), ppr, unit, result);
                             }
                             /*ProducedType type = p.getType();
                             if (pr!=null) {
                                 type = type.substitute(pr.getTypeArguments());
                             }
-                            result.append(type.getProducedTypeName()).append(" ")
+                            result.append(type.getProducedTypeName(unit)).append(" ")
                                 .append(p.getName());
                             if (p instanceof FunctionalParameter) {
                                 result.append("(");
                                 FunctionalParameter fp = (FunctionalParameter) p;
                                 for (Parameter pp: fp.getParameterLists().get(0).getParameters()) {
                                     result.append(pp.getType().substitute(pr.getTypeArguments())
-                                            .getProducedTypeName())
+                                            .getProducedTypeName(unit))
                                         .append(" ").append(pp.getName()).append(", ");
                                 }
                                 result.setLength(result.length()-2);

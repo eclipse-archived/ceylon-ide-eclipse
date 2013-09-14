@@ -439,7 +439,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
             		return super.getContextInformation();
             	}
             	return new ParameterContextInformation(declaration, 
-            			producedReference, pls.get(0), offset-prefix.length());
+            			producedReference, cpc.getRootNode().getUnit(), 
+            			pls.get(0), offset-prefix.length());
             }
 		}
 		return null;

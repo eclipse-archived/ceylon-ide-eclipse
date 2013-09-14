@@ -1066,7 +1066,7 @@ public class CeylonQuickFixAssistant {
                             Declaration d = dwp.getDeclaration();
                             if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
                                 ProducedReference pr = getRefinedProducedReference(et, d);
-                                def+= "$indent    " + getRefinementTextFor(d, pr, false, "") + "\n";
+                                def+= "$indent    " + getRefinementTextFor(d, pr, node.getUnit(), false, "") + "\n";
                             }
                         }
                     }

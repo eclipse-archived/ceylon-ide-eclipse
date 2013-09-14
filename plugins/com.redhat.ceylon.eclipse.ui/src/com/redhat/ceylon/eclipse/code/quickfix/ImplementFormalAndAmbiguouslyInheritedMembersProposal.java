@@ -111,7 +111,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
                     formalDeclNames.add(d.getName());
                     ProducedReference pr = getRefinedProducedReference(ci, d);
                     result.append(indent)
-                        .append(getRefinementTextFor(d, pr, false, indent))
+                        .append(getRefinementTextFor(d, pr, node.getUnit(), false, indent))
                         .append(indent);
                     importSignatureTypes(d, cu, already);
                 }
@@ -130,7 +130,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
                         ambiguouslyDeclNames.add(m.getName());
                         ProducedReference pr = getRefinedProducedReference(ci, m);
                         result.append(indent)
-                            .append(getRefinementTextFor(m, pr, false, indent))
+                            .append(getRefinementTextFor(m, pr, node.getUnit(), false, indent))
                             .append(indent);
                         importSignatureTypes(m, cu, already);
                     }

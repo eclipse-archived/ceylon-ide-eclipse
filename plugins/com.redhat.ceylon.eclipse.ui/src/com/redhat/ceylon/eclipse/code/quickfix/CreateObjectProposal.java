@@ -61,7 +61,7 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
                 String name = type.getDeclaration().getName().replace("&", "")
                 		.replace("<", "").replace(">", "");
                 CreateSubtype cs = subtypeDeclaration(type, 
-                		cu.getUnit().getPackage(), true);
+                		cu.getUnit().getPackage(), cu.getUnit(), true);
             	HashSet<Declaration> already = new HashSet<Declaration>();
                 for (ProducedType pt: cs.getImportedTypes()) {
                 	importType(already, pt, cu);

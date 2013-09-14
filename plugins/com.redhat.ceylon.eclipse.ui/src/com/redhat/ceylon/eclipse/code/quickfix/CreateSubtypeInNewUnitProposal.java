@@ -87,10 +87,10 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
     @Override
     public void apply(IDocument doc) {
         TypeDeclaration td = type.getDeclaration();
+        Unit unit = editor.getParseController().getRootNode()
+                .getUnit();
         CreateSubtype cs = subtypeDeclaration(type, 
-        		editor.getParseController().getRootNode()
-        		        .getUnit().getPackage(), 
-        		false);
+        		unit.getPackage(), unit, false);
         NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
                 Util.getFile(editor.getEditorInput()), 
         		"My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
@@ -119,7 +119,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
 	}
 	
     public static CreateSubtype subtypeDeclaration(ProducedType type, 
-    		Package pkg, boolean object) {
+    		Package pkg, Unit unit, boolean object) {
         TypeDeclaration td = type.getDeclaration();
         StringBuilder def = new StringBuilder();
         if (object) {
@@ -146,14 +146,14 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
                 for (ProducedType pt: td.getSatisfiedTypes()) {
                     if (pt.getDeclaration() instanceof Class) {
                         foundClass = true;
-                        appendParameters(pt, (Class) pt.getDeclaration(), def);
+                        appendParameters(pt, (Class) pt.getDeclaration(), unit, def);
                         break;
                     }
                 }
             }
             if (td instanceof Class) {
                 foundClass = true;
-            	appendParameters(type, (Class) td, def);
+            	appendParameters(type, (Class) td, unit, def);
             }
             if (!foundClass) {
             	def.append("()");
@@ -203,7 +203,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         		ProducedReference pr = getRefinedProducedReference(type, d);
             	if (pr instanceof ProducedTypedReference) {
             		def.append("    ")
-            			.append(getRefinementTextFor(d, pr, false, ""))
+            			.append(getRefinementTextFor(d, pr, unit, false, ""))
             			.append("\n");
             	}
         	}
@@ -266,8 +266,8 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
 	}
 
     public static void appendParameters(ProducedType type, Class c,
-            StringBuilder def) {
-        CeylonContentProposer.appendParameters(c,type, def);
+            Unit unit, StringBuilder def) {
+        CeylonContentProposer.appendParameters(c, type, unit, def);
 //        if (c.getParameterList()==null ||
 //                c.getParameterList().getParameters().isEmpty()) {
 //        	def.append("()");
