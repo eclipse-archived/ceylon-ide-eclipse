@@ -11,11 +11,11 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 public class FoldingController implements TreeLifecycleListener {
 	
     private final ProjectionAnnotationModel fAnnotationModel;
-    private final CeylonFoldingUpdater fFoldingUpdater;
+    private final FoldingUpdater fFoldingUpdater;
 
     public FoldingController(ProjectionAnnotationModel annotationModel, CeylonSourceViewer sourceViewer) {
         this.fAnnotationModel= annotationModel;
-        this.fFoldingUpdater= new CeylonFoldingUpdater(sourceViewer);
+        this.fFoldingUpdater= new FoldingUpdater(sourceViewer);
     }
 
     public Stage getStage() {
