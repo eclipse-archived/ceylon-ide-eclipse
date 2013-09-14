@@ -25,6 +25,7 @@ import java.util.List;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
@@ -34,6 +35,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 	
@@ -87,8 +89,13 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 //			 }
 //		 }
 		 if (tokens==null) {
-			 CommonTokenStream ts = new CommonTokenStream(new CeylonLexer(new ANTLRStringStream(document.get())));
+			 CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(document.get()));
+			 CommonTokenStream ts = new CommonTokenStream(lexer);
 			 ts.fill();
+             try {
+                new CeylonParser(ts).compilationUnit();
+             } 
+             catch (RecognitionException e) {}
 			 tokens = ts.getTokens();
 		 }
 		 new AutoEdit(document, tokens, command).customizeDocumentCommand();
@@ -207,7 +214,7 @@ class AutoEdit {
 
             if (current.equals(opening) && (!isQuotedOrCommented(command.offset) || 
             		isGraveAccentCharacterInStringLiteral(command.offset, opening) ||
-            		isWikiRefInAnnotatedStringLiteral(command.offset, opening))) {
+            		isOpeningBracketInAnnotationStringLiteral(command.offset, opening))) {
 				//typed character is an opening fence
 				if (closeOpeningFence(opening, closing)) {
 					//add a closing fence
@@ -222,6 +229,16 @@ class AutoEdit {
 				            }
 				        } 
 				        catch (BadLocationException e) {}
+				    }
+				    else if (isOpeningBracketInAnnotationStringLiteral(command.offset, opening)) {
+                        try {
+                            if (command.offset>1 &&
+                                    document.get(command.offset-1,1).equals("[") &&
+                                    !document.get(command.offset-2,1).equals("]")) {
+                                command.text += "]]";
+                            }
+                        } 
+                        catch (BadLocationException e) {}
 				    }
 				    else if (opening.equals("\"")) {
 				        try {
@@ -373,8 +390,15 @@ class AutoEdit {
         return false;
     }
 
-    private boolean isWikiRefInAnnotatedStringLiteral(int offset, String fence) {
-       return ("[".equals(fence) && tokenType(offset) == ASTRING_LITERAL); 
+    private boolean isOpeningBracketInAnnotationStringLiteral(int offset, String fence) {
+        if ("[".equals(fence)) {
+            int type = tokenType(offset);
+            //damn, AutoEdit can now no longer 
+            //distinguish annotation strings :(
+            return type == ASTRING_LITERAL ||
+                    type == AVERBATIM_STRING;
+        }
+        return false;
     }
     
     private boolean isMultilineCommentStart(int offset, IDocument d) {
