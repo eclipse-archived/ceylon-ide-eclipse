@@ -687,7 +687,8 @@ public class CeylonContentProposer {
                                 @Override
                                 public String getAdditionalProposalInfo() {
                                     return JDKUtils.isJDKModule(name) ?
-                                            "This module forms part of the Java SDK." :
+                                            getDocumentationForModule(name, JDK_MODULE_VERSION,
+                                                    "This module forms part of the Java SDK.") :
                                             getDocumentationFor(module, version);
                                 }
                             });
