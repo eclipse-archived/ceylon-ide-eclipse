@@ -2,19 +2,25 @@ package com.redhat.ceylon.eclipse.core.launch;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
@@ -24,137 +30,82 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
 /**
- * This class is a stateful helper that groups together
- * - static utility classes
- * - stateful correspondence between Eclipse and Ceylon objects
- * - queries on the correspondence
- * 
- * A GUI component will have its own copy and dispose of it.
- *
+ * This class is a stateless helper that groups together static utility methods
  */
 public class LaunchHelper {
-    
-    private List<Declaration> topLevelDeclarations = new LinkedList<Declaration>();
-    private List<IFile> correspondingfiles = new LinkedList<IFile>();
-    
-    private IProject project;
-    private Module module;
-    private Declaration topLevel;
-    private TypeChecker typeChecker;
 
-    //public getters
-    public IProject getProject() {
-        return this.project;
-    }
-
-    public Module getModule() {
-        return this.module;
-    }
-
-    public Declaration getTopLevel() {
-        return this.topLevel;
-    }
-
-    public List<Declaration> getTopLevelDeclarations() {
-        return this.topLevelDeclarations;
-    }  
-    
-    // Constructors
-    public LaunchHelper(String projectName) {
-        this.project = getProjectFromName(projectName);
-        this.typeChecker = CeylonBuilder.getProjectTypeChecker(this.project);
-        this.typeChecker = CeylonBuilder.getProjectTypeChecker(this.project);
-        if (!getModules(this.project).isEmpty()) {
-            this.module = getModules(this.project).iterator().next(); // just choose first one
-        } else {
-            this.module = getDefaultModule(); // maybe not required
-        }
-        // no single declaration
-        initializeMapping();
-    }
-    
-    public LaunchHelper(String projectName, String moduleName) {
-        this.project = getProjectFromName(projectName);
-        this.typeChecker = CeylonBuilder.getProjectTypeChecker(this.project);
-        this.module = getModule(this.project, moduleName);
-        // no single declaration
-        initializeMapping();
-    }
-    
-    public LaunchHelper(IJavaElement context) {
-        if (context != null) {
-            if (context instanceof IJavaProject) {
-                this.project = ((IJavaProject)context).getProject();
-                this.typeChecker = CeylonBuilder.getProjectTypeChecker(this.project);
-                if (!getModules(this.project).isEmpty()) {
-                    this.module = getModules(this.project).iterator().next(); // just choose first one
-                } else {
-                    this.module = getDefaultModule(); // maybe not required
+    static void addFiles(List<IFile> files, IResource resource) {
+        switch (resource.getType()) {
+            case IResource.FILE:
+                IFile file = (IFile) resource;
+                IPath path = file.getFullPath(); //getProjectRelativePath();
+                if (path!=null && "ceylon".equals(path.getFileExtension()) ) {
+                    files.add(file);
                 }
-                initializeMapping();
-            }
-            else if (context instanceof IPackageFragment) {
-                IPackageFragment pkg = (IPackageFragment)context;
-                this.project = pkg.getJavaProject().getProject();
-                this.typeChecker = CeylonBuilder.getProjectTypeChecker(this.project);
-                String pkgName = CeylonBuilder.getPackageName(pkg.getResource());
-                for (Module mod : getModules(this.project)) {
-                    if (mod.getDirectPackage(pkgName) != null) {
-                        this.module = mod;
+                break;
+            case IResource.FOLDER:
+            case IResource.PROJECT:
+                IContainer folder = (IContainer) resource;
+                try {
+                    for (IResource child: folder.members()) {
+                        addFiles(files, child);
                     }
                 }
-                if (this.module == null) {
-                    this.module = getDefaultModule();
+                catch (CoreException e) {
+                    e.printStackTrace();
                 }
-                initializeMapping();
-            }
+                break;
         }
     }
-
-    private void initializeMapping() { 
-        if (this.project != null && this.module != null && typeChecker != null) {
-            for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
-                if (!module.isDefault()) {
-                    if (module.getAllPackages().contains(pu.getPackage())) {
-                        addPhasedUnit(CeylonBuilder.getFile(pu), pu);
-                    }
-                } else {
-                    addPhasedUnit(CeylonBuilder.getFile(pu), pu);
-                }
-            }
-        }
-    }
- 
-    //For use in MainTab if needed
-    @Deprecated
-    public void initializeMapping(List<IFile> files) {  
-        for (IFile file : files) {            
+    
+    static Object[] findDeclarationFromFiles(List<IFile> files) {
+        List<Declaration> topLevelDeclarations = new LinkedList<Declaration>();
+        List<IFile> correspondingfiles = new LinkedList<IFile>();
+        for (IFile file : files) {
+            IProject project = file.getProject();
+            TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
             if (typeChecker != null) {
                 PhasedUnit phasedUnit = typeChecker.getPhasedUnits()
                         .getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(file));
                 if (phasedUnit!=null) {
-                    addPhasedUnit(file, phasedUnit);
+                    List<Declaration> declarations = phasedUnit.getDeclarations();
+                    for (Declaration d : declarations) {
+                        if (isRunnable(d)) {
+                            topLevelDeclarations.add(d);
+                            correspondingfiles.add(file);
+                        }
+                    }
                 }
             }
         }
-    }
-
-    private void addPhasedUnit(IFile file, PhasedUnit phasedUnit) {
-        List<Declaration> declarations = phasedUnit.getDeclarations();
-        for (Declaration d : declarations) {
-            if (isRunnable(d)) {
-                topLevelDeclarations.add(d);
-                correspondingfiles.add(file);
+        
+        Declaration declarationToRun = null;
+        IFile fileToRun = null; 
+        if (topLevelDeclarations.size() == 0) {
+            MessageDialog.openError(Util.getShell(), "Ceylon Launcher", 
+            		"No ceylon runnable element"); 
+        } 
+        else if (topLevelDeclarations.size() > 1) {
+            declarationToRun = LaunchHelper.chooseDeclaration(topLevelDeclarations);
+            if (declarationToRun!=null) {
+                fileToRun = correspondingfiles.get(topLevelDeclarations.indexOf(declarationToRun));
             }
+        } 
+        else {
+            declarationToRun = topLevelDeclarations.get(0);
+            fileToRun = correspondingfiles.get(0);
         }
+       
+        return new Object[] {declarationToRun, fileToRun};
     }
     
-    private boolean isRunnable(Declaration d) {
+    private static boolean isRunnable(Declaration d) {
         boolean candidateDeclaration = true;
         if (!d.isToplevel()) {
             candidateDeclaration = false;
@@ -179,8 +130,22 @@ public class LaunchHelper {
         }
         return candidateDeclaration;
     }
-
-
+   
+    static Module getAnyModule(IProject project, String fullModuleName) { // mostly for dependent projects
+        if (fullModuleName != null) {
+            String[] parts = fullModuleName.split("/");
+            
+            if (parts != null && parts.length != 2) {
+                return null;
+            }  	
+	        for (Module module: CeylonBuilder.getProjectModules(project).getListOfModules()) {
+	            if (module.getNameAsString().equals(parts[0]) && module.getVersion().equals(parts[1])) {
+	                return module;
+	            }
+	        }
+        }
+        return null;
+    }
     
     static Module getModule(IProject project, String fullModuleName) {
         
@@ -201,7 +166,7 @@ public class LaunchHelper {
                 }
             }
         }
-        return getDefaultModule();
+        return null;
     }
 
     private static Module getDefaultModule() {
@@ -212,27 +177,27 @@ public class LaunchHelper {
         return defaultModule;
     }
     
-    public Module getModule(Declaration decl) {
+    static Module getModule(Declaration decl) {
         return decl.getUnit().getPackage().getModule();
     }
 
-    public String getModuleFullName(Declaration decl) {
+    static String getModuleFullName(Declaration decl) {
         Module module = getModule(decl);
         if (module.isDefault()) {
             return Module.DEFAULT_MODULE_NAME;
         } else {
-            return module.getNameAsString() + "/" + module.getVersion();
+            return getFullModuleName(module);
         }
     }
  
-    public Set<Module> getModules(boolean includeDefault) {
+    static Set<Module> getModules(IProject project, boolean includeDefault) {
         Set<Module> modules = new HashSet<Module>();
 
-        for(Module module: CeylonBuilder.getModulesInProject(this.project)) {
+        for(Module module: CeylonBuilder.getProjectModules(project).getListOfModules()) {
             if (module.isAvailable() 
-                    && !module.getNameAsString().startsWith(Module.LANGUAGE_MODULE_NAME) &&
-                    !module.isJava() && module.getPackage(module.getNameAsString()) != null) {
-                if ((module.isDefault() && includeDefault) || (!module.isDefault() && !includeDefault)){
+                    && !module.getNameAsString().startsWith(Module.LANGUAGE_MODULE_NAME) && !module.isJava() ) {
+                if ((module.isDefault() && includeDefault) 
+                		|| (!module.isDefault() && module.getPackage(module.getNameAsString()) != null)){
                     modules.add(module);
                 }
             }
@@ -243,42 +208,118 @@ public class LaunchHelper {
         return modules;
     }
     
-    public boolean isProjectContainsModule(IProject project, String fullModuleName) {
+    static boolean isProjectContainsModule(IProject project, String fullModuleName) {
         if (fullModuleName.equals(Module.DEFAULT_MODULE_NAME)) {
             return true;
         }
         
-        if (project.getName().equals(this.project.getName())
-            && this.module != null 
-            && fullModuleName.equals(this.module.getNameAsString()+"/"+this.module.getVersion())) {
-            return true;
-        }
+        for (Module module : getModules(project, false)) {
+	            if (fullModuleName != null 
+	            		&& fullModuleName.equals(getFullModuleName(module))) {
+	            return true;
+	        }
+    	}
         return false;
     }
+
+	static String getFullModuleName(Module module) {
+		return module.getNameAsString()+"/"+module.getVersion();
+	}
     
-    public boolean isModuleContainsTopLevel(IProject project, String fullModuleName, String topLevelName) {
-        //assuming project and module exist and decls are module-specific
-        for (Declaration d : this.topLevelDeclarations) {
-            if (d.getQualifiedNameString().replace("::", ".").equals(topLevelName)) {
-                return true;
-            }
+	static List<Declaration> getDeclarationsForModule(String projectName, String fullModuleName) {
+		IProject project = getProjectFromName(projectName);
+    	
+    	List<Declaration> modDecls = new LinkedList<Declaration>();
+    	
+    	if (isProjectContainsModule(project, fullModuleName) && getModule(project, fullModuleName) != null) { // if the module is in the same project
+	    	TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+	    	Module module = getModule(project, fullModuleName);
+	    	for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
+	    		if (isModuleCompatible(module, pu)) {
+			    	for (Declaration decl : pu.getDeclarations()) {
+			    		if (isRunnable(decl)) {
+			    			modDecls.add(decl);
+			    		}
+			    	}
+	    		}
+	    	}
+    	} else { // depednent module
+    		Module module = getAnyModule(project, fullModuleName);
+    		for (Package pkg : module.getSharedPackages()) {
+    			for (Declaration decl : pkg.getMembers()) {
+		    		if (isRunnable(decl)) {
+		    			modDecls.add(decl);
+		    		}    				
+    			}
+    		}
+    	}
+    	
+    	return modDecls;	
+	}
+	
+	/**
+	 * Does not attempt to get all declarations before it returns true / also for dependent modules
+	 * @param project
+	 * @param fullModuleName
+	 * @param topLevelName
+	 * @return boolean if a top-level is contained in a module
+	 */
+    static boolean isModuleContainsTopLevel(IProject project, String fullModuleName, String topLevelName) {
+        
+    	if (!isProjectContainsModule(project, fullModuleName)) {
+    		return false;
+    	}
+    	
+    	Module mod = getAnyModule(project, fullModuleName);
+    	
+    	if (mod == null) {
+    		return false;
+    	}
+    	
+        if (mod.isDefault()) {
+        	TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+        	for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
+				for (Declaration decl : pu.getDeclarations()) {
+					if (getRunnableName(decl).equals(topLevelName)) {
+						return true;
+					}
+				}
+        	}
+        } else {
+			for (com.redhat.ceylon.compiler.typechecker.model.Package pkg : mod.getSharedPackages()) {
+				for (Declaration decl : pkg.getMembers()) {
+					if (getRunnableName(decl).equals(topLevelName)) {
+						return true;
+					}
+				}
+			}
         }
-        if (topLevelName.equals("run - default")) {
-            for (Declaration d : this.topLevelDeclarations) {
-                if (d.getQualifiedNameString().equals(getModule(d).getRootPackage().getNameAsString()+"::run")) {
-                    return true;
-                }
-            }
-        }
+    	
         return false;
-    }  
+    }
+
+	private static boolean isModuleCompatible(Module module,
+			PhasedUnit pu) {
+		return (!module.isDefault() && module.getAllPackages().contains(pu.getPackage()) )
+				|| module.isDefault();
+	}
+
+	private static List<Declaration> getRunnableDeclarations(PhasedUnit phasedUnit) {
+    	List<Declaration> puDecls = new LinkedList<Declaration>();
+    	for (Declaration decl : phasedUnit.getDeclarations()) {
+    		if (isRunnable(decl)) {
+    			puDecls.add(decl);
+    		}
+    	}
+    	return puDecls;
+	}
+
+	static String getRunnableName(Declaration d) {
+		return d.getQualifiedNameString().replace("::", ".");
+	}  
     
-    /**
-     * A common place to put this method.  TODO move to Utils in future
-     * @param List<Declaration> decls
-     * @return Declaration
-     */
-    public static Declaration chooseDeclaration(final List<Declaration> decls) {
+
+    static Declaration chooseDeclaration(final List<Declaration> decls) {
         FilteredItemsSelectionDialog sd = new CeylonTopLevelSelectionDialog(Util.getShell(), false, decls);
 
         if (sd.open() == Window.OK) {
@@ -286,8 +327,26 @@ public class LaunchHelper {
         }
         return null;
     }
+
+	static Module chooseModule(String projectName, boolean includeDefault) {
+		return chooseModule(getProjectFromName(projectName), includeDefault);
+	}
+	
+    static Module chooseModule(IProject project, boolean includeDefault) {
+
+    	Set<Module> modules = getModules(project, true);
+    	if (getDefaultOrOnlyModule(project, includeDefault) != null) {
+    		return getDefaultOrOnlyModule(project, includeDefault);
+    	}
+	    
+	    FilteredItemsSelectionDialog cmsd = new CeylonModuleSelectionDialog(Util.getShell(), modules, "Choose Ceylon Module"); 
+	    if (cmsd.open() == Window.OK) {
+	        return (Module)cmsd.getFirstResult();
+	    }
+	    return null;
+    }
     
-    public static IProject getProjectFromName(String projectName) {
+    static IProject getProjectFromName(String projectName) {
         if (projectName != null && projectName.length() > 0) {
             IWorkspace workspace = ResourcesPlugin.getWorkspace();
             IStatus status = workspace.validateName(projectName, IResource.PROJECT);
@@ -298,14 +357,23 @@ public class LaunchHelper {
         return null;
     }
 
-    public static Set<Module> getModules(IProject project) {
+    static Set<Module> getModules(IProject project) {
         Set<Module> returnedModules = new HashSet<Module>();
         returnedModules.addAll(CeylonBuilder.getModulesInProject(project));
         return returnedModules;
     }
 
-    public String getTopLevelDisplayName(Declaration decl) {
-        String topLevelName = decl.getQualifiedNameString().replace("::", ".");
+    static String getTopLevelNormalName(String moduleFullName, String displayName) {
+    	if (displayName.contains("- default")) {
+	        return moduleFullName.substring(0, moduleFullName.indexOf('/')) 
+	        		+ ".run";
+    	}
+	     
+        return displayName;
+    }
+    
+    static String getTopLevelDisplayName(Declaration decl) {
+        String topLevelName = getRunnableName(decl);
         if (getModule(decl) != null) {
             if (getModule(decl).getRootPackage() != null) {
                 if (getModule(decl).getRootPackage().equals(decl.getUnit().getPackage()) 
@@ -315,5 +383,61 @@ public class LaunchHelper {
             }
         }
         return "("+topLevelName+")";
+    }
+
+	static Module getDefaultOrOnlyModule(IProject project, boolean includeDefault) {
+	    Set<Module> modules = getModules(project, true);
+		
+	    //if only one real module or just one default module, just send it back
+	    if (modules.size() == 1) {
+	    	return modules.iterator().next();
+	    }
+	    
+	    if (modules.size() ==2 && !includeDefault) {
+	    	Iterator<Module> modIterator = modules.iterator(); 
+	    	while (modIterator.hasNext()) {
+	    		Module realMod = modIterator.next();
+	    		if (!realMod.isDefault()) {
+	    			return realMod;
+	    		}
+	    	}
+	    }
+	    return null;
+	}
+
+	static Declaration getDefaultRunnableForModule(Module mod) {
+		Declaration decl = null;
+		if (mod.getRootPackage() != null) {
+			decl = mod.getRootPackage().getDirectMember("run", null, false);
+		}
+		return decl;
+	}
+
+	static Module getModule(IFolder folder) {
+		for (Module mod : getModules(folder.getProject())) {
+		if (CeylonBuilder.getPackageName(folder).equals(mod.getRootPackage().getNameAsString()))
+			return mod;
+		}
+		return null;
+	}
+	
+    static ILaunchConfigurationType getConfigurationType() {
+        return getLaunchManager().getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE);        
+    }
+ 
+    static ILaunchManager getLaunchManager() {
+        return DebugPlugin.getDefault().getLaunchManager();
+    }
+    
+    static String getLaunchConfigurationName(String projectName, String moduleName, Declaration declarationToRun) {
+        String topLevelDisplayName = getTopLevelDisplayName(declarationToRun);
+        
+        String configurationName = projectName.trim() + " - " 
+		+ moduleName.trim() + " - "  
+		+ topLevelDisplayName.trim();
+		
+        configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
+        
+        return getLaunchManager().generateLaunchConfigurationName(configurationName);
     }
 }
