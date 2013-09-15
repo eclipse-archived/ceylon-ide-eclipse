@@ -129,13 +129,14 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         showWarnings.setEnabled(builderEnabled);
 
         offlineButton = new Button(composite, SWT.CHECK);
+        offlineButton.setText("Work offline (disable connection to remote module repositories)");
         offlineButton.setEnabled(builderEnabled);
         offlineButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 if (offlineOption == null) {
                     offlineOption = true;
-                } else if (offlineOption) {
-                    offlineOption = false;
+//                } else if (offlineOption) {
+//                    offlineOption = false;
                 } else {
                     offlineOption = null;
                 }
@@ -217,20 +218,20 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     }
     
     private void updateOfflineButton() {
-        if (offlineOption == null) {
-            offlineButton.setGrayed(true);
-            offlineButton.setSelection(true);
-            offlineButton.setText("Offline (will use default configuration)");
-        } else if (offlineOption == true) {
-            offlineButton.setGrayed(false);
-            offlineButton.setSelection(true);
-            offlineButton.setText("Offline (will prevent connecting to remote repositories)");
-        } else {
-            offlineButton.setGrayed(false);
-            offlineButton.setSelection(false);
-            offlineButton.setText("Offline");
-        }
-        offlineButton.pack();
+//        if (offlineOption == null) {
+//            offlineButton.setGrayed(true);
+//            offlineButton.setSelection(true);
+//            offlineButton.setText("Offline (will use default configuration)");
+//        } else if (offlineOption == true) {
+//            offlineButton.setGrayed(false);
+//            offlineButton.setSelection(true);
+//            offlineButton.setText("Offline (will prevent connecting to remote repositories)");
+//        } else {
+//            offlineButton.setGrayed(false);
+//            offlineButton.setSelection(false);
+//            offlineButton.setText("Offline");
+//        }
+//        offlineButton.pack();
     }
 
 }
