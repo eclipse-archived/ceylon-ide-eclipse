@@ -291,7 +291,8 @@ public class CeylonContentProposer {
 
         String text;
         try {
-            text = viewer.getDocument().get(token.getStartIndex(), token.getStopIndex() + 1);
+            text = viewer.getDocument().get(token.getStartIndex(), 
+                    token.getStopIndex()-token.getStartIndex()+1);
         }
         catch (BadLocationException e) {
             e.printStackTrace();
