@@ -96,17 +96,19 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sep.setLayoutData(sgd);
 
-        //Label misc = new Label(parent, SWT.LEFT | SWT.WRAP);
-        //misc.setText("Ceylon compiler settings:");
+//        Label misc = new Label(parent, SWT.LEFT | SWT.WRAP);
+//        misc.setText("Ceylon compiler settings");
 
-        Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
-        composite.setText("Ceylon compiler settings");
+        Group group = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        Composite composite = group;
+        group.setText("Platform");
         GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd.grabExcessHorizontalSpace=true;
         composite.setLayoutData(gd);
         GridLayout layout = new GridLayout();
         layout.numColumns = 1;
-        composite.setLayout(layout); 
+        layout.marginBottom = 2;
+        composite.setLayout(layout);
         
         compileToJava = new Button(composite, SWT.CHECK);
         compileToJava.setText("Compile project for JVM");
@@ -118,16 +120,20 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         compileToJs.setSelection(backendJs);
         compileToJs.setEnabled(builderEnabled);
         
-        enableExplodeModules = new Button(composite, SWT.CHECK);
-        enableExplodeModules.setText("Enable Java classes calling Ceylon (may affect performance)");
-        enableExplodeModules.setSelection(explodeModules);
-        enableExplodeModules.setEnabled(builderEnabled);
+        composite = new Composite(parent, SWT.NONE);
+        composite.setLayoutData(gd);
+        composite.setLayout(layout);
         
         showWarnings = new Button(composite, SWT.CHECK);
         showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(builderEnabled);
 
+        enableExplodeModules = new Button(composite, SWT.CHECK);
+        enableExplodeModules.setText("Enable Java classes calling Ceylon (may affect performance)");
+        enableExplodeModules.setSelection(explodeModules);
+        enableExplodeModules.setEnabled(builderEnabled);
+        
         offlineButton = new Button(composite, SWT.CHECK);
         offlineButton.setText("Work offline (disable connection to remote module repositories)");
         offlineButton.setEnabled(builderEnabled);
