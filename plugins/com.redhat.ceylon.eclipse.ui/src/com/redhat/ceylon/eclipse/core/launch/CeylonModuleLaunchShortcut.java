@@ -63,7 +63,7 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
             wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, moduleName);
             // save the runnable name
             wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, 
-            		LaunchHelper.getRunnableName(declarationToRun));
+            		LaunchHelper.getTopLevelDisplayName(declarationToRun));
             wc.setMappedResources(new IResource[] {resource});
             config = wc.doSave();
         } catch (CoreException exception) {
@@ -95,11 +95,11 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
                 moduleName = mod.getNameAsString();
             }
             
-            String topLevelName =LaunchHelper.getRunnableName(declaration);
+            String topLevelDisplayName =LaunchHelper.getTopLevelDisplayName(declaration);
             
             for (int i = 0; i < configs.length; i++) {
                 ILaunchConfiguration config = configs[i];
-                if (config.getAttribute(ATTR_TOPLEVEL_NAME, "").equals(topLevelName) && 
+                if (config.getAttribute(ATTR_TOPLEVEL_NAME, "").equals(topLevelDisplayName) && 
                         config.getAttribute(ATTR_PROJECT_NAME, "").equals(projectName) &&
                         config.getAttribute(ATTR_MODULE_NAME, "").equals(moduleName)) {
                     candidateConfigs.add(config);

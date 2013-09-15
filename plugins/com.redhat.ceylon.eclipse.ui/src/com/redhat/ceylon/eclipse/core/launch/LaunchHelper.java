@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,7 +42,7 @@ import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
  */
 public class LaunchHelper {
 
-    static void addFiles(List<IFile> files, IResource resource) {
+	static void addFiles(List<IFile> files, IResource resource) {
         switch (resource.getType()) {
             case IResource.FILE:
                 IFile file = (IFile) resource;
@@ -270,6 +272,10 @@ public class LaunchHelper {
     		return false;
     	}
     	
+    	if (Module.DEFAULT_MODULE_NAME.equals(fullModuleName)) {
+    		fullModuleName = Module.DEFAULT_MODULE_NAME + "/" + "unversioned"; //compatible with next method.
+    	}
+    	
     	Module mod = getAnyModule(project, fullModuleName);
     	
     	if (mod == null) {
@@ -304,6 +310,10 @@ public class LaunchHelper {
 				|| module.isDefault();
 	}
 
+	/**
+	 * May come in handy for uniting laucnh types
+	 */
+	@Deprecated
 	private static List<Declaration> getRunnableDeclarations(PhasedUnit phasedUnit) {
     	List<Declaration> puDecls = new LinkedList<Declaration>();
     	for (Declaration decl : phasedUnit.getDeclarations()) {
@@ -364,7 +374,7 @@ public class LaunchHelper {
     }
 
     static String getTopLevelNormalName(String moduleFullName, String displayName) {
-    	if (displayName.contains("- default")) {
+    	if (displayName.contains(DEFAULT_RUN_MARKER)) {
 	        return moduleFullName.substring(0, moduleFullName.indexOf('/')) 
 	        		+ ".run";
     	}
@@ -373,16 +383,13 @@ public class LaunchHelper {
     }
     
     static String getTopLevelDisplayName(Declaration decl) {
-        String topLevelName = getRunnableName(decl);
-        if (getModule(decl) != null) {
-            if (getModule(decl).getRootPackage() != null) {
-                if (getModule(decl).getRootPackage().equals(decl.getUnit().getPackage()) 
-                    && decl.getName().equals("run")) {
-                    topLevelName = "run - default"; 
-                }
-            }
+        
+    	String topLevelName = getRunnableName(decl);
+        
+        if (getModule(decl) != null && decl.equals(getDefaultRunnableForModule(getModule(decl)))) {
+	        topLevelName = "run" + DEFAULT_RUN_MARKER; 
         }
-        return "("+topLevelName+")";
+        return topLevelName;
     }
 
 	static Module getDefaultOrOnlyModule(IProject project, boolean includeDefault) {
@@ -433,8 +440,8 @@ public class LaunchHelper {
         String topLevelDisplayName = getTopLevelDisplayName(declarationToRun);
         
         String configurationName = projectName.trim() + " - " 
-		+ moduleName.trim() + " - "  
-		+ topLevelDisplayName.trim();
+        		+ moduleName.trim() + " ("  
+        		+ topLevelDisplayName.trim() + ")";
 		
         configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
         
