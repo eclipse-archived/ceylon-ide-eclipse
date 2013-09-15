@@ -10,6 +10,12 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_INSERT;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
@@ -23,7 +29,6 @@ import org.eclipse.jface.preference.ScaleFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -55,6 +60,12 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor pasteCorrectIndent;
     BooleanFieldEditor autoFoldImports;
     BooleanFieldEditor autoFoldComments;
+    BooleanFieldEditor closeParens;
+    BooleanFieldEditor closeBrackets;
+    BooleanFieldEditor closeBraces;
+    BooleanFieldEditor closeAngles;
+    BooleanFieldEditor closeBackticks;
+    BooleanFieldEditor closeQuotes;
     
     public CeylonEditorPreferencesPage() {
         super(GRID);
@@ -75,6 +86,12 @@ public class CeylonEditorPreferencesPage
         pasteCorrectIndent.store();
         autoFoldImports.store();
         autoFoldComments.store();
+        closeAngles.store();
+        closeBackticks.store();
+        closeBraces.store();
+        closeBrackets.store();
+        closeParens.store();
+        closeQuotes.store();
         return true;
     }
     
@@ -94,6 +111,12 @@ public class CeylonEditorPreferencesPage
         pasteCorrectIndent.loadDefault();
         autoFoldImports.loadDefault();
         autoFoldComments.loadDefault();
+        closeAngles.loadDefault();
+        closeBackticks.loadDefault();
+        closeBraces.loadDefault();
+        closeBrackets.loadDefault();
+        closeParens.loadDefault();
+        closeQuotes.loadDefault();
     }
     
     @Override
@@ -142,8 +165,14 @@ public class CeylonEditorPreferencesPage
 
     @Override
     protected void createFieldEditors() {
-//        super.createDescriptionLabel(getFieldEditorParent()).setText("Bracket highlighting");
-//        addField(new SpacerFieldEditor(getFieldEditorParent()));
+        autocompletionSection();
+        bracketHighlightingSection();        
+        foldingSection();
+        autocloseSection();
+        otherSection();
+    }
+
+    private void bracketHighlightingSection() {
         addField(new LabelFieldEditor("Bracket highlighting:",
                 getFieldEditorParent()));
         matchingBracket = new BooleanFieldEditor(MATCHING_BRACKET, 
@@ -163,6 +192,9 @@ public class CeylonEditorPreferencesPage
         addField(enclosingBrackets);
 //        super.createDescriptionLabel(getFieldEditorParent()).setText("Autocompletion");
         addField(new SpacerFieldEditor(getFieldEditorParent()));
+    }
+
+    private void autocompletionSection() {
         addField(new LabelFieldEditor("Autocompletion:",
                 getFieldEditorParent()));
         autoInsert = new BooleanFieldEditor(AUTO_INSERT, 
@@ -184,64 +216,9 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent());
         autoActivationChars.load();
         addField(autoActivationChars);
-        autoActivationDelay = new ScaleFieldEditor(AUTO_ACTIVATION_DELAY, 
+        autoActivationDelay = new ScaleWithLabelFieldEditor(AUTO_ACTIVATION_DELAY, 
                 "Auto-activation delay", 
-                getFieldEditorParent()) {
-            Label label;
-            @Override
-            protected void adjustForNumColumns(int numColumns) {
-                ((GridData) scale.getLayoutData()).horizontalSpan = numColumns - 2;
-            }
-            @Override
-            protected void doFillIntoGrid(Composite parent,
-                    int numColumns) {
-                super.doFillIntoGrid(parent, numColumns-1);
-//                ((GridData) getScaleControl().getLayoutData()).grabExcessHorizontalSpace=false;
-                label = new Label(parent, SWT.SHADOW_IN);
-                getScaleControl().addSelectionListener(new SelectionListener() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        label.setText(scale.getSelection() + " ms");
-                    }
-                    @Override
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                        label.setText(scale.getSelection() + " ms");
-                    }
-                });
-                GridData gd = new GridData();
-                label.setLayoutData(gd);
-            }
-            @Override
-            public int getNumberOfControls() {
-                return super.getNumberOfControls()+1;
-            }
-            @Override
-            protected void createControl(Composite parent) {
-                GridLayout layout = new GridLayout();
-                layout.numColumns = getNumberOfControls();
-                layout.marginWidth = 0;
-                layout.marginHeight = 0;
-                layout.horizontalSpacing = HORIZONTAL_GAP;
-                parent.setLayout(layout);
-                doFillIntoGrid(parent, layout.numColumns);
-            }
-            @Override
-            protected void doLoad() {
-                super.doLoad();
-                if (label != null) {
-                    int value = getPreferenceStore().getInt(getPreferenceName());
-                    label.setText(value + " ms       ");
-                }
-            }
-            @Override
-            protected void doLoadDefault() {
-                super.doLoadDefault();
-                if (label != null) {
-                    int value = getPreferenceStore().getDefaultInt(getPreferenceName());
-                    label.setText(value + " ms       ");
-                }
-            }
-        };
+                getFieldEditorParent());
         //autoActivationDelay.setValidRange(1, 9999);
         autoActivationDelay.setMinimum(1);
         autoActivationDelay.setMaximum(2000);
@@ -252,7 +229,10 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent());
         linkedMode.load();
         addField(linkedMode);
-        addField(new SpacerFieldEditor(getFieldEditorParent()));
+        addField(new SpacerFieldEditor(getFieldEditorParent()));        
+    }
+
+    private void foldingSection() {
         addField(new LabelFieldEditor("Folding:",
                 getFieldEditorParent()));
         autoFoldImports = new BooleanFieldEditor(AUTO_FOLD_IMPORTS, 
@@ -266,6 +246,9 @@ public class CeylonEditorPreferencesPage
         autoFoldComments.load();
         addField(autoFoldComments);
         addField(new SpacerFieldEditor(getFieldEditorParent()));
+    }
+
+    private void otherSection() {
         addField(new LabelFieldEditor("Other:",
                 getFieldEditorParent()));
         linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
@@ -283,6 +266,55 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent());
         pasteCorrectIndent.load();
         addField(pasteCorrectIndent);
+    }
+    
+    protected Composite getFieldEditorParent(Composite group) {
+        Composite parent = new Composite(group, SWT.NULL);
+        parent.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        return parent;
+    }
+
+    private void autocloseSection() {
+        addField(new LabelFieldEditor("Automatically close:",
+                getFieldEditorParent()));
+        Composite parent = getFieldEditorParent();
+        Composite group = new Composite(parent, SWT.NONE);
+        GridLayout layout = new GridLayout(3, true);
+        group.setLayout(layout);
+        GridData gd = new GridData();
+        gd.horizontalSpan=3;
+        group.setLayoutData(gd);
+        closeParens = new BooleanFieldEditor(CLOSE_PARENS, 
+                "Parentheses", 
+                getFieldEditorParent(group));
+        closeParens.load();
+        addField(closeParens);
+        closeBrackets = new BooleanFieldEditor(CLOSE_BRACKETS, 
+                "Brackets", 
+                getFieldEditorParent(group));
+        closeBrackets.load();
+        addField(closeBrackets);
+        closeAngles = new BooleanFieldEditor(CLOSE_ANGLES, 
+                "Angle brackets", 
+                getFieldEditorParent(group));
+        closeAngles.load();
+        addField(closeAngles);
+        closeBackticks = new BooleanFieldEditor(CLOSE_BACKTICKS, 
+                "Backticks", 
+                getFieldEditorParent(group));
+        closeBackticks.load();
+        addField(closeBackticks);
+        closeBraces = new BooleanFieldEditor(CLOSE_BRACES, 
+                "Braces", 
+                getFieldEditorParent(group));
+        closeBraces.load();
+        addField(closeBraces);
+        closeQuotes = new BooleanFieldEditor(CLOSE_QUOTES, 
+                "Quotes", 
+                getFieldEditorParent(group));
+        closeQuotes.load();
+        addField(closeQuotes);
+        addField(new SpacerFieldEditor(getFieldEditorParent()));
     }
 
 }

@@ -114,6 +114,13 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 	public static final String LINKED_MODE = "linkedModeCompletion";
 	public static final String LINKED_MODE_RENAME = "linkedModeRename";
 	public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
+	
+	public static final String CLOSE_PARENS = "closeParens";
+    public static final String CLOSE_BRACKETS = "closeBrackets";
+    public static final String CLOSE_ANGLES = "closeAngles";
+    public static final String CLOSE_BACKTICKS = "closeBackticks";
+    public static final String CLOSE_BRACES = "closeBraces";
+    public static final String CLOSE_QUOTES = "closeQuotes";
     
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         final ContentAssistant ca = new ContentAssistant();
@@ -143,6 +150,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         prefStore.setDefault(LINKED_MODE, true);
 		prefStore.setDefault(LINKED_MODE_RENAME, true);
         prefStore.setDefault(PASTE_CORRECT_INDENTATION, true);
+        prefStore.setDefault(CLOSE_PARENS, true);
+        prefStore.setDefault(CLOSE_BRACKETS, true);
+        prefStore.setDefault(CLOSE_ANGLES, true);
+        prefStore.setDefault(CLOSE_BRACES, true);
+        prefStore.setDefault(CLOSE_QUOTES, true);
+        prefStore.setDefault(CLOSE_BACKTICKS, true);
 		configCompletionPopup(ca);
 		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
             @Override
