@@ -30,6 +30,7 @@ import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.GROUP_RULERS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.DELETE_NEXT_WORD;
@@ -108,11 +109,16 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPropertyListener;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.ContentAssistAction;
@@ -193,7 +199,7 @@ public class CeylonEditor extends TextEditor {
     public final static String SUB_WORD_NAVIGATION= "subWordNavigation";
     public final static String AUTO_FOLD_IMPORTS= "autoFoldImports";
     public final static String AUTO_FOLD_COMMENTS= "autoFoldComments";
-
+    
     private CeylonParserScheduler parserScheduler;
     private ProblemMarkerManager problemMarkerManager;
     private ICharacterPairMatcher bracketMatcher;
@@ -212,6 +218,7 @@ public class CeylonEditor extends TextEditor {
     private CeylonParseController parseController;
     private ProjectionSupport projectionSupport;
     private LinkedModeModel linkedMode;
+    private ToggleFoldingRunner fFoldingRunner;
         
     //public static ResourceBundle fgBundleForConstructedKeys= getBundle(MESSAGE_BUNDLE);
     
@@ -925,30 +932,13 @@ public class CeylonEditor extends TextEditor {
 
     protected void rulerContextMenuAboutToShow(IMenuManager menu) {
         addDebugActions(menu);
-
         super.rulerContextMenuAboutToShow(menu);
-
-        //IMenuManager foldingMenu= new MenuManager("Folding", "projection");
-
-        //menu.appendToGroup(GROUP_RULERS, foldingMenu);
-
-        menu.appendToGroup(GROUP_RULERS, new Separator());
-        
-        IAction action;
-//      action= getAction("FoldingToggle");
-//      foldingMenu.add(action);
-        action= getAction("FoldingExpandAll");
-        menu.appendToGroup(GROUP_RULERS, action);
-        //foldingMenu.add(action);
-        action= getAction("FoldingCollapseAll");
-        //foldingMenu.add(action);
-        menu.appendToGroup(GROUP_RULERS, action);
-        /*action= getAction("FoldingRestore");
-        foldingMenu.add(action);
-        action= getAction("FoldingCollapseMembers");
-        foldingMenu.add(action);
-        action= getAction("FoldingCollapseComments");
-        foldingMenu.add(action);*/
+        menu.appendToGroup(GROUP_RULERS, new Separator());        
+        menu.appendToGroup(GROUP_RULERS, getAction("FoldingToggle"));
+        menu.appendToGroup(GROUP_RULERS, getAction("FoldingExpandAll"));
+        menu.appendToGroup(GROUP_RULERS, getAction("FoldingCollapseAll"));
+        menu.appendToGroup(GROUP_RULERS, getAction("FoldingCollapseImports"));
+        menu.appendToGroup(GROUP_RULERS, getAction("FoldingCollapseComments"));
     }
 
     private void addDebugActions(IMenuManager menu) {
@@ -1136,7 +1126,7 @@ public class CeylonEditor extends TextEditor {
 
     private void initiateServiceControllers() {
         try {
-            final CeylonSourceViewer sourceViewer = (CeylonSourceViewer) getSourceViewer();
+            final CeylonSourceViewer sourceViewer = getCeylonSourceViewer();
                         
             annotationUpdater= new IProblemChangedListener() {
                 public void problemsChanged(IResource[] changedResources, 
@@ -1183,11 +1173,16 @@ public class CeylonEditor extends TextEditor {
                 projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning");
             }*/
             projectionSupport.install();
-            sourceViewer.doOperation(ProjectionViewer.TOGGLE);
-            ProjectionAnnotationModel projectionAnnotationModel = sourceViewer.getProjectionAnnotationModel();
-            if (projectionAnnotationModel!=null) {
-                addModelListener(new FoldingController(sourceViewer));
+            IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+            store.setDefault(EDITOR_FOLDING_ENABLED, true);
+            if (store.getBoolean(EDITOR_FOLDING_ENABLED)) {
+                sourceViewer.doOperation(ProjectionViewer.TOGGLE);
             }
+            
+            foldingController = new FoldingController(this, true);
+            sourceViewer.addProjectionListener(foldingController);
+
+            initiateFoldingController(sourceViewer);
             
             if (isEditable()) {
                 addModelListener(new MarkerAnnotationUpdater());
@@ -1202,6 +1197,32 @@ public class CeylonEditor extends TextEditor {
         } 
         catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private FoldingController foldingController;
+    
+    private void initiateFoldingController(ProjectionViewer sourceViewer) {
+        ProjectionAnnotationModel projectionAnnotationModel = sourceViewer.getProjectionAnnotationModel();
+        if (projectionAnnotationModel!=null) {
+            addModelListener(foldingController);
+        }
+        else if (foldingController!=null) {
+            removeModelListener(foldingController);
+        }
+    }
+    
+    @Override
+    protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
+        super.handlePreferenceStoreChanged(event);
+        ISourceViewer sourceViewer = getSourceViewer();
+        if (sourceViewer!=null) {
+            if (EDITOR_FOLDING_ENABLED.equals(event.getProperty())) {
+                if (sourceViewer instanceof ProjectionViewer) {
+                    initiateFoldingController((ProjectionViewer) sourceViewer);
+                    new ToggleFoldingRunner().runWhenNextVisible();
+                }
+            }
         }
     }
     
@@ -1494,17 +1515,17 @@ public class CeylonEditor extends TextEditor {
      * @return a region denoting the current signed selection, for a resulting RtoL selections length is < 0
      */
     public IRegion getSignedSelection(ISourceViewer sourceViewer) {
-            StyledText text= sourceViewer.getTextWidget();
-            Point selection= text.getSelectionRange();
+        StyledText text= sourceViewer.getTextWidget();
+        Point selection= text.getSelectionRange();
 
-            if (text.getCaretOffset() == selection.x) {
-                    selection.x= selection.x + selection.y;
-                    selection.y= -selection.y;
-            }
+        if (text.getCaretOffset() == selection.x) {
+            selection.x= selection.x + selection.y;
+            selection.y= -selection.y;
+        }
 
-            selection.x= widgetOffset2ModelOffset(sourceViewer, selection.x);
+        selection.x= widgetOffset2ModelOffset(sourceViewer, selection.x);
 
-            return new Region(selection.x, selection.y);
+        return new Region(selection.x, selection.y);
     }
 
     private Map<IMarker, Annotation> markerParseAnnotations = new HashMap<IMarker, Annotation>();
@@ -1750,6 +1771,110 @@ public class CeylonEditor extends TextEditor {
         return "Ceylon Editor for " + getEditorInput().getName();
     }
     
+    boolean isFoldingEnabled() {
+        return EditorsPlugin.getDefault().getPreferenceStore().getBoolean(EDITOR_FOLDING_ENABLED);
+    }
+
+    /**
+     * Runner that will toggle folding either instantly (if the editor is
+     * visible) or the next time it becomes visible. If a runner is started when
+     * there is already one registered, the registered one is canceled as
+     * toggling folding twice is a no-op.
+     * <p>
+     * The access to the fFoldingRunner field is not thread-safe, it is assumed
+     * that <code>runWhenNextVisible</code> is only called from the UI thread.
+     * </p>
+     *
+     * @since 3.1
+     */
+    private final class ToggleFoldingRunner implements IPartListener2 {
+        /**
+         * The workbench page we registered the part listener with, or
+         * <code>null</code>.
+         */
+        private IWorkbenchPage fPage;
+
+        /**
+         * Does the actual toggling of projection.
+         */
+        private void toggleFolding() {
+            ISourceViewer sourceViewer= getSourceViewer();
+            if (sourceViewer instanceof ProjectionViewer) {
+                ProjectionViewer pv= (ProjectionViewer) sourceViewer;
+                if (pv.isProjectionMode() != isFoldingEnabled()) {
+                    if (pv.canDoOperation(ProjectionViewer.TOGGLE))
+                        pv.doOperation(ProjectionViewer.TOGGLE);
+                }
+            }
+        }
+
+        /**
+         * Makes sure that the editor's folding state is correct the next time
+         * it becomes visible. If it already is visible, it toggles the folding
+         * state. If not, it either registers a part listener to toggle folding
+         * when the editor becomes visible, or cancels an already registered
+         * runner.
+         */
+        public void runWhenNextVisible() {
+            // if there is one already: toggling twice is the identity
+            if (fFoldingRunner != null) {
+                fFoldingRunner.cancel();
+                return;
+            }
+            IWorkbenchPartSite site= getSite();
+            if (site != null) {
+                IWorkbenchPage page= site.getPage();
+                if (!page.isPartVisible(CeylonEditor.this)) {
+                    // if we're not visible - defer until visible
+                    fPage= page;
+                    fFoldingRunner= this;
+                    page.addPartListener(this);
+                    return;
+                }
+            }
+            // we're visible - run now
+            toggleFolding();
+        }
+
+        /**
+         * Remove the listener and clear the field.
+         */
+        private void cancel() {
+            if (fPage != null) {
+                fPage.removePartListener(this);
+                fPage= null;
+            }
+            if (fFoldingRunner == this)
+                fFoldingRunner= null;
+        }
+
+        /*
+         * @see org.eclipse.ui.IPartListener2#partVisible(org.eclipse.ui.IWorkbenchPartReference)
+         */
+        public void partVisible(IWorkbenchPartReference partRef) {
+            if (CeylonEditor.this.equals(partRef.getPart(false))) {
+                cancel();
+                toggleFolding();
+            }
+        }
+
+        /*
+         * @see org.eclipse.ui.IPartListener2#partClosed(org.eclipse.ui.IWorkbenchPartReference)
+         */
+        public void partClosed(IWorkbenchPartReference partRef) {
+            if (CeylonEditor.this.equals(partRef.getPart(false))) {
+                cancel();
+            }
+        }
+
+        public void partActivated(IWorkbenchPartReference partRef) {}
+        public void partBroughtToTop(IWorkbenchPartReference partRef) {}
+        public void partDeactivated(IWorkbenchPartReference partRef) {}
+        public void partOpened(IWorkbenchPartReference partRef) {}
+        public void partHidden(IWorkbenchPartReference partRef) {}
+        public void partInputChanged(IWorkbenchPartReference partRef) {}
+    }
+
 }
 
 

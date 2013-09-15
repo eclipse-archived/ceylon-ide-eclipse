@@ -1,59 +1,69 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.FoldingMessages.getResourceBundle;
+import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
+import static org.eclipse.jface.text.source.projection.ProjectionViewer.COLLAPSE;
+import static org.eclipse.jface.text.source.projection.ProjectionViewer.COLLAPSE_ALL;
+import static org.eclipse.jface.text.source.projection.ProjectionViewer.EXPAND;
+import static org.eclipse.jface.text.source.projection.ProjectionViewer.EXPAND_ALL;
+import static org.eclipse.jface.text.source.projection.ProjectionViewer.TOGGLE;
 import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_COLLAPSE;
 import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_COLLAPSE_ALL;
 import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_EXPAND;
 import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_EXPAND_ALL;
+import static org.eclipse.ui.editors.text.IFoldingCommandIds.FOLDING_TOGGLE;
 
+import java.util.Iterator;
 import java.util.ResourceBundle;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.source.projection.IProjectionListener;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.actions.ActionGroup;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+
 public class FoldingActionGroup extends ActionGroup {
-    private static abstract class PreferenceAction extends ResourceAction implements IUpdate {
+    
+    private static abstract class PreferenceAction 
+            extends ResourceAction implements IUpdate {
         PreferenceAction(ResourceBundle bundle, String prefix, int style) {
             super(bundle, prefix, style);
         }
     }
     
-    /**
-     * @since 3.2
-     */
     private class FoldingAction extends PreferenceAction {
-
         FoldingAction(ResourceBundle bundle, String prefix) {
             super(bundle, prefix, IAction.AS_PUSH_BUTTON);
         }
-
         public void update() {
             setEnabled(FoldingActionGroup.this.isEnabled() && fViewer.isProjectionMode());
         }
-        
     }
     
     private ProjectionViewer fViewer;
     
-//  private final PreferenceAction fToggle;
+    private final PreferenceAction fToggle;
     private final TextOperationAction fExpand;
     private final TextOperationAction fCollapse;
     private final TextOperationAction fExpandAll;
-    private final IProjectionListener fProjectionListener;
-    
-    /* since 3.2 */
+    private final IProjectionListener fProjectionListener;    
+    private final FoldingAction fCollapseComments;
+    private final FoldingAction fCollapseImports;
+    private final TextOperationAction fCollapseAll;
     //private final PreferenceAction fRestoreDefaults;
     //private final FoldingAction fCollapseMembers;
-    //private final FoldingAction fCollapseComments;
-    private final TextOperationAction fCollapseAll;
 
 
     /**
@@ -66,26 +76,25 @@ public class FoldingActionGroup extends ActionGroup {
      */
     public FoldingActionGroup(final ITextEditor editor, ITextViewer viewer) {
         if (!(viewer instanceof ProjectionViewer)) {
-//          fToggle= null;
+            fToggle= null;
             fExpand= null;
             fCollapse= null;
             fExpandAll= null;
             fCollapseAll= null;
             //fRestoreDefaults= null;
             //fCollapseMembers= null;
-            //fCollapseComments= null;
+            fCollapseComments= null;
+            fCollapseImports= null;
             fProjectionListener= null;
             return;
         }
         
-        fViewer= (ProjectionViewer) viewer;
+        fViewer = (ProjectionViewer) viewer;
         
-        fProjectionListener= new IProjectionListener() {
-
+        fProjectionListener = new IProjectionListener() {
             public void projectionEnabled() {
                 update();
             }
-
             public void projectionDisabled() {
                 update();
             }
@@ -93,39 +102,35 @@ public class FoldingActionGroup extends ActionGroup {
         
         fViewer.addProjectionListener(fProjectionListener);
         
-//        fToggle= new PreferenceAction(FoldingMessages.getResourceBundle(), "Projection.Toggle.", IAction.AS_CHECK_BOX) { //$NON-NLS-1$
-//            public void run() {
-//                IPreferenceStore store= JavaPlugin.getDefault().getPreferenceStore();
-//                boolean current= store.getBoolean(PreferenceConstants.EDITOR_FOLDING_ENABLED);
-//                store.setValue(PreferenceConstants.EDITOR_FOLDING_ENABLED, !current);
-//            }
-//
-//            public void update() {
-//                ITextOperationTarget target= (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
-//                    
-//                boolean isEnabled= (target != null && target.canDoOperation(ProjectionViewer.TOGGLE));
-//                setEnabled(isEnabled);
-//            }
-//        };
-//        fToggle.setChecked(true);
-//        fToggle.setActionDefinitionId(IFoldingCommandIds.FOLDING_TOGGLE);
-//        editor.setAction("FoldingToggle", fToggle); //$NON-NLS-1$
+        final IPreferenceStore store= EditorsPlugin.getDefault().getPreferenceStore();
+        fToggle= new PreferenceAction(FoldingMessages.getResourceBundle(), "Projection.Toggle.", IAction.AS_CHECK_BOX) {
+            public void run() {
+                store.setValue(EDITOR_FOLDING_ENABLED, !store.getBoolean(EDITOR_FOLDING_ENABLED));
+            }
+            public void update() {
+                ITextOperationTarget target= (ITextOperationTarget) editor.getAdapter(ITextOperationTarget.class);
+                setEnabled(target!=null && target.canDoOperation(TOGGLE));
+            }
+        };
+        fToggle.setChecked(store.getBoolean(EDITOR_FOLDING_ENABLED));
+        fToggle.setActionDefinitionId(FOLDING_TOGGLE);
+        editor.setAction("FoldingToggle", fToggle);
         
-        fExpandAll= new TextOperationAction(getResourceBundle(), "Projection.ExpandAll.", editor, ProjectionViewer.EXPAND_ALL, true); //$NON-NLS-1$
+        fExpandAll= new TextOperationAction(getResourceBundle(), "Projection.ExpandAll.", editor, EXPAND_ALL, true);
         fExpandAll.setActionDefinitionId(FOLDING_EXPAND_ALL);
-        editor.setAction("FoldingExpandAll", fExpandAll); //$NON-NLS-1$
+        editor.setAction("FoldingExpandAll", fExpandAll);
         
-        fCollapseAll= new TextOperationAction(getResourceBundle(), "Projection.CollapseAll.", editor, ProjectionViewer.COLLAPSE_ALL, true); //$NON-NLS-1$
+        fCollapseAll= new TextOperationAction(getResourceBundle(), "Projection.CollapseAll.", editor, COLLAPSE_ALL, true);
         fCollapseAll.setActionDefinitionId(FOLDING_COLLAPSE_ALL);
-        editor.setAction("FoldingCollapseAll", fCollapseAll); //$NON-NLS-1$
+        editor.setAction("FoldingCollapseAll", fCollapseAll);
         
-        fExpand= new TextOperationAction(getResourceBundle(), "Projection.Expand.", editor, ProjectionViewer.EXPAND, true); //$NON-NLS-1$
+        fExpand= new TextOperationAction(getResourceBundle(), "Projection.Expand.", editor, EXPAND, true);
         fExpand.setActionDefinitionId(FOLDING_EXPAND);
-        editor.setAction("FoldingExpand", fExpand); //$NON-NLS-1$
+        editor.setAction("FoldingExpand", fExpand);
         
-        fCollapse= new TextOperationAction(getResourceBundle(), "Projection.Collapse.", editor, ProjectionViewer.COLLAPSE, true); //$NON-NLS-1$
+        fCollapse= new TextOperationAction(getResourceBundle(), "Projection.Collapse.", editor, COLLAPSE, true);
         fCollapse.setActionDefinitionId(FOLDING_COLLAPSE);
-        editor.setAction("FoldingCollapse", fCollapse); //$NON-NLS-1$
+        editor.setAction("FoldingCollapse", fCollapse);
         
         /*fRestoreDefaults= new FoldingAction(getResourceBundle(), "Projection.Restore.") { //$NON-NLS-1$
             public void run() {
@@ -137,30 +142,47 @@ public class FoldingActionGroup extends ActionGroup {
         };
         fRestoreDefaults.setActionDefinitionId(FOLDING_RESTORE);
         editor.setAction("FoldingRestore", fRestoreDefaults); //$NON-NLS-1$*/
-        
-        /*fCollapseMembers= new FoldingAction(getResourceBundle(), "Projection.CollapseMembers.") { //$NON-NLS-1$
+                
+        fCollapseComments= new FoldingAction(getResourceBundle(), "Projection.CollapseComments.") {
             public void run() {
                 if (editor instanceof CeylonEditor) {
-                	CeylonEditor univEditor= (CeylonEditor) editor;
-                    // TODO Need more API on UniversalEditor in order to enable the following
-//                  editor.collapseMembers();
+                	ProjectionAnnotationModel pam = ((CeylonEditor) editor).getCeylonSourceViewer()
+                	        .getProjectionAnnotationModel();
+                	for (Iterator<ProjectionAnnotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
+                	    ProjectionAnnotation pa = iter.next();
+                	    if (pa instanceof FoldingUpdater.CeylonProjectionAnnotation) {
+                	        int tt = ((FoldingUpdater.CeylonProjectionAnnotation) pa).getTokenType();
+                	        if (tt==CeylonLexer.MULTI_COMMENT || 
+                	            tt==CeylonLexer.LINE_COMMENT) {
+                	            pam.collapse(pa);
+                	        }
+                	    }
+                	}
                 }
             }
         };
-        fCollapseMembers.setActionDefinitionId(FOLDING_COLLAPSE_MEMBERS);
-        editor.setAction("FoldingCollapseMembers", fCollapseMembers); //$NON-NLS-1$*/
+        fCollapseComments.setActionDefinitionId("com.redhat.ceylon.eclipse.ui.editor.folding.collapseComments");
+        editor.setAction("FoldingCollapseComments", fCollapseComments);
         
-        /*fCollapseComments= new FoldingAction(getResourceBundle(), "Projection.CollapseComments.") { //$NON-NLS-1$
+        fCollapseImports= new FoldingAction(getResourceBundle(), "Projection.CollapseImports.") {
             public void run() {
                 if (editor instanceof CeylonEditor) {
-                	CeylonEditor univEditor= (CeylonEditor) editor;
-                    // TODO Need more API on UniversalEditor in order to enable the following
-//                  editor.collapseComments();
+                    ProjectionAnnotationModel pam = ((CeylonEditor) editor).getCeylonSourceViewer()
+                            .getProjectionAnnotationModel();
+                    for (Iterator<ProjectionAnnotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
+                        ProjectionAnnotation pa = iter.next();
+                        if (pa instanceof FoldingUpdater.CeylonProjectionAnnotation) {
+                            int tt = ((FoldingUpdater.CeylonProjectionAnnotation) pa).getTokenType();
+                            if (tt==CeylonLexer.IMPORT) {
+                                pam.collapse(pa);
+                            }
+                        }
+                    }
                 }
             }
         };
-        fCollapseComments.setActionDefinitionId(FOLDING_COLLAPSE_COMMENTS);
-        editor.setAction("FoldingCollapseComments", fCollapseComments); //$NON-NLS-1$*/
+        fCollapseImports.setActionDefinitionId("com.redhat.ceylon.eclipse.ui.editor.folding.collapseImports");
+        editor.setAction("FoldingCollapseImports", fCollapseImports);
     }
     
     /**
@@ -191,15 +213,15 @@ public class FoldingActionGroup extends ActionGroup {
      */
     protected void update() {
         if (isEnabled()) {
-//          fToggle.update();
-//          fToggle.setChecked(fViewer.isProjectionMode());
+            fToggle.update();
+            fToggle.setChecked(fViewer.isProjectionMode());
             fExpand.update();
             fExpandAll.update();
             fCollapse.update();
             fCollapseAll.update();
             //fRestoreDefaults.update();
             //fCollapseMembers.update();
-            //fCollapseComments.update();
+            fCollapseComments.update();
         }
     }
     
@@ -211,14 +233,14 @@ public class FoldingActionGroup extends ActionGroup {
     public void fillMenu(IMenuManager manager) {
         if (isEnabled()) {
             update();
-//          manager.add(fToggle);
+            manager.add(fToggle);
             manager.add(fExpandAll);
             manager.add(fExpand);
             manager.add(fCollapse);
             manager.add(fCollapseAll);
             //manager.add(fRestoreDefaults);
             //manager.add(fCollapseMembers);
-            //manager.add(fCollapseComments);
+            manager.add(fCollapseComments);
         }
     }
     

@@ -549,9 +549,9 @@
             name="Show Outline"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
-            name="Collapse Members"
-            description="Collapses all members in the current source file"
-            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseMembers"/>
+            name="Collapse Imports"
+            description="Collapses import list in the current source file"
+            id="com.redhat.ceylon.eclipse.ui.editor.folding.collapseImports"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             name="Collapse Comments"

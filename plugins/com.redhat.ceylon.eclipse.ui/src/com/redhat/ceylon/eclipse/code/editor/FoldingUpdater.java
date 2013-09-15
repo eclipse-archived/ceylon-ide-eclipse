@@ -54,6 +54,11 @@ public class FoldingUpdater {
     public FoldingUpdater(CeylonSourceViewer sourceViewer) {
         this.sourceViewer = sourceViewer;
     }
+    
+    void reset() {
+        firstTime=true;
+        oldAnnotations.clear();
+    }
 
     /**
      * Make a folding annotation that corresponds to the extent of text
@@ -85,10 +90,20 @@ public class FoldingUpdater {
      * @param start        The starting offset of the text range
      * @param len        The length of the text range
      */
-    private ProjectionAnnotation makeAnnotation(int start, int len) {
-        ProjectionAnnotation annotation= new ProjectionAnnotation();
+    private ProjectionAnnotation makeAnnotation(int start, int len, int tokenType) {
+        ProjectionAnnotation annotation= new CeylonProjectionAnnotation(tokenType);
         newAnnotations.put(annotation, new Position(start, len));
         return annotation;
+    }
+    
+    class CeylonProjectionAnnotation extends ProjectionAnnotation {
+        private int tokenType;
+        public CeylonProjectionAnnotation(int tokenType) {
+            this.tokenType=tokenType;
+        }
+        public int getTokenType() {
+            return tokenType;
+        }
     }
 
     protected int advanceToEndOfLine(int offset, int len) {
@@ -367,7 +382,7 @@ public class FoldingUpdater {
         if (end.getType()!=CeylonLexer.LINE_COMMENT) {
             len = advanceToEndOfLine(offset, len);
         }
-        return makeAnnotation(offset, len);
+        return makeAnnotation(offset, len, start.getType());
     }
     
 }
