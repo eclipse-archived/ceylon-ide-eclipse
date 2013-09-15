@@ -1354,7 +1354,7 @@
    <extension point="org.eclipse.ui.propertyPages">
        <page 
            id="com.redhat.ceylon.eclipse.ui.preferences"
-           name="Ceylon"
+           name="Ceylon Compiler"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonProjectPreferencesPage">
          <enabledWhen>
             <adapt type="org.eclipse.core.resources.IProject"/>
