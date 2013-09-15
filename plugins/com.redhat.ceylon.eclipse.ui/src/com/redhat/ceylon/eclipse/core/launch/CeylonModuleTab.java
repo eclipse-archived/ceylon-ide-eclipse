@@ -217,10 +217,11 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, fModuleText.getText().trim());
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, fTopLevelText.getText().trim());
         
-        // only if apply is pressed - slightly different from JDT behaviour
+        /* only if apply is pressed - slightly different from JDT behaviour
         config.rename(fProjText.getText().trim() + " - " 
-        		+ getLaunchConfigurationDialog().generateName(fModuleText.getText().trim()) + " - "  
+        		+ getLaunchConfigurationDialog().generateName(fModuleText.getText().trim())  
         		+ fTopLevelText.getText().trim());
+        */
         
         mapResources(config);
     }
