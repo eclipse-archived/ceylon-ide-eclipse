@@ -36,6 +36,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToGetterProposal.ad
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addReverseIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RemoveAliasProposal.addRemoveAliasProposal;
@@ -447,6 +448,9 @@ public class CeylonQuickFixAssistant {
         	addAddParenthesesProposal(problem, file, proposals, node);
         	addChangeDeclarationProposal(problem, file, proposals, node);
         	break;
+        case 1050:
+            addFixAliasProposal(proposals, file, problem);
+            break;
         case 1200:
         case 1201:
         	addRemoveAnnotationDecProposal(proposals, "shared", project, node);
