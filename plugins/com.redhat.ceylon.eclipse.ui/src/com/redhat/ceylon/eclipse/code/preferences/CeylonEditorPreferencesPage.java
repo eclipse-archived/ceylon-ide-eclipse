@@ -151,7 +151,17 @@ public class CeylonEditorPreferencesPage
                         "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
             }
         });
-
+        Link annotationsLink = new Link(parent, 0);
+        annotationsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
+        annotationsLink.setText("See '<a>Annotations</a>' to customize annotation appearance.");
+        annotationsLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferencesUtil.createPreferenceDialogOn(getShell(), 
+                        "org.eclipse.ui.editors.preferencePages.Annotations", null, null);
+            }
+        });
+        
         Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
         GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sep.setLayoutData(sgd);
