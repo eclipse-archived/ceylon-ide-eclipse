@@ -244,7 +244,8 @@ public class CeylonEditorPreferencesPage
         group.setText(text);
         GridLayout layout = new GridLayout(cols, true);
         group.setLayout(layout);
-        GridData gd = new GridData();
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd.grabExcessHorizontalSpace=true;
         gd.horizontalSpan=3;
         group.setLayoutData(gd);
         return group;
