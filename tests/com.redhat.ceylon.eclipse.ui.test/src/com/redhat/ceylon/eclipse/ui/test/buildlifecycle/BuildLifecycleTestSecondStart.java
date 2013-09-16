@@ -70,12 +70,17 @@ public class BuildLifecycleTestSecondStart extends AbstractMultiProjectTest {
 
     public static String[] filesTouchedBeforeRestart = {
         referencedCeylonProjectName + "/src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon",        
-        mainProjectName + "/src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon"
+        mainProjectName + "/src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon",
+        mainProjectName + "/src/mainModule/other.ceylon"
     };
 
-    public static String[] filesToRecompileAtRestart = {
+    public static String[] filesToRecompileAtRestartInReferencedProject = {
         referencedCeylonProjectName + "/src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon",        
+    };
+    
+    public static String[] filesToRecompileAtRestartInMainProject = {
         mainProjectName + "/src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon",
+        mainProjectName + "/src/mainModule/other.ceylon",
         mainProjectName + "/src/mainModule/run.ceylon"
     };
     
@@ -83,8 +88,13 @@ public class BuildLifecycleTestSecondStart extends AbstractMultiProjectTest {
         return toIFileList(filesTouchedBeforeRestart);
     }
     
-    public static Collection<IFile> getFilesToRecompileAtRestart() {
-        return toIFileList(filesToRecompileAtRestart);
+    public static Collection<IFile> getFilesToRecompileAtRestart(IProject project) {
+        if (project.equals(mainProject)) {
+            return toIFileList(filesToRecompileAtRestartInMainProject);
+        }
+        else {
+            return toIFileList(filesToRecompileAtRestartInReferencedProject);
+        }
     }
     
     private static Collection<IFile> toIFileList(String[] names) {
@@ -120,23 +130,31 @@ public class BuildLifecycleTestSecondStart extends AbstractMultiProjectTest {
         assertThat("The referenced Ceylon project build should not have any error",
                 Utils.getProjectErrorMarkers(referencedCeylonProject),
                 Matchers.empty());
+        
         assertThat("The main project build should not have any error",
                 Utils.getProjectErrorMarkers(mainProject),
                 Matchers.empty());
         
         assertTrue("It should have done an incremental build after restart",
                 buildSummary.didIncrementalBuild());
+        
         assertEquals("It should have build the referenced projects first", 
                 1, 
                 buildSummary.getPreviousBuilds().size());
+        
         assertTrue("It should have done a full typecheck during the restart incremental build", 
                 buildSummary.didFullTypeCheckDuringIncrementalBuild());
 
         assertThat("The restart incremental build didn't see all the file changes",
                 buildSummary.getIncrementalBuildChangedSources(), 
                 Matchers.containsInAnyOrder(getFilesTouchedBeforeRestart().toArray(new IFile[] {})));
-        assertThat("The restart incremental build missed some impacted files", 
+        
+        assertThat("The restart incremental build missed some impacted files for the referenced project", 
+                buildSummary.getPreviousBuilds().get(0).getIncrementalBuildSourcesToCompile(), 
+                Matchers.containsInAnyOrder(getFilesToRecompileAtRestart(referencedCeylonProject).toArray(new IFile[] {})));
+        
+        assertThat("The restart incremental build missed some impacted files for the main project", 
                 buildSummary.getIncrementalBuildSourcesToCompile(), 
-                Matchers.containsInAnyOrder(getFilesToRecompileAtRestart().toArray(new IFile[] {})));
+                Matchers.containsInAnyOrder(getFilesToRecompileAtRestart(mainProject).toArray(new IFile[] {})));
     }
 }

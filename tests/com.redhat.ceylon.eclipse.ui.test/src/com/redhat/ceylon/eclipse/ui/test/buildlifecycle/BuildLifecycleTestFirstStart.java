@@ -2,6 +2,9 @@ package com.redhat.ceylon.eclipse.ui.test.buildlifecycle;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
+
+import java.io.ByteArrayInputStream;
+
 import junit.framework.Assert;
 
 import org.eclipse.core.internal.events.BuildManager;
@@ -16,6 +19,8 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
@@ -104,8 +109,37 @@ public class BuildLifecycleTestFirstStart extends AbstractMultiProjectTest {
         
         // Now touch on some files before start
         
+        
+        
+        Utils.openInEditor(referencedCeylonProject, "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon");
+        Utils.openInEditor(mainProject, "src/mainModule/run.ceylon");
+        
+        SWTBotEditor editor = bot.editorByTitle("CeylonDeclarations_Referenced_Ceylon_Project.ceylon");
+        Assert.assertNotNull(editor);
+        SWTBotEclipseEditor fileEditor = editor.toTextEditor();
+        fileEditor.show();
+        fileEditor.insertText(0, 0, 
+                "shared object ceylonAdditionalTopLevelObject_Referenced_Ceylon_Project {\n" +
+                "}\n\n");
+        fileEditor.saveAndClose();
+        
+        IFile otherFile = mainProject.getFile(new Path("src/mainModule/other.ceylon"));
+        otherFile.create(new ByteArrayInputStream((
+                "import referencedCeylonProject {\n"
+                + "    ceylonAdditionalTopLevelObject_Referenced_Ceylon_Project\n"
+                + "}\n"
+                + "void other() {\n"
+                + "    value v = ceylonAdditionalTopLevelObject_Referenced_Ceylon_Project;\n"
+                + "}\n"
+                ).getBytes()),
+                true,
+                null);
+        
         for (IFile file : BuildLifecycleTestSecondStart.getFilesTouchedBeforeRestart()) {
-            file.touch(null);
+            if (! file.getName().contains("CeylonDeclarations_Referenced_Ceylon_Project.ceylon") && 
+                    ! file.getName().contains("other.ceylon") ) {
+                file.touch(null);
+            }
         }
     }
 }
