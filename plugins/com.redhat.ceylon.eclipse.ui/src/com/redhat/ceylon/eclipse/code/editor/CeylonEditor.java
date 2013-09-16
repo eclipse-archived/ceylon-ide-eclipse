@@ -110,8 +110,10 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPage;
@@ -1144,10 +1146,36 @@ public class CeylonEditor extends TextEditor {
             };
             problemMarkerManager.addListener(annotationUpdater);
             
-            editorIconUpdater = new EditorIconUpdater(this);
+            editorIconUpdater = new IProblemChangedListener() {
+                @Override
+                public void problemsChanged(IResource[] changedResources, boolean isMarkerChange) {
+                    if (isMarkerChange) {
+                        IEditorInput input= getEditorInput();
+                        if (input instanceof IFileEditorInput) { // The editor might be looking at something outside the workspace (e.g. system include files).
+                            IFileEditorInput fileInput= (IFileEditorInput) input;
+                            IFile file = fileInput.getFile();
+                            if (file != null) {
+                                for (int i= 0; i<changedResources.length; i++) {
+                                    if (changedResources[i].equals(file)) {
+                                        Shell shell= getEditorSite().getShell();
+                                        if (shell!=null && !shell.isDisposed()) {
+                                            shell.getDisplay().syncExec(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    setTitleImage();
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
             problemMarkerManager.addListener(editorIconUpdater);
 
-            parserScheduler= new CeylonParserScheduler(parseController, this, 
+            parserScheduler = new CeylonParserScheduler(parseController, this, 
                     annotationCreator);
             
             addModelListener(new AdditionalAnnotationCreator(this));
@@ -1735,7 +1763,7 @@ public class CeylonEditor extends TextEditor {
     }
 
     private AnnotationCreator annotationCreator = new AnnotationCreator(this);
-    private EditorIconUpdater editorIconUpdater;
+    private IProblemChangedListener editorIconUpdater;
     private IProblemChangedListener annotationUpdater;
 
     private class MarkerAnnotationUpdater implements TreeLifecycleListener {
