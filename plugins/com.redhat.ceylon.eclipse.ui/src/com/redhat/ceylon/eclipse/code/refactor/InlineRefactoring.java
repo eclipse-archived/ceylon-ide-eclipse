@@ -61,6 +61,8 @@ public class InlineRefactoring extends AbstractRefactoring {
 	            !(declaration instanceof Setter) &&
 	            !declaration.isDefault() &&
 	            !declaration.isFormal() &&
+	            (((MethodOrValue)declaration).getTypeDeclaration()!=null) &&
+	            (!((MethodOrValue)declaration).getTypeDeclaration().isAnonymous()) &&
 	            (declaration.isToplevel() || !declaration.isShared()); //TODO temporary restriction!
 	            //TODO: && !declaration is a control structure variable 
 	            //TODO: && !declaration is a value with lazy init
