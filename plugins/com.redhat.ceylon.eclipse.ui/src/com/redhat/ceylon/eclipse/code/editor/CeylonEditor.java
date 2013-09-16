@@ -22,9 +22,8 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.TOGGLE_COMME
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
 import static com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider.isSrcArchive;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getMaxProblemMarkerSeverity;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FILE;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
@@ -48,7 +47,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -67,7 +65,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -124,10 +121,8 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import ceylon.language.StringBuilder;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
-import com.redhat.ceylon.eclipse.code.outline.DecoratedImageDescriptor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
@@ -1210,24 +1205,9 @@ public class CeylonEditor extends TextEditor {
     }
     
     public void updateTitleImage() {
-        IEditorInput editorInput = getEditorInput();
-        IFile file = getFile(editorInput);
+        IFile file = getFile(getEditorInput());
         if (file!=null) {
-            int flag;
-            switch (getMaxProblemMarkerSeverity(file, 1)) {
-            case IMarker.SEVERITY_ERROR: 
-                flag=CeylonLabelDecorator.ERROR;
-                break;
-            case IMarker.SEVERITY_WARNING: 
-                flag=CeylonLabelDecorator.WARNING;
-                break;
-            default: 
-                flag=0;
-            }
-            ImageRegistry imageRegistry = CeylonPlugin.getInstance().getImageRegistry();
-            setTitleImage(new DecoratedImageDescriptor(imageRegistry.getDescriptor(CEYLON_FILE), 
-                    flag, new Point(16,16)).createImage());
-            //TODO: clean up the image!
+            setTitleImage(getImageForFile(file));
         }
     }
     

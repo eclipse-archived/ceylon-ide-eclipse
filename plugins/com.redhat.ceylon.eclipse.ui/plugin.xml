@@ -2149,7 +2149,10 @@
           </queryParticipant>
     </extension>
 
-    <extension point="org.eclipse.ui.decorators">
+    <!-- don't use this approach because Eclipse's 
+         label decorators are really slow due to
+         asynchronicity -->
+    <!--extension point="org.eclipse.ui.decorators">
           <decorator
                 label="Ceylon Label Decorator"
                 state="true"
@@ -2162,6 +2165,6 @@
                 </objectClass>
                 </enablement>
           </decorator>
-    </extension>
+    </extension-->
      
 </plugin>

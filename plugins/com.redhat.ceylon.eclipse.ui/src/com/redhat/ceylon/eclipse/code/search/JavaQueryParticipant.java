@@ -150,7 +150,7 @@ public class JavaQueryParticipant implements IQueryParticipant {
             }
             @Override
             public ILabelProvider createLabelProvider() {
-                return CeylonLabelProvider.getInstance();
+                return new CeylonLabelProvider(true);
             }
         };
     }

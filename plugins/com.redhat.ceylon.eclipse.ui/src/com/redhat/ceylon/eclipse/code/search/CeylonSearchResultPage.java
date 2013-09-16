@@ -62,7 +62,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 
     private void configureViewer(StructuredViewer viewer) {
         viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(CeylonLabelProvider.getInstance());
+        viewer.setLabelProvider(new CeylonLabelProvider(true));
         viewer.setComparator(new CeylonViewerComparator());
     }
 
