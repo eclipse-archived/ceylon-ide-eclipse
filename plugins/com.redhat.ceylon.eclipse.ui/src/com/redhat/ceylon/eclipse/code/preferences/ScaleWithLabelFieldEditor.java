@@ -57,6 +57,13 @@ public final class ScaleWithLabelFieldEditor extends
         parent.setLayout(layout);
         doFillIntoGrid(parent, layout.numColumns);
     }
+    
+    @Override
+    public void setEnabled(boolean enabled, Composite parent) {
+        super.setEnabled(enabled, parent);
+        getScaleControl().setEnabled(enabled);
+        label.setEnabled(enabled);
+    }
 
     @Override
     protected void doLoad() {
