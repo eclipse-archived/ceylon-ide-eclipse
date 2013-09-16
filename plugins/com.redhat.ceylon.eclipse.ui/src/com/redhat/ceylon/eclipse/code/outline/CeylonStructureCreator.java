@@ -30,6 +30,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -82,7 +83,7 @@ public class CeylonStructureCreator extends StructureCreator {
         }
     }
 
-    private CeylonLabelProvider fLabelProvider;
+    private ILabelProvider fLabelProvider;
     
     static int getTypeCode(Object o) {
         if (o instanceof CeylonOutlineNode) {
@@ -127,7 +128,7 @@ public class CeylonStructureCreator extends StructureCreator {
     				throws CoreException {
 
     	CeylonParseController pc= new CeylonParseController();
-    	fLabelProvider= new CeylonLabelProvider();
+    	fLabelProvider= CeylonLabelProvider.getInstance();
     	CeylonOutlineBuilder builder= new CeylonOutlineBuilder();
         
     	//TODO: pass some more info in here!

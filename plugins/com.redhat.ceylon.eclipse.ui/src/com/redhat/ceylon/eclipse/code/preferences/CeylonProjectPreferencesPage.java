@@ -137,6 +137,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         offlineButton = new Button(composite, SWT.CHECK);
         offlineButton.setText("Work offline (disable connection to remote module repositories)");
         offlineButton.setEnabled(builderEnabled);
+        offlineButton.setSelection(offlineOption);
         offlineButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 if (offlineOption == null) {

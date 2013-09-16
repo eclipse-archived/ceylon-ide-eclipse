@@ -72,7 +72,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			CeylonParseController cpc, Declaration d, 
 			boolean addimport, ProducedReference producedReference,
 			Scope scope) {
-		super(offset, prefix, CeylonLabelProvider.getImage(d), 
+		super(offset, prefix, CeylonLabelProvider.getImageForDeclaration(d), 
 				desc, text, selectParams);
 		this.cpc = cpc;
 		this.declaration = d;
@@ -418,7 +418,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			}
 			@Override
 			public Image getImage() {
-				return CeylonLabelProvider.getImage(d);
+				return CeylonLabelProvider.getImageForDeclaration(d);
 			}
 			@Override
 			public IContextInformation getContextInformation() {

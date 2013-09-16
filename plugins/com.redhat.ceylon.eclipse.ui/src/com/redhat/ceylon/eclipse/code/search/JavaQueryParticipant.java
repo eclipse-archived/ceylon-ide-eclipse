@@ -26,9 +26,7 @@ import org.eclipse.jdt.ui.search.IQueryParticipant;
 import org.eclipse.jdt.ui.search.ISearchRequestor;
 import org.eclipse.jdt.ui.search.QuerySpecification;
 import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.search.ui.text.Match;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -152,28 +150,7 @@ public class JavaQueryParticipant implements IQueryParticipant {
             }
             @Override
             public ILabelProvider createLabelProvider() {
-                return new CeylonLabelProvider() {
-                    Object unwrap(Object element) {
-                        if (element instanceof WithProject) {
-                            return ((WithProject) element).element;
-                        }
-                        else {
-                            return element;
-                        }
-                    }
-                    @Override
-                    public Image getImage(Object element) {
-                        return super.getImage(unwrap(element));
-                    }
-                    @Override
-                    public String getText(Object element) {
-                        return super.getText(unwrap(element));
-                    }
-                    @Override
-                    public StyledString getStyledText(Object element) {
-                        return super.getStyledText(unwrap(element));
-                    }
-                };
+                return CeylonLabelProvider.getInstance();
             }
         };
     }

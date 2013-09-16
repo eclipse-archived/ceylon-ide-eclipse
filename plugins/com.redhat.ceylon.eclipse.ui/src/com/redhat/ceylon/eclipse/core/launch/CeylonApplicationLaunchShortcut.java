@@ -341,7 +341,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         @Override
         public Image getImage(Object element) {
             Declaration d = (Declaration) element;
-            return d==null ? null : CeylonLabelProvider.getImage(d);
+            return d==null ? null : CeylonLabelProvider.getImageForDeclaration(d);
         }
         
         @Override

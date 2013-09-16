@@ -5,14 +5,12 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 
@@ -64,28 +62,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 
     private void configureViewer(StructuredViewer viewer) {
         viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(new CeylonLabelProvider() {
-            Object unwrap(Object element) {
-                if (element instanceof WithProject) {
-                    return ((WithProject) element).element;
-                }
-                else {
-                    return element;
-                }
-            }
-            @Override
-            public Image getImage(Object element) {
-                return super.getImage(unwrap(element));
-            }
-            @Override
-            public String getText(Object element) {
-                return super.getText(unwrap(element));
-            }
-            @Override
-            public StyledString getStyledText(Object element) {
-                return super.getStyledText(unwrap(element));
-            }
-        });
+        viewer.setLabelProvider(CeylonLabelProvider.getInstance());
         viewer.setComparator(new CeylonViewerComparator());
     }
 

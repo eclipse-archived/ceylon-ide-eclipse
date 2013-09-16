@@ -16,6 +16,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IElementComparer;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -55,7 +57,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class CeylonOutlinePage extends ContentOutlinePage 
         implements TreeLifecycleListener, CaretListener {
@@ -68,7 +69,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
     
     private final ITreeContentProvider contentProvider;
     private final CeylonOutlineBuilder modelBuilder;
-    private final CeylonLabelProvider labelProvider;
+    private final ILabelProvider labelProvider;
     private final CeylonParseController parseController;
     private CeylonSourceViewer sourceViewer;
     
@@ -79,8 +80,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
         this.parseController= parseController;
         this.modelBuilder= modelBuilder;
         this.sourceViewer = sourceViewer;
-        labelProvider= new CeylonLabelProvider();
-
+        this.labelProvider= CeylonLabelProvider.getInstance();
+        
         contentProvider= new ITreeContentProvider() {
             public Object[] getChildren(Object element) {
                 return ((CeylonOutlineNode) element).getChildren().toArray();
@@ -150,9 +151,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         super.createControl(parent);
         TreeViewer viewer= getTreeViewer();
         viewer.setContentProvider(contentProvider);
-        if (labelProvider != null) {
-            viewer.setLabelProvider(labelProvider);
-        }
+        viewer.setLabelProvider(labelProvider);
         viewer.addSelectionChangedListener(this);
         CeylonOutlineNode rootNode= modelBuilder.buildTree(parseController.getRootNode());
         viewer.setAutoExpandLevel(4);
@@ -194,7 +193,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
             super("Expand All");
             setToolTipText("Expand All");
             
-            ImageDescriptor desc = CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.EXPAND_ALL);
+            ImageDescriptor desc = CeylonPlugin.getInstance().getImageRegistry()
+                    .getDescriptor(EXPAND_ALL);
             setHoverImageDescriptor(desc);
             setImageDescriptor(desc);
         }

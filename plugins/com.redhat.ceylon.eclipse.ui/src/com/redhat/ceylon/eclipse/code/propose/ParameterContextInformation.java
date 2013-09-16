@@ -38,7 +38,7 @@ public class ParameterContextInformation implements IContextInformation {
 	
 	@Override
 	public Image getImage() {
-		return CeylonLabelProvider.getImage(declaration);
+		return CeylonLabelProvider.getImageForDeclaration(declaration);
 	}
 	
 	@Override
