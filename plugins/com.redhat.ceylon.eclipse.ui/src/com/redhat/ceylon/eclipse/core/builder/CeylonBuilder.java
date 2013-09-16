@@ -506,6 +506,27 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 typeChecker = typeCheckers.get(project);
                 PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
+                
+                List<IFile> filesToRemove = new ArrayList<IFile>();
+                Set<IFile> changedSources = new HashSet<IFile>(); 
+
+                monitor.subTask("Scanning deltas of project " + project.getName()); 
+                calculateChangedSources(currentDelta, projectDeltas, filesToRemove, 
+                        changedSources, monitor);                
+                monitor.worked(1);
+                
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                
+                monitor.subTask("Cleaning removed files for project " + project.getName()); 
+                cleanRemovedSources(filesToRemove, phasedUnits, project);
+                monitor.worked(1);
+                
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
                 if (!isModelTypeChecked(project)) {
                     buildHook.fullTypeCheckDuringIncrementalBuild();
                     if (monitor.isCanceled()) {
@@ -545,34 +566,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
                 
                 monitor.subTask("Incremental Ceylon build of project " + project.getName());
-//                getConsoleStream().println(timedMessage("Incremental build of model"));
-                
-                List<IFile> filesToRemove = new ArrayList<IFile>();
-                Set<IFile> changedSources = new HashSet<IFile>(); 
-
-                monitor.subTask("Scanning deltas of project " + project.getName()); 
-                calculateChangedSources(currentDelta, projectDeltas, filesToRemove, 
-                		changedSources, monitor);                
-                monitor.worked(1);
-                
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-                
+//                getConsoleStream().printlbuiltPhasedUnitsn(timedMessage("Incremental build of model"));
 
                 monitor.subTask("Scanning dependencies of deltas of project " + project.getName()); 
                 final Collection<IFile> sourceToCompile= new HashSet<IFile>();
                 
                 calculateDependencies(project, sourceToCompile, currentDelta, 
                 		changedSources, typeChecker, phasedUnits, monitor);
-                monitor.worked(1);
-                
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
-
-                monitor.subTask("Cleaning removed files for project " + project.getName()); 
-                cleanRemovedSources(filesToRemove, phasedUnits, project);
                 monitor.worked(1);
                 
                 if (monitor.isCanceled()) {
@@ -999,14 +999,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     }
                 }
                 
-                for (PhasedUnit pu : referencingPhasedUnits) {
-                    pu.scanDeclarations();
-                }
-                for (PhasedUnit pu : referencingPhasedUnits) {
-                    pu.scanTypeDeclarations();
-                }
-                for (PhasedUnit pu : referencingPhasedUnits) {
-                    pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+                if (isModelTypeChecked(referencingProject)) {
+                    for (PhasedUnit pu : referencingPhasedUnits) {
+                        pu.scanDeclarations();
+                    }
+                    for (PhasedUnit pu : referencingPhasedUnits) {
+                        pu.scanTypeDeclarations();
+                    }
+                    for (PhasedUnit pu : referencingPhasedUnits) {
+                        pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+                    }
                 }
             }
         }
@@ -1265,11 +1267,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         JDTModelLoader loader = getModelLoader(typeChecker);
         loader.reset();
-        
-        for (PhasedUnits dependencyPhasedUnits: phasedUnitsOfDependencies) {
-            loader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
-        }
-        
+                
         for (PhasedUnit pu: dependencies) {
         	monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
             pu.scanDeclarations();
@@ -1444,6 +1442,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         moduleValidator.verifyModuleDependencyTree();
         typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
         
+        for (PhasedUnits dependencyPhasedUnits: typeChecker.getPhasedUnitsOfDependencies()) {
+            modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
+        }
+
         monitor.worked(1);
 
         typeCheckers.put(project, typeChecker);
