@@ -156,8 +156,6 @@ public class CeylonEditor extends TextEditor {
     private CeylonParserScheduler parserScheduler;
     private ProblemMarkerManager problemMarkerManager;
     private ICharacterPairMatcher bracketMatcher;
-    //private SubActionBars fActionBars;
-    //private DefaultPartListener fRefreshContributions;
     private ToggleBreakpointAction toggleBreakpointAction;
     private IAction enableDisableBreakpointAction;
     private IResourceChangeListener buildListener;
@@ -179,8 +177,6 @@ public class CeylonEditor extends TextEditor {
     private IProblemChangedListener annotationUpdater;
     
     ToggleFoldingRunner fFoldingRunner;
-    
-    //public static ResourceBundle fgBundleForConstructedKeys= getBundle(MESSAGE_BUNDLE);
     
     public CeylonEditor() {
         setSourceViewerConfiguration(createSourceViewerConfiguration());
@@ -667,7 +663,8 @@ public class CeylonEditor extends TextEditor {
                     return;
 
                 int previous= findPreviousPosition(position);
-                if (isBlockSelectionModeEnabled() && document.getLineOfOffset(previous) != document.getLineOfOffset(position)) {
+                if (isBlockSelectionModeEnabled() && 
+                        document.getLineOfOffset(previous)!=document.getLineOfOffset(position)) {
                     super.run(); // may navigate into virtual white space
                 } else if (previous != BreakIterator.DONE) {
                     setCaretPosition(previous);
@@ -1070,27 +1067,14 @@ public class CeylonEditor extends TextEditor {
             }
         });
     }
-
-    /*private void setSourceFontFromPreference() {
-        String fontName = WorkbenchPlugin.getDefault().getPreferenceStore()
-                .getString(JFaceResources.TEXT_FONT);
-        FontRegistry fontRegistry= CeylonPlugin.getInstance().getFontRegistry();
-        if (!fontRegistry.hasValueFor(fontName)) {
-            fontRegistry.put(fontName, PreferenceConverter.readFontData(fontName));
-        }
-        Font sourceFont= fontRegistry.get(fontName);
-        if (sourceFont!=null) {
-            getSourceViewer().getTextWidget().setFont(sourceFont);
-        }
-    }*/
-
+    
     private void initiateServiceControllers() {
         try {                        
             annotationUpdater= new IProblemChangedListener() {
                 public void problemsChanged(IResource[] changedResources, 
                         boolean isMarkerChange) {
                     // Remove annotations that were resolved by changes to 
-                    // other resources. 
+                    // other resources.
                     // TODO: It would be better to match the markers to the 
                     // annotations, and decide which annotations to remove.
                     scheduleParsing();
@@ -1210,43 +1194,6 @@ public class CeylonEditor extends TextEditor {
             setTitleImage(getImageForFile(file));
         }
     }
-    
-    /**
-     * Makes sure that menu items and status bar items disappear as the editor
-     * is out of focus, and reappear when it gets focus again. This does
-     * not work for toolbar items for unknown reasons, they stay visible.
-     *
-     */
-    /*private void registerEditorContributionsActivator() {
-        fRefreshContributions = new DefaultPartListener() {
-            private UniversalEditor editor = UniversalEditor.this;
-
-            @Override
-            public void partActivated(IWorkbenchPart part) {
-                if (part == editor) {
-                    editor.fActionBars.activate();
-                    editor.fActionBars.updateActionBars();
-                }
-
-                if (part instanceof UniversalEditor) {
-                    part.getSite().getPage().showActionSet(IMP_CODING_ACTION_SET);
-                    part.getSite().getPage().showActionSet(IMP_OPEN_ACTION_SET);
-                } else {
-                    part.getSite().getPage().hideActionSet(IMP_CODING_ACTION_SET);
-                    part.getSite().getPage().hideActionSet(IMP_OPEN_ACTION_SET);
-                }
-            }
-
-            @Override
-            public void partDeactivated(IWorkbenchPart part) {
-                if (part == editor) {
-                    editor.fActionBars.deactivate();
-                    editor.fActionBars.updateActionBars();
-                }
-            }
-        };
-        getSite().getPage().addPartListener(fRefreshContributions);
-    }*/
     
     public void dispose() {
         if (editorIconUpdater!=null) {
