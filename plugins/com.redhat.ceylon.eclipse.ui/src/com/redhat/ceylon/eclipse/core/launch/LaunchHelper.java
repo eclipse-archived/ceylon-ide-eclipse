@@ -32,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -139,12 +140,15 @@ public class LaunchHelper {
             
             if (parts != null && parts.length != 2) {
                 return null;
-            }  	
-	        for (Module module: CeylonBuilder.getProjectModules(project).getListOfModules()) {
-	            if (module.getNameAsString().equals(parts[0]) && module.getVersion().equals(parts[1])) {
-	                return module;
-	            }
-	        }
+            }
+            Modules modules = CeylonBuilder.getProjectModules(project);
+            if (modules != null) {
+		        for (Module module: modules.getListOfModules()) {
+		            if (module.getNameAsString().equals(parts[0]) && module.getVersion().equals(parts[1])) {
+		                return module;
+		            }
+		        }
+            }
         }
         return null;
     }
