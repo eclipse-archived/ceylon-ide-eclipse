@@ -19,6 +19,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+
 public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     
     public class ModuleLabelProvider implements ILabelProvider {
@@ -45,7 +47,7 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public String getText(Object mod) {
-            if (mod instanceof CeylonModuleTab.ModuleRepresentation) {
+            if (mod instanceof Module) {
                 return mod.toString();
             }
             return null;
@@ -68,11 +70,11 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
     class ModuleItemsFilter extends ItemsFilter {
         public boolean isConsistentItem(Object item) {
-            return item instanceof CeylonModuleTab.ModuleRepresentation;
+            return item instanceof Module;
         }
         
         public boolean matchItem(Object item) {
-            if(!(item instanceof CeylonModuleTab.ModuleRepresentation) || !modules.contains((CeylonModuleTab.ModuleRepresentation)item)) {
+            if(!(item instanceof Module) || !modules.contains((Module)item)) {
                 return false;
             }
             return matches(item.toString());
@@ -80,9 +82,9 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     }
  
     
-    Set<CeylonModuleTab.ModuleRepresentation> modules;
+    Set<Module> modules;
 
-    public CeylonModuleSelectionDialog(Shell shell, Set<CeylonModuleTab.ModuleRepresentation> modules, String title) {
+    public CeylonModuleSelectionDialog(Shell shell, Set<Module> modules, String title) {
         super(shell, false);
         setTitle(title);
         this.modules = modules;
@@ -106,7 +108,7 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     protected void fillContentProvider(AbstractContentProvider contentProvider, ItemsFilter filter, IProgressMonitor monitor)
         throws CoreException {
         if (this.modules!= null) {
-            for (CeylonModuleTab.ModuleRepresentation entry : this.modules) {
+            for (Module entry : this.modules) {
                 contentProvider.add(entry, filter);
             }
         }
@@ -119,8 +121,8 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
     @Override
     public String getElementName(Object mod) {
-        if (mod instanceof CeylonModuleTab.ModuleRepresentation) {
-            CeylonModuleTab.ModuleRepresentation entry = (CeylonModuleTab.ModuleRepresentation)mod;
+        if (mod instanceof Module) {
+            Module entry = (Module)mod;
             return entry.toString();
         }
         return null;
@@ -130,8 +132,8 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     protected Comparator getItemsComparator() {
         Comparator comp = new Comparator() {
             public int compare(Object o1, Object o2) {
-                if(o1 instanceof CeylonModuleTab.ModuleRepresentation 
-                    && o2 instanceof CeylonModuleTab.ModuleRepresentation) {
+                if(o1 instanceof Module 
+                    && o2 instanceof Module) {
                     return o1.toString().compareTo(
                         (o2.toString()));
                 }
