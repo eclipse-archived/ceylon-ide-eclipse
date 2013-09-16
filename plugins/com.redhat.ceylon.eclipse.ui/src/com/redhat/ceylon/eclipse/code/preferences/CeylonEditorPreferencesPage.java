@@ -19,10 +19,12 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
+import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.ScaleFieldEditor;
 import org.eclipse.swt.SWT;
@@ -47,10 +49,10 @@ public class CeylonEditorPreferencesPage
     public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.editor";
     
     BooleanFieldEditor enclosingBrackets;
-    BooleanFieldEditor matchingBracket;
+    BoolFieldEditor matchingBracket;
     BooleanFieldEditor currentBracket;
     BooleanFieldEditor autoInsert;
-    BooleanFieldEditor autoActivation;
+    BoolFieldEditor autoActivation;
     BooleanFieldEditor linkedMode;
     BooleanFieldEditor linkedModeRename;
     ScaleFieldEditor autoActivationDelay;
@@ -65,6 +67,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor closeAngles;
     BooleanFieldEditor closeBackticks;
     BooleanFieldEditor closeQuotes;
+    BoolFieldEditor enableFolding;
     
     public CeylonEditorPreferencesPage() {
         super(GRID);
@@ -91,6 +94,7 @@ public class CeylonEditorPreferencesPage
         closeBrackets.store();
         closeParens.store();
         closeQuotes.store();
+        enableFolding.store();
         return true;
     }
     
@@ -116,6 +120,7 @@ public class CeylonEditorPreferencesPage
         closeBrackets.loadDefault();
         closeParens.loadDefault();
         closeQuotes.loadDefault();
+        enableFolding.store();
     }
     
     @Override
@@ -186,68 +191,6 @@ public class CeylonEditorPreferencesPage
         foldingSection();
     }
 
-    private void bracketHighlightingSection() {
-//        addField(new LabelFieldEditor("Bracket highlighting:",
-//                getFieldEditorParent()));
-        Composite group = createGroup(1, "Bracket highlighting");
-        matchingBracket = new BooleanFieldEditor(MATCHING_BRACKET, 
-                "Highlight matching bracket", 
-                getFieldEditorParent(group));
-        matchingBracket.load();
-        addField(matchingBracket);
-        currentBracket = new BooleanFieldEditor(SELECTED_BRACKET, 
-                "Highlight selected bracket", 
-                getFieldEditorParent(group));
-        currentBracket.load();
-        addField(currentBracket);
-        enclosingBrackets = new BooleanFieldEditor(ENCLOSING_BRACKETS, 
-                "Highlight enclosing brackets", 
-                getFieldEditorParent(group));
-        enclosingBrackets.load();
-        addField(enclosingBrackets);
-//        super.createDescriptionLabel(getFieldEditorParent()).setText("Autocompletion");
-//        addField(new SpacerFieldEditor(getFieldEditorParent()));
-    }
-
-    private void autocompletionSection() {
-//        addField(new LabelFieldEditor("Autocompletion:",
-//                getFieldEditorParent()));
-        Composite group = createGroup(1, "Autocompletion");
-        autoInsert = new BooleanFieldEditor(AUTO_INSERT, 
-                "Auto-insert unique completions", 
-                getFieldEditorParent(group));
-        autoInsert.load();
-        addField(autoInsert);
-        autoActivation = new BooleanFieldEditor(AUTO_ACTIVATION, 
-                "Auto-activate completions list", 
-                getFieldEditorParent(group));
-        autoActivation.load();
-        addField(autoActivation);
-        String letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        autoActivationChars = new RadioGroupFieldEditor(AUTO_ACTIVATION_CHARS, 
-                "Auto-activation characters", 3, 
-                new String[][] { new String[] {"period", "."}, 
-                                 new String[] {"letters", letters },
-                                 new String[] {"both", "." + letters } }, 
-                getFieldEditorParent(group));
-        autoActivationChars.load();
-        addField(autoActivationChars);
-        autoActivationDelay = new ScaleWithLabelFieldEditor(AUTO_ACTIVATION_DELAY, 
-                "Auto-activation delay", 
-                getFieldEditorParent(group));
-        //autoActivationDelay.setValidRange(1, 9999);
-        autoActivationDelay.setMinimum(1);
-        autoActivationDelay.setMaximum(2000);
-        autoActivationDelay.load();
-        addField(autoActivationDelay);
-        linkedMode = new BooleanFieldEditor(LINKED_MODE, 
-                "Use linked mode to complete argument lists", 
-                getFieldEditorParent(group));
-        linkedMode.load();
-        addField(linkedMode);
-//        addField(new SpacerFieldEditor(getFieldEditorParent()));        
-    }
-
     private Composite createGroup(int cols, String text) {
         Composite parent = getFieldEditorParent();
         Group group = new Group(parent, SWT.NONE);
@@ -260,21 +203,161 @@ public class CeylonEditorPreferencesPage
         group.setLayoutData(gd);
         return group;
     }
+    
+    interface Listener {
+        void valueChanged(boolean oldValue, boolean newValue);
+    }
+    
+    class BoolFieldEditor extends BooleanFieldEditor {
+        private Listener listener;
+        public BoolFieldEditor(String name, String label, Composite parent) {
+            super(name, label, parent);
+        }
+        public BoolFieldEditor(String name, String labelText, int style,
+                Composite parent) {
+            super(name, labelText, style, parent);
+        }
+        public void setListener(Listener listener) {
+            this.listener = listener;
+        }
+        @Override
+        protected void valueChanged(boolean oldValue, boolean newValue) {
+            super.valueChanged(oldValue, newValue);
+            if (listener!=null) {
+                listener.valueChanged(oldValue, newValue);
+            }
+        }
+        @Override
+        protected void doLoadDefault() {
+            boolean oldValue = getBooleanValue();
+            super.doLoadDefault();
+            boolean newValue = getBooleanValue();
+            if (listener!=null) {
+                listener.valueChanged(oldValue, newValue);
+            }
+        }
+    }
+    
+    private void bracketHighlightingSection() {
+//        addField(new LabelFieldEditor("Bracket highlighting:",
+//                getFieldEditorParent()));
+        Composite group = createGroup(2, "Bracket highlighting");
+        Composite p0 = getFieldEditorParent(group);
+        GridData gd = new GridData();
+        gd.horizontalSpan=2;
+        p0.setLayoutData(gd);
+        matchingBracket = new BoolFieldEditor(MATCHING_BRACKET, 
+                "Enable matching bracket highlighting", p0);
+        matchingBracket.load();
+        addField(matchingBracket);
+        final Composite p1 = getFieldEditorParent(group);
+        currentBracket = new BooleanFieldEditor(SELECTED_BRACKET, 
+                "Highlight selected bracket", p1);
+        currentBracket.load();
+        addField(currentBracket);
+        final Composite p2 = getFieldEditorParent(group);
+        enclosingBrackets = new BooleanFieldEditor(ENCLOSING_BRACKETS, 
+                "Highlight enclosing brackets", p2);
+        enclosingBrackets.load();
+        addField(enclosingBrackets);
+        final IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+        boolean enabled = store.getBoolean(MATCHING_BRACKET);
+        currentBracket.setEnabled(enabled, p1);
+        enclosingBrackets.setEnabled(enabled, p2);
+        matchingBracket.setListener(new Listener() {
+            @Override
+            public void valueChanged(boolean oldValue, boolean newValue) {
+                currentBracket.setEnabled(newValue, p1);
+                enclosingBrackets.setEnabled(newValue, p2);
+            }
+        });
+//        super.createDescriptionLabel(getFieldEditorParent()).setText("Autocompletion");
+//        addField(new SpacerFieldEditor(getFieldEditorParent()));
+    }
+
+    private void autocompletionSection() {
+//        addField(new LabelFieldEditor("Autocompletion:",
+//                getFieldEditorParent()));
+        Composite group = createGroup(1, "Autocompletion");
+        linkedMode = new BooleanFieldEditor(LINKED_MODE, 
+                "Use linked mode to complete argument lists", 
+                getFieldEditorParent(group));
+        linkedMode.load();
+        addField(linkedMode);
+        autoInsert = new BooleanFieldEditor(AUTO_INSERT, 
+                "Auto-insert unique completions", 
+                getFieldEditorParent(group));
+        autoInsert.load();
+        addField(autoInsert);
+        autoActivation = new BoolFieldEditor(AUTO_ACTIVATION, 
+                "Auto-activate completions list", 
+                getFieldEditorParent(group));
+        autoActivation.load();
+        addField(autoActivation);
+        final Composite p1 = getFieldEditorParent(group);
+        String letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        autoActivationChars = new RadioGroupFieldEditor(AUTO_ACTIVATION_CHARS, 
+                "Auto-activation characters", 3, 
+                new String[][] { new String[] {"period", "."}, 
+                                 new String[] {"letters", letters },
+                                 new String[] {"both", "." + letters } }, p1);
+        autoActivationChars.load();
+        addField(autoActivationChars);
+        final Composite p2 = getFieldEditorParent(group);
+        autoActivationDelay = new ScaleWithLabelFieldEditor(AUTO_ACTIVATION_DELAY, 
+                "Auto-activation delay", p2);
+        //autoActivationDelay.setValidRange(1, 9999);
+        autoActivationDelay.setMinimum(1);
+        autoActivationDelay.setMaximum(2000);
+        autoActivationDelay.load();
+        addField(autoActivationDelay);
+        final IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+        boolean enabled = store.getBoolean(AUTO_ACTIVATION);
+        autoActivationChars.setEnabled(enabled, p1);
+        autoActivationDelay.setEnabled(enabled, p2);        
+        autoActivation.setListener(new Listener() {
+            @Override
+            public void valueChanged(boolean oldValue, boolean newValue) {
+                autoActivationChars.setEnabled(newValue, p1);
+                autoActivationDelay.setEnabled(newValue, p2);
+            }
+        });
+//        addField(new SpacerFieldEditor(getFieldEditorParent()));        
+    }
 
     private void foldingSection() {
 //        addField(new LabelFieldEditor("Folding:",
 //                getFieldEditorParent()));
-        Composite group = createGroup(2, "Source Folding");
+        final Composite group = createGroup(2, "Source Folding");
+        Composite p0 = getFieldEditorParent(group);
+        GridData gd = new GridData();
+        gd.horizontalSpan=2;
+        p0.setLayoutData(gd);
+        enableFolding = new BoolFieldEditor(EDITOR_FOLDING_ENABLED, 
+                "Enable source folding", p0);
+        enableFolding.load();
+        addField(enableFolding);
+        final Composite p1 = getFieldEditorParent(group);
         autoFoldImports = new BooleanFieldEditor(AUTO_FOLD_IMPORTS, 
-                "Automatically fold import lists", 
-                getFieldEditorParent(group));
+                "Automatically fold import lists", p1);
         autoFoldImports.load();
         addField(autoFoldImports);
+        final Composite p2 = getFieldEditorParent(group);
         autoFoldComments = new BooleanFieldEditor(AUTO_FOLD_COMMENTS, 
-                "Automatically fold comments", 
-                getFieldEditorParent(group));
+                "Automatically fold comments", p2);
         autoFoldComments.load();
         addField(autoFoldComments);
+        final IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+        boolean enabled = store.getBoolean(EDITOR_FOLDING_ENABLED);
+        autoFoldImports.setEnabled(enabled, p1);
+        autoFoldComments.setEnabled(enabled, p2);
+        enableFolding.setListener(new Listener() {
+            @Override
+            public void valueChanged(boolean oldValue, boolean newValue) {
+                autoFoldImports.setEnabled(newValue, p1);
+                autoFoldComments.setEnabled(newValue, p2);
+            }
+        });
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
     }
 
@@ -343,51 +426,3 @@ public class CeylonEditorPreferencesPage
     }
 
 }
-
-//class LabelFieldEditor extends FieldEditor {
-//
-//    private Label label;
-//
-//    // All labels can use the same preference name since they don't
-//    // store any preference.
-//    public LabelFieldEditor(String value, Composite parent) {
-//        super("label", value, parent);
-//    }
-//
-//    // Adjusts the field editor to be displayed correctly
-//    // for the given number of columns.
-//    protected void adjustForNumColumns(int numColumns) {
-//        ((GridData) label.getLayoutData()).horizontalSpan = numColumns;
-//    }
-//
-//    // Fills the field editor's controls into the given parent.
-//    protected void doFillIntoGrid(Composite parent, int numColumns) {
-//        label = getLabelControl(parent);
-//        
-//        GridData gridData = new GridData();
-//        gridData.horizontalSpan = numColumns;
-//        gridData.horizontalAlignment = GridData.FILL;
-//        gridData.grabExcessHorizontalSpace = false;
-//        gridData.verticalAlignment = GridData.CENTER;
-//        gridData.grabExcessVerticalSpace = false;
-//        
-//        label.setLayoutData(gridData);
-//    }
-//
-//    // Returns the number of controls in the field editor.
-//    public int getNumberOfControls() {
-//        return 1;
-//    }
-//
-//    // Labels do not persist any preferences, so these methods are empty.
-//    protected void doLoad() {}
-//    protected void doLoadDefault() {}
-//    protected void doStore() {}
-//}
-//
-//class SpacerFieldEditor extends LabelFieldEditor {
-//    // Implemented as an empty label field editor.
-//    public SpacerFieldEditor(Composite parent) {
-//        super("", parent);
-//    }
-//}
