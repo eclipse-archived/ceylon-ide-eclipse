@@ -1022,7 +1022,7 @@ public class CeylonEditor extends TextEditor {
     }
 
     private void watchForSourceBuild() {        
-        getWorkspace().addResourceChangeListener(buildListener= new IResourceChangeListener() {
+        getWorkspace().addResourceChangeListener(buildListener = new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event) {
                 if (event.getType()==POST_BUILD && event.getBuildKind()!=CLEAN_BUILD) {
                     scheduleParsing();
@@ -1049,7 +1049,7 @@ public class CeylonEditor extends TextEditor {
 
     private void watchDocument() {
         getSourceViewer().getDocument()
-                .addDocumentListener(documentListener= new IDocumentListener() {
+                .addDocumentListener(documentListener = new IDocumentListener() {
             public void documentAboutToBeChanged(DocumentEvent event) {}
             public void documentChanged(DocumentEvent event) {
                 synchronized (CeylonEditor.this) {
@@ -1084,7 +1084,7 @@ public class CeylonEditor extends TextEditor {
     private void watchForSourceMove() {
         // We need to see when the editor input changes, so we can watch the new document
         addPropertyListener(fEditorInputPropertyListener);
-        getWorkspace().addResourceChangeListener(moveListener= new IResourceChangeListener() {
+        getWorkspace().addResourceChangeListener(moveListener = new IResourceChangeListener() {
             public void resourceChanged(IResourceChangeEvent event) {
                 if (event.getType()==IResourceChangeEvent.POST_CHANGE) {
                     IProject project = parseController.getProject();
@@ -1291,7 +1291,8 @@ public class CeylonEditor extends TextEditor {
           fActionBars.dispose();
           fActionBars = null;
         }*/
-
+        
+        //document is null here
         /*if (documentListener!=null) {
             getSourceViewer().getDocument()
                 .removeDocumentListener(documentListener);
@@ -1323,7 +1324,7 @@ public class CeylonEditor extends TextEditor {
         uninstallQuickAccessAction();
 
         super.dispose();
-
+        
         /*if (fResourceListener != null) {
             ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
         }*/
