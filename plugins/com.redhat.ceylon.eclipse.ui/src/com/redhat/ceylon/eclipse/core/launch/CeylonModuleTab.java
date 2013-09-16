@@ -12,24 +12,13 @@ package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaModel;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.debug.ui.IJavaDebugHelpContextIds;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
 import org.eclipse.jdt.internal.debug.ui.actions.ControlAccessibleListener;
 import org.eclipse.jdt.internal.debug.ui.launcher.AbstractJavaMainTab;
@@ -37,7 +26,6 @@ import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -49,10 +37,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 
-import com.redhat.ceylon.compiler.typechecker.context.Context;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 
 /**
  * A launch configuration tab that displays and edits Ceylon project and
@@ -62,8 +51,10 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 public class CeylonModuleTab extends AbstractJavaMainTab  {
     
     private Text fModuleText;
-    private Button fSearchButton;
-
+    private Text fTopLevelText;
+    private Button fModuleSearchButton;
+    private Button fTopLevelSearchButton;
+    
     /* (non-Javadoc)
      * @see org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse.swt.widgets.Composite)
      */
@@ -73,8 +64,10 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         createProjectEditor(comp);
         createVerticalSpacer(comp, 1);
         createModuleEditor(comp, "Module:");
+        createVerticalSpacer(comp, 1);
+        createDeclarationEditor(comp, "Top level method or class:");
         setControl(comp);
-        // PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
     }
 
 
@@ -82,7 +75,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
      * @see org.eclipse.debug.ui.AbstractLaunchConfigurationTab#getImage()
      */
     public Image getImage() {
-        return JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_JAR_WITH_SOURCE);
+        return JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_JAR);
     }
     
     /* (non-Javadoc)
@@ -102,69 +95,65 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
     }
     
     /**
-     * Show a dialog that lists all main types
+     * Show a dialog that lists all modules in project
+     */
+    protected void handleModuleSearchButtonSelected() {
+        Module mod = LaunchHelper.chooseModule(this.fProjText.getText(), true);
+        if (mod != null) {
+            if (mod.isDefault()) {
+                fModuleText.setText(Module.DEFAULT_MODULE_NAME);
+            } else {
+                fModuleText.setText(mod.getNameAsString() + "/" + mod.getVersion());
+            }
+            // no need to set project even if the module is from a dependency as this project contains the app
+            
+            Declaration topLevel = LaunchHelper.getDefaultRunnableForModule(mod);
+
+            // fill the field, else leave blank
+            if (topLevel != null) {
+            	this.fTopLevelText.setText(LaunchHelper.getTopLevelDisplayName(topLevel));
+            }
+        }
+    }
+    
+ 
+    /**
+     * Show a dialog that lists all runnable types
      */
     protected void handleSearchButtonSelected() {
-                
-        IJavaProject project = getJavaProject();
-
-        IJavaElement[] elements = null;
-        if ((project == null) || !project.exists()) {
-            IJavaModel model = JavaCore.create(ResourcesPlugin.getWorkspace().getRoot());
-            if (model != null) {
-                try {
-                    elements = model.getJavaProjects();
-                }
-                catch (JavaModelException e) {JDIDebugUIPlugin.log(e);}
-            }
-        }
-        else {
-            elements = new IJavaElement[]{project};
-        }
-        if (elements == null) {
-            elements = new IJavaElement[]{};
-        }
-
-        Set<ModuleRepresentation> modules = 
-            new HashSet<ModuleRepresentation>();
-        for (IJavaElement jElement : elements) {
-            if (jElement instanceof IJavaProject) {
-                IProject absProject = ((IJavaProject)jElement).getProject();
-                for(Module module: CeylonBuilder.getProjectTypeChecker(absProject).getContext()
-                        .getModules().getListOfModules()) {
-                    if (!module.isDefault() && module.isAvailable() 
-                        && !module.getNameAsString().startsWith(Module.LANGUAGE_MODULE_NAME) &&
-                        !module.isJava() && module.getPackage(module.getNameAsString()) != null) {
-                        modules.add(new ModuleRepresentation(absProject.getName(), 
-                            module.getNameAsString(), module.getVersion()));
-                    }
-                }
-            }
-        }
-
-        CeylonModuleSelectionDialog cmsd = new CeylonModuleSelectionDialog(getShell(), modules, "Choose Ceylon Module"); 
-        if (cmsd.open() == Window.CANCEL) {
-            return;
-        }
+    	
+    	Declaration d = LaunchHelper.chooseDeclaration(LaunchHelper.getDeclarationsForModule(
+    			fProjText.getText(), fModuleText.getText()));
         
-        Object[] results = cmsd.getResult(); 
-        if (results != null && results.length > 0) {
-            if (results[0] instanceof ModuleRepresentation) {
-                ModuleRepresentation entry = (ModuleRepresentation)results[0];
-                if (entry != null) {
-                    fModuleText.setText(entry.moduleName + "/" + entry.moduleVersion);
-                    fProjText.setText(entry.project);
-                }
+        if (d != null) {
+            fTopLevelText.setText(LaunchHelper.getTopLevelDisplayName(d));
+            
+            // unique situation in which default module was selected but that the type belongs to a module
+            Module mod = LaunchHelper.getModule(d);
+            if (mod != null && !mod.isDefault()) {
+            	fModuleText.setText(LaunchHelper.getModuleFullName(d));
             }
         }
     }   
-    
+
     /* (non-Javadoc)
      * @see org.eclipse.jdt.internal.debug.ui.launcher.AbstractJavaMainTab#initializeFrom(org.eclipse.debug.core.ILaunchConfiguration)
      */
     public void initializeFrom(ILaunchConfiguration config) {
-        super.initializeFrom(config);
-        updateModuleNameFromConfig(config);
+        super.initializeFrom(config); // sets project
+        String moduleName = EMPTY_STRING;
+            try {
+                moduleName = config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, EMPTY_STRING);
+            }
+            catch (CoreException ce) {JDIDebugUIPlugin.log(ce);}    
+        fModuleText.setText(moduleName);        
+
+        String topLevelName = EMPTY_STRING;
+            try {
+                topLevelName = config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, EMPTY_STRING);
+            }
+            catch (CoreException ce) {JDIDebugUIPlugin.log(ce);}    
+        fTopLevelText.setText(topLevelName);
     }   
 
     /* (non-Javadoc)
@@ -174,59 +163,49 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         setErrorMessage(null);
         setMessage(null);
         String projectName = fProjText.getText().trim();
-        IProject project = null;
+        IProject project = LaunchHelper.getProjectFromName(projectName);
         
-        if (projectName.length() > 0) {
-            IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            IStatus status = workspace.validateName(projectName, IResource.PROJECT);
-            if (status.isOK()) {
-                project= ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-                if (project != null) {
-                    if (!project.exists()) {
-                        setErrorMessage("The project " + projectName + " does no exist."); 
-                        return false;
-                    }
-                    if (!project.isOpen()) {
-                        setErrorMessage("The project " + projectName + " is not opened"); 
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            }
-            else {
-                setErrorMessage("Error : " + status.getMessage()); 
+        if (project != null) {
+            if (!project.exists()) {
+                setErrorMessage("The project " + projectName + " does no exist."); 
                 return false;
             }
+            if (!project.isOpen()) {
+                setErrorMessage("The project " + projectName + " is not opened"); 
+                return false;
+            }
+            if (!CeylonNature.isEnabled(project)) {
+                setErrorMessage("The project " + projectName + " is not a Ceylon project"); 
+                return false;              
+            }
+        } else {
+            return false;
         }
+
         String moduleName = fModuleText.getText().trim();
         if (moduleName == null || moduleName.length() == 0) {
             setErrorMessage("The Ceylon module is not specified"); 
             return false;
         }
         
-        if (!projectContainsModule(project, moduleName)) {
+        if (!LaunchHelper.isProjectContainsModule(project, moduleName)) {
+            setErrorMessage("Ceylon module not found in project");
             return false;
         }
         
+        String topLevelName = fTopLevelText.getText().trim();
+        if (topLevelName == null || topLevelName.length() == 0) {
+            setErrorMessage("The top level class or function is not specified"); 
+            return false;
+        }
+        
+        if (!LaunchHelper.isModuleContainsTopLevel(project, moduleName, 
+        		LaunchHelper.getTopLevelNormalName(moduleName, topLevelName))) {
+            setErrorMessage("The top level class not found in module or is not runnable");
+            return false;
+        }
+        // can't think of anything else
         return true;
-    }
-            
-    private boolean projectContainsModule(IProject project, String fullModuleName) {
-        String[] parts = fullModuleName.split("/");
-        
-        if (parts != null && parts.length != 2) {
-            return false;
-        }
-        
-        for (Module module : CeylonBuilder.getProjectTypeChecker(project).getContext().getModules().getListOfModules()) {
-            if (module.getNameAsString().equals(parts[0]) && module.getVersion().equals(parts[1])) {
-                return true;
-            }
-        }
-        
-        setErrorMessage("Runnable module not found in project");
-        return false;
     }
 
 
@@ -236,6 +215,14 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
     public void performApply(ILaunchConfigurationWorkingCopy config) {
         config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, fModuleText.getText().trim());
+        config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, fTopLevelText.getText().trim());
+        
+        /* only if apply is pressed - slightly different from JDT behaviour
+        config.rename(fProjText.getText().trim() + " - " 
+        		+ getLaunchConfigurationDialog().generateName(fModuleText.getText().trim())  
+        		+ fTopLevelText.getText().trim());
+        */
+        
         mapResources(config);
     }
     
@@ -250,54 +237,54 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         else {
             config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
         }
-        initializeModuleName(javaElement, config);
-    }
-
-    protected void initializeModuleName(IJavaElement javaElement, ILaunchConfigurationWorkingCopy config) {
-        String name = null;
-        name = findModuleFromPackage(javaElement);
-
-        if (name == null) {
-            name = EMPTY_STRING;
-        }
-        config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, name);
-        if (name.length() > 0) {   
-            name = getLaunchConfigurationDialog().generateName(name);
-            config.rename(name);
-        }
-    }
-
-
-    private String findModuleFromPackage(IJavaElement javaElement) {
-        String name =null;
-        if (javaElement instanceof IPackageFragment) {
-            IPackageFragment pkg = (IPackageFragment)javaElement;
-            if (isRunnableModule(pkg)) {
-                Context context = CeylonBuilder.getProjectTypeChecker(pkg.getJavaProject().getProject()).getContext();
-                for (Module module : context.getModules().getListOfModules()) {
-                    if (module.getNameAsString().startsWith(pkg.getElementName())) {
-                        name = module.getNameAsString() + "/" + module.getVersion();
-                    }
-                }
-            }
-        }
-        return name;
-    }
-
-
-    private boolean isRunnableModule(IPackageFragment pkg) {
-        return pkg.getClassFile("module_.class") != null && pkg.getClassFile("run_.class") != null;
-    }
         
-    protected void updateModuleNameFromConfig(ILaunchConfiguration config) {
-        String moduleName = EMPTY_STRING;
-            try {
-                moduleName = config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, EMPTY_STRING);
-            }
-            catch (CoreException ce) {JDIDebugUIPlugin.log(ce);}    
-        fModuleText.setText(moduleName);        
+        String projectName = "";
+        String moduleName = null;
+        String topLevelName = null;
+        
+        if (javaElement == null) {
+        	return;
+        }
+        
+        Module module = null;
+        if (getContext().getJavaProject().exists()) {
+        	module = LaunchHelper.getDefaultOrOnlyModule(getContext().getJavaProject().getProject(), true);
+        	projectName = getContext().getJavaProject().getProject().getName();
+        }
+        
+        if (module != null) {
+        	moduleName = LaunchHelper.getFullModuleName(module);
+        }
+
+        if (moduleName == null) {
+            moduleName = EMPTY_STRING;
+        }
+        config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, moduleName);
+        if (moduleName.length() > 0) {   
+            moduleName = getLaunchConfigurationDialog().generateName(moduleName);
+            
+        }
+
+        Declaration topLevel = null;
+        if (module != null) {
+        	topLevel = LaunchHelper.getDefaultRunnableForModule(module);
+        }
+        if (topLevel != null) {
+        	topLevelName = LaunchHelper.getRunnableName(topLevel);
+        }
+
+        if (topLevelName == null) {
+            topLevelName = EMPTY_STRING;
+        }
+        config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, topLevelName);
+        if (topLevelName.length() > 0) {   
+            topLevelName = getLaunchConfigurationDialog().generateName(topLevelName);
+ 
+        }
+
+        config.rename(projectName + " - " + moduleName + " - " + topLevelName);
     }
-    
+
     protected void createModuleEditor(Composite parent, String text) {
         Group group = SWTFactory.createGroup(parent, text, 2, 1, GridData.FILL_HORIZONTAL); 
         fModuleText = SWTFactory.createSingleText(group, 1);
@@ -307,31 +294,32 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             }
             });
         ControlAccessibleListener.addListener(fModuleText, group.getText());
-        fSearchButton = createPushButton(group, LauncherMessages.AbstractJavaMainTab_2, null); 
-        fSearchButton.addSelectionListener(new SelectionListener() {
+        fModuleSearchButton = createPushButton(group, LauncherMessages.AbstractJavaMainTab_2, null); 
+        fModuleSearchButton.addSelectionListener(new SelectionListener() {
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+            public void widgetSelected(SelectionEvent e) {
+                handleModuleSearchButtonSelected();
+            }
+            });
+    }
+  
+    protected void createDeclarationEditor(Composite parent, String text) {
+        Group group = SWTFactory.createGroup(parent, text, 2, 1, GridData.FILL_HORIZONTAL); 
+        fTopLevelText = SWTFactory.createSingleText(group, 1);
+        fTopLevelText.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                updateLaunchConfigurationDialog();
+            }
+            });
+        ControlAccessibleListener.addListener(fModuleText, group.getText());
+        fTopLevelSearchButton = createPushButton(group, LauncherMessages.AbstractJavaMainTab_2, null); 
+        fTopLevelSearchButton.addSelectionListener(new SelectionListener() {
             public void widgetDefaultSelected(SelectionEvent e) {
             }
             public void widgetSelected(SelectionEvent e) {
                 handleSearchButtonSelected();
             }
             });
-    }
-    
-
-    public class ModuleRepresentation {
-        public ModuleRepresentation (String project, String moduleName, String moduleVersion) {
-            this.project = project;
-            this.moduleName = moduleName;
-            this.moduleVersion = moduleVersion;
-        }
-        
-        String moduleName;
-        String moduleVersion;
-        String project;
-        
-        @Override
-        public String toString() {
-            return "Project " + this.project + " - " + this.moduleName + "/" + this.moduleVersion;
-        }
-    }    
+    } 
 }
