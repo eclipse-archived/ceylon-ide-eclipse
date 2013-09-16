@@ -390,7 +390,11 @@ public class JDTModelLoader extends AbstractModelLoader {
                                     if(!classFile.exists())
                                         continue;
                                     IType type = classFile.getType();
-                                    if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) { // only top-levels ar added in source declarations 
+                                    if (type.exists() 
+                                         // only top-levels ar added in source declarations
+                                            && ! type.isMember() 
+                                            && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))
+                                            && ! isTypeHidden(module, type.getFullyQualifiedName())) {  
                                         convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
@@ -399,7 +403,10 @@ public class JDTModelLoader extends AbstractModelLoader {
                                     if(!compilationUnit.exists())
                                         continue;
                                     for (IType type : compilationUnit.getTypes()) {
-                                        if (type.exists() && ! type.isMember() && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))) {
+                                        if (type.exists() 
+                                                && ! type.isMember() 
+                                                && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))
+                                                && ! isTypeHidden(module, type.getFullyQualifiedName())) {
                                             convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
                                         }
                                     }
