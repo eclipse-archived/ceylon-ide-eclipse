@@ -9,6 +9,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_COMMENTS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,11 +17,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.antlr.runtime.CommonToken;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.projection.IProjectionListener;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
@@ -29,32 +33,50 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 
-/**
- * FolderBase is an abstract base type for a source-text folding service.
- * It is intended to support extensions for language-specific folders.
- * The class is abstract only with respect to a method that sends a
- * visitor to an AST, as both the visitor and AST node types are language
- * specific.
- * 
- * @author suttons@us.ibm.com
- * @author rfuhrer@watson.ibm.com
- * @author Gavin King
- */
-public class FoldingUpdater {
-    
-    private final CeylonSourceViewer sourceViewer;
+public class ProjectionAnnotationManager implements TreeLifecycleListener, IProjectionListener{
+	
+    private CeylonEditor editor;
 
     private boolean firstTime = true;
     
-    // Maps new annotations to positions
     private final HashMap<Annotation,Position> newAnnotations = new HashMap<Annotation, Position>();
     private HashMap<Annotation,Position> oldAnnotations = new HashMap<Annotation, Position>();
     
-    public FoldingUpdater(CeylonSourceViewer sourceViewer) {
-        this.sourceViewer = sourceViewer;
+
+    public ProjectionAnnotationManager(CeylonEditor editor) {
+        this.editor = editor;
     }
     
+    @Override
+    public void projectionEnabled() {
+        reset();
+//        editor.scheduleParsing();
+        update(editor.getParseController(), new NullProgressMonitor());
+    }
+    
+    @Override
+    public void projectionDisabled() {}
+
+    public Stage getStage() {
+        return SYNTACTIC_ANALYSIS;
+    }
+
+    public void update(CeylonParseController parseController, 
+    		IProgressMonitor monitor) {
+        Tree.CompilationUnit rn = parseController.getRootNode();
+        if (rn!=null) { // can be null if file is outside workspace
+            try {
+                updateFoldingStructure(rn, parseController.getTokens());
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     void reset() {
         firstTime=true;
         oldAnnotations.clear();
@@ -96,18 +118,8 @@ public class FoldingUpdater {
         return annotation;
     }
     
-    class CeylonProjectionAnnotation extends ProjectionAnnotation {
-        private int tokenType;
-        public CeylonProjectionAnnotation(int tokenType) {
-            this.tokenType=tokenType;
-        }
-        public int getTokenType() {
-            return tokenType;
-        }
-    }
-
     protected int advanceToEndOfLine(int offset, int len) {
-        IDocument doc = sourceViewer.getDocument();
+        IDocument doc = editor.getCeylonSourceViewer().getDocument();
         try {
             int line = doc.getLineOfOffset(offset+len);
             while (offset+len<doc.getLength() && 
@@ -155,10 +167,11 @@ public class FoldingUpdater {
      *                                text
      */
     public synchronized void updateFoldingStructure(Tree.CompilationUnit ast, 
-    		List<CommonToken> tokens) {
+            List<CommonToken> tokens) {
         try {
-        	
-        	ProjectionAnnotationModel annotationModel = sourceViewer.getProjectionAnnotationModel(); 
+            
+            ProjectionAnnotationModel annotationModel = editor.getCeylonSourceViewer()
+                    .getProjectionAnnotationModel(); 
             if (ast==null||annotationModel==null) {
                 // We can't create annotations without an AST
                 return;
@@ -281,7 +294,7 @@ public class FoldingUpdater {
             autofoldImports = false;
             autofoldComments = false;
         }
-    	for (int i=0; i<tokens.size(); i++) {
+        for (int i=0; i<tokens.size(); i++) {
             CommonToken token = tokens.get(i);
             int type = token.getType();
             if (type==MULTI_COMMENT ||
@@ -384,5 +397,4 @@ public class FoldingUpdater {
         }
         return makeAnnotation(offset, len, start.getType());
     }
-    
 }

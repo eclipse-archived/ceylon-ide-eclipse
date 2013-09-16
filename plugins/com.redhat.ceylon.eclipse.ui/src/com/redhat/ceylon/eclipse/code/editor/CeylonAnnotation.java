@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.jface.text.quickassist.IQuickFixableAnnotation;
 import org.eclipse.jface.text.source.Annotation;
@@ -7,6 +9,36 @@ import org.eclipse.jface.text.source.Annotation;
 public class CeylonAnnotation extends Annotation 
         implements IQuickFixableAnnotation {
 	
+    /** 
+     * Parent annotation ID
+     */
+    public static final String PARSE_ANNOTATION_TYPE = PLUGIN_ID + 
+            ".parseAnnotation";
+
+    /**
+     * Annotation ID for a parser annotation w/ severity = error.
+     * Must match the ID of the corresponding annotationTypes 
+     * extension in the plugin.xml.
+     */
+    public static final String PARSE_ANNOTATION_TYPE_ERROR = PARSE_ANNOTATION_TYPE + 
+            ".error";
+
+    /**
+     * Annotation ID for a parser annotation w/ severity = warning. 
+     * Must match the ID of the corresponding annotationTypes 
+     * extension in the plugin.xml.
+     */
+    public static final String PARSE_ANNOTATION_TYPE_WARNING = PARSE_ANNOTATION_TYPE + 
+            ".warning";
+
+    /**
+     * Annotation ID for a parser annotation w/ severity = info. 
+     * Must match the ID of the corresponding annotationTypes 
+     * extension in the plugin.xml.
+     */
+    public static final String PARSE_ANNOTATION_TYPE_INFO = PARSE_ANNOTATION_TYPE + 
+            ".info";
+
     private static int counter = 0;
 	
 	private CeylonEditor editor;
@@ -14,6 +46,10 @@ public class CeylonAnnotation extends Annotation
 	private final int count;
 	private final int code;
 	private final int severity;
+
+    public static boolean isParseAnnotation(Annotation a) {
+        return a.getType().startsWith(PARSE_ANNOTATION_TYPE);
+    }
 
 	public CeylonAnnotation(String type, String text, 
 			CeylonEditor editor, int code, int severity) {

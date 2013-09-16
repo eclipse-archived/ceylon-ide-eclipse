@@ -150,8 +150,8 @@ public class FoldingActionGroup extends ActionGroup {
                 	        .getProjectionAnnotationModel();
                 	for (Iterator<ProjectionAnnotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
                 	    ProjectionAnnotation pa = iter.next();
-                	    if (pa instanceof FoldingUpdater.CeylonProjectionAnnotation) {
-                	        int tt = ((FoldingUpdater.CeylonProjectionAnnotation) pa).getTokenType();
+                	    if (pa instanceof CeylonProjectionAnnotation) {
+                	        int tt = ((CeylonProjectionAnnotation) pa).getTokenType();
                 	        if (tt==CeylonLexer.MULTI_COMMENT || 
                 	            tt==CeylonLexer.LINE_COMMENT) {
                 	            pam.collapse(pa);
@@ -171,8 +171,8 @@ public class FoldingActionGroup extends ActionGroup {
                             .getProjectionAnnotationModel();
                     for (Iterator<ProjectionAnnotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
                         ProjectionAnnotation pa = iter.next();
-                        if (pa instanceof FoldingUpdater.CeylonProjectionAnnotation) {
-                            int tt = ((FoldingUpdater.CeylonProjectionAnnotation) pa).getTokenType();
+                        if (pa instanceof CeylonProjectionAnnotation) {
+                            int tt = ((CeylonProjectionAnnotation) pa).getTokenType();
                             if (tt==CeylonLexer.IMPORT) {
                                 pam.collapse(pa);
                             }

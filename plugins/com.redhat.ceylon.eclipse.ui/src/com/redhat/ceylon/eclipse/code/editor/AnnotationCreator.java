@@ -11,11 +11,11 @@ package com.redhat.ceylon.eclipse.code.editor;
 *    Robert Fuhrer (rfuhrer@watson.ibm.com) - initial API and implementation
 *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_ERROR;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_INFO;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.PARSE_ANNOTATION_TYPE_WARNING;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.isParseAnnotation;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE_ERROR;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE_INFO;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE_WARNING;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.isParseAnnotation;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_INFO;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
