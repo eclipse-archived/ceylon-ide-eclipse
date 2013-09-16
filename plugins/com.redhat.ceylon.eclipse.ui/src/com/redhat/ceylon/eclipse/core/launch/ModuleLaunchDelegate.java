@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,8 +19,10 @@ import org.eclipse.jdt.internal.ui.dialogs.StatusInfo;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
+import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -75,6 +78,17 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                         newArgs.add("--verbose");
                     }
 
+                    String topLevel = launch.getLaunchConfiguration()
+                        .getAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, "");
+                    int def = topLevel.indexOf(DEFAULT_RUN_MARKER);
+                    if (def != -1) {
+                        topLevel = topLevel.substring(0, def);
+                    }
+                    if (!"".equals(topLevel) && def == -1) { // default run not found
+                        newArgs.add("--run");
+                        newArgs.add(topLevel);
+                    }
+                    
                     newArgs.add("--");
                     
                     newArgs.add(launch.getLaunchConfiguration()
@@ -96,7 +110,9 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
 
                     runner.run(config, launch, monitor);
                 } catch (Exception e) {
-                    throw new CoreException(new StatusInfo());
+                	e.printStackTrace();
+                	MessageDialog.openError(Util.getShell(), "Ceylon Module Launcher Error", 
+                            "Internal Error");
                 }
             }
         };
