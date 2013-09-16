@@ -11,11 +11,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -44,6 +44,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
 import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
 import com.redhat.ceylon.eclipse.ui.test.Utils;
+import static com.redhat.ceylon.eclipse.ui.test.Utils.openInEditor;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class IncrementalBuildTests extends AbstractMultiProjectTest {
@@ -60,25 +61,10 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
         Utils.resetWorkbench(bot);
     }
     
-    protected void openInEditor(String fileName) {
-        final IFile runFile = mainProject.getFile(fileName);
-        Display.getDefault().syncExec(new Runnable() {
-            public void run() {
-                try {
-                    Util.gotoLocation(runFile, 0);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-    }
-
-    
-    
     @Test
     public void bug589_AddedJavaMethodNotSeen() throws InterruptedException, CoreException {
-        openInEditor("src/mainModule/run.ceylon");
-        openInEditor("javaSrc/mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java");
+        openInEditor(mainProject, "src/mainModule/run.ceylon");
+        openInEditor(mainProject, "javaSrc/mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java");
 
         SWTBotEditor editor = bot.editorByTitle("JavaClassInCeylonModule_Main_Ceylon_Project.java");
         Assert.assertNotNull(editor);
@@ -98,9 +84,9 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
             Assert.assertNotNull(editor);
             SWTBotEclipseEditor ceylonFileEditor = editor.toTextEditor();
             ceylonFileEditor.show();
-            assertEquals("Wrong line 18 in run.ceylon : ", ceylonFileEditor.getLines().get(17).trim(), "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();");
+            assertEquals("Wrong line 33 in run.ceylon : ", ceylonFileEditor.getLines().get(17).trim(), "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();");
             String ceylonEditorText = ceylonFileEditor.getText();
-            ceylonFileEditor.insertText(18, 0,"v5.newMethodToTest();\n");
+            ceylonFileEditor.insertText(33, 0,"v5.newMethodToTest();\n");
             
             /*
             ceylonFileEditor.navigateTo(18, 3);
