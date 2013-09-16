@@ -128,7 +128,7 @@ public class CeylonStructureCreator extends StructureCreator {
     				throws CoreException {
 
     	CeylonParseController pc= new CeylonParseController();
-    	fLabelProvider= CeylonLabelProvider.getInstance();
+    	fLabelProvider= new CeylonLabelProvider(true);
     	CeylonOutlineBuilder builder= new CeylonOutlineBuilder();
         
     	//TODO: pass some more info in here!

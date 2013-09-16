@@ -77,10 +77,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
             CeylonOutlineBuilder modelBuilder, 
             CeylonSourceViewer sourceViewer) {
         
-        this.parseController= parseController;
-        this.modelBuilder= modelBuilder;
+        this.parseController = parseController;
+        this.modelBuilder = modelBuilder;
         this.sourceViewer = sourceViewer;
-        this.labelProvider= CeylonLabelProvider.getInstance();
+        this.labelProvider = new CeylonLabelProvider(true);
         
         contentProvider= new ITreeContentProvider() {
             public Object[] getChildren(Object element) {

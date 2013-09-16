@@ -10,7 +10,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -29,6 +28,13 @@ import com.redhat.ceylon.eclipse.code.search.CeylonElement;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
 
+/**
+ * This class works, but we don't use it because it decorates the
+ * images asynchronously, which looks just horrible in the UI.
+ * However, we're still using its static utility methods directly
+ * from CeylonLabelProvider.
+ *
+ */
 public class CeylonLabelDecorator implements ILightweightLabelDecorator {
     
     @Override
@@ -93,24 +99,20 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
         if (entity instanceof IProject) {
             //TODO: add a Ceylon decoration to the project icon!
         }
-        if (entity instanceof IPath) {
-            //TODO??
-        }
         if (entity instanceof IResource) {
-//            int sev = getMaxProblemMarkerSeverity((IResource) entity, IResource.DEPTH_ONE);
-//            if (sev>=IMarker.SEVERITY_ERROR) {
-//                return ERROR;
-//            }
-//            else if (sev>=IMarker.SEVERITY_WARNING) {
-//                return WARNING;
-//            }
+            int sev = getMaxProblemMarkerSeverity((IResource) entity, IResource.DEPTH_ONE);
+            switch (sev) {
+            case IMarker.SEVERITY_ERROR:
+                return ERROR;
+            case IMarker.SEVERITY_WARNING:
+                return WARNING;
+            default: 
+                return 0;
+            }
         }
         if (entity instanceof CeylonOutlineNode) {
             return getNodeDecorationAttributes((Node)((CeylonOutlineNode) entity).getTreeNode());
         }
-//        if (entity instanceof CeylonHierarchyNode) {
-//            return getDecorationAttributes(((CeylonHierarchyNode) entity).getDeclaration());
-//        }
         if (entity instanceof DeclarationWithProject) {
             return getDecorationAttributes(((DeclarationWithProject) entity).getDeclaration());
         }
@@ -194,7 +196,7 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
      * or 0, indicating that no problem markers exist on the given resource.
      * @param depth TODO
      */
-    public static int getMaxProblemMarkerSeverity(IResource res, int depth) {
+    private static int getMaxProblemMarkerSeverity(IResource res, int depth) {
         if (res == null || !res.isAccessible())
             return 0;
     

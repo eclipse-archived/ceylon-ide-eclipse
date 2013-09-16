@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getDecorationAttributes;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.KEYWORDS;
@@ -19,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -30,6 +32,7 @@ import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -74,7 +77,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
             .getImageRegistry();
     
-    public static Image FILE_IMAGE = imageRegistry.get(CEYLON_FILE);
+    public static Image FILE = imageRegistry.get(CEYLON_FILE);
     public static Image ALIAS = imageRegistry.get(CEYLON_ALIAS);
     public static Image CLASS = imageRegistry.get(CEYLON_CLASS);
     public static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
@@ -168,44 +171,56 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     private final boolean includePackage;
     
-    public static ILabelProvider getInstance() {
-        return new DecoratingLabelProvider(new CeylonLabelProvider(true), 
-                PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator());
+    public CeylonLabelProvider(boolean includePackage) {
+        this.includePackage = includePackage;
     }
     
-    private CeylonLabelProvider(boolean includePackage) {
-        this.includePackage = includePackage;
+    private static Image getDecoratedImage(Object element, String key) {
+        int flags = getDecorationAttributes(element);
+        ImageDescriptor descriptor = imageRegistry.getDescriptor(key);
+        String decoratedKey = key+'#'+flags;
+        Image image = imageRegistry.get(decoratedKey);
+        if (image==null) {
+            imageRegistry.put(decoratedKey, 
+                    new DecoratedImageDescriptor(descriptor, flags, new Point(22,16)));
+            image = imageRegistry.get(decoratedKey);
+        }
+        return image;
     }
     
     @Override
     public Image getImage(Object element) {
+        return getDecoratedImage(element, getImageKey(element));
+    }
+    
+    public String getImageKey(Object element) {
         element = unwrap(element);
         if (element instanceof IFile || 
             element instanceof IPath) {
-            return FILE_IMAGE;
+            return CEYLON_FILE;
         }
         if (element instanceof IProject) {
-            return PROJECT;
+            return CEYLON_PROJECT;
         }
         if (element instanceof CeylonElement) {
-            return getImageForNode(((CeylonElement) element).getNode());
+            return getImageKeyForNode(((CeylonElement) element).getNode());
         }
         if (element instanceof Package) {
-            return PACKAGE;
+            return CEYLON_PACKAGE;
         }
         if (element instanceof Module) {
-            return ARCHIVE;
+            return CEYLON_ARCHIVE;
         }
         if (element instanceof Unit) {
-            return FILE_IMAGE;
+            return CEYLON_FILE;
         }
         if (element instanceof CeylonOutlineNode) {
-            return getImageForOutlineNode((CeylonOutlineNode) element);
+            return getImageKeyForNode((Node) ((CeylonOutlineNode) element).getTreeNode());
         }
         if (element instanceof Node) {
-            return getImageForNode((Node) element);
+            return getImageKeyForNode((Node) element);
         }
-        return FILE_IMAGE;
+        return CEYLON_FILE;
     }
 
     private Object unwrap(Object element) {
@@ -215,123 +230,127 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return element;
     }
     
-    private static Image getImageForOutlineNode(CeylonOutlineNode n) {
-        return getImageForNode((Node) n.getTreeNode());
-    }
-    
-    private static Image getImageForNode(Node n) {
+    private static String getImageKeyForNode(Node n) {
         if (n instanceof PackageNode) {
-            return PACKAGE;
+            return CEYLON_PACKAGE;
         }
         else if (n instanceof PackageDescriptor) {
-            return PACKAGE;
+            return CEYLON_PACKAGE;
         }
         else if (n instanceof ModuleDescriptor) {
-            return ARCHIVE;
+            return CEYLON_ARCHIVE;
         }
         else if (n instanceof Tree.CompilationUnit) {
-            return FILE_IMAGE;
+            return CEYLON_FILE;
         }
         else if (n instanceof Tree.ImportList) {
-            return IMPORT_LIST;
+            return CEYLON_IMPORT_LIST;
         }
         else if (n instanceof Tree.Import || 
         		n instanceof Tree.ImportModule) {
-            return IMPORT;
+            return CEYLON_IMPORT;
         }
         else if (n instanceof Tree.Declaration) {
-            return getImageForDeclarationNode((Tree.Declaration) n);
+            return getImageKeyForDeclarationNode((Tree.Declaration) n);
         }
         else {
             return null;
         }
     }
     
-    private static Image getImageForDeclarationNode(Tree.Declaration n) {
+    private static String getImageKeyForDeclarationNode(Tree.Declaration n) {
         boolean shared = hasAnnotation(n.getAnnotationList(), 
                 "shared", n.getUnit());
         if (n instanceof Tree.AnyClass) {
             if (shared) {
-                return CLASS;
+                return CEYLON_CLASS;
             }
             else {
-                return LOCAL_CLASS;
+                return CEYLON_LOCAL_CLASS;
             }
         }
         else if (n instanceof Tree.AnyInterface) {
             if (shared) {
-                return INTERFACE;
+                return CEYLON_INTERFACE;
             }
             else { 
-                return LOCAL_INTERFACE;
+                return CEYLON_LOCAL_INTERFACE;
             }
         }
         else if (n instanceof Tree.AnyMethod) {
             if (shared) {
-                return METHOD;
+                return CEYLON_METHOD;
             }
             else {
-                return LOCAL_METHOD;
+                return CEYLON_LOCAL_METHOD;
             }
         }
         else if (n instanceof Tree.TypeAliasDeclaration) {
-            return ALIAS;
+            return CEYLON_ALIAS;
         }
         else {
             if (shared) {
-                return ATTRIBUTE;
+                return CEYLON_ATTRIBUTE;
             }
             else {
-                return LOCAL_ATTRIBUTE;
+                return CEYLON_LOCAL_ATTRIBUTE;
             }
         }
     }
     
-    public static Image getImageForDeclaration(Declaration d) {
+    public static Image getImageForDeclaration(Declaration element) {
+        return getDecoratedImage(element, getImageKeyForDeclaration(element));
+    }
+
+    public static Image getImageForFile(IFile file) {
+        return getDecoratedImage(file, CEYLON_FILE);
+    }
+
+    private static String getImageKeyForDeclaration(Declaration d) {
         if (d==null) return null;
         boolean shared = d.isShared();
         if (d instanceof Class) {
             if (shared) {
-                return CLASS;
+                return CEYLON_CLASS;
             }
             else {
-                return LOCAL_CLASS;
+                return CEYLON_LOCAL_CLASS;
             }
         }
         else if (d instanceof Interface) {
             if (shared) {
-                return INTERFACE;
+                return CEYLON_INTERFACE;
             }
             else { 
-                return LOCAL_INTERFACE;
+                return CEYLON_LOCAL_INTERFACE;
             }
         }
         else if (d.isParameter()) {
         	if (d instanceof Method) {
-        		return PARAMETER_METHOD;
+        		return CEYLON_PARAMETER_METHOD;
         	}
         	else {
-        		return PARAMETER;
+        		return CEYLON_PARAMETER;
         	}
         }
         else if (d instanceof Method) {
             if (shared) {
-                return METHOD;
+                return CEYLON_METHOD;
             }
             else {
-                return LOCAL_METHOD;
+                return CEYLON_LOCAL_METHOD;
             }
         }
         else if (d instanceof TypeAlias ||
         		d instanceof NothingType) {
-            return ALIAS;
+            return CEYLON_ALIAS;
         }
         else {
             if (shared) {
-                return ATTRIBUTE;
+                return CEYLON_ATTRIBUTE;
             }
             else {
-                return LOCAL_ATTRIBUTE;
+                return CEYLON_LOCAL_ATTRIBUTE;
             }
         }
     }
