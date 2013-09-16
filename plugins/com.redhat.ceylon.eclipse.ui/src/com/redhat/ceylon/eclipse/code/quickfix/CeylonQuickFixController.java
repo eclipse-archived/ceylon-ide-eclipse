@@ -129,8 +129,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant
     public boolean canFix(IMarker marker) throws CoreException {
         for (String type : assistant.getSupportedMarkerTypes()) {
             if (marker.getType().equals(type)) {
-                MarkerAnnotation ma = new MarkerAnnotation(marker);
-                return assistant.canFix(ma);
+                return assistant.canFix(new MarkerAnnotation(marker));
             }
         }
         return false;

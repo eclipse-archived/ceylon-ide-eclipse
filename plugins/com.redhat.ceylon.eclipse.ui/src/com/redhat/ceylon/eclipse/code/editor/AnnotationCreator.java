@@ -109,8 +109,8 @@ public class AnnotationCreator extends ErrorVisitor {
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
             } 
             else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
-                for (Iterator i= model.getAnnotationIterator(); i.hasNext(); ) {
-                    Annotation a= (Annotation) i.next();
+                for (Iterator i = model.getAnnotationIterator(); i.hasNext(); ) {
+                    Annotation a = (Annotation) i.next();
                     if (isParseAnnotation(a)) {
                         model.removeAnnotation(a);
                     }
@@ -157,33 +157,5 @@ public class AnnotationCreator extends ErrorVisitor {
     		return PARSE_ANNOTATION_TYPE;            	
     	}
     }
-
-    /*private void removeAnnotations() {
-        final IDocumentProvider docProvider= fEditor.getDocumentProvider();
-
-        if (docProvider == null) {
-            return;
-        }
-
-        IAnnotationModel model= docProvider.getAnnotationModel(fEditor.getEditorInput());
-        if (model == null)
-            return;
-
-        if (model instanceof IAnnotationModelExtension) {
-            IAnnotationModelExtension modelExt= (IAnnotationModelExtension) model;
-            Annotation[] oldAnnotations= fAnnotations.toArray(new Annotation[fAnnotations.size()]);
-
-            modelExt.replaceAnnotations(oldAnnotations, Collections.EMPTY_MAP);
-        } else {
-            for(Iterator i= model.getAnnotationIterator(); i.hasNext(); ) {
-                Annotation a= (Annotation) i.next();
-
-                if (CeylonEditor.isParseAnnotation(a)) {
-                    model.removeAnnotation(a);
-                }
-            }
-        }
-        fAnnotations.clear();
-    }*/
     
 }

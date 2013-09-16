@@ -76,7 +76,6 @@ import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
-import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -1410,14 +1409,7 @@ public class CeylonEditor extends TextEditor {
                         0, "Unable to read source text", e.getStatus().getException()));
             }
         }
-        setInsertMode(SMART_INSERT);
-    
-        IAnnotationModel annotationModel = getDocumentProvider().getAnnotationModel(input);
-        // Not sure why annotationModel is null for files outside the
-        // workspace, but they are, so make sure we don't cause an NPE here.
-        if (annotationModel != null) {
-            annotationModel.addAnnotationModelListener(markerAnnotationUpdater);
-        }
+        setInsertMode(SMART_INSERT);    
     }
 
     /**

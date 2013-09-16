@@ -80,7 +80,6 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                     }
                 }
             }
-
         }.visit(cpc.getRootNode());
         
         for (CommonToken token : (List<CommonToken>) cpc.getTokens()) {
@@ -180,7 +179,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             if (node!=null) {
                 node.visit(new InitializerVisitor());
                 if (initializerAnnotation!=null) {
-                    model.addAnnotation(initializerAnnotation, initializerAnnotation.getInitializerPosition());
+                    model.addAnnotation(initializerAnnotation, 
+                            initializerAnnotation.getInitializerPosition());
                 }
             }
         }
@@ -198,16 +198,16 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             createAnnotation(that, that.getClassBody(), that.getIdentifier().getText());
         }
         private void createAnnotation(Node that, Tree.ClassBody body, String name) {
-//            int offset = editor.getSelection().getOffset();
-//            if (offset>that.getStartIndex()&&offset<that.getStopIndex()) {
-                Tree.Statement les = getLastExecutableStatement(body);
-                if (les != null) {
-                    int startIndex = body.getStartIndex() + 2;
-                    int stopIndex = les.getStopIndex();
-                    Position initializerPosition = new Position(startIndex, stopIndex - startIndex + 1);
-                    initializerAnnotation = new CeylonInitializerAnnotation(name, initializerPosition, 1);
-                }
-//            }
+//          int offset = editor.getSelection().getOffset();
+//          if (offset>that.getStartIndex()&&offset<that.getStopIndex()) {
+            Tree.Statement les = getLastExecutableStatement(body);
+            if (les != null) {
+                int startIndex = body.getStartIndex() + 2;
+                int stopIndex = les.getStopIndex();
+                Position initializerPosition = new Position(startIndex, stopIndex - startIndex + 1);
+                initializerAnnotation = new CeylonInitializerAnnotation(name, initializerPosition, 1);
+            }
+//          }
         }
     }
     
