@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
@@ -32,6 +33,7 @@ import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
@@ -47,6 +49,19 @@ public class Utils {
                 workspace.loadProjectDescription(projectDescriptionPath);
         return importProject(workspace, destinationRootPath,
                 originalProjectDescription);
+    }
+
+    public static void openInEditor(IProject project, String fileName) {
+        final IFile runFile = project.getFile(fileName);
+        Display.getDefault().syncExec(new Runnable() {
+            public void run() {
+                try {
+                    Util.gotoLocation(runFile, 0);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
     }
 
     public static IProject importProject(final IWorkspace workspace,
