@@ -11,8 +11,6 @@ package com.redhat.ceylon.eclipse.code.preferences;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.preferences.AetherRepositoryDialog.ERROR;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IInputValidator;
@@ -28,6 +26,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 
 /**
  * A simple input dialog for soliciting an input string from the user.
@@ -189,7 +189,7 @@ public class InputDialog extends Dialog {
         
         errorImage = new Label(errorDisplay, SWT.NONE);
         errorImage.setVisible(false);
-        errorImage.setImage(ERROR);
+        errorImage.setImage(CeylonLabelProvider.ERROR);
         
         errorMessageText = new Text(errorDisplay, SWT.READ_ONLY | SWT.WRAP);
         errorMessageText.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL

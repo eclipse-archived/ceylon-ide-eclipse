@@ -63,6 +63,9 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private static final String OUTLINE_POPUP_MENU_ID = PLUGIN_ID + 
             ".outline.popupMenu";
     
+    private static final ImageDescriptor PUBLIC = CeylonPlugin.getInstance().image("public_co.gif");
+    private static final ImageDescriptor ALPHA = CeylonPlugin.getInstance().image("alphab_sort_co.gif");
+    
     private final ITreeContentProvider contentProvider;
     private final CeylonOutlineBuilder modelBuilder;
     private final CeylonLabelProvider labelProvider;
@@ -234,7 +237,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             setToolTipText("Sort by name");
             setDescription("Sort entries lexically by name");
 
-            ImageDescriptor desc= CeylonPlugin.getInstance().image("alphab_sort_co.gif");
+            ImageDescriptor desc= ALPHA;
             this.setHoverImageDescriptor(desc);
             this.setImageDescriptor(desc); 
 
@@ -288,7 +291,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             setToolTipText("Hide non-shared members");
             setDescription("Hide non-shared members");
 
-            ImageDescriptor desc= CeylonPlugin.getInstance().image("public_co.gif");
+            ImageDescriptor desc= PUBLIC;
             setHoverImageDescriptor(desc);
             setImageDescriptor(desc); 
 
