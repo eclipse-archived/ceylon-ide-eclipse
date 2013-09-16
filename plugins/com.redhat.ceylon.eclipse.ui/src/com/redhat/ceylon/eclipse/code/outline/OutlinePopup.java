@@ -19,6 +19,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -45,7 +46,7 @@ public class OutlinePopup extends TreeViewPopup {
 	
     private CeylonOutlineContentProvider outlineContentProvider;
     private OutlineSorter outlineSorter;
-    private CeylonLabelProvider labelProvider;
+    private ILabelProvider labelProvider;
     private LexicalSortingAction lexicalSortingAction;
 
     protected static final Object[] NO_CHILDREN= new Object[0];
@@ -159,7 +160,7 @@ public class OutlinePopup extends TreeViewPopup {
         final TreeViewer treeViewer= new OutlineTreeViewer(tree);
         lexicalSortingAction= new LexicalSortingAction(treeViewer);
         outlineContentProvider= new CeylonOutlineContentProvider();
-        labelProvider= new CeylonLabelProvider();
+        labelProvider= CeylonLabelProvider.getInstance();
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new OutlineNamePatternFilter(filterText));
         //	fSortByDefiningTypeAction= new SortByDefiningTypeAction(treeViewer);

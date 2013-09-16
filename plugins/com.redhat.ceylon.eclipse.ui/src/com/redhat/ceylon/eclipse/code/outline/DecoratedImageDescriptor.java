@@ -11,6 +11,12 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.DECORATIONS;
+import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
+import static org.eclipse.jface.viewers.IDecoration.BOTTOM_RIGHT;
+import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
+import static org.eclipse.jface.viewers.IDecoration.TOP_RIGHT;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -38,7 +44,6 @@ import org.eclipse.swt.graphics.Point;
  * @since 0.1
  */
 public class DecoratedImageDescriptor extends CompositeImageDescriptor {
-    private final ImageDecoratorController fController;
     private ImageDescriptor fBaseImage;
     private int fFlags;
     private Point fSize;
@@ -51,8 +56,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
      *  for valid values.
      * @param size the size of the resulting image
      */
-    public DecoratedImageDescriptor(ImageDescriptor baseImage, int flags, Point size, ImageDecoratorController ctlr) {
-        fController= ctlr;
+    public DecoratedImageDescriptor(ImageDescriptor baseImage, int flags, Point size) {
         fBaseImage= baseImage;
         Assert.isNotNull(fBaseImage);
         fFlags= flags;
@@ -192,8 +196,8 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 
     private void drawTopRight() {
         Point pos= new Point(getSize().x, 0);
-        for(DecorationDescriptor d: fController.getTopRightDecorations()) {
-            if ((fFlags & d.mask) != 0) {
+        for(DecorationDescriptor d: DECORATIONS) {
+            if (d.getQuadrant()==TOP_RIGHT && d.hasDecoration(fFlags)) {
                 addTopRightImage(d.getImageDescriptor(), pos);
             }
         }
@@ -201,8 +205,8 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 
     private void drawTopLeft() {
         Point pos= new Point(0, 0);
-        for(DecorationDescriptor d: fController.getTopLeftDecorations()) {
-            if ((fFlags & d.mask) != 0) {
+        for(DecorationDescriptor d: DECORATIONS) {
+            if (d.getQuadrant()==TOP_LEFT && d.hasDecoration(fFlags)) {
                 addTopLeftImage(d.getImageDescriptor(), pos);
             }
         }
@@ -222,8 +226,8 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 //          flags &= ~d.mask;
 //      }
 
-        for(DecorationDescriptor d: fController.getBottomRightDecorations()) {
-            if ((fFlags & d.mask) != 0) {
+        for(DecorationDescriptor d: DECORATIONS) {
+            if (d.getQuadrant()==BOTTOM_RIGHT && d.hasDecoration(fFlags)) {
                 addBottomRightImage(d.getImageDescriptor(), pos);
             }
         }
@@ -231,8 +235,8 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 
     private void drawBottomLeft() {
         Point pos= new Point(0, getSize().y);
-        for(DecorationDescriptor d: fController.getBottomLeftDecorations()) {
-            if ((fFlags & d.mask) != 0) {
+        for (DecorationDescriptor d: DECORATIONS) {
+            if (d.getQuadrant()==BOTTOM_LEFT && d.hasDecoration(fFlags)) {
                 addBottomLeftImage(d.getImageDescriptor(), pos);
             }
         }

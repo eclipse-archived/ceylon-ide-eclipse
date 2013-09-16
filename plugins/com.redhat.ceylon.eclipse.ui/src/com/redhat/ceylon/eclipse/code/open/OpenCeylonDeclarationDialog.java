@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.open;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
@@ -25,6 +26,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -38,6 +40,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -132,7 +135,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public Image getImage(Object element) {
             DeclarationWithProject dwp = (DeclarationWithProject) element;
-            return dwp==null ? null : CeylonLabelProvider.getImage(dwp.getDeclaration());
+            return dwp==null ? null : getImageForDeclaration(dwp.getDeclaration());
         }
         
         @Override
@@ -231,7 +234,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         super(shell);
         //this.editor = editor;
         setSelectionHistory(new TypeSelectionHistory());
-        setListLabelProvider(new LabelProvider());
+        setListLabelProvider(new DecoratingLabelProvider(new LabelProvider(),
+                PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator()));
         setDetailsLabelProvider(new DetailsLabelProvider());
         setListSelectionLabelDecorator(new SelectionLabelDecorator());
     }

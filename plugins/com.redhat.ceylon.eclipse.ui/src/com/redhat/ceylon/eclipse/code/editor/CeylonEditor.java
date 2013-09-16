@@ -22,10 +22,12 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.TOGGLE_COMME
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
 import static com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider.isSrcArchive;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getMaxProblemMarkerSeverity;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.TASK_MARKER_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FILE;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
@@ -72,6 +74,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -136,9 +139,10 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import ceylon.language.StringBuilder;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
+import com.redhat.ceylon.eclipse.code.outline.DecoratedImageDescriptor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
@@ -1010,7 +1014,7 @@ public class CeylonEditor extends TextEditor {
 
         initiateServiceControllers();
 
-        setTitleImageFromLanguageIcon();
+        setTitleImage();
         //setSourceFontFromPreference();
         
         /*((IContextService) getSite().getService(IContextService.class))
@@ -1140,7 +1144,7 @@ public class CeylonEditor extends TextEditor {
             };
             problemMarkerManager.addListener(annotationUpdater);
             
-            editorIconUpdater= new EditorIconUpdater(this);
+            editorIconUpdater = new EditorIconUpdater(this);
             problemMarkerManager.addListener(editorIconUpdater);
 
             parserScheduler= new CeylonParserScheduler(parseController, this, 
@@ -1226,17 +1230,25 @@ public class CeylonEditor extends TextEditor {
         }
     }
     
-    private void setTitleImageFromLanguageIcon() {
-        IEditorInput editorInput= getEditorInput();
-        Object fileOrPath= getFile(editorInput);
-        if (fileOrPath==null) {
-            fileOrPath = getParseController().getPath();
-        }
-        try {
-            setTitleImage(new CeylonLabelProvider().getImage(fileOrPath));
-        } 
-        catch (Exception e) {
-            e.printStackTrace();
+    public void setTitleImage() {
+        IEditorInput editorInput = getEditorInput();
+        IFile file = getFile(editorInput);
+        if (file!=null) {
+            int flag;
+            switch (getMaxProblemMarkerSeverity(file, 1)) {
+            case IMarker.SEVERITY_ERROR: 
+                flag=CeylonLabelDecorator.ERROR;
+                break;
+            case IMarker.SEVERITY_WARNING: 
+                flag=CeylonLabelDecorator.WARNING;
+                break;
+            default: 
+                flag=0;
+            }
+            ImageRegistry imageRegistry = CeylonPlugin.getInstance().getImageRegistry();
+            setTitleImage(new DecoratedImageDescriptor(imageRegistry.getDescriptor(CEYLON_FILE), 
+                    flag, new Point(16,16)).createImage());
+            //TODO: clean up the image!
         }
     }
     
@@ -1279,7 +1291,7 @@ public class CeylonEditor extends TextEditor {
     
     public void dispose() {
         if (editorIconUpdater!=null) {
-            editorIconUpdater.dispose();
+            problemMarkerManager.removeListener(editorIconUpdater);
             editorIconUpdater = null;
         }
         if (annotationUpdater!=null) {

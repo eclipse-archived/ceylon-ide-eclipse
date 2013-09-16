@@ -14,27 +14,21 @@ package com.redhat.ceylon.eclipse.code.outline;
 import org.eclipse.jface.resource.ImageDescriptor;
 
 public class DecorationDescriptor {
-    public static enum Quadrant {
-        TOP_LEFT,
-        TOP_RIGHT,
-        BOTTOM_LEFT,
-        BOTTOM_RIGHT
-    }
 
     /**
      * the integer attribute value that selects this decoration
      */
-    public final int mask;
+    private final int mask;
 
     /**
      * the quadrant of the base icon image in which the given decoration should be displayed
      */
-    public final DecorationDescriptor.Quadrant quadrant;
+    private final int quadrant;
 
     private ImageDescriptor fImageDesc;
 
     public DecorationDescriptor(int mask, ImageDescriptor descriptor, 
-    		DecorationDescriptor.Quadrant quadrant) {
+    		int quadrant) {
         this.mask= mask;
         this.fImageDesc = descriptor;
         this.quadrant= quadrant;
@@ -43,4 +37,13 @@ public class DecorationDescriptor {
     public ImageDescriptor getImageDescriptor() {
         return fImageDesc;
     }
+    
+    public boolean hasDecoration(int flags) {
+        return (mask&flags)!=0;
+    }
+    
+    public int getQuadrant() {
+        return quadrant;
+    }
+    
 }

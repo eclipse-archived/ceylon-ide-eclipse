@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MULTIPLE_TYPES_IMAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImage;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
@@ -80,7 +80,7 @@ final class CeylonHierarchyLabelProvider extends
 			StyledString styledText = getStyledText(n);
 			cell.setText(styledText.toString());
 			cell.setStyleRanges(styledText.getStyleRanges());
-			cell.setImage(getImage(getDisplayedDeclaration(n)));
+			cell.setImage(getImageForDeclaration(getDisplayedDeclaration(n)));
 		}
 		super.update(cell);
 	}

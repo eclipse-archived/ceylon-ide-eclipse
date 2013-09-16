@@ -2148,4 +2148,20 @@
                 class="com.redhat.ceylon.eclipse.code.search.JavaQueryParticipant">
           </queryParticipant>
     </extension>
+
+    <extension point="org.eclipse.ui.decorators">
+          <decorator
+                label="Ceylon Label Decorator"
+                state="true"
+                lightweight="true"
+                class="com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator"
+                id="com.redhat.ceylon.eclipse.code.outline.decorator">
+                <enablement>
+                <objectClass
+                      name="java.lang.Object">
+                </objectClass>
+                </enablement>
+          </decorator>
+    </extension>
+     
 </plugin>
