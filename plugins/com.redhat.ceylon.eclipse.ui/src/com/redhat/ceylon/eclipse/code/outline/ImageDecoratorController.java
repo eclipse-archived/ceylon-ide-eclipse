@@ -44,8 +44,10 @@ public class ImageDecoratorController {
     public final static int ERROR= 1 << 1;
 
     private static final ImageRegistry registry = CeylonPlugin.getInstance().getImageRegistry();
-    public final static DecorationDescriptor WARNING_DECORATION= new DecorationDescriptor(WARNING, registry.getDescriptor(CEYLON_WARN), BOTTOM_LEFT);
-    public final static DecorationDescriptor ERROR_DECORATION= new DecorationDescriptor(ERROR, registry.getDescriptor(CEYLON_ERR), BOTTOM_LEFT);
+    public final static DecorationDescriptor WARNING_DECORATION = new DecorationDescriptor(WARNING, 
+            registry.getDescriptor(CEYLON_WARN), BOTTOM_LEFT);
+    public final static DecorationDescriptor ERROR_DECORATION = new DecorationDescriptor(ERROR, 
+            registry.getDescriptor(CEYLON_ERR), BOTTOM_LEFT);
 
     private final CeylonEntityImageDecorator fDecorator;
 
@@ -77,9 +79,11 @@ public class ImageDecoratorController {
         bottomRightDecorations.add(ERROR_DECORATION);
     }
 
-    public SourceEntityImageDescriptor getImageDescriptor(ImageDescriptor baseImage, Object entity, Point size) {
-        int attrs= fDecorator.getDecorationAttributes(entity);
-        return new SourceEntityImageDescriptor(baseImage, attrs, size, this);
+    public DecoratedImageDescriptor getImageDescriptor(ImageDescriptor baseImage, 
+            Object entity, Point size) {
+        return new DecoratedImageDescriptor(baseImage, 
+                fDecorator.getDecorationAttributes(entity), 
+                size, this);
     }
 
     public List<DecorationDescriptor> getBottomLeftDecorations() {

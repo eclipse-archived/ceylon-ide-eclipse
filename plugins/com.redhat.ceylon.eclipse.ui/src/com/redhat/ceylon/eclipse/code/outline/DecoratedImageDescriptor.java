@@ -18,7 +18,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 
 /**
- * A {@link SourceEntityImageDescriptor} consists of a base image and several adornments. The adornments
+ * A {@link DecoratedImageDescriptor} consists of a base image and several adornments. The adornments
  * are computed according to the flags either passed during creation or set via the method
  * {@link #setAdornments(int)}.
  * <p>
@@ -37,7 +37,7 @@ import org.eclipse.swt.graphics.Point;
  *
  * @since 0.1
  */
-public class SourceEntityImageDescriptor extends CompositeImageDescriptor {
+public class DecoratedImageDescriptor extends CompositeImageDescriptor {
     private final ImageDecoratorController fController;
     private ImageDescriptor fBaseImage;
     private int fFlags;
@@ -51,7 +51,7 @@ public class SourceEntityImageDescriptor extends CompositeImageDescriptor {
      *  for valid values.
      * @param size the size of the resulting image
      */
-    public SourceEntityImageDescriptor(ImageDescriptor baseImage, int flags, Point size, ImageDecoratorController ctlr) {
+    public DecoratedImageDescriptor(ImageDescriptor baseImage, int flags, Point size, ImageDecoratorController ctlr) {
         fController= ctlr;
         fBaseImage= baseImage;
         Assert.isNotNull(fBaseImage);
@@ -114,10 +114,10 @@ public class SourceEntityImageDescriptor extends CompositeImageDescriptor {
      * Method declared on Object.
      */
     public boolean equals(Object object) {
-        if (object == null || !SourceEntityImageDescriptor.class.equals(object.getClass()))
+        if (object == null || !DecoratedImageDescriptor.class.equals(object.getClass()))
             return false;
 
-        SourceEntityImageDescriptor other= (SourceEntityImageDescriptor) object;
+        DecoratedImageDescriptor other= (DecoratedImageDescriptor) object;
         return fBaseImage.equals(other.fBaseImage) && fFlags == other.fFlags && fSize.equals(other.fSize);
     }
 

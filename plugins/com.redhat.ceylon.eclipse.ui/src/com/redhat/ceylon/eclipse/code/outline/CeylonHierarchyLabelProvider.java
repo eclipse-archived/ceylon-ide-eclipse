@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MULTIPLE_TYPES_IMAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImage;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
@@ -13,7 +14,6 @@ import org.eclipse.swt.custom.StyleRange;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 final class CeylonHierarchyLabelProvider extends
 		StyledCellLabelProvider {
@@ -67,13 +67,14 @@ final class CeylonHierarchyLabelProvider extends
 	    return d;
 	}
 
+    
 	@Override
 	public void update(ViewerCell cell) {
 		CeylonHierarchyNode n = (CeylonHierarchyNode) cell.getElement();
 		if (n.getDeclaration()==null) {
 			cell.setText("multiple supertypes" + VIEW_INTERFACES);
 			cell.setStyleRanges(new StyleRange[0]);
-			cell.setImage(CeylonPlugin.getInstance().image("types.gif").createImage());
+            cell.setImage(MULTIPLE_TYPES_IMAGE);
 		}
 		else {
 			StyledString styledText = getStyledText(n);

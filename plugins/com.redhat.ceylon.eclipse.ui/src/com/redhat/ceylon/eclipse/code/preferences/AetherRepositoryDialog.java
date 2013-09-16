@@ -12,7 +12,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -23,7 +22,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 
 class AetherRepositoryDialog extends Dialog {
 
@@ -113,7 +112,7 @@ class AetherRepositoryDialog extends Dialog {
         
         errorImage = new Label(errorDisplay, SWT.NONE);
         errorImage.setVisible(false);
-        errorImage.setImage(ERROR);
+        errorImage.setImage(CeylonLabelProvider.ERROR);
         
         errorText = new Text(errorDisplay, SWT.READ_ONLY | SWT.WRAP);
         errorText.setVisible(false);
@@ -125,9 +124,6 @@ class AetherRepositoryDialog extends Dialog {
         return composite;
     }
     
-    static final Image ERROR = CeylonPlugin.getInstance()
-            .image("error_obj.gif").createImage();
-
     public String getValue() {
         return value;
     }

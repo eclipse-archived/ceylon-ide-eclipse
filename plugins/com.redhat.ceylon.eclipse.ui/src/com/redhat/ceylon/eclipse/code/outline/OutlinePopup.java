@@ -122,10 +122,9 @@ public class OutlinePopup extends TreeViewPopup {
             super("Sort", IAction.AS_CHECK_BOX);
             setToolTipText("Sort by name");
             setDescription("Sort entries lexically by name");
-            CeylonPlugin.getInstance().image("alphab_sort_co.gif");
+//            CeylonPlugin.getInstance().image("alphab_sort_co.gif");
             fOutlineViewer= outlineViewer;
-            boolean checked= getDialogSettings().getBoolean(STORE_LEXICAL_SORTING_CHECKED);
-            setChecked(checked);
+            setChecked(getDialogSettings().getBoolean(STORE_LEXICAL_SORTING_CHECKED));
         }
 
         public void run() {

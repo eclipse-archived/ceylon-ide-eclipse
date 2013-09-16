@@ -29,6 +29,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
@@ -36,6 +37,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.eclipse.code.outline.ImageDecoratorController;
+import com.redhat.ceylon.eclipse.code.outline.DecoratedImageDescriptor;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 
 
@@ -263,9 +266,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 		reg.put(CEYLON_PACKAGE, image("package_obj.gif"));
 		reg.put(CEYLON_IMPORT_LIST, image("impc_obj.gif"));
 		reg.put(CEYLON_IMPORT, image("imp_obj.gif"));
-		reg.put(CEYLON_FILE, image("template_obj.gif"));
-		reg.put(CEYLON_FILE_WARNING, image("file_obj.gif"));
-		reg.put(CEYLON_FILE_ERROR, image("file_obj.gif"));
 		reg.put(CEYLON_ALIAS, image("types.gif"));
 		reg.put(CEYLON_CLASS, image("class_obj.gif"));
 		reg.put(CEYLON_INTERFACE, image("int_obj.gif"));
@@ -318,6 +318,18 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 	    reg.put(REPOSITORIES, image("repositories.gif"));
 	    reg.put(RUNTIME_OBJ, image("runtime_obj.gif"));
 	    reg.put(CEYLON_LOCAL_NAME, image("localvariable_obj.gif"));
+        reg.put(MULTIPLE_TYPES, image("types.gif"));
+	    reg.put(ERROR, image("error_obj.gif"));
+        reg.put(WARNING, image("warning_obj.gif"));
+        
+        ImageDescriptor fileImageDesc = image("template_obj.gif");
+        reg.put(CEYLON_FILE, fileImageDesc);
+        reg.put(CEYLON_FILE_WARNING, new DecoratedImageDescriptor(fileImageDesc, 
+                1 << 2, new Point(16,16), new ImageDecoratorController())
+                     .createImage());
+        reg.put(CEYLON_FILE_ERROR, new DecoratedImageDescriptor(fileImageDesc, 
+                1 << 3, new Point(16,16), new ImageDecoratorController())
+                     .createImage());
 	}
 	
     private void registerProjectOpenCloseListener() {
