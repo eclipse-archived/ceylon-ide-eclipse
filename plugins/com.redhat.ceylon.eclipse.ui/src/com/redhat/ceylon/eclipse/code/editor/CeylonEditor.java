@@ -172,14 +172,15 @@ public class CeylonEditor extends TextEditor {
     private CeylonParseController parseController;
     private ProjectionSupport projectionSupport;
     private LinkedModeModel linkedMode;
-    ToggleFoldingRunner fFoldingRunner;
     
     private MarkerAnnotationUpdater markerAnnotationUpdater = new MarkerAnnotationUpdater(this);
     private ProjectionAnnotationManager projectionAnnotationManager = new ProjectionAnnotationManager(this);
     private AnnotationCreator annotationCreator = new AnnotationCreator(this);
     private IProblemChangedListener editorIconUpdater;
     private IProblemChangedListener annotationUpdater;
-
+    
+    ToggleFoldingRunner fFoldingRunner;
+    
     //public static ResourceBundle fgBundleForConstructedKeys= getBundle(MESSAGE_BUNDLE);
     
     public CeylonEditor() {
@@ -1414,8 +1415,9 @@ public class CeylonEditor extends TextEditor {
         IAnnotationModel annotationModel = getDocumentProvider().getAnnotationModel(input);
         // Not sure why annotationModel is null for files outside the
         // workspace, but they are, so make sure we don't cause an NPE here.
-        if (annotationModel != null)
+        if (annotationModel != null) {
             annotationModel.addAnnotationModelListener(markerAnnotationUpdater);
+        }
     }
 
     /**
