@@ -1,15 +1,10 @@
 package com.redhat.ceylon.eclipse.core.model;
 
-import java.io.File;
-import java.util.Properties;
-
 import org.eclipse.jdt.core.IClassFile;
 
-import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
-import com.redhat.ceylon.eclipse.util.CarUtils;
 
 /*
  * Created inside the JDTModelLoader.getCompiledUnit() function if the unit is a ceylon one
@@ -48,13 +43,13 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
             
             String[] splittedPath = getFullPath().split("!");
             if (splittedPath.length == 2) {
-                String carPath = splittedPath[0];
+//                String carPath = splittedPath[0];
                 try {
-                    Properties mapping = CarUtils.retrieveMappingFile(new File(carPath));
-                    String sourceFileRelativePath = mapping.getProperty(splittedPath[1]);
+//                    Properties mapping = CarUtils.retrieveMappingFile(new File(carPath));
+//                    String sourceFileRelativePath = mapping.getProperty(splittedPath[1]);
                     Package pkg = getPackage();
                     if (pkg != null) {
-                        Module module = pkg.getModule();
+//                        Module module = pkg.getModule();
                         // TODO : retrieve the PhasedUnits object related to this module
                         // get the PhasedUnit object through its src-relative path
                         IdePhasedUnit pu = null; // replace by the right value

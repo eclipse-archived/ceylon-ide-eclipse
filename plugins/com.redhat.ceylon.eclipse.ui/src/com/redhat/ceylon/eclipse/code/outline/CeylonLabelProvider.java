@@ -81,7 +81,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image CLASS = imageRegistry.get(CEYLON_CLASS);
     public static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
     public static Image LOCAL_CLASS = imageRegistry.get(CEYLON_LOCAL_CLASS);
-    private static Image LOCAL_INTERFACE = imageRegistry.get(CEYLON_LOCAL_INTERFACE);
+    public static Image LOCAL_INTERFACE = imageRegistry.get(CEYLON_LOCAL_INTERFACE);
     public static Image METHOD = imageRegistry.get(CEYLON_METHOD);
     public static Image ATTRIBUTE = imageRegistry.get(CEYLON_ATTRIBUTE);
     public static Image LOCAL_METHOD = imageRegistry.get(CEYLON_LOCAL_METHOD);
@@ -91,7 +91,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
     public static Image ARCHIVE = imageRegistry.get(CEYLON_ARCHIVE);
     public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
-    private static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
+    public static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
     public static Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
     public static Image CORRECTION = imageRegistry.get(CEYLON_CORRECTION);
     public static Image CHANGE = imageRegistry.get(CEYLON_CHANGE);
