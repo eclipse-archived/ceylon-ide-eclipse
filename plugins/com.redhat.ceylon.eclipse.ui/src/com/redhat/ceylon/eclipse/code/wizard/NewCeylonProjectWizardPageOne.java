@@ -1468,7 +1468,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 
     //TODO: fix copy/paste!
     void addCompilerSettings(Composite parent) {
-        Group group = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        Group group = new Group(parent, SWT.NONE);
         Composite composite = group;
         group.setText("Platform");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
