@@ -99,19 +99,19 @@ public class CeylonTokenColorer  {
         memberAttribute = text(colorRegistry, MEMBERS, SWT.NORMAL);
     }
     
-    public TextAttribute getInterpolationColoring() {
+    public static TextAttribute getInterpolationColoring() {
         return interpAttribute;
     }
     
-    public TextAttribute getMetaLiteralColoring() {
+    public static TextAttribute getMetaLiteralColoring() {
         return typeLiteralAttribute;
     }
     
-    public TextAttribute getMemberColoring() {
+    public static TextAttribute getMemberColoring() {
         return memberAttribute;
     }
     
-    public TextAttribute getColoring(CommonToken token) {
+    public static TextAttribute getColoring(CommonToken token) {
         switch (token.getType()) {
             case CeylonParser.PIDENTIFIER:
                 return packageAttribute;
