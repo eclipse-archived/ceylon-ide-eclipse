@@ -3,6 +3,9 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getColoring;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getInterpolationColoring;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getMemberColoring;
 
 import java.util.Iterator;
 import java.util.List;
@@ -22,25 +25,23 @@ import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.presentation.IPresentationDamager;
 import org.eclipse.jface.text.presentation.IPresentationRepairer;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 class PresentationDamageRepairer implements IPresentationDamager, 
         IPresentationRepairer {
 	
-    private final CeylonSourceViewer sourceViewer;
-    private final CeylonTokenColorer tokenColorer;
+    private final ISourceViewer sourceViewer;
     private volatile List<CommonToken> tokens;
     private final CeylonEditor editor;
     
-	PresentationDamageRepairer(CeylonSourceViewer sourceViewer, CeylonEditor editor) {
+	PresentationDamageRepairer(ISourceViewer sourceViewer, CeylonEditor editor) {
 		this.sourceViewer = sourceViewer;
-		tokenColorer = new CeylonTokenColorer();
 		this.editor = editor;
 	}
 	
@@ -223,14 +224,13 @@ class PresentationDamageRepairer implements IPresentationDamager,
 				if (tt==CeylonParser.STRING_MID ||
 				    tt==CeylonParser.STRING_END) {
                     changeTokenPresentation(presentation, 
-                            tokenColorer.getInterpolationColoring(),
+                            getInterpolationColoring(),
                             startOffset-2,startOffset-1,
                             inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
 				}
 				changeTokenPresentation(presentation, 
 						afterMemberOp && tt==CeylonLexer.LIDENTIFIER ?
-								tokenColorer.getMemberColoring() :
-								tokenColorer.getColoring(token), 
+						        getMemberColoring() : getColoring(token), 
 						startOffset, endOffset,
 						inMetaLiteral || inInterpolated>1 ||
 						    inInterpolated>0
@@ -241,7 +241,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
                 if (tt==CeylonParser.STRING_MID ||
                     tt==CeylonParser.STRING_START) {
                     changeTokenPresentation(presentation, 
-                            tokenColorer.getInterpolationColoring(),
+                            getInterpolationColoring(),
                             endOffset+1,endOffset+2,
                             inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
                 }
