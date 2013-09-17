@@ -42,7 +42,7 @@ public class MainUITests extends AbstractMultiProjectTest {
     private static SWTWorkbenchBot  bot;
     
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws InterruptedException {
         bot= Utils.createBot();
         
         importAndBuild();
@@ -57,16 +57,20 @@ public class MainUITests extends AbstractMultiProjectTest {
         Assert.assertNotNull(editor);
         SWTBotEclipseEditor runEditor = editor.toTextEditor();
         runEditor.show();
-        runEditor.navigateTo(5, 1);
+        runEditor.navigateTo(21, 1);
+        bot.sleep(500);
         runEditor.pressShortcut(Keystrokes.F3);
+        bot.sleep(500);
         editor = bot.editorByTitle("annotations.ceylon");
         Assert.assertNotNull(editor);
         SWTBotEclipseEditor annotationsEditor = editor.toTextEditor();
         annotationsEditor.show();
-        annotationsEditor.navigateTo(2, 9);
-        runEditor.pressShortcut(Keystrokes.F3);
-        editor = bot.editorByTitle("Annotated.ceylon");
-        assertNotNull("Following links should have led to open the Annotated.ceylon file", editor);
+        annotationsEditor.navigateTo(4, 67);
+        bot.sleep(500);
+        annotationsEditor.pressShortcut(Keystrokes.F3);
+        bot.sleep(500);
+        editor = bot.editorByTitle("ClassDeclaration.ceylon");
+        assertNotNull("Following links should have led to open the file 'ClassDeclaration.ceylon'", editor);
     }
 
     protected void openInEditor(String fileName) {

@@ -44,6 +44,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
 import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
 import com.redhat.ceylon.eclipse.ui.test.Utils;
+
 import static com.redhat.ceylon.eclipse.ui.test.Utils.openInEditor;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
@@ -51,7 +52,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
     private static SWTWorkbenchBot  bot;
     
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws InterruptedException {
         bot = Utils.createBot();
         importAndBuild();
     }
@@ -84,9 +85,9 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
             Assert.assertNotNull(editor);
             SWTBotEclipseEditor ceylonFileEditor = editor.toTextEditor();
             ceylonFileEditor.show();
-            assertEquals("Wrong line 33 in run.ceylon : ", ceylonFileEditor.getLines().get(17).trim(), "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();");
+            assertEquals("Wrong line 33 in run.ceylon : ", ceylonFileEditor.getLines().get(33).trim(), "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();");
             String ceylonEditorText = ceylonFileEditor.getText();
-            ceylonFileEditor.insertText(33, 0,"v5.newMethodToTest();\n");
+            ceylonFileEditor.insertText(34, 0,"v5.newMethodToTest();\n");
             
             /*
             ceylonFileEditor.navigateTo(18, 3);
