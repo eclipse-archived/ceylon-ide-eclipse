@@ -75,7 +75,6 @@ import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.ISourceViewerExtension2;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.IVerticalRulerInfo;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -1291,7 +1290,7 @@ public class CeylonEditor extends TextEditor {
         }
     }
     
-    protected SourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
+    protected final SourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
         
         fAnnotationAccess = getAnnotationAccess();
         fOverviewRuler = createOverviewRuler(getSharedColors());
@@ -1367,55 +1366,26 @@ public class CeylonEditor extends TextEditor {
 
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
-        ISourceViewer sourceViewer= getSourceViewer();
-        if (!(sourceViewer instanceof ISourceViewerExtension2)) {
-//            setPreferenceStore(createCombinedPreferenceStore(input));
-            internalDoSetInput(input);
-            return;
+        
+        //the following crazy stuff seems to be needed in
+        //order to get syntax highlighting in structured
+        //compare viewer
+        CeylonSourceViewer sourceViewer = getCeylonSourceViewer();
+        if (sourceViewer!=null) {
+            // uninstall & unregister preference store listener
+            getSourceViewerDecorationSupport(sourceViewer).uninstall();
+            sourceViewer.unconfigure();
+            //setPreferenceStore(createCombinedPreferenceStore(input));
+            // install & register preference store listener
+            sourceViewer.configure(getSourceViewerConfiguration());
+            getSourceViewerDecorationSupport(sourceViewer).install(getPreferenceStore());
         }
-
-        // uninstall & unregister preference store listener
-        getSourceViewerDecorationSupport(sourceViewer).uninstall();
-        ((ISourceViewerExtension2)sourceViewer).unconfigure();
-
-//        setPreferenceStore(createCombinedPreferenceStore(input));
-
-        // install & register preference store listener
-        sourceViewer.configure(getSourceViewerConfiguration());
-        getSourceViewerDecorationSupport(sourceViewer).install(getPreferenceStore());
-
-        internalDoSetInput(input);
-    }
-
-    private void internalDoSetInput(IEditorInput input) throws CoreException {
-//        ISourceViewer sourceViewer= getSourceViewer();
-//        JavaSourceViewer javaSourceViewer= null;
-//        if (sourceViewer instanceof JavaSourceViewer)
-//            javaSourceViewer= (JavaSourceViewer)sourceViewer;
-
-//        IPreferenceStore store= getPreferenceStore();
-//        if (javaSourceViewer != null && isFoldingEnabled() &&(store == null || 
-//                !store.getBoolean(PreferenceConstants.EDITOR_SHOW_SEGMENTS)))
-//            javaSourceViewer.prepareDelayedProjection();
-
+        
         super.doSetInput(input);
-
-//        if (javaSourceViewer != null && javaSourceViewer.getReconciler() == null) {
-//            IReconciler reconciler= getSourceViewerConfiguration().getReconciler(javaSourceViewer);
-//            if (reconciler != null) {
-//                reconciler.install(javaSourceViewer);
-//                javaSourceViewer.setReconciler(reconciler);
-//            }
-//        }
-
-        if (fEncodingSupport != null)
-            fEncodingSupport.reset();
-
-//        setOutlinePageInput(fOutlinePage, input);
-//
-//        if (isShowingOverrideIndicators())
-//            installOverrideIndicator(false);
+        
+        setInsertMode(SMART_INSERT);
     }
+
     /**
      * Add a Model listener to this editor. Any time the underlying AST is recomputed, the listener is notified.
      * 
