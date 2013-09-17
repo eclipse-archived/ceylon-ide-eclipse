@@ -20,7 +20,6 @@ import java.util.Map;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -522,12 +521,10 @@ public class CeylonMergeViewer extends TextMergeViewer {
     }
 
     private class CeylonEditorAdapter extends CeylonEditor {
-        private boolean fInputSet = false;
         private int fTextOrientation;
         private boolean fEditable;
         private CeylonEditorAdapter(int textOrientation) {
             fTextOrientation = textOrientation;
-            // TODO: has to be set here
 //            setPreferenceStore(createChainedPreferenceStore(null));
         }
         private void setEditable(boolean editable) {
@@ -538,18 +535,7 @@ public class CeylonMergeViewer extends TextMergeViewer {
             return CeylonMergeViewer.this.getSite();
         }
         @Override
-        public void createActions() {
-            if (fInputSet) {
-                super.createActions();
-                uninstallQuickAccessAction();
-                // to avoid handler conflicts disable extra actions
-                // we're not handling by CompareHandlerService
-//                getCorrectionCommands().deregisterCommands();
-//                getRefactorActionGroup().dispose();
-//                getGenerateActionGroup().dispose();
-            }
-            // else do nothing, we will create actions later, when input is available
-        }
+        public void createActions() {}
         @Override
         public void createPartControl(Composite composite) {
             SourceViewer sourceViewer = createSourceViewer(composite, new CompositeRuler(), 
@@ -557,12 +543,6 @@ public class CeylonMergeViewer extends TextMergeViewer {
             setSourceViewer(this, sourceViewer);
             createNavigationActions();
             getSelectionProvider().addSelectionChangedListener(getSelectionChangedListener());
-        }
-        @Override
-        protected void doSetInput(IEditorInput input) throws CoreException {
-            super.doSetInput(input);
-            // the editor input has been explicitly set
-            fInputSet = true;
         }
         // called by org.eclipse.ui.texteditor.TextEditorAction.canModifyEditor()
         @Override

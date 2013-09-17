@@ -478,7 +478,10 @@ public class CeylonHover
 	}
 
 	private CeylonBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		Tree.CompilationUnit rn = editor.getParseController().getRootNode();
+		if (editor==null) return null;
+	    CeylonParseController parseController = editor.getParseController();
+	    if (parseController==null) return null;
+        Tree.CompilationUnit rn = parseController.getRootNode();
 		if (rn!=null) {
 			int hoffset = hoverRegion.getOffset();
 			if (selection!=null && 
