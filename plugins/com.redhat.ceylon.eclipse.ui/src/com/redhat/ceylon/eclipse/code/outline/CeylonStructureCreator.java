@@ -29,7 +29,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.viewers.ILabelProvider;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -38,8 +37,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
  * @author rfuhrer
  */
 public class CeylonStructureCreator extends StructureCreator {
-	
-    private final ILabelProvider labelProvider = new CeylonLabelProvider(true);
     
     @Override
     public String getName() {
@@ -89,8 +86,7 @@ public class CeylonStructureCreator extends StructureCreator {
 
     private CeylonDocumentRangeNode buildCompareTree(CeylonOutlineNode outlineNode, 
     		DocumentRangeNode parent, IDocument document) {
-        CeylonDocumentRangeNode compareNode = new CeylonDocumentRangeNode(labelProvider, 
-                parent, outlineNode, document);
+        CeylonDocumentRangeNode compareNode = new CeylonDocumentRangeNode(parent, outlineNode, document);
         parent.addChild(compareNode);
         for (CeylonOutlineNode treeChild: outlineNode.getChildren()) {
             if (!(treeChild.getTreeNode() instanceof PackageNode)) {
@@ -106,7 +102,7 @@ public class CeylonStructureCreator extends StructureCreator {
             IStreamContentAccessor sca = (IStreamContentAccessor) node;
             try {
                 String contents = readString(sca);
-                return ignoreWhitespace ? contents.replaceAll("\\w+", " ") : contents;
+                return ignoreWhitespace ? contents.replaceAll("\\p{javaWhitespace}+", " ") : contents;
             } 
             catch (CoreException ex) {
                 ex.printStackTrace();

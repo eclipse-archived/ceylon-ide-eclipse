@@ -192,7 +192,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return getDecoratedImage(element, getImageKey(element));
     }
     
-    public String getImageKey(Object element) {
+    private static String getImageKey(Object element) {
         element = unwrap(element);
         if (element instanceof IFile || 
             element instanceof IPath) {
@@ -222,14 +222,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return CEYLON_FILE;
     }
 
-    private Object unwrap(Object element) {
+    private static Object unwrap(Object element) {
         if (element instanceof WithProject) {
             element = ((WithProject) element).element;
         }
         return element;
     }
     
-    private static String getImageKeyForNode(Node n) {
+    public static String getImageKeyForNode(Node n) {
         if (n instanceof PackageNode) {
             return CEYLON_PACKAGE;
         }
@@ -416,7 +416,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return includePackage;
     }
         
-    static StyledString getStyledLabelForNode(Node n) {
+    public static StyledString getStyledLabelForNode(Node n) {
         //TODO: it would be much better to render types
         //      from the tree nodes instead of from the
         //      model nodes
