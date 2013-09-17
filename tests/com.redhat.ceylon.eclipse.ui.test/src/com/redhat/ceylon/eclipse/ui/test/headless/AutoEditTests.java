@@ -9,452 +9,748 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Point;
-import org.junit.Before;
 import org.junit.Test;
-
 import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 
 public class AutoEditTests {
-    
-	public AutoEditTests() {}
-	
-	private CeylonAutoEditStrategy strategy;
-	
-	@Before
-	public void beforeTest() {
-	    strategy = new CeylonAutoEditStrategy(null);
-	}
-		    
+ 
     @Test
-    public void testCorrectIndentation() {
+    public void testCorrectIndentation1() {
         checkForCorrectIndentation(
-                "class Test()\n\t\textends Super(){\n\nvoid method(){\n\nfor (x in xs){}\n\n}\n\n}", 
-                "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){\n\t\t\n\t\tfor (x in xs){}\n\t\t\n\t}\n\t\n}");
-
+            "class Test()\n\t\textends Super(){\n\nvoid method(){\n\nfor (x in xs){}\n\n}\n\n}",
+            "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){\n\t\t\n\t\tfor (x in xs){}\n\t\t\n\t}\n\t\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation2() {
         checkForCorrectIndentation(
-                "class Test()\n\t\textends Super(){\n\nvoid method(){}\n\n}",
-                "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){}\n\t\n}");
-        
+            "class Test()\n\t\textends Super(){\n\nvoid method(){}\n\n}",
+            "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){}\n\t\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation3() {
         checkForCorrectIndentation(
-                "class Test()\n\t\textends Super(){\n\n\t\tvoid method(){}\n\t\n}",
-                "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){}\n\t\n}");
-        
+            "class Test()\n\t\textends Super(){\n\n\t\tvoid method(){}\n\t\n}",
+            "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){}\n\t\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation4() {
         checkForCorrectIndentation(
-                "class Test()\n\t\textends Super(){\nvoid method(){}\n}",
-                "class Test()\n\t\textends Super(){\n\tvoid method(){}\n}");
-        
+            "class Test()\n\t\textends Super(){\nvoid method(){}\n}",
+            "class Test()\n\t\textends Super(){\n\tvoid method(){}\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation5() {
         checkForCorrectIndentation(
-                "class Test()\n\t\textends Super(){\nvoid method(){\nfor (x in xs){}\n}\n}",
-                "class Test()\n\t\textends Super(){\n\tvoid method(){\n\t\tfor (x in xs){}\n\t}\n}");
-        
+            "class Test()\n\t\textends Super(){\nvoid method(){\nfor (x in xs){}\n}\n}",
+            "class Test()\n\t\textends Super(){\n\tvoid method(){\n\t\tfor (x in xs){}\n\t}\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation6() {
         checkForCorrectIndentation(
-                "class Test()\n\t\textends Super(){\n\t\tvoid method(){}\n}",
-                "class Test()\n\t\textends Super(){\n\tvoid method(){}\n}");
-        
+            "class Test()\n\t\textends Super(){\n\t\tvoid method(){}\n}",
+            "class Test()\n\t\textends Super(){\n\tvoid method(){}\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation7() {
         checkForCorrectIndentation(
-                "class Test()\nextends Super(){\n\nvoid method(){}\n\n}",
-                "class Test()\nextends Super(){\n\t\n\tvoid method(){}\n\t\n}");
-        
+            "class Test()\nextends Super(){\n\nvoid method(){}\n\n}",
+            "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){}\n\t\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation8() {
         checkForCorrectIndentation(
-                "class Test() extends Super(){\n\nvoid method(){}\n\t\n}",
-                "class Test() extends Super(){\n\t\n\tvoid method(){}\n\t\n}");
-        
+            "class Test() extends Super(){\n\nvoid method(){}\n\t\n}",
+            "class Test() extends Super(){\n\t\n\tvoid method(){}\n\t\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation9() {
         checkForCorrectIndentation(
-                "class Test()\n\t\textends Super()\n{\n\nvoid method(){}\n\t\n}",
-                "class Test()\n\t\textends Super()\n{\n\t\n\tvoid method(){}\n\t\n}");
-        
+            "class Test()\n\t\textends Super()\n{\n\nvoid method(){}\n\t\n}",
+            "class Test()\n\t\textends Super()\n{\n\t\n\tvoid method(){}\n\t\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation10() {
         checkForCorrectIndentation(
-                "\tclass Test()\n\t\textends Super(){\n\nvoid method(){\n}\n\t\n}",
-                "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){\n\t}\n\t\n}");
-        
+            "\tclass Test()\n\t\textends Super(){\n\nvoid method(){\n}\n\t\n}",
+            "class Test()\n\t\textends Super(){\n\t\n\tvoid method(){\n\t}\n\t\n}");
+    }
+    
+    @Test
+    public void testCorrectIndentation11() {
         checkForCorrectIndentation(
-                "void x(){\n\tclass Test()\n\t\textends Super(){\n\nvoid method(){\n}\n\t\n}",
-                "void x(){\n\tclass Test()\n\t\t\textends Super(){\n\t\t\n\t\tvoid method(){\n\t\t}\n\t\t\n\t}");
-
+            "void x(){\n\tclass Test()\n\t\textends Super(){\n\nvoid method(){\n}\n\t\n}",
+            "void x(){\n\tclass Test()\n\t\t\textends Super(){\n\t\t\n\t\tvoid method(){\n\t\t}\n\t\t\n\t}");
+    }
+    
+    @Test
+    public void testCorrectIndentation12() {
         checkForCorrectIndentation(
-                "void x(){\n\tclass Test()\n\t\textends Super(){\nvoid method(){\n}\n}\n",
-                "void x(){\n\tclass Test()\n\t\t\textends Super(){\n\t\tvoid method(){\n\t\t}\n\t}\n");
-        
+            "void x(){\n\tclass Test()\n\t\textends Super(){\nvoid method(){\n}\n}\n",
+            "void x(){\n\tclass Test()\n\t\t\textends Super(){\n\t\tvoid method(){\n\t\t}\n\t}\n");
+    }
+    
+    @Test
+    public void testCorrectIndentation13() {
         checkForCorrectIndentation(
-                "void x(){\n\tclass Test()\n\t\textends Super(){//foo\nvoid method(){//bar\n}//baz\n}\n",
-                "void x(){\n\tclass Test()\n\t\t\textends Super(){//foo\n\t\tvoid method(){//bar\n\t\t}//baz\n\t}\n");
-        
+            "void x(){\n\tclass Test()\n\t\textends Super(){//foo\nvoid method(){//bar\n}//baz\n}\n",
+            "void x(){\n\tclass Test()\n\t\t\textends Super(){//foo\n\t\tvoid method(){//bar\n\t\t}//baz\n\t}\n");
+    }
+    
+    @Test
+    public void testCorrectIndentation14() {
         checkForCorrectIndentation(
-                "doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}",
-                "doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}");
-
+            "doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}",
+            "doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}");
+    }
+    
+    @Test
+    public void testCorrectIndentation15() {
         checkForCorrectIndentation(
-                "\"Hello\n World\n !\"\nvoid hello(){}",
-                "\"Hello\n World\n !\"\nvoid hello(){}");
-        
+            "\"Hello\n World\n !\"\nvoid hello(){}",
+            "\"Hello\n World\n !\"\nvoid hello(){}");
+    }
+    
+    @Test
+    public void testCorrectIndentation16() {
         checkForCorrectIndentation(
-                "\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}",
-                "\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}");
-        
+            "\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}",
+            "\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}");
+    }
+    
+    @Test
+    public void testCorrectIndentation17() {
         checkForCorrectIndentation(
-                "void x(){\n\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}",
-                "void x(){\n\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}");
-        
+            "void x(){\n\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}",
+            "void x(){\n\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}");
+    }
+    
+    @Test
+    public void testCorrectIndentation18() {
         //Note: this test fails, but that is more of a conceptual
         //      problem with how the whole concept of correct
         //      indentation works!
         checkForCorrectIndentation(
-                "\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}",
-                "\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}");
-        
-        checkForCorrectIndentation(
-                "String x()\n=>\"hello\";",
-                "String x()\n=>\"hello\";");
-
-        checkForCorrectIndentation(
-                "String x()\n\t=>\"hello\";",
-                "String x()\n\t\t=>\"hello\";");
-        
-        checkForCorrectIndentation(
-                "String x()\n\t\t=>\"hello\";",
-                "String x()\n\t\t=>\"hello\";");
-
-        checkForCorrectIndentation(
-                "void x(){\n\tString x()\n\t\t\t=>\"hello\";",
-                "void x(){\n\tString x()\n\t\t\t=>\"hello\";");
-        
-        checkForCorrectIndentation(
-                "\tString x()\n\t\t\t=>\"hello\";",
-                "String x()\n\t\t=>\"hello\";");
-        
-        checkForCorrectIndentation(
-                "class X()\nextends Y()",
-                "class X()\nextends Y()");
-
-        checkForCorrectIndentation(
-                "class X()\n\textends Y()",
-                "class X()\n\t\textends Y()");
-        
-        checkForCorrectIndentation(
-                "class X()\n\t\textends Y()",
-                "class X()\n\t\textends Y()");
-
-        checkForCorrectIndentation(
-                "void x(){\n\tclass X()\n\t\t\textends Y()",
-                "void x(){\n\tclass X()\n\t\t\textends Y()");
-        
-        checkForCorrectIndentation(
-                "class X()\nextends Y()\nsatisfies Z",
-                "class X()\nextends Y()\nsatisfies Z");
-
-        checkForCorrectIndentation(
-                "class X()\n\textends Y()\n\tsatisfies Z",
-                "class X()\n\t\textends Y()\n\t\tsatisfies Z");
-        
-        checkForCorrectIndentation(
-                "class X()\n\t\textends Y()\n\t\tsatisfies Z",
-                "class X()\n\t\textends Y()\n\t\tsatisfies Z");
-
-        checkForCorrectIndentation(
-                "void x(){\n\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z",
-                "void x(){\n\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z");
-        
-        checkForCorrectIndentation(
-                "\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z",
-                "class X()\n\t\textends Y()\n\t\tsatisfies Z");
-        
-        checkForCorrectIndentation(
-                "void x(){\n\t//comment\n",
-                "void x(){\n\t//comment\n");
-        
-        checkForCorrectIndentation(
-                "void x(){\n//comment\n",
-                "void x(){\n\t//comment\n");
-        
-        checkForCorrectIndentation(
-                "void x(){\n\t\t//comment\n",
-                "void x(){\n\t//comment\n");
-        
-        checkForCorrectIndentation(
-                "\t//comment\n",
-                "//comment\n");
-        
-        checkForCorrectIndentation(
-                "\t\t//comment\n",
-                "//comment\n");
-        
-        checkForCorrectIndentation(
-                "\t/*\n\tcomment\n\t*/\n",
-                "\t/*\n\tcomment\n\t*/\n");
-        
-        checkForCorrectIndentation(
-                "\t\t/*\n\tcomment\n\t*/\n",
-                "\t\t/*\n\tcomment\n\t*/\n");
+            "\t\"\"\"Hello\n\t   World\n\t   !\"\"\"\n\tvoid hello(){}",
+            "\"\"\"Hello\n   World\n   !\"\"\"\nvoid hello(){}");
     }
     
     @Test
-    public void testNewLine() {
-        checkForNewLine(
-                "x=1;",
-                "x=1;\n");
-
-        checkForNewLine(
-                "x=1; ",
-                "x=1; \n");
-
-        checkForNewLine(
-                "void x(){\n\tx=1;",
-                "void x(){\n\tx=1;\n\t");
-        
-        checkForNewLine(
-                "void x(){\n\tx=1; //foo",
-                "void x(){\n\tx=1; //foo\n\t");
-        
-        checkForNewLine(
-                "void x(){\nvoid y(){\n\t\tx=1; //foo",
-                "void x(){\nvoid y(){\n\t\tx=1; //foo\n\t\t");
-        
-        checkForNewLine(
-                "\tx=1; //foo",
-                "\tx=1; //foo\n\t");
-        
-        checkForNewLine(
-                "\t\tx=1; //foo",
-                "\t\tx=1; //foo\n\t\t");
-        
-        checkForNewLine(
-                "Integer x {",
-                "Integer x {\n\t\n}");
-
-        checkForNewLine(
-                "Integer x { ",
-                "Integer x { \n\t\n}");
-
-        checkForNewLine(
-                "\tInteger x {",
-                "\tInteger x {\n\t\t\n\t}");
-
-        checkForNewLine(
-                "\tInteger x { //foo",
-                "\tInteger x { //foo\n\t\t\n\t}");
-
-        checkForNewLine(
-                "\t\tInteger x { //foo",
-                "\t\tInteger x { //foo\n\t\t\t\n\t\t}");
-
-        checkForNewLine(
-                "//hello",
-                "//hello\n");
-
-        checkForNewLine(
-                "//hello ",
-                "//hello \n");
-
-        checkForNewLine(
-                "\t//hello",
-                "\t//hello\n\t");
-        
-        checkForNewLine(
-                "\t//hello ",
-                "\t//hello \n\t");
-        
-        checkForNewLine(
-                "\t\t//hello",
-                "\t\t//hello\n\t\t");
-        
-        checkForNewLine(
-                "//hello\n",
-                "//hello\n\n");
-
-        checkForNewLine(
-                "\t//hello\n",
-                "\t//hello\n\n\t");
-
-        checkForNewLine(
-                "\t//hello\n\t",
-                "\t//hello\n\t\n\t");
-
-        checkForNewLine(
-                "//hello \n ",
-                "//hello \n \n");
-
-        checkForNewLine(
-                "//hello \n\t",
-                "//hello \n\t\n");
-
-        checkForNewLine(
-                "\t//hello \n\t",
-                "\t//hello \n\t\n\t");
-
-        checkForNewLine(
-                "\t//hello\n\t",
-                "\t//hello\n\t\n\t");
-        
-        checkForNewLine(
-                "\t//hello \n\t",
-                "\t//hello \n\t\n\t");
-        
-        checkForNewLine(
-                "/*hello",
-                "/*hello\n\n*/");
-        
-        checkForNewLine(
-                "\t/*hello",
-                "\t/*hello\n\t\n\t*/");
-        
-        checkForNewLine(
-                "\t/*\n\thello",
-                "\t/*\n\thello\n\t");
-        
-        checkForNewLine(
-                "void x() {}",
-                "void x() {}\n");
-
-        checkForNewLine(
-                "void x() {} ",
-                "void x() {} \n");
-
-        checkForNewLine(
-                "\tvoid x() {}",
-                "\tvoid x() {}\n\t");
-        
-        checkForNewLine(
-                "\tvoid x() {} //foo",
-                "\tvoid x() {} //foo\n\t");
-        
-        checkForNewLine(
-                "x=1;\n",
-                "x=1;\n\n");
-
-        checkForNewLine(
-                "x=1; \n ",
-                "x=1; \n \n "); //do we really want the space at the end here?
-
-        checkForNewLine(
-                "\tx=1;\n\t",
-                "\tx=1;\n\t\n\t");
-        
-        checkForNewLine(
-                "\tx=1; //foo\n\t",
-                "\tx=1; //foo\n\t\n\t");
-        
-        checkForNewLine(
-                "\t\tx=1; //foo\n\t\t",
-                "\t\tx=1; //foo\n\t\t\n\t\t");
-        
-        checkForNewLine(
-                "Integer x {\n\t",
-                "Integer x {\n\t\n\t");
-
-        checkForNewLine(
-                "Integer x { \n\t",
-                "Integer x { \n\t\n\t");
-
-        checkForNewLine(
-                "\tInteger x {\n\t\t",
-                "\tInteger x {\n\t\t\n\t\t");
-
-        checkForNewLine(
-                "\tInteger x { //foo\n\t\t",
-                "\tInteger x { //foo\n\t\t\n\t\t");
-
-        checkForNewLine(
-                "\t\tInteger x { //foo\n\t\t\t",
-                "\t\tInteger x { //foo\n\t\t\t\n\t\t\t");
-
-        checkForNewLine(
-                "void x() {}\n",
-                "void x() {}\n\n");
-
-        checkForNewLine(
-                "void x() {} \n ",
-                "void x() {} \n \n "); //do we really want the space
-
-        checkForNewLine(
-                "\tvoid x() {}\n\t",
-                "\tvoid x() {}\n\t\n\t");
-        
-        checkForNewLine(
-                "\tvoid x() {} //foo\n\t",
-                "\tvoid x() {} //foo\n\t\n\t");
-        
-        checkForNewLine(
-                "String greeting = \"hello",
-                "String greeting = \"hello\n                   ");
-        
-        checkForNewLine(
-                "\tString greeting = \"hello",
-                "\tString greeting = \"hello\n\t                   ");
-        
-        checkForNewLine(
-                "String greeting = \"hello\n                   world",
-                "String greeting = \"hello\n                   world\n                   ");
-        
-        checkForNewLine(
-                "\tString greeting = \"hello\n\t                   world",
-                "\tString greeting = \"hello\n\t                   world\n\t                   ");
-        
-        checkForNewLine(
-                "String greeting = \"\"\"hello",
-                "String greeting = \"\"\"hello\n                     ");
-        
-        checkForNewLine(
-                "\tString greeting = \"\"\"hello",
-                "\tString greeting = \"\"\"hello\n\t                     ");
-        
-        checkForNewLine(
-                "String greeting = \"\"\"hello\n                     world",
-                "String greeting = \"\"\"hello\n                     world\n                     ");
-        
-        checkForNewLine(
-                "\tString greeting = \"\"\"hello\n\t                     world",
-                "\tString greeting = \"\"\"hello\n\t                     world\n\t                     ");
-        
-        checkForNewLine(
-                "String x()\n=>\"hello\" +",
-                "String x()\n=>\"hello\" +\n");
-
-        checkForNewLine(
-                "String x()\n\t=>\"hello\" +",
-                "String x()\n\t=>\"hello\" +\n\t");
-        
-        checkForNewLine(
-                "String x()\n\t\t=>\"hello\" +",
-                "String x()\n\t\t=>\"hello\" +\n\t\t");
-
-        checkForNewLine(
-                "\tString x()\n\t\t\t=>\"hello\" +",
-                "\tString x()\n\t\t\t=>\"hello\" +\n\t\t\t");
-
-        checkForNewLine(
-                "String x()\n=>\"hello\";",
-                "String x()\n=>\"hello\";\n");
-
-        checkForNewLine(
-                "String x()\n\t=>\"hello\";",
-                "String x()\n\t=>\"hello\";\n");
-        
-        checkForNewLine(
-                "String x()\n\t\t=>\"hello\";",
-                "String x()\n\t\t=>\"hello\";\n");
-
-        checkForNewLine(
-                "\tString x()\n\t\t\t=>\"hello\";",
-                "\tString x()\n\t\t\t=>\"hello\";\n\t");
+    public void testCorrectIndentation19() {
+        checkForCorrectIndentation(
+            "String x()\n=>\"hello\";",
+            "String x()\n\t\t=>\"hello\";");
     }
     
     @Test
-    public void testClosingBrace() {
+    public void testCorrectIndentation20() {
+        checkForCorrectIndentation(
+            "String x()\n\t=>\"hello\";",
+            "String x()\n\t\t=>\"hello\";");
+    }
+    
+    @Test
+    public void testCorrectIndentation21() {
+        checkForCorrectIndentation(
+            "String x()\n\t\t=>\"hello\";",
+            "String x()\n\t\t=>\"hello\";");
+    }
+    
+    @Test
+    public void testCorrectIndentation22() {
+        checkForCorrectIndentation(
+            "void x(){\n\tString x()\n\t\t\t=>\"hello\";",
+            "void x(){\n\tString x()\n\t\t\t=>\"hello\";");
+    }
+    
+    @Test
+    public void testCorrectIndentation23() {
+        checkForCorrectIndentation(
+            "\tString x()\n\t\t\t=>\"hello\";",
+            "String x()\n\t\t=>\"hello\";");
+    }
+    
+    @Test
+    public void testCorrectIndentation24() {
+        checkForCorrectIndentation(
+            "class X()\nextends Y()",
+            "class X()\n\t\textends Y()");
+    }
+    
+    @Test
+    public void testCorrectIndentation25() {
+        checkForCorrectIndentation(
+            "class X()\n\textends Y()",
+            "class X()\n\t\textends Y()");
+    }
+    
+    @Test
+    public void testCorrectIndentation26() {
+        checkForCorrectIndentation(
+            "class X()\n\t\textends Y()",
+            "class X()\n\t\textends Y()");
+    }
+    
+    @Test
+    public void testCorrectIndentation27() {
+        checkForCorrectIndentation(
+            "void x(){\n\tclass X()\n\t\t\textends Y()",
+            "void x(){\n\tclass X()\n\t\t\textends Y()");
+    }
+    
+    @Test
+    public void testCorrectIndentation28() {
+        checkForCorrectIndentation(
+            "class X()\nextends Y()\nsatisfies Z",
+            "class X()\n\t\textends Y()\n\t\tsatisfies Z");
+    }
+    
+    @Test
+    public void testCorrectIndentation29() {
+        checkForCorrectIndentation(
+            "class X()\n\textends Y()\n\tsatisfies Z",
+            "class X()\n\t\textends Y()\n\t\tsatisfies Z");
+    }
+    
+    @Test
+    public void testCorrectIndentation30() {
+        checkForCorrectIndentation(
+            "class X()\n\t\textends Y()\n\t\tsatisfies Z",
+            "class X()\n\t\textends Y()\n\t\tsatisfies Z");
+    }
+    
+    @Test
+    public void testCorrectIndentation31() {
+        checkForCorrectIndentation(
+            "void x(){\n\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z",
+            "void x(){\n\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z");
+    }
+    
+    @Test
+    public void testCorrectIndentation32() {
+        checkForCorrectIndentation(
+            "\tclass X()\n\t\t\textends Y()\n\t\t\tsatisfies Z",
+            "class X()\n\t\textends Y()\n\t\tsatisfies Z");
+    }
+    
+    @Test
+    public void testCorrectIndentation33() {
+        checkForCorrectIndentation(
+            "void x(){\n\t//comment\n",
+            "void x(){\n\t//comment\n");
+    }
+    
+    @Test
+    public void testCorrectIndentation34() {
+        checkForCorrectIndentation(
+            "void x(){\n//comment\n",
+            "void x(){\n\t//comment\n");
+    }
+    
+    @Test
+    public void testCorrectIndentation35() {
+        checkForCorrectIndentation(
+            "void x(){\n\t\t//comment\n",
+            "void x(){\n\t//comment\n");
+    }
+    
+    @Test
+    public void testCorrectIndentation36() {
+        checkForCorrectIndentation(
+            "\t//comment\n",
+            "//comment\n");
+    }
+    
+    @Test
+    public void testCorrectIndentation37() {
+        checkForCorrectIndentation(
+            "\t\t//comment\n",
+            "//comment\n");
+    }
+    
+    @Test
+    public void testCorrectIndentation38() {
+        checkForCorrectIndentation(
+            "\t/*\n\tcomment\n\t*/\n",
+            "\t/*\n\tcomment\n\t*/\n");
+    }
+    
+    @Test
+    public void testCorrectIndentation39() {
+        checkForCorrectIndentation(
+            "\t\t/*\n\tcomment\n\t*/\n",
+            "\t\t/*\n\tcomment\n\t*/\n");
+    }
+    
+    @Test
+    public void testNewLine1() {
+        checkForNewLine(
+            "x=1;",
+            "x=1;\n");
+    }
+    
+    @Test
+    public void testNewLine2() {
+        checkForNewLine(
+            "x=1; ",
+            "x=1; \n");
+    }
+    
+    @Test
+    public void testNewLine3() {
+        checkForNewLine(
+            "void x(){\n\tx=1;",
+            "void x(){\n\tx=1;\n\t");
+    }
+    
+    @Test
+    public void testNewLine4() {
+        checkForNewLine(
+            "void x(){\n\tx=1; //foo",
+            "void x(){\n\tx=1; //foo\n\t");
+    }
+    
+    @Test
+    public void testNewLine5() {
+        checkForNewLine(
+            "void x(){\nvoid y(){\n\t\tx=1; //foo",
+            "void x(){\nvoid y(){\n\t\tx=1; //foo\n\t\t");
+    }
+    
+    @Test
+    public void testNewLine6() {
+        checkForNewLine(
+            "\tx=1; //foo",
+            "\tx=1; //foo\n\t");
+    }
+    
+    @Test
+    public void testNewLine7() {
+        checkForNewLine(
+            "\t\tx=1; //foo",
+            "\t\tx=1; //foo\n\t\t");
+    }
+    
+    @Test
+    public void testNewLine8() {
+        checkForNewLine(
+            "Integer x {",
+            "Integer x {\n\t\n}");
+    }
+    
+    @Test
+    public void testNewLine9() {
+        checkForNewLine(
+            "Integer x { ",
+            "Integer x { \n\t\n}");
+    }
+    
+    @Test
+    public void testNewLine10() {
+        checkForNewLine(
+            "\tInteger x {",
+            "\tInteger x {\n\t\t\n\t}");
+    }
+    
+    @Test
+    public void testNewLine11() {
+        checkForNewLine(
+            "\tInteger x { //foo",
+            "\tInteger x { //foo\n\t\t\n\t}");
+    }
+    
+    @Test
+    public void testNewLine12() {
+        checkForNewLine(
+            "\t\tInteger x { //foo",
+            "\t\tInteger x { //foo\n\t\t\t\n\t\t}");
+    }
+    
+    @Test
+    public void testNewLine13() {
+        checkForNewLine(
+            "//hello",
+            "//hello\n");
+    }
+    
+    @Test
+    public void testNewLine14() {
+        checkForNewLine(
+            "//hello ",
+            "//hello \n");
+    }
+    
+    @Test
+    public void testNewLine15() {
+        checkForNewLine(
+            "\t//hello",
+            "\t//hello\n\t");
+    }
+    
+    @Test
+    public void testNewLine16() {
+        checkForNewLine(
+            "\t//hello ",
+            "\t//hello \n\t");
+    }
+    
+    @Test
+    public void testNewLine17() {
+        checkForNewLine(
+            "\t\t//hello",
+            "\t\t//hello\n\t\t");
+    }
+    
+    @Test
+    public void testNewLine18() {
+        checkForNewLine(
+            "//hello\n",
+            "//hello\n\n");
+    }
+    
+    @Test
+    public void testNewLine19() {
+        checkForNewLine(
+            "\t//hello\n",
+            "\t//hello\n\n\t");
+    }
+    
+    @Test
+    public void testNewLine20() {
+        checkForNewLine(
+            "\t//hello\n\t",
+            "\t//hello\n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine21() {
+        checkForNewLine(
+            "//hello \n ",
+            "//hello \n \n");
+    }
+    
+    @Test
+    public void testNewLine22() {
+        checkForNewLine(
+            "//hello \n\t",
+            "//hello \n\t\n");
+    }
+    
+    @Test
+    public void testNewLine23() {
+        checkForNewLine(
+            "\t//hello \n\t",
+            "\t//hello \n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine24() {
+        checkForNewLine(
+            "\t//hello\n\t",
+            "\t//hello\n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine25() {
+        checkForNewLine(
+            "\t//hello \n\t",
+            "\t//hello \n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine26() {
+        checkForNewLine(
+            "/*hello",
+            "/*hello\n\n*/");
+    }
+    
+    @Test
+    public void testNewLine27() {
+        checkForNewLine(
+            "\t/*hello",
+            "\t/*hello\n\t\n\t*/");
+    }
+    
+    @Test
+    public void testNewLine28() {
+        checkForNewLine(
+            "\t/*\n\thello",
+            "\t/*\n\thello\n\t");
+    }
+    
+    @Test
+    public void testNewLine29() {
+        checkForNewLine(
+            "void x() {}",
+            "void x() {}\n");
+    }
+    
+    @Test
+    public void testNewLine30() {
+        checkForNewLine(
+            "void x() {} ",
+            "void x() {} \n");
+    }
+    
+    @Test
+    public void testNewLine31() {
+        checkForNewLine(
+            "\tvoid x() {}",
+            "\tvoid x() {}\n\t");
+    }
+    
+    @Test
+    public void testNewLine32() {
+        checkForNewLine(
+            "\tvoid x() {} //foo",
+            "\tvoid x() {} //foo\n\t");
+    }
+    
+    @Test
+    public void testNewLine33() {
+        checkForNewLine(
+            "x=1;\n",
+            "x=1;\n\n");
+    }
+    
+    @Test
+    public void testNewLine34() {
+        checkForNewLine(
+            "x=1; \n ",
+            "x=1; \n \n "); //do we really want the space at the end here?
+    }
+    
+    @Test
+    public void testNewLine35() {
+        checkForNewLine(
+            "\tx=1;\n\t",
+            "\tx=1;\n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine36() {
+        checkForNewLine(
+            "\tx=1; //foo\n\t",
+            "\tx=1; //foo\n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine37() {
+        checkForNewLine(
+            "\t\tx=1; //foo\n\t\t",
+            "\t\tx=1; //foo\n\t\t\n\t\t");
+    }
+    
+    @Test
+    public void testNewLine38() {
+        checkForNewLine(
+            "Integer x {\n\t",
+            "Integer x {\n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine39() {
+        checkForNewLine(
+            "Integer x { \n\t",
+            "Integer x { \n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine40() {
+        checkForNewLine(
+            "\tInteger x {\n\t\t",
+            "\tInteger x {\n\t\t\n\t\t");
+    }
+    
+    @Test
+    public void testNewLine41() {
+        checkForNewLine(
+            "\tInteger x { //foo\n\t\t",
+            "\tInteger x { //foo\n\t\t\n\t\t");
+    }
+    
+    @Test
+    public void testNewLine42() {
+        checkForNewLine(
+            "\t\tInteger x { //foo\n\t\t\t",
+            "\t\tInteger x { //foo\n\t\t\t\n\t\t\t");
+    }
+    
+    @Test
+    public void testNewLine43() {
+        checkForNewLine(
+            "void x() {}\n",
+            "void x() {}\n\n");
+    }
+    
+    @Test
+    public void testNewLine44() {
+        checkForNewLine(
+            "void x() {} \n ",
+            "void x() {} \n \n "); //do we really want the space
+    }
+    
+    @Test
+    public void testNewLine45() {
+        checkForNewLine(
+            "\tvoid x() {}\n\t",
+            "\tvoid x() {}\n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine46() {
+        checkForNewLine(
+            "\tvoid x() {} //foo\n\t",
+            "\tvoid x() {} //foo\n\t\n\t");
+    }
+    
+    @Test
+    public void testNewLine47() {
+        checkForNewLine(
+            "String greeting = \"hello",
+            "String greeting = \"hello\n                   ");
+    }
+    
+    @Test
+    public void testNewLine48() {
+        checkForNewLine(
+            "\tString greeting = \"hello",
+            "\tString greeting = \"hello\n\t                   ");
+    }
+    
+    @Test
+    public void testNewLine49() {
+        checkForNewLine(
+            "String greeting = \"hello\n                   world",
+            "String greeting = \"hello\n                   world\n                   ");
+    }
+    
+    @Test
+    public void testNewLine50() {
+        checkForNewLine(
+            "\tString greeting = \"hello\n\t                   world",
+            "\tString greeting = \"hello\n\t                   world\n\t                   ");
+    }
+    
+    @Test
+    public void testNewLine51() {
+        checkForNewLine(
+            "String greeting = \"\"\"hello",
+            "String greeting = \"\"\"hello\n                     ");
+    }
+    
+    @Test
+    public void testNewLine52() {
+        checkForNewLine(
+            "\tString greeting = \"\"\"hello",
+            "\tString greeting = \"\"\"hello\n\t                     ");
+    }
+    
+    @Test
+    public void testNewLine53() {
+        checkForNewLine(
+            "String greeting = \"\"\"hello\n                     world",
+            "String greeting = \"\"\"hello\n                     world\n                     ");
+    }
+    
+    @Test
+    public void testNewLine54() {
+        checkForNewLine(
+            "\tString greeting = \"\"\"hello\n\t                     world",
+            "\tString greeting = \"\"\"hello\n\t                     world\n\t                     ");
+    }
+    
+    @Test
+    public void testNewLine55() {
+        checkForNewLine(
+            "String x()\n=>\"hello\" +",
+            "String x()\n=>\"hello\" +\n\t\t");
+    }
+    
+    @Test
+    public void testNewLine56() {
+        //What should this one really do? Not well-defined
+        checkForNewLine(
+            "String x()\n\t=>\"hello\" +",
+            "String x()\n\t=>\"hello\" +\n\t\t");
+    }
+    
+    @Test
+    public void testNewLine57() {
+        checkForNewLine(
+            "String x()\n\t\t=>\"hello\" +",
+            "String x()\n\t\t=>\"hello\" +\n\t\t");
+    }
+    
+    @Test
+    public void testNewLine58() {
+        checkForNewLine(
+            "\tString x()\n\t\t\t=>\"hello\" +",
+            "\tString x()\n\t\t\t=>\"hello\" +\n\t\t\t");
+    }
+    
+    @Test
+    public void testNewLine59() {
+        checkForNewLine(
+            "String x()\n=>\"hello\";",
+            "String x()\n=>\"hello\";\n");
+    }
+    
+    @Test
+    public void testNewLine60() {
+        checkForNewLine(
+            "String x()\n\t=>\"hello\";",
+            "String x()\n\t=>\"hello\";\n");
+    }
+    
+    @Test
+    public void testNewLine61() {
+        checkForNewLine(
+            "String x()\n\t\t=>\"hello\";",
+            "String x()\n\t\t=>\"hello\";\n");
+    }
+    
+    @Test
+    public void testNewLine62() {
+        checkForNewLine(
+            "\tString x()\n\t\t\t=>\"hello\";",
+            "\tString x()\n\t\t\t=>\"hello\";\n\t");
+    }
+    
+    @Test
+    public void testClosingBrace1() {
         checkForClosingBrace(
-                "void x() {\n\t",
-                "void x() {\n}");
+            "void x() {\n\t",
+            "void x() {\n}");
+    }
 
+    @Test
+    public void testClosingBrace2() {
         checkForClosingBrace(
-                "\tvoid x() {\n\t\t",
-                "\tvoid x() {\n\t}");
+            "\tvoid x() {\n\t\t",
+            "\tvoid x() {\n\t}");
+    }
 
+    @Test
+    public void testClosingBrace3() {
         checkForClosingBrace(
-                "void x() {\n\tprint(\"hello\");\n\t",
-                "void x() {\n\tprint(\"hello\");\n}");
+            "void x() {\n\tprint(\"hello\");\n\t",
+            "void x() {\n\tprint(\"hello\");\n}");
+    }
 
+    @Test
+    public void testClosingBrace4() {
         checkForClosingBrace(
-                "void x() {\n\tprint(\"hello\");\n\t//bye\n\t",
-                "void x() {\n\tprint(\"hello\");\n\t//bye\n}");
+            "void x() {\n\tprint(\"hello\");\n\t//bye\n\t",
+            "void x() {\n\tprint(\"hello\");\n\t//bye\n}");
     }
     
     private void doNewline(IDocument doc) {
@@ -465,7 +761,7 @@ public class AutoEditTests {
             cmd.text= Character.toString('\n');
             cmd.doit= true;
             cmd.shiftsCaret= true;
-            strategy.customizeDocumentCommand(doc, cmd);
+            new CeylonAutoEditStrategy(null).customizeDocumentCommand(doc, cmd);
             doc.replace(cmd.offset, cmd.length, cmd.text);
         } catch (BadLocationException e) {
             System.err.println("Correct Indentation command failed " + e.getMessage());
@@ -480,7 +776,7 @@ public class AutoEditTests {
             cmd.text= Character.toString('}');
             cmd.doit= true;
             cmd.shiftsCaret= true;
-            strategy.customizeDocumentCommand(doc, cmd);
+            new CeylonAutoEditStrategy(null).customizeDocumentCommand(doc, cmd);
             doc.replace(cmd.offset, cmd.length, cmd.text);
         } catch (BadLocationException e) {
             System.err.println("Correct Indentation command failed " + e.getMessage());
@@ -490,19 +786,19 @@ public class AutoEditTests {
     private void checkForCorrectIndentation(String before, String expectedIndentation) {
         Document doc = new Document(before);
         doCorrectIndentation(doc);
-        assertEquals(doc.get(), expectedIndentation);
+        assertEquals(expectedIndentation, doc.get());
     }
 
     private void checkForNewLine(String before, String expectedIndentation) {
         Document doc = new Document(before);
         doNewline(doc);
-        assertEquals(doc.get(), expectedIndentation);
+        assertEquals(expectedIndentation, doc.get());
     }
 
     private void checkForClosingBrace(String before, String expectedIndentation) {
         Document doc = new Document(before);
         doClosingBrace(doc);
-        assertEquals(doc.get(), expectedIndentation);
+        assertEquals(expectedIndentation, doc.get());
     }
 
     void doCorrectIndentation(IDocument doc) {
@@ -532,7 +828,7 @@ public class AutoEditTests {
                 cmd.doit= true;
                 cmd.shiftsCaret= false;
 //              boolean saveMode= fAutoEditStrategy.setFixMode(true);
-                strategy.customizeDocumentCommand(doc, cmd);
+                new CeylonAutoEditStrategy(null).customizeDocumentCommand(doc, cmd);
 //              fAutoEditStrategy.setFixMode(saveMode);
                 doc.replace(cmd.offset, cmd.length, cmd.text);
             }
