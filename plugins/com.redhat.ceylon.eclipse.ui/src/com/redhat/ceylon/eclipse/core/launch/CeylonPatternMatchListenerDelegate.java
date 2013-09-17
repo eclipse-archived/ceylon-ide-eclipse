@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.core.launch;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static java.lang.Integer.parseInt;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-import static org.eclipse.debug.internal.ui.DebugUIPlugin.getActiveWorkbenchWindow;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -18,6 +17,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IHyperlink;
 import org.eclipse.ui.console.IPatternMatchListenerDelegate;
 import org.eclipse.ui.console.PatternMatchEvent;
@@ -88,7 +88,8 @@ public class CeylonPatternMatchListenerDelegate implements
 						}
 		            }
 		            IEditorInput input = new FileEditorInput(file);
-		            IWorkbenchPage activePage = getActiveWorkbenchWindow().getActivePage();
+		            IWorkbenchPage activePage = PlatformUI.getWorkbench()
+		                    .getActiveWorkbenchWindow().getActivePage();
 		            try {
 		            	CeylonEditor editor = (CeylonEditor) activePage.openEditor(input, EDITOR_ID, true);
 		            	IRegion li = editor.getCeylonSourceViewer().getDocument()

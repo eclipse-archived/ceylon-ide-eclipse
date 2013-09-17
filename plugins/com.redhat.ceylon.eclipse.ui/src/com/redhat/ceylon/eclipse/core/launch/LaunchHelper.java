@@ -314,19 +314,19 @@ public class LaunchHelper {
 				|| module.isDefault();
 	}
 
-	/**
-	 * May come in handy for uniting laucnh types
-	 */
-	@Deprecated
-	private static List<Declaration> getRunnableDeclarations(PhasedUnit phasedUnit) {
-    	List<Declaration> puDecls = new LinkedList<Declaration>();
-    	for (Declaration decl : phasedUnit.getDeclarations()) {
-    		if (isRunnable(decl)) {
-    			puDecls.add(decl);
-    		}
-    	}
-    	return puDecls;
-	}
+//	/**
+//	 * May come in handy for uniting laucnh types
+//	 */
+//	@Deprecated
+//	private static List<Declaration> getRunnableDeclarations(PhasedUnit phasedUnit) {
+//    	List<Declaration> puDecls = new LinkedList<Declaration>();
+//    	for (Declaration decl : phasedUnit.getDeclarations()) {
+//    		if (isRunnable(decl)) {
+//    			puDecls.add(decl);
+//    		}
+//    	}
+//    	return puDecls;
+//	}
 
 	static String getRunnableName(Declaration d) {
 		return d.getQualifiedNameString().replace("::", ".");
