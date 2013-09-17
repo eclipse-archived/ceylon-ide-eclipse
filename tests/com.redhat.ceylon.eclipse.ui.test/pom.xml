@@ -62,6 +62,37 @@
 		              </includes>
 		            </configuration>
 		        </execution>
+                <execution>                 
+                    <id>BuildLifecycleFirstStep</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>false</inherited>
+                    <configuration>
+                      <useUIHarness>true</useUIHarness>
+                      <useUIThread>false</useUIThread>
+                      <includes>
+                          <include>com/redhat/ceylon/eclipse/ui/test/buildlifecycle/BuildLifecycleTestFirstStart.class</include>
+                      </includes>
+                    </configuration>
+                </execution>
+                <execution>                 
+                    <id>BuildLifecycleSecondStep</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>false</inherited>
+                    <configuration>
+                      <useUIHarness>true</useUIHarness>
+                      <useUIThread>false</useUIThread>
+                      <deleteOsgiDataDirectory>false</deleteOsgiDataDirectory>                      
+                      <includes>
+                          <include>com/redhat/ceylon/eclipse/ui/test/buildlifecycle/BuildLifecycleTestSecondStart.class</include>
+                      </includes>
+                    </configuration>
+                </execution>
 	        </executions>
           </plugin>
 		  <plugin>
