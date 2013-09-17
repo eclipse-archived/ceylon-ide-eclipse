@@ -17,6 +17,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -351,6 +352,15 @@ public class Utils {
         public void setPreviousBuilds(List<CeylonBuildSummary> previousBuilds) {
             this.previousBuilds = previousBuilds;
         }
+    }
+
+    public static CeylonBuildSummary buildProject(IProject project) throws CoreException,
+    InterruptedException {
+        CeylonBuildSummary summary = new CeylonBuildSummary(project);
+        summary.install();
+        project.build(IncrementalProjectBuilder.FULL_BUILD, null);
+        summary.waitForBuildEnd(60);
+        return summary;
     }
     
 
