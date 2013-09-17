@@ -10,7 +10,6 @@ import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.internal.text.html.HTMLTextPresenter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
@@ -40,6 +39,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -49,6 +49,7 @@ import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
 import com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.CeylonHover;
+import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
 import com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyContentProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
@@ -65,14 +66,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 	
     protected final CeylonEditor editor;
     private final CompletionProcessor processor;
-    private final IPreferenceStore prefStore;
-
-    public CeylonSourceViewerConfiguration(IPreferenceStore prefStore, 
-    		CeylonEditor editor) {
-        super(prefStore);
+    
+    public CeylonSourceViewerConfiguration(CeylonEditor editor) {
+        super(EditorsUI.getPreferenceStore());
         this.editor = editor;
         processor = new CompletionProcessor(editor);
-        this.prefStore = prefStore;
     }
     
     public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
@@ -124,6 +122,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String CLOSE_QUOTES = "closeQuotes";
     
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+        if (editor==null) return null;
         final ContentAssistant ca = new ContentAssistant();
         ca.addCompletionListener(new ICompletionListener() {
 			@Override
@@ -131,7 +130,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 					boolean smartToggle) {}
 			@Override
 			public void assistSessionStarted(ContentAssistEvent event) {
-				editor.pauseBackgroundParsing();
+				if (editor!=null) {
+				    editor.pauseBackgroundParsing();
+				}
 				processor.sessionStarted();
 				/*try {
 					editor.getSite().getWorkbenchWindow().run(true, true, new Warmup());
@@ -140,25 +141,27 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 			}			
 			@Override
 			public void assistSessionEnded(ContentAssistEvent event) {
-				editor.unpauseBackgroundParsing();
-				editor.scheduleParsing();
+			    if (editor!=null) {
+			        editor.unpauseBackgroundParsing();
+			        editor.scheduleParsing();
+			    }
 			}
 		});
-        prefStore.setDefault(AUTO_INSERT, true);
-        prefStore.setDefault(AUTO_ACTIVATION, true);
-        prefStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
-        prefStore.setDefault(AUTO_ACTIVATION_CHARS, ".");
-        prefStore.setDefault(LINKED_MODE, true);
-		prefStore.setDefault(LINKED_MODE_RENAME, true);
-        prefStore.setDefault(PASTE_CORRECT_INDENTATION, true);
-        prefStore.setDefault(CLOSE_PARENS, true);
-        prefStore.setDefault(CLOSE_BRACKETS, true);
-        prefStore.setDefault(CLOSE_ANGLES, true);
-        prefStore.setDefault(CLOSE_BRACES, true);
-        prefStore.setDefault(CLOSE_QUOTES, true);
-        prefStore.setDefault(CLOSE_BACKTICKS, true);
+        getPreferenceStore().setDefault(AUTO_INSERT, true);
+        getPreferenceStore().setDefault(AUTO_ACTIVATION, true);
+        getPreferenceStore().setDefault(AUTO_ACTIVATION_DELAY, 500);
+        getPreferenceStore().setDefault(AUTO_ACTIVATION_CHARS, ".");
+        getPreferenceStore().setDefault(LINKED_MODE, true);
+		getPreferenceStore().setDefault(LINKED_MODE_RENAME, true);
+        getPreferenceStore().setDefault(PASTE_CORRECT_INDENTATION, true);
+        getPreferenceStore().setDefault(CLOSE_PARENS, true);
+        getPreferenceStore().setDefault(CLOSE_BRACKETS, true);
+        getPreferenceStore().setDefault(CLOSE_ANGLES, true);
+        getPreferenceStore().setDefault(CLOSE_BRACES, true);
+        getPreferenceStore().setDefault(CLOSE_QUOTES, true);
+        getPreferenceStore().setDefault(CLOSE_BACKTICKS, true);
 		configCompletionPopup(ca);
-		prefStore.addPropertyChangeListener(new IPropertyChangeListener() {
+		getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 configCompletionPopup(ca);
@@ -179,13 +182,14 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
     private void configCompletionPopup(ContentAssistant ca) {
         ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
-        ca.enableAutoInsert(prefStore.getBoolean(AUTO_INSERT));
-        ca.enableAutoActivation(prefStore.getBoolean(AUTO_ACTIVATION));
-        ca.setAutoActivationDelay(prefStore.getInt(AUTO_ACTIVATION_DELAY));
+        ca.enableAutoInsert(getPreferenceStore().getBoolean(AUTO_INSERT));
+        ca.enableAutoActivation(getPreferenceStore().getBoolean(AUTO_ACTIVATION));
+        ca.setAutoActivationDelay(getPreferenceStore().getInt(AUTO_ACTIVATION_DELAY));
     }
 
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+        if (editor==null) return null;
         CeylonQuickFixController quickAssist = new CeylonQuickFixController(editor);
         quickAssist.enableColoredLabels(true);
 		return quickAssist;
@@ -200,7 +204,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        return new IAutoEditStrategy[] { new CeylonAutoEditStrategy(editor) };
+        return new IAutoEditStrategy[] { new CeylonAutoEditStrategy() };
     }
         
     public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
@@ -209,12 +213,28 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
     	CeylonParseController pc = getParseController();
-		return new IHyperlinkDetector[] { new CeylonHyperlinkDetector(pc), 
-    			new JavaHyperlinkDetector(pc) };
+    	if (pc==null) {
+    	    return new IHyperlinkDetector[0];
+    	}
+    	else {
+    	    return new IHyperlinkDetector[] { 
+    	            new CeylonHyperlinkDetector(pc), 
+    	            new JavaHyperlinkDetector(pc) 
+    	        };
+    	}
     }
-
+    
+    //TODO: We need a CeylonParseControllerProvider 
+    //      which CeylonEditor implements - since
+    //      having to extend this class and override
+    //      is just sucky.
 	protected CeylonParseController getParseController() {
-		return editor.getParseController();
+	    if (editor==null) {
+	        return null;
+	    }
+	    else {
+	        return editor.getParseController();
+	    }
 	}
 
     /**
@@ -225,7 +245,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
             public IInformationControl createInformationControl(Shell parent) {
                 try{
                     return new BrowserInformationControl(parent, 
-                            APPEARANCE_JAVADOC_FONT, (String)null);
+                            APPEARANCE_JAVADOC_FONT, 
+                            (String) null);
                 }
                 catch(org.eclipse.swt.SWTError x){
                     return new DefaultInformationControl(parent, "Press 'F2' for focus", 
@@ -236,6 +257,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+        if (editor==null) return null;
         return new BestMatchHover(editor);
     }
 
@@ -299,11 +321,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 	private IDialogSettings getSettings() { return CeylonPlugin.getInstance().getDialogSettings(); }
     
     public IInformationPresenter getCodePresenter(ISourceViewer sourceViewer) {
+        if (editor==null) return null;
         InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
 			@Override
 			public IInformationControl createInformationControl(Shell parent) {
 				final CodePopup pop = new CodePopup(parent, SWT.RESIZE, editor);
-				pop.viewer.configure(new CeylonSourceViewerConfiguration(editor.getPrefStore(), editor) {
+				pop.viewer.configure(new CeylonSourceViewerConfiguration(editor) {
 					@Override
 					protected CeylonParseController getParseController() {
 						return pop.getParseController();
@@ -333,11 +356,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     	}
 		@Override
     	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		return new CeylonOutlineBuilder().buildTree(editor.getParseController().getRootNode());
+    		return new CeylonOutlineBuilder().buildTree(getParseController().getRootNode());
     	}
     }
 	
     public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer) {
+        if (editor==null) return null;
         InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
 			@Override
 			public IInformationControl createInformationControl(Shell parent) {
@@ -366,11 +390,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     	}
 		@Override
     	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		Node selectedNode = getSelectedNode(editor);
+    		Node selectedNode = getSelectedNode();
     		Declaration declaration = getReferencedDeclaration(selectedNode);
     		if (declaration==null) {
     			FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
-    			fcv.visit(editor.getParseController().getRootNode());
+    			fcv.visit(getParseController().getRootNode());
     			Tree.StatementOrArgument node = fcv.getStatementOrArgument();
     			if (node instanceof Tree.Declaration) {
     				declaration = ((Tree.Declaration) node).getDeclarationModel();
@@ -379,15 +403,16 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     		return new CeylonHierarchyContentProvider.RootNode(declaration);
     	}
     	//TODO: this is a copy/paste from AbstractFindAction
-    	private Node getSelectedNode(CeylonEditor editor) {
-    		CeylonParseController cpc = editor.getParseController();
+    	private Node getSelectedNode() {
+    		CeylonParseController cpc = getParseController();
     		return cpc.getRootNode()==null ? null : 
     			findNode(cpc.getRootNode(), 
     					(ITextSelection) editor.getSelectionProvider().getSelection());
     	}
     }
 
-    public IInformationPresenter getHierarchyPresenter(ISourceViewer sourceViewer, boolean b) {
+    public IInformationPresenter getHierarchyPresenter(ISourceViewer sourceViewer) {
+        if (editor==null) return null;
         InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
 			@Override
 			public IInformationControl createInformationControl(Shell parent) {
@@ -409,4 +434,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return null;
     }
 
+    private IPreferenceStore getPreferenceStore() {
+        return fPreferenceStore;
+    }
+    
 }

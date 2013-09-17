@@ -81,7 +81,7 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
         bkptAttributes.put("org.eclipse.jdt.debug.core.typeName", typeName);
 
         try {
-            IBreakpoint bkpt= JDIDebugModel.createStratumBreakpoint(file, null, srcFileName, null, null, lineNumber, -1, -1, 0, true, bkptAttributes);
+            JDIDebugModel.createStratumBreakpoint(file, null, srcFileName, null, null, lineNumber, -1, -1, 0, true, bkptAttributes);
         } 
         catch (CoreException e) {
             e.printStackTrace();

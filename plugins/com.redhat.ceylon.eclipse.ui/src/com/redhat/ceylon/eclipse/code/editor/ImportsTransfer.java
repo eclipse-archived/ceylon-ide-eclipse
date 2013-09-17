@@ -32,7 +32,7 @@ public class ImportsTransfer extends ByteArrayTransfer {
     protected void javaToNative(Object object, TransferData transferData) {
         if (isSupportedType(transferData)) {
             //TODO: serialize qualified names to NSStrings
-            imports = (Map<Declaration,String>) object;
+            imports = (Map) object;
             super.javaToNative(new byte[1], transferData);
         }
     }

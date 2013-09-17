@@ -3,45 +3,27 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.IFileSystem;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.TextSelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.swt.SWT;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.DocumentProviderRegistry;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -57,29 +39,29 @@ import org.eclipse.ui.texteditor.TextEditorAction;
  */
 public class EditorUtility {
 	
-	private static boolean isEditorInput(Object element, IEditorPart editor) {
-        if (editor!=null) {
-            return editor.getEditorInput().equals(getEditorInput(element));
-        }
-        return false;
-    }
+//	private static boolean isEditorInput(Object element, IEditorPart editor) {
+//        if (editor!=null) {
+//            return editor.getEditorInput().equals(getEditorInput(element));
+//        }
+//        return false;
+//    }
 
     /**
      * Tests if a given input element is currently shown in an editor
      * 
      * @return the IEditorPart if shown, null if element is not open in an editor
      */
-    private static IEditorPart isOpenInEditor(Object inputElement) {
-        IEditorInput input= null;
-        input= getEditorInput(inputElement);
-        if (input!=null) {
-            IWorkbenchPage p= getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            if (p!=null) {
-                return p.findEditor(input);
-            }
-        }
-        return null;
-    }
+//    private static IEditorPart isOpenInEditor(Object inputElement) {
+//        IEditorInput input= null;
+//        input= getEditorInput(inputElement);
+//        if (input!=null) {
+//            IWorkbenchPage p= getWorkbench().getActiveWorkbenchWindow().getActivePage();
+//            if (p!=null) {
+//                return p.findEditor(input);
+//            }
+//        }
+//        return null;
+//    }
 
     /**
      * Opens an editor suitable for a model element, <code>IFile</code>, or <code>IStorage</code>.
@@ -108,62 +90,62 @@ public class EditorUtility {
     /**
      * Selects and reveals the given region in the given editor part.
      */
-    private static void revealInEditor(IEditorPart part, IRegion region) {
-        if (part!=null && region!=null)
-            revealInEditor(part, region.getOffset(), region.getLength());
-    }
+//    private static void revealInEditor(IEditorPart part, IRegion region) {
+//        if (part!=null && region!=null)
+//            revealInEditor(part, region.getOffset(), region.getLength());
+//    }
 
     /**
      * Selects and reveals the given offset and length in the given editor part.
      */
-    private static void revealInEditor(IEditorPart editor, final int offset, final int length) {
-        if (editor instanceof ITextEditor) {
-            ((ITextEditor) editor).selectAndReveal(offset, length);
-            return;
-        }
-        // Support for non-text editor - try IGotoMarker interface
-        if (editor instanceof IGotoMarker) {
-            final IEditorInput input= editor.getEditorInput();
-            if (input instanceof IFileEditorInput) {
-                final IGotoMarker gotoMarkerTarget= (IGotoMarker) editor;
-                WorkspaceModifyOperation op= new WorkspaceModifyOperation() {
-                    protected void execute(IProgressMonitor monitor) throws CoreException {
-                        IMarker marker= null;
-                        try {
-                            marker = ((IFileEditorInput) input).getFile().createMarker(IMarker.TEXT);
-                        	String[] attributeNames = new String[] {IMarker.CHAR_START, IMarker.CHAR_END};
-                        	Object[] values = new Object[] {offset, offset + length};
-                            marker.setAttributes(attributeNames, values);
-                            gotoMarkerTarget.gotoMarker(marker);
-                        } finally {
-                            if (marker!=null)
-                                marker.delete();
-                        }
-                    }
-                };
-                try {
-                    op.run(null);
-                } catch (InvocationTargetException ex) {
-                    // reveal failed
-                } catch (InterruptedException e) {
-                    Assert.isTrue(false, "this operation can not be canceled"); //$NON-NLS-1$
-                }
-            }
-            return;
-        }
-        /*
-         * Workaround: send out a text selection XXX: Needs to be improved, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=32214
-         */
-        if (editor != null && editor.getEditorSite().getSelectionProvider() != null) {
-            IEditorSite site= editor.getEditorSite();
-            if (site==null)
-                return;
-            ISelectionProvider provider= editor.getEditorSite().getSelectionProvider();
-            if (provider==null)
-                return;
-            provider.setSelection(new TextSelection(offset, length));
-        }
-    }
+//    private static void revealInEditor(IEditorPart editor, final int offset, final int length) {
+//        if (editor instanceof ITextEditor) {
+//            ((ITextEditor) editor).selectAndReveal(offset, length);
+//            return;
+//        }
+//        // Support for non-text editor - try IGotoMarker interface
+//        if (editor instanceof IGotoMarker) {
+//            final IEditorInput input= editor.getEditorInput();
+//            if (input instanceof IFileEditorInput) {
+//                final IGotoMarker gotoMarkerTarget= (IGotoMarker) editor;
+//                WorkspaceModifyOperation op= new WorkspaceModifyOperation() {
+//                    protected void execute(IProgressMonitor monitor) throws CoreException {
+//                        IMarker marker= null;
+//                        try {
+//                            marker = ((IFileEditorInput) input).getFile().createMarker(IMarker.TEXT);
+//                        	String[] attributeNames = new String[] {IMarker.CHAR_START, IMarker.CHAR_END};
+//                        	Object[] values = new Object[] {offset, offset + length};
+//                            marker.setAttributes(attributeNames, values);
+//                            gotoMarkerTarget.gotoMarker(marker);
+//                        } finally {
+//                            if (marker!=null)
+//                                marker.delete();
+//                        }
+//                    }
+//                };
+//                try {
+//                    op.run(null);
+//                } catch (InvocationTargetException ex) {
+//                    // reveal failed
+//                } catch (InterruptedException e) {
+//                    Assert.isTrue(false, "this operation can not be canceled"); //$NON-NLS-1$
+//                }
+//            }
+//            return;
+//        }
+//        /*
+//         * Workaround: send out a text selection XXX: Needs to be improved, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=32214
+//         */
+//        if (editor != null && editor.getEditorSite().getSelectionProvider() != null) {
+//            IEditorSite site= editor.getEditorSite();
+//            if (site==null)
+//                return;
+//            ISelectionProvider provider= editor.getEditorSite().getSelectionProvider();
+//            if (provider==null)
+//                return;
+//            provider.setSelection(new TextSelection(offset, length));
+//        }
+//    }
 
     private static IEditorPart openInEditor(IFile file, boolean activate) throws PartInitException {
         if (file!=null) {
@@ -327,19 +309,19 @@ public class EditorUtility {
      * @return the SWT modifier bit, or <code>0</code> if no match was found
      * @since 2.1.1
      */
-    private static int findLocalizedModifier(String modifierName) {
-        if (modifierName == null)
-            return 0;
-        if (modifierName.equalsIgnoreCase(Action.findModifierString(SWT.CTRL)))
-            return SWT.CTRL;
-        if (modifierName.equalsIgnoreCase(Action.findModifierString(SWT.SHIFT)))
-            return SWT.SHIFT;
-        if (modifierName.equalsIgnoreCase(Action.findModifierString(SWT.ALT)))
-            return SWT.ALT;
-        if (modifierName.equalsIgnoreCase(Action.findModifierString(SWT.COMMAND)))
-            return SWT.COMMAND;
-        return 0;
-    }
+//    private static int findLocalizedModifier(String modifierName) {
+//        if (modifierName == null)
+//            return 0;
+//        if (modifierName.equalsIgnoreCase(Action.findModifierString(SWT.CTRL)))
+//            return SWT.CTRL;
+//        if (modifierName.equalsIgnoreCase(Action.findModifierString(SWT.SHIFT)))
+//            return SWT.SHIFT;
+//        if (modifierName.equalsIgnoreCase(Action.findModifierString(SWT.ALT)))
+//            return SWT.ALT;
+//        if (modifierName.equalsIgnoreCase(Action.findModifierString(SWT.COMMAND)))
+//            return SWT.COMMAND;
+//        return 0;
+//    }
 
 //    /**
 //     * Returns the modifier string for the given SWT modifier modifier bits.
@@ -388,27 +370,27 @@ public class EditorUtility {
      * 
      * @return an array of all dirty editor parts.
      */
-    private static IEditorPart[] getDirtyEditors() {
-        Set<IEditorInput> inputs= new HashSet<IEditorInput>();
-        List<IEditorPart> result= new ArrayList<IEditorPart>(0);
-        IWorkbench workbench= PlatformUI.getWorkbench();
-        IWorkbenchWindow[] windows= workbench.getWorkbenchWindows();
-        for(int i= 0; i < windows.length; i++) {
-            IWorkbenchPage[] pages= windows[i].getPages();
-            for(int x= 0; x < pages.length; x++) {
-                IEditorPart[] editors= pages[x].getDirtyEditors();
-                for(int z= 0; z < editors.length; z++) {
-                    IEditorPart ep= editors[z];
-                    IEditorInput input= ep.getEditorInput();
-                    if (!inputs.contains(input)) {
-                        inputs.add(input);
-                        result.add(ep);
-                    }
-                }
-            }
-        }
-        return result.toArray(new IEditorPart[result.size()]);
-    }
+//    private static IEditorPart[] getDirtyEditors() {
+//        Set<IEditorInput> inputs= new HashSet<IEditorInput>();
+//        List<IEditorPart> result= new ArrayList<IEditorPart>(0);
+//        IWorkbench workbench= PlatformUI.getWorkbench();
+//        IWorkbenchWindow[] windows= workbench.getWorkbenchWindows();
+//        for(int i= 0; i < windows.length; i++) {
+//            IWorkbenchPage[] pages= windows[i].getPages();
+//            for(int x= 0; x < pages.length; x++) {
+//                IEditorPart[] editors= pages[x].getDirtyEditors();
+//                for(int z= 0; z < editors.length; z++) {
+//                    IEditorPart ep= editors[z];
+//                    IEditorInput input= ep.getEditorInput();
+//                    if (!inputs.contains(input)) {
+//                        inputs.add(input);
+//                        result.add(ep);
+//                    }
+//                }
+//            }
+//        }
+//        return result.toArray(new IEditorPart[result.size()]);
+//    }
     
 	public static IDocument getDocument(Object input) {
 		IEditorInput ei = getEditorInput(input);

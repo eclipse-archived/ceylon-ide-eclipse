@@ -26,6 +26,19 @@
       </editor>
    </extension>
    
+   <extension
+      point="org.eclipse.compare.contentMergeViewers">
+      <viewer
+            extensions="java,java2"
+            class="com.redhat.ceylon.eclipse.code.viewer.CeylonContentViewerCreator"
+            id="com.redhat.ceylon.eclipse.ui.contentMergeViewer">
+      </viewer>
+      <contentTypeBinding
+            contentTypeId="com.redhat.ceylon.eclipse.ui.ceylonSource"
+            contentMergeViewerId="com.redhat.ceylon.eclipse.ui.contentMergeViewer">
+      </contentTypeBinding>
+   </extension>
+   
    <!-- this works but I don't trust it b/c it is actually 
         ambiguous ... there is another DocumentProvider for
         IURIEditorInputs -->
