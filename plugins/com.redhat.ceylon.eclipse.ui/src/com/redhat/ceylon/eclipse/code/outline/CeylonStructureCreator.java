@@ -48,7 +48,11 @@ public class CeylonStructureCreator extends StructureCreator {
     		IDocument document, ISharedDocumentAdapter sharedDocumentAdapter, 
     		IProgressMonitor monitor) 
     				throws CoreException {
-
+        
+        if (input instanceof CeylonDocumentRangeNode) {
+            return (CeylonDocumentRangeNode) input;
+        }
+        
         final boolean isEditable = input instanceof IEditableContent ?
                 ((IEditableContent) input).isEditable() : false;
         
