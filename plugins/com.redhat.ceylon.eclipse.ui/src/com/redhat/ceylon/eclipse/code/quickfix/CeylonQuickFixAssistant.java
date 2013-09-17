@@ -586,6 +586,9 @@ public class CeylonQuickFixAssistant {
     private void addModuleImportProposals(Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IProject project,
             TypeChecker tc, Node node) {
+        if (cu.getUnit().getPackage().getModule().isDefault()) {
+            return;
+        }
         if (node instanceof Tree.Import) {
             node = ((Tree.Import) node).getImportPath();
         }
