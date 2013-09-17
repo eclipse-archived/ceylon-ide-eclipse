@@ -29,7 +29,7 @@ final class WarmupJob extends Job {
 	protected IStatus run(IProgressMonitor monitor) {
 		monitor.beginTask("Warming up completion processor", 100000);
 		Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
-				.getContext().getModules().getListOfModules();
+				.getCompiledModules();
 		monitor.worked(10000);
 		try {
 		    for (Module m: modules) {

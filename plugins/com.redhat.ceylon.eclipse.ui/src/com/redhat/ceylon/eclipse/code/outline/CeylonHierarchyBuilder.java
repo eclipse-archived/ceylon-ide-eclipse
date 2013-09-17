@@ -17,7 +17,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -103,21 +102,20 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 		
 		monitor.beginTask("Building hierarchy", 100000);
 		
-		Modules modules = ceylonHierarchyContentProvider.editor
+		Set<Module> allModules = ceylonHierarchyContentProvider.getEditor()
 		        .getParseController().getTypeChecker()
-	            .getContext().getModules();
-
+	            .getPhasedUnits().getModuleManager().getCompiledModules();
+		
 		boolean isFromUnversionedModule = declaration.getUnit().getPackage()
 				.getModule().getVersion()==null;
-
-		Set<Module> allModules = modules.getListOfModules();
+		
 		monitor.worked(10000);
 		
 		Set<Package> packages = new HashSet<Package>();
 		int ams = allModules.size();
 		for (Module m: allModules) {
 			if (m.getVersion()!=null || isFromUnversionedModule) {
-				packages.addAll(m.getPackages());
+				packages.addAll(m.getAllPackages());
 				monitor.worked(20000/ams);
 				if (monitor.isCanceled()) return;
 			}
