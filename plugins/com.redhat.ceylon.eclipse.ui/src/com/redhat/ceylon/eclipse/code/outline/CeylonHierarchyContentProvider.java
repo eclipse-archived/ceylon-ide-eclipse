@@ -13,7 +13,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 public final class CeylonHierarchyContentProvider 
         implements ITreeContentProvider {
 	
-	final CeylonEditor editor;
+	private final CeylonEditor editor;
 	
 	public static final class RootNode {
 		Declaration declaration;
@@ -32,7 +32,11 @@ public final class CeylonHierarchyContentProvider
 		this.editor = editor;
 	}
 
-	@Override
+	CeylonEditor getEditor() {
+        return editor;
+    }
+
+    @Override
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		if (newInput!=null && newInput!=oldInput) {
 			declaration = ((RootNode) newInput).declaration;
