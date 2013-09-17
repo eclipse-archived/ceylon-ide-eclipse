@@ -123,7 +123,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
                     TreeViewer treeViewer = getTreeViewer();
                     if (treeViewer!=null && 
                             !treeViewer.getTree().isDisposed()) {
-                        treeViewer.setInput(modelBuilder.buildTree(parseController.getRootNode()));
+                        CeylonOutlineNode rootNode = modelBuilder.buildTree(parseController.getRootNode());
+                        treeViewer.setInput(rootNode);
                     }
                 }
             });
@@ -149,12 +150,11 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
     public void createControl(Composite parent) {
         super.createControl(parent);
-        TreeViewer viewer= getTreeViewer();
+        TreeViewer viewer = getTreeViewer();
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(labelProvider);
         viewer.addSelectionChangedListener(this);
-        CeylonOutlineNode rootNode= modelBuilder.buildTree(parseController.getRootNode());
-        viewer.setAutoExpandLevel(4);
+        CeylonOutlineNode rootNode = modelBuilder.buildTree(parseController.getRootNode());
         viewer.setInput(rootNode);
         viewer.setComparer(new IElementComparer() {
             @Override
@@ -167,7 +167,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             }
         });
 
-        IPageSite site= getSite();
+        IPageSite site = getSite();
         IToolBarManager toolBarManager= site.getActionBars().getToolBarManager();
         toolBarManager.add(new ExpandAllAction());
         toolBarManager.add(new CollapseAllAction(viewer));
@@ -185,7 +185,20 @@ public class CeylonOutlinePage extends ContentOutlinePage
         site.setSelectionProvider(getTreeViewer());
 
         viewer.getControl().setMenu(mm.createContextMenu(viewer.getControl()));
+        
+        expand(viewer, rootNode);
      }
+
+     void expand(TreeViewer viewer, CeylonOutlineNode rootNode) {
+        for (CeylonOutlineNode con: rootNode.getChildren()) {
+            if (con.getTreeNode() instanceof Tree.ImportList) {
+                viewer.collapseToLevel(con, 0);
+            }
+            else {
+                viewer.expandToLevel(con, TreeViewer.ALL_LEVELS);
+            }
+        }
+    }
     
     private class ExpandAllAction extends Action {
 

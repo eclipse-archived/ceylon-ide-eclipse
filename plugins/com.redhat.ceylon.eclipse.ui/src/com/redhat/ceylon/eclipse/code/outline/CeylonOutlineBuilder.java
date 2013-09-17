@@ -118,8 +118,7 @@ public class CeylonOutlineBuilder {
 		fItemStack.pop();
 		return fModelRoot;
 	}
-
-
+	
 	protected CeylonOutlineNode createTopItem(Node n) {
 		return createTopItem(n, DEFAULT_CATEGORY);
 	}
