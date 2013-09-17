@@ -102,12 +102,13 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         Group group = new Group(parent, SWT.SHADOW_ETCHED_IN);
         Composite composite = group;
         group.setText("Platform");
-        GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd.grabExcessHorizontalSpace=true;
         composite.setLayoutData(gd);
         GridLayout layout = new GridLayout();
+        
         layout.numColumns = 1;
-        layout.marginBottom = 2;
+        layout.marginBottom = 1;
         composite.setLayout(layout);
         
         compileToJava = new Button(composite, SWT.CHECK);
@@ -121,8 +122,13 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         compileToJs.setEnabled(builderEnabled);
         
         composite = new Composite(parent, SWT.NONE);
-        composite.setLayoutData(gd);
-        composite.setLayout(layout);
+        GridData gdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gdb.grabExcessHorizontalSpace=true;
+        composite.setLayoutData(gdb);
+        GridLayout layoutb = new GridLayout();
+        layoutb.numColumns = 1;
+        layoutb.marginBottom = 1;
+        composite.setLayout(layoutb);
         
         showWarnings = new Button(composite, SWT.CHECK);
         showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");

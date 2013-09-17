@@ -112,7 +112,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 
         final Composite composite= new Composite(parent, SWT.NULL);
         composite.setFont(parent.getFont());
-        composite.setLayout(initGridLayout(new GridLayout(1, false), true));
+        composite.setLayout(initGridLayout(new GridLayout(1, false), false));
         composite.setLayoutData(new GridData(HORIZONTAL_ALIGN_FILL));
 
         // create UI elements
@@ -348,7 +348,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 		public Control createContent(Composite composite) {
 			fGroup= new Group(composite, SWT.NONE);
 			fGroup.setFont(composite.getFont());
-			fGroup.setLayout(initGridLayout(new GridLayout(3, false), true));
+			fGroup.setLayout(initGridLayout(new GridLayout(3, false), false));
 			fGroup.setText(NewWizardMessages.NewJavaProjectWizardPageOne_LayoutGroup_title);
 
 			fStdRadio.doFillIntoGrid(fGroup, 3);
@@ -477,7 +477,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 		public Control createControl(Composite composite) {
 			fGroup= new Group(composite, SWT.NONE);
 			fGroup.setFont(composite.getFont());
-			fGroup.setLayout(initGridLayout(new GridLayout(2, false), true));
+			fGroup.setLayout(initGridLayout(new GridLayout(2, false), false));
 			fGroup.setText(NewWizardMessages.NewJavaProjectWizardPageOne_JREGroup_title);
 
 			fUseEEJRE.doFillIntoGrid(fGroup, 1);
@@ -1346,8 +1346,8 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 			layout.marginWidth= convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
 			layout.marginHeight= convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
 		} else {
-			layout.marginWidth= 0;
-			layout.marginHeight= 0;
+//			layout.marginWidth= 0;
+//			layout.marginHeight= 0;
 		}
 		return layout;
 	}
@@ -1468,24 +1468,17 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 
     //TODO: fix copy/paste!
     void addCompilerSettings(Composite parent) {
-        Group composite = new Group(parent, SWT.SHADOW_ETCHED_IN);
-        composite.setText("Ceylon compiler settings");
-        GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        Group group = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        Composite composite = group;
+        group.setText("Platform");
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         composite.setLayoutData(gd);
         GridLayout layout = new GridLayout();
+        initGridLayout(layout, false);
         layout.numColumns = 1;
+        layout.marginBottom = 1;
         composite.setLayout(layout);        
         
-        final Button enableJdtClasses = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
-        enableJdtClasses.setSelection(enableJdtClassesDir);
-        enableJdtClasses.setEnabled(true);
-
-        final Button showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");
-        showWarnings.setSelection(showCompilerWarnings);
-        showWarnings.setEnabled(true);
-
         final Button jc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         jc.setText("Compile project for JVM");
         jc.setSelection(compileJava);
@@ -1496,6 +1489,25 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         jsc.setText("Compile project to JavaScript");
         jsc.setSelection(compileJs);
         jsc.setEnabled(true);
+
+        composite = new Composite(parent, SWT.NONE);
+        GridData gdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gdb.grabExcessHorizontalSpace=true;
+        composite.setLayoutData(gdb);
+        GridLayout layoutb = new GridLayout();
+        layoutb.numColumns = 1;
+        layoutb.marginBottom = 3;
+        composite.setLayout(layoutb);
+        
+        final Button enableJdtClasses = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
+        enableJdtClasses.setSelection(enableJdtClassesDir);
+        enableJdtClasses.setEnabled(true);
+
+        final Button showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");
+        showWarnings.setSelection(showCompilerWarnings);
+        showWarnings.setEnabled(true);
 
 //        addSelectRepoSection(parent);
         
