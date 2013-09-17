@@ -66,7 +66,8 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
     private Button buttonShowCompleteDescription;
 
     public CeylonTestSelectionDialog(Shell parent) {
-        this(parent, new CeylonTestSelectionDialogLabelProvider(), new CeylonTestSelectionDialogContentProvider());
+        this(parent, new CeylonTestSelectionDialogLabelProvider(true), 
+                new CeylonTestSelectionDialogContentProvider());
     }
 
     public CeylonTestSelectionDialog(Shell parent, CeylonTestSelectionDialogLabelProvider labelProvider, CeylonTestSelectionDialogContentProvider contentProvider) {
@@ -229,6 +230,10 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
     }
 
     public static class CeylonTestSelectionDialogLabelProvider extends CeylonLabelProvider {
+
+        public CeylonTestSelectionDialogLabelProvider(boolean includePackage) {
+            super(includePackage);
+        }
 
         private boolean showCompleteDescription;
 
