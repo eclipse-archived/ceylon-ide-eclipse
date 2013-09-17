@@ -1143,6 +1143,7 @@ public class CeylonEditor extends TextEditor {
         projectionSupport = new ProjectionSupport(sourceViewer, getAnnotationAccess(), getSharedColors());
         MarkerAnnotationPreferences markerAnnotationPreferences = (MarkerAnnotationPreferences) getAdapter(MarkerAnnotationPreferences.class);
         if (markerAnnotationPreferences != null) {
+            @SuppressWarnings("unchecked")
             List<AnnotationPreference> annPrefs = markerAnnotationPreferences.getAnnotationPreferences();
             for (Iterator<AnnotationPreference> e = annPrefs.iterator(); e.hasNext();) {
                 Object annotationType = e.next().getAnnotationType();

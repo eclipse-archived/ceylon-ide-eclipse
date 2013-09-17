@@ -28,6 +28,7 @@ import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.views.navigator.LocalSelectionTransfer;
 
+@SuppressWarnings("deprecation")
 class WorkingSetDropAdapter extends JdtViewerDropAdapter implements TransferDropTargetListener {
 
 	private PackageExplorerPart fPackageExplorer;
