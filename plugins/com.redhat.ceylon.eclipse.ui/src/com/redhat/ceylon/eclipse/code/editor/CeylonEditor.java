@@ -973,6 +973,7 @@ public class CeylonEditor extends TextEditor {
         /*((IContextService) getSite().getService(IContextService.class))
                 .activateContext(PLUGIN_ID + ".context");*/
         
+        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
         currentTheme.getColorRegistry().addListener(colorChangeListener);
         updateFontAndCaret();
         currentTheme.getFontRegistry().addListener(fontChangeListener);
@@ -1251,6 +1252,7 @@ public class CeylonEditor extends TextEditor {
         /*if (fResourceListener != null) {
             ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
         }*/
+        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
         currentTheme.getColorRegistry().removeListener(colorChangeListener);
         currentTheme.getFontRegistry().removeListener(fontChangeListener);
     }
@@ -1273,13 +1275,15 @@ public class CeylonEditor extends TextEditor {
         }
     };
     
-    private final ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-    
     private static final String TEXT_FONT_PREFERENCE = PLUGIN_ID + ".editorFont";
     
+    public static Font getFont() {
+        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        return currentTheme.getFontRegistry().get(TEXT_FONT_PREFERENCE);
+    }
+    
     private void updateFontAndCaret() {
-        Font font = currentTheme.getFontRegistry().get(TEXT_FONT_PREFERENCE);
-        getSourceViewer().getTextWidget().setFont(font);
+        getSourceViewer().getTextWidget().setFont(getFont());
         try {
             Method updateCaretMethod = AbstractTextEditor.class.getDeclaredMethod("updateCaret");
             updateCaretMethod.setAccessible(true);
@@ -1323,6 +1327,7 @@ public class CeylonEditor extends TextEditor {
     private void installBracketMatcher(SourceViewerDecorationSupport support) {
         IPreferenceStore store = getPreferenceStore();
         store.setDefault(MATCHING_BRACKET, true);
+        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
         Color color = currentTheme.getColorRegistry()
                     .get(PLUGIN_ID + ".theme.matchingBracketsColor");
         store.setDefault(MATCHING_BRACKETS_COLOR, 
