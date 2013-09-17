@@ -29,7 +29,8 @@
    <extension
       point="org.eclipse.compare.contentMergeViewers">
       <viewer
-            extensions="java,java2"
+            extensions="ceylon"
+            label="Ceylon Source Compare"
             class="com.redhat.ceylon.eclipse.code.viewer.CeylonContentViewerCreator"
             id="com.redhat.ceylon.eclipse.ui.contentMergeViewer">
       </viewer>
