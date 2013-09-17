@@ -69,7 +69,7 @@ public class ConvertToClassRefactoring extends AbstractRefactoring {
 	public Change createChange(IProgressMonitor pm) 
 	        throws CoreException, OperationCanceledException {
 	    TextChange tfc = newLocalChange();
-	    convertInFile(tfc);         
+	    convertInFile(tfc);
 	    return tfc;
 	}
 

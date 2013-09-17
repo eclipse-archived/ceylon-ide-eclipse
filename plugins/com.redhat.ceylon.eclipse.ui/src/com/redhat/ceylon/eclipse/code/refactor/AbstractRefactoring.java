@@ -168,13 +168,17 @@ public abstract class AbstractRefactoring extends Refactoring {
     }
     
     DocumentChange newDocumentChange() {
-        return new DocumentChange(editor.getEditorInput().getName() + 
+        DocumentChange dc = new DocumentChange(editor.getEditorInput().getName() + 
                 " - current editor", document);
+        dc.setTextType("ceylon");
+        return dc;
     }
     
     TextFileChange newTextFileChange(PhasedUnit pu) {
-        return new TextFileChange(getName(), 
+        TextFileChange tfc = new TextFileChange(getName(), 
                 CeylonBuilder.getFile(pu));
+        tfc.setTextType("ceylon");
+        return tfc;
     }
 
     protected boolean searchInEditor() {
@@ -187,9 +191,11 @@ public abstract class AbstractRefactoring extends Refactoring {
     }
     
     TextChange newLocalChange() {
-        return searchInEditor() ?
+        TextChange tc = searchInEditor() ?
                 new DocumentChange(getName(), document) :
                 new TextFileChange(getName(), sourceFile);
+        tc.setTextType("ceylon");
+        return tc;
     }
 
 	protected List<PhasedUnit> getAllUnits() {
