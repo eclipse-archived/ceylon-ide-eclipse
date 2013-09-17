@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Display;
  */
 public class HTMLTextPresenter implements DefaultInformationControl.IInformationPresenter, DefaultInformationControl.IInformationPresenterExtension {
 
-	private static final String LINE_DELIM= System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+	private static final String LINE_DELIM= System.getProperty("line.separator", "\n");
 
 	private int fCounter;
 	private boolean fEnforceUpperLineLimit;
@@ -153,7 +153,7 @@ public class HTMLTextPresenter implements DefaultInformationControl.IInformation
 
 			if (line != null) {
 				append(buffer, LINE_DELIM, lineFormatted ? presentation : null);
-				append(buffer, HTMLMessages.getString("HTMLTextPresenter.ellipse"), presentation); //$NON-NLS-1$
+				append(buffer, "...", presentation);
 			}
 
 			return trim(buffer, presentation);
