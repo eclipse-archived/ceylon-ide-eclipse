@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.junit.BeforeClass;
@@ -38,6 +39,10 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.test.Utils;
+import com.redhat.ceylon.eclipse.ui.test.Utils.CeylonBuildSummary;
+
+import static com.redhat.ceylon.eclipse.ui.test.Utils.buildProject; 
+import static org.junit.Assert.assertTrue;
 
 /**
  * 
@@ -51,12 +56,15 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
     static private IProject projectReferences = null;
     
 	@BeforeClass
-	public static void compileDeclarationsAndReferences() {
+	public static void compileDeclarationsAndReferences() throws InterruptedException, CoreException {
 	    try {
 	        IPath projectDescriptionPath = null;
 	        IPath userDirPath = new Path(System.getProperty("user.dir"));
             final IWorkspace workspace = ResourcesPlugin.getWorkspace();
             
+            CeylonBuildSummary declarationsSummary = new CeylonBuildSummary(workspace.getRoot().getProject("declarations"));
+            declarationsSummary.install();
+
 	        try {
         		projectDescriptionPath = userDirPath.append("resources/model-loader-tests/declarations/.project");
         		projectDeclarations = Utils.importProject(workspace, "model-loader-tests", projectDescriptionPath);
@@ -64,22 +72,23 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
             catch(Exception e) {
                 Assert.fail("Import of the declarations project failed with the exception : \n" + e.toString());
             }
-	        try {
-        		projectDeclarations.build(IncrementalProjectBuilder.FULL_BUILD, null);
-        		IFile carFile = projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.car");
-        		carFile.refreshLocal(0, null);
-                Assert.assertTrue("declarations Project should  should produce a CAR",
-                        carFile.exists());
-                
-                projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.src").getLocation().toFile().delete();
-                projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.src.sha1").getLocation().toFile().delete();
-	        }
-            catch(Exception e) {
-                Assert.fail("Build of the declarations project failed with the exception : \n" + e.toString());
-            }
+
+            assertTrue("A build should have been started after import of the declarations project", declarationsSummary.waitForBuildEnd(120));
+            IFile carFile = projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.car");
+            carFile.refreshLocal(0, null);
+            Assert.assertTrue("declarations Project should  should produce a CAR",
+                carFile.exists());
 	        
-	        
-	        
+            assertTrue("We should be able to remove the generated src archive",
+                    projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.src")
+                        .getLocation().toFile().delete());
+            assertTrue("We should be able to remove the sha1 of the generated src archive",
+                    projectDeclarations.getFile("modules/declarations/1.0.0/declarations-1.0.0.src.sha1")
+                        .getLocation().toFile().delete());
+
+	        CeylonBuildSummary referencesSummary = new CeylonBuildSummary(workspace.getRoot().getProject("references"));
+            referencesSummary.install();
+            
 	        try {
                 projectDescriptionPath = userDirPath.append("resources/model-loader-tests/references/.project");
                 projectReferences = Utils.importProject(workspace, "model-loader-tests",
@@ -89,16 +98,11 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
                 Assert.fail("Build of the references project failed with the exception : \n" + e.toString());
             }
             
-            try {
-                projectReferences.build(IncrementalProjectBuilder.FULL_BUILD, null);
-                IFile carFile = projectReferences.getFile("modules/references/1.0.0/references-1.0.0.car");
-                carFile.refreshLocal(0, null);
-                Assert.assertTrue("references Project should produce a CAR", 
-                        carFile.exists());
-            }
-            catch(Exception e) {
-                Assert.fail("Build of the references project failed with the exception : \n" + e.toString());
-            }
+            assertTrue("A build should have been started after import of the declarations project", referencesSummary.waitForBuildEnd(120));
+            carFile = projectReferences.getFile("modules/references/1.0.0/references-1.0.0.car");
+            carFile.refreshLocal(0, null);
+            Assert.assertTrue("references Project should produce a CAR", 
+                    carFile.exists());
 	    }
 	    catch(AssertionError e) {
 	        compilationError = e;
