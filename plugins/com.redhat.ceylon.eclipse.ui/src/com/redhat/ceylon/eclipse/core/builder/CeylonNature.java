@@ -76,7 +76,6 @@ public class CeylonNature extends ProjectNatureBase {
     }
     
     @Override
-    @SuppressWarnings("unchecked")
     protected Map<String, String> getBuilderArguments() {
         Map<String, String> args = super.getBuilderArguments();
     	if (!keepSettings) {

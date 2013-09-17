@@ -287,10 +287,10 @@ public class JDTClass implements ClassMirror {
     }
     
     public String getJavaModelPath() {
-        ReferenceBinding sourceOrClass = klass;
-        if (! klass.isBinaryBinding()) {
-            sourceOrClass = klass.outermostEnclosingType();
-        }
+//        ReferenceBinding sourceOrClass = klass;
+//        if (! klass.isBinaryBinding()) {
+//            sourceOrClass = klass.outermostEnclosingType();
+//        }
         char[] classFullName = new char[0];
         for (char[] part : klass.compoundName) {
             classFullName = CharOperation.concat(classFullName, part, '/');

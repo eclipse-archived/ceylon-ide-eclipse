@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
-import static org.eclipse.search.internal.ui.SearchPlugin.SEARCH_ANNOTATION_TYPE;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -18,7 +17,6 @@ import java.util.Set;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.ui.PreferenceConstants;
-import org.eclipse.jface.internal.text.html.HTMLPrinter;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -28,23 +26,26 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.projection.AnnotationBag;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.code.hover.CeylonHover;
+import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 
 public class AnnotationUtils {
     // Following is just used for debugging to discover new annotation types to filter out
     //  private static Set<String> fAnnotationTypes= new HashSet<String>();
+    
+    public static final String SEARCH_ANNOTATION_TYPE= NewSearchUI.PLUGIN_ID + ".results"; //$NON-NLS-1$
 
     private static Set<String> sAnnotationTypesToFilter= new HashSet<String>();
 

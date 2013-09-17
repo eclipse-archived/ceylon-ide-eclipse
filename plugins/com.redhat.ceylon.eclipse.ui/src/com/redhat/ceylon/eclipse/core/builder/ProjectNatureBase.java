@@ -153,8 +153,8 @@ public abstract class ProjectNatureBase implements IProjectNature {
         getProject().setDescription(desc, null);
     }
 
-    protected Map getBuilderArguments() {
-        return new HashMap();
+    protected Map<String, String> getBuilderArguments() {
+        return new HashMap<String, String>();
     }
 
     public void deconfigure() throws CoreException {

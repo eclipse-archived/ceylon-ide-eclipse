@@ -16,7 +16,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilerAnnotation;
 
 public class SourceClass implements ClassMirror {
 
@@ -28,7 +27,7 @@ public class SourceClass implements ClassMirror {
     
     @Override
     public AnnotationMirror getAnnotation(String type) {
-        List<CompilerAnnotation> compilerAnnotations = getAstDeclaration().getCompilerAnnotations();
+//        List<CompilerAnnotation> compilerAnnotations = getAstDeclaration().getCompilerAnnotations();
         throw new IllegalAccessError("Don't use a Source Class Mirror !");
     }
 

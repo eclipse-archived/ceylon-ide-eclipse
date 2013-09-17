@@ -135,7 +135,7 @@ public class JDTModuleManager extends LazyModuleManager {
             getContext().setModules(modules);
 
             //build empty package
-            final Package emptyPackage = createPackage("", defaultModule);
+            createPackage("", defaultModule);
         }
         super.initCoreModules();
     }
