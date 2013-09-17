@@ -26,7 +26,7 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
-import org.eclipse.jface.internal.text.html.HTMLPrinter;
+import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -82,7 +82,6 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
-@SuppressWarnings("restriction")
 public class ModuleSearchViewPart extends ViewPart {
     
     private class RemoveSelectedAction extends Action implements ISelectionChangedListener {

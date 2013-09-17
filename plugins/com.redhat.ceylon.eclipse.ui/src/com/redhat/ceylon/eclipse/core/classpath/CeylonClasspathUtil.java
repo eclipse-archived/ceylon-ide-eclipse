@@ -54,7 +54,8 @@ public final class CeylonClasspathUtil {
         if (selection == null) {
             return null;
         }
-        for (Iterator it = selection.iterator(); it.hasNext();) {
+        for (@SuppressWarnings("rawtypes") Iterator it = selection.iterator(); 
+                it.hasNext();) {
             Object element = it.next();
             CeylonClasspathContainer cp = (CeylonClasspathContainer) CeylonPlugin.adapt(element,
                 CeylonClasspathContainer.class);

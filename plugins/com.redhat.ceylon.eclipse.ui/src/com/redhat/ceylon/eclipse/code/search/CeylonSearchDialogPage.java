@@ -134,7 +134,8 @@ public class CeylonSearchDialogPage extends DialogPage
 		        ISelection selection = container.getSelection();
 		        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
 		            IStructuredSelection ss = (IStructuredSelection) selection;
-		            for (Iterator<Object> it = ss.iterator(); it.hasNext();) {
+		            for (@SuppressWarnings("unchecked") Iterator<Object> it = ss.iterator(); 
+		                    it.hasNext();) {
 		                Object elem = it.next();
 		                if (elem instanceof IAdaptable) {
                             IResource resource = (IResource) ((IAdaptable) elem).getAdapter(IResource.class);

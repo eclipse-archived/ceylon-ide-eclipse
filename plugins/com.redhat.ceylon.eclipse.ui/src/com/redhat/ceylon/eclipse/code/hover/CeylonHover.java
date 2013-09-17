@@ -54,7 +54,7 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.internal.text.html.BrowserInput;
-import org.eclipse.jface.internal.text.html.HTMLPrinter;
+import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -129,7 +129,6 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  *
  * @since 2.1
  */
-@SuppressWarnings("restriction")
 public class CeylonHover 
         implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 	

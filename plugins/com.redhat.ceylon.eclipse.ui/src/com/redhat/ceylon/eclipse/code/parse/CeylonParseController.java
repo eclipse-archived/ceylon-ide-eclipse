@@ -14,7 +14,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -187,8 +186,7 @@ public class CeylonParseController {
         CeylonLexer lexer = new CeylonLexer(createInputStream(contents));
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         tokenStream.fill();
-        tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
-        tokens.addAll(tokenStream.getTokens());
+        tokens = tokenStream.getTokens();
 
         if (stager!=null) {
         	stager.afterStage(LEXICAL_ANALYSIS, monitor);

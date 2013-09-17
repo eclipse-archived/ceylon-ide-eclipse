@@ -144,7 +144,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		//and cache here than in getDamageRegion(),
 		//because these methods get called in strange
 		//orders
-		tokens = (List<CommonToken>) tokenStream.getTokens();
+		tokens = tokenStream.getTokens();
 		
 		highlightTokens(presentation, damage);
 		// The document might have changed since the presentation was computed, so

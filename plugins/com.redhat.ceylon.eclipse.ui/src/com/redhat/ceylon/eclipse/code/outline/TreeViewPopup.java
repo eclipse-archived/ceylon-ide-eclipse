@@ -65,6 +65,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  *
  * @since 2.1
  */
+@SuppressWarnings("deprecation")
 public abstract class TreeViewPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension, 
                    IInformationControlExtension2, IInformationControlExtension3,
@@ -544,7 +545,7 @@ public abstract class TreeViewPopup extends PopupDialog
 		treeViewer= null;
 		filterText= null;
 	}
-
+	
 	protected void addHandlerAndKeyBindingSupport() {
 		// Register action with command support
 		if (showViewMenuHandlerSubmission == null) {
@@ -555,7 +556,7 @@ public abstract class TreeViewPopup extends PopupDialog
 			    .addHandlerSubmission(showViewMenuHandlerSubmission);
 		}
 	}
-
+	
 	protected void removeHandlerAndKeyBindingSupport() {
 		// Remove handler submission
 		if (showViewMenuHandlerSubmission != null)
@@ -563,11 +564,11 @@ public abstract class TreeViewPopup extends PopupDialog
 			    .removeHandlerSubmission(showViewMenuHandlerSubmission);
 
 	}
-
+	
 	public boolean hasContents() {
 		return treeViewer != null && treeViewer.getInput() != null;
 	}
-
+	
 	public void setSizeConstraints(int maxWidth, int maxHeight) {
 		// ignore
 	}

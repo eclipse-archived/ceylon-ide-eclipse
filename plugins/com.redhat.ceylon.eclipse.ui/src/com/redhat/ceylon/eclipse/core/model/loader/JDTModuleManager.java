@@ -361,8 +361,7 @@ public class JDTModuleManager extends LazyModuleManager {
                     CommonTokenStream tokenStream = new CommonTokenStream(lexer);
                     CeylonParser parser = new CeylonParser(tokenStream);
                     Tree.CompilationUnit cu = parser.compilationUnit();
-                    List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
-                    tokens.addAll(tokenStream.getTokens());
+                    List<CommonToken> tokens = tokenStream.getTokens();
                     PhasedUnit phasedUnit = null;
                     if (referencedProject == null) {
                         phasedUnit = new ExternalPhasedUnit(file, srcDir, cu, 

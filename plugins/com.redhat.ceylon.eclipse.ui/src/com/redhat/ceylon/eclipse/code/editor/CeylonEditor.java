@@ -225,9 +225,8 @@ public class CeylonEditor extends TextEditor {
     public IPreferenceStore getPrefStore() {
         return super.getPreferenceStore();
     }
-
-    @SuppressWarnings("rawtypes")
-    public Object getAdapter(Class required) {
+    
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class required) {
         if (IContentOutlinePage.class.equals(required)) {
             return getOutlinePage();
         }
