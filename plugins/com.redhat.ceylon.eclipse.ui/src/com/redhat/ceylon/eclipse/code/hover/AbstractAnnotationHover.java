@@ -6,12 +6,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN_DIS;
 
 import java.util.Iterator;
 
-import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBufferManager;
-import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -594,7 +589,8 @@ public abstract class AbstractAnnotationHover
 	}
 
 	
-	public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+	@SuppressWarnings("unchecked")
+    public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
 		//IPath path;
 		IAnnotationModel model;
 		if (textViewer instanceof ISourceViewer) {
@@ -610,13 +606,13 @@ public abstract class AbstractAnnotationHover
 			return null;
 
 		//try {
-			Iterator parent;
+			Iterator<Annotation> parent;
 			if (model instanceof IAnnotationModelExtension2)
 				parent= ((IAnnotationModelExtension2)model).getAnnotationIterator(hoverRegion.getOffset(), 
 						hoverRegion.getLength()+1, true, true);
 			else
 				parent= model.getAnnotationIterator();
-			Iterator e= new AnnotationIterator(parent, fAllAnnotations);
+			Iterator<Annotation> e= new AnnotationIterator(parent, fAllAnnotations);
 
 			int layer= -1;
 			Annotation annotation= null;
@@ -624,7 +620,7 @@ public abstract class AbstractAnnotationHover
 			while (e.hasNext()) {
 				Annotation a= (Annotation) e.next();
 
-				AnnotationPreference preference= getAnnotationPreference(a);
+//				AnnotationPreference preference= getAnnotationPreference(a);
 //				if (preference == null || !(preference.getTextPreferenceKey() != null && fStore.getBoolean(preference.getTextPreferenceKey()) || (preference.getHighlightPreferenceKey() != null && fStore.getBoolean(preference.getHighlightPreferenceKey()))))
 //					continue;
 
@@ -690,35 +686,35 @@ public abstract class AbstractAnnotationHover
 		return null;
 	}*/
 
-	private IAnnotationModel getAnnotationModel(IPath path) {
-		if (path == null)
-			return null;
-
-		ITextFileBufferManager manager= FileBuffers.getTextFileBufferManager();
-		try {
-			manager.connect(path, LocationKind.NORMALIZE, null);
-		} 
-		catch (CoreException ex) {
-			//JavaPlugin.log(ex.getStatus());
-			return null;
-		}
-
-		IAnnotationModel model= null;
-		try {
-			model= manager.getTextFileBuffer(path, LocationKind.NORMALIZE).getAnnotationModel();
-			return model;
-		} 
-		finally {
-			if (model == null) {
-				try {
-					manager.disconnect(path, LocationKind.NORMALIZE, null);
-				} 
-				catch (CoreException ex) {
-					ex.printStackTrace();
-				}
-			}
-		}
-	}
+//	private IAnnotationModel getAnnotationModel(IPath path) {
+//		if (path == null)
+//			return null;
+//
+//		ITextFileBufferManager manager= FileBuffers.getTextFileBufferManager();
+//		try {
+//			manager.connect(path, LocationKind.NORMALIZE, null);
+//		} 
+//		catch (CoreException ex) {
+//			//JavaPlugin.log(ex.getStatus());
+//			return null;
+//		}
+//
+//		IAnnotationModel model= null;
+//		try {
+//			model= manager.getTextFileBuffer(path, LocationKind.NORMALIZE).getAnnotationModel();
+//			return model;
+//		} 
+//		finally {
+//			if (model == null) {
+//				try {
+//					manager.disconnect(path, LocationKind.NORMALIZE, null);
+//				} 
+//				catch (CoreException ex) {
+//					ex.printStackTrace();
+//				}
+//			}
+//		}
+//	}
 
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
         return new Region(offset, 0);

@@ -929,10 +929,8 @@ public class BuildPathsBlock {
 							}
 						}
 						if (newProjectCompliance != null) {
-							Map<String, String> options= javaProject.getOptions(false);
-							JavaModelUtil.setComplianceOptions(options, newProjectCompliance);
-							JavaModelUtil.setDefaultClassfileOptions(options, newProjectCompliance); // complete compliance options
-							javaProject.setOptions(options);
+							setOptionsFromJavaProject(javaProject,
+                                    newProjectCompliance);
 						}
 					}
 					monitor.worked(3);
@@ -948,6 +946,15 @@ public class BuildPathsBlock {
 			monitor.done();
 		}
 	}
+	
+    private static void setOptionsFromJavaProject(IJavaProject javaProject,
+            String newProjectCompliance) {
+        @SuppressWarnings("unchecked")
+        Map<String, String> options= javaProject.getOptions(false);
+        JavaModelUtil.setComplianceOptions(options, newProjectCompliance);
+        JavaModelUtil.setDefaultClassfileOptions(options, newProjectCompliance); // complete compliance options
+        javaProject.setOptions(options);
+    }
 
 	public static boolean hasClassfiles(IResource resource) throws CoreException {
 		if (resource.isDerived()) {

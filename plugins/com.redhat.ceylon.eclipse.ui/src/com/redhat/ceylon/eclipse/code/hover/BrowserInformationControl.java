@@ -18,8 +18,8 @@ import java.util.Iterator;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.internal.text.html.HTML2TextReader;
-import org.eclipse.jface.internal.text.html.HTMLPrinter;
+import com.redhat.ceylon.eclipse.code.html.HTML2TextReader;
+import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IDelayedInputChangeProvider;
@@ -442,12 +442,19 @@ public class BrowserInformationControl extends AbstractInformationControl
 		} catch (IOException e) {
 			text= ""; //$NON-NLS-1$
 		}
+		finally {
+		    try {
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+		}
 
 		fTextLayout.setText(text);
 		fTextLayout.setWidth(sizeConstraints==null ? SWT.DEFAULT : sizeConstraints.x-trimWidth);
-		Iterator iter= presentation.getAllStyleRangeIterator();
+		Iterator<StyleRange> iter= presentation.getAllStyleRangeIterator();
 		while (iter.hasNext()) {
-			StyleRange sr= (StyleRange)iter.next();
+			StyleRange sr = iter.next();
 			if (sr.fontStyle == SWT.BOLD)
 				fTextLayout.setStyle(fBoldStyle, sr.start, sr.start + sr.length);
 		}
@@ -455,7 +462,7 @@ public class BrowserInformationControl extends AbstractInformationControl
 		Rectangle bounds= fTextLayout.getBounds(); // does not return minimum width, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=217446
 		int lineCount= fTextLayout.getLineCount();
 		int textWidth= 0;
-		int[] offsets = fTextLayout.getLineOffsets();
+		fTextLayout.getLineOffsets();
 		for (int i=0; i<lineCount; i++) {
 			Rectangle rect= fTextLayout.getLineBounds(i);
 			int lineWidth= rect.x + rect.width;

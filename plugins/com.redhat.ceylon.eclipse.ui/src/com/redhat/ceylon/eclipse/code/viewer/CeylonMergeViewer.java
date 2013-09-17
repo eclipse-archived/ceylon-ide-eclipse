@@ -506,7 +506,7 @@ public class CeylonMergeViewer extends TextMergeViewer {
     }
     
     @Override
-    public Object getAdapter(Class adapter) {
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         if (adapter == ITextEditorExtension3.class) {
             IEditorInput activeInput= (IEditorInput)super.getAdapter(IEditorInput.class);
             if (activeInput != null) {

@@ -39,6 +39,7 @@ import net.lingala.zip4j.exception.ZipException;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -78,7 +79,6 @@ import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
-import com.redhat.ceylon.compiler.java.tools.CeyloncTool;
 import com.redhat.ceylon.compiler.java.tools.JarEntryFileObject;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
@@ -334,7 +334,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static class CeylonBuildHook {
-        protected void startBuild(int kind, Map args, IProject javaProject) {}
+        protected void startBuild(int kind, @SuppressWarnings("rawtypes") Map args, 
+                IProject javaProject) {}
         protected void resolvingClasspathContainer(
                 List<CeylonClasspathContainer> cpContainers) {}
         protected void setAndRefreshClasspathContainer() {}
@@ -361,7 +362,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
 	@Override
-    protected IProject[] build(final int kind, Map args, IProgressMonitor mon) 
+    protected IProject[] build(final int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor mon) 
     		throws CoreException {
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
@@ -446,7 +447,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //            getConsoleStream().println(timedMessage("Starting Ceylon build on project: " + project.getName()));
 //            getConsoleStream().println("-----------------------------------");
             
-            boolean binariesGenerationOK;
+//            boolean binariesGenerationOK;
             final TypeChecker typeChecker;
             Collection<IFile> sourcesForBinaryGeneration = Collections.emptyList();
 
@@ -641,7 +642,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //          getConsoleStream().println(timedMessage("Incremental generation of class files..."));
 //          getConsoleStream().println("             ...compiling " + 
 //                  sourceToCompile.size() + " source files...");
-            binariesGenerationOK = generateBinaries(project, javaProject,
+            /*binariesGenerationOK =*/ 
+            generateBinaries(project, javaProject,
                   sourcesForBinaryGeneration, typeChecker, 
                   monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
 //          getConsoleStream().println(successMessage(binariesGenerationOK));
@@ -680,7 +682,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		job.schedule();
 	}
 
-	private void sheduleIncrementalRebuild(Map args, final IProject project, 
+	private void sheduleIncrementalRebuild(@SuppressWarnings("rawtypes") Map args, final IProject project, 
 			IProgressMonitor monitor) {
 		try {
 			getCeylonClassesOutputFolder(project).refreshLocal(DEPTH_INFINITE, monitor);
@@ -1033,28 +1035,24 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         try {
             cu = parser.compilationUnit();
         }
-        catch (org.antlr.runtime.RecognitionException e) {
+        catch (RecognitionException e) {
             throw new RuntimeException(e);
         }
         
-        List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
-        tokens.addAll(tokenStream.getTokens());
-
         List<LexError> lexerErrors = lexer.getErrors();
         for (LexError le : lexerErrors) {
             cu.addLexError(le);
         }
         lexerErrors.clear();
-
+        
         List<ParseError> parserErrors = parser.getErrors();
         for (ParseError pe : parserErrors) {
             cu.addParseError(pe);
         }
         parserErrors.clear();
         
-        
         PhasedUnit newPhasedUnit = new ProjectPhasedUnit(file, srcDir, cu, pkg, 
-                moduleManager, typeChecker, tokens);
+                moduleManager, typeChecker, tokenStream.getTokens());
         
         return newPhasedUnit;
     }
@@ -1646,6 +1644,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private boolean compile(final IProject project, IJavaProject javaProject, 
     		List<String> options, java.util.List<File> sourceFiles, 
     		final TypeChecker typeChecker, PrintWriter printWriter,
@@ -1657,9 +1656,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         		" source files in project " + project.getName(), 
         		sourceFiles.size());
 
-        CeyloncTool compiler;
+    	com.redhat.ceylon.compiler.java.tools.CeyloncTool compiler;
         try {
-            compiler = new CeyloncTool();
+            compiler = new com.redhat.ceylon.compiler.java.tools.CeyloncTool();
         } catch (VerifyError e) {
             System.err.println("ERROR: Cannot run tests! Did you maybe forget to configure the -Xbootclasspath/p: parameter?");
             throw e;
@@ -2392,7 +2391,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	            }
 	        }
         }
-        final com.sun.tools.javac.util.Context dummyContext = new com.sun.tools.javac.util.Context();
+//        final com.sun.tools.javac.util.Context dummyContext = new com.sun.tools.javac.util.Context();
         class ConsoleLog implements Logger {
         	PrintWriter writer;
             ConsoleLog() {

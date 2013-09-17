@@ -26,7 +26,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 /**
  * Caution: this implementation is a layer breaker and contains some "shortcuts"
  */
-@SuppressWarnings({"deprecation"})
 public class BestMatchHover 
         implements ITextHover, ITextHoverExtension, 
                    ITextHoverExtension2 {
@@ -58,7 +57,8 @@ public class BestMatchHover
 			return null;
 
 		for (ITextHover hover: fInstantiatedTextHovers) {
-			String s= hover.getHoverInfo(textViewer, hoverRegion);
+			@SuppressWarnings("deprecation")
+            String s= hover.getHoverInfo(textViewer, hoverRegion);
 			if (s!=null && !s.trim().isEmpty()) {
 				fBestHover= hover;
 				return s;
@@ -84,7 +84,8 @@ public class BestMatchHover
 				}
 			} 
 			else {
-				String s= hover.getHoverInfo(textViewer, hoverRegion);
+				@SuppressWarnings("deprecation")
+                String s= hover.getHoverInfo(textViewer, hoverRegion);
 				if (s!=null && !s.isEmpty()) {
 					fBestHover= hover;
 					return s;
