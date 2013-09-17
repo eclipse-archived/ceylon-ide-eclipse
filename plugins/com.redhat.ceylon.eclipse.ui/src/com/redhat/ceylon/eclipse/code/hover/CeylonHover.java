@@ -470,7 +470,7 @@ public class CeylonHover
 	}
 
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		DocBrowserInformationControlInput info= (DocBrowserInformationControlInput) getHoverInfo2(textViewer, hoverRegion);
+		CeylonBrowserInformationControlInput info= (CeylonBrowserInformationControlInput) getHoverInfo2(textViewer, hoverRegion);
 		return info!=null ? info.getHtml() : null;
 	}
 
@@ -479,7 +479,7 @@ public class CeylonHover
 		return internalGetHoverInfo(textViewer, hoverRegion);
 	}
 
-	private DocBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
+	private CeylonBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		Tree.CompilationUnit rn = editor.getParseController().getRootNode();
 		if (rn!=null) {
 			int hoffset = hoverRegion.getOffset();
@@ -516,7 +516,7 @@ public class CeylonHover
 		return null;
 	}
 
-	private DocBrowserInformationControlInput getInferredTypeHoverInfo(Node node) {
+	private CeylonBrowserInformationControlInput getInferredTypeHoverInfo(Node node) {
 		ProducedType t = ((Tree.LocalModifier) node).getTypeModel();
 		if (t==null) return null;
 		StringBuffer buffer= new StringBuffer();
@@ -533,10 +533,10 @@ public class CeylonHover
 		}
 		//buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
 		HTMLPrinter.addPageEpilog(buffer);
-		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 20);
+		return new CeylonBrowserInformationControlInput(null, null, buffer.toString(), 20);
 	}
 	
-	private DocBrowserInformationControlInput getTermTypeHoverInfo(Node node, String selectedText, IDocument doc) {
+	private CeylonBrowserInformationControlInput getTermTypeHoverInfo(Node node, String selectedText, IDocument doc) {
 		ProducedType t = ((Tree.Term) node).getTypeModel();
 		if (t==null) return null;
 		String expr = "";
@@ -593,7 +593,7 @@ public class CeylonHover
 				16, 16, "<a href=\"exf:\">Extract function</a>", 
 				20, 4);
 		HTMLPrinter.addPageEpilog(buffer);
-		return new DocBrowserInformationControlInput(null, null, buffer.toString(), 20);
+		return new CeylonBrowserInformationControlInput(null, null, buffer.toString(), 20);
 	}
 
     private void appendCharacterHoverInfo(StringBuffer buffer, String character) {
@@ -741,21 +741,21 @@ public class CeylonHover
 	 *         if no information is available
 	 * @since 3.4
 	 */
-	private DocBrowserInformationControlInput getHoverInfo(Object model, 
+	private CeylonBrowserInformationControlInput getHoverInfo(Object model, 
 			BrowserInformationControlInput previousInput, Node node) {
 		if (model instanceof Declaration) {
 			Declaration dec = (Declaration) model;
-			return new DocBrowserInformationControlInput(previousInput, dec, 
+			return new CeylonBrowserInformationControlInput(previousInput, dec, 
 					getDocumentationFor(editor.getParseController(), dec, node), 20);
 		}
 		else if (model instanceof Package) {
 			Package dec = (Package) model;
-			return new DocBrowserInformationControlInput(previousInput, dec, 
+			return new CeylonBrowserInformationControlInput(previousInput, dec, 
 					getDocumentationFor(editor.getParseController(), dec), 20);
 		}
 		else if (model instanceof Module) {
 			Module dec = (Module) model;
-			return new DocBrowserInformationControlInput(previousInput, dec, 
+			return new CeylonBrowserInformationControlInput(previousInput, dec, 
 					getDocumentationFor(editor.getParseController(), dec), 20);
 		}
 		else {

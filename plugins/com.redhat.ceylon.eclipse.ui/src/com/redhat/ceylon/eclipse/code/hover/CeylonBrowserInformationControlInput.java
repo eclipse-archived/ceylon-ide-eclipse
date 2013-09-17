@@ -10,7 +10,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
  *
  * @since 3.4
  */
-class DocBrowserInformationControlInput extends BrowserInformationControlInput {
+class CeylonBrowserInformationControlInput extends BrowserInformationControlInput {
 
 	private final Object model;
 	private final String fHtml;
@@ -23,7 +23,7 @@ class DocBrowserInformationControlInput extends BrowserInformationControlInput {
 	 * @param html HTML contents, must not be null
 	 * @param leadingImageWidth the indent required for the element image
 	 */
-	public DocBrowserInformationControlInput(BrowserInformationControlInput previous, 
+	public CeylonBrowserInformationControlInput(BrowserInformationControlInput previous, 
 			Object model, String html, int leadingImageWidth) {
 		super(previous);
 		Assert.isNotNull(html);
