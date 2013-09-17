@@ -28,7 +28,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -101,7 +101,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		
 		super.apply(document);
 		
-		if (EditorsPlugin.getDefault().getPreferenceStore()
+		if (EditorsUI.getPreferenceStore()
 				.getBoolean(CeylonSourceViewerConfiguration.LINKED_MODE)) {
 			if (declaration instanceof Generic) {
 				ParameterList paramList = null;

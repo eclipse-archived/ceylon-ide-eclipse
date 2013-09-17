@@ -46,7 +46,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
@@ -244,7 +244,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         return false;
                     }
                     try {
-                    	if (EditorsPlugin.getDefault().getPreferenceStore()
+                    	if (EditorsUI.getPreferenceStore()
                     			.getBoolean(CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION)) {
                     		endOffset = correctSourceIndentation(new Point(endOffset-text.length(), text.length()), doc)+1;
                     	}

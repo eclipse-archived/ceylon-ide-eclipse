@@ -25,7 +25,7 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -43,7 +43,7 @@ public final class RenameDeclarationLinkedMode extends
 		}
 		
 		public static boolean useLinkedMode() {
-			IPreferenceStore prefStore = EditorsPlugin.getDefault().getPreferenceStore();
+			IPreferenceStore prefStore = EditorsUI.getPreferenceStore();
 			return prefStore.getBoolean(LINKED_MODE_RENAME);
 		}
 		

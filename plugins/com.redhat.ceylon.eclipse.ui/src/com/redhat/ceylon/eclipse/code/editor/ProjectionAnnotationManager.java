@@ -27,7 +27,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.IProjectionListener;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -283,7 +283,7 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
         final boolean autofoldImports;
         final boolean autofoldComments;
         if (firstTime) {
-            IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+            IPreferenceStore store = EditorsUI.getPreferenceStore();
             store.setDefault(AUTO_FOLD_IMPORTS, true);
             autofoldImports = store.getBoolean(AUTO_FOLD_IMPORTS);
             store.setDefault(AUTO_FOLD_COMMENTS, false);

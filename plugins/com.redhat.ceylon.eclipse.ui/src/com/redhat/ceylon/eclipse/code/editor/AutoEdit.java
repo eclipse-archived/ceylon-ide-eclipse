@@ -32,7 +32,7 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 
@@ -118,7 +118,7 @@ class AutoEdit {
 		String opening = null;
 		String closing = null;
 		
-		IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+		IPreferenceStore store = EditorsUI.getPreferenceStore();
 		
 		boolean found=false;
 		for (String[] type : FENCES) {
@@ -511,7 +511,7 @@ class AutoEdit {
             }
             
             StringBuilder buf = new StringBuilder(command.text);
-            boolean closeBrace = EditorsPlugin.getDefault().getPreferenceStore().getBoolean(CLOSE_BRACES) && 
+            boolean closeBrace = EditorsUI.getPreferenceStore().getBoolean(CLOSE_BRACES) && 
                     count("{")>count("}");
             int end = getEndOfCurrentLine();
 			appendIndent(command.offset, end, start, command.offset, 

@@ -100,10 +100,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.ContentAssistAction;
@@ -1158,7 +1158,7 @@ public class CeylonEditor extends TextEditor {
         }*/
         projectionSupport.install();
 
-        IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
         store.setDefault(EDITOR_FOLDING_ENABLED, true);
         if (store.getBoolean(EDITOR_FOLDING_ENABLED)) {
             sourceViewer.doOperation(ProjectionViewer.TOGGLE);
@@ -1425,7 +1425,7 @@ public class CeylonEditor extends TextEditor {
     }
     
     boolean isFoldingEnabled() {
-        return EditorsPlugin.getDefault().getPreferenceStore().getBoolean(EDITOR_FOLDING_ENABLED);
+        return EditorsUI.getPreferenceStore().getBoolean(EDITOR_FOLDING_ENABLED);
     }
 
 }
