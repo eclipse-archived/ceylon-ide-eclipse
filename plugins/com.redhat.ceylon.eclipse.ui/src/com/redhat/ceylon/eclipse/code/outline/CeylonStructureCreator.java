@@ -10,31 +10,28 @@
  *******************************************************************************/
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.eclipse.compare.IEditableContent;
 import org.eclipse.compare.IEncodedStreamContentAccessor;
 import org.eclipse.compare.ISharedDocumentAdapter;
 import org.eclipse.compare.IStreamContentAccessor;
-import org.eclipse.compare.ITypedElement;
+import org.eclipse.compare.ResourceNode;
 import org.eclipse.compare.structuremergeviewer.DocumentRangeNode;
 import org.eclipse.compare.structuremergeviewer.IStructureComparator;
 import org.eclipse.compare.structuremergeviewer.StructureCreator;
 import org.eclipse.compare.structuremergeviewer.StructureRootNode;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
@@ -42,83 +39,11 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
  */
 public class CeylonStructureCreator extends StructureCreator {
 	
-    public class TreeCompareNode extends DocumentRangeNode 
-            implements ITypedElement {
-    	
-        private final Node astNode;
-
-        public TreeCompareNode(CeylonOutlineNode treeNode, IDocument document) {
-            this(null, treeNode, document);
-        }
-
-        public TreeCompareNode(DocumentRangeNode parent, CeylonOutlineNode treeNode, 
-        		IDocument document) {
-            super(parent, CeylonStructureCreator.getTypeCode(treeNode.getTreeNode()), 
-                    getID(treeNode.getTreeNode()), document,
-                    getStartOffset(treeNode.getTreeNode()), 
-                    getLength(treeNode.getTreeNode()));
-            astNode= treeNode.getTreeNode();
-        }
-
-        @Override
-        public String toString() {
-            return getTypeCode() + ":" + getId();
-        }
-
-        @Override
-        public Image getImage() {
-            return fLabelProvider!=null ? 
-            		fLabelProvider.getImage(astNode) : null;
-        }
-
-        @Override
-        public String getName() {
-            return fLabelProvider!=null ? 
-            		fLabelProvider.getText(astNode) : toString();
-        }
-
-        @Override
-        public String getType() {
-            return "?type?";
-        }
-    }
-
-    private ILabelProvider fLabelProvider;
+    private final ILabelProvider labelProvider = new CeylonLabelProvider(true);
     
-    static int getTypeCode(Object o) {
-        if (o instanceof CeylonOutlineNode) {
-            o = ((CeylonOutlineNode) o).getTreeNode();
-        }
-        if (o instanceof Tree.Declaration) {
-            return ((Tree.Declaration) o).getDeclarationModel()
-                    .getDeclarationKind().ordinal();
-        }
-        else if (o instanceof Tree.CompilationUnit) {
-            return 100;
-        }
-        else {
-            return -1;
-        }
-    }
-    
-    static String getID(Object o) {
-        if (o instanceof CeylonOutlineNode) {
-            o = ((CeylonOutlineNode) o).getTreeNode();
-        }
-        if (o instanceof Tree.Declaration) {
-            return ((Tree.Declaration) o).getDeclarationModel().getQualifiedNameString();
-        }
-        else if (o instanceof Tree.CompilationUnit) {
-            return ((Tree.CompilationUnit) o).getUnit().getFilename();
-        }
-        else {
-            return o.toString();
-        }
-    }
-
     @Override
     public String getName() {
-        return "Ceylon Structural Comparison";
+        return "Ceylon Structure Compare";
     }
 
     @Override
@@ -127,35 +52,48 @@ public class CeylonStructureCreator extends StructureCreator {
     		IProgressMonitor monitor) 
     				throws CoreException {
 
-    	CeylonParseController pc= new CeylonParseController();
-    	fLabelProvider= new CeylonLabelProvider(true);
-    	CeylonOutlineBuilder builder= new CeylonOutlineBuilder();
+        final boolean isEditable = input instanceof IEditableContent ?
+                ((IEditableContent) input).isEditable() : false;
         
-    	//TODO: pass some more info in here!
-    	pc.initialize(null, null, null);
-
-    	pc.parse(document.get(), monitor, null);
+        StructureRootNode structureRootNode = new StructureRootNode(document, 
+                    input, this, sharedDocumentAdapter) {
+            @Override
+            public boolean isEditable() {
+                return isEditable;
+            }
+        };
+        
+    	CeylonParseController pc= new CeylonParseController();
+    	CeylonOutlineBuilder builder= new CeylonOutlineBuilder();
+    	
+    	if (input instanceof ResourceNode) {
+    	    IResource file = ((ResourceNode) input).getResource();
+    	    pc.initialize(file.getProjectRelativePath(), file.getProject(), null);
+    	}
+    	else {
+    	    pc.initialize(null, null, null);
+    	}
+    	
+    	pc.parse(document, monitor, null);
+    	
     	Node rootNode = pc.getRootNode();
-    	DocumentRangeNode compareRoot;
-
+    	
     	if (rootNode!=null) {
     		// now visit the model, creating TreeCompareNodes for each ModelTreeNode
-    		compareRoot= buildCompareTree(builder.buildTree(rootNode),
-    				null, document);
-    	} 
-    	else {
-    		compareRoot= new StructureRootNode(document, input, this, 
-    				sharedDocumentAdapter);
+    		buildCompareTree(builder.buildTree(rootNode), structureRootNode, document);
     	}
-    	return compareRoot;
+    	
+        return structureRootNode;
 
     }
 
-    private TreeCompareNode buildCompareTree(CeylonOutlineNode treeNode, 
+    private CeylonDocumentRangeNode buildCompareTree(CeylonOutlineNode outlineNode, 
     		DocumentRangeNode parent, IDocument document) {
-        TreeCompareNode compareNode= new TreeCompareNode(parent, treeNode, document);
-        for (CeylonOutlineNode treeChild: treeNode.getChildren()) {
-            compareNode.addChild(buildCompareTree(treeChild, compareNode, document));
+        CeylonDocumentRangeNode compareNode = new CeylonDocumentRangeNode(labelProvider, 
+                parent, outlineNode, document);
+        parent.addChild(compareNode);
+        for (CeylonOutlineNode treeChild: outlineNode.getChildren()) {
+            buildCompareTree(treeChild, compareNode, document);
         }
         return compareNode;
     }
@@ -165,9 +103,12 @@ public class CeylonStructureCreator extends StructureCreator {
         if (node instanceof IStreamContentAccessor) {
             IStreamContentAccessor sca = (IStreamContentAccessor) node;
             try {
-                return readString(sca);
+                String contents = readString(sca);
+                return ignoreWhitespace ? contents.replaceAll("\\w+", " ") : contents;
             } 
-            catch (CoreException ex) {}
+            catch (CoreException ex) {
+                ex.printStackTrace();
+            }
         }
         return null;
     }
@@ -175,46 +116,47 @@ public class CeylonStructureCreator extends StructureCreator {
     private static String readString(InputStream is, String encoding) {
         if (is == null)
             return null;
-        BufferedReader reader = null;
+        BufferedReader reader= null;
         try {
-            StringBuffer buffer = new StringBuffer();
-            char[] part = new char[2048];
-            int read = 0;
-            reader = new BufferedReader(new InputStreamReader(is, encoding));
-            while ((read = reader.read(part)) != -1)
+            StringBuffer buffer= new StringBuffer();
+            char[] part= new char[2048];
+            int read= 0;
+            reader= new BufferedReader(new InputStreamReader(is, encoding));
+
+            while ((read= reader.read(part)) != -1)
                 buffer.append(part, 0, read);
+
             return buffer.toString();
 
-        } 
-        catch (IOException ex) {
+        } catch (IOException ex) {
             // NeedWork
-        } 
-        finally {
-            if (reader!=null) {
+        } finally {
+            if (reader != null) {
                 try {
                     reader.close();
-                } 
-                catch (IOException ex) {}
+                } catch (IOException ex) {
+                    // silently ignored
+                }
             }
         }
         return null;
     }
 
     public static String readString(IStreamContentAccessor sa) throws CoreException {
-        InputStream is = sa.getContents();
-        if (is!=null) {
-            String encoding = null;
+        InputStream is= sa.getContents();
+        if (is != null) {
+            String encoding= null;
             if (sa instanceof IEncodedStreamContentAccessor) {
                 try {
-                    encoding = ((IEncodedStreamContentAccessor) sa).getCharset();
-                } 
-                catch (Exception e) {}
+                    encoding= ((IEncodedStreamContentAccessor) sa).getCharset();
+                } catch (Exception e) {
+                }
             }
-            if (encoding==null) {
-                encoding = ResourcesPlugin.getEncoding();
-            }
+            if (encoding == null)
+                encoding= ResourcesPlugin.getEncoding();
             return readString(is, encoding);
         }
         return null;
     }
+
 }
