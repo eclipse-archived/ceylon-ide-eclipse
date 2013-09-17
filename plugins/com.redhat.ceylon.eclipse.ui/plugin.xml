@@ -27,6 +27,18 @@
    </extension>
    
    <extension
+         point="org.eclipse.compare.contentViewers">
+      <viewer
+            extensions="ceylon"
+            class="com.redhat.ceylon.eclipse.code.viewer.CeylonTextViewerCreator"
+            id="com.redhat.ceylon.eclipse.ui.contentViewer">
+      </viewer>
+      <contentTypeBinding
+            contentTypeId="com.redhat.ceylon.eclipse.ui.ceylonSource"
+            contentViewerId="com.redhat.ceylon.eclipse.ui.contentViewer">
+      </contentTypeBinding>
+   </extension>
+   <extension
       point="org.eclipse.compare.contentMergeViewers">
       <viewer
             extensions="ceylon"
