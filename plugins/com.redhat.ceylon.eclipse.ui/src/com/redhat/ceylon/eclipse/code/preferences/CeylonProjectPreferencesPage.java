@@ -99,7 +99,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
 //        Label misc = new Label(parent, SWT.LEFT | SWT.WRAP);
 //        misc.setText("Ceylon compiler settings");
 
-        Group group = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        Group group = new Group(parent, SWT.NONE);
         Composite composite = group;
         group.setText("Platform");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
