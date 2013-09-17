@@ -8,7 +8,7 @@ import org.eclipse.swt.graphics.Point;
 
 class AutoEditTest extends CeylonAutoEditStrategy {
     
-	AutoEditTest() { super(null); }
+	AutoEditTest() { super(); }
 	
     public static void main(String[] args) {
         AutoEditTest instance = new AutoEditTest();

@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.DocumentRewriteSession;
@@ -30,6 +31,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.information.IInformationPresenter;
+import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
@@ -220,7 +222,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     return false;
                 }
                 else {
-                    Map<Declaration,String> imports = (Map<Declaration,String>) clipboard.getContents(ImportsTransfer.INSTANCE);
+                    Map<Declaration,String> imports = (Map) clipboard.getContents(ImportsTransfer.INSTANCE);
                     IRegion selection = editor.getSelection();
                     
                     IDocument doc= this.getDocument();
@@ -552,32 +554,43 @@ public class CeylonSourceViewer extends ProjectionViewer {
             if (backgroundColor != null && backgroundColor.isDisposed())
                 textWidget.setBackground(null);
         }
+        
         super.configure(configuration);
-        getTextHoveringController().setSizeConstraints(80, 30, false, true);
+        
+        AbstractInformationControlManager hoverController = getTextHoveringController();
+        if (hoverController!=null) { //null in a merge viewer
+            hoverController.setSizeConstraints(80, 30, false, true);
+        }
+        
         if (configuration instanceof CeylonSourceViewerConfiguration) {
-            CeylonSourceViewerConfiguration svc= (CeylonSourceViewerConfiguration) configuration;
-
-            outlinePresenter= svc.getOutlinePresenter(this);
-            if (outlinePresenter!=null)
+            CeylonSourceViewerConfiguration svc = (CeylonSourceViewerConfiguration) configuration;
+            
+            outlinePresenter = svc.getOutlinePresenter(this);
+            if (outlinePresenter!=null) {
                 outlinePresenter.install(this);
-
-            structurePresenter= svc.getOutlinePresenter(this);
-            if (structurePresenter!=null)
+            }
+            
+            structurePresenter = svc.getOutlinePresenter(this);
+            if (structurePresenter!=null) {
                 structurePresenter.install(this);
-
-            hierarchyPresenter= svc.getHierarchyPresenter(this, true);
-            if (hierarchyPresenter!=null)
+            }
+            
+            hierarchyPresenter = svc.getHierarchyPresenter(this);
+            if (hierarchyPresenter!=null) {
                 hierarchyPresenter.install(this);
+            }
             
             codePresenter = svc.getCodePresenter(this);
-            if (codePresenter!=null)
+            if (codePresenter!=null) {
                 codePresenter.install(this);
-
-            autoEditStrategy = new CeylonAutoEditStrategy(svc.editor);
+            }
+            
+            autoEditStrategy = new CeylonAutoEditStrategy();
             
             fQuickAssistAssistant = svc.getQuickAssistAssistant(this);
-            if (fQuickAssistAssistant != null)
+            if (fQuickAssistAssistant != null) {
                 fQuickAssistAssistant.install(this);
+            }
         }
         //    if (fPreferenceStore != null) {
         //        fPreferenceStore.addPropertyChangeListener(this);
@@ -690,5 +703,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
             }
         }
     }
-
+    
+    public IPresentationReconciler getPresentationReconciler() {
+        return fPresentationReconciler;
+    }
+    
 }

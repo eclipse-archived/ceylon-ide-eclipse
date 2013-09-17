@@ -38,7 +38,6 @@ import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.SELECT_WO
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_NEXT;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_PREVIOUS;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
@@ -54,8 +53,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
 import org.eclipse.jface.action.Action;
@@ -78,8 +75,10 @@ import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.ISourceViewerExtension2;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.IVerticalRulerInfo;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -220,7 +219,7 @@ public class CeylonEditor extends TextEditor {
      * @return the StructuredSourceViewerConfiguration to use with this editor
      */
     protected CeylonSourceViewerConfiguration createSourceViewerConfiguration() {
-        return new CeylonSourceViewerConfiguration(getPreferenceStore(), this);
+        return new CeylonSourceViewerConfiguration(this);
     }
 
     public IPreferenceStore getPrefStore() {
@@ -266,14 +265,17 @@ public class CeylonEditor extends TextEditor {
         setAction("ContentAssistProposal", action);
         markAsStateDependentAction("ContentAssistProposal", true);
 
-        toggleBreakpointAction= new ToggleBreakpointAction(this, 
-                getDocumentProvider().getDocument(getEditorInput()), 
-                getVerticalRuler());
-        setAction("ToggleBreakpoint", action);
-        
-        enableDisableBreakpointAction= new RulerEnableDisableBreakpointAction(this, 
-                getVerticalRuler());
-        setAction("ToggleBreakpoint", action);
+        IVerticalRuler verticalRuler = getVerticalRuler();
+        if (verticalRuler!=null) {
+            toggleBreakpointAction= new ToggleBreakpointAction(this, 
+                    getDocumentProvider().getDocument(getEditorInput()), 
+                    verticalRuler);
+            setAction("ToggleBreakpoint", action);
+
+            enableDisableBreakpointAction= new RulerEnableDisableBreakpointAction(this, 
+                    verticalRuler);
+            setAction("ToggleBreakpoint", action);
+        }
 
 //        action= new TextOperationAction(bundle, "Format.", this, 
 //                CeylonSourceViewer.FORMAT);
@@ -876,7 +878,7 @@ public class CeylonEditor extends TextEditor {
         }
     }
     
-    private void uninstallQuickAccessAction() {
+    protected void uninstallQuickAccessAction() {
         if (fHandlerService != null) {
             fHandlerService.deactivateHandler(fRefactorQuickAccessHandlerActivation); 
             fHandlerService.deactivateHandler(fFindQuickAccessHandlerActivation); 
@@ -996,11 +998,11 @@ public class CeylonEditor extends TextEditor {
     }
 
     private void initializeParseController() {
-        IEditorInput editorInput= getEditorInput();
+        IEditorInput editorInput = getEditorInput();
         IFile file = getFile(editorInput);
         IPath filePath = getPath(editorInput);
         parseController = new CeylonParseController();
-        IProject project= file!=null && file.exists() ? file.getProject() : null;
+        IProject project = file!=null && file.exists() ? file.getProject() : null;
         parseController.initialize(filePath, project, annotationCreator);
     }
 
@@ -1225,8 +1227,12 @@ public class CeylonEditor extends TextEditor {
             moveListener = null;
         }
         
-        toggleBreakpointAction.dispose(); // this holds onto the IDocument
-        foldingActionGroup.dispose();
+        if (toggleBreakpointAction!=null) {
+            toggleBreakpointAction.dispose(); // this holds onto the IDocument
+        }
+        if (foldingActionGroup!=null) {
+            foldingActionGroup.dispose();
+        }
         
         if (projectionSupport!=null) {
             projectionSupport.dispose();
@@ -1285,12 +1291,12 @@ public class CeylonEditor extends TextEditor {
         }
     }
     
-    protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
+    protected SourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
         
         fAnnotationAccess = getAnnotationAccess();
         fOverviewRuler = createOverviewRuler(getSharedColors());
         
-        ISourceViewer viewer= new CeylonSourceViewer(this, parent, ruler, 
+        SourceViewer viewer= new CeylonSourceViewer(this, parent, ruler, 
                 getOverviewRuler(), isOverviewRulerVisible(), styles);
         
         // ensure decoration support has been created and configured.
@@ -1344,21 +1350,72 @@ public class CeylonEditor extends TextEditor {
         return bracketMatcher;
     }
 
+//    protected void doSetInput(IEditorInput input) throws CoreException {
+//        // Catch CoreExceptions here, since it's possible that things like IOExceptions occur
+//        // while retrieving the input's contents, e.g., if the given input doesn't exist.
+//        try {
+//            super.doSetInput(input);
+//        } 
+//        catch (CoreException e) {
+//            if (e.getCause() instanceof IOException) {
+//                throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 
+//                        0, "Unable to read source text", e.getStatus().getException()));
+//            }
+//        }
+//        setInsertMode(SMART_INSERT);    
+//    }
+
+    @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
-        // Catch CoreExceptions here, since it's possible that things like IOExceptions occur
-        // while retrieving the input's contents, e.g., if the given input doesn't exist.
-        try {
-            super.doSetInput(input);
-        } 
-        catch (CoreException e) {
-            if (e.getCause() instanceof IOException) {
-                throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 
-                        0, "Unable to read source text", e.getStatus().getException()));
-            }
+        ISourceViewer sourceViewer= getSourceViewer();
+        if (!(sourceViewer instanceof ISourceViewerExtension2)) {
+//            setPreferenceStore(createCombinedPreferenceStore(input));
+            internalDoSetInput(input);
+            return;
         }
-        setInsertMode(SMART_INSERT);    
+
+        // uninstall & unregister preference store listener
+        getSourceViewerDecorationSupport(sourceViewer).uninstall();
+        ((ISourceViewerExtension2)sourceViewer).unconfigure();
+
+//        setPreferenceStore(createCombinedPreferenceStore(input));
+
+        // install & register preference store listener
+        sourceViewer.configure(getSourceViewerConfiguration());
+        getSourceViewerDecorationSupport(sourceViewer).install(getPreferenceStore());
+
+        internalDoSetInput(input);
     }
 
+    private void internalDoSetInput(IEditorInput input) throws CoreException {
+//        ISourceViewer sourceViewer= getSourceViewer();
+//        JavaSourceViewer javaSourceViewer= null;
+//        if (sourceViewer instanceof JavaSourceViewer)
+//            javaSourceViewer= (JavaSourceViewer)sourceViewer;
+
+//        IPreferenceStore store= getPreferenceStore();
+//        if (javaSourceViewer != null && isFoldingEnabled() &&(store == null || 
+//                !store.getBoolean(PreferenceConstants.EDITOR_SHOW_SEGMENTS)))
+//            javaSourceViewer.prepareDelayedProjection();
+
+        super.doSetInput(input);
+
+//        if (javaSourceViewer != null && javaSourceViewer.getReconciler() == null) {
+//            IReconciler reconciler= getSourceViewerConfiguration().getReconciler(javaSourceViewer);
+//            if (reconciler != null) {
+//                reconciler.install(javaSourceViewer);
+//                javaSourceViewer.setReconciler(reconciler);
+//            }
+//        }
+
+        if (fEncodingSupport != null)
+            fEncodingSupport.reset();
+
+//        setOutlinePageInput(fOutlinePage, input);
+//
+//        if (isShowingOverrideIndicators())
+//            installOverrideIndicator(false);
+    }
     /**
      * Add a Model listener to this editor. Any time the underlying AST is recomputed, the listener is notified.
      * 

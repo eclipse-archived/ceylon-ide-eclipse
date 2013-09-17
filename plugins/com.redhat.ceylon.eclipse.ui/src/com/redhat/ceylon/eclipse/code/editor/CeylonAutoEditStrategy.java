@@ -55,12 +55,6 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     //      we automagically escape unescaped quotes in the pasted
     //      text?
     
-	CeylonEditor editor;
-	
-	public CeylonAutoEditStrategy(CeylonEditor editor) {
-		this.editor = editor;
-	}
-	
 	 public void customizeDocumentCommand(IDocument document, DocumentCommand command) {
 		 List<CommonToken> tokens=null;
 //		 if (editor!=null) {

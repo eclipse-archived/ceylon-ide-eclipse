@@ -31,7 +31,6 @@ import org.eclipse.swt.custom.StyleRange;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class PresentationDamageRepairer implements IPresentationDamager, 
         IPresentationRepairer {
@@ -134,9 +133,8 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		CommonTokenStream tokenStream = new CommonTokenStream(lexer);
 		
 		CeylonParser parser = new CeylonParser(tokenStream);
-		Tree.CompilationUnit cu;
 		try {
-		    cu = parser.compilationUnit();
+		    parser.compilationUnit();
 		}
 		catch (RecognitionException e) {
 		    throw new RuntimeException(e);
@@ -264,11 +262,13 @@ class PresentationDamageRepairer implements IPresentationDamager,
                 attribute==null ? null : attribute.getBackground(),
                 attribute==null ? extraStyle : attribute.getStyle()|extraStyle);
 		
-		LinkedModeModel linkedMode = editor.getLinkedMode();
-		if (linkedMode!=null &&
-				(linkedMode.anyPositionContains(startOffset) ||
-				linkedMode.anyPositionContains(endOffset))) {
-			return;
+		if (editor!=null) {
+		    LinkedModeModel linkedMode = editor.getLinkedMode();
+		    if (linkedMode!=null &&
+		            (linkedMode.anyPositionContains(startOffset) ||
+		                    linkedMode.anyPositionContains(endOffset))) {
+		        return;
+		    }
 		}
 		
         // Negative (possibly 0) length style ranges will cause an 

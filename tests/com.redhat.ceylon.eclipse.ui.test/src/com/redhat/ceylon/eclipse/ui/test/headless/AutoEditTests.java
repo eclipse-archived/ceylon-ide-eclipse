@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.ui.test.headless;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -10,10 +8,13 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Point;
 import org.junit.Test;
+
 import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 
 public class AutoEditTests {
- 
+    
+	public AutoEditTests() {}
+		
     @Test
     public void testCorrectIndentation1() {
         checkForCorrectIndentation(
@@ -761,7 +762,7 @@ public class AutoEditTests {
             cmd.text= Character.toString('\n');
             cmd.doit= true;
             cmd.shiftsCaret= true;
-            new CeylonAutoEditStrategy(null).customizeDocumentCommand(doc, cmd);
+            new CeylonAutoEditStrategy().customizeDocumentCommand(doc, cmd);
             doc.replace(cmd.offset, cmd.length, cmd.text);
         } catch (BadLocationException e) {
             System.err.println("Correct Indentation command failed " + e.getMessage());
@@ -776,7 +777,7 @@ public class AutoEditTests {
             cmd.text= Character.toString('}');
             cmd.doit= true;
             cmd.shiftsCaret= true;
-            new CeylonAutoEditStrategy(null).customizeDocumentCommand(doc, cmd);
+            new CeylonAutoEditStrategy().customizeDocumentCommand(doc, cmd);
             doc.replace(cmd.offset, cmd.length, cmd.text);
         } catch (BadLocationException e) {
             System.err.println("Correct Indentation command failed " + e.getMessage());
@@ -828,7 +829,7 @@ public class AutoEditTests {
                 cmd.doit= true;
                 cmd.shiftsCaret= false;
 //              boolean saveMode= fAutoEditStrategy.setFixMode(true);
-                new CeylonAutoEditStrategy(null).customizeDocumentCommand(doc, cmd);
+                new CeylonAutoEditStrategy().customizeDocumentCommand(doc, cmd);
 //              fAutoEditStrategy.setFixMode(saveMode);
                 doc.replace(cmd.offset, cmd.length, cmd.text);
             }

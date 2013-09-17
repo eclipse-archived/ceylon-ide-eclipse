@@ -220,6 +220,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     }
 
     private void placeAnnotations(Map<Annotation,Position> annotationMap, IAnnotationModel annotationModel) {
+        if (annotationModel==null) return;
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
             	((IAnnotationModelExtension) annotationModel).replaceAnnotations(fOccurrenceAnnotations, annotationMap);

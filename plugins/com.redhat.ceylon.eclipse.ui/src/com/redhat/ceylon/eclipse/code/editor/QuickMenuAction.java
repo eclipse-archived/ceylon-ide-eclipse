@@ -55,7 +55,6 @@ public abstract class QuickMenuAction extends Action {
      */
     public void dispose() {
         if (creator != null) {
-            creator.dispose();
             creator = null;
         }
     }
