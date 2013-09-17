@@ -18,14 +18,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.compare.CompareConfiguration;
-import org.eclipse.compare.contentmergeviewer.ITokenComparator;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
-import org.eclipse.compare.contentmergeviewer.TokenComparator;
-import org.eclipse.compare.rangedifferencer.IRangeComparator;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.compare.JavaCompareUtilities;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
