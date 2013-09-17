@@ -129,8 +129,8 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     }
 
     @Override
-    protected Comparator getItemsComparator() {
-        Comparator comp = new Comparator() {
+    protected Comparator<Object> getItemsComparator() {
+        return new Comparator<Object>() {
             public int compare(Object o1, Object o2) {
                 if(o1 instanceof Module 
                     && o2 instanceof Module) {
@@ -140,7 +140,6 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
                 return -1;
             }
         };
-        return comp;
     }
 
     @Override
