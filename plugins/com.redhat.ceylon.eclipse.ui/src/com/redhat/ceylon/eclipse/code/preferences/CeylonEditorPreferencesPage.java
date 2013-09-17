@@ -40,7 +40,7 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 public class CeylonEditorPreferencesPage 
         extends FieldEditorPreferencePage 
@@ -128,7 +128,7 @@ public class CeylonEditorPreferencesPage
         //TODO: is it really right that we're 
         //      storing all our preferences
         //      in some other plugin's store??
-        setPreferenceStore(EditorsPlugin.getDefault().getPreferenceStore());
+        setPreferenceStore(EditorsUI.getPreferenceStore());
 //        setDescription("Preferences for the Ceylon editor");
     }
     
@@ -260,7 +260,7 @@ public class CeylonEditorPreferencesPage
                 "Highlight enclosing brackets", p2);
         enclosingBrackets.load();
         addField(enclosingBrackets);
-        final IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+        final IPreferenceStore store = EditorsUI.getPreferenceStore();
         boolean enabled = store.getBoolean(MATCHING_BRACKET);
         currentBracket.setEnabled(enabled, p1);
         enclosingBrackets.setEnabled(enabled, p2);
@@ -311,7 +311,7 @@ public class CeylonEditorPreferencesPage
         autoActivationDelay.setMaximum(2000);
         autoActivationDelay.load();
         addField(autoActivationDelay);
-        final IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+        final IPreferenceStore store = EditorsUI.getPreferenceStore();
         boolean enabled = store.getBoolean(AUTO_ACTIVATION);
         autoActivationChars.setEnabled(enabled, p1);
         autoActivationDelay.setEnabled(enabled, p2);        
@@ -347,7 +347,7 @@ public class CeylonEditorPreferencesPage
                 "Automatically fold comments", p2);
         autoFoldComments.load();
         addField(autoFoldComments);
-        final IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
+        final IPreferenceStore store = EditorsUI.getPreferenceStore();
         boolean enabled = store.getBoolean(EDITOR_FOLDING_ENABLED);
         autoFoldImports.setEnabled(enabled, p1);
         autoFoldComments.setEnabled(enabled, p2);
