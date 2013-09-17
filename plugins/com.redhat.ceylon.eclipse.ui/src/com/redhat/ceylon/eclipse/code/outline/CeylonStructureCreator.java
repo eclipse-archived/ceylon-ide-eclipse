@@ -93,11 +93,13 @@ public class CeylonStructureCreator extends StructureCreator {
                 parent, outlineNode, document);
         parent.addChild(compareNode);
         for (CeylonOutlineNode treeChild: outlineNode.getChildren()) {
-            buildCompareTree(treeChild, compareNode, document);
+            if (!(treeChild.getTreeNode() instanceof PackageNode)) {
+                buildCompareTree(treeChild, compareNode, document);
+            }
         }
         return compareNode;
     }
-
+    
     @Override
     public String getContents(Object node, boolean ignoreWhitespace) {
         if (node instanceof IStreamContentAccessor) {
@@ -157,6 +159,16 @@ public class CeylonStructureCreator extends StructureCreator {
             return readString(is, encoding);
         }
         return null;
+    }
+    
+    @Override
+    protected String[] getPath(Object element, Object input) {
+        return super.getPath(element, input);
+    }
+
+    @Override
+    protected String getDocumentPartitioning() {
+        return IDocument.DEFAULT_CONTENT_TYPE;
     }
 
 }
