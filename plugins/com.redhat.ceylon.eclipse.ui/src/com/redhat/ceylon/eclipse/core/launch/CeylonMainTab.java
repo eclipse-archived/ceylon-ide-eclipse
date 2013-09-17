@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
@@ -79,7 +78,7 @@ public class CeylonMainTab extends SharedJavaMainTab {
      * @see org.eclipse.jdt.internal.debug.ui.launcher.SharedJavaMainTab#createMainTypeExtensions(org.eclipse.swt.widgets.Composite)
      */
     protected void createMainTypeExtensions(Composite parent) {
-        fStopInMainCheckButton = SWTFactory.createCheckButton(parent, LauncherMessages.JavaMainTab_St_op_in_main_1, null, false, 1);
+        fStopInMainCheckButton = SWTFactory.createCheckButton(parent, "St&op in main", null, false, 1);
         fStopInMainCheckButton.addSelectionListener(getDefaultListener());
     }
 
