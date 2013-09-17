@@ -35,7 +35,7 @@ public class CeylonOutlineBuilder {
 		}
 		String filename = rootNode.getUnit().getFilename();
 		if (!filename.equals("module.ceylon") &&
-				!filename.equals("package.ceylon")) {
+		    !filename.equals("package.ceylon")) {
 			createSubItem(pn, PACKAGE_CATEGORY);
 		}
 		//createSubItem(rootNode);

@@ -17,29 +17,34 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
         implements ITypedElement {
 	
     private final ILabelProvider labelProvider;
-    private final Node node;
+    private final CeylonOutlineNode node;
     
     public CeylonDocumentRangeNode(ILabelProvider labelProvider, 
             DocumentRangeNode parent, CeylonOutlineNode outlineNode, 
     		IDocument document) {
         super(parent, 
-                getTypeCode(outlineNode), 
+                1, 
                 getIdentifier(outlineNode), 
                 document,
-                getStartOffset(outlineNode.getTreeNode()), 
-                getLength(outlineNode.getTreeNode()));
-        node = outlineNode.getTreeNode();
+                getStartOffset(outlineNode), 
+                getLength(outlineNode));
+        node = outlineNode;
         this.labelProvider = labelProvider;
     }
     
     @Override
     public Image getImage() {
-        return labelProvider.getImage(node);
+        return labelProvider.getImage(node.getTreeNode());
     }
     
     @Override
     public String getName() {
-        return labelProvider.getText(node);
+        if (node.getParent()==null) {
+            return "Ceylon Compilation Unit";
+        }
+        else {
+            return labelProvider.getText(node.getTreeNode());
+        }
     }
     
     @Override
@@ -47,38 +52,46 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
         return "ceylon";
     }
     
-    private static int getTypeCode(CeylonOutlineNode on) {
-        Node treeNode = ((CeylonOutlineNode) on).getTreeNode();
-        if (treeNode instanceof Tree.Declaration) {
-            return ((Tree.Declaration) treeNode).getDeclarationModel()
-                    .getDeclarationKind().ordinal();
-        }
-        else if (treeNode instanceof Tree.ImportList) {
-            return 50;
-        }
-        else if (treeNode instanceof Tree.Import) {
-            return 100;
-        }
-        else if (treeNode instanceof Tree.ImportModule) {
-            return 150;
-        }
-        else if (treeNode instanceof Tree.CompilationUnit) {
-            return 200;
-        }
-        else {
-            return -1;
-        }
-    }
-    
+//    private static int getTypeCode(CeylonOutlineNode on) {
+//        Node treeNode = ((CeylonOutlineNode) on).getTreeNode();
+//        if (treeNode instanceof Tree.Declaration) {
+//            return ((Tree.Declaration) treeNode).getDeclarationModel()
+//                    .getDeclarationKind().ordinal();
+//        }
+//        else if (treeNode instanceof Tree.ImportList) {
+//            return 50;
+//        }
+//        else if (treeNode instanceof Tree.Import) {
+//            return 100;
+//        }
+//        else if (treeNode instanceof Tree.ImportModule) {
+//            return 150;
+//        }
+//        else if (treeNode instanceof Tree.CompilationUnit) {
+//            return 200;
+//        }
+//        else if (treeNode instanceof Tree.ModuleDescriptor) {
+//            return 250;
+//        }
+//        else if (treeNode instanceof Tree.PackageDescriptor) {
+//            return 300;
+//        }
+//        else {
+//            return -1;
+//        }
+//    }
+//    
     private static String getIdentifier(CeylonOutlineNode on) {
         Node treeNode = ((CeylonOutlineNode) on).getTreeNode();
         if (treeNode instanceof Tree.Import) {
             return "@import:" + formatPath(((Tree.Import) treeNode).getImportPath().getIdentifiers());
         }
         else if (treeNode instanceof Tree.Declaration) {
-            String qualifiedName = ((Tree.Declaration) treeNode).getDeclarationModel().getQualifiedNameString();
-            int index = qualifiedName.indexOf("::");
-            return "@element:" + (index>0 ? qualifiedName.substring(index+2) : qualifiedName);
+            String name = ((Tree.Declaration) treeNode).getIdentifier().getText();
+            if (on.getParent().getTreeNode() instanceof Tree.Declaration) {
+                name = getIdentifier(on.getParent()) + ":" + name;
+            }
+            return "@element:" + name;
         }
         else if (treeNode instanceof Tree.ImportModule) {
             return "@importmodule:" + formatPath(((Tree.Import) treeNode).getImportPath().getIdentifiers());
@@ -88,6 +101,12 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
         }
         else if (treeNode instanceof Tree.CompilationUnit) {
             return "@compilationunit";
+        }
+        else if (treeNode instanceof Tree.ModuleDescriptor) {
+            return "@moduledescriptor";
+        }
+        else if (treeNode instanceof Tree.PackageDescriptor) {
+            return "@packagedescriptor";
         }
         else {
             return treeNode.toString();

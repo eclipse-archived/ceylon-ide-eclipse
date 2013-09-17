@@ -487,6 +487,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (n instanceof Tree.CompilationUnit) {
             Tree.CompilationUnit ai = (Tree.CompilationUnit) n;
+            if (ai.getUnit()==null) {
+                return new StyledString("unknown");
+            }
             return new StyledString(ai.getUnit().getFilename());
         }
         else if (n instanceof Tree.ModuleDescriptor) {
