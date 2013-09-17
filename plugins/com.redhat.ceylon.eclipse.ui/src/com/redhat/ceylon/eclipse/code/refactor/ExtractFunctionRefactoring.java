@@ -274,12 +274,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 node instanceof Tree.Body && 
                     !statements.isEmpty();
     }
-
-    /*public ExtractFunctionRefactoring(IQuickFixInvocationContext context) {
-        super(context);
-        newName = guessName();
-    }*/
-
+    
 	public String getName() {
 		return "Extract Function";
 	}
