@@ -131,9 +131,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
 
     public void doOperation(int operation) {
-        StyledText textWidget= getTextWidget();
-        if (textWidget == null) return;
-        String selectedText = editor.getSelectionText(); //or textWidget.getSelectionText()
+        if (getTextWidget() == null) {
+            super.doOperation(operation);
+            return;
+        }
+        String selectedText = editor.getSelectionText();
         Map<Declaration,String> imports = null;
         
         switch (operation) {
@@ -166,7 +168,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             doCorrectIndentation(getSelectedRange());
             return;
         case PASTE:
-            if (localPaste(textWidget)) return;
+            if (localPaste()) return;
             break;
         case CUT:
         case COPY:
@@ -177,7 +179,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         switch (operation) {
         case CUT:
         case COPY:
-            afterCopyCut(textWidget, selectedText, imports);
+            afterCopyCut(selectedText, imports);
             break;
         /*case PASTE:
             afterPaste(textWidget);
@@ -185,10 +187,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
     }
 
-    private void afterCopyCut(StyledText textWidget, String selection,
-            Map<Declaration,String> imports) {
+    private void afterCopyCut(String selection, Map<Declaration,String> imports) {
         if (!editor.isBlockSelectionModeEnabled()) {
-            Clipboard clipboard= new Clipboard(textWidget.getDisplay());
+            Clipboard clipboard= new Clipboard(getTextWidget().getDisplay());
             try {
                 Object text = clipboard.getContents(TextTransfer.getInstance());
                 try {
@@ -210,9 +211,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
     }
     
-    private boolean localPaste(StyledText textWidget) {
+    private boolean localPaste() {
         if (!editor.isBlockSelectionModeEnabled()) {
-            Clipboard clipboard= new Clipboard(textWidget.getDisplay());
+            Clipboard clipboard= new Clipboard(getTextWidget().getDisplay());
             try {
                 String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
                 if (text==null) {
@@ -257,7 +258,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         if (doc instanceof IDocumentExtension4) {
                             ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
                         }
-                        getTextWidget().setSelection(endOffset);
+                        setSelectedRange(endOffset, 0);
                     }
                 }
             }
