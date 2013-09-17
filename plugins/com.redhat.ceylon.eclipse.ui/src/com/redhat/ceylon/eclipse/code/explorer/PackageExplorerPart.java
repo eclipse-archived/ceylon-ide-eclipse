@@ -293,16 +293,14 @@ public class PackageExplorerPart extends ViewPart
 			}
 			return false;
 		}
-
-		@Override
+		
+        @Override
 		protected void handleInvalidSelection(ISelection invalidSelection, ISelection newSelection) {
 			IStructuredSelection is= (IStructuredSelection)invalidSelection;
-			List<Object> ns= null;
-			if (newSelection instanceof IStructuredSelection) {
-				ns= new ArrayList<Object>(((IStructuredSelection)newSelection).toList());
-			} else {
-				ns= new ArrayList<Object>();
-			}
+			@SuppressWarnings("unchecked")
+			List<Object> ns= newSelection instanceof IStructuredSelection ?
+				new ArrayList<Object>(((IStructuredSelection)newSelection).toList()) :
+				new ArrayList<Object>();
 			boolean changed= false;
 			for (Iterator<?> iter= is.iterator(); iter.hasNext();) {
 				Object element= iter.next();
@@ -677,7 +675,7 @@ public class PackageExplorerPart extends ViewPart
 	 * @see org.eclipse.ui.part.WorkbenchPart#getAdapter(java.lang.Class)
 	 */
 	@Override
-	public Object getAdapter(Class key) {
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class key) {
 		if (key.equals(ISelectionProvider.class))
 			return fViewer;
 		if (key == IShowInSource.class) {

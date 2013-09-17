@@ -266,7 +266,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		return (basicProposal ? anglePos : (bracePos>0&&(bracePos<parenPos||parenPos<0) ? bracePos : parenPos))+1;
 	}
 	
-	private boolean isNamedArgs() {
+	protected boolean isNamedArgs() {
         int parenPos = text.indexOf('(');
         int bracePos = text.indexOf('{');
         return bracePos>0&&(bracePos<parenPos||parenPos<0);

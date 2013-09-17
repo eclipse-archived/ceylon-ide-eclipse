@@ -11,7 +11,6 @@ package com.redhat.ceylon.eclipse.code.hover;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import org.eclipse.jface.internal.text.html.BrowserInput;
 import org.eclipse.jface.text.DefaultInformationControl;
 
 

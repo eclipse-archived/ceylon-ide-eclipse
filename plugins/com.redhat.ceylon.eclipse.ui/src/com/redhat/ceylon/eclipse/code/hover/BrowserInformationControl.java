@@ -18,8 +18,10 @@ import java.util.Iterator;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.action.ToolBarManager;
+
 import com.redhat.ceylon.eclipse.code.html.HTML2TextReader;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
+
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IDelayedInputChangeProvider;
@@ -452,7 +454,8 @@ public class BrowserInformationControl extends AbstractInformationControl
 
 		fTextLayout.setText(text);
 		fTextLayout.setWidth(sizeConstraints==null ? SWT.DEFAULT : sizeConstraints.x-trimWidth);
-		Iterator<StyleRange> iter= presentation.getAllStyleRangeIterator();
+		@SuppressWarnings("unchecked")
+        Iterator<StyleRange> iter= presentation.getAllStyleRangeIterator();
 		while (iter.hasNext()) {
 			StyleRange sr = iter.next();
 			if (sr.fontStyle == SWT.BOLD)

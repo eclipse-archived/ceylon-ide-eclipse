@@ -109,8 +109,10 @@ public class AnnotationCreator extends ErrorVisitor {
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
             } 
             else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
-                for (Iterator i = model.getAnnotationIterator(); i.hasNext(); ) {
-                    Annotation a = (Annotation) i.next();
+                for (@SuppressWarnings("unchecked") 
+                Iterator<Annotation> i = model.getAnnotationIterator(); 
+                        i.hasNext(); ) {
+                    Annotation a = i.next();
                     if (isParseAnnotation(a)) {
                         model.removeAnnotation(a);
                     }

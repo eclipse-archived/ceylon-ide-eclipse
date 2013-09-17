@@ -60,7 +60,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         if (cpc.getRootNode()==null) return;
         final IAnnotationModel model = editor.getDocumentProvider()
                 .getAnnotationModel(editor.getEditorInput());
-        for (Iterator<Annotation> iter = model.getAnnotationIterator(); 
+        for (@SuppressWarnings("unchecked")
+        Iterator<Annotation> iter = model.getAnnotationIterator(); 
                 iter.hasNext();) {
             Annotation a = iter.next();
             if (a instanceof RefinementAnnotation ||

@@ -222,6 +222,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     return false;
                 }
                 else {
+                    @SuppressWarnings({"unchecked", "rawtypes"})
                     Map<Declaration,String> imports = (Map) clipboard.getContents(ImportsTransfer.INSTANCE);
                     IRegion selection = editor.getSelection();
                     

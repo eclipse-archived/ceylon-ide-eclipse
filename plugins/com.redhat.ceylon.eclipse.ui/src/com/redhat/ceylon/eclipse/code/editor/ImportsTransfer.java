@@ -28,6 +28,7 @@ public class ImportsTransfer extends ByteArrayTransfer {
         return new String[] { TYPE_NAME };
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     protected void javaToNative(Object object, TransferData transferData) {
         if (isSupportedType(transferData)) {

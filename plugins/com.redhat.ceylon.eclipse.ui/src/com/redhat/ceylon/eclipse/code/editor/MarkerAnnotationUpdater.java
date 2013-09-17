@@ -39,7 +39,8 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
                 
         IAnnotationModel model = editor.getDocumentProvider()
                 .getAnnotationModel(editor.getEditorInput());
-        for (Iterator<Annotation> iter = model.getAnnotationIterator(); 
+        for (@SuppressWarnings("unchecked")
+        Iterator<Annotation> iter = model.getAnnotationIterator(); 
                 iter.hasNext();) {
             Annotation ann = iter.next();
             if (ann instanceof MarkerAnnotation) {
@@ -54,7 +55,8 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
                     if (markerStart==null||markerEnd==null) continue;
                     if (isProblemMarker||isTaskMarker) {
                         boolean found = false;
-                        for (Iterator<Annotation> iter2 = model.getAnnotationIterator(); 
+                        for (@SuppressWarnings("unchecked")
+                        Iterator<Annotation> iter2 = model.getAnnotationIterator(); 
                                 iter2.hasNext();) {
                             Annotation ann2 = iter2.next();
                             if (isProblemMarker && isParseAnnotation(ann2) ||
