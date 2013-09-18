@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.launch;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -198,8 +199,9 @@ public class LaunchHelper {
  
     static Set<Module> getModules(IProject project, boolean includeDefault) {
         Set<Module> modules = new HashSet<Module>();
-
-        for(Module module: CeylonBuilder.getProjectModules(project).getListOfModules()) {
+        Modules projectModules = CeylonBuilder.getProjectModules(project);
+        if (projectModules==null) return Collections.emptySet();
+        for(Module module: projectModules.getListOfModules()) {
             if (module.isAvailable() 
                     && !module.getNameAsString().startsWith(Module.LANGUAGE_MODULE_NAME) && !module.isJava() ) {
                 if ((module.isDefault() && includeDefault) 

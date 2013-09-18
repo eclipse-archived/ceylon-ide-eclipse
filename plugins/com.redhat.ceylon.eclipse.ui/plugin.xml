@@ -52,6 +52,18 @@
       </contentTypeBinding>
    </extension>
    
+   <extension
+         point="org.eclipse.ui.ide.projectNatureImages">
+         <image
+               icon="icons/ceylon_nature.gif"
+               id="com.redhat.ceylon.eclipse.ui.projectNatureImage"
+               natureId="com.redhat.ceylon.eclipse.ui.ceylonNature">
+         <description>
+            A Ceylon project
+         </description>
+         </image>
+   </extension>
+   
    <!-- this works but I don't trust it b/c it is actually 
         ambiguous ... there is another DocumentProvider for
         IURIEditorInputs -->
@@ -67,6 +79,8 @@
          id="ceylonNature"
          name="Ceylon Nature"
          point="org.eclipse.core.resources.natures">
+      <requires-nature
+            id="org.eclipse.jdt.core.javanature"/>
       <builder
             id="com.redhat.ceylon.eclipse.ui.ceylonBuilder"/>
       <runtime>
@@ -1262,7 +1276,12 @@
       <launchConfigurationTypeImage
             id="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplicationImage"
             configTypeID="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
-            icon="icons/ceylon_app.gif">
+            icon="icons/start_application.gif">
+      </launchConfigurationTypeImage>
+      <launchConfigurationTypeImage
+            id="com.redhat.ceylon.eclipse.ui.launching.localCeylonJsApplicationImage"
+            configTypeID="com.redhat.ceylon.eclipse.ui.launching.localCeylonJsApplication"
+            icon="icons/start_application.gif">
       </launchConfigurationTypeImage>
    </extension>
    
@@ -1301,7 +1320,7 @@
       </shortcut>   
       <shortcut
             label="Ceylon Application"
-            icon="icons/ceylon_app.gif"
+            icon="icons/start_application.gif"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.CeylonApplicationLaunchShortcut"
             description="Launch a local Ceylon application"
@@ -1333,7 +1352,7 @@
       </shortcut>
       <shortcut
             label="Ceylon JavaScript Application"
-            icon="icons/ceylon_app.gif"
+            icon="icons/start_application.gif"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.JsLaunchShortcut"
             description="Launch a JavaScript Ceylon application"
