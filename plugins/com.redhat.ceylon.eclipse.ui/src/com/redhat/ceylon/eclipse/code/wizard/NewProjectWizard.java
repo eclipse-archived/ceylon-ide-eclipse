@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_FILE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.lang.reflect.InvocationTargetException;
@@ -50,7 +50,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
     public NewProjectWizard(NewCeylonProjectWizardPageOne pageOne, NewCeylonProjectWizardPageTwo pageTwo) {
         setDefaultPageImageDescriptor(CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(CEYLON_NEW_FILE));
+                .getImageRegistry().getDescriptor(CEYLON_NEW_PROJECT));
         setDialogSettings(JavaPlugin.getDefault().getDialogSettings());
         setWindowTitle("New Ceylon Project");
         firstPage= pageOne;

@@ -169,7 +169,7 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newProjectWizard"
-             icon="icons/new_wiz.gif"
+             icon="icons/newprj_wiz.gif"
              name="Ceylon Project" 
              finalPerspective="com.redhat.ceylon.eclipse.ui.perspective"
              category="com.redhat.ceylon.eclipse.ui.category"
