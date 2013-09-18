@@ -16,13 +16,11 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
@@ -68,9 +66,7 @@ public class CeylonMergeViewer extends TextMergeViewer {
     protected void handleDispose(DisposeEvent event) {
         sourceViewers= null;
         if (editors != null) {
-            for (Iterator<CeylonEditorAdapter> iterator = editors.values().iterator(); 
-                    iterator.hasNext();) {
-                CeylonEditorAdapter cea= iterator.next();
+            for (CeylonEditorAdapter cea: editors.values()) {
                 cea.dispose();
             }
             editors= null;
@@ -237,13 +233,11 @@ public class CeylonMergeViewer extends TextMergeViewer {
     @Override
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         if (adapter == ITextEditorExtension3.class) {
-            IEditorInput activeInput = (IEditorInput)super.getAdapter(IEditorInput.class);
+            IEditorInput activeInput = (IEditorInput) super.getAdapter(IEditorInput.class);
             if (activeInput!=null) {
-                for (Iterator<CeylonEditorAdapter> iterator= editors.values().iterator(); 
-                        iterator.hasNext();) {
-                    CeylonEditorAdapter editor = iterator.next();
-                    if (activeInput.equals(editor.getEditorInput())) {
-                        return editor;
+                for (CeylonEditorAdapter cea: editors.values()) {
+                    if (activeInput.equals(cea.getEditorInput())) {
+                        return cea;
                     }
                 }
             }
@@ -299,18 +293,14 @@ public class CeylonMergeViewer extends TextMergeViewer {
         Field field= null;
         try {
             field= AbstractTextEditor.class.getDeclaredField("fSourceViewer");
-        } catch (SecurityException ex) {
-            JavaPlugin.log(ex);
-        } catch (NoSuchFieldException ex) {
-            JavaPlugin.log(ex);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         field.setAccessible(true);
         try {
             field.set(editor, viewer);
-        } catch (IllegalArgumentException ex) {
-            JavaPlugin.log(ex);
-        } catch (IllegalAccessException ex) {
-            JavaPlugin.log(ex);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
     
