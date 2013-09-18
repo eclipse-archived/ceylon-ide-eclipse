@@ -360,12 +360,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (element instanceof CeylonOutlineNode) {
             CeylonOutlineNode con = (CeylonOutlineNode) element;
             StyledString label = getStyledLabelForNode((Node) con.getTreeNode());
-            if (con.getChildren().isEmpty()) {
-            	return label;
-            }
-            else {
-            	return new StyledString("> ", ARROW_STYLER).append(label);
-            }
+            return label;
+            //TODO: add the arrow if the node is dirty vs git!
+            //return new StyledString("> ", ARROW_STYLER).append(label);
         }
         else if (element instanceof IFile) {
             return new StyledString(((IFile) element).getName());
