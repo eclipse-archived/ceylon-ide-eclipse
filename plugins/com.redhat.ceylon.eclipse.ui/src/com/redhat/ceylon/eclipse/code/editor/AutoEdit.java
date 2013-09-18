@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
@@ -372,7 +373,12 @@ class AutoEdit {
     			if (tokens.get(tokens.size()-1).getStartIndex()==offset) { //at very end of file
     				//check to see if last token is an
     				//unterminated string or comment
-    				CommonToken token = tokens.get(tokens.size()-2);
+    			    //Note: ANTLR sometimes sends me 2 EOFs, 
+    			    //      so do this:
+    			    CommonToken token = null;
+    			    for (int i=1; token==null || token.getType()==EOF; i++) {
+    			        token = tokens.get(tokens.size()-i);
+    			    }
     				int type = token==null ? -1 : token.getType();
     				if ((type==STRING_LITERAL ||
     						type==STRING_END ||
