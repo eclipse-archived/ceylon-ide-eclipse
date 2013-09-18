@@ -29,13 +29,15 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     static int getIndentSpaces() {
         IPreferencesService ps = getPreferencesService();
         return ps==null ? 4 :
-            ps.getInt("org.eclipse.ui.editors", EDITOR_TAB_WIDTH, 4, null);
+            ps.getInt("org.eclipse.ui.editors", 
+                    EDITOR_TAB_WIDTH, 4, null);
     }
     
     static boolean getIndentWithSpaces() {
         IPreferencesService ps = getPreferencesService();
         return ps==null ? false :
-            ps.getBoolean("org.eclipse.ui.editors", EDITOR_SPACES_FOR_TABS, false, null);
+            ps.getBoolean("org.eclipse.ui.editors", 
+                    EDITOR_SPACES_FOR_TABS, false, null);
     }
     
     static void initialIndent(StringBuilder buf) {
@@ -43,7 +45,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         if (getIndentWithSpaces()) {
             int spaces = getIndentSpaces();
             for (int i=1; i<=spaces; i++) {
-                buf.append(' ');                          
+                buf.append(' ');
             }
         }
         else {
