@@ -10,7 +10,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
@@ -37,6 +37,49 @@ import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
  */
 public class CeylonLabelDecorator implements ILightweightLabelDecorator {
     
+    private final ImageRegistry imageRegistry = CeylonPlugin.getInstance().getImageRegistry();
+    
+    public final static int WARNING = 1 << 2;
+    public final static int ERROR = 1 << 3;
+    private final static int REFINES = 1 << 4;
+    private final static int IMPLEMENTS = 1 << 5;
+    private final static int FORMAL = 1 << 6;
+    private final static int ABSTRACT = 1 << 7;
+    private final static int VARIABLE = 1 << 8;
+    private final static int ANNOTATION = 1 << 9;
+    private final static int ENUM = 1 << 10;
+    private final static int ALIAS = 1 << 11;
+    private final static int DEPRECATED = 1 << 12;
+//    private final static int FINAL = 1 << 13;
+    
+    public static final String WARNING_IMAGE = "warning.gif";
+    public static final String ERROR_IMAGE = "error.gif";
+    public static final String REFINES_IMAGE = "over_tiny_co.gif";
+    public static final String IMPLEMENTS_IMAGE = "implm_tiny_co.gif";
+    public static final String FINAL_IMAGE = "final_co.gif";
+    public static final String ABSTRACT_IMAGE = "abstract_co.gif";
+    public static final String VARIABLE_IMAGE = "volatile_co.gif";
+    public static final String ANNOTATION_IMAGE = "annotation_tsk.gif";
+    public static final String ENUM_IMAGE = "enum_tsk.gif";
+    public static final String ALIAS_IMAGE = "linked_co.gif";
+    public static final String DEPRECATED_IMAGE = "deprecated.gif";
+    
+    static final DecorationDescriptor[] DECORATIONS = new DecorationDescriptor[] {
+        new DecorationDescriptor(WARNING, WARNING_IMAGE, BOTTOM_LEFT),
+        new DecorationDescriptor(ERROR, ERROR_IMAGE, BOTTOM_LEFT),
+        new DecorationDescriptor(REFINES, REFINES_IMAGE, BOTTOM_RIGHT),
+        new DecorationDescriptor(IMPLEMENTS, IMPLEMENTS_IMAGE, BOTTOM_RIGHT),
+        new DecorationDescriptor(FORMAL, FINAL_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(ABSTRACT, ABSTRACT_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(VARIABLE, VARIABLE_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ANNOTATION, ANNOTATION_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ENUM, ENUM_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ALIAS, ALIAS_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(DEPRECATED, DEPRECATED_IMAGE, IDecoration.UNDERLAY)
+//        new DecorationDescriptor(FINAL, CeylonPlugin.getInstance().image("..."), TOP_RIGHT)
+    };
+    
+    
     @Override
     public void addListener(ILabelProviderListener listener) {}
     
@@ -56,47 +99,11 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
         int adornmentFlags = getDecorationAttributes(element);
         for (DecorationDescriptor d: DECORATIONS) {
             if (d.hasDecoration(adornmentFlags)) {
-                decoration.addOverlay(d.getImageDescriptor(), d.getQuadrant());
+                decoration.addOverlay(imageRegistry.getDescriptor(d.getImageKey()), 
+                        d.getQuadrant());
             }
         }
     }
-    
-    public final static int WARNING = 1 << 2;
-    public final static int ERROR = 1 << 3;
-    private final static int REFINES = 1 << 4;
-    private final static int IMPLEMENTS = 1 << 5;
-    private final static int FORMAL = 1 << 6;
-    private final static int ABSTRACT = 1 << 7;
-    private final static int VARIABLE = 1 << 8;
-    private final static int ANNOTATION = 1 << 9;
-    private final static int ENUM = 1 << 10;
-    private final static int ALIAS = 1 << 11;
-//    private final static int FINAL = 1 << 12;
-    
-    private static final ImageDescriptor WARNING_IMAGE = CeylonPlugin.getInstance().image("warning.gif");
-    private static final ImageDescriptor ERROR_IMAGE = CeylonPlugin.getInstance().image("error.gif");
-    private static final ImageDescriptor REFINES_IMAGE = CeylonPlugin.getInstance().image("over_tiny_co.gif");
-    private static final ImageDescriptor IMPLEMENTS_IMAGE = CeylonPlugin.getInstance().image("implm_tiny_co.gif");
-    private static final ImageDescriptor FINAL_IMAGE = CeylonPlugin.getInstance().image("final_co.gif");
-    private static final ImageDescriptor ABSTRACT_IMAGE = CeylonPlugin.getInstance().image("abstract_co.gif");
-    private static final ImageDescriptor VOLATILE_IMAGE = CeylonPlugin.getInstance().image("volatile_co.gif");
-    private static final ImageDescriptor ANNOTATION_IMAGE = CeylonPlugin.getInstance().image("annotation_tsk.gif");
-    private static final ImageDescriptor ENUM_IMAGE = CeylonPlugin.getInstance().image("enum_tsk.gif");
-    private static final ImageDescriptor ALIAS_IMAGE = CeylonPlugin.getInstance().image("linked_co.gif");
-    
-    static final DecorationDescriptor[] DECORATIONS = new DecorationDescriptor[] {
-        new DecorationDescriptor(WARNING, WARNING_IMAGE, BOTTOM_LEFT),
-        new DecorationDescriptor(ERROR, ERROR_IMAGE, BOTTOM_LEFT),
-        new DecorationDescriptor(REFINES, REFINES_IMAGE, BOTTOM_RIGHT),
-        new DecorationDescriptor(IMPLEMENTS, IMPLEMENTS_IMAGE, BOTTOM_RIGHT),
-        new DecorationDescriptor(FORMAL, FINAL_IMAGE, TOP_RIGHT),
-        new DecorationDescriptor(ABSTRACT, ABSTRACT_IMAGE, TOP_RIGHT),
-        new DecorationDescriptor(VARIABLE, VOLATILE_IMAGE, TOP_LEFT),
-        new DecorationDescriptor(ANNOTATION, ANNOTATION_IMAGE, TOP_LEFT),
-        new DecorationDescriptor(ENUM, ENUM_IMAGE, TOP_LEFT),
-        new DecorationDescriptor(ALIAS, ALIAS_IMAGE, TOP_LEFT)
-//        new DecorationDescriptor(FINAL, CeylonPlugin.getInstance().image("..."), TOP_RIGHT)
-    };
     
     public static int getDecorationAttributes(Object entity) {
         if (entity instanceof IProject) {
@@ -166,6 +173,9 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
         }
         
         int result = 0;
+        if (model.isDeprecated()) {
+            result |= DEPRECATED;
+        }
         if (model.isFormal()) {
             result |= FORMAL;
         }

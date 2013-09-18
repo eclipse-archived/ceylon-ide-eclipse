@@ -1,5 +1,16 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ABSTRACT_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ALIAS_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ANNOTATION_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.DEPRECATED_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ENUM_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ERROR_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.FINAL_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.IMPLEMENTS_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.REFINES_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.VARIABLE_IMAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.WARNING_IMAGE;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
@@ -259,6 +270,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 	@Override
 	protected void initializeImageRegistry(ImageRegistry reg) {
         reg.put(CEYLON_PROJECT, image("prj_obj.gif"));
+        reg.put(CEYLON_FILE, image("template_obj.gif"));
 		reg.put(CEYLON_ARCHIVE, image("jar_l_obj.gif"));
 		reg.put(CEYLON_PACKAGE, image("package_obj.gif"));
 		reg.put(CEYLON_IMPORT_LIST, image("impc_obj.gif"));
@@ -320,14 +332,18 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 	    reg.put(ERROR, image("error_obj.gif"));
         reg.put(WARNING, image("warning_obj.gif"));
         
-        ImageDescriptor fileImageDesc = image("template_obj.gif");
-        reg.put(CEYLON_FILE, fileImageDesc);
-//        reg.put(CEYLON_FILE_WARNING, new DecoratedImageDescriptor(fileImageDesc, 
-//                1 << 2, new Point(16,16), new ImageDecoratorController())
-//                     .createImage());
-//        reg.put(CEYLON_FILE_ERROR, new DecoratedImageDescriptor(fileImageDesc, 
-//                1 << 3, new Point(16,16), new ImageDecoratorController())
-//                     .createImage());
+        reg.put(WARNING_IMAGE, image(WARNING_IMAGE));
+        reg.put(ERROR_IMAGE, image(ERROR_IMAGE));
+        reg.put(REFINES_IMAGE, image(REFINES_IMAGE));
+        reg.put(IMPLEMENTS_IMAGE, image(IMPLEMENTS_IMAGE));
+        reg.put(FINAL_IMAGE, image(FINAL_IMAGE));
+        reg.put(ABSTRACT_IMAGE, image(ABSTRACT_IMAGE));
+        reg.put(VARIABLE_IMAGE, image(VARIABLE_IMAGE));
+        reg.put(ANNOTATION_IMAGE, image(ANNOTATION_IMAGE));
+        reg.put(ENUM_IMAGE, image(ENUM_IMAGE));
+        reg.put(ALIAS_IMAGE, image(ALIAS_IMAGE));
+        reg.put(DEPRECATED_IMAGE, image(DEPRECATED_IMAGE));
+        
 	}
 	
     private void registerProjectOpenCloseListener() {

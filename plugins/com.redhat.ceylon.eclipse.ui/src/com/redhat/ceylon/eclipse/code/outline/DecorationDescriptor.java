@@ -11,7 +11,6 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 
 public class DecorationDescriptor {
 
@@ -25,17 +24,17 @@ public class DecorationDescriptor {
      */
     private final int quadrant;
 
-    private ImageDescriptor fImageDesc;
+    private String imageKey;
 
-    public DecorationDescriptor(int mask, ImageDescriptor descriptor, 
+    public DecorationDescriptor(int mask, String imageKey, 
     		int quadrant) {
         this.mask= mask;
-        this.fImageDesc = descriptor;
+        this.imageKey = imageKey;
         this.quadrant= quadrant;
     }
 
-    public ImageDescriptor getImageDescriptor() {
-        return fImageDesc;
+    public String getImageKey() {
+        return imageKey;
     }
     
     public boolean hasDecoration(int flags) {
