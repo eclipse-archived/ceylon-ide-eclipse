@@ -13,6 +13,7 @@ package com.redhat.ceylon.eclipse.code.hover;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.hover.CeylonWordFinder.findWord;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
@@ -1659,27 +1660,27 @@ public class CeylonHover
         
         @Override
         public void emitBlock(StringBuilder out, List<String> lines, String meta) {
-            if (lines.isEmpty())
-                return;
-
-            if (meta == null || meta.length() == 0) {
-                out.append("<pre>");
-            } else {
-                out.append("<pre class=\"brush: ").append(meta).append("\">");
-            }
-
-            for (String s : lines) {
-                HTMLPrinter.convertToHTMLContent(s);
-                s = HTMLPrinter.convertToHTMLContent(s);
-                s = s.replaceAll("'[^']'|#[0-9a-fA-F_]+|\\$[01]+|\\b(\\d|_)+(\\.(\\d|_)+)?([Ee][+-]?\\d+)?\\b", "<span style='color:#0000FF'>$0</span>");
-                for (String kw: CeylonTokenColorer.keywords) {
-                    s = s.replaceAll("\\b"+kw+"\\b", "<b style='color:#8B008B'>"+kw+"</b>");
+            if (!lines.isEmpty()) {
+                if (meta == null || meta.length() == 0) {
+                    out.append("<pre>");
+                } else {
+                    out.append("<pre class=\"brush: ").append(meta).append("\">");
                 }
-                s = s.replaceAll("&quot;", "\"").replaceAll("\"([^\"]*)\"", "<span style='color:#0000FF'>&quot;$1&quot;</span>");
-                s = s.replaceAll("\\b\\p{Lu}\\p{L}*\\b", "<span style='color:#000080'>$0</span>");
-                out.append(s).append('\n');
+
+                for (String s: lines) {
+                    //TODO: this is lame because the syntax highlight gets applied
+                    //      to keywords and typenames in string literals
+                    s = convertToHTMLContent(s);
+                    s = s.replaceAll("'[^']'|#[0-9a-fA-F_]+|\\$[01]+|\\b(\\d|_)+(\\.(\\d|_)+)?([Ee][+-]?\\d+)?\\b", "<span style='color:#0000FF'>$0</span>");
+                    for (String kw: CeylonTokenColorer.keywords) {
+                        s = s.replaceAll("\\b"+kw+"\\b", "<b style='color:#8B008B'>"+kw+"</b>");
+                    }
+                    s = s.replaceAll("&quot;", "\"").replaceAll("\"([^\"]*)\"", "<span style='color:#0000FF'>&quot;$1&quot;</span>");
+                    s = s.replaceAll("\\b\\p{Lu}\\p{L}*\\b", "<span style='color:#000080'>$0</span>");
+                    out.append(s).append('\n');
+                }
+                out.append("</pre>\n");
             }
-            out.append("</pre>\n");
         }
         
     }
