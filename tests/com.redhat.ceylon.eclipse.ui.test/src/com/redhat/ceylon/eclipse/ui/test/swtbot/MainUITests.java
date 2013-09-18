@@ -51,7 +51,7 @@ public class MainUITests extends AbstractMultiProjectTest {
     @Test
     public void gotoSelectedDeclarationFromLanguageModuleSource() {
         String fileName = "src/mainModule/run.ceylon";
-        openInEditor(fileName);
+        Utils.openInEditor(mainProject, fileName);
         
         SWTBotEditor editor = bot.editorByTitle("run.ceylon");
         Assert.assertNotNull(editor);
@@ -72,18 +72,4 @@ public class MainUITests extends AbstractMultiProjectTest {
         editor = bot.editorByTitle("ClassDeclaration.ceylon");
         assertNotNull("Following links should have led to open the file 'ClassDeclaration.ceylon'", editor);
     }
-
-    protected void openInEditor(String fileName) {
-        final IFile runFile = mainProject.getFile(fileName);
-        Display.getDefault().syncExec(new Runnable() {
-            public void run() {
-                try {
-                    Util.gotoLocation(runFile, 0);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-    }
-    
 }
