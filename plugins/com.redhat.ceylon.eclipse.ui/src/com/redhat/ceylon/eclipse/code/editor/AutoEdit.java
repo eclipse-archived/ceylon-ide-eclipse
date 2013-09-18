@@ -14,6 +14,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getIndentSpaces;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getIndentWithSpaces;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getPreferences;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.initialIndent;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
@@ -33,25 +34,22 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 
 class AutoEdit {
 	
 	public AutoEdit(IDocument document, List<CommonToken> tokens,
-			DocumentCommand command, IPreferenceStore store) {
+			DocumentCommand command) {
 		this.document = document;
 		this.tokens = tokens;
 		this.command = command;
-		this.store = store;
 	}
 
 	private IDocument document;
 	private List<CommonToken> tokens;
 	private DocumentCommand command;
-    private IPreferenceStore store;
-    
+	
     public void customizeDocumentCommand() {
     	
         //Note that IMP's Correct Indentation sends us a tab
@@ -122,10 +120,11 @@ class AutoEdit {
 		String closing = null;
 		
 		boolean found=false;
+		IPreferenceStore store = getPreferences();
 		for (String[] type : FENCES) {
 			if (type[0].equals(current) || 
 					type[1].equals(current)) {
-			    if (store.getBoolean(type[2])) {
+			    if (store==null || store.getBoolean(type[2])) {
 			        opening = type[0];
 			        closing = type[1];
 			        found = true;
@@ -517,8 +516,10 @@ class AutoEdit {
             }
             
             StringBuilder buf = new StringBuilder(command.text);
-            boolean closeBrace = EditorsUI.getPreferenceStore().getBoolean(CLOSE_BRACES) && 
-                    count("{")>count("}");
+            IPreferenceStore store = getPreferences();
+            boolean closeBrace = store==null || 
+                    store.getBoolean(CLOSE_BRACES) && 
+                            count("{")>count("}");
             int end = getEndOfCurrentLine();
 			appendIndent(command.offset, end, start, command.offset, 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
