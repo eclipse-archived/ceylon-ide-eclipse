@@ -387,6 +387,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
             }
         }
         @Override
+        public void visit(Tree.Parameter that) {}
+        @Override
         public void visit(Tree.PackageDescriptor that) {
             if (inBounds(that)) {
                 result.add(new CeylonOutlineNode(that));
