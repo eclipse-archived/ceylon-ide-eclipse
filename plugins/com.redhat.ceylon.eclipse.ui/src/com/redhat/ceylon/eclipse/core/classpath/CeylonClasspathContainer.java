@@ -456,15 +456,26 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
 	public static IPath getSourceArchive(RepositoryManager provider,
 			Module module) {
+	    // BEWARE : here the request to the provider is done in 2 steps, because if
+	    // we do this in a single step, the Aether repo might return the .jar
+	    // archive as a default result when not finding it with the .src extension.
+	    // In this case it will not try the second extension (-sources.jar). 
         ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
-        		module.getVersion(), ArtifactContext.SRC, ArtifactContext.MAVEN_SRC);
+        		module.getVersion(), ArtifactContext.SRC);
 		File srcArtifact = provider.getArtifact(ctx);
 		if (srcArtifact!=null) {
-		    if (srcArtifact.getPath().endsWith(ArtifactContext.SRC)
-		    		|| srcArtifact.getPath().endsWith(ArtifactContext.MAVEN_SRC)) {
+		    if (srcArtifact.getPath().endsWith(ArtifactContext.SRC)) {
 	            return new Path(srcArtifact.getPath());
 		    }
 		}
+        ctx = new ArtifactContext(module.getNameAsString(), 
+                module.getVersion(), ArtifactContext.MAVEN_SRC);
+        srcArtifact = provider.getArtifact(ctx);
+        if (srcArtifact!=null) {
+            if (srcArtifact.getPath().endsWith(ArtifactContext.MAVEN_SRC)) {
+                return new Path(srcArtifact.getPath());
+            }
+        }
 		return null;
 	}
 
