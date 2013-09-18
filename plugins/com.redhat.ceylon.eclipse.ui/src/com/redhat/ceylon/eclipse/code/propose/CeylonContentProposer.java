@@ -711,9 +711,9 @@ public class CeylonContentProposer {
         if (mod.equals(Module.LANGUAGE_MODULE_NAME)) {
             return true;
         }
-        Tree.ModuleDescriptor md = cpc.getRootNode().getModuleDescriptor();
-		if (md!=null) {
-			Tree.ImportModuleList iml = md.getImportModuleList();
+        List<Tree.ModuleDescriptor> md = cpc.getRootNode().getModuleDescriptors();
+		if (!md.isEmpty()) {
+			Tree.ImportModuleList iml = md.get(0).getImportModuleList();
 			if (iml!=null) {
 				for (Tree.ImportModule im: iml.getImportModules()) {
 					if (im.getImportPath()!=null) {
@@ -1132,7 +1132,7 @@ public class CeylonContentProposer {
     private static boolean isEmptyModuleDescriptor(CeylonParseController cpc) {
         return isModuleDescriptor(cpc) && 
                 cpc.getRootNode() != null && 
-                cpc.getRootNode().getModuleDescriptor() == null; 
+                cpc.getRootNode().getModuleDescriptors().isEmpty(); 
     }
 
     private static void addModuleDescriptorCompletion(CeylonParseController cpc, int offset, 
@@ -1165,7 +1165,7 @@ public class CeylonContentProposer {
         return cpc.getRootNode() != null &&
                 cpc.getRootNode().getUnit() != null &&
                 cpc.getRootNode().getUnit().getFilename().equals("package.ceylon") && 
-                cpc.getRootNode().getPackageDescriptor() == null;
+                cpc.getRootNode().getPackageDescriptors().isEmpty();
     }
 
     private static void addPackageDescriptorCompletion(CeylonParseController cpc, int offset, 
@@ -1576,18 +1576,22 @@ public class CeylonContentProposer {
         }
     }
     
-    private static void addKeywordProposals(CeylonParseController cpc, int offset, String prefix, List<ICompletionProposal> result, Node node) {
+    private static void addKeywordProposals(CeylonParseController cpc, int offset, String prefix, 
+            List<ICompletionProposal> result, Node node) {
         if( isModuleDescriptor(cpc) ) {
             if( prefix.isEmpty() || "import".startsWith(prefix) ) {
                 if (node instanceof Tree.CompilationUnit) {
-                    Tree.ModuleDescriptor moduleDescriptor = ((Tree.CompilationUnit) node).getModuleDescriptor();
-                    if (moduleDescriptor != null && 
-                            moduleDescriptor.getImportModuleList() != null && 
+                    List<Tree.ModuleDescriptor> moduleDescriptors =  cpc.getRootNode().getModuleDescriptors();
+                    if (!moduleDescriptors.isEmpty()) {
+                        Tree.ModuleDescriptor moduleDescriptor = moduleDescriptors.get(0);
+                        if (moduleDescriptor.getImportModuleList() != null && 
                             moduleDescriptor.getImportModuleList().getStartIndex() < offset ) {
-                        addKeywordProposal(offset, prefix, result, "import");
+                            addKeywordProposal(offset, prefix, result, "import");
+                        }
                     }
                 }
-                else if (node instanceof Tree.ImportModuleList || node instanceof Tree.BaseMemberExpression) {
+                else if (node instanceof Tree.ImportModuleList || 
+                        node instanceof Tree.BaseMemberExpression) {
                     addKeywordProposal(offset, prefix, result, "import");
                 }
             }

@@ -521,11 +521,11 @@ public class CeylonQuickFixAssistant {
             final IProject project, Collection<ICompletionProposal> proposals, 
             final Shell shell) {
         Tree.ImportPath importPath;
-        if (cu.getPackageDescriptor()!=null) {
-            importPath = cu.getPackageDescriptor().getImportPath();
+        if (!cu.getPackageDescriptors().isEmpty()) {
+            importPath = cu.getPackageDescriptors().get(0).getImportPath();
         }
-        else if (cu.getModuleDescriptor()!=null) {
-            importPath = cu.getModuleDescriptor().getImportPath();
+        else if (cu.getModuleDescriptors().isEmpty()) {
+            importPath = cu.getModuleDescriptors().get(0).getImportPath();
         }
         else {
             return;

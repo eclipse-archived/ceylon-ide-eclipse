@@ -831,11 +831,14 @@ public class CeylonHover
 		PhasedUnit pu = cpc.getTypeChecker()
 				.getPhasedUnitFromRelativePath(pack.getNameAsString().replace('.', '/') + "/package.ceylon");
 		if (pu!=null) {
-			Tree.PackageDescriptor refnode = pu.getCompilationUnit().getPackageDescriptor();
-			if (refnode!=null) {
-				appendDocAnnotationContent(refnode.getAnnotationList(), buffer, pack);
-				appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, pack);
-				appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
+			List<Tree.PackageDescriptor> packageDescriptors = pu.getCompilationUnit().getPackageDescriptors();
+			if (!packageDescriptors.isEmpty()) {
+			    Tree.PackageDescriptor refnode = packageDescriptors.get(0);
+			    if (refnode!=null) {
+			        appendDocAnnotationContent(refnode.getAnnotationList(), buffer, pack);
+			        appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, pack);
+			        appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
+			    }
 			}
 		}
 		
@@ -918,13 +921,16 @@ public class CeylonHover
 		PhasedUnit pu = cpc.getTypeChecker()
 				.getPhasedUnitFromRelativePath(mod.getNameAsString().replace('.', '/') + "/module.ceylon");
 		if (pu!=null) {
-			Tree.ModuleDescriptor refnode = pu.getCompilationUnit().getModuleDescriptor();
-			if (refnode!=null) {
-			    Scope linkScope = mod.getPackage(mod.getNameAsString());
-				appendDocAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
-				appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
-				appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
-			}
+            List<Tree.ModuleDescriptor> moduleDescriptors = pu.getCompilationUnit().getModuleDescriptors();
+            if (!moduleDescriptors.isEmpty()) {
+                Tree.ModuleDescriptor refnode = moduleDescriptors.get(0);
+                if (refnode!=null) {
+                    Scope linkScope = mod.getPackage(mod.getNameAsString());
+                    appendDocAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
+                    appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
+                    appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
+                }
+            }
 		}
 				
 		boolean first = true;

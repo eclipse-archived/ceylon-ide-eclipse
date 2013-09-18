@@ -16,6 +16,7 @@ import org.eclipse.text.edits.InsertEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
@@ -51,7 +52,8 @@ public class AddModuleImportUtil {
     }
 
     private static InsertEdit createEdit(PhasedUnit unit, String moduleName, String moduleVersion) {
-        ImportModuleList iml = getImportList(unit);        
+        ImportModuleList iml = getImportList(unit);    
+        if (iml==null) return null;
         int offset;
         if (iml.getImportModules().isEmpty()) {
             offset = iml.getStartIndex() + 1;
@@ -74,7 +76,13 @@ public class AddModuleImportUtil {
     }
 
     private static ImportModuleList getImportList(PhasedUnit unit) {
-        return unit.getCompilationUnit().getModuleDescriptor().getImportModuleList();
+        List<ModuleDescriptor> moduleDescriptors = unit.getCompilationUnit().getModuleDescriptors();
+        if (!moduleDescriptors.isEmpty()) {
+            return moduleDescriptors.get(0).getImportModuleList();
+        }
+        else {
+            return null;
+        }
     }
 
 }
