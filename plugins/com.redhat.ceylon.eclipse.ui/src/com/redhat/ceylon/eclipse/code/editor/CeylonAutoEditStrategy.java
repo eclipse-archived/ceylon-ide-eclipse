@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -75,7 +76,8 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
              catch (RecognitionException e) {}
 			 tokens = ts.getTokens();
 		 }
-		 new AutoEdit(document, tokens, command).customizeDocumentCommand();
+		 new AutoEdit(document, tokens, command, EditorsUI.getPreferenceStore())
+		         .customizeDocumentCommand();
 	 }
 	 
 }

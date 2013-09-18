@@ -40,16 +40,18 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 class AutoEdit {
 	
 	public AutoEdit(IDocument document, List<CommonToken> tokens,
-			DocumentCommand command) {
+			DocumentCommand command, IPreferenceStore store) {
 		this.document = document;
 		this.tokens = tokens;
 		this.command = command;
+		this.store = store;
 	}
 
 	private IDocument document;
 	private List<CommonToken> tokens;
 	private DocumentCommand command;
-
+    private IPreferenceStore store;
+    
     public void customizeDocumentCommand() {
     	
         //Note that IMP's Correct Indentation sends us a tab
@@ -118,8 +120,6 @@ class AutoEdit {
 		String current = command.text;
 		String opening = null;
 		String closing = null;
-		
-		IPreferenceStore store = EditorsUI.getPreferenceStore();
 		
 		boolean found=false;
 		for (String[] type : FENCES) {
@@ -758,14 +758,20 @@ class AutoEdit {
                 //with a {, }, or ; or which itelf starts 
                 //with a }. We will use that to infer the 
                 //indent for the current line
-                char ch1 = getNextNonWhitespaceCharacterInLine(start);
-                if (ch1=='}') break;
-                int end1 = getEndOfPreviousLine(start);
-                int start1 = getStartOfPreviousLine(start);
-                char ch = getLastNonWhitespaceCharacterInLine(start1, end1);
-                if (ch==';' || ch=='{' || ch=='}') break;
-                end = end1;
-                start = start1;
+                char startingChar = getNextNonWhitespaceCharacterInLine(start);
+                if (startingChar=='}') break;
+                int prevEnd = end;
+                int prevStart = start;
+                char prevEndingChar;
+                do {
+                    prevEnd = getEndOfPreviousLine(prevStart);
+                    prevStart = getStartOfPreviousLine(prevStart);
+                    prevEndingChar = getLastNonWhitespaceCharacterInLine(prevStart, prevEnd);
+                }
+                while (prevEndingChar=='\n' && prevStart>0); //skip blank lines when searching for previous line
+                if (prevEndingChar==';' || prevEndingChar=='{' || prevEndingChar=='}') break;
+                end = prevEnd;
+                start = prevStart;
             }
         }
         while (isStringOrCommentContinuation(start)) {
