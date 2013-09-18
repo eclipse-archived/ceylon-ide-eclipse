@@ -1388,6 +1388,7 @@ public class CeylonEditor extends TextEditor {
         
         super.doSetInput(input);
         
+        //have to do this or we get a funny-looking caret
         setInsertMode(SMART_INSERT);
     }
 
