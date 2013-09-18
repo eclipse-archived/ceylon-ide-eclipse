@@ -16,12 +16,16 @@ import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_RIGHT;
 import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
 import static org.eclipse.jface.viewers.IDecoration.TOP_RIGHT;
+import static org.eclipse.jface.viewers.IDecoration.UNDERLAY;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
+
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * A {@link DecoratedImageDescriptor} consists of a base image and several adornments. The adornments
@@ -47,6 +51,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
     private ImageDescriptor fBaseImage;
     private int fFlags;
     private Point fSize;
+    private final ImageRegistry imageRegistry = CeylonPlugin.getInstance().getImageRegistry();
 
     /**
      * Creates a new SourceEntityImageDescriptor.
@@ -138,11 +143,8 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
     protected void drawCompositeImage(int width, int height) {
         ImageData bg= getImageData(fBaseImage);
 
-//        if ((fFlags & DEPRECATED) != 0) { // draw *behind* the full image
-//            Point size= getSize();
-//            ImageData data= getImageData(PluginImages.DESC_OVR_DEPRECATED);
-//            drawImage(data, 0, size.y - data.height);
-//        }
+        drawUnderlay();
+        
         drawImage(bg, (width-bg.width)/2, 0);
 
         drawTopLeft(); // conventionally not used
@@ -158,6 +160,14 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
             System.err.println("Image data not available: " + descriptor.toString()); //$NON-NLS-1$
         }
         return data;
+    }
+
+    private void addUnderlayImage(ImageDescriptor desc, Point pos) {
+        ImageData data= getImageData(desc);
+        int x = (pos.x - data.width)/2;
+        if (x >= 0) {
+            drawImage(data, x, pos.y);
+        }
     }
 
     private void addTopLeftImage(ImageDescriptor desc, Point pos) {
@@ -194,11 +204,20 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
         }
     }
 
+    private void drawUnderlay() {
+        Point pos= new Point(getSize().x, 0);
+        for(DecorationDescriptor d: DECORATIONS) {
+            if (d.getQuadrant()==UNDERLAY && d.hasDecoration(fFlags)) {
+                addUnderlayImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
+            }
+        }
+    }
+
     private void drawTopRight() {
         Point pos= new Point(getSize().x, 0);
         for(DecorationDescriptor d: DECORATIONS) {
             if (d.getQuadrant()==TOP_RIGHT && d.hasDecoration(fFlags)) {
-                addTopRightImage(d.getImageDescriptor(), pos);
+                addTopRightImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
             }
         }
     }
@@ -207,7 +226,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
         Point pos= new Point(0, 0);
         for(DecorationDescriptor d: DECORATIONS) {
             if (d.getQuadrant()==TOP_LEFT && d.hasDecoration(fFlags)) {
-                addTopLeftImage(d.getImageDescriptor(), pos);
+                addTopLeftImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
             }
         }
     }
@@ -228,7 +247,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 
         for(DecorationDescriptor d: DECORATIONS) {
             if (d.getQuadrant()==BOTTOM_RIGHT && d.hasDecoration(fFlags)) {
-                addBottomRightImage(d.getImageDescriptor(), pos);
+                addBottomRightImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
             }
         }
     }
@@ -237,7 +256,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
         Point pos= new Point(0, getSize().y);
         for (DecorationDescriptor d: DECORATIONS) {
             if (d.getQuadrant()==BOTTOM_LEFT && d.hasDecoration(fFlags)) {
-                addBottomLeftImage(d.getImageDescriptor(), pos);
+                addBottomLeftImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
             }
         }
     }
