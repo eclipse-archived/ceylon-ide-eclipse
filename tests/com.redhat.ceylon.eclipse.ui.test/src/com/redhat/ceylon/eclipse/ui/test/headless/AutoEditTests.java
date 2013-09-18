@@ -1,20 +1,44 @@
 package com.redhat.ceylon.eclipse.ui.test.headless;
 
+
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
 import static org.junit.Assert.assertEquals;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 
 public class AutoEditTests {
+ 
+    @BeforeClass
+    public static void setupPreferences() {
+        String[] FENCES = {
+            CLOSE_BRACES,
+            CLOSE_QUOTES,
+            CLOSE_BACKTICKS,
+            CLOSE_ANGLES,
+            CLOSE_PARENS,
+            CLOSE_BRACKETS};
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        for (String closeSetting : FENCES) {
+            store.setValue(closeSetting, true);
+            store.setDefault(closeSetting, true);
+        }
+    }
     
-	public AutoEditTests() {}
-		
     @Test
     public void testCorrectIndentation1() {
         checkForCorrectIndentation(
