@@ -70,7 +70,8 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
     private final static int VARIABLE = 1 << 8;
     private final static int ANNOTATION = 1 << 9;
     private final static int ENUM = 1 << 10;
-//    private final static int FINAL = 1 << 11;
+    private final static int ALIAS = 1 << 11;
+//    private final static int FINAL = 1 << 12;
     
     private static final ImageDescriptor WARNING_IMAGE = CeylonPlugin.getInstance().image("warning.gif");
     private static final ImageDescriptor ERROR_IMAGE = CeylonPlugin.getInstance().image("error.gif");
@@ -81,6 +82,7 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
     private static final ImageDescriptor VOLATILE_IMAGE = CeylonPlugin.getInstance().image("volatile_co.gif");
     private static final ImageDescriptor ANNOTATION_IMAGE = CeylonPlugin.getInstance().image("annotation_tsk.gif");
     private static final ImageDescriptor ENUM_IMAGE = CeylonPlugin.getInstance().image("enum_tsk.gif");
+    private static final ImageDescriptor ALIAS_IMAGE = CeylonPlugin.getInstance().image("linked_co.gif");
     
     static final DecorationDescriptor[] DECORATIONS = new DecorationDescriptor[] {
         new DecorationDescriptor(WARNING, WARNING_IMAGE, BOTTOM_LEFT),
@@ -91,7 +93,8 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
         new DecorationDescriptor(ABSTRACT, ABSTRACT_IMAGE, TOP_RIGHT),
         new DecorationDescriptor(VARIABLE, VOLATILE_IMAGE, TOP_LEFT),
         new DecorationDescriptor(ANNOTATION, ANNOTATION_IMAGE, TOP_LEFT),
-        new DecorationDescriptor(ENUM, ENUM_IMAGE, TOP_LEFT)
+        new DecorationDescriptor(ENUM, ENUM_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ALIAS, ALIAS_IMAGE, TOP_LEFT)
 //        new DecorationDescriptor(FINAL, CeylonPlugin.getInstance().image("..."), TOP_RIGHT)
     };
     
@@ -176,11 +179,16 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
             result |= ABSTRACT;
         }
 //        if (model instanceof Class && ((Class) model).isFinal()) {
-//            result |= FINAL;
-//        }
-        if (model instanceof TypeDeclaration && 
-                ((TypeDeclaration) model).getCaseTypeDeclarations()!=null) {
-            result |= ENUM;
+        //            result |= FINAL;
+        //        }
+        if (model instanceof TypeDeclaration) {
+            TypeDeclaration td = (TypeDeclaration) model;
+            if(td.getCaseTypeDeclarations()!=null) {
+                result |= ENUM;
+            }
+            if (td.isAlias()) {
+                result |= ALIAS;
+            }
         }
         Declaration refined = getRefinedDeclaration(model);
         if (refined!=null) {
