@@ -53,8 +53,8 @@ public abstract class ProjectNatureBase implements IProjectNature {
             String[] natures= description.getNatureIds();
             String[] newNatures= new String[natures.length + 1];
 
-            System.arraycopy(natures, 0, newNatures, 0, natures.length);
-            newNatures[natures.length]= natureID;
+            System.arraycopy(natures, 0, newNatures, 1, natures.length);
+            newNatures[0]= natureID;
 
             description.setNatureIds(newNatures);
             project.setDescription(description, null);
