@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static org.eclipse.core.runtime.Platform.getPreferencesService;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
@@ -10,7 +9,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.eclipse.core.runtime.preferences.IPreferencesService;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -28,17 +27,22 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
     }
     
     static int getIndentSpaces() {
-        IPreferencesService ps = getPreferencesService();
-        return ps==null ? 4 :
-            ps.getInt("org.eclipse.ui.editors", 
-                    EDITOR_TAB_WIDTH, 4, null);
+        IPreferenceStore store = getPreferences();
+        return store==null ? 4 : store.getInt(EDITOR_TAB_WIDTH);
     }
     
     static boolean getIndentWithSpaces() {
-        IPreferencesService ps = getPreferencesService();
-        return ps==null ? false :
-            ps.getBoolean("org.eclipse.ui.editors", 
-                    EDITOR_SPACES_FOR_TABS, false, null);
+        IPreferenceStore store = getPreferences();
+        return store==null ? false : store.getBoolean(EDITOR_SPACES_FOR_TABS);
+    }
+
+    static IPreferenceStore getPreferences() {
+        try {
+            return EditorsUI.getPreferenceStore();
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
     
     static void initialIndent(StringBuilder buf) {
@@ -76,7 +80,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
              catch (RecognitionException e) {}
 			 tokens = ts.getTokens();
 		 }
-		 new AutoEdit(document, tokens, command, EditorsUI.getPreferenceStore())
+		 new AutoEdit(document, tokens, command)
 		         .customizeDocumentCommand();
 	 }
 	 
