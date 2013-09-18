@@ -466,7 +466,7 @@ class AutoEdit {
                 break;
             default:
                 //when spacesfortabs is enabled, we get sent spaces instead of a tab
-                if (CeylonAutoEditStrategy.getIndentWithSpaces() && isIndent(getPrefix())) {
+                if (getIndentWithSpaces() && isIndent(getPrefix())) {
                     if (isStringOrCommentContinuation(command.offset)) {
                         shiftToBeginningOfStringOrCommentContinuation();
                     }
@@ -765,7 +765,7 @@ class AutoEdit {
                 char ch = getLastNonWhitespaceCharacterInLine(start1, end1);
                 if (ch==';' || ch=='{' || ch=='}') break;
                 end = end1;
-                start=start1;
+                start = start1;
             }
         }
         while (isStringOrCommentContinuation(start)) {
