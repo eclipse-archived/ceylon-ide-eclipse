@@ -13,6 +13,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static java.lang.System.identityHashCode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,39 +109,56 @@ public class CeylonOutlineNode implements IAdaptable {
     }
 
     public String getIdentifier() {
-        if (treeNode instanceof Tree.Import) {
-            return "@import:" + formatPath(((Tree.Import) treeNode).getImportPath().getIdentifiers());
-        }
-        else if (treeNode instanceof Tree.Declaration) {
-            String name = ((Tree.Declaration) treeNode).getIdentifier().getText();
-            if (getParent()!=null && getParent().getTreeNode() instanceof Tree.Declaration) {
-                return getParent().getIdentifier() + ":" + name;
+        try {
+            if (treeNode instanceof Tree.Import) {
+                Tree.ImportPath importPath = ((Tree.Import) treeNode).getImportPath();
+                String name = importPath==null ? 
+                        String.valueOf(identityHashCode(treeNode)) : 
+                            formatPath(importPath.getIdentifiers());
+                        return "@import:" + name;
+            }
+            else if (treeNode instanceof Tree.Declaration) {
+                Tree.Identifier id = ((Tree.Declaration) treeNode).getIdentifier();
+                String name = id==null ? 
+                        String.valueOf(identityHashCode(treeNode)) : 
+                            id.getText();
+                        if (parent!=null && parent.getTreeNode() instanceof Tree.Declaration) {
+                            return getParent().getIdentifier() + ":" + name;
+                        }
+                        else {
+                            return "@declaration:" + name;
+                        }
+            }
+            else if (treeNode instanceof Tree.ImportModule) {
+                Tree.ImportPath importPath = ((Tree.ImportModule) treeNode).getImportPath();
+                String name = importPath==null ? 
+                        String.valueOf(identityHashCode(treeNode)) : 
+                            formatPath(importPath.getIdentifiers());
+                        return "@importmodule:" + name;
+            }
+            else if (treeNode instanceof Tree.ImportList) {
+                return "@importlist";
+            }
+            else if (treeNode instanceof Tree.CompilationUnit) {
+                return "@compilationunit";
+            }
+            else if (treeNode instanceof Tree.ModuleDescriptor) {
+                return "@moduledescriptor";
+            }
+            else if (treeNode instanceof Tree.PackageDescriptor) {
+                return "@packagedescriptor";
+            }
+            else if (treeNode instanceof PackageNode) {
+                return "@packagenode";
             }
             else {
-                return "@declaration:" + name;
+                //the root node
+                return ".";
             }
         }
-        else if (treeNode instanceof Tree.ImportModule) {
-            return "@importmodule:" + formatPath(((Tree.Import) treeNode).getImportPath().getIdentifiers());
-        }
-        else if (treeNode instanceof Tree.ImportList) {
-            return "@importlist";
-        }
-        else if (treeNode instanceof Tree.CompilationUnit) {
-            return "@compilationunit";
-        }
-        else if (treeNode instanceof Tree.ModuleDescriptor) {
-            return "@moduledescriptor";
-        }
-        else if (treeNode instanceof Tree.PackageDescriptor) {
-            return "@packagedescriptor";
-        }
-        else if (treeNode instanceof PackageNode) {
-            return "@packagenode";
-        }
-        else {
-            //the root node
-            return ".";
+        catch (RuntimeException re) {
+            re.printStackTrace();
+            return "";
         }
     }
     

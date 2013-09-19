@@ -202,6 +202,17 @@ public class CeylonOutlinePage extends ContentOutlinePage
         
         expand(viewer, rootNode);
      }
+    
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (labelProvider!=null) {
+            labelProvider.dispose();
+        }
+        if (contentProvider!=null) {
+            contentProvider.dispose();
+        }
+    }
 
      void expand(TreeViewer viewer, CeylonOutlineNode rootNode) {
         for (CeylonOutlineNode con: rootNode.getChildren()) {
