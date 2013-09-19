@@ -74,7 +74,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
     
     public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
-        PresentationReconciler reconciler= new PresentationReconciler();
+        PresentationReconciler reconciler = new PresentationReconciler();
         //make sure we pass the sourceViewer we get as an argument here
         //otherwise it breaks syntax highlighting in Code popup
         PresentationDamageRepairer damageRepairer = new PresentationDamageRepairer(sourceViewer, editor);
@@ -337,9 +337,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		});
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
-        presenter.setInformationProvider(new OutlineInformationProvider(), DEFAULT_CONTENT_TYPE); //TODO!!
+        presenter.setInformationProvider(new OutlineInformationProvider(), 
+                DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(40, 10, true, false);
-		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),"code_presenter_bounds"), true, true);
+		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
+		        "code_presenter_bounds"), true, true);
         return presenter;
     }
     
@@ -371,9 +373,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		});
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
-        presenter.setInformationProvider(new OutlineInformationProvider(), DEFAULT_CONTENT_TYPE);
+        presenter.setInformationProvider(new OutlineInformationProvider(), 
+                DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(40, 10, true, false);
-		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),"outline_presenter_bounds"), true, true);
+		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
+		        "outline_presenter_bounds"), true, true);
         return presenter;
     }
     
@@ -422,9 +426,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		});
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
-        presenter.setInformationProvider(new HierarchyInformationProvider(), DEFAULT_CONTENT_TYPE);
+        presenter.setInformationProvider(new HierarchyInformationProvider(), 
+                DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(40, 10, true, false);
-        presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),"hierarchy_presenter_bounds"), true, true);
+        presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
+                "hierarchy_presenter_bounds"), true, true);
         return presenter;
     }
     
