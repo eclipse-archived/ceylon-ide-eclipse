@@ -106,7 +106,7 @@ public class CeylonOutlineBuilder {
 	private Stack<CeylonOutlineNode> itemStack= new Stack<CeylonOutlineNode>();
 
 	public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
-	    file = cpc.getProject()==null && cpc.getPath()==null ? null :
+	    file = cpc.getProject()==null || cpc.getPath()==null ? null :
 	            cpc.getProject().getFile(cpc.getPath());
 	    itemStack.push(modelRoot=createTopItem());
 		try {
