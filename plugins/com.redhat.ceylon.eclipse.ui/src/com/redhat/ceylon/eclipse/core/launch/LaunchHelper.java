@@ -33,7 +33,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -134,31 +133,10 @@ public class LaunchHelper {
         }
         return candidateDeclaration;
     }
-   
-    static Module getAnyModule(IProject project, String fullModuleName) { // mostly for dependent projects
-        if (fullModuleName != null) {
-            String[] parts = fullModuleName.split("/");
-            
-            if (parts != null && parts.length != 2) {
-                return null;
-            }
-            Modules modules = CeylonBuilder.getProjectModules(project);
-            if (modules != null) {
-		        for (Module module: modules.getListOfModules()) {
-		            if (module.getNameAsString().equals(parts[0]) && module.getVersion().equals(parts[1])) {
-		                return module;
-		            }
-		        }
-            }
-        }
-        return null;
-    }
     
     static Module getModule(IProject project, String fullModuleName) {
-        
-        if (Module.DEFAULT_MODULE_NAME.equals(fullModuleName)) {
-            return getDefaultModule();
-        }
+    	
+    	fullModuleName = normalizeFullModuleName(fullModuleName);
         
         if (fullModuleName != null) {
             String[] parts = fullModuleName.split("/");
@@ -172,11 +150,31 @@ public class LaunchHelper {
                     return module;
                 }
             }
+            
+            if (isDefaultModulePresent(project)) {
+            	return getDefaultModule(project);
+            }
         }
         return null;
     }
 
-    private static Module getDefaultModule() {
+    private static String normalizeFullModuleName(String fullModuleName) {
+    	if (Module.DEFAULT_MODULE_NAME.equals(fullModuleName)) {
+    		return getFullModuleName(getEmptyDefaultModule());
+    	} else {
+    		return fullModuleName;
+    	}
+	}
+
+	private static Module getDefaultModule(IProject project) {
+        Module defaultModule = CeylonBuilder.getProjectModules(project).getDefaultModule();
+        if (defaultModule == null) {
+        	defaultModule = getEmptyDefaultModule();
+        }
+        return defaultModule;
+    }
+    
+    private static Module getEmptyDefaultModule() {
         Module defaultModule = new Module();
         defaultModule.setName(Arrays.asList(new String[]{Module.DEFAULT_MODULE_NAME}));
         defaultModule.setVersion("unversioned");
@@ -190,7 +188,7 @@ public class LaunchHelper {
     			return decl.getUnit().getPackage().getModule();
     		}
     	}
-        return getDefaultModule();
+        return getEmptyDefaultModule();
     }
 
     static String getModuleFullName(Declaration decl) {
@@ -215,14 +213,25 @@ public class LaunchHelper {
                 }
             }
         }
-        if (modules.isEmpty()) {
-            modules.add(getDefaultModule());
+        if (modules.isEmpty() || isDefaultModulePresent(project)) {
+            modules.add(getDefaultModule(project));
         }
         return modules;
     }
-    
-    static boolean isProjectContainsModule(IProject project, String fullModuleName) {
-        if (fullModuleName.equals(Module.DEFAULT_MODULE_NAME)) {
+        
+    private static boolean isDefaultModulePresent(IProject project) {
+    	Module defaultModule = CeylonBuilder.getProjectModules(project).getDefaultModule();
+    	if (defaultModule != null) {
+    		List<Declaration> decls = getDeclarationsForModule(project, defaultModule);
+    		if (!decls.isEmpty()) {
+    			return true;
+    		}
+    	}
+		return false;
+	}
+
+	static boolean isModuleInProject(IProject project, String fullModuleName) {
+        if (fullModuleName.equals(Module.DEFAULT_MODULE_NAME) && isDefaultModulePresent(project)) {
             return true;
         }
         
@@ -238,40 +247,43 @@ public class LaunchHelper {
 	static String getFullModuleName(Module module) {
 		return module.getNameAsString()+"/"+module.getVersion();
 	}
-    
-	static List<Declaration> getDeclarationsForModule(String projectName, String fullModuleName) {
-		IProject project = getProjectFromName(projectName);
+ 
+	static List<Declaration> getDeclarationsForModule(IProject project, Module module) {
     	
     	List<Declaration> modDecls = new LinkedList<Declaration>();
+
     	
-    	if (getFullModuleName(getDefaultModule()).equals(fullModuleName)) {
-    		fullModuleName = Module.DEFAULT_MODULE_NAME;
-    	}
-    	
-    	if (isProjectContainsModule(project, fullModuleName) && getModule(project, fullModuleName) != null) { // if the module is in the same project
-	    	TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-	    	Module module = getModule(project, fullModuleName);
-	    	for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
-	    		if (isModuleCompatible(module, pu)) {
-			    	for (Declaration decl : pu.getDeclarations()) {
-			    		if (isRunnable(decl)) {
-			    			modDecls.add(decl);
-			    		}
-			    	}
-	    		}
-	    	}
-    	} else { // depednent module
-    		Module module = getAnyModule(project, fullModuleName);
-    		for (Package pkg : module.getSharedPackages()) {
-    			for (Declaration decl : pkg.getMembers()) {
+    	if (module != null) {
+    		List<Package> pkgs = module.getPackages(); // avoid concurrent exception
+			for (Package pkg : pkgs) {
+				if (pkg.getModule() != null && isPackageInProject(project, pkg))
+				for (Declaration decl : pkg.getMembers()) {
 		    		if (isRunnable(decl)) {
 		    			modDecls.add(decl);
 		    		}    				
-    			}
-    		}
+				}
+			}
     	}
-    	
+
     	return modDecls;	
+	}
+	
+	private static boolean isPackageInProject(IProject project, Package pkg) {
+
+    	TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+    	List<PhasedUnit> pus = typeChecker.getPhasedUnits().getPhasedUnits();
+    	for (PhasedUnit phasedUnit : pus) {
+			if (pkg.equals(phasedUnit.getPackage())) {
+				return true;
+			}
+		}
+    	return false;
+	}
+
+	static List<Declaration> getDeclarationsForModule(String projectName, String fullModuleName) {
+		IProject project = getProjectFromName(projectName);
+    	Module module = getModule(project, fullModuleName);
+    	return getDeclarationsForModule(project, module);
 	}
 	
 	/**
@@ -283,35 +295,24 @@ public class LaunchHelper {
 	 */
     static boolean isModuleContainsTopLevel(IProject project, String fullModuleName, String topLevelName) {
         
-    	if (!isProjectContainsModule(project, fullModuleName)) {
+    	if (!isModuleInProject(project, fullModuleName)) {
     		return false;
     	}
     	
     	if (Module.DEFAULT_MODULE_NAME.equals(fullModuleName)) {
-    		fullModuleName = getFullModuleName(getDefaultModule()); //compatible with next method.
+    		fullModuleName = getFullModuleName(getDefaultModule(project));
     	}
     	
-    	Module mod = getAnyModule(project, fullModuleName);
+    	Module mod = getModule(project, fullModuleName);
     	
     	if (mod == null) {
     		return false;
     	}
     	
-        if (mod.isDefault()) {
-        	TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-        	for (PhasedUnit pu : typeChecker.getPhasedUnits().getPhasedUnits()) {
-				for (Declaration decl : pu.getDeclarations()) {
-					if (getRunnableName(decl).equals(topLevelName)) {
-						return true;
-					}
-				}
-        	}
-        } else {
-			for (Package pkg : mod.getPackages()) {
-				for (Declaration decl : pkg.getMembers()) {
-					if (getRunnableName(decl).equals(topLevelName)) {
-						return true;
-					}
+		for (Package pkg : mod.getPackages()) {
+			for (Declaration decl : pkg.getMembers()) {
+				if (getRunnableName(decl).equals(topLevelName)) {
+					return true;
 				}
 			}
         }
@@ -319,30 +320,9 @@ public class LaunchHelper {
         return false;
     }
 
-	private static boolean isModuleCompatible(Module module,
-			PhasedUnit pu) {
-		return (!module.isDefault() && module.getAllPackages().contains(pu.getPackage()) )
-				|| module.isDefault();
-	}
-
-//	/**
-//	 * May come in handy for uniting laucnh types
-//	 */
-//	@Deprecated
-//	private static List<Declaration> getRunnableDeclarations(PhasedUnit phasedUnit) {
-//    	List<Declaration> puDecls = new LinkedList<Declaration>();
-//    	for (Declaration decl : phasedUnit.getDeclarations()) {
-//    		if (isRunnable(decl)) {
-//    			puDecls.add(decl);
-//    		}
-//    	}
-//    	return puDecls;
-//	}
-
 	static String getRunnableName(Declaration d) {
 		return d.getQualifiedNameString().replace("::", ".");
-	}  
-    
+	}
 
     static Declaration chooseDeclaration(final List<Declaration> decls) {
         FilteredItemsSelectionDialog sd = new CeylonTopLevelSelectionDialog(Util.getShell(), false, decls);
@@ -359,10 +339,11 @@ public class LaunchHelper {
 	
     static Module chooseModule(IProject project, boolean includeDefault) {
 
-    	Set<Module> modules = getModules(project, true);
     	if (getDefaultOrOnlyModule(project, includeDefault) != null) {
     		return getDefaultOrOnlyModule(project, includeDefault);
     	}
+    	
+    	Set<Module> modules = getModules(project, true);
 	    
 	    FilteredItemsSelectionDialog cmsd = new CeylonModuleSelectionDialog(Util.getShell(), modules, "Choose Ceylon Module"); 
 	    if (cmsd.open() == Window.OK) {
@@ -380,12 +361,6 @@ public class LaunchHelper {
             }
         }
         return null;
-    }
-
-    static Set<Module> getModules(IProject project) {
-        Set<Module> returnedModules = new HashSet<Module>();
-        returnedModules.addAll(CeylonBuilder.getModulesInProject(project));
-        return returnedModules;
     }
 
     static String getTopLevelNormalName(String moduleFullName, String displayName) {
@@ -436,7 +411,7 @@ public class LaunchHelper {
 	}
 
 	static Module getModule(IFolder folder) {
-		for (Module mod : getModules(folder.getProject())) {
+		for (Module mod : CeylonBuilder.getModulesInProject((folder.getProject()))) {
 		if (CeylonBuilder.getPackageName(folder).equals(mod.getRootPackage().getNameAsString()))
 			return mod;
 		}
