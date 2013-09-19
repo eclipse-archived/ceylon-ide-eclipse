@@ -12,7 +12,9 @@ package com.redhat.ceylon.eclipse.code.editor;
 *******************************************************************************/
 
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
+import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
@@ -54,6 +57,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -198,7 +202,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 try {
                     if (imports==null) return;
                     Object[] data = new Object[] { text, imports, selection };
-                    Transfer[] dataTypes = new Transfer[] { TextTransfer.getInstance(), ImportsTransfer.INSTANCE, SourceTransfer.INSTANCE };
+                    Transfer[] dataTypes = new Transfer[] { 
+                            TextTransfer.getInstance(), 
+                            ImportsTransfer.INSTANCE, 
+                            SourceTransfer.INSTANCE };
                     clipboard.setContents(data, dataTypes);
                 } 
                 catch (SWTError e) {
@@ -230,14 +237,14 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     IDocument doc= this.getDocument();
                     DocumentRewriteSession rewriteSession= null;
                     if (doc instanceof IDocumentExtension4) {
-                        rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+                        rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
                     }
                     
                     int endOffset = selection.getOffset()+selection.getLength();
                     try {
                     	MultiTextEdit edit = new MultiTextEdit();
                     	if (imports!=null) {
-                    		pasteImports(imports, edit);
+                    		pasteImports(imports, edit, text);
                     	}
                     	edit.addChild(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
                     	edit.apply(doc);
@@ -248,8 +255,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         return false;
                     }
                     try {
-                    	if (EditorsUI.getPreferenceStore()
-                    			.getBoolean(CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION)) {
+                    	if (EditorsUI.getPreferenceStore().getBoolean(PASTE_CORRECT_INDENTATION)) {
                     		endOffset = correctSourceIndentation(new Point(endOffset-text.length(), text.length()), doc)+1;
                     	}
                     	return true;
@@ -303,8 +309,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         Point p= this.getSelectedRange();
 
         if (doc instanceof IDocumentExtension4) {
-            IDocumentExtension4 extension= (IDocumentExtension4) doc;
-            rewriteSession= extension.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+            rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
         }
 
         try {
@@ -319,8 +324,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         } 
         finally {
             if (doc instanceof IDocumentExtension4) {
-                IDocumentExtension4 extension= (IDocumentExtension4) doc;
-                extension.stopRewriteSession(rewriteSession);
+                ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
             }
             restoreSelection();
         }
@@ -359,8 +363,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             e.printStackTrace();
         } finally {
             if (doc instanceof IDocumentExtension4) {
-                IDocumentExtension4 extension= (IDocumentExtension4) doc;
-                extension.stopRewriteSession(rewriteSession);
+                ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
             }
             restoreSelection();
         }
@@ -373,8 +376,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         final String lineCommentPrefix= "//";
 
         if (doc instanceof IDocumentExtension4) {
-            IDocumentExtension4 extension= (IDocumentExtension4) doc;
-            rewriteSession= extension.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+            rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
         }
 
         try {
@@ -413,8 +415,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             e.printStackTrace();
         } finally {
             if (doc instanceof IDocumentExtension4) {
-                IDocumentExtension4 extension= (IDocumentExtension4) doc;
-                extension.stopRewriteSession(rewriteSession);
+                ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
             }
             restoreSelection();
         }
@@ -473,8 +474,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         IDocument doc= getDocument();
         DocumentRewriteSession rewriteSession= null;
         if (doc instanceof IDocumentExtension4) {
-            IDocumentExtension4 extension= (IDocumentExtension4) doc;
-            rewriteSession= extension.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+            rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
         }
 
         try {
@@ -484,8 +484,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             e.printStackTrace();
         } finally {
             if (doc instanceof IDocumentExtension4) {
-                IDocumentExtension4 extension= (IDocumentExtension4) doc;
-                extension.stopRewriteSession(rewriteSession);
+                ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
             }
             restoreSelection();
         }
@@ -599,7 +598,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         //        initializeViewerColors();
         //    }
         
-        ITextHover textHover = configuration.getTextHover(this,DEFAULT_CONTENT_TYPE);
+        ITextHover textHover = configuration.getTextHover(this, DEFAULT_CONTENT_TYPE);
         if (textHover!=null) {
             setTextHover(textHover, DEFAULT_CONTENT_TYPE);
         }
@@ -676,7 +675,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         return v.results;
     }
     
-    void pasteImports(Map<Declaration,String> map, MultiTextEdit edit) {
+    void pasteImports(Map<Declaration,String> map, MultiTextEdit edit, String pastedText) {
         if (!map.isEmpty()) {
             CeylonParseController pc = editor.getParseController();
             if (pc==null || pc.getRootNode()==null) return;
@@ -687,12 +686,22 @@ public class CeylonSourceViewer extends ProjectionViewer {
             for (Iterator<Map.Entry<Declaration,String>> i=imports.entrySet().iterator(); 
                     i.hasNext();) {
                 Map.Entry<Declaration,String> e = i.next();
-                if (cu.getUnit().getPackage().equals(e.getKey().getUnit().getPackage())) {
+                Declaration declaration = e.getKey();
+                Package declarationPackage = declaration.getUnit().getPackage();
+                Pattern pattern = Pattern.compile("\\bimport\\s+" + 
+                        declarationPackage.getNameAsString().replace(".", "\\.") + 
+                        "\\b[^.]");
+                if (cu.getUnit().getPackage().equals(declarationPackage)) {
+                    //the declaration belongs to this package
+                    i.remove();
+                }
+                else if (pattern.matcher(pastedText).find()) {
+                    //i.e. the pasted text probably already contains the import
                     i.remove();
                 }
                 else {
                     for (Import ip: cu.getUnit().getImports()) {
-                        if (ip.getDeclaration().equals(e.getKey())) {
+                        if (ip.getDeclaration().equals(declaration)) {
                             i.remove();
                             break;
                         }
