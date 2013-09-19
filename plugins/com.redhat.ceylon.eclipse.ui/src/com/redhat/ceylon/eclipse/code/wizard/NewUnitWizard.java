@@ -3,11 +3,16 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_FILE;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
+import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -17,6 +22,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.operations.IWorkbenchOperationSupport;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
@@ -52,11 +58,27 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         if (contents.contains("$className")) {
             contents=contents.replace("$className", pageOne.getClassName());
         }
-        FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
+        final CreateCeylonSourceFileOperation op = new CreateCeylonSourceFileOperation(page.getSourceDir(), 
                 page.getPackageFragment(), page.getUnitName(), 
                 page.isIncludePreamble(), contents, getShell());
         try {
-            getContainer().run(true, true, op);
+            getContainer().run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor monitor) throws InvocationTargetException,
+                        InterruptedException {
+                    //TODO: should we do this in a WorkspaceModifyOperation?
+                    try {
+                        IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
+                        op.addContext(os.getUndoContext());
+                        os.getOperationHistory().execute(op, monitor, 
+                                getUIInfoAdapter(getShell()));
+                    } 
+                    catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
         } 
         catch (InvocationTargetException e) {
             e.printStackTrace();

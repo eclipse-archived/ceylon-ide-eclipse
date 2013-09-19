@@ -2,17 +2,23 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PACKAGE;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
+import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.operations.IWorkbenchOperationSupport;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 public class NewPackageWizard extends Wizard implements INewWizard {
@@ -37,13 +43,30 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     
     @Override
     public boolean performFinish() {
-        FileCreationOp op = new FileCreationOp(page.getSourceDir(), 
+        final CreateCeylonSourceFileOperation op = new CreateCeylonSourceFileOperation("New Ceylon Package",
+                page.getSourceDir(), 
                 page.getPackageFragment(), "package", 
                 page.isIncludePreamble(), 
                 (page.isShared() ? "shared " : "") + "package " + page.getPackageFragment().getElementName() + ";\n",
                 getShell());
         try {
-            getContainer().run(true, true, op);
+            getContainer().run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor monitor) throws InvocationTargetException,
+                        InterruptedException {
+                    //TODO: should we do this in a WorkspaceModifyOperation?
+                    try {
+                        IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
+                        op.addContext(os.getUndoContext());
+                        os.getOperationHistory()
+                                .execute(op, monitor, getUIInfoAdapter(getShell()));
+                    } 
+                    catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
         } 
         catch (InvocationTargetException e) {
             e.printStackTrace();
