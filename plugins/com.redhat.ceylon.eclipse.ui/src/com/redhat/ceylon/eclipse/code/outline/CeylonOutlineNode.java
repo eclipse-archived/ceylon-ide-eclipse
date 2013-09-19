@@ -162,11 +162,18 @@ public class CeylonOutlineNode implements IAdaptable {
 
     private String path() {
         Unit unit = treeNode.getUnit();
-        return unit==null ? 
-                resource.getProjectRelativePath()
-                    .toPortableString() : 
-                unit.getPackage().getNameAsString() + "." +
+        if (resource!=null) {
+            return resource.getProjectRelativePath()
+                    .toPortableString();
+        }
+        else if (unit!=null) {
+            return unit.getPackage().getNameAsString() + "." +
                     unit.getFilename();
+        }
+        else {
+            return "unknown";
+        }
+                
     }
 
 //    private String filename() {
