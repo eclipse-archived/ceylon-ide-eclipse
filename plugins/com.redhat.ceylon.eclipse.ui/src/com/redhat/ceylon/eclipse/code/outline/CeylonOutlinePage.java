@@ -24,13 +24,13 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.actions.CollapseAllAction;
+import org.eclipse.jdt.internal.ui.packageview.DefaultElementComparer;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DecoratingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DecorationContext;
-import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -143,25 +143,6 @@ public class CeylonOutlinePage extends ContentOutlinePage
     
     private volatile boolean suspend = false;
     
-    @Override
-    public void selectionChanged(SelectionChangedEvent event) {
-        super.selectionChanged(event);
-        if (!suspend) {
-            ITreeSelection sel= (ITreeSelection) event.getSelection();
-            if (!sel.isEmpty()) {
-                Node node = ((CeylonOutlineNode) sel.getFirstElement()).getTreeNode();
-                if (node instanceof PackageNode || 
-                    node instanceof Tree.CompilationUnit) {
-                    return;
-                }
-                int startOffset = getStartOffset(node);
-                int endOffset = getEndOffset(node);
-                int length = endOffset - startOffset;
-                ((ITextEditor) getCurrentEditor()).selectAndReveal(startOffset, length);
-            }
-        }
-    }
-
     public void createControl(Composite parent) {
         super.createControl(parent);
         TreeViewer viewer = getTreeViewer();
@@ -170,16 +151,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         viewer.addSelectionChangedListener(this);
         CeylonOutlineNode rootNode = modelBuilder.buildTree(parseController);
         viewer.setInput(rootNode);
-        viewer.setComparer(new IElementComparer() {
-            @Override
-            public int hashCode(Object element) {
-                return element.hashCode();
-            }
-            @Override
-            public boolean equals(Object a, Object b) {
-                return a.equals(b);
-            }
-        });
+        viewer.setComparer(new DefaultElementComparer());
 
         IPageSite site = getSite();
         IToolBarManager toolBarManager = site.getActionBars().getToolBarManager();
@@ -256,7 +228,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                 int cat1= t1.getCategory();
                 int cat2= t2.getCategory();
                 if (cat1 == cat2) {
-                    return 0;//labelProvider.getText(t1).compareTo(labelProvider.getText(t2));
+                    return t1.getIdentifier().compareTo(t2.getIdentifier());
                 }
                 return cat1 - cat2;
             }
@@ -363,6 +335,32 @@ public class CeylonOutlinePage extends ContentOutlinePage
     }
     
     @Override
+    public void selectionChanged(SelectionChangedEvent event) {
+        super.selectionChanged(event);
+        if (!suspend) {
+            ITreeSelection sel= (ITreeSelection) event.getSelection();
+            if (!sel.isEmpty()) {
+                Node node = ((CeylonOutlineNode) sel.getFirstElement()).getTreeNode();
+                if (node instanceof PackageNode || 
+                    node instanceof Tree.ImportList ||
+                    node instanceof Tree.CompilationUnit) {
+                    return;
+                }
+                suspend = true;
+                try {
+                    int startOffset = getStartOffset(node);
+                    int endOffset = getEndOffset(node);
+                    ((ITextEditor) getCurrentEditor())
+                            .selectAndReveal(startOffset, endOffset-startOffset);
+                }
+                finally {
+                    suspend = false;
+                }
+            }
+        }
+    }
+
+    @Override
     public void caretMoved(CaretEvent event) {
         int offset = sourceViewer.widgetOffset2ModelOffset(event.caretOffset);
         expandCaretedNode(offset);
@@ -370,17 +368,24 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
     private void expandCaretedNode(int offset) {
         if (suspend) return;
-        suspend = true;
         CompilationUnit rootNode = parseController.getRootNode();
         if (rootNode==null) return;
-        OutlineNodeVisitor visitor = new OutlineNodeVisitor(offset);
-        rootNode.visit(visitor);
-        if (!visitor.result.isEmpty()) {
-            TreePath treePath = new TreePath(visitor.result.toArray());
-            getTreeViewer().expandToLevel(treePath, 1);
-            setSelection(new TreeSelection(treePath));
+        suspend = true;
+        try {
+            OutlineNodeVisitor visitor = new OutlineNodeVisitor(offset);
+            rootNode.visit(visitor);
+            if (!visitor.result.isEmpty()) {
+                TreePath treePath = new TreePath(visitor.result.toArray());
+                if (!visitor.result.get(visitor.result.size()-1)
+                        .getChildren().isEmpty()) {
+                    getTreeViewer().expandToLevel(treePath, 1);
+                }
+                setSelection(new TreeSelection(treePath));
+            }
         }
-        suspend = false;
+        finally {
+            suspend = false;
+        }
     }
     
     class OutlineNodeVisitor extends Visitor {

@@ -10,6 +10,10 @@
  *******************************************************************************/
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.ROOT_CATEGORY;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +35,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
@@ -89,18 +92,31 @@ public class CeylonStructureCreator extends StructureCreator {
 
     }
 
-    private CeylonDocumentRangeNode buildCompareTree(CeylonOutlineNode outlineNode, 
+    private void buildCompareTree(CeylonOutlineNode outlineNode, 
     		DocumentRangeNode parent, IDocument document) {
-        CeylonDocumentRangeNode compareNode = new CeylonDocumentRangeNode(parent, outlineNode, document);
-        parent.addChild(compareNode);
-        for (CeylonOutlineNode treeChild: outlineNode.getChildren()) {
-            Node childNode = treeChild.getTreeNode();
-            if (!(childNode instanceof PackageNode || 
-                  childNode instanceof Tree.CompilationUnit)) {
-                buildCompareTree(treeChild, compareNode, document);
-            }
+        CeylonDocumentRangeNode compareNode;
+        switch (outlineNode.getCategory()) {
+        case ROOT_CATEGORY: //attach children of the unit node directly to our root
+            compareNode = new CeylonDocumentRangeNode(parent, outlineNode, document) {
+                @Override
+                public String getName() {
+                    return "Ceylon Source File";
+                }
+            };
+            break;
+        case DEFAULT_CATEGORY:
+        case IMPORT_LIST_CATEGORY:
+            compareNode = new CeylonDocumentRangeNode(parent, outlineNode, document);
+            break;
+        default:
+            // The outline view has some extra nodes 
+            // we don't care about so just do nothing
+            return;
         }
-        return compareNode;
+        for (CeylonOutlineNode treeChild: outlineNode.getChildren()) {            
+            buildCompareTree(treeChild, compareNode, document);
+        }
+        parent.addChild(compareNode);
     }
     
     @Override

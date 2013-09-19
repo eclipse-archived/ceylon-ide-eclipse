@@ -11,7 +11,6 @@ import java.util.Stack;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 
-import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -24,7 +23,6 @@ public class CeylonOutlineBuilder {
 	void visitTree(Object root) {
 		if (root==null) return;
 		Tree.CompilationUnit rootNode = (Tree.CompilationUnit) root;
-		PackageNode pn = new PackageNode(null);
 		Unit unit = rootNode.getUnit();
 		if (unit==null) {
 			//This was necessary because sometimes IMP
@@ -34,11 +32,12 @@ public class CeylonOutlineBuilder {
 			//CeylonParseController
 			return;
 		}
-		Package pkg = unit.getPackage();
-		pn.setPackageName(pkg.getQualifiedNameString());
 		if (!unit.getFilename().equals("module.ceylon") &&
 		    !unit.getFilename().equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
-		    createSubItem(pn, PACKAGE_CATEGORY, file.getParent());
+	        PackageNode packageNode = new PackageNode();
+	        packageNode.setPackageName(unit.getPackage().getQualifiedNameString());
+		    createSubItem(packageNode, PACKAGE_CATEGORY, 
+		            file==null ? null : file.getParent());
 		}
 		createSubItem(rootNode, UNIT_CATEGORY, file);
  		rootNode.visit(new CeylonModelVisitor());
@@ -108,7 +107,7 @@ public class CeylonOutlineBuilder {
 	public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
 	    file = cpc.getProject()==null || cpc.getPath()==null ? null :
 	            cpc.getProject().getFile(cpc.getPath());
-	    itemStack.push(modelRoot=createTopItem());
+	    itemStack.push(modelRoot=createTopItem(cpc.getRootNode()));
 		try {
 			visitTree(cpc.getRootNode());
 		} 
@@ -119,8 +118,8 @@ public class CeylonOutlineBuilder {
 		return modelRoot;
 	}
 	
-	protected CeylonOutlineNode createTopItem() {
-        return new CeylonOutlineNode(ROOT_CATEGORY);
+	protected CeylonOutlineNode createTopItem(Node node) {
+        return new CeylonOutlineNode(node, ROOT_CATEGORY);
 	}
 
 	protected CeylonOutlineNode createSubItem(Node n) {

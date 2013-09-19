@@ -117,6 +117,12 @@ public class CeylonSourcePositionLocator {
 	    else if (node instanceof Tree.PackageDescriptor) {
 	        return ((Tree.PackageDescriptor) node).getImportPath();
 	    }
+        else if (node instanceof Tree.Import) {
+            return ((Tree.Import) node).getImportPath();
+        }
+        else if (node instanceof Tree.ImportModule) {
+            return ((Tree.ImportModule) node).getImportPath();
+        }
 	    else if (node instanceof Tree.NamedArgument) {
 	        Identifier id = ((Tree.NamedArgument) node).getIdentifier();
 	        if (id==null || id.getToken()==null) {

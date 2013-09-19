@@ -5,6 +5,8 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyl
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
+import java.util.Arrays;
+
 import org.eclipse.compare.ITypedElement;
 import org.eclipse.compare.structuremergeviewer.DocumentRangeNode;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -54,7 +56,7 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
 
     @Override
     public String toString() {
-        return node.getIdentifier();
+        return node.getIdentifier() + Arrays.asList(getChildren());
     }
     
 }
