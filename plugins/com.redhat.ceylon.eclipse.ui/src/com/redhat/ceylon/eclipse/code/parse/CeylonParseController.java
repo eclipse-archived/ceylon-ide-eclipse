@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.DONE;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
@@ -231,10 +232,13 @@ public class CeylonParseController {
         
         if (project!=null) {
             if (!isModelTypeChecked(project)) {
-                return; // TypeChecking has not been performed
+                // TypeChecking has not been performed
+                // on the main model, so don't do it 
+                // on the editor's tree
+                stager.afterStage(DONE, monitor);
+                return; 
             }
             typeChecker = getProjectTypeChecker(project);
-            //modelLoader = getProjectModelLoader(project);
         }
         
         if (isCanceling(monitor)) {
@@ -264,6 +268,7 @@ public class CeylonParseController {
         
         if (stager!=null) {
         	stager.afterStage(TYPE_ANALYSIS, monitor);
+        	stager.afterStage(DONE, monitor);
         }
         
         return;
