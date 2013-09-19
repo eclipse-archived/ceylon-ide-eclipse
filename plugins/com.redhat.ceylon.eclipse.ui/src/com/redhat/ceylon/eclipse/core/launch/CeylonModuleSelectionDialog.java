@@ -48,7 +48,7 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
         @Override
         public String getText(Object mod) {
             if (mod instanceof Module) {
-                return mod.toString();
+                return LaunchHelper.getFullModuleName((Module) mod);
             }
             return null;
         }

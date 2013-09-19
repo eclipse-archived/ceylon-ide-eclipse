@@ -43,26 +43,34 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
-    
+
+    /**
+     * Creates a <b>new</b> configuration if none was found or chosen.
+     * 
+     * @return the configuration created.
+     */
     protected ILaunchConfiguration createConfiguration(Declaration declarationToRun, IResource resource) {
         ILaunchConfiguration config = null;
         ILaunchConfigurationWorkingCopy wc = null;
         try {
-            ILaunchConfigurationType configType = LaunchHelper.getConfigurationType();
-
             Module mod = LaunchHelper.getModule(declarationToRun);      
-            String moduleName = mod.getNameAsString() + "/" + mod.getVersion();
+            String moduleName = LaunchHelper.getFullModuleName(mod);
+            
             if (mod.isDefault()) {
                 moduleName = mod.getNameAsString();
             }
 
-            wc = configType.newInstance(null, LaunchHelper.getLaunchConfigurationName(
-            		resource.getProject().getName(), moduleName, declarationToRun));        
+            wc = LaunchHelper.getConfigurationType()
+            		.newInstance(null, LaunchHelper.getLaunchConfigurationName(
+            				resource.getProject().getName(), moduleName, declarationToRun));
+            
             wc.setAttribute(ATTR_PROJECT_NAME, resource.getProject().getName());
             wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, moduleName);
-            // save the runnable name
+            
+            // save the runnable display name, which may be exact name or 'run - default'
             wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, 
             		LaunchHelper.getTopLevelDisplayName(declarationToRun));
+            
             wc.setMappedResources(new IResource[] {resource});
             config = wc.doSave();
         } catch (CoreException exception) {
@@ -107,6 +115,7 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         } catch (CoreException e) {
             e.printStackTrace(); // TODO : Use a logger
         }
+        
         int candidateCount = candidateConfigs.size();
         if (candidateCount == 1) {
             return candidateConfigs.get(0);
@@ -116,7 +125,13 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         }
         return null;
     }
-
+    
+    /**
+     * Choose a pre-defined configuration if there is more than one defined configuration
+     * for the same combination of project, module and runnable
+     * @param configuration list
+     * @return the chosen configuration
+     */
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList) {
         IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
         ElementListSelectionDialog dialog= new ElementListSelectionDialog(Util.getShell(), labelProvider);
@@ -131,7 +146,10 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         }
         return null;        
     }
-    
+ 
+    /**
+     * Launch from a Navigation selection - right-click, run-as or debug-as
+     */
     @Override
     public void launch(ISelection selection, String mode) {
         if (! (selection instanceof IStructuredSelection)) {
@@ -166,6 +184,9 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         searchAndLaunch(files, mode);
     }
 
+    /**
+     * Launch from the current editor context 
+     */
     @Override
     public void launch(IEditorPart editor, String mode) {
         IFile file = Util.getFile(editor.getEditorInput());
@@ -205,7 +226,12 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         }
         searchAndLaunch(Arrays.asList(file), mode);
     }
-    
+ 
+    /**
+     * Launches a dialogue to help choose a declaration and its associated file
+     * @param files - the files to search in
+     * @param mode
+     */
     private void searchAndLaunch(List<IFile> files, String mode) {
 
     	Object[] ret = LaunchHelper.findDeclarationFromFiles(files);
@@ -214,19 +240,37 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         }
     }
 
+    /**
+     * Launches a module after giving an opportunity to select a runnable declaration
+     * @param mod - module
+     * @param resource - associate Eclipse resource
+     * @param mode
+     */
     private void launchModule(Module mod, IResource resource, String mode) {
     	
     	Declaration declarationToRun = LaunchHelper.getDefaultRunnableForModule(mod);
 
+    	List<Declaration> decls = new LinkedList<Declaration>();
+    	
+    	if (declarationToRun != null) {
+    		decls.add(declarationToRun); // top
+    	}
+    	
+    	decls.addAll(LaunchHelper.getDeclarationsForModule(
+    			resource.getProject().getName(), LaunchHelper.getFullModuleName(mod)));
+    	
+    	declarationToRun = LaunchHelper.chooseDeclaration(decls);
     	if (declarationToRun != null) {
     		launch(declarationToRun, resource, mode);
-    	} else {
-    		List<IFile> files = new LinkedList<IFile>(); 
-    		LaunchHelper.addFiles(files, resource);
-    		searchAndLaunch(files, mode);
     	}
     }
     
+    /**
+     * The actual launch after the declaration has been chosen
+     * @param declarationToRun - the chosen declaration
+     * @param resource - the associated Eclipse resource
+     * @param mode
+     */
     private void launch(Declaration declarationToRun, IResource resource, String mode) {
 
         ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, resource, 
