@@ -22,6 +22,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
@@ -55,11 +56,14 @@ class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompl
         Declaration dec = dwp.getDeclaration();
         String pkg = "";
         if (dec.isToplevel() && !isImported(dec, cu) && isInPackage(cu, dec)) {
-            pkg = " in '" + dec.getContainer().getQualifiedNameString() + "'";
-            if (getOccurrenceLocation(cu, findNode(cu, problem.getOffset()))!=IMPORT) {
-                List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), null, null);
-                for (InsertEdit ie: ies) {
-                    change.addEdit(ie);
+            String pn = dec.getContainer().getQualifiedNameString();
+            pkg = " in '" + pn + "'";
+            if (!pn.isEmpty() && !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
+                if (getOccurrenceLocation(cu, findNode(cu, problem.getOffset()))!=IMPORT) {
+                    List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), null, null);
+                    for (InsertEdit ie: ies) {
+                        change.addEdit(ie);
+                    }
                 }
             }
         }

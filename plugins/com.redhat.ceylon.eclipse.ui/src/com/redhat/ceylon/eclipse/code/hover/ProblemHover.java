@@ -61,9 +61,7 @@ public class ProblemHover extends AbstractAnnotationHover {
 
 			ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
 			new CeylonQuickFixController(annotation.getEditor())
-			        .collectCorrections(quickAssistContext, 
-			        		new ProblemLocation[] { location }, 
-			        		proposals);
+			        .collectCorrections(quickAssistContext, location, proposals);
 
 			return (ICompletionProposal[]) proposals.toArray(new ICompletionProposal[proposals.size()]);
 		}

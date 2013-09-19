@@ -89,8 +89,7 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
 			ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
 			IDocument doc = getDocument(marker.getResource());
 			new CeylonQuickFixController(marker).collectCorrections(quickAssistContext, 
-					new ProblemLocation[] { new ProblemLocation(marker) },
-					proposals);
+					new ProblemLocation(marker), proposals);
 
 			IMarkerResolution[] resolutions = new IMarkerResolution[proposals.size()];
 			int i = 0;
