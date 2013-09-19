@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.ROOT_CATEGORY;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
@@ -27,7 +28,9 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
             CeylonOutlineNode outlineNode, 
     		IDocument document) {
         super(parent, 1, 
-                outlineNode.getIdentifier(), 
+                outlineNode.getCategory()==ROOT_CATEGORY ?
+                        "@root" :
+                        outlineNode.getIdentifier(), 
                 document,
                 getStartOffset(outlineNode), 
                 getLength(outlineNode));
