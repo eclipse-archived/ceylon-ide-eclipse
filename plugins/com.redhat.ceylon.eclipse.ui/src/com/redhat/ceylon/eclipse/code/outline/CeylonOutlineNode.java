@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
@@ -115,7 +116,9 @@ public class CeylonOutlineNode implements IAdaptable {
             case PACKAGE_CATEGORY:
                 return "@package:" + ((PackageNode)treeNode).getPackageName();
             case UNIT_CATEGORY:
-                return "@unit: " + ((Tree.CompilationUnit) treeNode).getUnit().getFilename();
+                Unit unit = ((Tree.CompilationUnit) treeNode).getUnit();
+                String filename = unit==null ? resource.getName() : unit.getFilename();
+                return "@unit: " + filename;
             case IMPORT_LIST_CATEGORY:
                 return "@importlist";
             case DEFAULT_CATEGORY:

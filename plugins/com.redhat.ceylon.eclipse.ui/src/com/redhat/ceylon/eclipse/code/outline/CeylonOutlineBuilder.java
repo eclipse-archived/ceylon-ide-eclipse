@@ -24,15 +24,7 @@ public class CeylonOutlineBuilder {
 		if (root==null) return;
 		Tree.CompilationUnit rootNode = (Tree.CompilationUnit) root;
 		Unit unit = rootNode.getUnit();
-		if (unit==null) {
-			//This was necessary because sometimes IMP
-			//was sending us the AST before we had
-			//finished properly parsing it ... but I
-			//think I've fixed that by changes to
-			//CeylonParseController
-			return;
-		}
-		if (!unit.getFilename().equals("module.ceylon") &&
+		if (unit!=null && !unit.getFilename().equals("module.ceylon") &&
 		    !unit.getFilename().equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
 	        PackageNode packageNode = new PackageNode();
 	        packageNode.setPackageName(unit.getPackage().getQualifiedNameString());
