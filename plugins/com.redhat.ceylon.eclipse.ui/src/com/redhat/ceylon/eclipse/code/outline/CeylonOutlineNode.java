@@ -117,7 +117,7 @@ public class CeylonOutlineNode implements IAdaptable {
             case UNIT_CATEGORY:
                 return "@unit: " + ((Tree.CompilationUnit) treeNode).getUnit().getFilename();
             case IMPORT_LIST_CATEGORY:
-                return "@importlist" + ((Tree.ImportList) treeNode).getUnit().getFilename();
+                return "@importlist";
             case DEFAULT_CATEGORY:
             default:
                 if (treeNode instanceof Tree.Import) {
