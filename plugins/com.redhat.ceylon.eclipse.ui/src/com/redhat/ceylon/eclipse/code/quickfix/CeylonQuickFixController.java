@@ -16,8 +16,8 @@ import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationModel;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -159,6 +159,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant
 
         ProblemLocation[] problemLocations =
             (ProblemLocation[]) problems.toArray(new ProblemLocation[problems.size()]);
+        Arrays.sort(problemLocations);
         if (addQuickFixes) {
             collectCorrections(context, problemLocations, proposals);
         }
@@ -181,9 +182,9 @@ public class CeylonQuickFixController extends QuickAssistAssistant
 
     public void collectAssists(IQuickAssistInvocationContext context,
             ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
-        //if (locations.length==0) {
-            ((CeylonQuickFixAssistant) assistant).addProposals(context, editor, proposals);
-        //}
+        if (proposals.isEmpty()) {
+            assistant.addProposals(context, editor, proposals);
+        }
     }
 
     private static void collectMarkerProposals(SimpleMarkerAnnotation annotation, Collection<ICompletionProposal> proposals) {
@@ -217,18 +218,43 @@ public class CeylonQuickFixController extends QuickAssistAssistant
     }
     
     public void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
+            ProblemLocation location, Collection<ICompletionProposal> proposals) {
+        Tree.CompilationUnit rootNode = getRootNode();
+        assistant.addProposals(quickAssistContext, location, getFile(), 
+                rootNode, proposals);
+    }
+    
+    public void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
             ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
-        if (locations!= null && locations.length>0) {
-        	Tree.CompilationUnit rootNode = getRootNode();
-        	HashSet<Integer> handledProblems = new HashSet<Integer>(locations.length);
-        	for (int i = 0; i < locations.length; i++) {
-        		ProblemLocation curr = locations[i];
-        		Integer id = new Integer(curr.getProblemId());
-        		if (handledProblems.add(id)) {
-        			assistant.addProposals(quickAssistContext, curr, getFile(), 
-        			        rootNode, proposals);
-        		}
-        	}
+        ISourceViewer viewer = quickAssistContext.getSourceViewer();
+        Tree.CompilationUnit rootNode = getRootNode();
+        for (int i=locations.length-1; i>=0; i--) {
+            ProblemLocation loc = locations[i];
+            if (loc.getOffset()<=viewer.getSelectedRange().x) {
+                for (int j=i; j>=0; j--) {
+                    ProblemLocation location = locations[j];
+                    if (location.getOffset()!=loc.getOffset()) break;
+                    assistant.addProposals(quickAssistContext, location, getFile(), 
+                            rootNode, proposals);
+                }
+                if (!proposals.isEmpty()) {
+                    viewer.setSelectedRange(loc.getOffset(), loc.getLength());
+                    return;
+                }
+            }
+        }
+        for (int i=0; i<locations.length; i++) {
+            ProblemLocation loc = locations[i];
+            for (int j=i; j<locations.length; j++) {
+                ProblemLocation location = locations[j];
+                if (location.getOffset()!=loc.getOffset()) break;
+                assistant.addProposals(quickAssistContext, location, getFile(), 
+                        rootNode, proposals);
+            }
+            if (!proposals.isEmpty()) {
+                viewer.setSelectedRange(loc.getOffset(), loc.getLength());
+                return;
+            }
         }
     }
 
