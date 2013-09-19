@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
@@ -81,7 +82,7 @@ public class CeylonStructureCreator extends StructureCreator {
     	
     	if (rootNode!=null) {
     		// now visit the model, creating TreeCompareNodes for each ModelTreeNode
-    		buildCompareTree(builder.buildTree(rootNode), structureRootNode, document);
+    		buildCompareTree(builder.buildTree(pc), structureRootNode, document);
     	}
     	
         return structureRootNode;
@@ -93,7 +94,9 @@ public class CeylonStructureCreator extends StructureCreator {
         CeylonDocumentRangeNode compareNode = new CeylonDocumentRangeNode(parent, outlineNode, document);
         parent.addChild(compareNode);
         for (CeylonOutlineNode treeChild: outlineNode.getChildren()) {
-            if (!(treeChild.getTreeNode() instanceof PackageNode)) {
+            Node childNode = treeChild.getTreeNode();
+            if (!(childNode instanceof PackageNode || 
+                  childNode instanceof Tree.CompilationUnit)) {
                 buildCompareTree(treeChild, compareNode, document);
             }
         }

@@ -4,8 +4,12 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.DEFAULT_C
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.PACKAGE_CATEGORY;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.ROOT_CATEGORY;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.UNIT_CATEGORY;
 
 import java.util.Stack;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -13,10 +17,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SyntheticVariable;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonOutlineBuilder {
 	
-	public void visitTree(Object root) {
+	void visitTree(Object root) {
 		if (root==null) return;
 		Tree.CompilationUnit rootNode = (Tree.CompilationUnit) root;
 		PackageNode pn = new PackageNode(null);
@@ -29,25 +34,17 @@ public class CeylonOutlineBuilder {
 			//CeylonParseController
 			return;
 		}
-		else {
-			Package pkg = unit.getPackage();
-			pn.setPackageName(pkg.getQualifiedNameString());
+		Package pkg = unit.getPackage();
+		pn.setPackageName(pkg.getQualifiedNameString());
+		if (!unit.getFilename().equals("module.ceylon") &&
+		    !unit.getFilename().equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
+		    createSubItem(pn, PACKAGE_CATEGORY, file.getParent());
 		}
-		String filename = rootNode.getUnit().getFilename();
-		if (!filename.equals("module.ceylon") &&
-		    !filename.equals("package.ceylon")) {
-			createSubItem(pn, PACKAGE_CATEGORY);
-		}
-		//createSubItem(rootNode);
-		/*pushSubItem(rootNode.getImportList());
-		for (Tree.Import i: rootNode.getImportList().getImports()) {
-			createSubItem(i);
-		}
-		popSubItem();*/
+		createSubItem(rootNode, UNIT_CATEGORY, file);
  		rootNode.visit(new CeylonModelVisitor());
 	}
 
-	public class CeylonModelVisitor extends Visitor {
+	private class CeylonModelVisitor extends Visitor {
 		// set to true to get nodes for everything in the outline
 		private static final boolean INCLUDEALL = false;
 		
@@ -103,28 +100,27 @@ public class CeylonOutlineBuilder {
 		
 	}
 
-	protected CeylonOutlineNode fModelRoot;
+	private CeylonOutlineNode modelRoot;
+	private IFile file;
 
-	private Stack<CeylonOutlineNode> fItemStack= new Stack<CeylonOutlineNode>();
+	private Stack<CeylonOutlineNode> itemStack= new Stack<CeylonOutlineNode>();
 
-	public final CeylonOutlineNode buildTree(Node rootASTNode) {
-		fItemStack.push(fModelRoot=createTopItem(rootASTNode, ROOT_CATEGORY));
+	public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
+	    file = cpc.getProject()==null && cpc.getPath()==null ? null :
+	            cpc.getProject().getFile(cpc.getPath());
+	    itemStack.push(modelRoot=createTopItem());
 		try {
-			visitTree(rootASTNode);
+			visitTree(cpc.getRootNode());
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		fItemStack.pop();
-		return fModelRoot;
+		itemStack.pop();
+		return modelRoot;
 	}
 	
-	protected CeylonOutlineNode createTopItem(Node n) {
-		return createTopItem(n, DEFAULT_CATEGORY);
-	}
-
-	protected CeylonOutlineNode createTopItem(Node n, int category) {
-		return new CeylonOutlineNode(n, category);
+	protected CeylonOutlineNode createTopItem() {
+        return new CeylonOutlineNode(ROOT_CATEGORY);
 	}
 
 	protected CeylonOutlineNode createSubItem(Node n) {
@@ -132,21 +128,25 @@ public class CeylonOutlineBuilder {
 	}
 
 	protected CeylonOutlineNode createSubItem(Node n, int category) {
-		final CeylonOutlineNode parent= fItemStack.peek();
-		CeylonOutlineNode treeNode= new CeylonOutlineNode(n, parent, category);
-		parent.addChild(treeNode);
-		return treeNode;
+		return createSubItem(n, category, null);
 	}
+
+    protected CeylonOutlineNode createSubItem(Node n, int category, IResource file) {
+        final CeylonOutlineNode parent= itemStack.peek();
+        CeylonOutlineNode treeNode= new CeylonOutlineNode(n, parent, category, file);
+        parent.addChild(treeNode);
+        return treeNode;
+    }
 
 	protected CeylonOutlineNode pushSubItem(Node n) {
 		return pushSubItem(n, DEFAULT_CATEGORY);
 	}
 
 	protected CeylonOutlineNode pushSubItem(Node n, int category) {
-		return fItemStack.push(createSubItem(n, category));
+		return itemStack.push(createSubItem(n, category));
 	}
 
 	protected void popSubItem() {
-		fItemStack.pop();
+		itemStack.pop();
 	}
 }

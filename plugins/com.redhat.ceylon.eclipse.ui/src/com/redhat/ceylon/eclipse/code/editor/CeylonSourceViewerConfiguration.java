@@ -356,7 +356,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     	}
 		@Override
     	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		return new CeylonOutlineBuilder().buildTree(getParseController().getRootNode());
+    		return new CeylonOutlineBuilder().buildTree(getParseController());
     	}
     }
 	
