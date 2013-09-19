@@ -35,12 +35,11 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 class PresentationDamageRepairer implements IPresentationDamager, 
         IPresentationRepairer {
 	
-    private final ISourceViewer sourceViewer;
     private volatile List<CommonToken> tokens;
     private final CeylonEditor editor;
+    private IDocument document;
     
 	PresentationDamageRepairer(ISourceViewer sourceViewer, CeylonEditor editor) {
-		this.sourceViewer = sourceViewer;
 		this.editor = editor;
 	}
 	
@@ -75,8 +74,33 @@ class PresentationDamageRepairer implements IPresentationDamager,
 
 	public boolean isWithinExistingToken(DocumentEvent event, 
 			CommonToken t) {
-		return t.getStartIndex()<=event.getOffset() && 
-				t.getStopIndex()>=event.getOffset()+event.getLength()-1;
+	    int eventStart = event.getOffset();
+	    int eventStop = event.getOffset()+event.getLength();
+	    int tokenStart = t.getStartIndex();
+	    int tokenStop = t.getStopIndex()+1;
+	    switch (t.getType()) {
+	    case CeylonLexer.MULTI_COMMENT:
+	        return tokenStart<=eventStart-2 && 
+	                tokenStop>=eventStop+2;
+        case CeylonLexer.VERBATIM_STRING:
+        case CeylonLexer.AVERBATIM_STRING:
+            return tokenStart<=eventStart-3 && 
+                    tokenStop>=eventStop+3;
+        case CeylonLexer.CHAR_LITERAL:
+        case CeylonLexer.STRING_LITERAL:
+        case CeylonLexer.ASTRING_LITERAL:
+        case CeylonLexer.STRING_START:
+        case CeylonLexer.STRING_MID:
+        case CeylonLexer.STRING_END:
+            return tokenStart<=event.getOffset()-1 && 
+                    tokenStop>=eventStop+1;
+        case CeylonLexer.LINE_COMMENT:
+            return tokenStart<=eventStart-2 && 
+                    tokenStop>=eventStop;
+        default:
+            return tokenStart<=eventStart && 
+                    tokenStop>=eventStop;
+	    }
 	}
 
 	public boolean isWithinTokenChange(DocumentEvent event,
@@ -98,9 +122,21 @@ class PresentationDamageRepairer implements IPresentationDamager,
 			}
 			break;
 		case CeylonLexer.STRING_LITERAL:
+        case CeylonLexer.ASTRING_LITERAL:
+        case CeylonLexer.VERBATIM_STRING:
+        case CeylonLexer.AVERBATIM_STRING:
+        case CeylonLexer.STRING_START:
+        case CeylonLexer.STRING_MID:
+        case CeylonLexer.STRING_END:
+            for (char c: event.getText().toCharArray()) {
+                if (c=='"'||c=='`') {
+                    return false;
+                }
+            }
+            break;
         case CeylonLexer.CHAR_LITERAL:
 			for (char c: event.getText().toCharArray()) {
-				if (c=='"'||c=='\'') {
+				if (c=='\'') {
 					return false;
 				}
 			}
@@ -127,8 +163,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 	
 	public void createPresentation(TextPresentation presentation, 
 			ITypedRegion damage) {
-		String text = sourceViewer.getDocument().get();
-		ANTLRStringStream input = new ANTLRStringStream(text);
+		ANTLRStringStream input = new ANTLRStringStream(document.get());
 		CeylonLexer lexer = new CeylonLexer(input);
 		CommonTokenStream tokenStream = new CommonTokenStream(lexer);
 		
@@ -147,25 +182,6 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		tokens = tokenStream.getTokens();
 		
 		highlightTokens(presentation, damage);
-		// The document might have changed since the presentation was computed, so
-		// trim the presentation's "result window" to the current document's extent.
-		// This avoids upsetting SWT, but there's still a question as to whether
-		// this is really the right thing to do. i.e., this assumes that the
-		// presentation will get recomputed later on, when the new document change
-		// gets noticed. But will it?
-		/*IDocument doc = sourceViewer.getDocument();
-		int newDocLength= doc!=null ? doc.getLength() : 0;
-		IRegion presExtent= presentation.getExtent();
-		if (presExtent.getOffset() + presExtent.getLength() > newDocLength) {
-			presentation.setResultWindow(new Region(presExtent.getOffset(), 
-					newDocLength - presExtent.getOffset()));
-		}*/
-		sourceViewer.changeTextPresentation(presentation, true);
-		
-//		ProjectionAnnotationModel annotationModel = sourceViewer.getProjectionAnnotationModel();
-//		if (annotationModel!=null) {
-//			new FoldingUpdater(sourceViewer).updateFoldingStructure(cu, tokens, annotationModel);
-//		}
 	}
 
 	private void highlightTokens(TextPresentation presentation,
@@ -176,7 +192,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		int inInterpolated=0;
 		boolean afterMemberOp = false;
 		//start iterating tokens
-		Iterator<CommonToken> iter= tokens.iterator();
+		Iterator<CommonToken> iter = tokens.iterator();
 		if (iter!=null) {
 			while (iter.hasNext()) {
 				CommonToken token= iter.next();
@@ -271,22 +287,13 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		    }
 		}
 		
-        // Negative (possibly 0) length style ranges will cause an 
-        // IllegalArgumentException in changeTextPresentation(..)
-        /*if (styleRange.length <= 0 || 
-        		styleRange.start+styleRange.length > 
-                        sourceViewer.getDocument().getLength()) {
-        	//do nothing
-        } 
-        else {*/
-            presentation.addStyleRange(styleRange);
-        //}
+		presentation.addStyleRange(styleRange);
+        
     }
 
     private boolean noTextChange(DocumentEvent event) {
 		try {
-			return sourceViewer.getDocument()
-					.get(event.getOffset(),event.getLength())
+			return document.get(event.getOffset(), event.getLength())
 					.equals(event.getText());
 		} 
 		catch (BadLocationException e) {
@@ -294,5 +301,8 @@ class PresentationDamageRepairer implements IPresentationDamager,
 		}
 	}
 	
-	public void setDocument(IDocument document) {}
+	public void setDocument(IDocument document) {
+	    this.document = document;
+	}
+	
 }
