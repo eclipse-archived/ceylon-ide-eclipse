@@ -24,6 +24,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -164,7 +165,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     }
     
     public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
-        final Pattern wikiRef = Pattern.compile("\\[\\[(\\w+)(\\.(\\w+))?\\]\\]");
+        final Pattern wikiRef = Pattern.compile("\\[\\[(((\\w|\\.)+)::)?(\\w+)(\\.(\\w+))?\\]\\]");
         final List<Region> result = new ArrayList<Region>();
         new Visitor() {
             @Override
@@ -172,17 +173,26 @@ public class RenameRefactoring extends AbstractRefactoring {
                 super.visit(that);
                 Matcher m = wikiRef.matcher(that.getToken().getText());
                 while (m.find()) {
-                    String group1 = m.group(1);
-                    Declaration base = that.getScope().getMemberOrParameter(that.getUnit(), 
-                            group1, null, false);
-                    if (base!=null && base.equals(declaration)) {
-                        result.add(new Region(that.getStartIndex()+m.start(1), group1.length()));
+                    String group2 = m.group(2);
+                    String group4 = m.group(4);
+                    String group6 = m.group(6);
+                    Declaration base;
+                    if (group2==null) {
+                        base = that.getScope().getMemberOrParameter(that.getUnit(), 
+                                group4, null, false);
                     }
-                    String group3 = m.group(3);
-                    if (base instanceof TypeDeclaration && group3!=null) {
-                        Declaration qualified = ((TypeDeclaration) base).getMember(group3, null, false);
+                    else {
+                        Package pack = that.getUnit().getPackage().getModule()
+                                .getPackage(group2);
+                        base = pack==null ? null : pack.getDirectMember(group4, null, false);
+                    }
+                    if (base!=null && base.equals(declaration)) {
+                        result.add(new Region(that.getStartIndex()+m.start(4), group4.length()));
+                    }
+                    if (base instanceof TypeDeclaration && group6!=null) {
+                        Declaration qualified = ((TypeDeclaration) base).getMember(group6, null, false);
                         if (qualified!=null && qualified.equals(declaration)) {
-                            result.add(new Region(that.getStartIndex()+m.start(3), group3.length()));
+                            result.add(new Region(that.getStartIndex()+m.start(6), group6.length()));
                         }
                     }
                 }
