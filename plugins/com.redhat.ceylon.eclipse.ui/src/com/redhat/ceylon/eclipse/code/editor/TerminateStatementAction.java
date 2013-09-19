@@ -23,14 +23,16 @@ import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Block;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.MethodDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 final class TerminateStatementAction extends Action {
 	private final CeylonEditor editor;
-	int line;
+	private int line;
 	
 	private abstract class Processor extends Visitor implements NaturalVisitor {}
 
@@ -385,6 +387,16 @@ final class TerminateStatementAction extends Action {
 					super.visit(that);
 					terminateWithSemicolon(that);
 				}
+				@Override 
+                public void visit(Tree.StaticType that) {
+                    super.visit(that);
+                    terminateWithSemicolon(that);
+                }
+				@Override 
+                public void visit(Tree.Expression that) {
+                    super.visit(that);
+                    terminateWithSemicolon(that);
+                }
 				boolean terminatedInLine(Node node) {
 				    return node!=null &&
 				            node.getStartIndex()<=endOfCodeInLine;
@@ -464,26 +476,37 @@ final class TerminateStatementAction extends Action {
 							that instanceof Tree.SpecifiedArgument) {
 						terminateWithSemicolon(that);
 					}
-					if (that instanceof Tree.MethodDeclaration &&
-                            ((Tree.MethodDeclaration) that).getSpecifierExpression()==null) {
-					    List<ParameterList> pl = ((Tree.MethodDeclaration) that).getParameterLists();
-                        terminateWithParenAndBaces(that, pl.isEmpty() ? null : pl.get(pl.size()-1));
+					
+                    if (that instanceof Tree.MethodDeclaration) {
+                        MethodDeclaration md = (Tree.MethodDeclaration) that;
+                        if (md.getSpecifierExpression()==null) {
+                            List<ParameterList> pl = md.getParameterLists();
+                            if (md.getIdentifier()!=null && terminatedInLine(md.getIdentifier())) {
+                                terminateWithParenAndBaces(that, pl.isEmpty() ? null : pl.get(pl.size()-1));
+                            }
+                        }
+                        else {
+                            terminateWithSemicolon(that);
+                        }
 					}
-                    if (that instanceof Tree.ClassDeclaration &&
-                            ((Tree.ClassDeclaration) that).getClassSpecifier()==null) {
-                        terminateWithParenAndBaces(that, ((Tree.ClassDeclaration) that).getParameterList());
+                    if (that instanceof Tree.ClassDeclaration) {
+                        ClassDeclaration cd = (Tree.ClassDeclaration) that;
+                        if (cd.getClassSpecifier()==null) {
+                            terminateWithParenAndBaces(that, cd.getParameterList());
+                        }
+                        else {
+                            terminateWithSemicolon(that);
+                        }
                     }
-                    if (that instanceof Tree.InterfaceDeclaration &&
-                            ((Tree.InterfaceDeclaration) that).getTypeSpecifier()==null) {
-                        terminateWithBaces(that);
-                    }
-                    if (that instanceof Tree.ClassDeclaration &&
-                            ((Tree.ClassDeclaration) that).getClassSpecifier()!=null||
-                        that instanceof Tree.MethodDeclaration &&
-                            ((Tree.MethodDeclaration) that).getSpecifierExpression()!=null ||
-                        that instanceof Tree.InterfaceDeclaration &&
-                            ((Tree.InterfaceDeclaration) that).getTypeSpecifier()!=null) {
-                        terminateWithSemicolon(that);
+                    
+                    if (that instanceof Tree.InterfaceDeclaration) {
+                        Tree.InterfaceDeclaration id = (Tree.InterfaceDeclaration) that;
+                        if (id.getTypeSpecifier()==null) {
+                            terminateWithBaces(that);
+                        }
+                        else {
+                            terminateWithSemicolon(that);
+                        }
                     }
                     super.visit(that);
 				}
