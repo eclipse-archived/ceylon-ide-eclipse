@@ -25,7 +25,6 @@ import static com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvide
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.util.ResourceBundle.getBundle;
-import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
@@ -156,9 +155,6 @@ public class CeylonEditor extends TextEditor {
     private ICharacterPairMatcher bracketMatcher;
     private ToggleBreakpointAction toggleBreakpointAction;
     private IAction enableDisableBreakpointAction;
-    private IResourceChangeListener buildListener;
-    private IResourceChangeListener moveListener;
-    private IDocumentListener documentListener;
     private FoldingActionGroup foldingActionGroup;
     private SourceArchiveDocumentProvider sourceArchiveDocumentProvider;
     private ToggleBreakpointAdapter toggleBreakpointTarget;
@@ -171,8 +167,6 @@ public class CeylonEditor extends TextEditor {
     private MarkerAnnotationUpdater markerAnnotationUpdater = new MarkerAnnotationUpdater(this);
     private ProjectionAnnotationManager projectionAnnotationManager = new ProjectionAnnotationManager(this);
     private AnnotationCreator annotationCreator = new AnnotationCreator(this);
-    private IProblemChangedListener editorIconUpdater;
-    private IProblemChangedListener annotationUpdater;
     
     ToggleFoldingRunner fFoldingRunner;
     
@@ -979,16 +973,6 @@ public class CeylonEditor extends TextEditor {
         currentTheme.getFontRegistry().addListener(fontChangeListener);
     }
 
-    private void watchForSourceBuild() {        
-        getWorkspace().addResourceChangeListener(buildListener = new IResourceChangeListener() {
-            public void resourceChanged(IResourceChangeEvent event) {
-                if (event.getType()==POST_BUILD && event.getBuildKind()!=CLEAN_BUILD) {
-                    scheduleParsing();
-                }
-            }
-        }, IResourceChangeEvent.POST_BUILD);
-    }
-
     public synchronized void scheduleParsing() {
         if (parserScheduler!=null && !backgroundParsingPaused) {
             parserScheduler.cancel();
@@ -1004,28 +988,62 @@ public class CeylonEditor extends TextEditor {
         IProject project = file!=null && file.exists() ? file.getProject() : null;
         parseController.initialize(filePath, project, annotationCreator);
     }
-
-    private void watchDocument() {
-        getSourceViewer().getDocument()
-                .addDocumentListener(documentListener = new IDocumentListener() {
-            public void documentAboutToBeChanged(DocumentEvent event) {}
-            public void documentChanged(DocumentEvent event) {
-                synchronized (CeylonEditor.this) {
-                    if (parserScheduler!=null && !backgroundParsingPaused) {
-                        parserScheduler.cancel();
-                        parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+    
+    private IProblemChangedListener editorIconUpdater = new IProblemChangedListener() {
+        @Override
+        public void problemsChanged(IResource[] changedResources, boolean isMarkerChange) {
+            if (isMarkerChange) {
+                IEditorInput input= getEditorInput();
+                if (input instanceof IFileEditorInput) { // The editor might be looking at something outside the workspace (e.g. system include files).
+                    IFileEditorInput fileInput = (IFileEditorInput) input;
+                    IFile file = fileInput.getFile();
+                    if (file != null) {
+                        for (int i= 0; i<changedResources.length; i++) {
+                            if (changedResources[i].equals(file)) {
+                                Shell shell= getEditorSite().getShell();
+                                if (shell!=null && !shell.isDisposed()) {
+                                    shell.getDisplay().syncExec(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            updateTitleImage();
+                                        }
+                                    });
+                                }
+                            }
+                        }
                     }
                 }
             }
-        });
-    }
+        }
+    };
+    
+    private IDocumentListener documentListener = new IDocumentListener() {
+        public void documentAboutToBeChanged(DocumentEvent event) {}
+        public void documentChanged(DocumentEvent event) {
+            synchronized (CeylonEditor.this) {
+                if (parserScheduler!=null && !backgroundParsingPaused) {
+                    parserScheduler.cancel();
+                    parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+                }
+            }
+        }
+    };
+    
+    private IResourceChangeListener buildListener = new IResourceChangeListener() {
+        public void resourceChanged(IResourceChangeEvent event) {
+            if (event.getBuildKind()!=CLEAN_BUILD) {
+                scheduleParsing();
+            }
+        }
+    };
 
     /**
      * The following listener is intended to detect when the document associated
      * with this editor changes its identity, which happens when, e.g., the
-     * underlying resource gets moved or renamed.
+     * underlying resource gets moved or renamed. We need to see when the editor 
+     * input changes, so we can watch the new document.
      */
-    private IPropertyListener fEditorInputPropertyListener = new IPropertyListener() {
+    private IPropertyListener editorInputPropertyListener = new IPropertyListener() {
         public void propertyChanged(Object source, int propId) {
             if (source == CeylonEditor.this && propId == IEditorPart.PROP_INPUT) {
                 IDocument oldDoc= getParseController().getDocument();
@@ -1038,105 +1056,69 @@ public class CeylonEditor extends TextEditor {
             }
         }
     };
-
-    private void watchForSourceMove() {
-        // We need to see when the editor input changes, so we can watch the new document
-        addPropertyListener(fEditorInputPropertyListener);
-        getWorkspace().addResourceChangeListener(moveListener = new IResourceChangeListener() {
-            public void resourceChanged(IResourceChangeEvent event) {
-                if (event.getType()==IResourceChangeEvent.POST_CHANGE) {
-                    IProject project = parseController.getProject();
-                    if (project!=null) { //things extrenal to the workspace don't move
-                        IPath oldWSRelPath= project.getFullPath().append(parseController.getPath());
-                        IResourceDelta rd= event.getDelta().findMember(oldWSRelPath);
-                        if (rd != null) {
-                            if ((rd.getFlags() & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
-                                // The net effect of the following is to re-initialize() the IParseController with the new path
-                                IPath newPath= rd.getMovedToPath();
-                                IPath newProjRelPath= newPath.removeFirstSegments(1);
-                                String newProjName= newPath.segment(0);
-                                IProject proj= project.getName().equals(newProjName) ? 
-                                        project : project.getWorkspace().getRoot()
-                                                .getProject(newProjName);
-                                // Tell the IParseController about the move - it caches the path
-                                // fParserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
-                                parseController.initialize(newProjRelPath, proj, annotationCreator);
-                            }
-                        }
+    
+    private IResourceChangeListener moveListener = new IResourceChangeListener() {
+        public void resourceChanged(IResourceChangeEvent event) {
+            IProject project = parseController.getProject();
+            if (project!=null) { //things external to the workspace don't move
+                IPath oldWSRelPath = project.getFullPath().append(parseController.getPath());
+                IResourceDelta rd = event.getDelta().findMember(oldWSRelPath);
+                if (rd != null) {
+                    if ((rd.getFlags() & IResourceDelta.MOVED_TO) != 0) {
+                        // The net effect of the following is to re-initialize() the parse controller with the new path
+                        IPath newPath = rd.getMovedToPath();
+                        IPath newProjRelPath = newPath.removeFirstSegments(1);
+                        String newProjName = newPath.segment(0);
+                        IProject proj = project.getName().equals(newProjName) ? 
+                                project : project.getWorkspace().getRoot()
+                                .getProject(newProjName);
+                        // Tell the parse controller about the move - it caches the path
+                        // parserScheduler.cancel(); // avoid a race condition if ParserScheduler was starting/in the middle of a run
+                        parseController.initialize(newProjRelPath, proj, annotationCreator);
                     }
                 }
             }
-        });
-    }
+        }
+    };
+    
+    private IProblemChangedListener annotationUpdater = new IProblemChangedListener() {
+        public void problemsChanged(IResource[] changedResources, 
+                boolean isMarkerChange) {
+            // Remove annotations that were resolved by changes to 
+            // other resources.
+            // TODO: It would be better to match the markers to the 
+            // annotations, and decide which annotations to remove.
+            scheduleParsing();
+        }
+    };
     
     private void initiateServiceControllers() {
-        try {                        
-            annotationUpdater= new IProblemChangedListener() {
-                public void problemsChanged(IResource[] changedResources, 
-                        boolean isMarkerChange) {
-                    // Remove annotations that were resolved by changes to 
-                    // other resources.
-                    // TODO: It would be better to match the markers to the 
-                    // annotations, and decide which annotations to remove.
-                    scheduleParsing();
-                }
-            };
-            problemMarkerManager.addListener(annotationUpdater);
-            
-            editorIconUpdater = new IProblemChangedListener() {
-                @Override
-                public void problemsChanged(IResource[] changedResources, boolean isMarkerChange) {
-                    if (isMarkerChange) {
-                        IEditorInput input= getEditorInput();
-                        if (input instanceof IFileEditorInput) { // The editor might be looking at something outside the workspace (e.g. system include files).
-                            IFileEditorInput fileInput = (IFileEditorInput) input;
-                            IFile file = fileInput.getFile();
-                            if (file != null) {
-                                for (int i= 0; i<changedResources.length; i++) {
-                                    if (changedResources[i].equals(file)) {
-                                        Shell shell= getEditorSite().getShell();
-                                        if (shell!=null && !shell.isDisposed()) {
-                                            shell.getDisplay().syncExec(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    updateTitleImage();
-                                                }
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-            problemMarkerManager.addListener(editorIconUpdater);
 
-            parserScheduler = new CeylonParserScheduler(parseController, this, 
-                    annotationCreator);
-            
-            addModelListener(new AdditionalAnnotationCreator(this));
-            
-            installProjectionSupport();
-
-            updateProjectionAnnotationManager();
-            
-            if (isEditable()) {
-                addModelListener(markerAnnotationUpdater);
-            }
-            
-            watchDocument();
-            watchForSourceMove();
-            watchForSourceBuild();
-            
-            parserScheduler.schedule();
-            
-        } 
-        catch (Exception e) {
-            e.printStackTrace();
+        problemMarkerManager.addListener(annotationUpdater);            
+        problemMarkerManager.addListener(editorIconUpdater);
+        
+        parserScheduler = new CeylonParserScheduler(parseController, this, 
+                annotationCreator);
+        
+        addModelListener(new AdditionalAnnotationCreator(this));
+        
+        installProjectionSupport();
+        
+        updateProjectionAnnotationManager();
+        
+        if (isEditable()) {
+            addModelListener(markerAnnotationUpdater);
         }
+        
+        getSourceViewer().getDocument().addDocumentListener(documentListener);
+        addPropertyListener(editorInputPropertyListener);
+        getWorkspace().addResourceChangeListener(moveListener, IResourceChangeEvent.POST_CHANGE);
+        getWorkspace().addResourceChangeListener(buildListener, IResourceChangeEvent.POST_BUILD);
+        
+        parserScheduler.schedule();
+        
     }
-
+    
     private void installProjectionSupport() {
         final CeylonSourceViewer sourceViewer = getCeylonSourceViewer();
         
