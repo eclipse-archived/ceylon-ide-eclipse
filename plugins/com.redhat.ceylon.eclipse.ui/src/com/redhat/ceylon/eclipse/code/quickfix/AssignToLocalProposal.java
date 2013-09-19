@@ -83,8 +83,14 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
                     //some expressions look like a type declaration
                     //when they appear right in front of an annotation
                     //or function invocations
-                    expression = ((Tree.TypedDeclaration) st).getType();
-                    expanse = expression;
+                    Tree.Type type = ((Tree.TypedDeclaration) st).getType();
+                    if (type instanceof Tree.SimpleType) {
+                        expression = type;
+                        expanse = expression;
+                    }
+                    else {
+                        return;
+                    }
                 }
                 else {
                     return;
