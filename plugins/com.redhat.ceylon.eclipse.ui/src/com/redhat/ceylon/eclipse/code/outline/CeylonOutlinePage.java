@@ -109,11 +109,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
     }
 
     public Stage getStage() {
-        return Stage.TYPE_ANALYSIS;
-        //the above is correct, but the 
-        //below strangely seems to work
-        //every bit as well...
-        //return Stage.SYNTACTIC_ANALYSIS;
+        return Stage.DONE;
     }
     
     @Override

@@ -11,7 +11,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public interface TreeLifecycleListener  {
 
-    public enum Stage { LEXICAL_ANALYSIS, SYNTACTIC_ANALYSIS, TYPE_ANALYSIS }
+    public enum Stage { LEXICAL_ANALYSIS, SYNTACTIC_ANALYSIS, TYPE_ANALYSIS, DONE }
 
     /**
      * @return The stage at which the listener should be
