@@ -12,9 +12,9 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
-import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 
@@ -109,7 +109,11 @@ public class CeylonOutlinePage extends ContentOutlinePage
     }
 
     public Stage getStage() {
-        return TYPE_ANALYSIS;
+        return Stage.TYPE_ANALYSIS;
+        //the above is correct, but the 
+        //below strangely seems to work
+        //every bit as well...
+        //return Stage.SYNTACTIC_ANALYSIS;
     }
     
     @Override
@@ -188,8 +192,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
      void expand(TreeViewer viewer, CeylonOutlineNode rootNode) {
         for (CeylonOutlineNode con: rootNode.getChildren()) {
-            if (con.getTreeNode() instanceof Tree.ImportList) {
-                viewer.collapseToLevel(con, 0);
+            if (con.getCategory()==IMPORT_LIST_CATEGORY) {
+                viewer.collapseToLevel(con, TreeViewer.ALL_LEVELS);
             }
             else {
                 viewer.expandToLevel(con, TreeViewer.ALL_LEVELS);
@@ -420,6 +424,13 @@ public class CeylonOutlinePage extends ContentOutlinePage
         }
         @Override
         public void visit(Tree.Parameter that) {}
+        @Override
+        public void visit(Tree.ImportList that) {
+            if (inBounds(that)) {
+                result.add(new CeylonOutlineNode(that, IMPORT_LIST_CATEGORY));
+            }
+            super.visit(that);
+        }
         @Override
         public void visit(Tree.PackageDescriptor that) {
             if (inBounds(that)) {
