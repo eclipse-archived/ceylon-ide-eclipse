@@ -123,8 +123,14 @@ public class CeylonOutlinePage extends ContentOutlinePage
                     TreeViewer treeViewer = getTreeViewer();
                     if (treeViewer!=null && 
                             !treeViewer.getTree().isDisposed()) {
-                        CeylonOutlineNode rootNode = modelBuilder.buildTree(parseController.getRootNode());
+                        Object[] expanded = treeViewer.getExpandedElements();
+                        Tree.CompilationUnit cu = parseController.getRootNode();
+                        CeylonOutlineNode rootNode = modelBuilder.buildTree(cu);
                         treeViewer.setInput(rootNode);
+                        for (Object obj: expanded) {
+                            treeViewer.expandToLevel(obj, 1);
+                        }
+                        expandCaretedNode(sourceViewer.getSelectedRange().x);
                     }
                 }
             });
@@ -140,9 +146,9 @@ public class CeylonOutlinePage extends ContentOutlinePage
             ITreeSelection sel= (ITreeSelection) event.getSelection();
             if (!sel.isEmpty()) {
                 Node node = ((CeylonOutlineNode) sel.getFirstElement()).getTreeNode();
-                int startOffset= getStartOffset(node);
-                int endOffset= getEndOffset(node);
-                int length= endOffset - startOffset;
+                int startOffset = getStartOffset(node);
+                int endOffset = getEndOffset(node);
+                int length = endOffset - startOffset;
                 ((ITextEditor) getCurrentEditor()).selectAndReveal(startOffset, length);
             }
         }
@@ -168,7 +174,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         });
 
         IPageSite site = getSite();
-        IToolBarManager toolBarManager= site.getActionBars().getToolBarManager();
+        IToolBarManager toolBarManager = site.getActionBars().getToolBarManager();
         toolBarManager.add(new ExpandAllAction());
         toolBarManager.add(new CollapseAllAction(viewer));
         toolBarManager.add(new LexicalSortingAction());
@@ -341,17 +347,21 @@ public class CeylonOutlinePage extends ContentOutlinePage
     
     @Override
     public void caretMoved(final CaretEvent event) {
+        int offset = sourceViewer.widgetOffset2ModelOffset(event.caretOffset);
+        expandCaretedNode(offset);
+    }
+
+    private void expandCaretedNode(int offset) {
         if (suspend) return;
         suspend = true;
         CompilationUnit rootNode = parseController.getRootNode();
         if (rootNode==null) return;
-        OutlineNodeVisitor v = new OutlineNodeVisitor(sourceViewer.widgetOffset2ModelOffset(event.caretOffset));
-        rootNode.visit(v);
-        if (!v.result.isEmpty()) {
-            //List<CeylonOutlineNode> segments = new ArrayList<CeylonOutlineNode>();
-            //segments.add(new CeylonOutlineNode(rootNode, CeylonOutlineNode.ROOT_CATEGORY));
-            //segments.add(new CeylonOutlineNode(v.result));
-            setSelection(new TreeSelection(new TreePath(v.result.toArray())));
+        OutlineNodeVisitor visitor = new OutlineNodeVisitor(offset);
+        rootNode.visit(visitor);
+        if (!visitor.result.isEmpty()) {
+            TreePath treePath = new TreePath(visitor.result.toArray());
+            getTreeViewer().expandToLevel(treePath, 1);
+            setSelection(new TreeSelection(treePath));
         }
         suspend = false;
     }

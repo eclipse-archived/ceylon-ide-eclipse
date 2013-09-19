@@ -12,10 +12,13 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 public class CeylonOutlineNode {
 	
@@ -75,11 +78,54 @@ public class CeylonOutlineNode {
     @Override
     public boolean equals(Object obj) {
     	return obj instanceof CeylonOutlineNode &&
-    			((CeylonOutlineNode) obj).treeNode==treeNode;
+    			(((CeylonOutlineNode) obj).treeNode==treeNode ||
+    			((CeylonOutlineNode) obj).getIdentifier().equals(getIdentifier()));
     }
     
     @Override
     public int hashCode() {
-    	return treeNode.hashCode();
+        return getIdentifier().hashCode();
     }
+
+    public String getIdentifier() {
+        if (treeNode instanceof Tree.Import) {
+            return "@import:" + formatPath(((Tree.Import) treeNode).getImportPath().getIdentifiers());
+        }
+        else if (treeNode instanceof Tree.Declaration) {
+            String name = ((Tree.Declaration) treeNode).getIdentifier().getText();
+            if (getParent()!=null && getParent().getTreeNode() instanceof Tree.Declaration) {
+                return getParent().getIdentifier() + ":" + name;
+            }
+            else {
+                return "@declaration:" + name;
+            }
+        }
+        else if (treeNode instanceof Tree.ImportModule) {
+            return "@importmodule:" + formatPath(((Tree.Import) treeNode).getImportPath().getIdentifiers());
+        }
+        else if (treeNode instanceof Tree.ImportList) {
+            return "@importlist";
+        }
+        else if (treeNode instanceof Tree.CompilationUnit) {
+            return "@compilationunit";
+        }
+        else if (treeNode instanceof Tree.ModuleDescriptor) {
+            return "@moduledescriptor";
+        }
+        else if (treeNode instanceof Tree.PackageDescriptor) {
+            return "@packagedescriptor";
+        }
+        else if (treeNode instanceof PackageNode) {
+            return "@packagenode";
+        }
+        else {
+            return null;
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return getIdentifier();
+    }
+    
 }

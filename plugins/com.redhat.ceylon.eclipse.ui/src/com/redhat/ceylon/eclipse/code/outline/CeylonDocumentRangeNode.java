@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
@@ -12,8 +11,6 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonDocumentRangeNode extends DocumentRangeNode 
@@ -28,7 +25,7 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
             CeylonOutlineNode outlineNode, 
     		IDocument document) {
         super(parent, 1, 
-                getIdentifier(outlineNode), 
+                outlineNode.getIdentifier(), 
                 document,
                 getStartOffset(outlineNode), 
                 getLength(outlineNode));
@@ -54,39 +51,10 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
     public String getType() {
         return "ceylon";
     }
-    
-    private static String getIdentifier(CeylonOutlineNode on) {
-        Node treeNode = ((CeylonOutlineNode) on).getTreeNode();
-        if (treeNode instanceof Tree.Import) {
-            return "@import:" + formatPath(((Tree.Import) treeNode).getImportPath().getIdentifiers());
-        }
-        else if (treeNode instanceof Tree.Declaration) {
-            String name = ((Tree.Declaration) treeNode).getIdentifier().getText();
-            if (on.getParent().getTreeNode() instanceof Tree.Declaration) {
-                return getIdentifier(on.getParent()) + ":" + name;
-            }
-            else {
-                return "@declaration:" + name;
-            }
-        }
-        else if (treeNode instanceof Tree.ImportModule) {
-            return "@importmodule:" + formatPath(((Tree.Import) treeNode).getImportPath().getIdentifiers());
-        }
-        else if (treeNode instanceof Tree.ImportList) {
-            return "@importlist";
-        }
-        else if (treeNode instanceof Tree.CompilationUnit) {
-            return "@compilationunit";
-        }
-        else if (treeNode instanceof Tree.ModuleDescriptor) {
-            return "@moduledescriptor";
-        }
-        else if (treeNode instanceof Tree.PackageDescriptor) {
-            return "@packagedescriptor";
-        }
-        else {
-            return null;
-        }
-    }
 
+    @Override
+    public String toString() {
+        return node.getIdentifier();
+    }
+    
 }
