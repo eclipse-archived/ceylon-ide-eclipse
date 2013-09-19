@@ -1414,23 +1414,28 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-    private void addCreateParameterProposal(Collection<ICompletionProposal> proposals, IProject project, Tree.CompilationUnit cu, Node node,
+    private void addCreateParameterProposal(Collection<ICompletionProposal> proposals, IProject project, 
+            Tree.CompilationUnit cu, Node node,
             String brokenName, String def, ProducedType returnType) {
     	FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(node);
         fcv.visit(cu);
         Tree.Declaration decl = fcv.getDeclaration();
-        if (decl == null || decl.getDeclarationModel() == null || decl.getDeclarationModel().isActual()) {
+        if (decl == null || 
+                decl.getDeclarationModel() == null || 
+                decl.getDeclarationModel().isActual()) {
             return;
         }
         
         Tree.ParameterList paramList = getParameters(decl);
         if (paramList != null) {
-            String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + def.substring(0, def.length() - 1);
+            String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + 
+                    def.substring(0, def.length() - 1);
             String paramDesc = "parameter '" + brokenName + "'";
     
             for (PhasedUnit unit : getUnits(project)) {
                 if (unit.getUnit().equals(cu.getUnit())) {
-                    CreateProposal.addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, decl.getDeclarationModel(), unit, decl, paramList, returnType);
+                    CreateProposal.addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, 
+                            decl.getDeclarationModel(), unit, decl, paramList, returnType);
                     break;
                 }
             }
