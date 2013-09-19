@@ -28,11 +28,13 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.DecoratingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.DecorationContext;
 import org.eclipse.jface.viewers.IElementComparer;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -43,6 +45,7 @@ import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
@@ -69,7 +72,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
     
     private final ITreeContentProvider contentProvider;
     private final CeylonOutlineBuilder modelBuilder;
-    private final ILabelProvider labelProvider;
+    private final StyledCellLabelProvider labelProvider;
     private final CeylonParseController parseController;
     private CeylonSourceViewer sourceViewer;
     
@@ -80,7 +83,9 @@ public class CeylonOutlinePage extends ContentOutlinePage
         this.parseController = parseController;
         this.modelBuilder = modelBuilder;
         this.sourceViewer = sourceViewer;
-        this.labelProvider = new CeylonLabelProvider(true);
+        this.labelProvider = new DecoratingStyledCellLabelProvider(new CeylonLabelProvider(true), 
+                PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator(), 
+                DecorationContext.DEFAULT_CONTEXT);
         
         contentProvider= new ITreeContentProvider() {
             public Object[] getChildren(Object element) {
@@ -124,8 +129,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                     if (treeViewer!=null && 
                             !treeViewer.getTree().isDisposed()) {
                         Object[] expanded = treeViewer.getExpandedElements();
-                        Tree.CompilationUnit cu = parseController.getRootNode();
-                        CeylonOutlineNode rootNode = modelBuilder.buildTree(cu);
+                        CeylonOutlineNode rootNode = modelBuilder.buildTree(parseController);
                         treeViewer.setInput(rootNode);
                         for (Object obj: expanded) {
                             treeViewer.expandToLevel(obj, 1);
@@ -146,6 +150,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
             ITreeSelection sel= (ITreeSelection) event.getSelection();
             if (!sel.isEmpty()) {
                 Node node = ((CeylonOutlineNode) sel.getFirstElement()).getTreeNode();
+                if (node instanceof PackageNode || 
+                    node instanceof Tree.CompilationUnit) {
+                    return;
+                }
                 int startOffset = getStartOffset(node);
                 int endOffset = getEndOffset(node);
                 int length = endOffset - startOffset;
@@ -160,7 +168,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(labelProvider);
         viewer.addSelectionChangedListener(this);
-        CeylonOutlineNode rootNode = modelBuilder.buildTree(parseController.getRootNode());
+        CeylonOutlineNode rootNode = modelBuilder.buildTree(parseController);
         viewer.setInput(rootNode);
         viewer.setComparer(new IElementComparer() {
             @Override
@@ -237,7 +245,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                 int cat1= t1.getCategory();
                 int cat2= t2.getCategory();
                 if (cat1 == cat2) {
-                    return labelProvider.getText(t1).compareTo(labelProvider.getText(t2));
+                    return 0;//labelProvider.getText(t1).compareTo(labelProvider.getText(t2));
                 }
                 return cat1 - cat2;
             }
@@ -343,10 +351,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
         
     }
     
-    
-    
     @Override
-    public void caretMoved(final CaretEvent event) {
+    public void caretMoved(CaretEvent event) {
         int offset = sourceViewer.widgetOffset2ModelOffset(event.caretOffset);
         expandCaretedNode(offset);
     }

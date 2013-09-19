@@ -17,14 +17,21 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.JavaCore;
+
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
-public class CeylonOutlineNode {
+public class CeylonOutlineNode implements IAdaptable {
 	
-    public static final int ROOT_CATEGORY = -3;
+    public static final int ROOT_CATEGORY = -4;
     public static final int DEFAULT_CATEGORY = 0;
-    public static final int PACKAGE_CATEGORY = -2;
+    public static final int PACKAGE_CATEGORY = -3;
+    public static final int UNIT_CATEGORY = -2;
     public static final int IMPORT_LIST_CATEGORY = -1;
 
     private final List<CeylonOutlineNode> children= new ArrayList<CeylonOutlineNode>();
@@ -32,16 +39,21 @@ public class CeylonOutlineNode {
     private CeylonOutlineNode parent;
 
     private final Node treeNode;
-
     private final int category;
+    private IResource resource;
 
     CeylonOutlineNode(Node treeNode) {
         this(treeNode, DEFAULT_CATEGORY);
     }
 
     CeylonOutlineNode(Node treeNode, int category) {
-        this.treeNode= treeNode;
-        this.category= category;
+        this.treeNode = treeNode;
+        this.category = category;
+    }
+
+    CeylonOutlineNode(int category) {
+        this.category = category;
+        treeNode = null;
     }
 
     CeylonOutlineNode(Node treeNode, CeylonOutlineNode parent) {
@@ -49,10 +61,18 @@ public class CeylonOutlineNode {
     }
 
     CeylonOutlineNode(Node treeNode, CeylonOutlineNode parent, 
-    		int category) {
-        this.treeNode= treeNode;
-        this.parent= parent;
-        this.category= category;
+            int category) {
+        this.treeNode = treeNode;
+        this.parent = parent;
+        this.category = category;
+    }
+
+    CeylonOutlineNode(Node treeNode, CeylonOutlineNode parent, 
+            int category, IResource resource) {
+        this.treeNode = treeNode;
+        this.parent = parent;
+        this.category = category;
+        this.resource = resource;
     }
 
     void addChild(CeylonOutlineNode child) {   
@@ -119,13 +139,29 @@ public class CeylonOutlineNode {
             return "@packagenode";
         }
         else {
-            return null;
+            //the root node
+            return ".";
         }
     }
     
     @Override
     public String toString() {
         return getIdentifier();
+    }
+
+    @Override
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+        if (adapter.equals(IFile.class) || 
+            adapter.equals(IResource.class)) {
+            return resource;
+        }
+        else if (adapter.equals(IJavaElement.class) && 
+                treeNode instanceof PackageNode) {
+            return JavaCore.create(resource);
+        }
+        else {
+            return null;
+        }
     }
     
 }
