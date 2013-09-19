@@ -102,9 +102,8 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             if (mod.isDefault()) {
                 fModuleText.setText(Module.DEFAULT_MODULE_NAME);
             } else {
-                fModuleText.setText(mod.getNameAsString() + "/" + mod.getVersion());
+                fModuleText.setText(LaunchHelper.getFullModuleName(mod));
             }
-            // no need to set project even if the module is from a dependency as this project contains the app
             
             Declaration topLevel = LaunchHelper.getDefaultRunnableForModule(mod);
 
@@ -187,7 +186,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             return false;
         }
         
-        if (!LaunchHelper.isProjectContainsModule(project, moduleName)) {
+        if (!LaunchHelper.isModuleInProject(project, moduleName)) {
             setErrorMessage("Ceylon module not found in project");
             return false;
         }

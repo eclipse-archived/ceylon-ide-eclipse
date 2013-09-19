@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -64,12 +65,22 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                 try {
                     List<String> newArgs = new ArrayList<String>();
                     
-                    newArgs.add("run");
+                    if (CeylonBuilder.compileToJs(project)) {
+                    	newArgs.add("run-js");
+                    } else {
+                    	newArgs.add("run");
+                    }
 
                     for (IPath repo : workingRepos) {
                         newArgs.add("--rep");
                         newArgs.add(repo.toOSString());
                     }
+                    
+                    for (String repo: CeylonProjectConfig.get(project).getProjectLocalRepos()) {
+                        newArgs.add("--rep");
+                        newArgs.add(repo);                    	
+                    }
+                    
                     if (CeylonProjectConfig.get(project).isOffline()) {
                         newArgs.add("--offline");
                     }
