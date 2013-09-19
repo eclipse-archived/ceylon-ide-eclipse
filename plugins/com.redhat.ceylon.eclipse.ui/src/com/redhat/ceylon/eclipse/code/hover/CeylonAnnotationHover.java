@@ -17,7 +17,7 @@ public class CeylonAnnotationHover implements IAnnotationHover {
     @Override
     public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
         List<Annotation> annotations = getAnnotationsForLine(sourceViewer, lineNumber);
-        if (annotations.size()>1) {
+        if (annotations!=null && !annotations.isEmpty()) {
             for (Iterator<Annotation> iter=annotations.iterator(); iter.hasNext();) {
                 if (iter.next() instanceof CeylonInitializerAnnotation) {
                     iter.remove();
