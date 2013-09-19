@@ -112,20 +112,18 @@ public class CeylonOutlineNode implements IAdaptable {
             //      category to distinguish them!
             switch (category) {
             case ROOT_CATEGORY:
-                return "@root";
+                return "@root" + path();
             case PACKAGE_CATEGORY:
-                return "@package:" + ((PackageNode)treeNode).getPackageName();
+                return "@package";
             case UNIT_CATEGORY:
-                Unit unit = ((Tree.CompilationUnit) treeNode).getUnit();
-                String filename = unit==null ? resource.getName() : unit.getFilename();
-                return "@unit: " + filename;
+                return "@unit";
             case IMPORT_LIST_CATEGORY:
                 return "@importlist";
             case DEFAULT_CATEGORY:
             default:
                 if (treeNode instanceof Tree.Import) {
-                    Tree.ImportPath importPath = ((Tree.Import) treeNode).getImportPath();
-                    return "@import:" + pathToName(importPath);
+                    return "@import:" + 
+                            pathToName(((Tree.Import) treeNode).getImportPath());
                 }
                 else if (treeNode instanceof Tree.Declaration) {
                     Tree.Identifier id = ((Tree.Declaration) treeNode).getIdentifier();
@@ -140,16 +138,16 @@ public class CeylonOutlineNode implements IAdaptable {
                             }
                 }
                 else if (treeNode instanceof Tree.ImportModule) {
-                    Tree.ImportPath importPath = ((Tree.ImportModule) treeNode).getImportPath();
-                    return "@importmodule:" + pathToName(importPath);
+                    return "@importmodule:" + 
+                            pathToName(((Tree.ImportModule) treeNode).getImportPath());
                 }
                 else if (treeNode instanceof Tree.ModuleDescriptor) {
-                    Tree.ImportPath importPath = ((Tree.ModuleDescriptor) treeNode).getImportPath();
-                    return "@moduledescriptor:" + pathToName(importPath);
+                    return "@moduledescriptor:" + 
+                            pathToName(((Tree.ModuleDescriptor) treeNode).getImportPath());
                 }
                 else if (treeNode instanceof Tree.PackageDescriptor) {
-                    Tree.ImportPath importPath = ((Tree.PackageDescriptor) treeNode).getImportPath();
-                    return "@packagedescriptor:" + pathToName(importPath);
+                    return "@packagedescriptor:" + 
+                            pathToName(((Tree.PackageDescriptor) treeNode).getImportPath());
                 }
                 else {
                     throw new RuntimeException("unexpected node type");
@@ -162,11 +160,26 @@ public class CeylonOutlineNode implements IAdaptable {
         }
     }
 
+    private String path() {
+        Unit unit = treeNode.getUnit();
+        return unit==null ? 
+                resource.getProjectRelativePath()
+                    .toPortableString() : 
+                unit.getPackage().getNameAsString() + "." +
+                    unit.getFilename();
+    }
+
+//    private String filename() {
+//        Unit unit = treeNode.getUnit();
+//        return unit==null ? 
+//                resource.getName() : 
+//                unit.getFilename();
+//    }
+
     private String pathToName(Tree.ImportPath importPath) {
-        String name = importPath==null ? 
+        return importPath==null ? 
                 String.valueOf(identityHashCode(treeNode)) : 
                     formatPath(importPath.getIdentifiers());
-        return name;
     }
     
     @Override
