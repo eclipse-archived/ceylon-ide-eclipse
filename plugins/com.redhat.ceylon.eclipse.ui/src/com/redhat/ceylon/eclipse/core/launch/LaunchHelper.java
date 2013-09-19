@@ -185,7 +185,12 @@ public class LaunchHelper {
     }
     
     static Module getModule(Declaration decl) {
-        return decl.getUnit().getPackage().getModule();
+    	if (decl.getUnit().getPackage() != null) {
+    		if (decl.getUnit().getPackage().getModule() != null) {
+    			return decl.getUnit().getPackage().getModule();
+    		}
+    	}
+        return getDefaultModule();
     }
 
     static String getModuleFullName(Declaration decl) {
@@ -199,9 +204,9 @@ public class LaunchHelper {
  
     static Set<Module> getModules(IProject project, boolean includeDefault) {
         Set<Module> modules = new HashSet<Module>();
-        Modules projectModules = CeylonBuilder.getProjectModules(project);
+        List<Module> projectModules = CeylonBuilder.getModulesInProject(project);
         if (projectModules==null) return Collections.emptySet();
-        for(Module module: projectModules.getListOfModules()) {
+        for(Module module: projectModules) {
             if (module.isAvailable() 
                     && !module.getNameAsString().startsWith(Module.LANGUAGE_MODULE_NAME) && !module.isJava() ) {
                 if ((module.isDefault() && includeDefault) 
@@ -239,6 +244,10 @@ public class LaunchHelper {
     	
     	List<Declaration> modDecls = new LinkedList<Declaration>();
     	
+    	if (getFullModuleName(getDefaultModule()).equals(fullModuleName)) {
+    		fullModuleName = Module.DEFAULT_MODULE_NAME;
+    	}
+    	
     	if (isProjectContainsModule(project, fullModuleName) && getModule(project, fullModuleName) != null) { // if the module is in the same project
 	    	TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
 	    	Module module = getModule(project, fullModuleName);
@@ -266,7 +275,7 @@ public class LaunchHelper {
 	}
 	
 	/**
-	 * Does not attempt to get all declarations before it returns true / also for dependent modules
+	 * Does not attempt to get all declarations before it returns true 
 	 * @param project
 	 * @param fullModuleName
 	 * @param topLevelName
@@ -279,7 +288,7 @@ public class LaunchHelper {
     	}
     	
     	if (Module.DEFAULT_MODULE_NAME.equals(fullModuleName)) {
-    		fullModuleName = Module.DEFAULT_MODULE_NAME + "/" + "unversioned"; //compatible with next method.
+    		fullModuleName = getFullModuleName(getDefaultModule()); //compatible with next method.
     	}
     	
     	Module mod = getAnyModule(project, fullModuleName);
@@ -380,7 +389,7 @@ public class LaunchHelper {
     }
 
     static String getTopLevelNormalName(String moduleFullName, String displayName) {
-    	if (displayName.contains(DEFAULT_RUN_MARKER)) {
+    	if (displayName.contains(DEFAULT_RUN_MARKER) && moduleFullName.indexOf('/') != -1) {
 	        return moduleFullName.substring(0, moduleFullName.indexOf('/')) 
 	        		+ ".run";
     	}
