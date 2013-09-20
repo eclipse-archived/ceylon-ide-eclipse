@@ -37,6 +37,13 @@ public class FindContainerVisitor extends Visitor
 		super.visit(that);
 		currentDeclaration = d;
 	}
+    @Override
+    public void visit(Tree.AttributeSetterDefinition that) {
+        Tree.StatementOrArgument d = currentDeclaration;
+        currentDeclaration = that;
+        super.visit(that);
+        currentDeclaration = d;
+    }
 	@Override
 	public void visit(Tree.AnyMethod that) {
 		Tree.StatementOrArgument d = currentDeclaration;
