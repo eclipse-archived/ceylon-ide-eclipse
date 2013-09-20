@@ -81,6 +81,7 @@ import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -677,16 +678,16 @@ public class CeylonContentProposer {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
-                        for (final String version : module.getVersions().descendingSet()) {
-                            final String versioned = withBody ? getModuleString(name, version) + ";" : name;
+                        for (final ModuleVersionDetails version : module.getVersions().descendingSet()) {
+                            final String versioned = withBody ? getModuleString(name, version.getVersion()) + ";" : name;
                             result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
                                     versioned, versioned.substring(len), false) {
                             	@Override
                             	public Point getSelection(
                             			IDocument document) {
                                     if (withBody) {
-                                    	return new Point(offset+versioned.length()-prefix.length()-len-version.length()-2, 
-                                    			version.length());
+                                    	return new Point(offset+versioned.length()-prefix.length()-len-version.getVersion().length()-2, 
+                                    			version.getVersion().length());
                                     }
                                     else {
                                     	return new Point(offset+versioned.length()-prefix.length()-len, 0);
@@ -697,7 +698,7 @@ public class CeylonContentProposer {
                                     return JDKUtils.isJDKModule(name) ?
                                             getDocumentationForModule(name, JDK_MODULE_VERSION,
                                                     "This module forms part of the Java SDK.") :
-                                            getDocumentationFor(module, version);
+                                            getDocumentationFor(module, version.getVersion());
                                 }
                             });
                         }

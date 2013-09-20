@@ -163,8 +163,8 @@ public class ModuleSearchManager {
         for (ModuleDetails detail : details) {
             List<ModuleVersionNode> versionNodes = new ArrayList<ModuleVersionNode>(detail.getVersions().size());
             ModuleNode moduleNode = new ModuleNode(detail.getName(), versionNodes);
-            for(String version : detail.getVersions().descendingSet()){
-                ModuleVersionNode versionNode = new ModuleVersionNode(moduleNode, version);
+            for(ModuleVersionDetails version : detail.getVersions().descendingSet()){
+                ModuleVersionNode versionNode = new ModuleVersionNode(moduleNode, version.getVersion());
                 if (version.equals(detail.getLastVersion())) {
                     versionNode.setFilled(true);
                     versionNode.setDoc(detail.getDoc());
