@@ -30,6 +30,8 @@ public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
         
         Tree.Declaration throwContainer = determineThrowContainer(statement, cu);
         if( !(throwContainer instanceof Tree.MethodDefinition) && 
+            !(throwContainer instanceof Tree.AttributeGetterDefinition) && 
+            !(throwContainer instanceof Tree.AttributeSetterDefinition) && 
             !(throwContainer instanceof Tree.ClassOrInterface) ) {
             return;               
         }
