@@ -1097,7 +1097,7 @@ public class CeylonContentProposer {
                     addBasicProposal(offset, prefix, cpc, result, dwp, dec, scope, ol);
                 }
                 
-                if (isProposable(dwp, ol, scope) && 
+                if (isProposable(dwp, ol, scope) && ol!=IMPORT &&
                         isDirectlyInsideBlock(node, cpc, scope, token) && 
                         !memberOp && !filter) {
                     addForProposal(offset, prefix, cpc, result, dwp, dec, ol);
