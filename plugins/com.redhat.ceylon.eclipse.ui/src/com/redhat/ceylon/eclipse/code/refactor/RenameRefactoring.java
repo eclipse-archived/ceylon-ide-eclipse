@@ -165,7 +165,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     }
     
     public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
-        final Pattern wikiRef = Pattern.compile("\\[\\[(((\\w|\\.)+)::)?(\\w+)(\\.(\\w+))?\\]\\]");
+        final Pattern wikiRef = Pattern.compile("\\[\\[([^\"`|\\[\\]]*\\|)?(((\\w|\\.)+)::)?(\\w+)(\\.(\\w+))?\\]\\]");
         final List<Region> result = new ArrayList<Region>();
         new Visitor() {
             @Override
@@ -173,26 +173,26 @@ public class RenameRefactoring extends AbstractRefactoring {
                 super.visit(that);
                 Matcher m = wikiRef.matcher(that.getToken().getText());
                 while (m.find()) {
-                    String group2 = m.group(2);
-                    String group4 = m.group(4);
-                    String group6 = m.group(6);
+                    String pgroup = m.group(3);
+                    String tgroup = m.group(5); int tloc = m.start(5);
+                    String mgroup = m.group(7); int mloc = m.start(7);
                     Declaration base;
-                    if (group2==null) {
+                    if (pgroup==null) {
                         base = that.getScope().getMemberOrParameter(that.getUnit(), 
-                                group4, null, false);
+                                tgroup, null, false);
                     }
                     else {
                         Package pack = that.getUnit().getPackage().getModule()
-                                .getPackage(group2);
-                        base = pack==null ? null : pack.getDirectMember(group4, null, false);
+                                .getPackage(pgroup);
+                        base = pack==null ? null : pack.getDirectMember(tgroup, null, false);
                     }
                     if (base!=null && base.equals(declaration)) {
-                        result.add(new Region(that.getStartIndex()+m.start(4), group4.length()));
+                        result.add(new Region(that.getStartIndex()+tloc, tgroup.length()));
                     }
-                    if (base instanceof TypeDeclaration && group6!=null) {
-                        Declaration qualified = ((TypeDeclaration) base).getMember(group6, null, false);
+                    if (base instanceof TypeDeclaration && mgroup!=null) {
+                        Declaration qualified = ((TypeDeclaration) base).getMember(mgroup, null, false);
                         if (qualified!=null && qualified.equals(declaration)) {
-                            result.add(new Region(that.getStartIndex()+m.start(6), group6.length()));
+                            result.add(new Region(that.getStartIndex()+mloc, mgroup.length()));
                         }
                     }
                 }
