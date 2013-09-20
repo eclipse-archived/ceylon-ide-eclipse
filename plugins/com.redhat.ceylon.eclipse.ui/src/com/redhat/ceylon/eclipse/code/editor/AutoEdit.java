@@ -598,9 +598,9 @@ class AutoEdit {
 //                		 && endOfLastLineChar!='\n'; //oops, there's that silly null again!
     	int prevEnding = getTokenType(lastEndOfWhitespace(startOfPrev, endOfPrev));
     	int currStarting = getTokenType(firstEndOfWhitespace(start, end));
-    	boolean isContinuation = isBinaryOperator(prevEnding)||
-    			isBinaryOperator(currStarting)||
-    			isInheritanceClause(currStarting);
+    	boolean isContinuation = endOfLastLineChar!=';' && endOfLastLineChar!='}' &&
+    	        (isBinaryOperator(prevEnding) || isBinaryOperator(currStarting) ||
+    			        isInheritanceClause(currStarting));
         boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
         boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{';
         appendIndent(isContinuation, isOpening, isClosing, correctContinuation, 
