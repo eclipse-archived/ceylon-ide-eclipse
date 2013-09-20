@@ -1,11 +1,14 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring.LINK_PATTERN;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -26,12 +29,15 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedType;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.StringLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 
@@ -62,9 +68,11 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
         final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
         TypeChecker tc = getProjectTypeChecker(project);
         if (tc==null) return null;
+        final Pattern wikiRef = Pattern.compile(LINK_PATTERN);
 		for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
             final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
-            phasedUnit.getCompilationUnit().visit(new Visitor() {
+            Tree.CompilationUnit cu = phasedUnit.getCompilationUnit();
+            cu.visit(new Visitor() {
                 @Override
                 public void visit(ImportMemberOrType that) {
                     super.visit(that);
@@ -91,11 +99,13 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                     visitIt(that.getIdentifier(), that.getDeclarationModel());
                 }
                 protected void visitIt(Tree.Identifier id, Declaration dec) {
+                    visitIt(id.getText(), id.getStartIndex(), dec);
+                }
+                protected void visitIt(String name, Integer offset, Declaration dec) {
                     if (dec!=null && dec.getQualifiedNameString()
                             .equals(getQualifiedName(javaDeclaration)) &&
-                            id.getText().equals(javaDeclaration.getElementName())) {
-                        edits.add(new ReplaceEdit(id.getStartIndex(), 
-                                oldName.length(), newName));
+                            name.equals(javaDeclaration.getElementName())) {
+                        edits.add(new ReplaceEdit(offset, oldName.length(), newName));
                     }
                 }
                 protected String getQualifiedName(IMember dec) {
@@ -110,6 +120,37 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                     }
                     else {
                         return "@";
+                    }
+                }
+                @Override
+                public void visit(StringLiteral that) {
+                    super.visit(that);
+                    //TODO: fix copy/paste from RenameRefactoring
+                    Matcher m = wikiRef.matcher(that.getToken().getText());
+                    while (m.find()) {
+                        String pgroup = m.group(3);
+                        String tgroup = m.group(5); int tloc = m.start(5);
+                        String mgroup = m.group(7); int mloc = m.start(7);
+                        Declaration base;
+                        if (pgroup==null) {
+                            base = that.getScope().getMemberOrParameter(that.getUnit(), 
+                                    tgroup, null, false);
+                        }
+                        else {
+                            Package pack = that.getUnit().getPackage().getModule()
+                                    .getPackage(pgroup);
+                            base = pack==null ? null : pack.getDirectMember(tgroup, null, false);
+                        }
+                        Integer offset = that.getStartIndex();
+                        if (base!=null) {
+                            visitIt(tgroup, offset+tloc, base);
+                        }
+                        if (base instanceof TypeDeclaration && mgroup!=null) {
+                            Declaration qualified = ((TypeDeclaration) base).getMember(mgroup, null, false);
+                            if (qualified!=null) {
+                                visitIt(mgroup, offset+mloc, qualified);
+                            }
+                        }
                     }
                 }
             });
