@@ -26,7 +26,7 @@ public class AddModuleImportProposal implements ICompletionProposal,
         this.project = project;
         this.unit = unit;
         this.name = details.getName();
-        this.version = details.getLastVersion();
+        this.version = details.getLastVersion().getVersion();
     }
     
     AddModuleImportProposal(IProject project, Unit unit, String name, String version) {
