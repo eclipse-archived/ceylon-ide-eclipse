@@ -92,6 +92,7 @@ import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -605,9 +606,10 @@ public class CeylonQuickFixAssistant {
         }
         for (int i=ids.size(); i>0; i--) {
             String pn = formatPath(ids.subList(0, i));
-            ModuleQuery q = new ModuleQuery(pn, ModuleQuery.Type.JVM); //TODO: Type.JS if JS compilation enabled!
-            q.setCount(2l);
-            ModuleSearchResult msr = tc.getContext().getRepositoryManager().searchModules(q);
+            ModuleQuery query = new ModuleQuery(pn, ModuleQuery.Type.JVM); //TODO: Type.JS if JS compilation enabled!
+            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+            query.setCount(2l);
+            ModuleSearchResult msr = tc.getContext().getRepositoryManager().searchModules(query);
             ModuleDetails md = msr.getResult(pn);
             if (md!=null) {
                 proposals.add(new AddModuleImportProposal(project, cu.getUnit(), md));
