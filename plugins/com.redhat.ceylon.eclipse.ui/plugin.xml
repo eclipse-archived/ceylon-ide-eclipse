@@ -1308,7 +1308,7 @@
                   <iterate>
                      <test
                            forcePluginActivation="true"
-                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonApp">
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonModule">
                      </test>
                   </iterate>
                </with>
@@ -2168,8 +2168,15 @@
              properties="canLaunchAsCeylonApp, canLaunchAsCeylonJsApp"
              type="java.lang.Object">
        </propertyTester>
+       <propertyTester
+             class="com.redhat.ceylon.eclipse.core.launch.CeylonModulePropertyTester"
+             id="com.redhat.ceylon.eclipse.core.launch.ceylonModulePropertyTester"
+             namespace="com.redhat.ceylon.eclipse.ui"
+             properties="canLaunchAsCeylonModule"
+             type="java.lang.Object">
+       </propertyTester>       
     </extension>
-    
+
     <extension
           id="JavaProjectStateMirror"
           name="Java Project State Mirror"
