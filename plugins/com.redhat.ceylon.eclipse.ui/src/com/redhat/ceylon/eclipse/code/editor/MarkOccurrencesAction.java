@@ -125,7 +125,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     	if (!activeEditor.isBackgroundParsingPaused() &&
     	        !activeEditor.isBlockSelectionModeEnabled() &&
     	        !activeEditor.isInLinkedMode()) {
-    		int offset = event.caretOffset;
+    		int offset = activeEditor.getCeylonSourceViewer()
+    		        .widgetOffset2ModelOffset(event.caretOffset);
     		int length = 0;
     		IRegion selection = activeEditor.getSelection();
     		if (selection.getLength()>0) {
