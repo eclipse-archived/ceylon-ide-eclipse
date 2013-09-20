@@ -2,11 +2,14 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.ITextSelection;
 
+import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public class Util {
     
@@ -62,5 +65,19 @@ public class Util {
 	        findNode(cpc.getRootNode(), 
 	            (ITextSelection) editor.getSelectionProvider().getSelection());
 	}
+
+    public static ModuleQuery.Type getModuleQueryType(IProject project) {
+        if (project!=null) {
+            boolean compileToJava = CeylonBuilder.compileToJava(project);
+            boolean compileToJs = CeylonBuilder.compileToJs(project);
+            if (compileToJava&&!compileToJs) {
+                return ModuleQuery.Type.JVM;
+            }
+            if (compileToJs&&!compileToJava) {
+                return ModuleQuery.Type.JS;
+            }
+        }
+        return ModuleQuery.Type.ALL;
+    }
     
 }
