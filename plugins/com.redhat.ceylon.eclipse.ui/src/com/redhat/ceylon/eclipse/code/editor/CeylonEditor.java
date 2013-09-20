@@ -1059,6 +1059,7 @@ public class CeylonEditor extends TextEditor {
     
     private IResourceChangeListener moveListener = new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event) {
+            if (parseController==null) return;
             IProject project = parseController.getProject();
             if (project!=null) { //things external to the workspace don't move
                 IPath oldWSRelPath = project.getFullPath().append(parseController.getPath());
