@@ -1197,7 +1197,7 @@
             delegateName="Ceylon Module Launcher"
             id="com.redhat.ceylon.eclipse.ui.launching.ceylonModule"
             modes="run, debug"
-            name="Ceylon Java Module"
+            name="Ceylon Module"
             sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
