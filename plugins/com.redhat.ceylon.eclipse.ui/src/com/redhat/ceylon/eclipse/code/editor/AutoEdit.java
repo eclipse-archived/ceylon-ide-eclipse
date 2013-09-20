@@ -452,9 +452,11 @@ class AutoEdit {
             throws BadLocationException {
         switch (command.text.charAt(0)) {
             case '}':
+            case ')':
                 reduceIndentOfCurrentLine();
                 break;
             case '{':
+            case '(':
             case '\t':
                 if (isStringOrCommentContinuation(command.offset)) {
                     shiftToBeginningOfStringOrCommentContinuation();
@@ -524,10 +526,13 @@ class AutoEdit {
 			appendIndent(command.offset, end, start, command.offset, 
                     startOfNewLineChar, endOfLastLineChar, lastNonWhitespaceChar, 
                     closeBrace, true, buf); //false, because otherwise it indents after annotations, which I guess we don't want
-            if (buf.length()>2 && buf.charAt(buf.length()-1)=='}') {
-                String hanging = document.get(command.offset, end-command.offset); //stuff after the { on the current line
-                buf.insert(command.caretOffset-command.offset, hanging);
-                command.length = hanging.length();
+            if (buf.length()>2) {
+                char ch = buf.charAt(buf.length()-1);
+                if (ch=='}'||ch==')') {
+                    String hanging = document.get(command.offset, end-command.offset); //stuff after the { on the current line
+                    buf.insert(command.caretOffset-command.offset, hanging);
+                    command.length = hanging.length();
+                }
             }
             command.text = buf.toString();
             
@@ -566,22 +571,36 @@ class AutoEdit {
         	command.length=0;
         	return;
         }
-        if (command.offset<endOfWs || 
-                command.offset==start && command.shiftsCaret==false) { //Test for IMP's "Correct Indent"
+        // this happens in three cases:
+        // 1. the user types a tab in the whitespace 
+        //    at the start of the line
+        // 2. the user types { or ( at the start of
+        //    the line
+        // 3. Correct Indentation is calling us
+        boolean opening = command.text.equals("{") || 
+                command.text.equals("(");
+        if (command.offset<endOfWs ||
+            command.offset==endOfWs && endOfWs==end && opening || //we don't want to stop the user adv
+            command.offset==start && !command.shiftsCaret) { //test for Correct Indentation
             int endOfPrev = getEndOfPreviousLine();
             int startOfPrev = getStartOfPreviousLine();
             char endOfLastLineChar = getLastNonWhitespaceCharacterInLine(startOfPrev, endOfPrev);
             char lastNonWhitespaceChar = endOfLastLineChar=='\n' ? 
                     getPreviousNonWhitespaceCharacter(startOfPrev) : endOfLastLineChar;
-            char startOfCurrentLineChar = command.text.equals("{") ? 
-                    '{' : getNextNonWhitespaceCharacter(start, end);
+            char startOfCurrentLineChar;
+            if (opening) { 
+                startOfCurrentLineChar = command.text.charAt(0);
+            }
+            else {
+                startOfCurrentLineChar = getNextNonWhitespaceCharacter(start, end);
+            }
             
             StringBuilder buf = new StringBuilder();
             appendIndent(start, end, startOfPrev, endOfPrev, 
             		startOfCurrentLineChar, endOfLastLineChar,
                     lastNonWhitespaceChar, false, true, buf);
-            if (command.text.equals("{")) {
-                buf.append("{");
+            if (opening) {
+                buf.append(command.text.charAt(0));
             }
             command.text = buf.toString();
             command.offset=start;
@@ -593,16 +612,16 @@ class AutoEdit {
             char startOfCurrentLineChar, char endOfLastLineChar, char lastNonWhitespaceChar,
             boolean closeBraces, boolean correctContinuation, StringBuilder buf)
             		throws BadLocationException {
-//        boolean isContinuation = startOfCurrentLineChar!='{' && startOfCurrentLineChar!='}' &&
-//                lastNonWhitespaceChar!=';' && lastNonWhitespaceChar!='}' && lastNonWhitespaceChar!='{'
-//                		 && endOfLastLineChar!='\n'; //oops, there's that silly null again!
     	int prevEnding = getTokenType(lastEndOfWhitespace(startOfPrev, endOfPrev));
     	int currStarting = getTokenType(firstEndOfWhitespace(start, end));
-    	boolean isContinuation = endOfLastLineChar!=';' && endOfLastLineChar!='}' &&
+    	boolean terminatedCleanly = endOfLastLineChar==';' || endOfLastLineChar==',';
+    	boolean isContinuation = !terminatedCleanly &&
     	        (isBinaryOperator(prevEnding) || isBinaryOperator(currStarting) ||
     			        isInheritanceClause(currStarting));
-        boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}';
-        boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{';
+        boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}' ||
+                endOfLastLineChar=='(' && startOfCurrentLineChar!=')';
+        boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{' ||
+                startOfCurrentLineChar==')' && endOfLastLineChar!='(';
         appendIndent(isContinuation, isOpening, isClosing, correctContinuation, 
                 startOfPrev, endOfPrev, closeBraces, buf);
     }
@@ -712,7 +731,7 @@ class AutoEdit {
     }*/
     
     private void appendIndent(boolean isContinuation, boolean isBeginning,
-            boolean isEnding,  boolean correctContinuation, int start, int end,
+            boolean isEnding, boolean correctContinuation, int start, int end,
             boolean closeBraces, StringBuilder buf) 
             		throws BadLocationException {
         String indent = getIndent(start, end, isContinuation&&!correctContinuation);
@@ -723,12 +742,10 @@ class AutoEdit {
             if (closeBraces) {
             	command.shiftsCaret=false;
             	command.caretOffset=command.offset+buf.length();
-            	String newlineChar;
-            	if (end<document.getLength()) {
-            		newlineChar = document.get(end, 1);
-            	}
-            	else if (start>0) {
-            		newlineChar = document.get(start-1, 1);
+            	int line = document.getLineOfOffset(start);
+            	String newlineChar = document.getLineDelimiter(line);
+            	if (newlineChar==null && line>0) {
+            		newlineChar = document.getLineDelimiter(line-1);
             	}
             	else {
             		newlineChar = System.lineSeparator(); //TODO: is this right?
@@ -760,7 +777,7 @@ class AutoEdit {
                 //with a }. We will use that to infer the 
                 //indent for the current line
                 char startingChar = getNextNonWhitespaceCharacterInLine(start);
-                if (startingChar=='}') break;
+                if (startingChar=='}' || startingChar==')') break;
                 int prevEnd = end;
                 int prevStart = start;
                 char prevEndingChar;
@@ -770,7 +787,13 @@ class AutoEdit {
                     prevEndingChar = getLastNonWhitespaceCharacterInLine(prevStart, prevEnd);
                 }
                 while (prevEndingChar=='\n' && prevStart>0); //skip blank lines when searching for previous line
-                if (prevEndingChar==';' || prevEndingChar=='{' || prevEndingChar=='}') break;
+                if (prevEndingChar==';' || prevEndingChar==',' || 
+                    prevEndingChar=='{' || prevEndingChar=='}' ||
+                    prevEndingChar=='(') 
+                    //note assymmetry between } and ) here, 
+                    //due to stuff like "class X()\nextends Y()"
+                    //and X f()\n=> X()
+                    break;
                 end = prevEnd;
                 start = prevStart;
             }
