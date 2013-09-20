@@ -85,7 +85,12 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                         newArgs.add("--offline");
                     }
                     if (launch.getLaunchMode().equals("debug")) {
-                        newArgs.add("--verbose");
+                        if (CeylonBuilder.compileToJs(project)) {
+                        	newArgs.add("--debug");
+                        	newArgs.add("debug"); //
+                        } else {
+                            newArgs.add("--verbose");
+                        }
                     }
 
                     String topLevel = launch.getLaunchConfiguration()
