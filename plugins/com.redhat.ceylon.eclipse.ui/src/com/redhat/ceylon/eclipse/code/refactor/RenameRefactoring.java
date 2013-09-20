@@ -35,7 +35,9 @@ import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class RenameRefactoring extends AbstractRefactoring {
     
-	private static class FindReferencesVisitor extends FindReferenceVisitor {
+	static final String LINK_PATTERN = "\\[\\[([^\"`|\\[\\]]*\\|)?(((\\w|\\.)+)::)?(\\w+)(\\.(\\w+))?\\]\\]";
+
+    private static class FindReferencesVisitor extends FindReferenceVisitor {
         private FindReferencesVisitor(Declaration declaration) {
             super(declaration);
         }
@@ -165,7 +167,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     }
     
     public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
-        final Pattern wikiRef = Pattern.compile("\\[\\[([^\"`|\\[\\]]*\\|)?(((\\w|\\.)+)::)?(\\w+)(\\.(\\w+))?\\]\\]");
+        final Pattern wikiRef = Pattern.compile(LINK_PATTERN);
         final List<Region> result = new ArrayList<Region>();
         new Visitor() {
             @Override
@@ -186,13 +188,14 @@ public class RenameRefactoring extends AbstractRefactoring {
                                 .getPackage(pgroup);
                         base = pack==null ? null : pack.getDirectMember(tgroup, null, false);
                     }
+                    Integer offset = that.getStartIndex();
                     if (base!=null && base.equals(declaration)) {
-                        result.add(new Region(that.getStartIndex()+tloc, tgroup.length()));
+                        result.add(new Region(offset+tloc, tgroup.length()));
                     }
                     if (base instanceof TypeDeclaration && mgroup!=null) {
                         Declaration qualified = ((TypeDeclaration) base).getMember(mgroup, null, false);
                         if (qualified!=null && qualified.equals(declaration)) {
-                            result.add(new Region(that.getStartIndex()+mloc, mgroup.length()));
+                            result.add(new Region(offset+mloc, mgroup.length()));
                         }
                     }
                 }
