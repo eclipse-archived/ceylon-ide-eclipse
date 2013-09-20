@@ -507,8 +507,15 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 	public static IPath getModuleArchive(RepositoryManager provider,
 			Module module) {
         ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
-        		module.getVersion(), ArtifactContext.CAR, ArtifactContext.JAR);
-		File moduleArtifact = provider.getArtifact(ctx);
+                module.getVersion(), ArtifactContext.CAR);
+        // try first with .car
+        File moduleArtifact = provider.getArtifact(ctx);
+        if (moduleArtifact==null){
+            // try with .jar
+            ctx = new ArtifactContext(module.getNameAsString(), 
+                    module.getVersion(), ArtifactContext.JAR);
+            moduleArtifact = provider.getArtifact(ctx);
+        }
 		if (moduleArtifact!=null) {
 			return new Path(moduleArtifact.getPath());
 		}
