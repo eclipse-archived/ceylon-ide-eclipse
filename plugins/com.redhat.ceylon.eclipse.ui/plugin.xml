@@ -1194,13 +1194,23 @@
       <launchConfigurationType
             delegate="com.redhat.ceylon.eclipse.core.launch.ModuleLaunchDelegate"
             delegateDescription=""
-            delegateName="Ceylon Module Launcher"
-            id="com.redhat.ceylon.eclipse.ui.launching.ceylonModule"
+            delegateName="Ceylon Java Module Launcher"
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaModule"
             modes="run, debug"
-            name="Ceylon Module"
+            name="Ceylon Java Module"
             sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
+      <launchConfigurationType
+            delegate="com.redhat.ceylon.eclipse.core.launch.ModuleLaunchDelegate"
+            delegateDescription=""
+            delegateName="Ceylon JavaScript Module Launcher"
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaScriptModule"
+            modes="run, debug"
+            name="Ceylon JavaScript Module"
+            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>      
       <launchConfigurationType
             delegate="com.redhat.ceylon.eclipse.core.launch.CeylonLaunchDelegate"
             delegateDescription=""
@@ -1225,19 +1235,33 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            type="com.redhat.ceylon.eclipse.ui.launching.ceylonModule"
+            type="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaModule"
             class="com.redhat.ceylon.eclipse.core.launch.CeylonModuleTabGroup"
-            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.ceylonModule">
+            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.ceylonJavaModule">
             <launchMode 
                   mode="debug"
                   perspective="org.eclipse.debug.ui.DebugPerspective"
-                  description="Debug Ceylon Module">
+                  description="Debug Ceylon Java Module">
             </launchMode>
             <launchMode
                   mode="run"
-                  description="Run Ceylon Module">
+                  description="Run Ceylon Java Module">
             </launchMode>
-      </launchConfigurationTabGroup>         
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            type="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaScriptModule"
+            class="com.redhat.ceylon.eclipse.core.launch.CeylonModuleTabGroup"
+            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.ceylonJavaScriptModule">
+            <launchMode 
+                  mode="debug"
+                  perspective="org.eclipse.debug.ui.DebugPerspective"
+                  description="Debug Ceylon JavaScript Module">
+            </launchMode>
+            <launchMode
+                  mode="run"
+                  description="Run Ceylon JavaScript Module">
+            </launchMode>
+      </launchConfigurationTabGroup>        
       <launchConfigurationTabGroup
             type="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
             class="com.redhat.ceylon.eclipse.core.launch.LocalCeylonApplicationTabGroup"
@@ -1270,9 +1294,14 @@
    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
       <launchConfigurationTypeImage
             id="com.redhat.ceylon.eclipse.ui.launching.ceylonModuleImage"
-            configTypeID="com.redhat.ceylon.eclipse.ui.launching.ceylonModule"
+            configTypeID="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaModule"
             icon="icons/jar_l_obj.gif">
-      </launchConfigurationTypeImage>   
+      </launchConfigurationTypeImage>
+      <launchConfigurationTypeImage
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonModuleImage"
+            configTypeID="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaScriptModule"
+            icon="icons/jar_l_obj.gif">
+      </launchConfigurationTypeImage>  
       <launchConfigurationTypeImage
             id="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplicationImage"
             configTypeID="com.redhat.ceylon.eclipse.ui.launching.localCeylonApplication"
@@ -1287,18 +1316,18 @@
    
    <extension point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            label="Ceylon Module"
+            label="Ceylon Java Module"
             icon="icons/jar_l_obj.gif"
             modes="run, debug"
-            class="com.redhat.ceylon.eclipse.core.launch.CeylonModuleLaunchShortcut"
-            description="Launch a Ceylon module"
-            id="com.redhat.ceylon.eclipse.ui.launcher.moduleShortcut">
+            class="com.redhat.ceylon.eclipse.core.launch.CeylonJavaModuleShortcut"
+            description="Launch a Ceylon Java module"
+            id="com.redhat.ceylon.eclipse.ui.launcher.javaModuleShortcut">
          <description 
-               description="Runs a local Ceylon module"
+               description="Runs a Ceylon Java module"
                mode="run">
          </description>
          <description
-               description="Debugs a local Ceylon module"
+               description="Debugs a Ceylon Java module"
                mode="debug">
          </description>
          <contextualLaunch>
@@ -1308,16 +1337,48 @@
                   <iterate>
                      <test
                            forcePluginActivation="true"
-                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonModule">
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaModule">
                      </test>
                   </iterate>
                </with>
             </enablement>
          </contextualLaunch>
          <configurationType
-            id="com.redhat.ceylon.eclipse.ui.launching.ceylonModule">
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaModule">
          </configurationType>
-      </shortcut>   
+      </shortcut>
+      <shortcut
+            label="Ceylon JavaScript Module"
+            icon="icons/jar_l_obj.gif"
+            modes="run, debug"
+            class="com.redhat.ceylon.eclipse.core.launch.CeylonJsModuleShortcut"
+            description="Launch a Ceylon JavaScript module"
+            id="com.redhat.ceylon.eclipse.ui.launcher.javaScriptModuleShortcut">
+         <description 
+               description="Runs a Ceylon JavaScript module"
+               mode="run">
+         </description>
+         <description
+               description="Debugs a Ceylon JavaScript module"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <test
+                           forcePluginActivation="true"
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaScriptModule">
+                     </test>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaScriptModule">
+         </configurationType>
+      </shortcut>         
       <shortcut
             label="Ceylon Application"
             icon="icons/start_application.gif"
@@ -1340,7 +1401,7 @@
                   <iterate>
                      <test
                            forcePluginActivation="true"
-                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonApp">
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaModule">
                      </test>
                   </iterate>
                </with>
@@ -1372,7 +1433,7 @@
                   <iterate>
                      <test
                            forcePluginActivation="true"
-                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJsApp">
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaScriptModule">
                      </test>
                   </iterate>
                </with>
@@ -2165,16 +2226,9 @@
              class="com.redhat.ceylon.eclipse.core.launch.CeylonRunPropertyTester"
              id="com.redhat.ceylon.eclipse.core.launch.ceylonRunPropertyTester"
              namespace="com.redhat.ceylon.eclipse.ui"
-             properties="canLaunchAsCeylonApp, canLaunchAsCeylonJsApp"
+             properties="canLaunchAsCeylonJavaModule, canLaunchAsCeylonJavaScriptModule"
              type="java.lang.Object">
-       </propertyTester>
-       <propertyTester
-             class="com.redhat.ceylon.eclipse.core.launch.CeylonModulePropertyTester"
-             id="com.redhat.ceylon.eclipse.core.launch.ceylonModulePropertyTester"
-             namespace="com.redhat.ceylon.eclipse.ui"
-             properties="canLaunchAsCeylonModule"
-             type="java.lang.Object">
-       </propertyTester>       
+       </propertyTester>    
     </extension>
 
     <extension

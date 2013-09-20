@@ -14,7 +14,9 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.debug.ui.IJavaDebugHelpContextIds;
@@ -176,6 +178,33 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
                 setErrorMessage("The project " + projectName + " is not a Ceylon project"); 
                 return false;              
             }
+            
+            try {
+            	ILaunchConfigurationType launchType = getCurrentLaunchConfiguration().getType();
+            	
+            	boolean javaEnabled = LaunchHelper.isBuilderEnabled(project,
+            			ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVA_MODULE);
+            	
+            	boolean jsEnabled = LaunchHelper.isBuilderEnabled(project,
+            			ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE);
+            	
+            	if (launchType.equals(DebugPlugin.getDefault().getLaunchManager()
+							.getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVA_MODULE))
+            			&& !javaEnabled) {
+            		setErrorMessage("The project " + projectName + " is not enabled to run as a Java module"); 
+            		return false;
+            	}
+            	
+            	if (launchType.equals(DebugPlugin.getDefault().getLaunchManager()
+							.getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE))
+            			&& !jsEnabled) {
+            		setErrorMessage("The project " + projectName + " is not enabled to run as a JavaScript module"); 
+            		return false;
+            	}
+			} catch (CoreException e) {
+				e.printStackTrace(); // TODO logger
+			}
+            
         } else {
             return false;
         }
@@ -211,15 +240,10 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
      * @see org.eclipse.debug.ui.ILaunchConfigurationTab#performApply(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
      */
     public void performApply(ILaunchConfigurationWorkingCopy config) {
+
         config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, fModuleText.getText().trim());
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, fTopLevelText.getText().trim());
-        
-        /* only if apply is pressed - slightly different from JDT behaviour
-        config.rename(fProjText.getText().trim() + " - " 
-        		+ getLaunchConfigurationDialog().generateName(fModuleText.getText().trim())  
-        		+ fTopLevelText.getText().trim());
-        */
         
         mapResources(config);
     }
