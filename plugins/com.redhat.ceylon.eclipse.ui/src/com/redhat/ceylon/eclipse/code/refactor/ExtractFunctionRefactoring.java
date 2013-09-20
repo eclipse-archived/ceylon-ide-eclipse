@@ -83,15 +83,15 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
     }
 
-	private final class CheckStatementsVisitor extends Visitor {
-	    final Tree.Body scope;
-	    final Collection<Statement> statements;
-	    CheckStatementsVisitor(Tree.Body scope, 
-	            Collection<Statement> statements) {
-	        this.scope = scope;
-	        this.statements = statements;
-	    }
-	    String problem = null;
+    private final class CheckStatementsVisitor extends Visitor {
+        final Tree.Body scope;
+        final Collection<Statement> statements;
+        CheckStatementsVisitor(Tree.Body scope, 
+                Collection<Statement> statements) {
+            this.scope = scope;
+            this.statements = statements;
+        }
+        String problem = null;
         @Override
         public void visit(Tree.Body that) {
             if (that.equals(scope)) {
@@ -187,85 +187,84 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         public void visit(Tree.Return that) {
             super.visit(that);
             if (that.getExpression()!=null) {
-            	returns.add(that);
+                returns.add(that);
             }
         }
     }
 
-    public static final class FindLocalReferencesVisitor extends Visitor {
-		List<Tree.BaseMemberExpression> localReferences = 
-				new ArrayList<Tree.BaseMemberExpression>();
-		Declaration declaration;
-		FindLocalReferencesVisitor(Declaration declaration) {
-			this.declaration = declaration;
-		}
-		public List<Tree.BaseMemberExpression> getLocalReferences() {
-			return localReferences;
-		}
-		@Override
-		public void visit(Tree.BaseMemberExpression that) {
-			super.visit(that);
-			//TODO: things nested inside control structures
-			Declaration currentDec = that.getDeclaration();
-			for (Tree.BaseMemberExpression bme: localReferences) {
-				Declaration dec = bme.getDeclaration();
-				if (dec.equals(currentDec)) {
-					return;
-				}
-				if (currentDec instanceof TypedDeclaration && 
-						((TypedDeclaration)currentDec).getOriginalDeclaration().equals(dec)) {
-					return;
-				}
-			}
-			for (Scope scope = currentDec.getScope(); 
-					scope!=null;
-					scope=scope.getContainer()) {
-				if (scope.equals(declaration)) {
-					localReferences.add(that);
-				}
-			}
-		}
-	}
+    private static final class FindLocalReferencesVisitor extends Visitor {
+        List<Tree.BaseMemberExpression> localReferences = 
+                new ArrayList<Tree.BaseMemberExpression>();
+        private Scope scope;
+        private Scope targetScope;
+        private FindLocalReferencesVisitor(Scope scope, Scope targetScope) {
+            this.scope = scope;
+            this.targetScope = targetScope;
+        }
+        public List<Tree.BaseMemberExpression> getLocalReferences() {
+            return localReferences;
+        }
+        @Override
+        public void visit(Tree.BaseMemberExpression that) {
+            super.visit(that);
+            //TODO: things nested inside control structures
+            Declaration currentDec = that.getDeclaration();
+            for (Tree.BaseMemberExpression bme: localReferences) {
+                Declaration dec = bme.getDeclaration();
+                if (dec.equals(currentDec)) {
+                    return;
+                }
+                if (currentDec instanceof TypedDeclaration) {
+                    TypedDeclaration od = ((TypedDeclaration)currentDec).getOriginalDeclaration();
+                    if (od!=null && od.equals(dec)) return;
+                }
+            }
+            if (currentDec.isDefinedInScope(scope) && 
+                !currentDec.isDefinedInScope(targetScope)) {
+                localReferences.add(that);
+            }
+        }
+    }
 
-	private String newName;
-	private boolean explicitType;
+    private String newName;
+    private boolean explicitType;
     private Tree.AttributeDeclaration result;
     private List<Statement> statements;
     List<Return> returns;
 
-	public ExtractFunctionRefactoring(ITextEditor editor) {
-	    super(editor);
-	    if (editor instanceof CeylonEditor && 
-	            editor.getSelectionProvider()!=null) {
-	        init((ITextSelection) editor.getSelectionProvider()
-	                .getSelection());
-	    }
+    public ExtractFunctionRefactoring(ITextEditor editor) {
+        super(editor);
+        if (editor instanceof CeylonEditor && 
+                editor.getSelectionProvider()!=null) {
+            init((ITextSelection) editor.getSelectionProvider()
+                    .getSelection());
+        }
         if (result!=null) {
             newName = result.getDeclarationModel().getName();
         }
         else {
             newName = guessName(node);
         }
-	}
+    }
 
     private void init(ITextSelection selection) {
         if (node instanceof Tree.Body) {
             Tree.Body body = (Tree.Body) node;
             statements = getStatements(body, selection);
-	        for (Statement s: statements) {
-	            FindResultVisitor v = new FindResultVisitor(body, statements);
-	            s.visit(v);
-	            if (v.result!=null) {
-	                result = v.result;
-	            }
-	        }
-        	returns = new ArrayList<Return>();
-	        for (Statement s: statements) {
-	            FindReturnsVisitor v = new FindReturnsVisitor(returns);
-	            s.visit(v);
-	        }
-	        
-	    }
+            for (Statement s: statements) {
+                FindResultVisitor v = new FindResultVisitor(body, statements);
+                s.visit(v);
+                if (v.result!=null) {
+                    result = v.result;
+                }
+            }
+            returns = new ArrayList<Return>();
+            for (Statement s: statements) {
+                FindReturnsVisitor v = new FindReturnsVisitor(returns);
+                s.visit(v);
+            }
+            
+        }
     }
 
     @Override
@@ -275,12 +274,12 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     !statements.isEmpty();
     }
     
-	public String getName() {
-		return "Extract Function";
-	}
+    public String getName() {
+        return "Extract Function";
+    }
 
-	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
+            throws CoreException, OperationCanceledException {
         if (node instanceof Tree.Body) {
             Tree.Body body = (Tree.Body) node;
             for (Statement s: statements) {
@@ -300,132 +299,134 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                         + v.problem);
             }
         }
-		return new RefactoringStatus();
-	}
+        return new RefactoringStatus();
+    }
 
-	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
+            throws CoreException, OperationCanceledException {
         Declaration existing = node.getScope()
                 .getMemberOrParameter(node.getUnit(), newName, null, false);
         if (null!=existing) {
             return createWarningStatus("An existing declaration named '" +
                     newName + "' already exists in the same scope");
         }
-		return new RefactoringStatus();
-	}
+        return new RefactoringStatus();
+    }
 
-	public Change createChange(IProgressMonitor pm) throws CoreException,
-			OperationCanceledException {
-		TextChange tfc = newLocalChange();
-		if (node instanceof Tree.Term) {
-		    extractExpressionInFile(tfc);
-		}
-		else if (node instanceof Tree.Body) {
-		    extractStatementsInFile(tfc);
-		}
-		return tfc;
-	}
+    public Change createChange(IProgressMonitor pm) throws CoreException,
+            OperationCanceledException {
+        TextChange tfc = newLocalChange();
+        if (node instanceof Tree.Term) {
+            extractExpressionInFile(tfc);
+        }
+        else if (node instanceof Tree.Body) {
+            extractStatementsInFile(tfc);
+        }
+        return tfc;
+    }
 
     private void extractExpressionInFile(TextChange tfc) throws CoreException {
         tfc.setEdit(new MultiTextEdit());
-		IDocument doc = tfc.getCurrentDocument(null);
-		
-		Tree.Term term = (Tree.Term) node;
+        IDocument doc = tfc.getCurrentDocument(null);
+        
+        Tree.Term term = (Tree.Term) node;
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;
-		String exp = toString(unparenthesize(term));
-		FindContainerVisitor fsv = new FindContainerVisitor(term);
-		rootNode.visit(fsv);
-		Tree.Declaration decNode = fsv.getDeclaration();
-		/*if (decNode instanceof Tree.Declaration) {
-			Tree.AnnotationList anns = ((Tree.Declaration) decNode).getAnnotationList();
-			if (anns!=null && !anns.getAnnotations().isEmpty()) {
-				decNode = anns.getAnnotations().get(0);
-			}
-		}*/
-		Declaration dec = decNode.getDeclarationModel();
-		FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(dec);
-		term.visit(flrv);
-		List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
-		for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-			addLocalType(dec, node.getUnit().denotableType(bme.getTypeModel()), 
-			        localTypes, new ArrayList<ProducedType>());
-		}
-		
-		String params = "";
-		String args = "";
-		if (!flrv.getLocalReferences().isEmpty()) {
-			for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-				Declaration pdec = bme.getDeclaration();
-				if (pdec instanceof TypedDeclaration && 
-						((TypedDeclaration) pdec).isDynamicallyTyped()) {
-					params += "dynamic";
-				}
-				else {
-					params += node.getUnit().denotableType(bme.getTypeModel()).getProducedTypeName();
-				}
-				params += " " + bme.getIdentifier().getText() + ", ";
-				args += bme.getIdentifier().getText() + ", ";
-			}
-			params = params.substring(0, params.length()-2);
-			args = args.substring(0, args.length()-2);
-		}
-		
-		String indent = "\n" + getIndent(decNode, doc);
+        String exp = toString(unparenthesize(term));
+        FindContainerVisitor fsv = new FindContainerVisitor(term);
+        rootNode.visit(fsv);
+        Tree.Declaration decNode = fsv.getDeclaration();
+        Declaration dec = decNode.getDeclarationModel();
+        FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(node.getScope(), 
+                getContainingScope(decNode));
+        term.visit(flrv);
+        List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
+        for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+            addLocalType(dec, node.getUnit().denotableType(bme.getTypeModel()), 
+                    localTypes, new ArrayList<ProducedType>());
+        }
+        
+        String params = "";
+        String args = "";
+        if (!flrv.getLocalReferences().isEmpty()) {
+            for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+                Declaration pdec = bme.getDeclaration();
+                if (pdec instanceof TypedDeclaration && 
+                        ((TypedDeclaration) pdec).isDynamicallyTyped()) {
+                    params += "dynamic";
+                }
+                else {
+                    params += node.getUnit().denotableType(bme.getTypeModel()).getProducedTypeName();
+                }
+                params += " " + bme.getIdentifier().getText() + ", ";
+                args += bme.getIdentifier().getText() + ", ";
+            }
+            params = params.substring(0, params.length()-2);
+            args = args.substring(0, args.length()-2);
+        }
+        
+        String indent = "\n" + getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 
-		String typeParams = "";
-		String constraints = "";
-		if (!localTypes.isEmpty()) {
-			for (TypeDeclaration t: localTypes) {
-				typeParams += t.getName() + ", ";
-				if (!t.getSatisfiedTypes().isEmpty()) {
+        String typeParams = "";
+        String constraints = "";
+        if (!localTypes.isEmpty()) {
+            for (TypeDeclaration t: localTypes) {
+                typeParams += t.getName() + ", ";
+                if (!t.getSatisfiedTypes().isEmpty()) {
                     constraints += extraIndent + getDefaultIndent() + 
                             "given " + t.getName() + " satisfies ";
-					for (ProducedType pt: t.getSatisfiedTypes()) {
-						constraints += pt.getProducedTypeName() + "&";
-					}
-					constraints = constraints.substring(0, constraints.length()-1);
-				}
-			}
-			typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
-		}
-		
-		String type;
-		String ending;
-		ProducedType tt = term.getTypeModel();
-		if (tt==null || tt.isUnknown()) {
-			type = "dynamic";
-			ending = "return ";
-		}
-		else {
-			boolean isVoid = (tt.getDeclaration() instanceof Class) && 
-					tt.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
-			if (isVoid) {
-				type = "void";
-				ending = "";
-			}
-			else {
-				ending = "return ";
-				if (explicitType || dec.isToplevel()) {
-					ProducedType returnType = node.getUnit().denotableType(tt);
-					type = returnType.getProducedTypeName();
-					HashSet<Declaration> decs = new HashSet<Declaration>();
-					importType(decs, returnType, rootNode);
-					applyImports(tfc, decs, rootNode);
-				}
-				else {
-					type = "function";
-				}
-			}
-		}
+                    for (ProducedType pt: t.getSatisfiedTypes()) {
+                        constraints += pt.getProducedTypeName() + "&";
+                    }
+                    constraints = constraints.substring(0, constraints.length()-1);
+                }
+            }
+            typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
+        }
+        
+        String type;
+        String ending;
+        ProducedType tt = term.getTypeModel();
+        if (tt==null || tt.isUnknown()) {
+            type = "dynamic";
+            ending = "return ";
+        }
+        else {
+            boolean isVoid = (tt.getDeclaration() instanceof Class) && 
+                    tt.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
+            if (isVoid) {
+                type = "void";
+                ending = "";
+            }
+            else {
+                ending = "return ";
+                if (explicitType || dec.isToplevel()) {
+                    ProducedType returnType = node.getUnit().denotableType(tt);
+                    type = returnType.getProducedTypeName();
+                    HashSet<Declaration> decs = new HashSet<Declaration>();
+                    importType(decs, returnType, rootNode);
+                    applyImports(tfc, decs, rootNode);
+                }
+                else {
+                    type = "function";
+                }
+            }
+        }
 
-		tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
-				type + " " + newName + typeParams + "(" + params + ")" + 
-						constraints + 
-						" {" + extraIndent + ending + exp + ";" + indent + "}" 
-						+ indent + indent));
-		tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
+        tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
+                type + " " + newName + typeParams + "(" + params + ")" + 
+                        constraints + 
+                        " {" + extraIndent + ending + exp + ";" + indent + "}" 
+                        + indent + indent));
+        tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
+    }
+
+    private Scope getContainingScope(Tree.Declaration decNode) {
+        return decNode instanceof Tree.AttributeDeclaration ||
+               decNode instanceof Tree.MethodDeclaration ?
+                          decNode.getScope() : //the above don't have their own scope!
+                          decNode.getScope().getContainer();
     }
 
     private void extractStatementsInFile(TextChange tfc) throws CoreException {
@@ -441,35 +442,30 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         FindContainerVisitor fsv = new FindContainerVisitor(body);
         rootNode.visit(fsv);
         Tree.Declaration decNode = fsv.getDeclaration();
-        /*if (decNode instanceof Tree.Declaration) {
-            Tree.AnnotationList anns = ((Tree.Declaration) decNode).getAnnotationList();
-            if (anns!=null && !anns.getAnnotations().isEmpty()) {
-                decNode = anns.getAnnotations().get(0);
-            }
-        }*/
         final Declaration dec = decNode.getDeclarationModel();
-        FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(dec);
+        FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(node.getScope(),
+                getContainingScope(decNode));
         for (Statement s: statements) {
             s.visit(flrv);
         }
         final List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
         for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-        	addLocalType(dec, unit.denotableType(bme.getTypeModel()), 
+            addLocalType(dec, unit.denotableType(bme.getTypeModel()), 
                   localTypes, new ArrayList<ProducedType>());
         }
         for (Statement s: statements) {
-        	new Visitor() {
-        		public void visit(Tree.TypeArgumentList that) {
-        			for (ProducedType pt: that.getTypeModels()) {
-        	        	addLocalType(dec, unit.denotableType(pt), 
-        	                    localTypes, new ArrayList<ProducedType>());
-        			}
-        		}
-        	}.visit(s);
+            new Visitor() {
+                public void visit(Tree.TypeArgumentList that) {
+                    for (ProducedType pt: that.getTypeModels()) {
+                        addLocalType(dec, unit.denotableType(pt), 
+                                localTypes, new ArrayList<ProducedType>());
+                    }
+                }
+            }.visit(s);
         }
         //TODO: what was all this for?!
 //      List<Tree.BaseMemberExpression> localRefs = new ArrayList<Tree.BaseMemberExpression>();
-//		for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+//        for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
 //            if (result==null || !bme.getDeclaration().equals(result.getDeclarationModel())) {
 //                FindOuterReferencesVisitor v = new FindOuterReferencesVisitor(bme.getDeclaration());
 //                for (Statement s: body.getStatements()) {
@@ -485,21 +481,27 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 //            }
 //        }
         
+        HashSet<Declaration> movingDecs = new HashSet<Declaration>();
+        for (Statement s: statements) {
+            if (s instanceof Tree.Declaration) {
+                movingDecs.add(((Tree.Declaration) s).getDeclarationModel());
+            }
+        }
+        
         String params = "";
         String args = "";
-        HashSet<Declaration> decs = new HashSet<Declaration>();
-		Set<Declaration> done = decs;
+        Set<Declaration> done = new HashSet<Declaration>(movingDecs);
         boolean nonempty = false;
         for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
             Declaration bmed = bme.getDeclaration();
-			if (done.add(bmed)) {
-            	if (bmed instanceof TypedDeclaration && 
-            			((TypedDeclaration) bmed).isDynamicallyTyped()) {
-            		params += "dynamic";
-            	}
-            	else {
-            		params += unit.denotableType(bme.getTypeModel()).getProducedTypeName();
-            	}
+            if (done.add(bmed)) {
+                if (bmed instanceof TypedDeclaration && 
+                        ((TypedDeclaration) bmed).isDynamicallyTyped()) {
+                    params += "dynamic";
+                }
+                else {
+                    params += unit.denotableType(bme.getTypeModel()).getProducedTypeName();
+                }
                 params += " " + bme.getIdentifier().getText() + ", ";
                 args += bme.getIdentifier().getText() + ", ";
                 nonempty = true;
@@ -532,37 +534,37 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         
         ProducedType returnType;
         if (result!=null) {
-        	returnType = unit.denotableType(result.getDeclarationModel().getType());
+            returnType = unit.denotableType(result.getDeclarationModel().getType());
         }
         else if (!returns.isEmpty())  {
-        	UnionType ut = new UnionType(unit);
-        	List<ProducedType> list = new ArrayList<ProducedType>();
-        	for (Return r: returns) {
-        		Util.addToUnion(list, r.getExpression().getTypeModel());
-        	}
-        	ut.setCaseTypes(list);
-        	returnType = ut.getType();
+            UnionType ut = new UnionType(unit);
+            List<ProducedType> list = new ArrayList<ProducedType>();
+            for (Return r: returns) {
+                Util.addToUnion(list, r.getExpression().getTypeModel());
+            }
+            ut.setCaseTypes(list);
+            returnType = ut.getType();
         }
         else {
-        	returnType = null;
+            returnType = null;
         }
         String content;
         if (result!=null||!returns.isEmpty()) {
             if (returnType.isUnknown()) {
-            	content = "dynamic";
+                content = "dynamic";
             }
             else if (explicitType||dec.isToplevel()) {
-        		content = returnType.getProducedTypeName();
-    			HashSet<Declaration> already = new HashSet<Declaration>();
-        		importType(already, returnType, rootNode);
-        		applyImports(tfc, already, rootNode);
-        	}
-        	else {
-        		content = "function";
-        	}
+                content = returnType.getProducedTypeName();
+                HashSet<Declaration> already = new HashSet<Declaration>();
+                importType(already, returnType, rootNode);
+                applyImports(tfc, already, rootNode);
+            }
+            else {
+                content = "function";
+            }
         }
         else {
-        	content = "void";
+            content = "void";
         }
         content += " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " {";
@@ -587,7 +589,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     "=" + invocation;
         }
         else if (!returns.isEmpty()) {
-        	invocation = "return " + invocation;
+            invocation = "return " + invocation;
         }
         
         tfc.addEdit(new InsertEdit(decNode.getStartIndex(), content));        
@@ -605,46 +607,46 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         return statements;
     }
 
-	private void addLocalType(Declaration dec, ProducedType type,
-			List<TypeDeclaration> localTypes, List<ProducedType> visited) {
-		if (visited.contains(type)) {
-			return;
-		}
-		else {
-			visited.add(type);
-		}
-		TypeDeclaration td = type.getDeclaration();
-		if (td.getContainer()==dec) {
-			boolean found=false;
-			for (TypeDeclaration typeDeclaration: localTypes) {
-				if (typeDeclaration==td) {
-					found=true; 
-					break;
-				}
-			}
-			if (!found) {
-				localTypes.add(td);
-			}
-		}
-		for (ProducedType pt: td.getSatisfiedTypes()) {
-			addLocalType(dec, pt, localTypes, visited);
-		}
-		for (ProducedType pt: type.getTypeArgumentList()) {
-			addLocalType(dec, pt, localTypes, visited);
-		}
-	}
+    private void addLocalType(Declaration dec, ProducedType type,
+            List<TypeDeclaration> localTypes, List<ProducedType> visited) {
+        if (visited.contains(type)) {
+            return;
+        }
+        else {
+            visited.add(type);
+        }
+        TypeDeclaration td = type.getDeclaration();
+        if (td.getContainer()==dec) {
+            boolean found=false;
+            for (TypeDeclaration typeDeclaration: localTypes) {
+                if (typeDeclaration==td) {
+                    found=true; 
+                    break;
+                }
+            }
+            if (!found) {
+                localTypes.add(td);
+            }
+        }
+        for (ProducedType pt: td.getSatisfiedTypes()) {
+            addLocalType(dec, pt, localTypes, visited);
+        }
+        for (ProducedType pt: type.getTypeArgumentList()) {
+            addLocalType(dec, pt, localTypes, visited);
+        }
+    }
 
 
-	public void setNewName(String text) {
-		newName = text;
-	}
-	
-	public String getNewName() {
-		return newName;
-	}
-	
-	public void setExplicitType() {
-		this.explicitType = !explicitType;
-	}
-	
+    public void setNewName(String text) {
+        newName = text;
+    }
+    
+    public String getNewName() {
+        return newName;
+    }
+    
+    public void setExplicitType() {
+        this.explicitType = !explicitType;
+    }
+    
 }
