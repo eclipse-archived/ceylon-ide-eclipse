@@ -368,6 +368,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
     private void expandCaretedNode(int offset) {
         if (suspend) return;
+        if (offset==0) return; //right at the start of file, don't expand the import list
         CompilationUnit rootNode = parseController.getRootNode();
         if (rootNode==null) return;
         suspend = true;
