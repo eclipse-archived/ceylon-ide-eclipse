@@ -46,6 +46,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.addSpe
 import static com.redhat.ceylon.eclipse.code.quickfix.SplitDeclarationProposal.addSplitDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.UseAliasProposal.addUseAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getLevenshteinDistance;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getModuleQueryType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -606,7 +607,7 @@ public class CeylonQuickFixAssistant {
         }
         for (int i=ids.size(); i>0; i--) {
             String pn = formatPath(ids.subList(0, i));
-            ModuleQuery query = new ModuleQuery(pn, ModuleQuery.Type.JVM); //TODO: Type.JS if JS compilation enabled!
+            ModuleQuery query = new ModuleQuery(pn, getModuleQueryType(project));
             query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
             query.setCount(2l);
             ModuleSearchResult msr = tc.getContext().getRepositoryManager().searchModules(query);
