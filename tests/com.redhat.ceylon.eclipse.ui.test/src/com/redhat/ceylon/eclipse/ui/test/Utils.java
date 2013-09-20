@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.core.resources.IBuildConfiguration;
+import org.eclipse.core.resources.IBuildContext;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -183,8 +186,14 @@ public class Utils {
         private CeylonBuildSummary reentrantBuildSummary;
         private boolean scheduledReentrantBuild = false;
         private List<CeylonBuildSummary> previousBuilds =new ArrayList<>();
+        private boolean isReentrant = false;
         
-        private CeylonBuildSummary summaryToFill = this; 
+        private CeylonBuildSummary summaryToFill = this;
+
+        private IBuildConfiguration configuration;
+        private IBuildConfiguration[] requestConfigurations;
+        private IBuildConfiguration[] referencedconfigurations;
+        private IBuildConfiguration[] referencingconfigurations; 
 
         public CeylonBuildSummary(IProject project) {
             this.project = project;
@@ -199,15 +208,20 @@ public class Utils {
         }
         
         @Override
-        protected void startBuild(int kind, Map args, IProject project) {
-            this.kind = kind;
-            this.args = args;
+        protected void startBuild(int kind, Map args, IProject project, 
+                IBuildConfiguration config, IBuildContext context) {
             if (! this.project.equals(project)) {
                 summaryToFill = new CeylonBuildSummary(project);
                 previousBuilds.add(summaryToFill);
             } else {
                 summaryToFill = this;
             }
+            summaryToFill.kind = kind;
+            summaryToFill.args = args;
+            summaryToFill.configuration = config;
+            summaryToFill.requestConfigurations = context.getRequestedConfigs();
+            summaryToFill.referencedconfigurations = context.getAllReferencedBuildConfigs();
+            summaryToFill.referencingconfigurations = context.getAllReferencingBuildConfigs();
         }
         
         protected void resolvingClasspathContainer(
@@ -248,6 +262,7 @@ public class Utils {
             summaryToFill.scheduledReentrantBuild = true;
             if (summaryToFill == this) {
                 reentrantBuildSummary = createReentrantBuildSummary(project);
+                reentrantBuildSummary.isReentrant = true;
                 reentrantBuildSummary.ceylonBuildHookToRestore = ceylonBuildHookToRestore;
             }
         }
@@ -267,18 +282,22 @@ public class Utils {
             if (!installed) {
                 throw new RuntimeException("Cannot wait for a build with a non-installed hook !");
             }
-            if (firstBuildLatch.await(timeoutInSeconds, TimeUnit.SECONDS)) {
-                if (reentrantBuildSummary != null) {
-                    reentrantBuildSummary.waitForBuildEnd(timeoutInSeconds);
+            try {
+                if (firstBuildLatch.await(timeoutInSeconds, TimeUnit.SECONDS)) {
+                    if (reentrantBuildSummary != null) {
+                        reentrantBuildSummary.waitForBuildEnd(timeoutInSeconds);
+                    }
+                    return true;
+                } else {
+                    if (reentrantBuildSummary != null) {
+                        reentrantBuildSummary.endBuild();
+                    }
+                    return false;
                 }
-                return true;
-            } else {
-                if (reentrantBuildSummary != null) {
-                    reentrantBuildSummary.endBuild();
-                }
-                return false;
             }
-            
+            finally {
+                System.out.println(toString());
+            }
         }
 
         public final int getKind() {
@@ -337,7 +356,7 @@ public class Utils {
             return incrementalBuildfilesToRemove;
         }
 
-        public final Collection<IFile> getIncrementalBuildSourcesToCompile() {
+        public final Collection<IFile> getIncrementalBuildSourcesToCompile() { 
             return incrementalBuildSourcesToCompile;
         }
 
@@ -349,8 +368,68 @@ public class Utils {
             return previousBuilds;
         }
 
+        public IBuildConfiguration getConfiguration() {
+            return configuration;
+        }
+
+        public IBuildConfiguration[] getRequestConfigurations() {
+            return requestConfigurations;
+        }
+
+        public IBuildConfiguration[] getReferencedconfigurations() {
+            return referencedconfigurations;
+        }
+
+        public IBuildConfiguration[] getReferencingconfigurations() {
+            return referencingconfigurations;
+        }
+
         public void setPreviousBuilds(List<CeylonBuildSummary> previousBuilds) {
             this.previousBuilds = previousBuilds;
+        }
+        
+        @Override
+        public String toString() {
+            String result = "";
+            for (CeylonBuildSummary previousSummary : getPreviousBuilds()) {
+                result += previousSummary + "\n";
+            }            
+            result += 
+                "Project : " + project + "\n" +
+                (   ! didFullBuild() && ! didIncrementalBuild() ? 
+                        "  No Build performed !\n"
+                    :
+                        "  Kind : " + kind + "\n" +
+                        "  Args : " + args + "\n" +
+                        "  Current Build Configuration : " + configuration + "\n" +                        
+                        "  Requested Build Configurations : " + Arrays.asList(requestConfigurations) + "\n" +                        
+                        "  Referenced Build Configurations : " + Arrays.asList(referencedconfigurations) + "\n" +                        
+                        "  Referencing Build Configurations : " + Arrays.asList(referencingconfigurations) + "\n" +                        
+                        "  Build Type : " + ( didFullBuild() ? "Full" : "Incremental" ) + "\n" +
+                        "  Resolved Classpath Containers during Build : " + didResolveCpContainers() + "\n" +
+                        "  Set and Refreshed Classpath Containers during Build : " + didSetAndRefreshedCpContainers() + "\n" +
+                        (   didFullBuild() ?
+                                "  Parsed Ceylon Model during Full Build : " + didParseCeylonModelDuringFullBuild() + "\n"
+                            :  
+                                "  Did a Full TypeCheck during Incremental Build : " + didFullTypeCheckDuringIncrementalBuild() + "\n" +
+                                "  Changed Sources : " + getIncrementalBuildChangedSources() + "\n" +
+                                "  Files To Remove : " + getIncrementalBuildfilesToRemove() + "\n" +
+                                "  Sources To Compile : " + getIncrementalBuildSourcesToCompile() + "\n" +
+                                "  Result Phased Units : " + getIncrementalBuildResultPhasedUnits() + "\n"
+                        ) +
+                        "  Triggered a reentrant Build : " + didTriggerReentrantBuild() + "\n"
+                );
+            if (didTriggerReentrantBuild() && installed) {
+                result += "\nReentrant Builds :\n";
+                for (CeylonBuildSummary previousSummary : getPreviousBuilds()) {
+                    if (previousSummary.didTriggerReentrantBuild()) {
+                        result += previousSummary.getReentrantBuildSummary() + "\n";
+                    }
+                }
+                result += getReentrantBuildSummary() + "\n";
+            }
+            
+            return result;
         }
     }
 
