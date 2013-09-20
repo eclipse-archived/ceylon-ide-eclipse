@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE;
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVA_MODULE;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 
 import java.util.Arrays;
@@ -20,9 +22,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
@@ -418,23 +417,12 @@ public class LaunchHelper {
 		return null;
 	}
 	
-    static ILaunchConfigurationType getConfigurationType() {
-        return getLaunchManager().getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ATTR_CEYLON_MODULE);        
-    }
- 
-    static ILaunchManager getLaunchManager() {
-        return DebugPlugin.getDefault().getLaunchManager();
-    }
-    
-    static String getLaunchConfigurationName(String projectName, String moduleName, Declaration declarationToRun) {
-        String topLevelDisplayName = getTopLevelDisplayName(declarationToRun);
-        
-        String configurationName = projectName.trim() + " - " 
-        		+ moduleName.trim() + " ("  
-        		+ topLevelDisplayName.trim() + ")";
-		
-        configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
-        
-        return getLaunchManager().generateLaunchConfigurationName(configurationName);
-    }
+    static boolean isBuilderEnabled(IProject project, String property) {
+        if (CAN_LAUNCH_AS_CEYLON_JAVA_MODULE.equals(property)) {
+            return CeylonBuilder.compileToJava(project);
+        } else if (CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE.equals(property)) {
+            return CeylonBuilder.compileToJs(project);
+        }
+        return false;
+    }	
 }

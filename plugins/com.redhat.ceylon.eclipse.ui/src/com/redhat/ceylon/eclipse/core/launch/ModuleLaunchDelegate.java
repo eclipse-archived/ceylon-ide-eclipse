@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.launching.IVMRunner;
@@ -22,7 +23,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -65,7 +65,11 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                 try {
                     List<String> newArgs = new ArrayList<String>();
                     
-                    if (CeylonBuilder.compileToJs(project)) {
+                    boolean runAsJs = DebugPlugin.getDefault().getLaunchManager()
+                    		.getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE)
+                    			.equals(launch.getLaunchConfiguration().getType());
+                    
+                    if (runAsJs) {
                     	newArgs.add("run-js");
                     } else {
                     	newArgs.add("run");
@@ -85,7 +89,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                         newArgs.add("--offline");
                     }
                     if (launch.getLaunchMode().equals("debug")) {
-                        if (CeylonBuilder.compileToJs(project)) {
+                        if (runAsJs) {
                         	newArgs.add("--debug");
                         	newArgs.add("debug"); //
                         } else {

@@ -16,9 +16,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut;
@@ -42,9 +44,27 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
-public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
+public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
 
-    /**
+    protected ILaunchManager getLaunchManager() {
+        return DebugPlugin.getDefault().getLaunchManager();
+    }
+ 
+	protected abstract ILaunchConfigurationType getConfigurationType();
+ 
+    private String getLaunchConfigurationName(String projectName, String moduleName, Declaration declarationToRun) {
+        String topLevelDisplayName = LaunchHelper.getTopLevelDisplayName(declarationToRun);
+        
+        String configurationName = projectName.trim() + " - " 
+        		+ moduleName.trim() + " ("  
+        		+ topLevelDisplayName.trim() + ")";
+		
+        configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
+        
+        return getLaunchManager().generateLaunchConfigurationName(configurationName);
+    }
+    
+	/**
      * Creates a <b>new</b> configuration if none was found or chosen.
      * 
      * @return the configuration created.
@@ -60,8 +80,7 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
                 moduleName = mod.getNameAsString();
             }
 
-            wc = LaunchHelper.getConfigurationType()
-            		.newInstance(null, LaunchHelper.getLaunchConfigurationName(
+            wc = getConfigurationType().newInstance(null, getLaunchConfigurationName(
             				resource.getProject().getName(), moduleName, declarationToRun));
             
             wc.setAttribute(ATTR_PROJECT_NAME, resource.getProject().getName());
@@ -93,7 +112,7 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         String projectName = resource.getProject().getName();
         
         try {
-            ILaunchConfiguration[] configs = LaunchHelper.getLaunchManager().getLaunchConfigurations(configType);
+            ILaunchConfiguration[] configs = getLaunchManager().getLaunchConfigurations(configType);
             candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
  
             Module mod = LaunchHelper.getModule(declaration);
@@ -273,8 +292,7 @@ public class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      */
     private void launch(Declaration declarationToRun, IResource resource, String mode) {
 
-        ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, resource, 
-        		LaunchHelper.getConfigurationType());
+        ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, resource, getConfigurationType());
         if (config == null) {
             config = createConfiguration(declarationToRun, resource);
         }

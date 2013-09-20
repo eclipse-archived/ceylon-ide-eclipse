@@ -13,12 +13,20 @@ public interface ICeylonLaunchConfigurationConstants extends
     public static final String ID_CEYLON_APPLICATION = PLUGIN_ID + ".launching.localCeylonApplication";
     public static final String ID_JS_APPLICATION = PLUGIN_ID + ".launching.localCeylonJsApplication";
 
+    public static final String ID_CEYLON_JAVA_MODULE = PLUGIN_ID + ".launching.ceylonJavaModule";
+    public static final String ID_CEYLON_JAVASCRIPT_MODULE = PLUGIN_ID + ".launching.ceylonJavaScriptModule";
+    
     public static final String ATTR_CEYLON_MODULE = PLUGIN_ID + ".launching.ceylonModule";
     public static final String ATTR_JS_DEBUG = PLUGIN_ID + ".launching.ceylonDebugJs";
     public static final String ATTR_JS_NODEPATH = PLUGIN_ID + ".launching.ceylonJsNodePath";
     
+    public static final String ATTR_LAUNCH_TYPE = "CEYLON_LAUNCH_TYPE";
     public static final String ATTR_MODULE_NAME = "CEYLON_MODULE";
     public static final String ATTR_TOPLEVEL_NAME = "CEYLON_TOPLEVEL";
+    
+    public static final String CAN_LAUNCH_AS_CEYLON_JAVA_MODULE = "canLaunchAsCeylonJavaModule";
+    public static final String CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE = "canLaunchAsCeylonJavaScriptModule";
+    public static final String CEYLON_FILE_EXTENSION = "ceylon";
     
     /**
      * Marker in the launch configuration that the module should be run without --run
