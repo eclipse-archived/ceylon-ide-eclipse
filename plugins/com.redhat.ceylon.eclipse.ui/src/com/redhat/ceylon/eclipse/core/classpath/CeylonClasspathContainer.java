@@ -20,7 +20,6 @@ package com.redhat.ceylon.eclipse.core.classpath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelTypeChecked;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
@@ -74,6 +73,7 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -116,18 +116,49 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         			}                    
         		}
 
-        		final IProject p = javaProject.getProject();
-        		Job job = new BuildItJob("Initial build of project " + 
-        				p.getName(), p, p);
-        		job.setRule(p.getWorkspace().getRoot());
-        		job.setPriority(Job.BUILD);
-        		job.schedule(3000);
-        		    	    		
         		boolean changed = container.resolveClasspath(monitor, true);
             	if(changed) {
             		container.refreshClasspathContainer(monitor, javaProject);
             	}
 
+            	// Schedule a build of the project :
+                //   - with referenced projects
+                //   - with referencing projects (TODO : not sure it's really useful
+                //        in the context of the project initialization, 
+                //        but let's not change for the moment)
+                //   - and don't rebuild if the model is already typechecked
+
+                final IProject p = javaProject.getProject();
+                final Job buildJob = new BuildProjectAfterClasspathChangeJob("Initial build of project " + 
+                        p.getName(), p, true, true, false);
+                buildJob.setRule(p.getWorkspace().getRoot());
+                buildJob.setPriority(Job.BUILD);
+                
+                // Before scheduling the Build Job, we will wait for the end of the classpath container initialization for 1 minute 
+                final long waitUntil = System.currentTimeMillis() + 60000;
+                Job buildWhenAllContainersAreInitialized = new Job("Waiting for all Ceylon Classpath Containers to be initialized before building project " + p + " ...") {
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        if (! CeylonBuilder.allClasspathContainersInitialized()) {
+                            if (System.currentTimeMillis() < waitUntil) {
+                                // System.out.println("Waiting 1 seconde more for classpath container initialization before building project " + p + " ...");
+                                schedule(1000);
+                                return Status.OK_STATUS;
+                            }
+                            else {
+                                // System.out.println("All the classpath containers are not initialized after 1 minute, so build project " + p + " anymway !");
+                            }
+                        }
+                        // System.out.println("Scheduling build of project " + p + " after all classpath containers have been initialized");
+                        buildJob.schedule();
+                        return Status.OK_STATUS;
+                    }
+                };
+                
+                buildWhenAllContainersAreInitialized.setPriority(BUILD);
+                buildWhenAllContainersAreInitialized.schedule(3000);
+
+                CeylonBuilder.setContainerInitialized(p);
         		return Status.OK_STATUS;
         		
         	} 
@@ -138,17 +169,6 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         	}
         }
         
-    }
-
-    private static final class BuildItJob extends BuildProjectAndDependenciesJob {
-        private final IProject p;
-        private BuildItJob(String name, IProject project, IProject p) {
-            super(name, project);
-            this.p = p;
-        }
-        protected boolean reallyRun() {
-        	return !isModelTypeChecked(p);
-        }
     }
 
     public static final String CONTAINER_ID = PLUGIN_ID + ".cpcontainer.CEYLON_CONTAINER";
@@ -259,8 +279,13 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	        		refreshClasspathContainer(monitor, javaProject);
     	        	}
     	    		
-    	            Job job = new BuildProjectAndDependenciesJob("Rebuild of project " + 
-    	            		project.getName(), project);
+    	            // Rebuild the project :
+    	        	//   - without referenced projects
+                    //   - with referencing projects
+                    //   - and force the rebuild even if the model is already typechecked
+    	        	
+    	        	Job job = new BuildProjectAfterClasspathChangeJob("Rebuild of project " + 
+    	            		project.getName(), project, false, true, true);
     	            job.setRule(project.getWorkspace().getRoot());
     	            job.schedule(3000);
     	            job.setPriority(Job.BUILD);

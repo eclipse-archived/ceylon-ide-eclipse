@@ -40,6 +40,8 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.eclipse.core.resources.IBuildConfiguration;
+import org.eclipse.core.resources.IBuildContext;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -50,6 +52,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -206,6 +209,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     final static Map<IProject, ModelState> modelStates = new HashMap<IProject, ModelState>();
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
     private final static Map<IProject, List<IFile>> projectSources = new HashMap<IProject, List<IFile>>();
+    private static Set<IProject> containersInitialized = new HashSet<IProject>();
 
     public static final String CEYLON_CONSOLE= "Ceylon Build";
     //private long startTime;
@@ -335,7 +339,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static class CeylonBuildHook {
         protected void startBuild(int kind, @SuppressWarnings("rawtypes") Map args, 
-                IProject javaProject) {}
+                IProject javaProject, IBuildConfiguration config, IBuildContext context) {}
         protected void resolvingClasspathContainer(
                 List<CeylonClasspathContainer> cpContainers) {}
         protected void setAndRefreshClasspathContainer() {}
@@ -366,7 +370,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     		throws CoreException {
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
-        buildHook.startBuild(kind, args, project);
+        buildHook.startBuild(kind, args, project, getBuildConfig(), getContext());
 		SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(), 100);
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
@@ -2141,6 +2145,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         typeCheckers.remove(project);
         projectSources.remove(project);
         modelStates.remove(project);
+        containersInitialized.remove(project);
         CeylonProjectConfig.remove(project);
         JavaProjectStateMirror.cleanup(project);
     }
@@ -2482,4 +2487,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 "CeylonBuilder for " + getProject().getName();
     }
 
+    public static void setContainerInitialized(IProject project) {
+        containersInitialized.add(project);
+    }
+    
+    public static boolean allClasspathContainersInitialized() {
+        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+            if (project.isAccessible() && CeylonNature.isEnabled(project)
+                    && ! containersInitialized.contains(project)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
