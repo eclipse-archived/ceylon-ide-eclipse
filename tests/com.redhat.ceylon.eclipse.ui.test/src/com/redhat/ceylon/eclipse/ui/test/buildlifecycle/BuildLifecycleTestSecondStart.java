@@ -38,12 +38,15 @@ import com.redhat.ceylon.eclipse.ui.test.Utils.CeylonBuildSummary;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class BuildLifecycleTestSecondStart extends AbstractMultiProjectTest {
 
-    private static SWTWorkbenchBot  bot;
+    private static IProject project = workspace.getRoot().getProject(mainProjectName);
+    private static CeylonBuildSummary buildSummary = new CeylonBuildSummary(project);
+
+    static {
+        buildSummary.install();
+    }
     
     @BeforeClass
     public static void beforeClass() {
-        bot = Utils.createBot();
-
         String testRunWronglyError = ""
                 + "This test should be started :\n"
                 + "  - as a SWTBot test,\n"
@@ -111,18 +114,6 @@ public class BuildLifecycleTestSecondStart extends AbstractMultiProjectTest {
         IPath projectDescriptionPath = null;
         IPath userDirPath = new Path(System.getProperty("user.dir"));
 
-        IProject project = workspace.getRoot().getProject(mainProjectName);
-        CeylonBuildSummary buildSummary = new CeylonBuildSummary(project);
-        buildSummary.install();
-        
-        // Now set autoBuild back to true so that it should only compile the files that have 
-        // been touched before restart
-        IWorkspaceDescription description = workspace.getDescription();
-        assertFalse("AutoBuilding should be false due to the FirstStart test :\n"
-                + "This test should always be started just after " + BuildLifecycleTestFirstStart.class.getSimpleName() + " and WITHOUT removing workspace OSGI data", description.isAutoBuilding());
-        description.setAutoBuilding(true);
-        workspace.setDescription(description);
-        
         if (!buildSummary.waitForBuildEnd(120)) {
             fail("No build has been automatically started after restart");
         }
