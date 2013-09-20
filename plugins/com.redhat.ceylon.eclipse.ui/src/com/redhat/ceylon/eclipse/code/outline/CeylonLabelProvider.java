@@ -460,23 +460,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (n instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
-            String type;
-            Styler styler;
             Tree.Type tt = td.getType();
-            if (tt instanceof Tree.VoidModifier) {
-                type = "void";
-                styler = KW_STYLER;
-            }
-            else if (tt instanceof Tree.DynamicModifier) {
-                type = "dynamic";
-                styler = KW_STYLER;
-            }
-            else {
-                type = type(tt);
-                styler = TYPE_STYLER;
-            }
-            StyledString label = new StyledString(type, styler);
-            label.append(" ").append(name(td.getIdentifier()), ID_STYLER);
+            StyledString label = new StyledString();
+            label.append(type(tt, td))
+                .append(" ")
+                .append(name(td.getIdentifier()), ID_STYLER);
             if (n instanceof Tree.AnyMethod) {
                 Tree.AnyMethod am = (Tree.AnyMethod) n;
                 parameters(am.getTypeParameterList(), label);
@@ -550,30 +538,32 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return formatPath(p.getIdentifiers());
     }
     
-    private static String type(Tree.Type type) {
-        if (type==null) {
-            return "<Unknown>";
-        }
-        else {
+    private static StyledString type(Tree.Type type, Tree.TypedDeclaration node) {
+        StyledString result = new StyledString();
+        if (type!=null) {
+            if (type instanceof Tree.VoidModifier) {
+                return result.append("void", KW_STYLER);
+            }
+            if (type instanceof Tree.DynamicModifier) {
+                return result.append("dynamic", KW_STYLER);
+            }
             ProducedType tm = type.getTypeModel();
-        	if (tm==null) {
-        		return "<Unknown>";
-        	}
-        	else {
+        	if (tm!=null) {
         		boolean sequenced = type instanceof Tree.SequencedType;
         		if (sequenced) {
         			tm = type.getUnit().getIteratedType(tm);
-                	if (tm==null) {
-                		return "<Unknown>";
+                	if (tm!=null) {
+                		return result.append(tm.getProducedTypeName(node.getUnit()), 
+                		            TYPE_STYLER)
+                		        .append("*");
                 	}
         		}
-        		String tn = tm.getProducedTypeName();
-        		if (sequenced) {
-        			tn+="*";
-        		}
-				return tn;
+				return result.append(tm.getProducedTypeName(node.getUnit()), 
+                        TYPE_STYLER);
         	}
         }
+        return result.append(node instanceof Tree.AnyMethod ? "function" : "value", 
+                KW_STYLER);
     }
     
     private static String name(Tree.Identifier id) {
@@ -597,16 +587,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 if (p!=null) {
                     if (p instanceof Tree.ParameterDeclaration) {
                         Tree.TypedDeclaration td = ((Tree.ParameterDeclaration) p).getTypedDeclaration();
-                        if (td.getType() instanceof Tree.DynamicModifier) {
-                            label.append("dynamic", KW_STYLER);
-                        }
-                        else if (td.getType() instanceof Tree.VoidModifier) {
-                            label.append("void", KW_STYLER);
-                        }
-                        else {
-                            label.append(type(td.getType()), TYPE_STYLER);
-                        }
-                        label.append(" ").append(name(td.getIdentifier()), ID_STYLER);
+                        label.append(type(td.getType(), td))
+                            .append(" ")
+                            .append(name(td.getIdentifier()), ID_STYLER);
                         if (p instanceof Tree.FunctionalParameterDeclaration) {
                             for (Tree.ParameterList ipl: ((Tree.MethodDeclaration) td).getParameterLists()) {
                                 parameters(ipl, label);
