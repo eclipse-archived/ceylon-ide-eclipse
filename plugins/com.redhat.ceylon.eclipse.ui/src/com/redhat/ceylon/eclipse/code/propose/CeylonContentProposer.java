@@ -82,6 +82,7 @@ import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -672,8 +673,10 @@ public class CeylonContentProposer {
         else {
             final TypeChecker tc = cpc.getTypeChecker();
             if (tc!=null) {
+                ModuleQuery query = new ModuleQuery(pfp, ModuleQuery.Type.JVM);
+                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
                 ModuleSearchResult results = tc.getContext().getRepositoryManager()
-                        .completeModules(new ModuleQuery(pfp, ModuleQuery.Type.JVM));
+                        .completeModules(query);
                 for (final ModuleDetails module: results.getResults()) {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
