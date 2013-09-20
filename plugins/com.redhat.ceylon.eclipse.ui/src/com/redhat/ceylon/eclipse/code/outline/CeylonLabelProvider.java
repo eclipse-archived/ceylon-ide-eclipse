@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getDecorationAttributes;
@@ -548,7 +549,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return result.append("dynamic", KW_STYLER);
             }
             ProducedType tm = type.getTypeModel();
-        	if (tm!=null) {
+        	if (tm!=null && !isTypeUnknown(tm)) {
         		boolean sequenced = type instanceof Tree.SequencedType;
         		if (sequenced) {
         			tm = type.getUnit().getIteratedType(tm);
