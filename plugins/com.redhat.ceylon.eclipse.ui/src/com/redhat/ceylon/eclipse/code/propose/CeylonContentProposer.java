@@ -48,6 +48,7 @@ import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARG
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getModuleQueryType;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
@@ -673,7 +674,8 @@ public class CeylonContentProposer {
         else {
             final TypeChecker tc = cpc.getTypeChecker();
             if (tc!=null) {
-                ModuleQuery query = new ModuleQuery(pfp, ModuleQuery.Type.JVM);
+                ModuleQuery query = new ModuleQuery(pfp, 
+                        getModuleQueryType(cpc.getProject()));
                 query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
                 ModuleSearchResult results = tc.getContext().getRepositoryManager()
                         .completeModules(query);
