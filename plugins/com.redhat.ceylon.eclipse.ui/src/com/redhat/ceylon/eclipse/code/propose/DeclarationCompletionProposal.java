@@ -129,9 +129,14 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			}
         	int first = getFirstPosition(pl==null);
         	if (first<=0) {
+        	    //no arg list
         		return super.getSelection(document);
         	}
         	int next = getNextPosition(document, first, pl==null);
+            if (next<=0) {
+                //an empty arg list
+                return super.getSelection(document);
+            }
         	int middle = getCompletionPosition(first, next);
 			return new Point(offset-prefix.length()+first+middle, next-middle);
 		}
@@ -177,8 +182,9 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	        final LinkedModeModel linkedModeModel = new LinkedModeModel();
 	        final int loc = offset-prefix.length();
 	        int first = getFirstPosition(basicProposal);
-	        if (first<=0) return;
+	        if (first<=0) return; //no arg list
 	        int next = getNextPosition(document, first, basicProposal);
+	        if (next<=0) return; //empty arg list
 	        int i=0;
 	        while (next>1 && i<paramCount) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
