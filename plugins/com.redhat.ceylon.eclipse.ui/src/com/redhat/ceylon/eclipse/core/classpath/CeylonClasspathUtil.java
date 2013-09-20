@@ -103,7 +103,7 @@ public final class CeylonClasspathUtil {
      * 
      * @param javaProject
      *            the project to search into
-     * @return the Ivy classpath container if found
+     * @return the Ceylon classpath container if found
      */
     public static List <CeylonClasspathContainer> getCeylonClasspathContainers(
             IJavaProject javaProject) {
