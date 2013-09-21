@@ -139,13 +139,14 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
 	 */
 	public void init(IJavaProject jproject, IPath defaultJavaOutputLocation, 
 			IClasspathEntry[] defaultEntries, 
-			boolean defaultsOverrideExistingClasspath) {
+			boolean defaultsOverrideExistingClasspath, boolean javaCompilationEnabled) {
 		if (!defaultsOverrideExistingClasspath && jproject.exists() && 
 				jproject.getProject().getFile(".classpath").exists()) { //$NON-NLS-1$
 			defaultJavaOutputLocation= null;
 			defaultEntries= null;
 		}
-		getBuildPathsBlock().init(jproject, defaultJavaOutputLocation, defaultEntries);
+		getBuildPathsBlock().init(jproject, defaultJavaOutputLocation, 
+		        defaultEntries, javaCompilationEnabled);
 		fJavaProject= jproject;
 	}
 
