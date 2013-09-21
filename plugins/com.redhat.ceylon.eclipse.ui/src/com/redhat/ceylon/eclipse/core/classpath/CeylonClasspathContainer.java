@@ -149,13 +149,19 @@ public class CeylonClasspathContainer implements IClasspathContainer {
                                 // System.out.println("All the classpath containers are not initialized after 1 minute, so build project " + p + " anymway !");
                             }
                         }
-                        // System.out.println("Scheduling build of project " + p + " after all classpath containers have been initialized");
-                        buildJob.schedule();
+
+                        if (getJobManager().find(buildJob).length > 0) {
+                            // System.out.println("Scheduling build of project " + p + " after all classpath containers have been initialized");
+                            buildJob.schedule();
+                        } else {
+                            // System.out.println("A build of project " + p + " is already scheduled or running. Finally don't schedule a new one after all classpath containers have been initialized");
+                        }
                         return Status.OK_STATUS;
                     }
                 };
                 
                 buildWhenAllContainersAreInitialized.setPriority(BUILD);
+                buildWhenAllContainersAreInitialized.setSystem(true);
                 buildWhenAllContainersAreInitialized.schedule(3000);
 
                 CeylonBuilder.setContainerInitialized(p);
