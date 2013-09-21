@@ -4,11 +4,14 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.ltk.core.refactoring.Change;
@@ -30,10 +33,14 @@ import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
 	private IPackageFragment javaPackageFragment;
+	
+	private static Map<IPackageFragment,String> allPackagesMoving = new HashMap<IPackageFragment,String>();
 
     @Override
 	protected boolean initialize(Object element) {
 		javaPackageFragment= (IPackageFragment) element;
+		final String newName = getArguments().getNewName();
+		allPackagesMoving.put(javaPackageFragment, newName);
 		return getProcessor() instanceof RenameProcessor &&
 		        getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
 	}
@@ -75,7 +82,7 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
             if (!edits.isEmpty()) {
                 try {
                     final IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                    IFile movedFile = getMovedFile(newName, file);
+                    IFile movedFile = getMovedFile(file);
                     TextFileChange change= new MovingTextFileChange(movedFile.getName(), movedFile, file);
                     change.setEdit(new MultiTextEdit());
                     for (ReplaceEdit edit: edits) {
@@ -94,7 +101,13 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 			return null;
 		}
 		else {
-		    CompositeChange result = new CompositeChange("Ceylon source changes");
+		    CompositeChange result = new CompositeChange("Ceylon source changes") {
+		        @Override
+		        public Change perform(IProgressMonitor pm) throws CoreException {
+		            allPackagesMoving.clear();
+		            return super.perform(pm);
+		        }
+		    };
 		    for (Change change: changes) {
 		        result.add(change);
 		    }
@@ -102,11 +115,20 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 		}
 	}
 	
-	private IFile getMovedFile(final String newName, IFile file) {
-		String oldPath = javaPackageFragment.getElementName().replace('.', '/');
-        String newPath = newName.replace('.', '/');
-        String replaced = file.getProjectRelativePath().toString()
-        		.replace(oldPath, newPath);
-        return file.getProject().getFile(replaced);
+	private static IFile getMovedFile(IFile file) {
+	    for (Map.Entry<IPackageFragment,String> e: allPackagesMoving.entrySet()) {
+	        IPackageFragment javaPackageFragment = e.getKey();
+	        String newName = e.getValue();
+	        String oldPath = javaPackageFragment.getElementName().replace('.', '/');
+	        String newPath = newName.replace('.', '/');
+	        IPath pathInSourceFolder = file.getParent().getProjectRelativePath()
+	                .removeFirstSegments(1); //TODO: lame, it assumes a the source folder belongs directly to the project
+	        if (pathInSourceFolder.toPortableString().equals(oldPath)) {
+	            return file.getProject().getFile(file.getParent().getProjectRelativePath()
+	                    .removeLastSegments(pathInSourceFolder.segmentCount())
+	                    .append(newPath).append(file.getName()));
+	        }
+	    }
+	    return file;
 	}
 }
