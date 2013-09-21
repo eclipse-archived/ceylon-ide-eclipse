@@ -150,7 +150,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
                             }
                         }
 
-                        if (getJobManager().find(buildJob).length > 0) {
+                        if (getJobManager().find(buildJob).length == 0) {
                             // System.out.println("Scheduling build of project " + p + " after all classpath containers have been initialized");
                             buildJob.schedule();
                         } else {
