@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -143,8 +144,13 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
     private IFile getMovedFile(final String newName, IFile file) {
         String oldPath = javaPackageFragment.getElementName().replace('.', '/');
         String newPath = newName.replace('.', '/');
-        String replaced = file.getProjectRelativePath().toString()
-                .replace(oldPath, newPath);
-        return file.getProject().getFile(replaced);
+        IPath pathInSourceFolder = file.getParent().getProjectRelativePath()
+                .removeFirstSegments(1); //TODO: lame, it assumes a the source folder belongs directly to the project
+        if (pathInSourceFolder.toPortableString().equals(oldPath)) {
+            return file.getProject().getFile(file.getParent().getProjectRelativePath()
+                    .removeLastSegments(pathInSourceFolder.segmentCount())
+                    .append(newPath).append(file.getName()));
+        }
+        return file;
     }
 }
