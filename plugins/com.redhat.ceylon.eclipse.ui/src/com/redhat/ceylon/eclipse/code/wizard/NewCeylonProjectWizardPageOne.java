@@ -435,7 +435,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 		private String[] fJRECompliance;
 		private IExecutionEnvironment[] fInstalledEEs;
 		private String[] fEECompliance;
-
+		
 		public JREGroup() {
 			fUseDefaultJRE= new SelectionButtonDialogField(SWT.RADIO);
 			fUseDefaultJRE.setLabelText(getDefaultJVMLabel());
@@ -643,21 +643,21 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 			updateEnableState();
 		}
 
-		private void updateEnableState() {
-			final boolean detect= fDetectGroup.mustDetect();
-			fUseDefaultJRE.setEnabled(!detect);
-			fUseProjectJRE.setEnabled(!detect);
-			fUseEEJRE.setEnabled(!detect);
-			fJRECombo.setEnabled(!detect && fUseProjectJRE.isSelected());
-			fEECombo.setEnabled(!detect && fUseEEJRE.isSelected());
+		public void updateEnableState() {
+			final boolean disabled= !compileJava||fDetectGroup.mustDetect();
+			fUseDefaultJRE.setEnabled(!disabled);
+			fUseProjectJRE.setEnabled(!disabled);
+			fUseEEJRE.setEnabled(!disabled);
+			fJRECombo.setEnabled(!disabled && fUseProjectJRE.isSelected());
+			fEECombo.setEnabled(!disabled && fUseEEJRE.isSelected());
 			if (fPreferenceLink != null) {
-				fPreferenceLink.setEnabled(!detect);
+				fPreferenceLink.setEnabled(!disabled);
 			}
 			if (fGroup != null) {
-				fGroup.setEnabled(!detect);
+				fGroup.setEnabled(!disabled);
 			}
 		}
-
+		
 		/* (non-Javadoc)
 		 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
 		 */
@@ -1533,6 +1533,8 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 compileJava = !compileJava;
+                fJREGroup.updateEnableState();
+                enableJdtClasses.setEnabled(compileJava);
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
