@@ -172,6 +172,10 @@ public class CeylonQuickFixAssistant {
     }
 
     public static String getIndent(Node node, IDocument doc) {
+        if (node==null||node.getEndToken()==null||
+                node.getEndToken().getLine()==0) {
+            return "";
+        }
         try {
             IRegion region = doc.getLineInformation(node.getEndToken().getLine()-1);
             String line = doc.get(region.getOffset(), region.getLength());
