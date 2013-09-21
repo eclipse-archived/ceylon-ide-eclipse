@@ -72,39 +72,11 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
                 final List<Change> changes= new ArrayList<Change>();
                 TypeChecker tc = getProjectTypeChecker(project);
                 if (tc==null) return null;
-				for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
-                    
-                    final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
-                    if (phasedUnit.getPackage().getNameAsString().startsWith(oldName)) {
-                        phasedUnit.getCompilationUnit().visit(new Visitor() {
-                            @Override
-                            public void visit(ImportPath that) {
-                                super.visit(that);
-                                if (formatPath(that.getIdentifiers()).equals(oldName)) {
-                                    edits.add(new ReplaceEdit(that.getStartIndex(), 
-                                            oldName.length(), newName));
-                                }
-                            }
-                        });
-                        if (!edits.isEmpty()) {
-                            try {
-                                IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                                IFile newFile = getMovedFile(newName, file);
-                                TextFileChange change= new TextFileChange(newFile.getName(), newFile);
-                                change.setEdit(new MultiTextEdit());
-                                changes.add(change);
-                                for (ReplaceEdit edit: edits) {
-                                    change.addEdit(edit);
-                                }
-                            }       
-                            catch (Exception e) { 
-                                e.printStackTrace(); 
-                            }
-                        }
+				for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {                    
+                    if (phasedUnit.getPackage().getNameAsString().equals(oldName)) {
+                        updateRefsInCopiedFile(newName, oldName, changes, phasedUnit);
                     }
-                    
                 }
-                
                 if (!changes.isEmpty()) {
                     CompositeChange result= new CompositeChange("Ceylon source changes");
                     for (Change change: changes) {
@@ -139,6 +111,36 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
         change.setEnabled(true);
         return change;
         
+    }
+
+    private void updateRefsInCopiedFile(final String newName, final String oldName,
+            final List<Change> changes, PhasedUnit phasedUnit) {
+        final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
+        phasedUnit.getCompilationUnit().visit(new Visitor() {
+            @Override
+            public void visit(ImportPath that) {
+                super.visit(that);
+                if (formatPath(that.getIdentifiers()).equals(oldName)) {
+                    edits.add(new ReplaceEdit(that.getStartIndex(), 
+                            oldName.length(), newName));
+                }
+            }
+        });
+        if (!edits.isEmpty()) {
+            try {
+                IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                IFile newFile = getMovedFile(newName, file);
+                TextFileChange change= new TextFileChange(newFile.getName(), newFile);
+                change.setEdit(new MultiTextEdit());
+                changes.add(change);
+                for (ReplaceEdit edit: edits) {
+                    change.addEdit(edit);
+                }
+            }       
+            catch (Exception e) { 
+                e.printStackTrace(); 
+            }
+        }
     }
 
     private IFile getMovedFile(final String newName, IFile file) {
