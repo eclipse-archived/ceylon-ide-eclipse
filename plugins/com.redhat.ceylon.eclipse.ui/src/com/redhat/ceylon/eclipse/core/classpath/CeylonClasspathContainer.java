@@ -150,12 +150,20 @@ public class CeylonClasspathContainer implements IClasspathContainer {
                             }
                         }
 
-                        if (getJobManager().find(buildJob).length == 0) {
+                        boolean shouldSchedule = true;
+                        for (Job job : getJobManager().find(buildJob)) {
+                            if (job.getState() == Job.WAITING) {
+                                // System.out.println("A build of project " + p + " is already scheduled. Finally don't schedule a new one after all classpath containers have been initialized");
+                                shouldSchedule = false;
+                                break;
+                            }
+                        }
+                            
+                            
+                        if (shouldSchedule) {
                             // System.out.println("Scheduling build of project " + p + " after all classpath containers have been initialized");
                             buildJob.schedule();
-                        } else {
-                            // System.out.println("A build of project " + p + " is already scheduled or running. Finally don't schedule a new one after all classpath containers have been initialized");
-                        }
+                        }   
                         return Status.OK_STATUS;
                     }
                 };
