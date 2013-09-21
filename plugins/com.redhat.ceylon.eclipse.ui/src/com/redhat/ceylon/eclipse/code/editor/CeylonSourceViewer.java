@@ -233,36 +233,38 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     @SuppressWarnings({"unchecked", "rawtypes"})
                     Map<Declaration,String> imports = (Map) clipboard.getContents(ImportsTransfer.INSTANCE);
                     IRegion selection = editor.getSelection();
+                    int endOffset = selection.getOffset()+selection.getLength();
                     
-                    IDocument doc= this.getDocument();
+                    IDocument doc = this.getDocument();
                     DocumentRewriteSession rewriteSession= null;
                     if (doc instanceof IDocumentExtension4) {
                         rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
                     }
                     
-                    int endOffset = selection.getOffset()+selection.getLength();
                     try {
-                    	MultiTextEdit edit = new MultiTextEdit();
-                    	if (imports!=null) {
-                    		pasteImports(imports, edit, text);
-                    	}
-                    	edit.addChild(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
-                    	edit.apply(doc);
-                    	endOffset = edit.getRegion().getOffset()+edit.getRegion().getLength();
-                    } 
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        return false;
-                    }
-                    try {
-                    	if (EditorsUI.getPreferenceStore().getBoolean(PASTE_CORRECT_INDENTATION)) {
-                    		endOffset = correctSourceIndentation(new Point(endOffset-text.length(), text.length()), doc)+1;
-                    	}
-                    	return true;
-                    } 
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        return true;
+                        try {
+                            MultiTextEdit edit = new MultiTextEdit();
+                            if (imports!=null) {
+                                pasteImports(imports, edit, text);
+                            }
+                            edit.addChild(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
+                            edit.apply(doc);
+                            endOffset = edit.getRegion().getOffset()+edit.getRegion().getLength();
+                        } 
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            return false;
+                        }
+                        try {
+                            if (EditorsUI.getPreferenceStore().getBoolean(PASTE_CORRECT_INDENTATION)) {
+                                endOffset = correctSourceIndentation(new Point(endOffset-text.length(), text.length()), doc)+1;
+                            }
+                            return true;
+                        } 
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            return true;
+                        }
                     }
                     finally {
                         if (doc instanceof IDocumentExtension4) {
