@@ -1913,11 +1913,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		return project.getFolder(path).getRawLocation().toFile();
 	}
     
-    private static void clearMarkersOn(IResource resource, boolean includeBackendErrors) {
+    private static void clearMarkersOn(IResource resource, boolean alsoDeleteBackendErrors) {
         try {
             resource.deleteMarkers(TASK_MARKER_ID, false, DEPTH_INFINITE);
             resource.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_INFINITE);
-            if (includeBackendErrors) {
+            if (alsoDeleteBackendErrors) {
                 resource.deleteMarkers(PROBLEM_MARKER_ID + ".backend", true, DEPTH_INFINITE);
             }
             //these are actually errors from the Ceylon compiler, but
@@ -1933,14 +1933,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         try {
             //project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
             project.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_ZERO);
+            project.deleteMarkers(PROBLEM_MARKER_ID + ".backend", true, DEPTH_ZERO);
         } catch (CoreException e) {
             e.printStackTrace();
         }
     }
 
-    private static void clearMarkersOn(Collection<IFile> files, boolean alsoBackendErrors) {
+    private static void clearMarkersOn(Collection<IFile> files, boolean alsoDeleteBackendErrors) {
         for(IFile file: files) {
-            clearMarkersOn(file, alsoBackendErrors);
+            clearMarkersOn(file, alsoDeleteBackendErrors);
         }
     }
 
