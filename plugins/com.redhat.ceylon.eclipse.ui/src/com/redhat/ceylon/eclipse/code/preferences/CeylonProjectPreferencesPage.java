@@ -138,7 +138,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         enableExplodeModules = new Button(composite, SWT.CHECK);
         enableExplodeModules.setText("Enable Java classes calling Ceylon (may affect performance)");
         enableExplodeModules.setSelection(explodeModules);
-        enableExplodeModules.setEnabled(builderEnabled);
+        enableExplodeModules.setEnabled(builderEnabled&&backendJava);
         
         offlineButton = new Button(composite, SWT.CHECK);
         offlineButton.setText("Work offline (disable connection to remote module repositories)");
@@ -190,6 +190,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 backendJava = !backendJava;
+                enableExplodeModules.setEnabled(backendJava);
             }
         });
         
