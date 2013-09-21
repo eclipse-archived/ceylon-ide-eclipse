@@ -60,9 +60,9 @@ import org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathBasePage;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathSupport;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.CPListElement;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.CPListLabelProvider;
-import org.eclipse.jdt.internal.ui.wizards.buildpaths.ClasspathOrderingWorkbookPage;
+//import org.eclipse.jdt.internal.ui.wizards.buildpaths.ClasspathOrderingWorkbookPage;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.FolderSelectionDialog;
-import org.eclipse.jdt.internal.ui.wizards.buildpaths.LibrariesWorkbookPage;
+//import org.eclipse.jdt.internal.ui.wizards.buildpaths.LibrariesWorkbookPage;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.ProjectsWorkbookPage;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.CheckedListDialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.DialogField;
@@ -139,9 +139,9 @@ public class BuildPathsBlock {
 
 	private int fPageIndex;
 
-	private BuildPathBasePage fSourceContainerPage;
+	private SourceContainerWorkbookPage fSourceContainerPage;
 	private ProjectsWorkbookPage fProjectsPage;
-	private LibrariesWorkbookPage fLibrariesPage;
+//	private LibrariesWorkbookPage fLibrariesPage;
 
 	private BuildPathBasePage fCurrPage;
 
@@ -171,7 +171,7 @@ public class BuildPathsBlock {
 		fPageIndex= pageToShow;
 
 		fSourceContainerPage= null;
-		fLibrariesPage= null;
+//		fLibrariesPage= null;
 		fProjectsPage= null;
 		fCurrPage= null;
         //fRunnableContext= runnableContext;
@@ -252,28 +252,28 @@ public class BuildPathsBlock {
 		item.setImage(projectImage);
 		item.setData(fProjectsPage);
 		item.setControl(fProjectsPage.getControl(folder));
-
-		fLibrariesPage= new LibrariesWorkbookPage(fClassPathList, fPageContainer);
-		item= new TabItem(folder, SWT.NONE);
-		item.setText(NewWizardMessages.BuildPathsBlock_tab_libraries);
-		item.setImage(JavaPluginImages.get(JavaPluginImages.IMG_OBJS_LIBRARY));
-		item.setData(fLibrariesPage);
-		item.setControl(fLibrariesPage.getControl(folder));
+		
+//		fLibrariesPage= new LibrariesWorkbookPage(fClassPathList, fPageContainer);
+//		item= new TabItem(folder, SWT.NONE);
+//		item.setText(NewWizardMessages.BuildPathsBlock_tab_libraries);
+//		item.setImage(JavaPluginImages.get(JavaPluginImages.IMG_OBJS_LIBRARY));
+//		item.setData(fLibrariesPage);
+//		item.setControl(fLibrariesPage.getControl(folder));
 
 		// a non shared image
 		Image cpoImage= JavaPluginImages.DESC_TOOL_CLASSPATH_ORDER.createImage();
 		composite.addDisposeListener(new ImageDisposer(cpoImage));
 
-		ClasspathOrderingWorkbookPage ordpage= new ClasspathOrderingWorkbookPage(fClassPathList);
-		item= new TabItem(folder, SWT.NONE);
-		item.setText(NewWizardMessages.BuildPathsBlock_tab_order);
-		item.setImage(cpoImage);
-		item.setData(ordpage);
-		item.setControl(ordpage.getControl(folder));
+//		ClasspathOrderingWorkbookPage ordpage= new ClasspathOrderingWorkbookPage(fClassPathList);
+//		item= new TabItem(folder, SWT.NONE);
+//		item.setText(NewWizardMessages.BuildPathsBlock_tab_order);
+//		item.setImage(cpoImage);
+//		item.setData(ordpage);
+//		item.setControl(ordpage.getControl(folder));
 
 		if (fCurrJProject != null) {
 			fSourceContainerPage.init(fCurrJProject);
-			fLibrariesPage.init(fCurrJProject);
+//			fLibrariesPage.init(fCurrJProject);
 			fProjectsPage.init(fCurrJProject);
 		}
 
@@ -309,7 +309,8 @@ public class BuildPathsBlock {
 	 * is passed, jdt default settings are used, or - if the project is an existing Java project - the
 	 * classpath entries of the existing project
 	 */
-	public void init(IJavaProject jproject, IPath javaOutputLocation, IClasspathEntry[] classpathEntries) {
+	public void init(IJavaProject jproject, IPath javaOutputLocation, 
+	        IClasspathEntry[] classpathEntries, boolean javaCompilationEnabled) {
 		fCurrJProject= jproject;
 		boolean projectExists= false;
 		List<CPListElement> newClassPath= null;
@@ -358,7 +359,7 @@ public class BuildPathsBlock {
 		if (fSourceContainerPage != null) {
 			fSourceContainerPage.init(fCurrJProject);
 			fProjectsPage.init(fCurrJProject);
-			fLibrariesPage.init(fCurrJProject);
+//			fLibrariesPage.init(fCurrJProject);
 		}
 
 		initializeTimeStamps();
@@ -1142,11 +1143,11 @@ public class BuildPathsBlock {
 		} else {
 			fTabFolder.setSelection(pageIndex);
 
-			Object page=  fTabFolder.getItem(pageIndex).getData();
-			if (page instanceof LibrariesWorkbookPage) {
-				CPListElement element= CPListElement.create(entry, true, fCurrJProject);
-				((LibrariesWorkbookPage) page).addElement(element);
-			}
+//			Object page=  fTabFolder.getItem(pageIndex).getData();
+//			if (page instanceof LibrariesWorkbookPage) {
+//				CPListElement element= CPListElement.create(entry, true, fCurrJProject);
+//				((LibrariesWorkbookPage) page).addElement(element);
+//			}
 		}
 	}
 

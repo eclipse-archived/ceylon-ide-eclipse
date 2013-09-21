@@ -335,7 +335,8 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 				throw new OperationCanceledException();
 			}
 
-			init(javaProject, outputJavaLocation, entries, false);
+			init(javaProject, outputJavaLocation, entries, false, 
+			        fFirstPage.isCompileJava());
 		} finally {
 			monitor.done();
 		}
