@@ -96,7 +96,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
                     tokenStop>=eventStop+1;
         case CeylonLexer.LINE_COMMENT:
             return tokenStart<=eventStart-2 && 
-                    tokenStop>=eventStop;
+                    tokenStop>=eventStop+1; //account for case where we delete the newline
         default:
             return tokenStart<=eventStart && 
                     tokenStop>=eventStop;
