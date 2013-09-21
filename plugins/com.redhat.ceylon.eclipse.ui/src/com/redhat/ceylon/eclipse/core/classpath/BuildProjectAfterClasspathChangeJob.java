@@ -55,9 +55,19 @@ public class BuildProjectAfterClasspathChangeJob extends Job {
 		return Status.OK_STATUS;
 	}
 
-	protected boolean reallyRun() {
-		return true;
-	}
+	
+	
+    @Override
+    public boolean belongsTo(Object family) {
+        if (family instanceof BuildProjectAfterClasspathChangeJob) {
+            BuildProjectAfterClasspathChangeJob otherJob = (BuildProjectAfterClasspathChangeJob) family;
+            return project.equals(otherJob.project) 
+                    && buildReferencedProjects == otherJob.buildReferencedProjects
+                    && buildReferencingProjects == otherJob.buildReferencingProjects
+                    && forceRebuild == otherJob.forceRebuild;
+        }
+        return false;
+    }
 
     @Override
     public boolean shouldRun() {
