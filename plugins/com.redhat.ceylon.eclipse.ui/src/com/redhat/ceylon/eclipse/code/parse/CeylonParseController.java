@@ -235,7 +235,9 @@ public class CeylonParseController {
                 // TypeChecking has not been performed
                 // on the main model, so don't do it 
                 // on the editor's tree
-                stager.afterStage(DONE, monitor);
+                if (stager!=null) {
+                    stager.afterStage(DONE, monitor);
+                }
                 return; 
             }
             typeChecker = getProjectTypeChecker(project);
