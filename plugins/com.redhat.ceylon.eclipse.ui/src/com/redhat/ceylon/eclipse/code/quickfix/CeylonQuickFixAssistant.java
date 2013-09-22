@@ -1633,6 +1633,7 @@ public class CeylonQuickFixAssistant {
         cu.visit(fsv);
         //if (!fsv.isToplevel()) {
             Tree.Statement statement = fsv.getStatement();
+            if (statement==null) return;
             for (PhasedUnit unit: getUnits(project)) {
                 if (unit.getUnit().equals(cu.getUnit())) {
                     CreateProposal.addCreateProposal(proposals, def, true, desc, image, 
