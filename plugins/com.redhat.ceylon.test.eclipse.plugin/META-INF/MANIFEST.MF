@@ -28,5 +28,5 @@ Require-Bundle: com.redhat.ceylon.eclipse.ui;bundle-version="1.0.0",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
- lib/ceylon.language-0.6-ide.jar,
- lib/ceylon.test-0.6-ide.jar
+ lib/ceylon.language-0.6.1-ide.jar,
+ lib/ceylon.test-0.6.1-ide.jar
