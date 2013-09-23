@@ -406,6 +406,7 @@ public class CeylonQuickFixAssistant {
         	addMakeSharedProposal(proposals, project, node);
         	break;
         case 500:
+        case 510:
         	addMakeDefaultProposal(proposals, project, node);
         	break;
         case 600:
@@ -634,8 +635,19 @@ public class CeylonQuickFixAssistant {
 
     private void addMakeDefaultProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        Declaration d = decNode.getDeclarationModel();
+        
+        Declaration d;
+        if (node instanceof Tree.Declaration) {
+            Tree.Declaration decNode = (Tree.Declaration) node;
+            d = decNode.getDeclarationModel();
+        }
+        else if (node instanceof Tree.BaseMemberExpression) {
+            d = ((Tree.BaseMemberExpression) node).getDeclaration();
+        }
+        else {
+            return;
+        }
+        
         if (d.isClassOrInterfaceMember()) {
         	List<Declaration> rds = ((ClassOrInterface)d.getContainer()).getInheritedMembers(d.getName());
         	Declaration rd=null;
