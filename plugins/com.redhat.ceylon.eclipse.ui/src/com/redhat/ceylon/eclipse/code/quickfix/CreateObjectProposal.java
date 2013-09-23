@@ -11,6 +11,7 @@ import java.util.HashSet;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
@@ -74,6 +75,11 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
                         offset+7+il, name.length()+2, file, change));
             }
         }
+    }
+    
+    @Override
+    public StyledString getStyledDisplayString() {
+        return style(getDisplayString());
     }
     
 }

@@ -102,7 +102,7 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 				
 				declaration = annotations + type + " " + identifier + ";";
     			SpecifierOrInitializerExpression sie = attrDecl.getSpecifierOrInitializerExpression();
-    			if (sie==null) return;
+    			if (sie==null || sie.getExpression()==null) return;
 				action = identifier + " = ";
     			operation = sie.getExpression().getTerm();
     		} else {
