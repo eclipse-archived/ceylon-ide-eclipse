@@ -77,7 +77,21 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                 Declaration dec = that.getDeclarationModel();
                 if (dec!=null) {
                     if (dec.isActual()) {
-                        addRefinementAnnotation(model, that, dec);
+                        addRefinementAnnotation(model, that, 
+                                that.getIdentifier(), dec);
+                    }
+                }
+            }
+            @Override
+            public void visit(Tree.SpecifierStatement that) {
+                super.visit(that);
+                if (that.getRefinement()) {
+                    Declaration dec = that.getDeclaration();
+                    if (dec!=null) {
+                        if (dec.isActual()) {
+                            addRefinementAnnotation(model, that, 
+                                    that.getBaseMemberExpression(), dec);
+                        }
                     }
                 }
             }
@@ -143,13 +157,14 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     }
     
     private void addRefinementAnnotation(IAnnotationModel model, 
-    		Tree.Declaration that, Declaration dec) {
+    		Tree.StatementOrArgument that, Node line, Declaration dec) {
         Declaration refined = getRefinedDeclaration(dec);
         if (refined!=null) {
-            RefinementAnnotation ra = new RefinementAnnotation(null, refined, 
-                    that.getIdentifier().getToken().getLine());
+            RefinementAnnotation ra = new RefinementAnnotation(
+                    "refines " + dec.getQualifiedNameString(), //never actually displayed 
+                    refined, line.getToken().getLine());
             model.addAnnotation(ra, new Position(getStartOffset(that), 
-            		getLength(that)+1));
+            		getLength(that)));
         }
     }
     
