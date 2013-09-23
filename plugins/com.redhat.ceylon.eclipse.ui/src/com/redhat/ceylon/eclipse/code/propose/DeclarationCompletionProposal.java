@@ -104,6 +104,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		if (EditorsUI.getPreferenceStore()
 				.getBoolean(CeylonSourceViewerConfiguration.LINKED_MODE)) {
 			if (declaration instanceof Generic) {
+                Generic generic = (Generic) declaration;
 				ParameterList paramList = null;
 				if (declaration instanceof Functional && getFirstPosition(false)>0) {
 					List<ParameterList> pls = ((Functional) declaration).getParameterLists();
@@ -111,7 +112,10 @@ class DeclarationCompletionProposal extends CompletionProposal {
 						paramList = pls.get(0);
 					}
 				}
-				enterLinkedMode(document, paramList, (Generic) declaration);
+				if (paramList!=null && !paramList.getParameters().isEmpty() ||
+				        !generic.getTypeParameters().isEmpty()) {
+                    enterLinkedMode(document, paramList, generic);
+                }
 			}
 		}
 		
@@ -160,7 +164,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			int angleIndex = text.lastIndexOf('>');
 			int parenIndex = text.lastIndexOf(')');
 			int braceIndex = text.lastIndexOf('}');
-			comma = (typeArgList ? angleIndex : (braceIndex>parenIndex?braceIndex:parenIndex))-lastOffset;
+			return (typeArgList ? angleIndex : (braceIndex>parenIndex?braceIndex:parenIndex))-lastOffset;
 		}
 		return comma;
 	}
@@ -173,26 +177,26 @@ class DeclarationCompletionProposal extends CompletionProposal {
     
 	public void enterLinkedMode(IDocument document, ParameterList parameterList, 
 			Generic generic) {
-        boolean basicProposal = parameterList==null;
-        int paramCount = basicProposal ? 
+        boolean proposeTypeArguments = noValueArguments(parameterList);
+        int paramCount = proposeTypeArguments ? 
         		generic.getTypeParameters().size() :
         		parameterList.getParameters().size();
         if (paramCount==0) return;
 	    try {
 	        final LinkedModeModel linkedModeModel = new LinkedModeModel();
 	        final int loc = offset-prefix.length();
-	        int first = getFirstPosition(basicProposal);
+	        int first = getFirstPosition(proposeTypeArguments);
 	        if (first<=0) return; //no arg list
-	        int next = getNextPosition(document, first, basicProposal);
+	        int next = getNextPosition(document, first, proposeTypeArguments);
 	        if (next<=0) return; //empty arg list
 	        int i=0;
-	        while (next>1 && i<paramCount) {
+	        while (next>0 && i<paramCount) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
-	        	if (basicProposal) {
-	        		addBasicProposals(generic, loc, first, props, i);
+	        	if (proposeTypeArguments) {
+	        		addTypeArgumentProposals(generic, loc, first, props, i);
 	        	}
 	        	else {
-	        		addProposals(parameterList, loc, first, props, i);
+	        		addValueArgumentProposals(parameterList, loc, first, props, i);
 	        	}
 		        LinkedPositionGroup linkedPositionGroup = new LinkedPositionGroup();
 		        int middle = getCompletionPosition(first, next);
@@ -201,7 +205,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		        		props.toArray(NO_COMPLETIONS));
 		        linkedPositionGroup.addPosition(linkedPosition);
 		        first = first+next+1;
-		        next = getNextPosition(document, first, basicProposal);
+		        next = getNextPosition(document, first, proposeTypeArguments);
 	            linkedModeModel.addGroup(linkedPositionGroup);
 	            i++;
 	        }
@@ -261,6 +265,11 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	    }
 	}
 
+    private boolean noValueArguments(ParameterList parameterList) {
+        return parameterList==null ||
+                parameterList.getParameters().isEmpty();
+    }
+
 	protected int getCompletionPosition(int first, int next) {
 		return text.substring(first, first+next-1).lastIndexOf(' ')+1;
 	}
@@ -284,7 +293,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
         return parenPos>0&&(bracePos>parenPos||bracePos<0);
     }
 
-	private void addProposals(ParameterList parameterList, final int loc,
+	private void addValueArgumentProposals(ParameterList parameterList, final int loc,
 			int first, List<ICompletionProposal> props, final int index) {
 		Parameter p = parameterList.getParameters().get(index);
 		if (p.getModel().isDynamicallyTyped()) {
@@ -319,7 +328,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		}
 	}
 
-	private void addBasicProposals(Generic generic, final int loc,
+	private void addTypeArgumentProposals(Generic generic, final int loc,
 			int first, List<ICompletionProposal> props, final int index) {
 		TypeParameter p = generic.getTypeParameters().get(index);
 		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
