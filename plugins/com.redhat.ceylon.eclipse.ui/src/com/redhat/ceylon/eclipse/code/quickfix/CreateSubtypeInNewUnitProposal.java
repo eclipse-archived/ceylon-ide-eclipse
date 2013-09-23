@@ -351,10 +351,15 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
             ClassOrInterface ci = ((Tree.ClassOrInterface) node).getDeclarationModel();
             return ci==null ? null : ci.getType();
         }
-        else {
+        else if (node instanceof Tree.SpecifierOrInitializerExpression ||
+                node instanceof Tree.Return || 
+                node instanceof Tree.PositionalArgumentList) {
             RequiredTypeVisitor rtv = new RequiredTypeVisitor(node, null);
             rtv.visit(cu);
             return rtv.getType();
+        }
+        else {
+            return null;
         }
     }
     

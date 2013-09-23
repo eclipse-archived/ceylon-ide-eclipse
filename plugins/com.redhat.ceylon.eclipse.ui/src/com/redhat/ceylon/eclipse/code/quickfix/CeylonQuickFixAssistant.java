@@ -200,17 +200,18 @@ public class CeylonQuickFixAssistant {
         IProject project = Util.getProject(editor.getEditorInput());
         IFile file = Util.getFile(editor.getEditorInput());
         
-        RenameDeclarationProposal.add(proposals, file, editor);
-        InlineDeclarationProposal.add(proposals, editor);
-        ExtractValueProposal.add(proposals, editor);
-        ExtractFunctionProposal.add(proposals, editor);
-        ConvertToClassProposal.add(proposals, editor);
-        ConvertToNamedArgumentsProposal.add(proposals, editor);
-        
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());
+            
+            RenameDeclarationProposal.add(proposals, file, editor);
+            InlineDeclarationProposal.add(proposals, editor);
+            ExtractValueProposal.add(proposals, editor, node);
+            ExtractFunctionProposal.add(proposals, editor, node);
+            ConvertToClassProposal.add(proposals, editor);
+            ConvertToNamedArgumentsProposal.add(proposals, editor);
+        
             addAssignToLocalProposal(file, cu, proposals, node, 
                     editor.getSelection().getOffset());
             
@@ -223,9 +224,6 @@ public class CeylonQuickFixAssistant {
             addArgumentProposals(proposals, doc, file, node);
             addImportProposals(editor, proposals, file, node);
             
-            addCreateObjectProposal(doc, cu, proposals, file, node);
-            addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);
-            
             Tree.Statement statement = findStatement(cu, node);
             addConvertToIfElseProposal(doc, proposals, file, statement);
             addConvertToThenElseProposal(cu, doc, proposals, file, statement);
@@ -235,12 +233,16 @@ public class CeylonQuickFixAssistant {
             addConvertMethodToGetterProposal(proposals, editor, file, node);
             
             addThrowsAnnotationProposal(proposals, statement, cu, file, doc);            
-        }
 
-        CreateSubtypeInNewUnitProposal.add(proposals, editor);
-        MoveDeclarationProposal.add(proposals, editor);
+            addCreateObjectProposal(doc, cu, proposals, file, node);
+            addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);            
+            CreateSubtypeInNewUnitProposal.add(proposals, editor);
+            MoveDeclarationProposal.add(proposals, editor);
+            
+            RefineFormalMembersProposal.add(proposals, editor);
+            
+        }
         
-        RefineFormalMembersProposal.add(proposals, editor);
     }
 
     private void addAnnotationProposals(Collection<ICompletionProposal> proposals, 
