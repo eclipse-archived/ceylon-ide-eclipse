@@ -23,6 +23,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModu
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
@@ -31,7 +32,6 @@ import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -324,7 +324,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		IClasspathEntry newEntry = JavaCore.newContainerEntry(path, null, 
 				new IClasspathAttribute[0], false);
 		IClasspathEntry[] entries = javaProject.getRawClasspath();
-		List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(Arrays.asList(entries));
+		List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(asList(entries));
 		int index = 0;
 		boolean mustReplace = false;
 		for (IClasspathEntry entry: newEntries) {
@@ -394,10 +394,9 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			
 			final Collection<IClasspathEntry> paths = findModuleArchivePaths(
 					javaProject, project, typeChecker);
-			if(this.classpathEntries == null || !paths.equals(Arrays.asList(this.classpathEntries))) {
-				IClasspathEntry[] classpathEntry = new IClasspathEntry[paths.size()];
-				IClasspathEntry[] newClasspathEntries = paths.toArray(classpathEntry);
-				this.classpathEntries = newClasspathEntries;
+			if (this.classpathEntries == null || 
+			        !paths.equals(asList(this.classpathEntries))) {
+				this.classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
 				return true;
 			}
 		}
@@ -490,7 +489,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			paths.put(newEntry.toString(), newEntry);
 		}
 		
-		return Arrays.asList(paths.values().toArray(new IClasspathEntry[0]));
+		return asList(paths.values().toArray(new IClasspathEntry[paths.size()]));
 	}
 
 	public static IPath getSourceArchive(RepositoryManager provider,
