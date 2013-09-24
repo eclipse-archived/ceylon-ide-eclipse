@@ -8,12 +8,13 @@ public class RenameWizard extends RefactoringWizard {
 				| PREVIEW_EXPAND_FIRST_NODE);
 		setDefaultPageTitle(refactoring.getName());
 	}
-
+	
+	@Override
 	protected void addUserInputPages() {
 		addPage(new RenameInputPage(getRefactoring().getName()));
 	}
 
-	public AbstractRefactoring getRenameRefactoring() {
-		return (AbstractRefactoring) getRefactoring();
-	}
+//	public AbstractRefactoring getRenameRefactoring() {
+//		return (AbstractRefactoring) getRefactoring();
+//	}
 }

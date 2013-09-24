@@ -26,8 +26,8 @@ public class RenameRefactoringAction extends AbstractRefactoringAction {
 	    return "No declaration name selected";
 	}
 	
-	public String currentName() {
-	    return ((RenameRefactoring) refactoring).getDeclaration().getName();
-	}
-	
+//	public String currentName() {
+//	    return ((RenameRefactoring) refactoring).getDeclaration().getName();
+//	}
+//	
 }

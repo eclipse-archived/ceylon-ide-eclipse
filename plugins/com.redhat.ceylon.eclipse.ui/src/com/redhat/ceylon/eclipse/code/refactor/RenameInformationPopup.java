@@ -11,8 +11,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 import static org.eclipse.jface.text.link.ILinkedModeListener.UPDATE_CARET;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -80,8 +78,6 @@ import org.eclipse.swt.widgets.Tracker;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -263,12 +259,12 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
     private Image fMenuImage;
     private MenuManager fMenuManager;
     private ToolBar fToolBar;
-    private String fOpenDialogBinding= "";
     private boolean fIsMenuUp= false;
 
     private boolean fDelayJobFinished= false;
 
-    public RenameInformationPopup(CeylonEditor editor, AbstractRenameLinkedMode renameLinkedMode) {
+    public RenameInformationPopup(CeylonEditor editor, 
+            AbstractRenameLinkedMode renameLinkedMode) {
         fEditor= editor;
         fRenameLinkedMode= renameLinkedMode;
         restoreSnapPosition();
@@ -290,8 +286,6 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
     }
 
     public void open() {
-        // Must cache here, since editor context is not available in menu from popup shell:
-        fOpenDialogBinding= getOpenDialogBinding();
 
         Shell workbenchShell= fEditor.getSite().getShell();
         final Display display= workbenchShell.getDisplay();
@@ -750,25 +744,7 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
                 refactorAction.setEnabled(true);
                 manager.add(refactorAction);
 
-//                IAction previewAction= new Action("Preview") {
-//                    @Override
-//                    public void run() {
-//                        activateEditor();
-//                        fRenameLinkedMode.doRename(true);
-//                    }
-//                };
-//                previewAction.setAccelerator(SWT.CTRL | SWT.CR);
-//                previewAction.setEnabled(canRefactor);
-//                manager.add(previewAction);
-
-                IAction openDialogAction= new Action("Open Dialog" + '\t' + fOpenDialogBinding) {
-                    @Override
-                    public void run() {
-                    	fRenameLinkedMode.linkedModeModel.exit(NONE);
-                        new RenameRefactoringAction(fEditor).run();
-                    }
-                };
-                manager.add(openDialogAction);
+                fRenameLinkedMode.addMenuItems(manager);
 
                 manager.add(new Separator());
                 
@@ -812,18 +788,6 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
 
     private static String getEnterBinding() {
         return KeyStroke.getInstance(KeyLookupFactory.getDefault().formalKeyLookup(IKeyLookup.CR_NAME)).format();
-    }
-
-    /**
-     * WARNING: only works in workbench window context!
-     * @return the keybinding for Refactor &gt; Rename
-     */
-    private static String getOpenDialogBinding() {
-        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench().getAdapter(IBindingService.class);
-        if (bindingService == null)
-            return "";
-        String binding= bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + ".action.rename");
-        return binding == null ? "" : binding;
     }
 
     private static void recursiveSetBackgroundColor(Control control, Color color) {
