@@ -559,9 +559,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     collectDependencies(project, typeChecker, builtPhasedUnits);
                     monitor.worked(1);
                     
-                    //we do this before the binary generation, in order to 
-                    //display the errors quicker, but if the backend starts
-                    //adding its own errors, we should do it afterwards
                     monitor.subTask("Collecting problems for project " 
                             + project.getName());
                     addProblemAndTaskMarkers(builtPhasedUnits, project);
@@ -620,9 +617,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             }
             
-            //we do this before the binary generation, in order to 
-            //display the errors quicker, but if the backend starts
-            //adding its own errors, we should do it afterwards
             monitor.subTask("Collecting problems for project " 
                     + project.getName());
             addProblemAndTaskMarkers(builtPhasedUnits, project);
@@ -1512,17 +1506,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private static void addProblemAndTaskMarkers(final List<PhasedUnit> units, 
     		final IProject project) {
-    	new Job("updating markers for project: " + project) {
-    		@Override
-    		protected IStatus run(IProgressMonitor monitor) {
-    	        for (PhasedUnit phasedUnit: units) {
-    	            IFile file = getFile(phasedUnit);
-    	            phasedUnit.getCompilationUnit().visit(new MarkerCreator(file));
-    	            addTaskMarkers(file, phasedUnit.getTokens());
-    	        }
-    			return Status.OK_STATUS;
-    		}
-    	}.schedule();
+        for (PhasedUnit phasedUnit: units) {
+            IFile file = getFile(phasedUnit);
+            phasedUnit.getCompilationUnit().visit(new MarkerCreator(file));
+            addTaskMarkers(file, phasedUnit.getTokens());
+        }
     }
 
     private boolean generateBinaries(IProject project, IJavaProject javaProject,
