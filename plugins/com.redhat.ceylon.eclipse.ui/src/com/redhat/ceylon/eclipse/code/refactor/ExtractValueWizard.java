@@ -8,12 +8,13 @@ public class ExtractValueWizard extends RefactoringWizard {
 				| PREVIEW_EXPAND_FIRST_NODE);
 		setDefaultPageTitle(refactoring.getName());
 	}
-
+	
+	@Override
 	protected void addUserInputPages() {
 		addPage(new ExtractValueInputPage(getRefactoring().getName()));
 	}
 
-	public ExtractValueRefactoring getExtractLocalRefactoring() {
-		return (ExtractValueRefactoring) getRefactoring();
-	}
+//	public ExtractValueRefactoring getExtractLocalRefactoring() {
+//		return (ExtractValueRefactoring) getRefactoring();
+//	}
 }

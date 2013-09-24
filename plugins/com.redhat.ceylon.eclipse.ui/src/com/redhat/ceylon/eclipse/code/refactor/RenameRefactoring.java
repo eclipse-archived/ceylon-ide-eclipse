@@ -222,4 +222,8 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public Declaration getDeclaration() {
 		return declaration;
 	}
+
+    public String getNewName() {
+        return newName;
+    }
 }

@@ -8,12 +8,13 @@ public class ExtractFunctionWizard extends RefactoringWizard {
 				| PREVIEW_EXPAND_FIRST_NODE);
 		setDefaultPageTitle(refactoring.getName());
 	}
-
+	
+	@Override
 	protected void addUserInputPages() {
 		addPage(new ExtractFunctionInputPage(getRefactoring().getName()));
 	}
 
-	public ExtractFunctionRefactoring getExtractFunctionRefactoring() {
-		return (ExtractFunctionRefactoring) getRefactoring();
-	}
+//	public ExtractFunctionRefactoring getExtractFunctionRefactoring() {
+//		return (ExtractFunctionRefactoring) getRefactoring();
+//	}
 }

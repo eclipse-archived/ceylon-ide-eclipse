@@ -1,7 +1,10 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -16,6 +19,8 @@ import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -79,9 +84,11 @@ public abstract class AbstractRenameLinkedMode {
     private String originalName;
 
     protected LinkedPosition namePosition;
-    public LinkedModeModel linkedModeModel;
-    private LinkedPositionGroup linkedPositionGroup;
+    protected LinkedModeModel linkedModeModel;
+    protected LinkedPositionGroup linkedPositionGroup;
     private final FocusEditingSupport focusEditingSupport;
+    
+    protected String openDialogKeyBinding= "";
     
     public AbstractRenameLinkedMode(CeylonEditor editor) {
         this.editor = editor;
@@ -133,6 +140,8 @@ public abstract class AbstractRenameLinkedMode {
                 ((IEditingSupportRegistry) viewer).register(focusEditingSupport);
             }
 
+            // Must cache here, since editor context is not available in menu from popup shell:
+            openDialogKeyBinding = getOpenDialogBinding();
             infoPopup = new RenameInformationPopup(editor, this);
 			infoPopup.open();
 
@@ -232,4 +241,18 @@ public abstract class AbstractRenameLinkedMode {
 
 	public abstract String getHintTemplate();
 
+    /**
+     * WARNING: only works in workbench window context!
+     * @return the keybinding for Refactor &gt; Rename
+     */
+    private static String getOpenDialogBinding() {
+        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench()
+                .getAdapter(IBindingService.class);
+        if (bindingService == null) return "";
+        String binding= bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + ".action.rename");
+        return binding == null ? "" : binding;
+    }
+
+    void addMenuItems(IMenuManager manager) {}
+    
 }
