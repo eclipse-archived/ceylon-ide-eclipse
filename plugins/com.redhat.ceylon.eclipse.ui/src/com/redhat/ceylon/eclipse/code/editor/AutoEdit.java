@@ -23,8 +23,10 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIterator;
 import static java.lang.Character.isWhitespace;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
@@ -34,6 +36,7 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextUtilities;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -830,6 +833,7 @@ class AutoEdit {
         if (start<0||end<0) return "";
         int nestingLevel = 0;
         while (start>0) {
+            nestingLevel += parenCount(start, end);
             //We're searching for an earlier line whose 
             //immediately preceding line ends cleanly 
             //with a {, }, or ; or which itelf starts 
@@ -847,15 +851,14 @@ class AutoEdit {
             }
             while (prevEndingChar=='\n' && prevStart>0); //skip blank lines when searching for previous line
             if (prevEndingChar==';' || 
-                prevEndingChar==',' && nestingLevel==0 || 
+                prevEndingChar==',' && nestingLevel>=0 || 
                 prevEndingChar=='{' || 
                 prevEndingChar=='}' ||
-                prevEndingChar=='(' && nestingLevel==0)
+                prevEndingChar=='(' && nestingLevel>=0)
                 //note assymmetry between } and ) here, 
                 //due to stuff like "class X()\nextends Y()"
                 //and X f()\n=> X()
                 break;
-            if (prevEndingChar==')') nestingLevel++;
             end = prevEnd;
             start = prevStart;
         }
@@ -865,6 +868,21 @@ class AutoEdit {
         }
         return document.get(start, 
                 firstEndOfWhitespace(start, end)-start);
+    }
+
+    int parenCount(int start, int end) {
+        int count=0;
+        for (Iterator<CommonToken> it = getTokenIterator(getTokens(), 
+                new Region(start, end-start)); it.hasNext();) {
+            int type = it.next().getType();
+            if (type==CeylonLexer.RPAREN) {
+                count--;
+            }
+            else if (type==CeylonLexer.LPAREN) {
+                count++;
+            }
+        }
+        return count;
     }
     
     private void incrementIndent(StringBuilder buf, String indent) {
