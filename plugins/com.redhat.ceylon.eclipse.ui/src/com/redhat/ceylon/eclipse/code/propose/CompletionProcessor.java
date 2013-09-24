@@ -144,7 +144,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 
     public IContextInformationValidator getContextInformationValidator() {
 		if (validator == null) {
-			validator= new ParameterContextValidator();
+			validator= new ParameterContextValidator(editor);
 		}
         return validator;
     }

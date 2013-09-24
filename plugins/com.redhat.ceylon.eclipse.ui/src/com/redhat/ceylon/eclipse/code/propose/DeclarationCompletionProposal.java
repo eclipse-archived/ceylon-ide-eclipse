@@ -450,6 +450,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
             		//TODO: for now there is no context info for type args lists - fix that!
             		!(pls.get(0).getParameters().isEmpty()&&!((Generic)declaration).getTypeParameters().isEmpty())) {
             	int paren = text.indexOf('(');
+            	if (paren<0) paren = text.indexOf('{');
             	if (paren<0 && !getDisplayString().equals("show parameters")) { //ugh, horrible, todo!
             		return super.getContextInformation();
             	}

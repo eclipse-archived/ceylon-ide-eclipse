@@ -15,6 +15,7 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 
 class ParameterContextValidator implements IContextInformationValidator, IContextInformationPresenter {
@@ -23,17 +24,23 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 	private IContextInformation information;
 	private int currentParameter;
 	private ITextViewer viewer;
+    private CeylonEditor editor;
 	
-	@Override
+	public ParameterContextValidator(CeylonEditor editor) {
+        this.editor = editor;
+    }
+
+    @Override
 	public boolean updatePresentation(int brokenPosition, TextPresentation presentation) {
 
 		int currentParameter = -1;
 		int position = ((CeylonSourceViewer) viewer).getSelectedRange().x;
 		try {
 			int paren = viewer.getDocument().get(this.position, position-this.position).indexOf('(');
+			if (paren<0) paren = viewer.getDocument().get(this.position, position-this.position).indexOf('{');
 			if (paren<0) this.position = viewer.getDocument().get(0, position).lastIndexOf('(');
 			currentParameter = getCharCount(viewer.getDocument(), 
-					this.position+paren+1, position, ",", "", true);
+					this.position+paren+1, position, ",;", "", true);
 		} 
 		catch (BadLocationException x) {
 			return false;
@@ -79,6 +86,12 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 	
 	@Override
 	public boolean isContextInformationValid(int brokenPosition) {
+	    if (editor.isInLinkedMode()) {
+	        Object linkedModeOwner = editor.getLinkedModeOwner();
+            if (linkedModeOwner instanceof DeclarationCompletionProposal) {
+	            return true;
+	        }
+	    }
 		try {
 			int position = ((CeylonSourceViewer) viewer).getSelectedRange().x;
 			if (position < this.position) {
@@ -92,7 +105,7 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 				return false;
 			}
 			
-			return getCharCount(document, this.position, position, "(<", ")>", false)>=1;
+			return getCharCount(document, this.position, position, "{(<", "{)>", false)>=1;
 
 		} 
 		catch (BadLocationException x) {
