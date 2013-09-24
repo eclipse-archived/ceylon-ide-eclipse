@@ -134,7 +134,7 @@ public class AutoEditTests {
     public void testCorrectIndentation14() {
         checkForCorrectIndentation(
             "doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}",
-            "doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}");
+            "doc (\"Hello\n      World\n      !\")\nvoid hello(){}");
     }
     
     @Test
@@ -305,14 +305,14 @@ public class AutoEditTests {
     public void testCorrectIndentation38() {
         checkForCorrectIndentation(
             "\t/*\n\tcomment\n\t*/\n",
-            "\t/*\n\tcomment\n\t*/\n");
+            "/*\n comment\n */\n");
     }
     
     @Test
     public void testCorrectIndentation39() {
         checkForCorrectIndentation(
             "\t\t/*\n\tcomment\n\t*/\n",
-            "\t\t/*\n\tcomment\n\t*/\n");
+            "/*\n comment\n */\n");
     }
     
     @Test
@@ -494,21 +494,21 @@ public class AutoEditTests {
     public void testNewLine26() {
         checkForNewLine(
             "/*hello",
-            "/*hello\n\n*/");
+            "/*hello\n \n */");
     }
     
     @Test
     public void testNewLine27() {
         checkForNewLine(
             "\t/*hello",
-            "\t/*hello\n\t\n\t*/");
+            "\t/*hello\n\t \n\t */");
     }
     
     @Test
     public void testNewLine28() {
         checkForNewLine(
             "\t/*\n\thello",
-            "\t/*\n\thello\n\t");
+            "\t/*\n\thello\n\t ");
     }
     
     @Test
