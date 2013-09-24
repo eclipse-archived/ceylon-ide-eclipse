@@ -645,6 +645,8 @@ class AutoEdit {
     	CommonToken currStarting = getNextNonHiddenToken(startOfCurrent, endOfCurrent);
     	boolean terminatedCleanly = endOfLastLineChar==';' || endOfLastLineChar==',';
     	boolean isContinuation = !terminatedCleanly &&
+    	        //note: unfortunately we can't treat a line after a closing paren  
+    	        //      as a continuation because it might be an annotation
     	        (isBinaryOperator(prevEnding) || isBinaryOperator(currStarting) ||
     			        isInheritanceClause(currStarting) || 
     			        isOperatorChar(startOfCurrentLineChar)); //to account for a previously line-commented character
@@ -826,6 +828,7 @@ class AutoEdit {
     private String getIndent(int start, int end) 
             throws BadLocationException {
         if (start<0||end<0) return "";
+        int nestingLevel = 0;
         while (start>0) {
             //We're searching for an earlier line whose 
             //immediately preceding line ends cleanly 
@@ -843,13 +846,16 @@ class AutoEdit {
                 prevEndingChar = getPreviousNonHiddenCharacterInLine(prevEnd);
             }
             while (prevEndingChar=='\n' && prevStart>0); //skip blank lines when searching for previous line
-            if (prevEndingChar==';' || prevEndingChar==',' || 
-                    prevEndingChar=='{' || prevEndingChar=='}' ||
-                    prevEndingChar=='(') 
+            if (prevEndingChar==';' || 
+                prevEndingChar==',' && nestingLevel==0 || 
+                prevEndingChar=='{' || 
+                prevEndingChar=='}' ||
+                prevEndingChar=='(' && nestingLevel==0)
                 //note assymmetry between } and ) here, 
                 //due to stuff like "class X()\nextends Y()"
                 //and X f()\n=> X()
                 break;
+            if (prevEndingChar==')') nestingLevel++;
             end = prevEnd;
             start = prevStart;
         }
