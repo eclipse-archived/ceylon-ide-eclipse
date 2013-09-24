@@ -163,6 +163,7 @@ public class CeylonEditor extends TextEditor {
     private CeylonParseController parseController;
     private ProjectionSupport projectionSupport;
     private LinkedModeModel linkedMode;
+    private Object linkedModeOwner;
     
     private MarkerAnnotationUpdater markerAnnotationUpdater = new MarkerAnnotationUpdater(this);
     private ProjectionAnnotationManager projectionAnnotationManager = new ProjectionAnnotationManager(this);
@@ -198,12 +199,23 @@ public class CeylonEditor extends TextEditor {
         return linkedMode!=null;
     }
     
-    public void setLinkedMode(LinkedModeModel linkedMode) {
+    public void setLinkedMode(LinkedModeModel linkedMode,
+            Object linkedModeOwner) {
         this.linkedMode = linkedMode;
+        this.linkedModeOwner = linkedModeOwner;
+    }
+    
+    public void clearLinkedMode() {
+        this.linkedMode = null;
+        this.linkedModeOwner = null;
     }
     
     public LinkedModeModel getLinkedMode() {
         return linkedMode;
+    }
+    
+    public Object getLinkedModeOwner() {
+        return linkedModeOwner;
     }
     
     /**
