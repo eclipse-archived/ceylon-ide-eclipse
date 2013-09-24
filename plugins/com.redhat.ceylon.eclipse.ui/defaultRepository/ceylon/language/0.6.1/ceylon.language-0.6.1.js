@@ -4382,7 +4382,6 @@ function $init$LazyMap(){
             $$lazyMap.get=function (key$709){
                 var $$lazyMap=this;
                 return (opt$710=$$lazyMap.entries$708.find($JsCallable(function (e$711){
-                    var $$lazyMap=this;
                     return e$711.key.equals(key$709);
                 },[{$nm:'e',$mt:'prm',$t:{t:Entry,a:{Key:'Key',Item:'Item'}},$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:{t:Entry,a:{Key:$$lazyMap.$$targs$$.Key,Item:$$lazyMap.$$targs$$.Item}},Element:{t:Entry,a:{Key:$$lazyMap.$$targs$$.Key,Item:$$lazyMap.$$targs$$.Item}}}},Return:{t:Boolean$}})),opt$710!==null?opt$710.item:null);
             };
@@ -4642,7 +4641,6 @@ function $init$LazySet(){
                 $prop$getC$758.set=setC$758;
                 if (setC$758.$$metamodel$$===undefined)setC$758.$$metamodel$$=$prop$getC$758.$$metamodel$$;
                 var sorted$760=$$lazySet.elems$757.$sort($JsCallable(byIncreasing($JsCallable(function (e$761){
-                    var $$lazySet=this;
                     return e$761.hash;
                 },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},Return:{t:Integer}}),{Value:{t:Integer},Element:$$lazySet.$$targs$$.Element}),[{$nm:'p1',$mt:'prm',$t:'Element'},{$nm:'p2',$mt:'prm',$t:'Element'}],{Arguments:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},Return:{t:Comparison}}));
                 $prop$getSorted$760={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},d:['ceylon.language','LazySet','$at','size','$at','sorted']};}};
@@ -4673,7 +4671,6 @@ function $init$LazySet(){
                     $$iterator$768.$$targs$$=$$targs$$;
                     Iterator({Element:$$lazySet.$$targs$$.Element},$$iterator$768);
                     $$iterator$768.sorted$769_=$$lazySet.elems$757.$sort($JsCallable(byIncreasing($JsCallable(function (e$770){
-                        var $$lazySet=this;
                         return e$770.hash;
                     },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},Return:{t:Integer}}),{Value:{t:Integer},Element:$$lazySet.$$targs$$.Element}),[{$nm:'p1',$mt:'prm',$t:'Element'},{$nm:'p2',$mt:'prm',$t:'Element'}],{Arguments:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},Return:{t:Comparison}})).iterator();
                     $$iterator$768.$prop$getSorted$769={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$cont:iterator$768,d:['ceylon.language','LazySet','$m','iterator','$o','iterator','$at','sorted']};}};
@@ -9012,7 +9009,7 @@ defineAttr(lang$proto, 'releaseVersion', function(){ return 1; },undefined,
   {$t:{t:Integer}, $cont:lang$proto, $an:function(){return[shared(),actual()]},mod:$$METAMODEL$$,d:['ceylon.language','language','$at','releaseVersion']});
 defineAttr(lang$proto, 'versionName', function(){ return String$("Virtual Boy",11); },undefined,
   {$t:{t:String$}, $cont:lang$proto, $an:function(){return[shared(),actual()]},mod:$$METAMODEL$$,d:['ceylon.language','language','$at','versionName']});
-defineAttr(lang$proto, 'majorVersionBinary', function(){ return 0; },undefined,
+defineAttr(lang$proto, 'majorVersionBinary', function(){ return 5; },undefined,
   {$t:{t:Integer}, $cont:lang$proto, $an:function(){return[shared(),actual()]},mod:$$METAMODEL$$,d:['ceylon.language','language','$at','majorVersionBinary']});
 defineAttr(lang$proto, 'minorVersionBinary', function(){ return 0; },undefined,
   {$t:{t:Integer}, $cont:lang$proto, $an:function(){return[shared(),actual()]},mod:$$METAMODEL$$,d:['ceylon.language','language','$at','minorVersionBinary']});
@@ -9202,7 +9199,7 @@ defineAttr(process$proto, 'string', function() {
     return processString;
 },undefined,{$t:{t:String$},$cont:process$proto,$an:function(){return[shared(),actual()]},mod:$$METAMODEL$$,d:['ceylon.language','Object','$at','string']});
 defineAttr(process$proto, 'vm', function() {
-    if (typeof process !== "undefined" && process.execPath && process.execPath.match(/node(\.exe)?$/)) {
+    if (typeof process !== "undefined" && process.execPath && process.execPath.match(/node(js)?(\.exe)?$/)) {
         return String$("node.js", 7);
     } else if (typeof window === 'object') {
         return String$("Browser", 7);
