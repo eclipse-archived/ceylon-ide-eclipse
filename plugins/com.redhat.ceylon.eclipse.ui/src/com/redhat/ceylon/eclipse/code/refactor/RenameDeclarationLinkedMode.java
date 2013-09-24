@@ -10,7 +10,6 @@ import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryFactory;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
@@ -22,19 +21,14 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextViewerExtension6;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.IUndoManagerExtension;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
-import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.swt.SWT;
-import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -60,94 +54,85 @@ public final class RenameDeclarationLinkedMode extends
 	@Override
 	public void start() {
 	    if (!refactoring.isEnabled()) return;
-		final ISourceViewer viewer= editor.getCeylonSourceViewer();
-        editor.doSave(new NullProgressMonitor());
-        
-		//save where we are before opening linked mode
-		if (viewer instanceof ITextViewerExtension6) {
-			IUndoManager undoManager= ((ITextViewerExtension6)viewer).getUndoManager();
-			if (undoManager instanceof IUndoManagerExtension) {
-				IUndoManagerExtension undoManagerExtension= (IUndoManagerExtension)undoManager;
-				IUndoContext undoContext= undoManagerExtension.getUndoContext();
-				IOperationHistory operationHistory= OperationHistoryFactory.getOperationHistory();
-				fStartingUndoOperation= operationHistory.getUndoOperation(undoContext);
-			}
-		}
-		
+		editor.doSave(new NullProgressMonitor());
+		saveEditorState();
 		super.start();
 	}
 
+    private void saveEditorState() {
+        //save where we are before opening linked mode
+        IUndoManager undoManager = editor.getCeylonSourceViewer().getUndoManager();
+        if (undoManager instanceof IUndoManagerExtension) {
+            IUndoManagerExtension undoManagerExtension= (IUndoManagerExtension)undoManager;
+            IUndoContext undoContext = undoManagerExtension.getUndoContext();
+            IOperationHistory operationHistory = OperationHistoryFactory.getOperationHistory();
+            fStartingUndoOperation = operationHistory.getUndoOperation(undoContext);
+        }
+    }
+
 	public void done() {
-		final ISourceViewer viewer= editor.getCeylonSourceViewer();
-		if (!isEnabled()) return;
-//			Image image= null;
-//			Label label= null;
-		
+		if (!isEnabled()) return;		
 		try {
-//				if (viewer instanceof SourceViewer) {
-//					final SourceViewer sourceViewer= (SourceViewer) viewer;
-//					Control viewerControl= sourceViewer.getControl();
-//					if (viewerControl instanceof Composite) {
-//						Composite composite= (Composite) viewerControl;
-//						Display display= composite.getDisplay();
-//
-//						// Flush pending redraw requests:
-//						while (! display.isDisposed() && display.readAndDispatch()) {
-//						}
-//
-//						// Copy editor area:
-//						GC gc= new GC(composite);
-//						Point size;
-//						try {
-//							size= composite.getSize();
-//							image= new Image(gc.getDevice(), size.x, size.y);
-//							gc.copyArea(image, 0, 0);
-//						} finally {
-//							gc.dispose();
-//							gc= null;
-//						}
-//
-//						// Persist editor area while executing refactoring:
-//						label= new Label(composite, SWT.NONE);
-//						label.setImage(image);
-//						label.setBounds(0, 0, size.x, size.y);
-//						label.moveAbove(null);
-//					}
-			
+		    hideEditorActivity();
 			refactoring.setNewName(getNewName());
-			
-			//undo the change made in the current editor
-			editor.getSite().getWorkbenchWindow().run(false, true, new IRunnableWithProgress() {
-				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					if (viewer instanceof ITextViewerExtension6) {
-						IUndoManager undoManager= ((ITextViewerExtension6)viewer).getUndoManager();
-						if (undoManager instanceof IUndoManagerExtension) {
-							IUndoManagerExtension undoManagerExtension= (IUndoManagerExtension)undoManager;
-							IUndoContext undoContext= undoManagerExtension.getUndoContext();
-							IOperationHistory operationHistory= OperationHistoryFactory.getOperationHistory();
-							while (undoManager.undoable()) {
-								if (fStartingUndoOperation != null && 
-										fStartingUndoOperation.equals(operationHistory.getUndoOperation(undoContext)))
-									return;
-								undoManager.undo();
-							}
-						}
-					}
-				}
-			});
-				
-			RefactoringExecutionHelper helper= new RefactoringExecutionHelper(refactoring,
+			revertChanges();
+			new RefactoringExecutionHelper(refactoring,
 					RefactoringStatus.WARNING,
 				    RefactoringSaveHelper.SAVE_ALL,
 				    editor.getSite().getShell(),
-				    editor.getSite().getWorkbenchWindow());
-			helper.perform(false, true);
+				    editor.getSite().getWorkbenchWindow())
+			    .perform(false, true);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		finally {
+		    unhideEditorActivity();
+		}
 		super.done();
 	}
+
+    private void revertChanges()  {
+        //undo the change made in the current editor
+        //note: I would prefer to do it this way 
+        //      but that's not the way JDT does it
+//        DocumentChange change = new DocumentChange("Reverting Inline Rename", 
+//                namePosition.getDocument());
+//        change.setEdit(new MultiTextEdit());
+//        for (LinkedPosition lp: linkedPositionGroup.getPositions()) {
+//            change.addEdit(new ReplaceEdit(lp.getOffset(), 
+//                    lp.getLength(), 
+//                    getOriginalName()));
+//        }
+//        try {
+//            change.perform(new NullProgressMonitor());
+//        } 
+//        catch (CoreException e) {
+//            e.printStackTrace();
+//        }
+        try {
+            editor.getSite().getWorkbenchWindow().run(false, true, new IRunnableWithProgress() {
+                public void run(IProgressMonitor monitor) 
+                        throws InvocationTargetException, InterruptedException {
+                    IUndoManager undoManager = editor.getCeylonSourceViewer().getUndoManager();
+                    if (undoManager instanceof IUndoManagerExtension) {
+                        IUndoContext undoContext = ((IUndoManagerExtension) undoManager).getUndoContext();
+                        IOperationHistory operationHistory = OperationHistoryFactory.getOperationHistory();
+                        while (undoManager.undoable()) {
+                            if (fStartingUndoOperation != null && 
+                                    fStartingUndoOperation.equals(operationHistory.getUndoOperation(undoContext))) {
+                                return;
+                            }
+                            undoManager.undo();
+                        }
+                    }
+                }
+            });
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 	@Override
 	public String getHintTemplate() {
@@ -195,20 +180,7 @@ public final class RenameDeclarationLinkedMode extends
 	
     private void enterDialogMode() {
         refactoring.setNewName(getNewName());
-        DocumentChange change = new DocumentChange("Reverting Inline Rename", 
-                namePosition.getDocument());
-        change.setEdit(new MultiTextEdit());
-        for (LinkedPosition lp: linkedPositionGroup.getPositions()) {
-            change.addEdit(new ReplaceEdit(lp.getOffset(), 
-                    lp.getLength(), 
-                    getOriginalName()));
-        }
-        try {
-            change.perform(new NullProgressMonitor());
-        } 
-        catch (CoreException e) {
-            e.printStackTrace();
-        }
+        revertChanges();
         linkedModeModel.exit(NONE);
     }
     
@@ -254,5 +226,47 @@ public final class RenameDeclarationLinkedMode extends
         };
         manager.add(openDialogAction);
     }
+	
+//  private Image image= null;
+//  private Label label= null;
+	
+	private void hideEditorActivity() {
+//      if (viewer instanceof SourceViewer) {
+//      final SourceViewer sourceViewer= (SourceViewer) viewer;
+//      Control viewerControl= sourceViewer.getControl();
+//      if (viewerControl instanceof Composite) {
+//          Composite composite= (Composite) viewerControl;
+//          Display display= composite.getDisplay();
+//
+//          // Flush pending redraw requests:
+//          while (! display.isDisposed() && display.readAndDispatch()) {
+//          }
+//
+//          // Copy editor area:
+//          GC gc= new GC(composite);
+//          Point size;
+//          try {
+//              size= composite.getSize();
+//              image= new Image(gc.getDevice(), size.x, size.y);
+//              gc.copyArea(image, 0, 0);
+//          } finally {
+//              gc.dispose();
+//              gc= null;
+//          }
+//
+//          // Persist editor area while executing refactoring:
+//          label= new Label(composite, SWT.NONE);
+//          label.setImage(image);
+//          label.setBounds(0, 0, size.x, size.y);
+//          label.moveAbove(null);
+//      }
+	}
+	
+	private void unhideEditorActivity() {
+//	    if (label != null)
+//            label.dispose();
+//        if (image != null)
+//            image.dispose();
+	}
 	
 }
