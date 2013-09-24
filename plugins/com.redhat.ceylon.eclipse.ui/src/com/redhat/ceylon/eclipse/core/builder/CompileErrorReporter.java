@@ -45,19 +45,21 @@ final class CompileErrorReporter implements
 		else {
 		    IFile file = getWorkspace().getRoot()
 		            .getFileForLocation(new Path(source.getName()));
-		    if(file != null){
-		        try {
-		            for (IMarker m: file.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, false, DEPTH_ZERO)) {
-		                int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
-		                if (sev==IMarker.SEVERITY_ERROR) {
-		                    return;
-		                }
-		            }
-		        } 
-		        catch (CoreException e) {
-		            e.printStackTrace();
+		    if(file != null) {
+		        if (CeylonBuilder.isCeylon(file)){
+    		        try {
+    		            for (IMarker m: file.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, false, DEPTH_ZERO)) {
+    		                int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
+    		                if (sev==IMarker.SEVERITY_ERROR) {
+    		                    return;
+    		                }
+    		            }
+    		        } 
+    		        catch (CoreException e) {
+    		            e.printStackTrace();
+    		        }
+    		        setupMarker(file, diagnostic);
 		        }
-		        setupMarker(file, diagnostic);
 		    }else{
 		        setupMarker(project, diagnostic);
 		    }
