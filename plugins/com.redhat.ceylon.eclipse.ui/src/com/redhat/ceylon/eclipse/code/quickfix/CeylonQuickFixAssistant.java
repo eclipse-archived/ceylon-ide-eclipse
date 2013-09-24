@@ -204,6 +204,7 @@ public class CeylonQuickFixAssistant {
         if (cu!=null) {
             Node node = findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());
+            int currentOffset = editor.getSelection().getOffset();
             
             RenameDeclarationProposal.add(proposals, file, editor);
             InlineDeclarationProposal.add(proposals, editor);
@@ -213,13 +214,14 @@ public class CeylonQuickFixAssistant {
             ConvertToNamedArgumentsProposal.add(proposals, editor);
         
             addAssignToLocalProposal(file, cu, proposals, node, 
-                    editor.getSelection().getOffset());
+                    currentOffset);
             
             Tree.Declaration decNode = findDeclaration(cu, node);
             addAnnotationProposals(proposals, project, decNode);
             addTypingProposals(proposals, file, cu, node, decNode);
-            addDeclarationProposals(editor, proposals, doc, file, cu, node,
-                    decNode);
+            
+            addDeclarationProposals(editor, proposals, doc, file, cu, 
+                    node, decNode, currentOffset);
             
             addArgumentProposals(proposals, doc, file, node);
             addImportProposals(editor, proposals, file, node);
@@ -283,8 +285,25 @@ public class CeylonQuickFixAssistant {
     private void addDeclarationProposals(CeylonEditor editor,
             Collection<ICompletionProposal> proposals, IDocument doc,
             IFile file, Tree.CompilationUnit cu, Node node,
-            Tree.Declaration decNode) {
+            Tree.Declaration decNode, int currentOffset) {
         
+        if (decNode==null) return;
+        if (decNode.getAnnotationList()!=null) {
+            Integer stopIndex = decNode.getAnnotationList().getStopIndex();
+            if (stopIndex!=null && currentOffset<=stopIndex+1) {
+                return;
+            }
+        }
+        if (decNode instanceof Tree.TypedDeclaration) {
+            Tree.TypedDeclaration tdn = (Tree.TypedDeclaration) decNode;
+            if (tdn.getType()!=null) {
+                Integer stopIndex = tdn.getType().getStopIndex();
+                if (stopIndex!=null && currentOffset<=stopIndex+1) {
+                    return;
+                }
+            }
+        }
+            
         if (decNode instanceof Tree.AttributeDeclaration) {
             AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
             Tree.SpecifierOrInitializerExpression se = attDecNode.getSpecifierOrInitializerExpression(); 
