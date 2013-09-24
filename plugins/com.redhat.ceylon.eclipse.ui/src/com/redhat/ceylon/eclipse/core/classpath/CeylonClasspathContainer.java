@@ -24,6 +24,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonMo
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.util.Arrays.asList;
+import static java.util.Collections.synchronizedSet;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
@@ -33,7 +34,6 @@ import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +136,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
                 
                 // Before scheduling the Build Job, we will wait for the end of the classpath container initialization for 1 minute 
                 final long waitUntil = System.currentTimeMillis() + 60000;
-                Job buildWhenAllContainersAreInitialized = new Job("Waiting for all Ceylon Classpath Containers to be initialized before building project " + p + " ...") {
+                Job buildWhenAllContainersAreInitialized = new Job("Waiting for all dependencies to be initialized before building project " + p + " ...") {
                     @Override
                     protected IStatus run(IProgressMonitor monitor) {
                         if (! CeylonBuilder.allClasspathContainersInitialized()) {
@@ -192,7 +192,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     //private String jdtVersion;
     private IJavaProject javaProject;
     
-    private Set<String> modulesWithSourcesAlreadySearched = Collections.synchronizedSet(new HashSet<String>());
+    private Set<String> modulesWithSourcesAlreadySearched = synchronizedSet(new HashSet<String>());
 
     public IJavaProject getJavaProject() {
         return javaProject;
@@ -256,7 +256,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     };*/
 
     public static void runInitialize(final IPath containerPath, final IJavaProject javaProject) {
-    	Job job = new InitDependenciesJob("Initializing Ceylon dependencies for project " + 
+    	Job job = new InitDependenciesJob("Initializing dependencies for project " + 
     			javaProject.getElementName(), containerPath, javaProject);
     	job.setUser(false);
     	job.setPriority(Job.BUILD);
@@ -266,7 +266,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 
     public void runReconfigure() {
         modulesWithSourcesAlreadySearched.clear();
-    	Job job = new Job("Resolving Ceylon dependencies for project " + 
+    	Job job = new Job("Resolving dependencies for project " + 
                 getJavaProject().getElementName()) {
     	    @Override 
     	    protected IStatus run(IProgressMonitor monitor) {
