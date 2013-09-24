@@ -13,6 +13,7 @@ import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
+import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -24,11 +25,14 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.IUndoManagerExtension;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.link.LinkedModeModel;
+import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -40,6 +44,7 @@ public final class RenameDeclarationLinkedMode extends
     	
 	private IUndoableOperation fStartingUndoOperation;
 	private final RenameRefactoring refactoring;
+	private boolean showPreview = false;
 	
 	public RenameDeclarationLinkedMode(CeylonEditor editor) {
 		super(editor);
@@ -59,6 +64,34 @@ public final class RenameDeclarationLinkedMode extends
 		super.start();
 	}
 
+	public void done() {
+		if (isEnabled()) {
+		    try {
+		        hideEditorActivity();
+		        refactoring.setNewName(getNewName());
+		        revertChanges();
+		        if (showPreview) {
+		            openPreview();
+		        }
+		        else {
+		            new RefactoringExecutionHelper(refactoring,
+		                    RefactoringStatus.WARNING,
+		                    RefactoringSaveHelper.SAVE_ALL,
+		                    editor.getSite().getShell(),
+		                    editor.getSite().getWorkbenchWindow())
+		                .perform(false, true);
+		        }
+		    } 
+		    catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		    finally {
+		        unhideEditorActivity();
+		    }
+		    super.done();
+		}
+	}
+
     private void saveEditorState() {
         //save where we are before opening linked mode
         IUndoManager undoManager = editor.getCeylonSourceViewer().getUndoManager();
@@ -69,28 +102,6 @@ public final class RenameDeclarationLinkedMode extends
             fStartingUndoOperation = operationHistory.getUndoOperation(undoContext);
         }
     }
-
-	public void done() {
-		if (!isEnabled()) return;		
-		try {
-		    hideEditorActivity();
-			refactoring.setNewName(getNewName());
-			revertChanges();
-			new RefactoringExecutionHelper(refactoring,
-					RefactoringStatus.WARNING,
-				    RefactoringSaveHelper.SAVE_ALL,
-				    editor.getSite().getShell(),
-				    editor.getSite().getWorkbenchWindow())
-			    .perform(false, true);
-		} 
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		finally {
-		    unhideEditorActivity();
-		}
-		super.done();
-	}
 
     private void revertChanges()  {
         //undo the change made in the current editor
@@ -178,10 +189,35 @@ public final class RenameDeclarationLinkedMode extends
 		return refactoring.getDeclaration().getName();
 	}
 	
-    private void enterDialogMode() {
+    void enterDialogMode() {
         refactoring.setNewName(getNewName());
         revertChanges();
         linkedModeModel.exit(NONE);
+    }
+    
+    void openPreview() {
+        new RenameRefactoringAction(editor) {
+            @Override
+            public AbstractRefactoring createRefactoring() {
+                return RenameDeclarationLinkedMode.this.refactoring;
+            }
+            @Override
+            public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+                return new RenameWizard((AbstractRefactoring) refactoring) {
+                    @Override
+                    protected void addUserInputPages() {}
+                };
+            }
+        }.run();
+    }
+
+    void openDialog() {
+        new RenameRefactoringAction(editor) {
+            @Override
+            public AbstractRefactoring createRefactoring() {
+                return RenameDeclarationLinkedMode.this.refactoring;
+            }
+        }.run();
     }
     
 	@Override
@@ -191,21 +227,8 @@ public final class RenameDeclarationLinkedMode extends
 	        @Override
 	        public void run() {
 	            enterDialogMode();
-	            new RenameRefactoringAction(editor) {
-	                @Override
-	                public AbstractRefactoring createRefactoring() {
-	                    return RenameDeclarationLinkedMode.this.refactoring;
-	                }
-	                @Override
-	                public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
-	                    return new RenameWizard((AbstractRefactoring) refactoring) {
-	                        @Override
-	                        protected void addUserInputPages() {}
-	                    };
-	                }
-	            }.run();
+	            openPreview();
 	        }
-
 	    };
 	    previewAction.setAccelerator(SWT.CTRL | SWT.CR);
 	    previewAction.setEnabled(true);
@@ -216,12 +239,7 @@ public final class RenameDeclarationLinkedMode extends
             @Override
             public void run() {
                 enterDialogMode();
-                new RenameRefactoringAction(editor) {
-                    @Override
-                    public AbstractRefactoring createRefactoring() {
-                        return RenameDeclarationLinkedMode.this.refactoring;
-                    }
-                }.run();
+                openDialog();
             }
         };
         manager.add(openDialogAction);
@@ -269,4 +287,16 @@ public final class RenameDeclarationLinkedMode extends
 //            image.dispose();
 	}
 	
+	@Override
+    DeleteBlockingExitPolicy createExitPolicy(final IDocument document) {
+        return new DeleteBlockingExitPolicy(document) {
+            @Override
+            public ExitFlags doExit(LinkedModeModel model, VerifyEvent event, int offset, int length) {
+                showPreview = (event.stateMask & SWT.CTRL) != 0
+                                && (event.character == SWT.CR || event.character == SWT.LF);
+                return super.doExit(model, event, offset, length);
+            }
+        };
+    }
+
 }

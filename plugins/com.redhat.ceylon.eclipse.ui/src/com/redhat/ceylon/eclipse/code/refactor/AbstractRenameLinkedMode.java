@@ -47,27 +47,29 @@ public abstract class AbstractRenameLinkedMode {
 
 		@Override
 		public void suspend(LinkedModeModel model) {
-		    editor.setLinkedMode(linkedModeModel);
+		    editor.clearLinkedMode();
 		}
 
 		@Override
 		public void resume(LinkedModeModel model, int flags) {
-		    editor.setLinkedMode(linkedModeModel);
+		    editor.setLinkedMode(linkedModeModel, AbstractRenameLinkedMode.this);
 		}
 	}
 
 	private final class FocusEditingSupport implements IEditingSupport {
         public boolean ownsFocusShell() {
-            if (infoPopup == null)
+            if (infoPopup == null) {
                 return false;
+            }
             if (infoPopup.ownsFocusShell()) {
                 return true;
             }
 
             Shell editorShell= editor.getSite().getShell();
             Shell activeShell= editorShell.getDisplay().getActiveShell();
-            if (editorShell == activeShell)
+            if (editorShell == activeShell) {
                 return true;
+            }
             return false;
         }
 
@@ -126,14 +128,14 @@ public abstract class AbstractRenameLinkedMode {
             linkedModeModel.addGroup(linkedPositionGroup);
             linkedModeModel.forceInstall();
             linkedModeModel.addLinkingListener(new LinkedModeListener());
-            editor.setLinkedMode(linkedModeModel);
+            editor.setLinkedMode(linkedModeModel, this);
             
             LinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
 //            ui.setExitPosition(viewer, offset, 0, Integer.MAX_VALUE);
             ui.setExitPosition(viewer, offset, 0, LinkedPositionGroup.NO_STOP);
-            ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
+            ui.setExitPolicy(createExitPolicy(document));
             ui.enter();
-
+            
 //            viewer.setSelectedRange(fOriginalSelection.x, fOriginalSelection.y); // by default, full word is selected; restore original selection
             
             if (viewer instanceof IEditingSupportRegistry) {
@@ -148,6 +150,10 @@ public abstract class AbstractRenameLinkedMode {
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
+    }
+
+    DeleteBlockingExitPolicy createExitPolicy(final IDocument document) {
+        return new DeleteBlockingExitPolicy(document);
     }
 
 	protected abstract void addLinkedPositions(IDocument document, 
@@ -179,7 +185,7 @@ public abstract class AbstractRenameLinkedMode {
 
     private void linkedModeLeft() {
     	CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
-        editor.setLinkedMode(null);
+        editor.clearLinkedMode();
 
 //        if (linkedModeModel != null) {
 //            linkedModeModel.exit(ILinkedModeListener.NONE);
