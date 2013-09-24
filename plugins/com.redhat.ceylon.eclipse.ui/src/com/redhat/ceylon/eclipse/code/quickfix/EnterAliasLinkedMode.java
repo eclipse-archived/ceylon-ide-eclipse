@@ -99,7 +99,8 @@ class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
 
 	@Override
 	public String getHintTemplate() {
-		return "Enter alias for '" + dec.getName() + "' {0}";
+		return "Enter alias for " + linkedPositionGroup.getPositions().length + 
+		        " occurrences of '" + dec.getName() + "' {0}";
 	}
 
 	@Override
