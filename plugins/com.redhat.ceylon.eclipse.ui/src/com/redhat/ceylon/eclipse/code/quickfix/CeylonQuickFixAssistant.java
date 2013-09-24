@@ -224,7 +224,7 @@ public class CeylonQuickFixAssistant {
                     node, decNode, currentOffset);
             
             addArgumentProposals(proposals, doc, file, node);
-            addImportProposals(editor, proposals, file, node);
+            addImportProposals(editor, cu, proposals, file, node);
             
             Tree.Statement statement = findStatement(cu, node);
             addConvertToIfElseProposal(doc, proposals, file, statement);
@@ -364,8 +364,43 @@ public class CeylonQuickFixAssistant {
         
     }
 
-    private void addImportProposals(CeylonEditor editor,
+    private void addImportProposals(CeylonEditor editor, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file, Node node) {
+        
+        class FindImportVisitor extends Visitor {
+            private Declaration declaration;
+            Tree.ImportMemberOrType result;
+            FindImportVisitor(Declaration dec) {
+                this.declaration = dec;
+            }
+            @Override
+            public void visit(Tree.Declaration that) {}
+            @Override
+            public void visit(Tree.ImportMemberOrType that) {
+                super.visit(that);
+                if (that.getDeclarationModel()!=null &&
+                        that.getDeclarationModel().equals(declaration)) {
+                    result = that;
+                }
+            }
+        }
+        if (node instanceof Tree.MemberOrTypeExpression) {
+            Declaration declaration = ((Tree.MemberOrTypeExpression) node).getDeclaration();
+            if (declaration!=null) {
+                FindImportVisitor visitor = new FindImportVisitor(declaration);
+                visitor.visit(cu);
+                node = visitor.result;
+            }
+        }
+        else if (node instanceof Tree.SimpleType) {
+            Declaration declaration = ((Tree.SimpleType) node).getDeclarationModel();
+            if (declaration!=null) {
+                FindImportVisitor visitor = new FindImportVisitor(declaration);
+                visitor.visit(cu);
+                node = visitor.result;
+            }
+        }
+            
         if (node instanceof Tree.ImportMemberOrType) {
             Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
             Declaration dec = imt.getDeclarationModel();
