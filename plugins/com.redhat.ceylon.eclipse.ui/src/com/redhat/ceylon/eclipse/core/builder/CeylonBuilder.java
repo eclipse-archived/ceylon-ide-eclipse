@@ -1563,9 +1563,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             js_outRepo = modulesOutputDir.getAbsolutePath();
         }
 
-        // Don't stop compiling when encountering errors
-        options.add("-continue");
-        
         List<File> javaSourceFiles = new ArrayList<File>();
         List<File> sourceFiles = new ArrayList<File>();
         List<File> moduleFiles = new ArrayList<File>();
@@ -1589,6 +1586,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         if ((!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) && 
                 compileToJava(project)) {
+            // For Java don't stop compiling when encountering errors
+            options.add("-continue");
             // always add the java files, otherwise ceylon code won't see them 
             // and they won't end up in the archives (src/car)
             sourceFiles.addAll(javaSourceFiles);
