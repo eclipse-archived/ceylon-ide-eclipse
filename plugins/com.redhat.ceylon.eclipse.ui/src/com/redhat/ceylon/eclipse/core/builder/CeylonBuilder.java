@@ -211,6 +211,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
     private final static Map<IProject, List<IFile>> projectSources = new HashMap<IProject, List<IFile>>();
     private static Set<IProject> containersInitialized = new HashSet<IProject>();
+    private final static Map<IProject, RepositoryManager> projectRepositoryManagers = new HashMap<IProject, RepositoryManager>();
 
     public static final String CEYLON_CONSOLE= "Ceylon Build";
     //private long startTime;
@@ -1365,6 +1366,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     	modelStates.put(project, ModelState.Parsing);
     	typeCheckers.remove(project);
+        projectRepositoryManagers.remove(project);
     	projectSources.remove(project);
         
         SubMonitor monitor = SubMonitor.convert(mon,
@@ -1466,14 +1468,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
             });
 		
-		RepositoryManager repositoryManager = repoManager()
-		        .offline(CeylonProjectConfig.get(project).isOffline())
-		        .cwd(project.getLocation().toFile())
-		        .systemRepo(getInterpolatedCeylonSystemRepo(project))
-		        .extraUserRepos(getReferencedProjectsOutputRepositories(project))
-		        .logger(new EclipseLogger())
-                .isJDKIncluded(true)
-		        .buildManager();
+		RepositoryManager repositoryManager = getProjectRepositoryManager(project);
 		
         typeCheckerBuilder.setRepositoryManager(repositoryManager);
         TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
@@ -2123,11 +2118,29 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static RepositoryManager getProjectRepositoryManager(IProject project) {
-        TypeChecker typeChecker = getProjectTypeChecker(project);
-        if (typeChecker == null) {
-            return null;
+        RepositoryManager repoManager = projectRepositoryManagers.get(project);
+        if (repoManager == null) {
+            try {
+                repoManager = resetProjectRepositoryManager(project);
+            } catch(CoreException e) {
+                e.printStackTrace();
+            }
         }
-        return typeChecker.getContext().getRepositoryManager();
+        return repoManager;
+    }
+    
+    public static RepositoryManager resetProjectRepositoryManager(IProject project) throws CoreException {
+        RepositoryManager repositoryManager = repoManager()
+                .offline(CeylonProjectConfig.get(project).isOffline())
+                .cwd(project.getLocation().toFile())
+                .systemRepo(getInterpolatedCeylonSystemRepo(project))
+                .extraUserRepos(getReferencedProjectsOutputRepositories(project))
+                .logger(new EclipseLogger())
+                .isJDKIncluded(true)
+                .buildManager();
+
+        projectRepositoryManagers.put(project, repositoryManager);
+        return repositoryManager;
     }
     
     public static Iterable<IProject> getProjects() {
@@ -2143,6 +2156,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         projectSources.remove(project);
         modelStates.remove(project);
         containersInitialized.remove(project);
+        projectRepositoryManagers.remove(project);
         CeylonProjectConfig.remove(project);
         JavaProjectStateMirror.cleanup(project);
     }
