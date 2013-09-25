@@ -1563,6 +1563,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             js_outRepo = modulesOutputDir.getAbsolutePath();
         }
 
+        // Don't stop compiling when encountering errors
+        options.add("-continue");
+        
         List<File> javaSourceFiles = new ArrayList<File>();
         List<File> sourceFiles = new ArrayList<File>();
         List<File> moduleFiles = new ArrayList<File>();
