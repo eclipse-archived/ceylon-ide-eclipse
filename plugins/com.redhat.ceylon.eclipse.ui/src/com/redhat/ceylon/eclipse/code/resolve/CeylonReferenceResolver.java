@@ -8,6 +8,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
@@ -138,6 +139,15 @@ public class CeylonReferenceResolver {
         }
         else if (node instanceof Tree.MetaLiteral) {
             return ((Tree.MetaLiteral) node).getDeclaration();
+        }
+        else if (node instanceof Tree.DocLink) {
+            DocLink docLink = (Tree.DocLink) node;
+            if (docLink.getQualified()!=null) {
+                return docLink.getQualified();
+            }
+            else {
+                return docLink.getBase();
+            }
         }
         else {
             return null;
