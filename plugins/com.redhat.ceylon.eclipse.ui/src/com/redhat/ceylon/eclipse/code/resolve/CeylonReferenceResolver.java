@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
+import java.util.List;
+
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
@@ -142,8 +144,9 @@ public class CeylonReferenceResolver {
         }
         else if (node instanceof Tree.DocLink) {
             DocLink docLink = (Tree.DocLink) node;
-            if (docLink.getQualified()!=null) {
-                return docLink.getQualified();
+            List<Declaration> qualified = docLink.getQualified();
+            if (qualified!=null && !qualified.isEmpty()) {
+                return qualified.get(qualified.size()-1);
             }
             else {
                 return docLink.getBase();
