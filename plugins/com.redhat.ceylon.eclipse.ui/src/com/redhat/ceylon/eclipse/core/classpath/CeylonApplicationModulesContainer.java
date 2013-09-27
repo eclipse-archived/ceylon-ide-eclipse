@@ -73,117 +73,11 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
  */
-public class CeylonClasspathContainer implements IClasspathContainer {
-
-    private static final class InitDependenciesJob extends Job {
-        
-        private final IPath containerPath;
-        private final IJavaProject javaProject;
-
-        private InitDependenciesJob(String name, IPath containerPath,
-                IJavaProject javaProject) {
-            super(name);
-            this.containerPath = containerPath;
-            this.javaProject = javaProject;
-        }
-
-        @Override 
-        protected IStatus run(IProgressMonitor monitor) {			
-        	try {
-        		
-        		IClasspathContainer c = getClasspathContainer(containerPath, javaProject);
-        		CeylonClasspathContainer container;
-        		if (c instanceof CeylonClasspathContainer) {
-        			container = (CeylonClasspathContainer) c;
-        		} 
-        		else {
-        			IClasspathEntry entry = getCeylonClasspathEntry(containerPath, javaProject);
-        			IClasspathAttribute[] attributes = entry == null ? 
-        					new IClasspathAttribute[0] : entry.getExtraAttributes();
-        			if (c == null) {
-        				container = new CeylonClasspathContainer(javaProject, containerPath,
-        						new IClasspathEntry[0], attributes);
-        			} 
-        			else {
-        				// this might be the persisted one: reuse the persisted entries
-        				container = new CeylonClasspathContainer(javaProject, containerPath, 
-        						c.getClasspathEntries(), attributes);
-        			}                    
-        		}
-
-        		boolean changed = container.resolveClasspath(monitor, true);
-            	if(changed) {
-            		container.refreshClasspathContainer(monitor, javaProject);
-            	}
-
-            	// Schedule a build of the project :
-                //   - with referenced projects
-                //   - with referencing projects (TODO : not sure it's really useful
-                //        in the context of the project initialization, 
-                //        but let's not change for the moment)
-                //   - and don't rebuild if the model is already typechecked
-
-                final IProject p = javaProject.getProject();
-                final Job buildJob = new BuildProjectAfterClasspathChangeJob("Initial build of project " + 
-                        p.getName(), p, true, true, false);
-                buildJob.setRule(p.getWorkspace().getRoot());
-                buildJob.setPriority(Job.BUILD);
-                
-                // Before scheduling the Build Job, we will wait for the end of the classpath container initialization for 1 minute 
-                final long waitUntil = System.currentTimeMillis() + 60000;
-                Job buildWhenAllContainersAreInitialized = new Job("Waiting for all dependencies to be initialized before building project " + p + " ...") {
-                    @Override
-                    protected IStatus run(IProgressMonitor monitor) {
-                        if (! CeylonBuilder.allClasspathContainersInitialized()) {
-                            if (System.currentTimeMillis() < waitUntil) {
-                                // System.out.println("Waiting 1 seconde more for classpath container initialization before building project " + p + " ...");
-                                schedule(1000);
-                                return Status.OK_STATUS;
-                            }
-                            else {
-                                // System.out.println("All the classpath containers are not initialized after 1 minute, so build project " + p + " anymway !");
-                            }
-                        }
-
-                        boolean shouldSchedule = true;
-                        for (Job job : getJobManager().find(buildJob)) {
-                            if (job.getState() == Job.WAITING) {
-                                // System.out.println("A build of project " + p + " is already scheduled. Finally don't schedule a new one after all classpath containers have been initialized");
-                                shouldSchedule = false;
-                                break;
-                            }
-                        }
-                            
-                            
-                        if (shouldSchedule) {
-                            // System.out.println("Scheduling build of project " + p + " after all classpath containers have been initialized");
-                            buildJob.schedule();
-                        }   
-                        return Status.OK_STATUS;
-                    }
-                };
-                
-                buildWhenAllContainersAreInitialized.setPriority(BUILD);
-                buildWhenAllContainersAreInitialized.setSystem(true);
-                buildWhenAllContainersAreInitialized.schedule(3000);
-
-                CeylonBuilder.setContainerInitialized(p);
-        		return Status.OK_STATUS;
-        		
-        	} 
-        	catch (JavaModelException ex) {
-        		// unless there are issues with the JDT, this should never happen
-        		return new Status(IStatus.ERROR, PLUGIN_ID,
-        				"could not get container", ex);
-        	}
-        }
-        
-    }
+public class CeylonApplicationModulesContainer implements IClasspathContainer {
 
     public static final String CONTAINER_ID = PLUGIN_ID + ".cpcontainer.CEYLON_CONTAINER";
 
@@ -207,7 +101,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
      */
     private IClasspathAttribute[] attributes = new IClasspathAttribute[0];
 
-    public CeylonClasspathContainer(IJavaProject javaProject, IPath path,
+    public CeylonApplicationModulesContainer(IJavaProject javaProject, IPath path,
             IClasspathEntry[] classpathEntries, IClasspathAttribute[] attributes) {
         this.path = path;
         this.attributes = attributes; 
@@ -215,14 +109,14 @@ public class CeylonClasspathContainer implements IClasspathContainer {
         this.javaProject = javaProject;
     }
 
-    public CeylonClasspathContainer(IProject project) {
+    public CeylonApplicationModulesContainer(IProject project) {
 		javaProject = JavaCore.create(project);
-		path = new Path(CeylonClasspathContainer.CONTAINER_ID + "/default");
+		path = new Path(CeylonApplicationModulesContainer.CONTAINER_ID + "/default");
 		classpathEntries = new IClasspathEntry[0];
 		attributes = new IClasspathAttribute[0];
     }
     
-    public CeylonClasspathContainer(CeylonClasspathContainer cp) {
+    public CeylonApplicationModulesContainer(CeylonApplicationModulesContainer cp) {
         path = cp.path;
         javaProject = cp.javaProject;        
         classpathEntries = cp.classpathEntries;
@@ -230,7 +124,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     }
 
     public String getDescription() {
-        return "Ceylon Modules";
+        return "Ceylon Application Modules";
     }
 
     public int getKind() {
@@ -254,15 +148,6 @@ public class CeylonClasspathContainer implements IClasspathContainer {
             return rule == this;
         }
     };*/
-
-    public static void runInitialize(final IPath containerPath, final IJavaProject javaProject) {
-    	Job job = new InitDependenciesJob("Initializing dependencies for project " + 
-    			javaProject.getElementName(), containerPath, javaProject);
-    	job.setUser(false);
-    	job.setPriority(Job.BUILD);
-    	job.setRule(getWorkspace().getRoot());
-    	job.schedule();
-    }
 
     public void runReconfigure() {
         modulesWithSourcesAlreadySearched.clear();
@@ -290,7 +175,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
     	            
     	    		boolean changed = resolveClasspath(monitor, false);
     	        	if(changed) {
-    	        		refreshClasspathContainer(monitor, javaProject);
+    	        		refreshClasspathContainer(monitor);
     	        	}
     	    		
     	            // Rebuild the project :
@@ -407,9 +292,8 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 		
 	}
 
-	public void refreshClasspathContainer(IProgressMonitor monitor,
-			IJavaProject javaProject) throws JavaModelException {
-		setClasspathContainer(path, new IJavaProject[] {javaProject},
+	public void refreshClasspathContainer(IProgressMonitor monitor) throws JavaModelException {
+		setClasspathContainer(path, new IJavaProject[] { getJavaProject() },
 				new IClasspathContainer[] {this}, new SubProgressMonitor(monitor, 1));
 		//update the package manager UI
 		new Job("update package manager") {
@@ -435,6 +319,7 @@ public class CeylonClasspathContainer implements IClasspathContainer {
 			if (name.equals(Module.DEFAULT_MODULE_NAME) ||
 					JDKUtils.isJDKModule(name) ||
 					JDKUtils.isOracleJDKModule(name) ||
+                    module.equals(module.getLanguageModule()) ||
 					isProjectModule(javaProject, module)) {
 				continue;
 			}

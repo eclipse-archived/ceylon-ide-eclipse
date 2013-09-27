@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.swt.widgets.Display;
@@ -40,7 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesContainer;
 
 public class Utils {
 
@@ -173,7 +174,7 @@ public class Utils {
         private int kind;
         private Map args;
         private IProject project;
-        private Collection<CeylonClasspathContainer> resolvedCpContainers;
+        private Collection<IClasspathContainer> resolvedCpContainers;
         private boolean cpContainersSetAndRefreshed = false;
         private boolean fullBuild = false;
         private boolean ceylonModelParsedDuringFullBuild = false;
@@ -225,7 +226,7 @@ public class Utils {
         }
         
         protected void resolvingClasspathContainer(
-                List<CeylonClasspathContainer> cpContainers) {
+                List<IClasspathContainer> cpContainers) {
             summaryToFill.resolvedCpContainers = cpContainers;
         }
         protected void setAndRefreshClasspathContainer() {
@@ -324,7 +325,7 @@ public class Utils {
             return resolvedCpContainers != null;
         }
 
-        public final Collection<CeylonClasspathContainer> getResolvedCpContainers() {
+        public final Collection<IClasspathContainer> getResolvedCpContainers() {
             return resolvedCpContainers;
         }
 
