@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
-import java.io.BufferedReader;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,11 +16,12 @@ import javax.lang.model.element.NestingKind;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
+import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 
 //This is bullshit. The IDE should have a nice way of converting
 //compilation units into objects that can be shown in the problems
@@ -34,7 +36,6 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
     private final IProject project;
     private final JavaFileObject jf;
     private final IFile file;
-    private int spos=-1, epos=-1;
 
     public CeylonCompilationError(IProject proj, AnalysisMessage error) {
         err = error;
@@ -123,45 +124,38 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
     public JavaFileObject getSource() {
         return jf;
     }
-
-    private void calculatePositions() {
-        int ln = 1;
-        try (BufferedReader reader = new BufferedReader(new java.io.InputStreamReader(file.getContents()))) {
-            String line = reader.readLine();
-            while (ln < err.getLine()) {
-                spos += line.length()+1;
-                ln++;
-                line = reader.readLine();
-            }
-            spos += err.getTreeNode().getToken().getCharPositionInLine()+1;
-            epos = spos + err.getTreeNode().getToken().getText().length();
-        } catch (IOException|CoreException ex) {
-            ex.printStackTrace();
-        }
-    }
-
+    
     @Override
     public long getPosition() {
-        if (spos < 0) {
-            calculatePositions();
-        }
-        return spos;
+        return getStartPosition();
     }
 
     @Override
     public long getStartPosition() {
-        if (spos < 0) {
-            calculatePositions();
+        int startOffset = 0;
+        Node errorNode = getIdentifyingNode(err.getTreeNode());
+        if (errorNode == null) {
+            errorNode = err.getTreeNode();
         }
-        return spos;
+        Token token = errorNode.getToken();
+        if (token!=null) {
+            startOffset = errorNode.getStartIndex();
+        }
+        return startOffset;
     }
 
     @Override
     public long getEndPosition() {
-        if (epos < 0) {
-            calculatePositions();
+        int endOffset = 0;
+        Node errorNode = getIdentifyingNode(err.getTreeNode());
+        if (errorNode == null) {
+            errorNode = err.getTreeNode();
         }
-        return epos;
+        Token token = errorNode.getToken();
+        if (token!=null) {
+            endOffset = errorNode.getStopIndex()+1;
+        }
+        return endOffset;
     }
 
     @Override
@@ -171,7 +165,16 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
 
     @Override
     public long getColumnNumber() {
-        return err.getTreeNode().getToken().getCharPositionInLine();
+        int startCol = 0;
+        Node errorNode = getIdentifyingNode(err.getTreeNode());
+        if (errorNode == null) {
+            errorNode = err.getTreeNode();
+        }
+        Token token = errorNode.getToken();
+        if (token!=null) {
+            startCol = token.getCharPositionInLine();
+        }
+        return startCol;
     }
 
     @Override
