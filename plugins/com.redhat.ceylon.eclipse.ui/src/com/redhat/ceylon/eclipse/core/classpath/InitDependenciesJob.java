@@ -4,10 +4,13 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -15,6 +18,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 public class InitDependenciesJob extends Job {
     
     private final CeylonProjectModulesContainer container;
+    private boolean retriedAfterAddingTheLanguageModuleEntry = false; 
 
     public InitDependenciesJob(String name, CeylonProjectModulesContainer container) {
         super(name);
@@ -24,8 +28,29 @@ public class InitDependenciesJob extends Job {
     @Override 
     protected IStatus run(IProgressMonitor monitor) {			
     	try {
+    	    final IJavaProject javaProject = container.getJavaProject();
+            final IProject project = javaProject.getProject();
+            
+    	    boolean languageModuleContainerFound = false;
+            IClasspathEntry[] entries = javaProject.getRawClasspath();
+            for (int i = 0; i < entries.length; i++) {
+                IClasspathEntry entry = entries[i];
+                if (entry != null && entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER) {
+                    if (CeylonClasspathUtil.isLanguageModuleClasspathContainer(entry.getPath())) {
+                        languageModuleContainerFound = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!languageModuleContainerFound && !retriedAfterAddingTheLanguageModuleEntry) {
+                retriedAfterAddingTheLanguageModuleEntry = true;
+                new CeylonLanguageModuleContainer(project).install();
+                schedule(1000);
+                return Status.OK_STATUS;
+            }
+            
     		boolean changed = container.resolveClasspath(monitor, true);
-
     		if(changed) {
         		container.refreshClasspathContainer(monitor);
         	}
@@ -37,32 +62,31 @@ public class InitDependenciesJob extends Job {
             //        but let's not change for the moment)
             //   - and don't rebuild if the model is already typechecked
 
-            final IProject p = container.getJavaProject().getProject();
             final Job buildJob = new BuildProjectAfterClasspathChangeJob("Initial build of project " + 
-                    p.getName(), p, true, true, false);
-            buildJob.setRule(p.getWorkspace().getRoot());
+                    project.getName(), project, true, true, false);
+            buildJob.setRule(project.getWorkspace().getRoot());
             buildJob.setPriority(Job.BUILD);
             
-            // Before scheduling the Build Job, we will wait for the end of the classpath container initialization for 1 minute 
-            final long waitUntil = System.currentTimeMillis() + 60000;
-            Job buildWhenAllContainersAreInitialized = new Job("Waiting for all dependencies to be initialized before building project " + p + " ...") {
+            // Before scheduling the Build Job, we will wait for the end of the classpath container initialization for 2 minutes 
+            final long waitUntil = System.currentTimeMillis() + 120000;
+            Job buildWhenAllContainersAreInitialized = new Job("Waiting for all dependencies to be initialized before building project " + project + " ...") {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     if (! CeylonBuilder.allClasspathContainersInitialized()) {
                         if (System.currentTimeMillis() < waitUntil) {
-                            System.out.println("Waiting 1 seconde more for classpath container initialization before building project " + p + " ...");
+                            System.out.println("Waiting 1 seconde more for classpath container initialization before building project " + project + " ...");
                             schedule(1000);
                             return Status.OK_STATUS;
                         }
                         else {
-                            System.out.println("All the classpath containers are not initialized after 1 minute, so build project " + p + " anymway !");
+                            System.out.println("All the classpath containers are not initialized after 1 minute, so build project " + project + " anyway !");
                         }
                     }
 
                     boolean shouldSchedule = true;
                     for (Job job : getJobManager().find(buildJob)) {
                         if (job.getState() == Job.WAITING) {
-                            System.out.println("A build of project " + p + " is already scheduled. Finally don't schedule a new one after all classpath containers have been initialized");
+                            System.out.println("A build of project " + project + " is already scheduled. Finally don't schedule a new one after all classpath containers have been initialized");
                             shouldSchedule = false;
                             break;
                         }
@@ -70,7 +94,7 @@ public class InitDependenciesJob extends Job {
             
             
                     if (shouldSchedule) {
-                        System.out.println("Scheduling build of project " + p + " after all classpath containers have been initialized");
+                        System.out.println("Scheduling build of project " + project + " after all classpath containers have been initialized");
                         buildJob.schedule();
                     }   
                     return Status.OK_STATUS;
@@ -81,7 +105,7 @@ public class InitDependenciesJob extends Job {
             buildWhenAllContainersAreInitialized.setSystem(true);
             buildWhenAllContainersAreInitialized.schedule(3000);
 
-            CeylonBuilder.setContainerInitialized(p);
+            CeylonBuilder.setContainerInitialized(project);
     		return Status.OK_STATUS;
     		
     	} 
