@@ -1,13 +1,11 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring.LINK_PATTERN;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -97,7 +95,7 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                 protected void visitIt(Tree.Identifier id, Declaration dec) {
                     visitIt(id.getText(), id.getStartIndex(), dec);
                 }
-                protected void visitIt(String name, Integer offset, Declaration dec) {
+                protected void visitIt(String name, int offset, Declaration dec) {
                     if (dec!=null && dec.getQualifiedNameString()
                             .equals(getQualifiedName(javaDeclaration)) &&
                             name.equals(javaDeclaration.getElementName())) {
@@ -122,20 +120,29 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                 public void visit(DocLink that) {
                     super.visit(that);
                     //TODO: fix copy/paste from RenameRefactoring
-                    Matcher m = LINK_PATTERN.matcher(that.getToken().getText());
-                    while (m.find()) {
-                        Declaration base = that.getBase();
-                        Declaration qualified = that.getQualified();
-                        Integer offset = that.getStartIndex();
-                        if (base!=null) {
-                            String tgroup = m.group(5);
-                            int tloc = m.start(5);
-                            visitIt(tgroup, offset+tloc, base);
-                        }
+                    String text = that.getText();
+                    int scopeIndex = text.indexOf("::");
+                    int start = scopeIndex<0 ? 0 : scopeIndex+2;
+                    Integer offset = that.getStartIndex();
+                    Declaration base = that.getBase();
+                    if (base!=null) {
+                        int index = text.indexOf('.', start);
+                        String name = index<0 ? 
+                                text.substring(start) : 
+                                text.substring(start, index);
+                        visitIt(name, offset+start, base);
+                        start = index;
+                        int i=0;
+                        List<Declaration> qualified = that.getQualified();
                         if (qualified!=null) {
-                            String mgroup = m.group(7);
-                            int mloc = m.start(7);
-                            visitIt(mgroup, offset+mloc, qualified);
+                            while (start>0 && i<qualified.size()) {
+                                index = text.indexOf('.', start);
+                                name = index<0 ? 
+                                        text.substring(start) : 
+                                        text.substring(start, index);
+                                visitIt(name, offset+start, qualified.get(i++));
+                                start = index;
+                            }
                         }
                     }
                 }

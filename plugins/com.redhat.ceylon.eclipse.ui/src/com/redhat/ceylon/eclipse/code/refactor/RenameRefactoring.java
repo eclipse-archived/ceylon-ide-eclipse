@@ -6,8 +6,6 @@ import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningSt
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -27,13 +25,12 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class RenameRefactoring extends AbstractRefactoring {
     
-	static final Pattern LINK_PATTERN =  Pattern.compile("\\[\\[([^\"`|\\[\\]]*\\|)?(((\\w|\\.)+)::)?(\\w+)(\\.(\\w+))?\\]\\]");
-
     private static class FindReferencesVisitor extends FindReferenceVisitor {
         private FindReferencesVisitor(Declaration declaration) {
             super(declaration);
@@ -84,14 +81,37 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public int getCount() {
 	    return declaration==null ? 0 : countDeclarationOccurrences();
 	}
+	
+	class FindDocLinkReferencesVisitor extends Visitor {
+	    private Declaration declaration;
+        int count;
+        FindDocLinkReferencesVisitor(Declaration declaration) {
+            this.declaration = declaration;
+	    }
+	    @Override
+	    public void visit(DocLink that) {
+	        if (that.getBase()!=null) {
+	            if (that.getBase().equals(declaration)) {
+	                count++;
+	            }
+	            else if (that.getQualified()!=null) {
+	                if (that.getQualified().contains(declaration)) {
+	                    count++;
+	                }
+	            }
+	        }
+	    }
+	}
 
 	@Override
 	int countReferences(Tree.CompilationUnit cu) {
         FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
         FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
+        FindDocLinkReferencesVisitor fdlrv = new FindDocLinkReferencesVisitor(frv.getDeclaration());
         cu.visit(frv);
         cu.visit(fdv);
-        return frv.getNodes().size() + fdv.getDeclarationNodes().size();
+        cu.visit(fdlrv);
+        return frv.getNodes().size() + fdv.getDeclarationNodes().size() + fdlrv.count;
 	}
 
 	public String getName() {
@@ -166,22 +186,36 @@ public class RenameRefactoring extends AbstractRefactoring {
     public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
         final List<Region> result = new ArrayList<Region>();
         new Visitor() {
+            private void visitIt(String name, int offset, Declaration dec) {
+                if (dec!=null && dec.equals(declaration)) {
+                    result.add(new Region(offset, name.length()));
+                }
+            }
             @Override
             public void visit(Tree.DocLink that) {
-                Matcher m = LINK_PATTERN.matcher(that.getToken().getText());
-                while (m.find()) {
-                    Declaration base = that.getBase();
-                    Declaration qualified = that.getQualified();
-                    Integer offset = that.getStartIndex();
-                    if (base!=null && base.equals(declaration)) {
-                        String tgroup = m.group(5);
-                        int tloc = m.start(5);
-                        result.add(new Region(offset+tloc, tgroup.length()));
-                    }
-                    if (qualified!=null && qualified.equals(declaration)) {
-                        String mgroup = m.group(7);
-                        int mloc = m.start(7);
-                        result.add(new Region(offset+mloc, mgroup.length()));
+                String text = that.getText();
+                int scopeIndex = text.indexOf("::");
+                int start = scopeIndex<0 ? 0 : scopeIndex+2;
+                Integer offset = that.getStartIndex();
+                Declaration base = that.getBase();
+                if (base!=null) {
+                    int index = text.indexOf('.', start);
+                    String name = index<0 ? 
+                            text.substring(start) : 
+                            text.substring(start, index);
+                    visitIt(name, offset+start, base);
+                    start = index+1;
+                    int i=0;
+                    List<Declaration> qualified = that.getQualified();
+                    if (qualified!=null) {
+                        while (start>0 && i<qualified.size()) {
+                            index = text.indexOf('.', start);
+                            name = index<0 ? 
+                                    text.substring(start) : 
+                                    text.substring(start, index);
+                            visitIt(name, offset+start, qualified.get(i++));
+                            start = index+1;
+                        }
                     }
                 }
             }
