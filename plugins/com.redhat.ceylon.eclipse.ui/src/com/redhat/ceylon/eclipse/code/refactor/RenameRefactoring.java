@@ -24,18 +24,15 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.StringLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class RenameRefactoring extends AbstractRefactoring {
     
-	static final String LINK_PATTERN = "\\[\\[([^\"`|\\[\\]]*\\|)?(((\\w|\\.)+)::)?(\\w+)(\\.(\\w+))?\\]\\]";
+	static final Pattern LINK_PATTERN =  Pattern.compile("\\[\\[([^\"`|\\[\\]]*\\|)?(((\\w|\\.)+)::)?(\\w+)(\\.(\\w+))?\\]\\]");
 
     private static class FindReferencesVisitor extends FindReferenceVisitor {
         private FindReferencesVisitor(Declaration declaration) {
@@ -167,36 +164,24 @@ public class RenameRefactoring extends AbstractRefactoring {
     }
     
     public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
-        final Pattern wikiRef = Pattern.compile(LINK_PATTERN);
         final List<Region> result = new ArrayList<Region>();
         new Visitor() {
             @Override
-            public void visit(StringLiteral that) {
-                super.visit(that);
-                Matcher m = wikiRef.matcher(that.getToken().getText());
+            public void visit(Tree.DocLink that) {
+                Matcher m = LINK_PATTERN.matcher(that.getToken().getText());
                 while (m.find()) {
-                    String pgroup = m.group(3);
-                    String tgroup = m.group(5); int tloc = m.start(5);
-                    String mgroup = m.group(7); int mloc = m.start(7);
-                    Declaration base;
-                    if (pgroup==null) {
-                        base = that.getScope().getMemberOrParameter(that.getUnit(), 
-                                tgroup, null, false);
-                    }
-                    else {
-                        Package pack = that.getUnit().getPackage().getModule()
-                                .getPackage(pgroup);
-                        base = pack==null ? null : pack.getDirectMember(tgroup, null, false);
-                    }
+                    Declaration base = that.getBase();
+                    Declaration qualified = that.getQualified();
                     Integer offset = that.getStartIndex();
                     if (base!=null && base.equals(declaration)) {
+                        String tgroup = m.group(5);
+                        int tloc = m.start(5);
                         result.add(new Region(offset+tloc, tgroup.length()));
                     }
-                    if (base instanceof TypeDeclaration && mgroup!=null) {
-                        Declaration qualified = ((TypeDeclaration) base).getMember(mgroup, null, false);
-                        if (qualified!=null && qualified.equals(declaration)) {
-                            result.add(new Region(offset+mloc, mgroup.length()));
-                        }
+                    if (qualified!=null && qualified.equals(declaration)) {
+                        String mgroup = m.group(7);
+                        int mloc = m.start(7);
+                        result.add(new Region(offset+mloc, mgroup.length()));
                     }
                 }
             }
