@@ -14,9 +14,9 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public class InitDependenciesJob extends Job {
     
-    private final CeylonApplicationModulesContainer container;
+    private final CeylonProjectModulesContainer container;
 
-    public InitDependenciesJob(String name, CeylonApplicationModulesContainer container) {
+    public InitDependenciesJob(String name, CeylonProjectModulesContainer container) {
         super(name);
         this.container = container;
     }

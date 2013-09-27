@@ -41,7 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 
 public class Utils {
 

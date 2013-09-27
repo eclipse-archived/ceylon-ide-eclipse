@@ -3,8 +3,8 @@ package com.redhat.ceylon.eclipse.core.launch;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesContainer.getModuleArchive;
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesContainer.isProjectModule;
+import static com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer.getModuleArchive;
+import static com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer.isProjectModule;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static java.util.Arrays.asList;
 
@@ -36,7 +36,7 @@ import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonLaunchDelegate extends JavaLaunchDelegate {
@@ -176,8 +176,8 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
         final List<String> classpathList = new ArrayList<String>();
         
         for (IClasspathContainer container : getCeylonClasspathContainers(javaProject)) {
-            if (container instanceof CeylonApplicationModulesContainer) {
-                CeylonApplicationModulesContainer applicationModulesContainer = (CeylonApplicationModulesContainer) container;
+            if (container instanceof CeylonProjectModulesContainer) {
+                CeylonProjectModulesContainer applicationModulesContainer = (CeylonProjectModulesContainer) container;
                 boolean changed = applicationModulesContainer.resolveClasspath(new NullProgressMonitor(), false);
                 if(changed) {
                     applicationModulesContainer.refreshClasspathContainer(new NullProgressMonitor());

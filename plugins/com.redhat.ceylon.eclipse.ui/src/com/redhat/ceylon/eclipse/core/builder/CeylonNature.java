@@ -10,7 +10,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
-import com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 
 public class CeylonNature extends ProjectNatureBase {
@@ -64,7 +64,7 @@ public class CeylonNature extends ProjectNatureBase {
         } catch (JavaModelException e) {
             e.printStackTrace();
         }
-        new CeylonApplicationModulesContainer(project).runReconfigure();
+        new CeylonProjectModulesContainer(project).runReconfigure();
     }
     
     protected void refreshPrefs() {

@@ -42,7 +42,7 @@ import com.redhat.ceylon.eclipse.core.classpath.InitDependenciesJob;
  * .classpath file), and then schedule the refresh of the 
  * container.
  */
-public class CeylonApplicationModulesInitializer extends ClasspathContainerInitializer {
+public class CeylonProjectModulesInitializer extends ClasspathContainerInitializer {
 
     /**
      * Initialize the container with the "persisted" classpath 
@@ -51,23 +51,23 @@ public class CeylonApplicationModulesInitializer extends ClasspathContainerIniti
     public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
         int size = containerPath.segmentCount();
         if (size > 0) {
-            if (containerPath.segment(0).equals(CeylonApplicationModulesContainer.CONTAINER_ID)) {
+            if (containerPath.segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID)) {
                 IClasspathContainer c = getClasspathContainer(containerPath, project);
-                CeylonApplicationModulesContainer container;
-                if (c instanceof CeylonApplicationModulesContainer) {
-                    container = (CeylonApplicationModulesContainer) c;
+                CeylonProjectModulesContainer container;
+                if (c instanceof CeylonProjectModulesContainer) {
+                    container = (CeylonProjectModulesContainer) c;
                 } 
                 else {
                     IClasspathEntry entry = getCeylonClasspathEntry(containerPath, project);
                     IClasspathAttribute[] attributes = entry == null ? 
                             new IClasspathAttribute[0] : entry.getExtraAttributes();
                     if (c == null) {
-                        container = new CeylonApplicationModulesContainer(project, containerPath,
+                        container = new CeylonProjectModulesContainer(project, containerPath,
                                 new IClasspathEntry[0], attributes);
                     } 
                     else {
                         // this might be the persisted one: reuse the persisted entries
-                        container = new CeylonApplicationModulesContainer(project, containerPath, 
+                        container = new CeylonProjectModulesContainer(project, containerPath, 
                                 c.getClasspathEntries(), attributes);
                     }                    
                 }
