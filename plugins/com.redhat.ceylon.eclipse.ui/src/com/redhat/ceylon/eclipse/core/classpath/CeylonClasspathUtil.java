@@ -95,8 +95,24 @@ public final class CeylonClasspathUtil {
     }
 
     public static boolean isCeylonClasspathContainer(IPath containerPath) {
-        return containerPath.segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID) ||
-                containerPath.segment(0).equals(CeylonLanguageModuleContainer.CONTAINER_ID);
+        return isLanguageModuleClasspathContainer(containerPath) ||
+                isProjectModulesClasspathContainer(containerPath);
+    }
+
+    public static boolean isLanguageModuleClasspathContainer(IPath containerPath) {
+        int size = containerPath.segmentCount();
+        if (size > 0) {
+            return (containerPath.segment(0).equals(CeylonLanguageModuleContainer.CONTAINER_ID));
+        }
+        return false;
+    }
+
+    public static boolean isProjectModulesClasspathContainer(IPath containerPath) {
+        int size = containerPath.segmentCount();
+        if (size > 0) {
+            return (containerPath.segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID));
+        }
+        return false;        
     }
 
     /**
