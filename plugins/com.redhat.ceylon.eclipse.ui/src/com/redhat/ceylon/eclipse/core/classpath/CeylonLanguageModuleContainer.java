@@ -78,7 +78,7 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
             if (entry.getPath().equals(runtimeEntry.getPath()) ) {
                 containerToReplace = true;
             }
-            if (entry.getPath().segment(0).equals(CeylonApplicationModulesContainer.CONTAINER_ID) ) {
+            if (entry.getPath().segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID) ) {
                 containerToReplace = true;
                 ceylonClasspathEntry = entry;
                 containerToReplace = true;

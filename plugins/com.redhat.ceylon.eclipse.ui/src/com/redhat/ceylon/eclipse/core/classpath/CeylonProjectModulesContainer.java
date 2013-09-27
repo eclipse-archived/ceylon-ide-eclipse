@@ -77,7 +77,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
  */
-public class CeylonApplicationModulesContainer implements IClasspathContainer {
+public class CeylonProjectModulesContainer implements IClasspathContainer {
 
     public static final String CONTAINER_ID = PLUGIN_ID + ".cpcontainer.CEYLON_CONTAINER";
 
@@ -101,7 +101,7 @@ public class CeylonApplicationModulesContainer implements IClasspathContainer {
      */
     private IClasspathAttribute[] attributes = new IClasspathAttribute[0];
 
-    public CeylonApplicationModulesContainer(IJavaProject javaProject, IPath path,
+    public CeylonProjectModulesContainer(IJavaProject javaProject, IPath path,
             IClasspathEntry[] classpathEntries, IClasspathAttribute[] attributes) {
         this.path = path;
         this.attributes = attributes; 
@@ -109,14 +109,14 @@ public class CeylonApplicationModulesContainer implements IClasspathContainer {
         this.javaProject = javaProject;
     }
 
-    public CeylonApplicationModulesContainer(IProject project) {
+    public CeylonProjectModulesContainer(IProject project) {
 		javaProject = JavaCore.create(project);
-		path = new Path(CeylonApplicationModulesContainer.CONTAINER_ID + "/default");
+		path = new Path(CeylonProjectModulesContainer.CONTAINER_ID + "/default");
 		classpathEntries = new IClasspathEntry[0];
 		attributes = new IClasspathAttribute[0];
     }
     
-    public CeylonApplicationModulesContainer(CeylonApplicationModulesContainer cp) {
+    public CeylonProjectModulesContainer(CeylonProjectModulesContainer cp) {
         path = cp.path;
         javaProject = cp.javaProject;        
         classpathEntries = cp.classpathEntries;
@@ -124,7 +124,7 @@ public class CeylonApplicationModulesContainer implements IClasspathContainer {
     }
 
     public String getDescription() {
-        return "Ceylon Application Modules";
+        return "Ceylon Project Modules";
     }
 
     public int getKind() {

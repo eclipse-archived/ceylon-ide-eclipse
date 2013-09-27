@@ -112,7 +112,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
@@ -397,7 +397,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (container instanceof CeylonLanguageModuleContainer) {
                 languageModuleContainerFound = true;
             }
-            if (container instanceof CeylonApplicationModulesContainer) {
+            if (container instanceof CeylonProjectModulesContainer) {
                 applicationModulesContainerFound = true;
             }
         }
@@ -448,8 +448,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (cpContainers != null) {
                 buildHook.resolvingClasspathContainer(cpContainers);
                 for (IClasspathContainer container: cpContainers) {
-                    if (container instanceof CeylonApplicationModulesContainer) {
-                        CeylonApplicationModulesContainer applicationModulesContainer = (CeylonApplicationModulesContainer) container;
+                    if (container instanceof CeylonProjectModulesContainer) {
+                        CeylonProjectModulesContainer applicationModulesContainer = (CeylonProjectModulesContainer) container;
                         boolean changed = applicationModulesContainer.resolveClasspath(monitor, true);
                         if(changed) {
                             buildHook.setAndRefreshClasspathContainer();

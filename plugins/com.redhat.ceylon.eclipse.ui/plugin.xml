@@ -1941,7 +1941,7 @@
         name="Ceylon Application Modules Container"
         point="org.eclipse.jdt.core.classpathContainerInitializer">
         <classpathContainerInitializer
-            class="com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesInitializer"
+            class="com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesInitializer"
             id="com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER">
         </classpathContainerInitializer>
     </extension>
