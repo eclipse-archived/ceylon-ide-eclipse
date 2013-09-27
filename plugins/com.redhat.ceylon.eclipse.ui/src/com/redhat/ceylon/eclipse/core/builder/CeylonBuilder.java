@@ -112,7 +112,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
@@ -343,7 +344,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         protected void startBuild(int kind, @SuppressWarnings("rawtypes") Map args, 
                 IProject javaProject, IBuildConfiguration config, IBuildContext context) {}
         protected void resolvingClasspathContainer(
-                List<CeylonClasspathContainer> cpContainers) {}
+                List<IClasspathContainer> cpContainers) {}
         protected void setAndRefreshClasspathContainer() {}
         protected void dofullBuild() {}
         protected void parseCeylonModel() {}
@@ -387,12 +388,33 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         	}
         }
         
-        List<CeylonClasspathContainer> cpContainers = getCeylonClasspathContainers(javaProject);
+        List<IClasspathContainer> cpContainers = getCeylonClasspathContainers(javaProject);
         
-        if (cpContainers.isEmpty()) {
+        
+        boolean languageModuleContainerFound = false;
+        boolean applicationModulesContainerFound = false;
+        for (IClasspathContainer container : cpContainers) {
+            if (container instanceof CeylonLanguageModuleContainer) {
+                languageModuleContainerFound = true;
+            }
+            if (container instanceof CeylonApplicationModulesContainer) {
+                applicationModulesContainerFound = true;
+            }
+        }
+        if (! languageModuleContainerFound) {
             //if the ClassPathContainer is missing, add an error
             IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
-            marker.setAttribute(IMarker.MESSAGE, "the Ceylon classpath container is not set on the project " + 
+            marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container for the language module is not set on the project " + 
+                    project.getName() + " (try running Enable Ceylon Builder on the project)");
+            marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
+            return project.getReferencedProjects();
+        }
+        if (! applicationModulesContainerFound) {
+            //if the ClassPathContainer is missing, add an error
+            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+            marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container for application modules is not set on the project " + 
                     project.getName() + " (try running Enable Ceylon Builder on the project)");
             marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
             marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
@@ -425,15 +447,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (mustResolveClasspathContainer.value) {
             if (cpContainers != null) {
                 buildHook.resolvingClasspathContainer(cpContainers);
-                for (CeylonClasspathContainer container: cpContainers) {
-                	boolean changed = container.resolveClasspath(monitor, true);
-                	if(changed) {
-                        buildHook.setAndRefreshClasspathContainer();
-                		JavaCore.setClasspathContainer(container.getPath(), 
-                		        new IJavaProject[]{javaProject}, 
-                		        new IClasspathContainer[]{null} , monitor);
-                		container.refreshClasspathContainer(monitor, javaProject);
-                	}
+                for (IClasspathContainer container: cpContainers) {
+                    if (container instanceof CeylonApplicationModulesContainer) {
+                        CeylonApplicationModulesContainer applicationModulesContainer = (CeylonApplicationModulesContainer) container;
+                        boolean changed = applicationModulesContainer.resolveClasspath(monitor, true);
+                        if(changed) {
+                            buildHook.setAndRefreshClasspathContainer();
+                            JavaCore.setClasspathContainer(applicationModulesContainer.getPath(), 
+                                    new IJavaProject[]{javaProject}, 
+                                    new IClasspathContainer[]{null} , monitor);
+                            applicationModulesContainer.refreshClasspathContainer(monitor);
+                        }
+                    }
                 }
             }
         }
@@ -1787,8 +1812,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	private void addProjectClasspathElements(List<String> classpathElements,
 			IPath workspaceLocation, IJavaProject javaProj) {
 		try {
-			List<CeylonClasspathContainer> containers = getCeylonClasspathContainers(javaProj);
-			for (CeylonClasspathContainer container : containers) {
+			List<IClasspathContainer> containers = getCeylonClasspathContainers(javaProj);
+			for (IClasspathContainer container : containers) {
 				for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
 					if (!isInCeylonClassesOutputFolder(cpEntry.getPath())) {
 						classpathElements.add(cpEntry.getPath().toOSString());
@@ -2500,6 +2525,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static void setContainerInitialized(IProject project) {
         containersInitialized.add(project);
+    }
+    
+    public static boolean isContainerInitialized(IProject project) {
+        return containersInitialized.contains(project);
     }
     
     public static boolean allClasspathContainersInitialized() {

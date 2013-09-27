@@ -8,8 +8,10 @@ import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 
-import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 
 public class CeylonNature extends ProjectNatureBase {
     
@@ -57,7 +59,12 @@ public class CeylonNature extends ProjectNatureBase {
     
     public void addToProject(final IProject project) {
         super.addToProject(project);
-        new CeylonClasspathContainer(project).runReconfigure();
+        try {
+            new CeylonLanguageModuleContainer(project).install();
+        } catch (JavaModelException e) {
+            e.printStackTrace();
+        }
+        new CeylonApplicationModulesContainer(project).runReconfigure();
     }
     
     protected void refreshPrefs() {

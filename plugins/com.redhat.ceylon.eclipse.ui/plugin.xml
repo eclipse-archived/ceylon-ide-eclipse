@@ -1927,11 +1927,21 @@
     </extension>
     
     <extension
-        id="com.redhat.ceylon.eclipse.ui.cpcontainer.Container"
-        name="Ceylon Classpath Container"
+        id="com.redhat.ceylon.eclipse.ui.cpcontainer.RuntimeContainer"
+        name="Ceylon Language Module Container"
         point="org.eclipse.jdt.core.classpathContainerInitializer">
         <classpathContainerInitializer
-            class="com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathInitializer"
+            class="com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleInitializer"
+            id="com.redhat.ceylon.eclipse.ui.cpcontainer.RUNTIME_CONTAINER">
+        </classpathContainerInitializer>
+    </extension>
+    
+    <extension
+        id="com.redhat.ceylon.eclipse.ui.cpcontainer.Container"
+        name="Ceylon Application Modules Container"
+        point="org.eclipse.jdt.core.classpathContainerInitializer">
+        <classpathContainerInitializer
+            class="com.redhat.ceylon.eclipse.core.classpath.CeylonApplicationModulesInitializer"
             id="com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER">
         </classpathContainerInitializer>
     </extension>
