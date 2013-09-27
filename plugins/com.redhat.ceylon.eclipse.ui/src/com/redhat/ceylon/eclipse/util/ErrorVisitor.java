@@ -8,10 +8,7 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisWarning;
-import com.redhat.ceylon.compiler.typechecker.analyzer.FilenameWarning;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
@@ -27,9 +24,7 @@ public abstract class ErrorVisitor extends Visitor {
     protected boolean warnForErrors = false;
     
     protected int getSeverity(Message error, boolean expected) {
-        return expected || 
-                error instanceof UsageWarning || 
-                error instanceof FilenameWarning ? 
+        return expected || error instanceof UsageWarning ? 
             SEVERITY_WARNING : SEVERITY_ERROR;
     }
     
@@ -66,12 +61,13 @@ public abstract class ErrorVisitor extends Visitor {
                     }
                 }
             }
+            
             if (error instanceof AnalysisMessage) {
-                if (error instanceof AnalysisWarning &&
-                            node.getUnit().getPackage().getQualifiedNameString()
-                                    .startsWith(Module.LANGUAGE_MODULE_NAME)) {
-                    continue;
-                }
+//                if (error instanceof UnsupportedError &&
+//                            node.getUnit().getPackage().getQualifiedNameString()
+//                                    .startsWith(Module.LANGUAGE_MODULE_NAME)) {
+//                    continue;
+//                }
                 AnalysisMessage analysisMessage = (AnalysisMessage) error;
                 Node errorNode = getIdentifyingNode(analysisMessage.getTreeNode());
                 if (errorNode == null) {
@@ -85,7 +81,7 @@ public abstract class ErrorVisitor extends Visitor {
                     startLine = token.getLine();
                 }
             }
-
+            
             handleMessage(startOffset, endOffset, startCol, startLine, error);
         }
     }
