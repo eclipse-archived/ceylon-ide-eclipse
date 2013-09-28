@@ -12,14 +12,18 @@ import org.eclipse.jface.text.source.TextInvocationContext;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
 import com.redhat.ceylon.eclipse.code.quickfix.ProblemLocation;
 
 public class ProblemHover extends AbstractAnnotationHover {
 
-	protected static class ProblemInfo extends AnnotationInfo {
+	private CeylonEditor editor;
+
+    private static final ICompletionProposal[] NO_PROPOSALS = new ICompletionProposal[0];
+    
+    protected class ProblemInfo extends AnnotationInfo {
 		
-		private static final ICompletionProposal[] NO_PROPOSALS = new ICompletionProposal[0];
 
 		public ProblemInfo(Annotation annotation, Position position,
 				ITextViewer textViewer) {
@@ -58,11 +62,10 @@ public class ProblemHover extends AbstractAnnotationHover {
 					return location.getLength();
 				}
 			};
-
+			
 			ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-			new CeylonQuickFixController(annotation.getEditor())
-			        .collectCorrections(quickAssistContext, location, proposals);
-
+			new CeylonQuickFixController(editor).collectCorrections(quickAssistContext, location, proposals);
+			
 			return (ICompletionProposal[]) proposals.toArray(new ICompletionProposal[proposals.size()]);
 		}
 
@@ -73,19 +76,21 @@ public class ProblemHover extends AbstractAnnotationHover {
 			}
 
 			TextInvocationContext context = new TextInvocationContext(
-					((ISourceViewer) this.viewer), position.getOffset(),
+					((ISourceViewer) this.viewer), 
+					position.getOffset(),
 					position.getLength());
 			return new CeylonQuickFixController(markerAnnotation.getMarker())
 			        .computeQuickAssistProposals(context);
 		}
 
 	}
-
-	public ProblemHover() {
-		super(false);
-	}
-
-	protected AnnotationInfo createAnnotationInfo(Annotation annotation,
+    
+	public ProblemHover(CeylonEditor editor) {
+        super(false);
+        this.editor = editor;
+    }
+	
+    protected AnnotationInfo createAnnotationInfo(Annotation annotation,
 			Position position, ITextViewer textViewer) {
 		return new ProblemInfo(annotation, position, textViewer);
 	}

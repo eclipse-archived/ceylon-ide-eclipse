@@ -92,16 +92,16 @@ public class AnnotationCreator extends ErrorVisitor {
     }
 
     public void updateAnnotations() {
-        IDocumentProvider docProvider= editor.getDocumentProvider();
+        IDocumentProvider docProvider = editor.getDocumentProvider();
         if (docProvider!=null) {
-            IAnnotationModel model= docProvider.getAnnotationModel(editor.getEditorInput());
+            IAnnotationModel model = docProvider.getAnnotationModel(editor.getEditorInput());
             if (model instanceof IAnnotationModelExtension) {
-                IAnnotationModelExtension modelExt= (IAnnotationModelExtension) model;
-                Annotation[] oldAnnotations= annotations.toArray(new Annotation[annotations.size()]);
-                Map<Annotation,Position> newAnnotations= new HashMap<Annotation,Position>(messages.size());
+                IAnnotationModelExtension modelExt = (IAnnotationModelExtension) model;
+                Annotation[] oldAnnotations = annotations.toArray(new Annotation[annotations.size()]);
+                Map<Annotation,Position> newAnnotations = new HashMap<Annotation,Position>(messages.size());
                 for (PositionedMessage pm: messages) {
                 	if (!suppressAnnotation(pm)) {
-                		Annotation a= createAnnotation(pm);
+                		Annotation a = createAnnotation(pm);
                 		newAnnotations.put(a, pm.pos);
                 		annotations.add(a);
                 	}
@@ -111,7 +111,7 @@ public class AnnotationCreator extends ErrorVisitor {
             else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
                 for (@SuppressWarnings("unchecked") 
                 Iterator<Annotation> i = model.getAnnotationIterator(); 
-                        i.hasNext(); ) {
+                        i.hasNext();) {
                     Annotation a = i.next();
                     if (isParseAnnotation(a)) {
                         model.removeAnnotation(a);
@@ -144,7 +144,7 @@ public class AnnotationCreator extends ErrorVisitor {
 
 	private Annotation createAnnotation(PositionedMessage pm) {
         return new CeylonAnnotation(getAnnotationType(pm), 
-        		pm.message, editor, pm.code, pm.severity);
+        		pm.message, pm.code, pm.severity);
     }
 
     private String getAnnotationType(PositionedMessage pm) {

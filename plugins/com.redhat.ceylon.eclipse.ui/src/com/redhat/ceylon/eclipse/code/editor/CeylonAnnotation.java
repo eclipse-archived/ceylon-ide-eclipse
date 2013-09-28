@@ -41,7 +41,6 @@ public class CeylonAnnotation extends Annotation
 
     private static int counter = 0;
 	
-	private CeylonEditor editor;
 	private Boolean fixable;
 	private final int count;
 	private final int code;
@@ -52,9 +51,8 @@ public class CeylonAnnotation extends Annotation
     }
 
 	public CeylonAnnotation(String type, String text, 
-			CeylonEditor editor, int code, int severity) {
+	        int code, int severity) {
 		super(type, false, text);
-		this.editor = editor;
 		this.code = code;
 		this.severity = severity;
 		count = counter++;
@@ -68,10 +66,6 @@ public class CeylonAnnotation extends Annotation
 		return severity;
 	}
 
-	public CeylonEditor getEditor() {
-		return editor;
-	}
-	
 	@Override
 	public boolean isQuickFixable() throws AssertionFailedException {
 		return fixable;
