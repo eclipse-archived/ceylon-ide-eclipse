@@ -26,6 +26,8 @@ import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.actions.CollapseAllAction;
 import org.eclipse.jdt.internal.ui.packageview.DefaultElementComparer;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -71,10 +73,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private static final ImageDescriptor ALPHA = CeylonPlugin.getInstance().image("alphab_sort_co.gif");
     
     private final ITreeContentProvider contentProvider;
-    private final CeylonOutlineBuilder modelBuilder;
     private final StyledCellLabelProvider labelProvider;
-    private final CeylonParseController parseController;
+    private CeylonParseController parseController;
     private CeylonSourceViewer sourceViewer;
+    private CeylonOutlineBuilder modelBuilder;
     
     public CeylonOutlinePage(CeylonParseController parseController,
             CeylonOutlineBuilder modelBuilder, 
@@ -83,29 +85,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
         this.parseController = parseController;
         this.modelBuilder = modelBuilder;
         this.sourceViewer = sourceViewer;
+        this.contentProvider = new OutlineContentProvider();
         this.labelProvider = new DecoratingStyledCellLabelProvider(new CeylonLabelProvider(true), 
                 PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator(), 
                 DecorationContext.DEFAULT_CONTEXT);
-        
-        contentProvider= new ITreeContentProvider() {
-            public Object[] getChildren(Object element) {
-                return ((CeylonOutlineNode) element).getChildren().toArray();
-            }
-            public Object getParent(Object element) {
-                return ((CeylonOutlineNode) element).getParent();
-            }
-            public boolean hasChildren(Object element) {
-                Object[] children= getChildren(element);
-                return children!=null && children.length > 0;
-            }
-            public Object[] getElements(Object inputElement) {
-                return getChildren(inputElement);
-            }
-            @Override
-            public void dispose() {}
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
-        };
     }
 
     public Stage getStage() {
@@ -154,29 +137,35 @@ public class CeylonOutlinePage extends ContentOutlinePage
         viewer.setComparer(new DefaultElementComparer());
 
         IPageSite site = getSite();
-        IToolBarManager toolBarManager = site.getActionBars().getToolBarManager();
-        toolBarManager.add(new ExpandAllAction());
-        toolBarManager.add(new CollapseAllAction(viewer));
-        toolBarManager.add(new LexicalSortingAction());
-        toolBarManager.add(new HideNonSharedAction());
         
-        MenuManager mm = new MenuManager();
-        JavaPlugin.createStandardGroups(mm);
+        MenuManager menuManager = new MenuManager();
+        JavaPlugin.createStandardGroups(menuManager);
         /*mm.add(new GroupMarker("find"));
         mm.add(new Separator());
         mm.add(new GroupMarker("refactor"));
         mm.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));*/
         
-        site.registerContextMenu(OUTLINE_POPUP_MENU_ID, mm, getTreeViewer());
+        site.registerContextMenu(OUTLINE_POPUP_MENU_ID, menuManager, getTreeViewer());
         site.setSelectionProvider(getTreeViewer());
 
-        viewer.getControl().setMenu(mm.createContextMenu(viewer.getControl()));
+        viewer.getControl().setMenu(menuManager.createContextMenu(viewer.getControl()));
         
         expand(viewer, rootNode);
-     }
+    }
+    
+    @Override
+    public void makeContributions(IMenuManager menuManager,
+            IToolBarManager toolBarManager, IStatusLineManager statusLineManager) {
+        super.makeContributions(menuManager, toolBarManager, statusLineManager);
+        toolBarManager.add(new ExpandAllAction());
+        toolBarManager.add(new CollapseAllAction(getTreeViewer()));
+        toolBarManager.add(new LexicalSortingAction());
+        toolBarManager.add(new HideNonSharedAction());
+    }
     
     @Override
     public void dispose() {
+        getTreeViewer().removeSelectionChangedListener(this);
         super.dispose();
         if (labelProvider!=null) {
             labelProvider.dispose();
@@ -184,6 +173,15 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (contentProvider!=null) {
             contentProvider.dispose();
         }
+        IPageSite site = getSite();
+        //TODO: how the hell do we clean up the actions?
+        //      they hang around, preventing this object
+        //      from being garbage collected!
+//        site.getActionBars().getToolBarManager().removeAll();
+        site.setSelectionProvider(null);
+        sourceViewer = null;
+        parseController = null;
+        modelBuilder = null;
     }
 
      void expand(TreeViewer viewer, CeylonOutlineNode rootNode) {
@@ -197,6 +195,27 @@ public class CeylonOutlinePage extends ContentOutlinePage
         }
     }
     
+    private static final class OutlineContentProvider implements
+            ITreeContentProvider {
+        public Object[] getChildren(Object element) {
+            return ((CeylonOutlineNode) element).getChildren().toArray();
+        }
+        public Object getParent(Object element) {
+            return ((CeylonOutlineNode) element).getParent();
+        }
+        public boolean hasChildren(Object element) {
+            Object[] children= getChildren(element);
+            return children!=null && children.length > 0;
+        }
+        public Object[] getElements(Object inputElement) {
+            return getChildren(inputElement);
+        }
+        @Override
+        public void dispose() {}
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+    }
+
     private class ExpandAllAction extends Action {
 
         public ExpandAllAction() {
@@ -296,7 +315,6 @@ public class CeylonOutlinePage extends ContentOutlinePage
         };
 
         public HideNonSharedAction() {
-            super();
             setText("Hide non-shared");
             setToolTipText("Hide non-shared members");
             setDescription("Hide non-shared members");
