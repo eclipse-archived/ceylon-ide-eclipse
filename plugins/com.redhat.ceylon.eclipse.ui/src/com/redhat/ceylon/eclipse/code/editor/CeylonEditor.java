@@ -96,7 +96,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IPropertyListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
@@ -255,6 +257,8 @@ public class CeylonEditor extends TextEditor {
                     new CeylonOutlineBuilder(), getCeylonSourceViewer());
             parserScheduler.addModelListener(outlinePage);
             getSourceViewer().getTextWidget().addCaretListener(outlinePage);
+            getSite().getPage().addPartListener(new EditorPartListener(outlinePage, 
+                    getCeylonSourceViewer()));
             //myOutlinePage.update(parseController);
          }
          return outlinePage;
@@ -431,6 +435,29 @@ public class CeylonEditor extends TextEditor {
         setAction(DELETE_NEXT_WORD, action);
         textWidget.setKeyBinding(SWT.CTRL | SWT.DEL, SWT.NULL);
         markAsStateDependentAction(DELETE_NEXT_WORD, true);
+    }
+
+    private static final class EditorPartListener implements IPartListener {
+        private CeylonOutlinePage outlinePage;
+        private CeylonSourceViewer sourceViewer;
+        EditorPartListener(CeylonOutlinePage outlinePage, CeylonSourceViewer sourceViewer) {
+            this.outlinePage = outlinePage;
+            this.sourceViewer = sourceViewer;
+        }
+        @Override
+        public void partActivated(IWorkbenchPart part) {}
+
+        @Override
+        public void partClosed(IWorkbenchPart part) {
+            sourceViewer.getTextWidget().removeCaretListener(outlinePage);
+            part.getSite().getPage().removePartListener(this);
+        }
+        @Override
+        public void partBroughtToTop(IWorkbenchPart part) {}
+        @Override
+        public void partDeactivated(IWorkbenchPart part) {}
+        @Override
+        public void partOpened(IWorkbenchPart part) {}
     }
 
     /**
@@ -1205,10 +1232,7 @@ public class CeylonEditor extends TextEditor {
             annotationUpdater = null;
         }
         
-        /*if (fActionBars!=null) {
-          fActionBars.dispose();
-          fActionBars = null;
-        }*/
+        outlinePage = null;
         
         if (buildListener!=null) {
             getWorkspace().removeResourceChangeListener(buildListener);
@@ -1253,6 +1277,7 @@ public class CeylonEditor extends TextEditor {
         ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
         currentTheme.getColorRegistry().removeListener(colorChangeListener);
         currentTheme.getFontRegistry().removeListener(fontChangeListener);
+        
     }
 
     private IPropertyChangeListener colorChangeListener = new IPropertyChangeListener() {
