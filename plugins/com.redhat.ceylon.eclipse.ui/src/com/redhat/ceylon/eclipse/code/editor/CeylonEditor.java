@@ -11,6 +11,7 @@
 
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.configCompletionPopup;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_MATCHING_FENCE;
@@ -137,18 +138,18 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
  */
 public class CeylonEditor extends TextEditor {
     
-    public static final String MESSAGE_BUNDLE= "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
+    public static final String MESSAGE_BUNDLE = "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
 
-    private static final int REPARSE_SCHEDULE_DELAY= 100;
+    private static final int REPARSE_SCHEDULE_DELAY = 100;
 
     //preference keys
-    public final static String MATCHING_BRACKET= "matchingBrackets";
-    public final static String MATCHING_BRACKETS_COLOR= "matchingBracketsColor";    
-    public final static String SELECTED_BRACKET= "highlightBracketAtCaretLocation";
-    public final static String ENCLOSING_BRACKETS= "enclosingBrackets";
-    public final static String SUB_WORD_NAVIGATION= "subWordNavigation";
-    public final static String AUTO_FOLD_IMPORTS= "autoFoldImports";
-    public final static String AUTO_FOLD_COMMENTS= "autoFoldComments";
+    public final static String MATCHING_BRACKET = "matchingBrackets";
+    public final static String MATCHING_BRACKETS_COLOR = "matchingBracketsColor";    
+    public final static String SELECTED_BRACKET = "highlightBracketAtCaretLocation";
+    public final static String ENCLOSING_BRACKETS = "enclosingBrackets";
+    public final static String SUB_WORD_NAVIGATION = "subWordNavigation";
+    public final static String AUTO_FOLD_IMPORTS = "autoFoldImports";
+    public final static String AUTO_FOLD_COMMENTS = "autoFoldComments";
     
     private CeylonParserScheduler parserScheduler;
     private ProblemMarkerManager problemMarkerManager;
@@ -1183,6 +1184,7 @@ public class CeylonEditor extends TextEditor {
             updateProjectionAnnotationManager();
             new ToggleFoldingRunner(this).runWhenNextVisible();
         }
+        configCompletionPopup(getCeylonSourceViewer().getContentAssistant());
     }
     
     public void updateTitleImage() {
@@ -1237,7 +1239,7 @@ public class CeylonEditor extends TextEditor {
         if (parserScheduler!=null) {
             parserScheduler.cancel(); // avoid unnecessary work after the editor is asked to close down
         }
-        parserScheduler= null;
+        parserScheduler = null;
         parseController = null;
         
         uninstallQuickAccessAction();
@@ -1453,7 +1455,7 @@ public class CeylonEditor extends TextEditor {
     }
     
     boolean isFoldingEnabled() {
-        return EditorsUI.getPreferenceStore().getBoolean(EDITOR_FOLDING_ENABLED);
+        return getPreferenceStore().getBoolean(EDITOR_FOLDING_ENABLED);
     }
 
 }
