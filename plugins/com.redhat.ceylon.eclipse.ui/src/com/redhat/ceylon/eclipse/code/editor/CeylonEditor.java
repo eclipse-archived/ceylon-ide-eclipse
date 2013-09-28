@@ -1195,6 +1195,7 @@ public class CeylonEditor extends TextEditor {
     }
     
     public void dispose() {
+        
         if (editorIconUpdater!=null) {
             problemMarkerManager.removeListener(editorIconUpdater);
             editorIconUpdater = null;
@@ -1209,12 +1210,6 @@ public class CeylonEditor extends TextEditor {
           fActionBars = null;
         }*/
         
-        //document is null here
-        /*if (documentListener!=null) {
-            getSourceViewer().getDocument()
-                .removeDocumentListener(documentListener);
-        }*/
-        
         if (buildListener!=null) {
             getWorkspace().removeResourceChangeListener(buildListener);
             buildListener = null;
@@ -1223,6 +1218,12 @@ public class CeylonEditor extends TextEditor {
             getWorkspace().removeResourceChangeListener(moveListener);
             moveListener = null;
         }
+        
+        IDocument document = getParseController().getDocument();
+        if (document!=null) {
+            document.removeDocumentListener(documentListener);
+        }
+        removePropertyListener(editorInputPropertyListener);
         
         if (toggleBreakpointAction!=null) {
             toggleBreakpointAction.dispose(); // this holds onto the IDocument
