@@ -64,6 +64,21 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
 	
+    public static final String AUTO_INSERT = "autoInsert";
+    public static final String AUTO_ACTIVATION = "autoActivation";
+    public static final String AUTO_ACTIVATION_CHARS = "autoActivationChars";
+    public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
+    public static final String LINKED_MODE = "linkedModeCompletion";
+    public static final String LINKED_MODE_RENAME = "linkedModeRename";
+    public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
+    
+    public static final String CLOSE_PARENS = "closeParens";
+    public static final String CLOSE_BRACKETS = "closeBrackets";
+    public static final String CLOSE_ANGLES = "closeAngles";
+    public static final String CLOSE_BACKTICKS = "closeBackticks";
+    public static final String CLOSE_BRACES = "closeBraces";
+    public static final String CLOSE_QUOTES = "closeQuotes";
+    
     protected final CeylonEditor editor;
     private final CompletionProcessor processor;
     
@@ -106,85 +121,87 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		}
 	}*/
     
-    public static final String AUTO_INSERT = "autoInsert";
-    public static final String AUTO_ACTIVATION = "autoActivation";
-    public static final String AUTO_ACTIVATION_CHARS = "autoActivationChars";
-    public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
-	public static final String LINKED_MODE = "linkedModeCompletion";
-	public static final String LINKED_MODE_RENAME = "linkedModeRename";
-	public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
-	
-	public static final String CLOSE_PARENS = "closeParens";
-    public static final String CLOSE_BRACKETS = "closeBrackets";
-    public static final String CLOSE_ANGLES = "closeAngles";
-    public static final String CLOSE_BACKTICKS = "closeBackticks";
-    public static final String CLOSE_BRACES = "closeBraces";
-    public static final String CLOSE_QUOTES = "closeQuotes";
-    
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         if (editor==null) return null;
-        final ContentAssistant ca = new ContentAssistant();
-        ca.addCompletionListener(new ICompletionListener() {
-			@Override
-			public void selectionChanged(ICompletionProposal proposal,
-					boolean smartToggle) {}
-			@Override
-			public void assistSessionStarted(ContentAssistEvent event) {
-				if (editor!=null) {
-				    editor.pauseBackgroundParsing();
-				}
-				processor.sessionStarted();
-				/*try {
-					editor.getSite().getWorkbenchWindow().run(true, true, new Warmup());
-				} 
-				catch (Exception e) {}*/
-			}			
-			@Override
-			public void assistSessionEnded(ContentAssistEvent event) {
-			    if (editor!=null) {
-			        editor.unpauseBackgroundParsing();
-			        editor.scheduleParsing();
-			    }
-			}
-		});
-        getPreferenceStore().setDefault(AUTO_INSERT, true);
-        getPreferenceStore().setDefault(AUTO_ACTIVATION, true);
-        getPreferenceStore().setDefault(AUTO_ACTIVATION_DELAY, 500);
-        getPreferenceStore().setDefault(AUTO_ACTIVATION_CHARS, ".");
-        getPreferenceStore().setDefault(LINKED_MODE, true);
-		getPreferenceStore().setDefault(LINKED_MODE_RENAME, true);
-        getPreferenceStore().setDefault(PASTE_CORRECT_INDENTATION, true);
-        getPreferenceStore().setDefault(CLOSE_PARENS, true);
-        getPreferenceStore().setDefault(CLOSE_BRACKETS, true);
-        getPreferenceStore().setDefault(CLOSE_ANGLES, true);
-        getPreferenceStore().setDefault(CLOSE_BRACES, true);
-        getPreferenceStore().setDefault(CLOSE_QUOTES, true);
-        getPreferenceStore().setDefault(CLOSE_BACKTICKS, true);
-		configCompletionPopup(ca);
-		getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                configCompletionPopup(ca);
-            }
-        });
-        ca.enableColoredLabels(true);
-        ca.setRepeatedInvocationMode(true);
+        final ContentAssistant contentAssistant = new ContentAssistant();
+        contentAssistant.addCompletionListener(new CompletionListener(editor, processor));
+        fPreferenceStore.setDefault(AUTO_INSERT, true);
+        fPreferenceStore.setDefault(AUTO_ACTIVATION, true);
+        fPreferenceStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
+        fPreferenceStore.setDefault(AUTO_ACTIVATION_CHARS, ".");
+        fPreferenceStore.setDefault(LINKED_MODE, true);
+		fPreferenceStore.setDefault(LINKED_MODE_RENAME, true);
+        fPreferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
+        fPreferenceStore.setDefault(CLOSE_PARENS, true);
+        fPreferenceStore.setDefault(CLOSE_BRACKETS, true);
+        fPreferenceStore.setDefault(CLOSE_ANGLES, true);
+        fPreferenceStore.setDefault(CLOSE_BRACES, true);
+        fPreferenceStore.setDefault(CLOSE_QUOTES, true);
+        fPreferenceStore.setDefault(CLOSE_BACKTICKS, true);
+        contentAssistant.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
+		configCompletionPopup(contentAssistant, fPreferenceStore);
+		fPreferenceStore.addPropertyChangeListener(new PropertyChangeListener(contentAssistant, fPreferenceStore));
+        contentAssistant.enableColoredLabels(true);
+        contentAssistant.setRepeatedInvocationMode(true);
         KeyStroke key = KeyStroke.getInstance(SWT.CTRL, SWT.SPACE);
-		ca.setRepeatedInvocationTrigger(KeySequence.getInstance(key));
-        ca.setStatusMessage(key.format() + " to toggle filter by type");
-        ca.setStatusLineVisible(true);
-        ca.setInformationControlCreator(new CeylonHover(editor).getHoverControlCreator("Click for focus"));
-        ca.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+		contentAssistant.setRepeatedInvocationTrigger(KeySequence.getInstance(key));
+        contentAssistant.setStatusMessage(key.format() + " to toggle filter by type");
+        contentAssistant.setStatusLineVisible(true);
+        contentAssistant.setInformationControlCreator(new CeylonHover(editor).getHoverControlCreator("Click for focus"));
+        contentAssistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 //      ca.setContextInformationPopupBackground(Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
         //ca.enablePrefixCompletion(true); //TODO: prefix completion stuff in ICompletionProposalExtension3
-        return ca;
+        return contentAssistant;
+    }
+    
+    private static final class HierarchyPresenterControlCreator
+            implements IInformationControlCreator {
+        private CeylonEditor editor;
+        HierarchyPresenterControlCreator(CeylonEditor editor) {
+            this.editor = editor;
+        }
+        @Override
+        public IInformationControl createInformationControl(Shell parent) {
+        	return new HierarchyPopup(editor, parent, 
+        			SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+        }
     }
 
-    private void configCompletionPopup(ContentAssistant ca) {
-        ca.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
-        ca.enableAutoInsert(getPreferenceStore().getBoolean(AUTO_INSERT));
-        ca.enableAutoActivation(getPreferenceStore().getBoolean(AUTO_ACTIVATION));
-        ca.setAutoActivationDelay(getPreferenceStore().getInt(AUTO_ACTIVATION_DELAY));
+    private static final class BrowserControlCreator 
+            implements IInformationControlCreator {
+        public IInformationControl createInformationControl(Shell parent) {
+            try {
+                return new BrowserInformationControl(parent, 
+                        APPEARANCE_JAVADOC_FONT, 
+                        (String) null);
+            }
+            catch(org.eclipse.swt.SWTError x){
+                return new DefaultInformationControl(parent, "Press 'F2' for focus", 
+                        new HTMLTextPresenter(true));
+            }
+        }
+    }
+
+    private static final class PropertyChangeListener 
+            implements IPropertyChangeListener {
+        private ContentAssistant contentAssistant;
+        private IPreferenceStore preferenceStore;
+        public PropertyChangeListener(ContentAssistant contentAssistant,
+                IPreferenceStore preferenceStore) {
+            this.contentAssistant = contentAssistant;
+            this.preferenceStore = preferenceStore;
+        }
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            configCompletionPopup(contentAssistant, preferenceStore);
+        }
+    }
+    
+    private static void configCompletionPopup(ContentAssistant ca,
+            IPreferenceStore preferenceStore) {
+        ca.enableAutoInsert(preferenceStore.getBoolean(AUTO_INSERT));
+        ca.enableAutoActivation(preferenceStore.getBoolean(AUTO_ACTIVATION));
+        ca.setAutoActivationDelay(preferenceStore.getInt(AUTO_ACTIVATION_DELAY));
     }
 
     @Override
@@ -236,24 +253,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 	        return editor.getParseController();
 	    }
 	}
-
+	
     /**
      * Used to present hover help (anything else?)
      */
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
-        return new IInformationControlCreator() {
-            public IInformationControl createInformationControl(Shell parent) {
-                try{
-                    return new BrowserInformationControl(parent, 
-                            APPEARANCE_JAVADOC_FONT, 
-                            (String) null);
-                }
-                catch(org.eclipse.swt.SWTError x){
-                    return new DefaultInformationControl(parent, "Press 'F2' for focus", 
-                            new HTMLTextPresenter(true));
-                }
-            }
-        };
+        return new BrowserControlCreator();
     }
 
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
@@ -322,22 +327,10 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     
     public IInformationPresenter getCodePresenter(ISourceViewer sourceViewer) {
         if (editor==null) return null;
-        InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
-			@Override
-			public IInformationControl createInformationControl(Shell parent) {
-				final CodePopup pop = new CodePopup(parent, SWT.RESIZE, editor);
-				pop.viewer.configure(new CeylonSourceViewerConfiguration(editor) {
-					@Override
-					protected CeylonParseController getParseController() {
-						return pop.getParseController();
-					}
-				});
-				return pop;
-			}
-		});
+        InformationPresenter presenter = new InformationPresenter(new CodePresenterControlCreator(editor));
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
-        presenter.setInformationProvider(new OutlineInformationProvider(), 
+        presenter.setInformationProvider(new OutlineInformationProvider(getParseController()), 
                 DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(40, 10, true, false);
 		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
@@ -345,8 +338,90 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return presenter;
     }
     
-	private class OutlineInformationProvider 
+	private static final class OutlinePresenterControlCreator implements
+            IInformationControlCreator {
+	    private CeylonEditor editor;
+        OutlinePresenterControlCreator(CeylonEditor editor) {
+            this.editor = editor;
+	    }
+        @Override
+        public IInformationControl createInformationControl(Shell parent) {
+        	return new OutlinePopup(editor, parent, 
+        			SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+        }
+    }
+
+    private static final class CodePopupSourceViewerConfiguration 
+            extends CeylonSourceViewerConfiguration {
+        private final CodePopup popup;
+        private CodePopupSourceViewerConfiguration(CeylonEditor editor,
+                CodePopup popup) {
+            super(editor);
+            this.popup = popup;
+        }
+
+        @Override
+        protected CeylonParseController getParseController() {
+            return popup.getParseController();
+        }
+    }
+    
+    private static final class CodePresenterControlCreator 
+            implements IInformationControlCreator {
+        private CeylonEditor editor;
+        CodePresenterControlCreator(CeylonEditor editor) {
+            this.editor = editor;
+	    }
+        @Override
+        public IInformationControl createInformationControl(Shell parent) {
+        	final CodePopup pop = new CodePopup(parent, SWT.RESIZE, editor);
+        	pop.viewer.configure(new CodePopupSourceViewerConfiguration(editor, pop));
+        	return pop;
+        }
+    }
+    
+    private static final class CompletionListener 
+            implements ICompletionListener {
+	    private CeylonEditor editor;
+        private CompletionProcessor processor;
+
+        private CompletionListener(CeylonEditor editor,
+                CompletionProcessor processor) {
+            this.editor = editor;
+            this.processor = processor;
+	        
+	    }
+        @Override
+        public void selectionChanged(ICompletionProposal proposal,
+        		boolean smartToggle) {}
+
+        @Override
+        public void assistSessionStarted(ContentAssistEvent event) {
+        	if (editor!=null) {
+        	    editor.pauseBackgroundParsing();
+        	}
+        	processor.sessionStarted();
+        	/*try {
+        		editor.getSite().getWorkbenchWindow().run(true, true, new Warmup());
+        	} 
+        	catch (Exception e) {}*/
+        }
+
+        @Override
+        public void assistSessionEnded(ContentAssistEvent event) {
+            if (editor!=null) {
+                editor.unpauseBackgroundParsing();
+                editor.scheduleParsing();
+            }
+        }
+    }
+
+    private static final class OutlineInformationProvider 
             implements IInformationProvider, IInformationProviderExtension {
+        private CeylonParseController parseController;
+        OutlineInformationProvider(CeylonParseController parseController) {
+            this.parseController = parseController;
+        }
 		@Override
     	public IRegion getSubject(ITextViewer textViewer, int offset) {
     		return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
@@ -358,22 +433,16 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     	}
 		@Override
     	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		return new CeylonOutlineBuilder().buildTree(getParseController());
+    		return new CeylonOutlineBuilder().buildTree(parseController);
     	}
     }
 	
     public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer) {
         if (editor==null) return null;
-        InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
-			@Override
-			public IInformationControl createInformationControl(Shell parent) {
-				return new OutlinePopup(editor, parent, 
-						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-			}
-		});
+        InformationPresenter presenter = new InformationPresenter(new OutlinePresenterControlCreator(editor));
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
-        presenter.setInformationProvider(new OutlineInformationProvider(), 
+        presenter.setInformationProvider(new OutlineInformationProvider(getParseController()), 
                 DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(40, 10, true, false);
 		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
@@ -417,13 +486,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
     public IInformationPresenter getHierarchyPresenter(ISourceViewer sourceViewer) {
         if (editor==null) return null;
-        InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
-			@Override
-			public IInformationControl createInformationControl(Shell parent) {
-				return new HierarchyPopup(editor, parent, 
-						SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-			}
-		});
+        InformationPresenter presenter = new InformationPresenter(new HierarchyPresenterControlCreator(editor));
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new HierarchyInformationProvider(), 
@@ -438,10 +501,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public IReconciler getReconciler(ISourceViewer sourceViewer) {
         //don't spell-check!
         return null;
-    }
-
-    private IPreferenceStore getPreferenceStore() {
-        return fPreferenceStore;
     }
     
 }
