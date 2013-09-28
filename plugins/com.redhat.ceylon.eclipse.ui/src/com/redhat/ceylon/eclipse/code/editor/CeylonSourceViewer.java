@@ -591,10 +591,6 @@ public class CeylonSourceViewer extends ProjectionViewer {
             
             autoEditStrategy = new CeylonAutoEditStrategy();
             
-            fQuickAssistAssistant = svc.getQuickAssistAssistant(this);
-            if (fQuickAssistAssistant != null) {
-                fQuickAssistAssistant.install(this);
-            }
         }
         //    if (fPreferenceStore != null) {
         //        fPreferenceStore.addPropertyChangeListener(this);
