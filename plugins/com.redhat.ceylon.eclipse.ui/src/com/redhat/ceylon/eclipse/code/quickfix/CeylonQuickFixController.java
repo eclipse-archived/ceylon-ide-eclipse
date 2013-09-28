@@ -63,17 +63,6 @@ public class CeylonQuickFixController extends QuickAssistAssistant
         setQuickAssistProcessor(this);        
     }
 
-    protected IFile getFile() {
-        if (editor!=null && 
-                editor.getEditorInput() instanceof FileEditorInput) {
-            FileEditorInput input = (FileEditorInput) editor.getEditorInput();
-            if (input!=null) {
-            	return input.getFile();
-            }
-        }
-        return file;
-    }
-    
     public CeylonQuickFixController(IMarker marker) {
         IFileEditorInput input = MarkerUtils.getInput(marker);
 		if (input!=null) {
@@ -98,7 +87,17 @@ public class CeylonQuickFixController extends QuickAssistAssistant
 		}
         setQuickAssistProcessor(this);
 	}
-
+    
+    protected IFile getFile() {
+        if (editor!=null && 
+                editor.getEditorInput() instanceof FileEditorInput) {
+            FileEditorInput input = (FileEditorInput) editor.getEditorInput();
+            if (input!=null) {
+                return input.getFile();
+            }
+        }
+        return file;
+    }
     
     Tree.CompilationUnit getRootNode() {
     	if (editor!=null) {

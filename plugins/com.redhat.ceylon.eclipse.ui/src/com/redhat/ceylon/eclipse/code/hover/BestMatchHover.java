@@ -45,7 +45,7 @@ public class BestMatchHover
 	 */
 	private void installTextHovers() {
 		fInstantiatedTextHovers= new ArrayList<ITextHover>(2);
-		fInstantiatedTextHovers.add(new ProblemHover());
+		fInstantiatedTextHovers.add(new ProblemHover(editor));
 		fInstantiatedTextHovers.add(new CeylonHover(editor));
 	}
 
