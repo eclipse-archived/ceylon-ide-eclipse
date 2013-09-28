@@ -35,8 +35,6 @@ import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -80,12 +78,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String CLOSE_QUOTES = "closeQuotes";
     
     protected final CeylonEditor editor;
-    private final CompletionProcessor processor;
     
     public CeylonSourceViewerConfiguration(CeylonEditor editor) {
         super(EditorsUI.getPreferenceStore());
+        setPreferenceDefaults();
         this.editor = editor;
-        processor = new CompletionProcessor(editor);
     }
     
     public PresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
@@ -121,26 +118,30 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		}
 	}*/
     
+    static void setPreferenceDefaults() {
+        IPreferenceStore preferenceStore = EditorsUI.getPreferenceStore();
+        preferenceStore.setDefault(AUTO_INSERT, true);
+        preferenceStore.setDefault(AUTO_ACTIVATION, true);
+        preferenceStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
+        preferenceStore.setDefault(AUTO_ACTIVATION_CHARS, ".");
+        preferenceStore.setDefault(LINKED_MODE, true);
+        preferenceStore.setDefault(LINKED_MODE_RENAME, true);
+        preferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
+        preferenceStore.setDefault(CLOSE_PARENS, true);
+        preferenceStore.setDefault(CLOSE_BRACKETS, true);
+        preferenceStore.setDefault(CLOSE_ANGLES, true);
+        preferenceStore.setDefault(CLOSE_BRACES, true);
+        preferenceStore.setDefault(CLOSE_QUOTES, true);
+        preferenceStore.setDefault(CLOSE_BACKTICKS, true);
+    }
+    
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         if (editor==null) return null;
-        final ContentAssistant contentAssistant = new ContentAssistant();
-        contentAssistant.addCompletionListener(new CompletionListener(editor, processor));
-        fPreferenceStore.setDefault(AUTO_INSERT, true);
-        fPreferenceStore.setDefault(AUTO_ACTIVATION, true);
-        fPreferenceStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
-        fPreferenceStore.setDefault(AUTO_ACTIVATION_CHARS, ".");
-        fPreferenceStore.setDefault(LINKED_MODE, true);
-		fPreferenceStore.setDefault(LINKED_MODE_RENAME, true);
-        fPreferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
-        fPreferenceStore.setDefault(CLOSE_PARENS, true);
-        fPreferenceStore.setDefault(CLOSE_BRACKETS, true);
-        fPreferenceStore.setDefault(CLOSE_ANGLES, true);
-        fPreferenceStore.setDefault(CLOSE_BRACES, true);
-        fPreferenceStore.setDefault(CLOSE_QUOTES, true);
-        fPreferenceStore.setDefault(CLOSE_BACKTICKS, true);
-        contentAssistant.setContentAssistProcessor(processor, DEFAULT_CONTENT_TYPE);
-		configCompletionPopup(contentAssistant, fPreferenceStore);
-		fPreferenceStore.addPropertyChangeListener(new PropertyChangeListener(contentAssistant, fPreferenceStore));
+        ContentAssistant contentAssistant = new ContentAssistant();
+        CompletionProcessor completionProcessor = new CompletionProcessor(editor);
+        contentAssistant.addCompletionListener(new CompletionListener(editor, completionProcessor));
+        contentAssistant.setContentAssistProcessor(completionProcessor, DEFAULT_CONTENT_TYPE);
+		configCompletionPopup(contentAssistant);
         contentAssistant.enableColoredLabels(true);
         contentAssistant.setRepeatedInvocationMode(true);
         KeyStroke key = KeyStroke.getInstance(SWT.CTRL, SWT.SPACE);
@@ -153,7 +154,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         //ca.enablePrefixCompletion(true); //TODO: prefix completion stuff in ICompletionProposalExtension3
         return contentAssistant;
     }
-    
+
     private static final class HierarchyPresenterControlCreator
             implements IInformationControlCreator {
         private CeylonEditor editor;
@@ -181,27 +182,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
             }
         }
     }
-
-    private static final class PropertyChangeListener 
-            implements IPropertyChangeListener {
-        private ContentAssistant contentAssistant;
-        private IPreferenceStore preferenceStore;
-        public PropertyChangeListener(ContentAssistant contentAssistant,
-                IPreferenceStore preferenceStore) {
-            this.contentAssistant = contentAssistant;
-            this.preferenceStore = preferenceStore;
-        }
-        @Override
-        public void propertyChange(PropertyChangeEvent event) {
-            configCompletionPopup(contentAssistant, preferenceStore);
-        }
-    }
     
-    private static void configCompletionPopup(ContentAssistant ca,
-            IPreferenceStore preferenceStore) {
-        ca.enableAutoInsert(preferenceStore.getBoolean(AUTO_INSERT));
-        ca.enableAutoActivation(preferenceStore.getBoolean(AUTO_ACTIVATION));
-        ca.setAutoActivationDelay(preferenceStore.getInt(AUTO_ACTIVATION_DELAY));
+    static void configCompletionPopup(ContentAssistant contentAssistant) {
+        IPreferenceStore preferenceStore = EditorsUI.getPreferenceStore();
+        contentAssistant.enableAutoInsert(preferenceStore.getBoolean(AUTO_INSERT));
+        contentAssistant.enableAutoActivation(preferenceStore.getBoolean(AUTO_ACTIVATION));
+        contentAssistant.setAutoActivationDelay(preferenceStore.getInt(AUTO_ACTIVATION_DELAY));
     }
 
     @Override
