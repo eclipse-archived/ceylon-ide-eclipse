@@ -64,11 +64,10 @@ import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
@@ -133,22 +132,23 @@ public class CeylonHover
         implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 	
 	private CeylonEditor editor;
-	private ITextSelection selection;
 	
 	public CeylonHover(CeylonEditor editor) {
 		this.editor = editor;
-		editor.getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				selection = (ITextSelection) event.getSelection();
-			}
-		});
 	}
 
 	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
 		return findWord(textViewer.getDocument(), offset);
 	}
-	/**
+	private final class GetSelection implements Runnable {
+        ITextSelection selection;
+        @Override
+        public void run() {
+            selection = (ITextSelection) editor.getSelectionProvider().getSelection();
+        }
+    }
+
+    /**
 	 * Action to go back to the previous input in the hover control.
 	 */
 	static final class BackAction extends Action {
@@ -278,7 +278,7 @@ public class CeylonHover
 		}
 	}
 
-	private void close(BrowserInformationControl control) {
+	private static void close(BrowserInformationControl control) {
 		control.notifyDelayedInputChange(null);
 		control.dispose();
 	}
@@ -325,9 +325,9 @@ public class CeylonHover
 			public void changing(LocationEvent event) {
 				String location = event.location;
 				
-				//This was necessary for windows environment (fix for blank page)
-				//Its someway related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
-				if (!"about:blank".equals(location)) { //$NON-NLS-1$
+				//necessary for windows environment (fix for blank page)
+				//somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
+				if (!"about:blank".equals(location)) {
 					event.doit= false;
 				}
 				
@@ -485,6 +485,9 @@ public class CeylonHover
         Tree.CompilationUnit rn = parseController.getRootNode();
 		if (rn!=null) {
 			int hoffset = hoverRegion.getOffset();
+			GetSelection gs = new GetSelection();
+			Display.getDefault().syncExec(gs);
+			ITextSelection selection = gs.selection;
 			if (selection!=null && 
 				selection.getOffset()<=hoffset &&
 				selection.getOffset()+selection.getLength()>=hoffset) {
@@ -1662,7 +1665,7 @@ public class CeylonHover
         }
     }
     
-    public static class CeylonBlockEmitter implements BlockEmitter {
+    public static final class CeylonBlockEmitter implements BlockEmitter {
         
         @Override
         public void emitBlock(StringBuilder out, List<String> lines, String meta) {
