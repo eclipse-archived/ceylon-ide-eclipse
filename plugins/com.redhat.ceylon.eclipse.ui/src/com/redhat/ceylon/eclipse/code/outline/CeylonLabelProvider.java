@@ -177,6 +177,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static Image getDecoratedImage(Object element, String key) {
+        if (key==null) return null;
         int flags = getDecorationAttributes(element);
         ImageDescriptor descriptor = imageRegistry.getDescriptor(key);
         String decoratedKey = key+'#'+flags;
@@ -216,7 +217,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return CEYLON_FILE;
         }
         if (element instanceof CeylonOutlineNode) {
-            return getImageKeyForNode((Node) ((CeylonOutlineNode) element).getTreeNode());
+            return getImageKeyForNode(((CeylonOutlineNode) element).getTreeNode());
         }
         if (element instanceof Node) {
             return getImageKeyForNode((Node) element);
@@ -363,9 +364,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public StyledString getStyledText(Object element) {
         element = unwrap(element);
         if (element instanceof CeylonOutlineNode) {
-            CeylonOutlineNode con = (CeylonOutlineNode) element;
-            StyledString label = getStyledLabelForNode((Node) con.getTreeNode());
-            return label;
+            return getStyledLabelForNode(((CeylonOutlineNode) element).getTreeNode());
             //TODO: add the arrow if the node is dirty vs git!
             //return new StyledString("> ", ARROW_STYLER).append(label);
         }
