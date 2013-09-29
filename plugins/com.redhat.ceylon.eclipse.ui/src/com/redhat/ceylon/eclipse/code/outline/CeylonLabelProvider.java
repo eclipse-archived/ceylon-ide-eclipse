@@ -18,8 +18,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -54,7 +59,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.eclipse.code.search.CeylonElement;
-import com.redhat.ceylon.eclipse.code.search.WithProject;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -79,6 +83,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             .getImageRegistry();
     
     public static Image FILE = imageRegistry.get(CEYLON_FILE);
+    public static Image FOLDER = imageRegistry.get(CEYLON_FOLDER);
     public static Image ALIAS = imageRegistry.get(CEYLON_ALIAS);
     public static Image CLASS = imageRegistry.get(CEYLON_CLASS);
     public static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
@@ -196,18 +201,32 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static String getImageKey(Object element) {
-        element = unwrap(element);
         if (element instanceof IFile || 
             element instanceof IPath) {
             return CEYLON_FILE;
         }
-        if (element instanceof IProject) {
+        if (element instanceof IFolder ||
+            element instanceof IPackageFragmentRoot) { //should be the source folder icon
+            return CEYLON_FOLDER;
+        }
+        if (element instanceof IProject ||
+            element instanceof IJavaProject) {
             return CEYLON_PROJECT;
         }
         if (element instanceof CeylonElement) {
-            return getImageKeyForNode(((CeylonElement) element).getNode());
+            return ((CeylonElement) element).getImageKey();
         }
-        if (element instanceof Package) {
+        if (element instanceof IPackageFragment) {
+            if (((IFolder)((IPackageFragment)element).getResource())
+                    .getFile("module.ceylon").exists()) {
+                return CEYLON_ARCHIVE;
+            }
+            else {
+                return CEYLON_PACKAGE;
+            }
+        }
+        if (element instanceof Package ||
+            element instanceof IPackageFragment) {
             return CEYLON_PACKAGE;
         }
         if (element instanceof Module) {
@@ -223,13 +242,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return getImageKeyForNode((Node) element);
         }
         return CEYLON_FILE;
-    }
-
-    private static Object unwrap(Object element) {
-        if (element instanceof WithProject) {
-            element = ((WithProject) element).element;
-        }
-        return element;
     }
     
     public static String getImageKeyForNode(Node n) {
@@ -362,7 +374,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     @Override
     public StyledString getStyledText(Object element) {
-        element = unwrap(element);
         if (element instanceof CeylonOutlineNode) {
             return getStyledLabelForNode(((CeylonOutlineNode) element).getTreeNode());
             //TODO: add the arrow if the node is dirty vs git!
@@ -374,14 +385,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (element instanceof IPath) {
             return new StyledString(((IPath) element).lastSegment());
         }
+        else if (element instanceof IFolder) {
+            return new StyledString(((IFolder) element).getName());
+        }
         else if (element instanceof IProject) {
             return new StyledString(((IProject) element).getName());
+        }
+        else if (element instanceof IJavaElement) {
+            return new StyledString(((IJavaElement) element).getElementName());
         }
         else if (element instanceof CeylonElement) {
             CeylonElement ce = (CeylonElement) element;
             String pkg;
             if (includePackage()) {
-                pkg = " - " + getPackageLabel(ce.getNode());
+                pkg = " - " + ce.getPackageLabel();
             }
             else {
                 pkg = "";
@@ -390,7 +407,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
 			String path = file==null ? 
 					ce.getVirtualFile().getPath() : 
 					file.getFullPath().toString();
-			return getStyledLabelForNode(ce.getNode())
+			return ce.getLabel()
                     .append(pkg, QUALIFIER_STYLER)
                     .append(" - " + path, COUNTER_STYLER)
                     .append(":" + ce.getLocation(), COUNTER_STYLER);
@@ -410,7 +427,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     public String getText(Object element) {
-        return getStyledText(unwrap(element)).toString();
+        return getStyledText(element).toString();
     }
     
     protected boolean includePackage() {
