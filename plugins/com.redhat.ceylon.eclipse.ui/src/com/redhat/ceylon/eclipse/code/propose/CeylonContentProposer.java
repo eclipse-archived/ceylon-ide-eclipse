@@ -383,7 +383,7 @@ public class CeylonContentProposer {
 	            		}
 	            		return pp;
 	            	} else { // type lookup, handle package later
-	           			return new PositionedPrefix(docRef.ref, docRef.start);
+	           			return new PositionedPrefix(docRef.ref, token.getStartIndex()+docRef.start);
 	            	}
             	} else {
             		return null; // in literal but no docRef
