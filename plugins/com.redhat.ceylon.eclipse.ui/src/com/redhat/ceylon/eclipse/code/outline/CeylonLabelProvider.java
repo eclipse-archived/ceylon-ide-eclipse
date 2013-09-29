@@ -55,7 +55,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.eclipse.code.search.CeylonElement;
@@ -500,14 +499,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (n instanceof Tree.ModuleDescriptor) {
             Tree.ModuleDescriptor i = (Tree.ModuleDescriptor) n;
-            ImportPath p = i.getImportPath();
+            Tree.ImportPath p = i.getImportPath();
 			if (isNonempty(p)) {
                 return new StyledString(toPath(p), QUALIFIER_STYLER);
             }
         }
         else if (n instanceof Tree.PackageDescriptor) {
             Tree.PackageDescriptor i = (Tree.PackageDescriptor) n;
-            ImportPath p = i.getImportPath();
+            Tree.ImportPath p = i.getImportPath();
 			if (isNonempty(p)) {
                 return new StyledString(toPath(p), QUALIFIER_STYLER);
             }
@@ -515,9 +514,15 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (n instanceof Tree.ImportList) {
             return new StyledString("imports");
         }
+        else if (n instanceof Tree.ImportPath) {
+            Tree.ImportPath p = (Tree.ImportPath) n;
+            if (isNonempty(p)) {
+                return new StyledString(toPath(p), QUALIFIER_STYLER);
+            }
+        }
         else if (n instanceof Tree.Import) {
             Tree.Import i = (Tree.Import) n;
-            ImportPath p = i.getImportPath();
+            Tree.ImportPath p = i.getImportPath();
 			if (isNonempty(p)) {
                 return new StyledString(toPath(p), QUALIFIER_STYLER);
             }

@@ -16,6 +16,7 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getNodeDecorationAttributes;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static java.lang.System.identityHashCode;
 
 import java.util.ArrayList;
@@ -28,10 +29,13 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 
@@ -165,9 +169,33 @@ public class CeylonOutlineNode implements IAdaptable {
     }
     
     public StyledString getLabel() {
+        if (category==DEFAULT_CATEGORY && declaration) {
+            IEditorPart currentEditor = Util.getCurrentEditor();
+            if (currentEditor instanceof CeylonEditor) {
+                CeylonEditor ce = (CeylonEditor) currentEditor;
+                Node node = findNode(ce.getParseController().getRootNode(), startOffset);
+                if (node!=null) {
+                    return getStyledLabelForNode(node);
+                }
+            }
+        }
         return label;
     }
 
+    public int getDecorations() {
+        if (category==DEFAULT_CATEGORY && declaration) {
+            IEditorPart currentEditor = Util.getCurrentEditor();
+            if (currentEditor instanceof CeylonEditor) {
+                CeylonEditor ce = (CeylonEditor) currentEditor;
+                Node node = findNode(ce.getParseController().getRootNode(), startOffset);
+                if (node!=null) {
+                    return getNodeDecorationAttributes(node);
+                }
+            }
+        }
+        return decorations;
+    }
+    
     @Override
     public boolean equals(Object obj) {
     	if (obj instanceof CeylonOutlineNode) {
@@ -188,10 +216,6 @@ public class CeylonOutlineNode implements IAdaptable {
         return id;
     }
     
-    public int getDecorations() {
-        return decorations;
-    }
-
     public String createIdentifier(Node treeNode) {
         try {
             //note: we actually have two different outline

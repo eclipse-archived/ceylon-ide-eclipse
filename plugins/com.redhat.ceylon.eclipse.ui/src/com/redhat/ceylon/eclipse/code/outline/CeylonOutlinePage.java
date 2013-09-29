@@ -98,7 +98,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (treeViewer!=null && 
                 !treeViewer.getTree().isDisposed()) {
             treeViewer.getTree().getDisplay()
-                   .asyncExec(new Runnable() {
+                   .syncExec(new Runnable() {
                 public void run() {
                     TreeViewer treeViewer = getTreeViewer();
                     if (treeViewer!=null && 
@@ -110,6 +110,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                         for (Object obj: expanded) {
                             treeViewer.expandToLevel(obj, 1);
                         }
+                        treeViewer.refresh();
                         expandCaretedNode(sourceViewer.getSelectedRange().x);
                     }
                 }
@@ -122,10 +123,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
         TreeViewer viewer = getTreeViewer();
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(labelProvider);
+        viewer.setComparer(new DefaultElementComparer());
         CeylonOutlineNode rootNode = new CeylonOutlineBuilder()
                 .buildTree(parseController);
         viewer.setInput(rootNode);
-        viewer.setComparer(new DefaultElementComparer());
         expand(viewer, rootNode);
         sourceViewer.getTextWidget().addCaretListener(this);
     }
@@ -163,7 +164,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         parseController = null;
     }
 
-     void expand(TreeViewer viewer, CeylonOutlineNode rootNode) {
+     static void expand(TreeViewer viewer, CeylonOutlineNode rootNode) {
         for (CeylonOutlineNode con: rootNode.getChildren()) {
             if (con.getCategory()==IMPORT_LIST_CATEGORY) {
                 viewer.collapseToLevel(con, TreeViewer.ALL_LEVELS);
