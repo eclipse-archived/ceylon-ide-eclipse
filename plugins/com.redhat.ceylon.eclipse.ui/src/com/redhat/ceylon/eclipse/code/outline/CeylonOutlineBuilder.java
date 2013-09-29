@@ -20,7 +20,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonOutlineBuilder {
 	
-	void visitTree(Object root) {
+	void visitTree(Object root, IFile file) {
 		if (root==null) return;
 		Tree.CompilationUnit rootNode = (Tree.CompilationUnit) root;
 		Unit unit = rootNode.getUnit();
@@ -91,17 +91,15 @@ public class CeylonOutlineBuilder {
 		
 	}
 
-	private CeylonOutlineNode modelRoot;
-	private IFile file;
-
-	private Stack<CeylonOutlineNode> itemStack= new Stack<CeylonOutlineNode>();
+	private Stack<CeylonOutlineNode> itemStack = new Stack<CeylonOutlineNode>();
 
 	public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
-	    file = cpc.getProject()==null || cpc.getPath()==null ? null :
+	    IFile file = cpc.getProject()==null || cpc.getPath()==null ? null :
 	            cpc.getProject().getFile(cpc.getPath());
-	    itemStack.push(modelRoot=createTopItem(cpc.getRootNode()));
+	    CeylonOutlineNode modelRoot = createTopItem(cpc.getRootNode());
+	    itemStack.push(modelRoot);
 		try {
-			visitTree(cpc.getRootNode());
+			visitTree(cpc.getRootNode(), file);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();

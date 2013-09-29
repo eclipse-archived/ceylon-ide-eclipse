@@ -72,18 +72,14 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private static final ImageDescriptor PUBLIC = CeylonPlugin.getInstance().image("public_co.gif");
     private static final ImageDescriptor ALPHA = CeylonPlugin.getInstance().image("alphab_sort_co.gif");
     
-    private final ITreeContentProvider contentProvider;
-    private final StyledCellLabelProvider labelProvider;
+    private ITreeContentProvider contentProvider;
+    private StyledCellLabelProvider labelProvider;
     private CeylonParseController parseController;
     private CeylonSourceViewer sourceViewer;
-    private CeylonOutlineBuilder modelBuilder;
     
     public CeylonOutlinePage(CeylonParseController parseController,
-            CeylonOutlineBuilder modelBuilder, 
             CeylonSourceViewer sourceViewer) {
-        
         this.parseController = parseController;
-        this.modelBuilder = modelBuilder;
         this.sourceViewer = sourceViewer;
         this.contentProvider = new OutlineContentProvider();
         this.labelProvider = new DecoratingStyledCellLabelProvider(new CeylonLabelProvider(true), 
@@ -112,7 +108,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
                     if (treeViewer!=null && 
                             !treeViewer.getTree().isDisposed()) {
                         Object[] expanded = treeViewer.getExpandedElements();
-                        CeylonOutlineNode rootNode = modelBuilder.buildTree(parseController);
+                        CeylonOutlineNode rootNode = new CeylonOutlineBuilder()
+                                .buildTree(parseController);
                         treeViewer.setInput(rootNode);
                         for (Object obj: expanded) {
                             treeViewer.expandToLevel(obj, 1);
@@ -132,7 +129,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(labelProvider);
         viewer.addSelectionChangedListener(this);
-        CeylonOutlineNode rootNode = modelBuilder.buildTree(parseController);
+        CeylonOutlineNode rootNode = new CeylonOutlineBuilder()
+                .buildTree(parseController);
         viewer.setInput(rootNode);
         viewer.setComparer(new DefaultElementComparer());
 
@@ -166,12 +164,16 @@ public class CeylonOutlinePage extends ContentOutlinePage
     @Override
     public void dispose() {
         getTreeViewer().removeSelectionChangedListener(this);
+        getTreeViewer().setSelection(null);
+        getSite().getSelectionProvider().setSelection(null);
         super.dispose();
         if (labelProvider!=null) {
             labelProvider.dispose();
+            labelProvider = null;
         }
         if (contentProvider!=null) {
             contentProvider.dispose();
+            contentProvider = null;
         }
         IPageSite site = getSite();
         //TODO: how the hell do we clean up the actions?
@@ -181,7 +183,6 @@ public class CeylonOutlinePage extends ContentOutlinePage
         site.setSelectionProvider(null);
         sourceViewer = null;
         parseController = null;
-        modelBuilder = null;
     }
 
      void expand(TreeViewer viewer, CeylonOutlineNode rootNode) {
@@ -195,8 +196,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
         }
     }
     
-    private static final class OutlineContentProvider implements
-            ITreeContentProvider {
+    private static final class OutlineContentProvider 
+            implements ITreeContentProvider {
         public Object[] getChildren(Object element) {
             return ((CeylonOutlineNode) element).getChildren().toArray();
         }
@@ -237,7 +238,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         
     }
 
-    class LexicalSortingAction extends Action {
+    private class LexicalSortingAction extends Action {
 
         private ViewerComparator fElementComparator= new ViewerComparator() {
             @Override
@@ -407,7 +408,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         }
     }
     
-    class OutlineNodeVisitor extends Visitor {
+    static class OutlineNodeVisitor extends Visitor {
         private final int offset;
         private final boolean hideNonshared;
         OutlineNodeVisitor(int offset) {

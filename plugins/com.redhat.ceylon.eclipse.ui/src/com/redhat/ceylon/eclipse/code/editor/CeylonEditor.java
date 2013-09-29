@@ -120,7 +120,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import ceylon.language.StringBuilder;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
@@ -254,7 +253,7 @@ public class CeylonEditor extends TextEditor {
     public CeylonOutlinePage getOutlinePage() {
         if (outlinePage == null) {
             outlinePage = new CeylonOutlinePage(getParseController(),
-                    new CeylonOutlineBuilder(), getCeylonSourceViewer());
+                    getCeylonSourceViewer());
             parserScheduler.addModelListener(outlinePage);
             getSourceViewer().getTextWidget().addCaretListener(outlinePage);
             getSite().getPage().addPartListener(new EditorPartListener(outlinePage, 
