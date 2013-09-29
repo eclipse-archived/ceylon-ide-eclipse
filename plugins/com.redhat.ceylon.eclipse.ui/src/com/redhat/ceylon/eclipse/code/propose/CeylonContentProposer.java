@@ -240,18 +240,19 @@ public class CeylonContentProposer {
         if ((tt==ASTRING_LITERAL || tt==AVERBATIM_STRING) &&
                 offset>adjustedToken.getStartIndex() &&
                 offset<adjustedToken.getStopIndex()) {
-            
-        	inDoc = true;
+
+            inDoc = true;
             // de-qualifying type here in case we need package proposal
-    		int qualMarker = result.prefix.lastIndexOf("::");
-			if (qualMarker > -1 && offset > (adjustedToken.getStartIndex() + result.start + qualMarker +1) ) {
-    			qual = result.prefix.substring(0, qualMarker + 2);
-    			result.prefix = result.prefix.substring(qualMarker + 2);
-    		}
-			else if (result.isMemberOp && requiredType != null 
-					&& !requiredType.getDeclaration().getQualifiedNameString().startsWith("ceylon.language")) { // FIXME
-				qual = requiredType.getDeclaration().getQualifiedNameString() + ".";
-			}
+            int qualMarker = result.prefix.lastIndexOf("::");
+            if (!result.isMemberOp && qualMarker > -1 && offset > (adjustedToken.getStartIndex() + result.start + qualMarker +1) ) {
+                qual = result.prefix.substring(0, qualMarker + 2);
+                result.prefix = result.prefix.substring(qualMarker + 2);
+                }
+            else if (result.isMemberOp) {
+                if (result.type != null && requiredType != null) {
+                    qual = result.type + ".";
+                }
+            } 
         }
         
         //construct completions when outside ordinary code
@@ -378,6 +379,7 @@ public class CeylonContentProposer {
 	            		PositionedPrefix pp = new PositionedPrefix(docRef.start, true);
 	            		if (docRef.start + docRef.ref.lastIndexOf('.') < offsetInToken) {
 	            			pp.prefix = docRef.ref.substring(docRef.ref.lastIndexOf('.') + 1, offsetInToken - docRef.start +1);
+	            			pp.type = docRef.ref.substring(0, docRef.ref.lastIndexOf('.'));
 	            		}
 	            		return pp;
 	            	} else { // type lookup, handle package later
@@ -480,6 +482,7 @@ public class CeylonContentProposer {
 	}
 
 	private static class PositionedPrefix {
+        String type;
         String prefix;
         int start;
         boolean isMemberOp;
