@@ -12,6 +12,7 @@ import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ALI
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARGUMENT_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.UPPER_BOUND;
+import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.DOCLINK;
 
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -195,8 +196,14 @@ class FindOccurrenceLocationVisitor extends Visitor
     
     public void visit(Tree.StringLiteral that) {
         if (inBounds(that)) {
-            occurrence = EXPRESSION;
+            occurrence = DOCLINK;
         }
+    }
+   
+    public void visit(Tree.DocLink that) {
+    	if (this.node instanceof Tree.DocLink) {
+            occurrence = DOCLINK;
+    	}
     }
     
     private boolean inBounds(Node that) {
