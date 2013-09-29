@@ -68,9 +68,7 @@ public class CeylonStructureCreator extends StructureCreator {
             }
         };
         
-    	CeylonParseController pc= new CeylonParseController();
-    	CeylonOutlineBuilder builder= new CeylonOutlineBuilder();
-    	
+    	CeylonParseController pc = new CeylonParseController();
     	if (input instanceof ResourceNode) {
     	    IResource file = ((ResourceNode) input).getResource();
     	    pc.initialize(file.getProjectRelativePath(), file.getProject(), null);
@@ -85,7 +83,8 @@ public class CeylonStructureCreator extends StructureCreator {
     	
     	if (rootNode!=null) {
     		// now visit the model, creating TreeCompareNodes for each ModelTreeNode
-    		buildCompareTree(builder.buildTree(pc), structureRootNode, document);
+    		buildCompareTree(new CeylonOutlineBuilder().buildTree(pc), 
+    		        structureRootNode, document);
     	}
     	
         return structureRootNode;

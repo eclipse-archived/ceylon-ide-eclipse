@@ -36,7 +36,7 @@ public class CeylonOutlineNode implements IAdaptable {
     public static final int UNIT_CATEGORY = -2;
     public static final int IMPORT_LIST_CATEGORY = -1;
 
-    private final List<CeylonOutlineNode> children= new ArrayList<CeylonOutlineNode>();
+    private final List<CeylonOutlineNode> children = new ArrayList<CeylonOutlineNode>();
 
     private CeylonOutlineNode parent;
 
