@@ -35,6 +35,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationKind;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -96,19 +97,20 @@ public class JavaQueryParticipant implements IQueryParticipant {
                                 nodes = frv.getNodes();
                             }
                             for (Node node: nodes) {
-                                FindContainerVisitor fcv = new FindContainerVisitor(node);
-                                cu.visit(fcv);
                                 if (node.getToken()==null) {
                                     //a synthetic node inserted in the tree
                                 }
                                 else {
+                                    FindContainerVisitor fcv = new FindContainerVisitor(node);
+                                    cu.visit(fcv);
                                     node = getIdentifyingNode(node);
+                                    Tree.StatementOrArgument c = fcv.getStatementOrArgument();
+                                    requestor.reportMatch(new CeylonSearchMatch(c, 
+                                            pu.getUnitFile(), 
+                                            node.getStartIndex(), 
+                                            node.getStopIndex()-node.getStartIndex()+1,
+                                            node.getToken()));
                                 }
-                                requestor.reportMatch(new CeylonSearchMatch(fcv.getStatementOrArgument(), 
-                                        pu.getUnitFile(), 
-                                        node.getStartIndex(), 
-                                        node.getStopIndex()-node.getStartIndex()+1,
-                                        node.getToken()));
                             }
                         }
                         break;

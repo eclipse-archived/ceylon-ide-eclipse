@@ -17,7 +17,28 @@ public class FindContainerVisitor extends Visitor
 		this.node=node;
 	}
     @Override
+    public void visit(Tree.ImportModule that) {
+        Tree.StatementOrArgument d = currentDeclaration;
+        currentDeclaration = that;
+        super.visit(that);
+        currentDeclaration = d;
+    }
+    @Override
     public void visit(Tree.Import that) {
+        Tree.StatementOrArgument d = currentDeclaration;
+        currentDeclaration = that;
+        super.visit(that);
+        currentDeclaration = d;
+    }
+    @Override
+    public void visit(Tree.ModuleDescriptor that) {
+        Tree.StatementOrArgument d = currentDeclaration;
+        currentDeclaration = that;
+        super.visit(that);
+        currentDeclaration = d;
+    }
+    @Override
+    public void visit(Tree.PackageDescriptor that) {
         Tree.StatementOrArgument d = currentDeclaration;
         currentDeclaration = that;
         super.visit(that);

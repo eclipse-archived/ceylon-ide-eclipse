@@ -98,9 +98,12 @@ class CeylonSearchQuery implements ISearchQuery {
     	                FindContainerVisitor fcv = new FindContainerVisitor(node);
     	                cu.visit(fcv);
     	                node = getIdentifyingNode(node);
-    	                result.addMatch(new CeylonSearchMatch(fcv.getStatementOrArgument(), pu.getUnitFile(), 
-    	                        node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
-    	                        node.getToken()));
+    	                Tree.StatementOrArgument c = fcv.getStatementOrArgument();
+    	                if (c!=null) {
+                            result.addMatch(new CeylonSearchMatch(c, pu.getUnitFile(), 
+        	                        node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
+        	                        node.getToken()));
+    	                }
     	                count++;
     	            }
     	        };
