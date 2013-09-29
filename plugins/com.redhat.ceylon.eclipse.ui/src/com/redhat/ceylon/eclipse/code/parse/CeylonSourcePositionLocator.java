@@ -31,7 +31,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
@@ -95,15 +94,15 @@ public class CeylonSourcePositionLocator {
         return findScope(cu, s.getOffset(), s.getOffset()+s.getLength());
     }
     
-    public static int getStartOffset(Object node) {
+    public static int getStartOffset(Node node) {
         return getNodeStartOffset(node);
     }
     
-    public static int getEndOffset(Object node) {
-        return getNodeEndOffset(node)+1;
+    public static int getEndOffset(Node node) {
+        return getNodeEndOffset(node);
     }
     
-    public static int getLength(Object node) {
+    public static int getLength(Node node) {
         return getEndOffset(node) - getStartOffset(node);
     }
     
@@ -208,12 +207,8 @@ public class CeylonSourcePositionLocator {
         }
     }
     
-    private static Node toNode(Object node) {
-        if (node instanceof CeylonOutlineNode) {
-        	CeylonOutlineNode on = (CeylonOutlineNode) node;
-            return (Node) on.getTreeNode();
-        }
-        else if (node instanceof Node) {
+    private static Node toNode(Node node) {
+        if (node instanceof Node) {
             return getIdentifyingNode((Node) node);
         }
         else {
@@ -221,10 +216,7 @@ public class CeylonSourcePositionLocator {
         }
     }
     
-    public static int getNodeStartOffset(Object node) {
-        if (node instanceof CommonToken) {
-            return ((CommonToken) node).getStartIndex();
-        }
+    public static int getNodeStartOffset(Node node) {
         Node in = toNode(node);
         if (in==null) {
             return 0;
@@ -235,17 +227,14 @@ public class CeylonSourcePositionLocator {
         }
     }
     
-    public static int getNodeEndOffset(Object node) {
-        if (node instanceof CommonToken) {
-            return ((CommonToken) node).getStopIndex();
-        }
+    public static int getNodeEndOffset(Node node) {
         Node in = toNode(node);
         if (in==null) {
             return 0;
         }
         else {
             Integer index = in.getStopIndex();
-            return index==null?0:index;
+            return index==null?0:index+1;
         }
     }
     
@@ -260,7 +249,7 @@ public class CeylonSourcePositionLocator {
 
     public static IPath getNodePath(Node node, IProject project, TypeChecker tc) {
         Unit unit = node.getUnit();
-
+        
         if (unit instanceof IResourceAware) {
     	    IFile fileResource = ((IResourceAware) unit).getFileResource();
     	    if (fileResource != null) {

@@ -6,9 +6,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-
 /**
  * The NamePatternFilter selects the elements which
  * match the given string patterns.
@@ -38,17 +35,10 @@ class OutlineNamePatternFilter extends ViewerFilter {
 		return hasUnfilteredChild(treeViewer, element);*/
 		TreeViewer treeViewer= (TreeViewer) viewer;
 		if (element instanceof CeylonOutlineNode) {
-			Node node = ((CeylonOutlineNode)element).getTreeNode();
-			if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
-				com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration dec = (com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node;
-				Identifier id = dec.getIdentifier();
-				return id!=null && id.getText().toLowerCase()
-						.startsWith(filterText.getText().toLowerCase()) ||
-						hasUnfilteredChild(treeViewer, element);
-			}
-			else {
-				return false;
-			}
+			String name = ((CeylonOutlineNode)element).getName();
+			return name!=null && name.toLowerCase()
+					.startsWith(filterText.getText().toLowerCase()) ||
+					hasUnfilteredChild(treeViewer, element);
 		}
 		return true;
 	}

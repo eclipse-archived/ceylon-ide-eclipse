@@ -13,8 +13,6 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 
@@ -221,8 +219,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private static final ViewerComparator fElementComparator = new ViewerComparator() {
         @Override
         public int compare(Viewer viewer, Object e1, Object e2) {
-            CeylonOutlineNode t1= (CeylonOutlineNode) e1;
-            CeylonOutlineNode t2= (CeylonOutlineNode) e2;
+            CeylonOutlineNode t1 = (CeylonOutlineNode) e1;
+            CeylonOutlineNode t2 = (CeylonOutlineNode) e2;
             int cat1= t1.getCategory();
             int cat2= t2.getCategory();
             if (cat1 == cat2) {
@@ -235,7 +233,9 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private static final ViewerComparator fPositionComparator = new ViewerComparator() {
         @Override
         public int compare(Viewer viewer, Object e1, Object e2) {
-            return getStartOffset(e1) - getStartOffset(e2);
+            CeylonOutlineNode t1 = (CeylonOutlineNode) e1;
+            CeylonOutlineNode t2 = (CeylonOutlineNode) e2;
+            return t1.getStartOffset() - t2.getStartOffset();
         }
     };
 
@@ -277,14 +277,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private static final ViewerFilter filter = new ViewerFilter() {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            Node node = ((CeylonOutlineNode) element).getTreeNode();
-            if (node instanceof Tree.Declaration) {
-                Declaration declaration = ((Tree.Declaration) node).getDeclarationModel();
-                if (declaration != null) {
-                    return declaration.isShared();
-                }
-            }
-            return true;
+            return ((CeylonOutlineNode) element).isShared();
         }
     };
 
@@ -334,21 +327,19 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (!suspend) {
             ITreeSelection sel= (ITreeSelection) event.getSelection();
             if (!sel.isEmpty()) {
-                Node node = ((CeylonOutlineNode) sel.getFirstElement()).getTreeNode();
-                if (node instanceof PackageNode || 
-                    node instanceof Tree.ImportList ||
-                    node instanceof Tree.CompilationUnit) {
-                    return;
-                }
-                suspend = true;
-                try {
-                    int startOffset = getStartOffset(node);
-                    int endOffset = getEndOffset(node);
-                    ((ITextEditor) getCurrentEditor())
-                            .selectAndReveal(startOffset, endOffset-startOffset);
-                }
-                finally {
-                    suspend = false;
+                CeylonOutlineNode on = (CeylonOutlineNode) sel.getFirstElement();
+                if (on.getCategory()==CeylonOutlineNode.DEFAULT_CATEGORY) {
+                    suspend = true;
+                    try {
+                        int startOffset = on.getStartOffset();
+                        int endOffset = on.getEndOffset();
+                        ((ITextEditor) getCurrentEditor())
+                                .selectAndReveal(startOffset, 
+                                        endOffset-startOffset);
+                    }
+                    finally {
+                        suspend = false;
+                    }
                 }
             }
         }
@@ -369,10 +360,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
         try {
             OutlineNodeVisitor visitor = new OutlineNodeVisitor(offset);
             rootNode.visit(visitor);
-            if (!visitor.result.isEmpty()) {
-                TreePath treePath = new TreePath(visitor.result.toArray());
-                if (!visitor.result.get(visitor.result.size()-1)
-                        .getChildren().isEmpty()) {
+            List<CeylonOutlineNode> result = visitor.result;
+            if (!result.isEmpty()) {
+                TreePath treePath = new TreePath(result.toArray());
+                if (!result.get(result.size()-1).getChildren().isEmpty()) {
                     getTreeViewer().expandToLevel(treePath, 1);
                 }
                 setSelection(new TreeSelection(treePath));
@@ -392,6 +383,9 @@ public class CeylonOutlinePage extends ContentOutlinePage
                     .getBoolean("HideNonSharedAction.isChecked");
         }
         List<CeylonOutlineNode> result = new ArrayList<CeylonOutlineNode>();
+        private CeylonOutlineNode getParent() {
+            return result.isEmpty() ? null : result.get(result.size()-1);
+        }
         @Override
         public void visit(Tree.Declaration that) {
             if (!(that instanceof Tree.TypeParameterDeclaration) &&
@@ -401,7 +395,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                 if (inBounds(that)) {
                     Declaration dm = that.getDeclarationModel();
                     if (!hideNonshared||dm!=null&&dm.isShared()) {
-                        result.add(new CeylonOutlineNode(that));
+                        result.add(new CeylonOutlineNode(that, getParent()));
                         super.visit(that);
                     }
                 }
@@ -415,6 +409,11 @@ public class CeylonOutlinePage extends ContentOutlinePage
         }
         @Override
         public void visit(Tree.Parameter that) {}
+        @Override
+        public void visit(Tree.CompilationUnit that) {
+//            result.add(new CeylonOutlineNode(that, ROOT_CATEGORY));
+            super.visit(that);
+        }
         @Override
         public void visit(Tree.ImportList that) {
             if (inBounds(that)) {
@@ -439,14 +438,14 @@ public class CeylonOutlinePage extends ContentOutlinePage
         @Override
         public void visit(Tree.Import that) {
             if (inBounds(that)) {
-                result.add(new CeylonOutlineNode(that));
+                result.add(new CeylonOutlineNode(that,getParent()));
             }
             super.visit(that);
         }
         @Override
         public void visit(Tree.ImportModule that) {
             if (inBounds(that)) {
-                result.add(new CeylonOutlineNode(that));
+                result.add(new CeylonOutlineNode(that,getParent()));
             }
             super.visit(that);
         }

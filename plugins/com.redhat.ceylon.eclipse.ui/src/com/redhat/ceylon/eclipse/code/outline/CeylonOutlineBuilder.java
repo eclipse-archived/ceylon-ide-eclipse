@@ -20,21 +20,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonOutlineBuilder {
 	
-	void visitTree(Object root, IFile file) {
-		if (root==null) return;
-		Tree.CompilationUnit rootNode = (Tree.CompilationUnit) root;
-		Unit unit = rootNode.getUnit();
-		if (unit!=null && !unit.getFilename().equals("module.ceylon") &&
-		    !unit.getFilename().equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
-	        PackageNode packageNode = new PackageNode();
-	        packageNode.setPackageName(unit.getPackage().getQualifiedNameString());
-		    createSubItem(packageNode, PACKAGE_CATEGORY, 
-		            file==null ? null : file.getParent());
-		}
-		createSubItem(rootNode, UNIT_CATEGORY, file);
- 		rootNode.visit(new CeylonModelVisitor());
-	}
-
 	private class CeylonModelVisitor extends Visitor {
 		// set to true to get nodes for everything in the outline
 		private static final boolean INCLUDEALL = false;
@@ -96,10 +81,21 @@ public class CeylonOutlineBuilder {
 	public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
 	    IFile file = cpc.getProject()==null || cpc.getPath()==null ? null :
 	            cpc.getProject().getFile(cpc.getPath());
-	    CeylonOutlineNode modelRoot = createTopItem(cpc.getRootNode());
+	    Tree.CompilationUnit rootNode = cpc.getRootNode();
+	    CeylonOutlineNode modelRoot = createTopItem(rootNode, file);
 	    itemStack.push(modelRoot);
 		try {
-			visitTree(cpc.getRootNode(), file);
+	        Unit unit = rootNode.getUnit();
+	        if (unit!=null && 
+	            !unit.getFilename().equals("module.ceylon") &&
+	            !unit.getFilename().equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
+	            PackageNode packageNode = new PackageNode();
+	            packageNode.setPackageName(unit.getPackage().getQualifiedNameString());
+	            createSubItem(packageNode, PACKAGE_CATEGORY, 
+	                    file==null ? null : file.getParent());
+	        }
+	        createSubItem(rootNode, UNIT_CATEGORY, file);
+	        rootNode.visit(new CeylonModelVisitor());
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
@@ -108,8 +104,8 @@ public class CeylonOutlineBuilder {
 		return modelRoot;
 	}
 	
-	protected CeylonOutlineNode createTopItem(Node node) {
-        return new CeylonOutlineNode(node, ROOT_CATEGORY);
+	protected CeylonOutlineNode createTopItem(Node node, IFile file) {
+        return new CeylonOutlineNode(node, ROOT_CATEGORY, file);
 	}
 
 	protected CeylonOutlineNode createSubItem(Node n) {
@@ -122,7 +118,7 @@ public class CeylonOutlineBuilder {
 
     protected CeylonOutlineNode createSubItem(Node n, int category, IResource file) {
         final CeylonOutlineNode parent= itemStack.peek();
-        CeylonOutlineNode treeNode= new CeylonOutlineNode(n, parent, category, file);
+        CeylonOutlineNode treeNode = new CeylonOutlineNode(n, parent, category, file);
         parent.addChild(treeNode);
         return treeNode;
     }

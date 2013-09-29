@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getColoring;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getInterpolationColoring;
@@ -212,8 +210,8 @@ class PresentationDamageRepairer implements IPresentationDamager,
                     break;
 				}
 				
-				int startOffset= getStartOffset(token);
-				int endOffset= getEndOffset(token);
+				int startOffset= token.getStartIndex();
+				int endOffset= token.getStopIndex()+1;
 				if (endOffset<damage.getOffset()) continue;
 				if (startOffset>damage.getOffset()+damage.getLength()) break;
 				
@@ -237,7 +235,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
 				}*/
 				if (tt==CeylonParser.STRING_MID ||
 				    tt==CeylonParser.STRING_END) {
-                    changeTokenPresentation(presentation, 
+                    changeTokenPresentation(presentation,
                             getInterpolationColoring(),
                             startOffset-2,startOffset-1,
                             inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
