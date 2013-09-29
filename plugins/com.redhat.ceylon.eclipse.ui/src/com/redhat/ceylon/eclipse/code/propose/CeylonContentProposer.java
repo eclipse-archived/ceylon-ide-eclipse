@@ -249,8 +249,8 @@ public class CeylonContentProposer {
     			result.prefix = result.prefix.substring(qualMarker + 2);
     		}
 			else if (result.isMemberOp && requiredType != null 
-					&& !requiredType.getProducedTypeQualifiedName().startsWith("ceylon.language")) { // FIXME
-				qual = requiredType.getProducedTypeQualifiedName() + ".";
+					&& !requiredType.getDeclaration().getQualifiedNameString().startsWith("ceylon.language")) { // FIXME
+				qual = requiredType.getDeclaration().getQualifiedNameString() + ".";
 			}
         }
         
@@ -1863,10 +1863,7 @@ public class CeylonContentProposer {
         }
         else if (memberOp && (node instanceof Tree.Term || node instanceof Tree.DocLink)) {
         	ProducedType type = null;
-        	if (node instanceof Tree.Term) {
-        		type = ((Tree.Term)node).getTypeModel();
-        	} 
-        	else if (node instanceof Tree.DocLink) {
+        	if (node instanceof Tree.DocLink) {
         		Declaration d = ((Tree.DocLink)node).getBase();
         		if (d != null) {
 	        		type = CeylonContentProposer.type(d);
@@ -1875,6 +1872,13 @@ public class CeylonContentProposer {
 	        		}
         		}
         	}
+        	else if (node instanceof Tree.StringLiteral) {//Doclink not available
+        		type = null;  //TODO derive doclink type
+        	}
+        	else if (node instanceof Tree.Term) {
+        		type = ((Tree.Term)node).getTypeModel();
+        	} 
+
         	
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
@@ -1976,11 +1980,7 @@ public class CeylonContentProposer {
         if (ol!= DOCLINK) {
         	result.append(name(d));
         } else {
-        	if (d.getProximity() < 1 && d.getDeclaration().isClassMember()) {
-        		result.append(name(d));
-        	} else {
-        		result.append(d.getDeclaration().getQualifiedNameString()); // TODO escape \i ?
-        	}
+       		result.append(d.getDeclaration().getQualifiedNameString()); // TODO escape \i ?
         }
         if (ol!=IMPORT && ol!= DOCLINK) appendTypeParameters(d.getDeclaration(), result);
         return result.toString();
