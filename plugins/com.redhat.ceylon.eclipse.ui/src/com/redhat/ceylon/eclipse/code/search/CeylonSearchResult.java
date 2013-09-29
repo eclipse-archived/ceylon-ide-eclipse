@@ -94,18 +94,21 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 
 	@Override
 	public IFile getFile(Object element) {
-		if (element instanceof IFile)
+		if (element instanceof IFile) {
 			return (IFile) element;
-		else if (element instanceof CeylonElement)
+		}
+		else if (element instanceof CeylonElement) {
 			return ((CeylonElement) element).getFile();
-		else 
+		}
+		else { 
 			return null;
+		}
 	}
 
 	@Override
 	public Match[] computeContainedMatches(AbstractTextSearchResult atsr,
 			IEditorPart editor) {
-		IEditorInput ei= editor.getEditorInput();
+		IEditorInput ei = editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
 			return getMatchesForFile(Util.getFile(ei));
 		}
@@ -119,7 +122,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 
 	@Override
 	public boolean isShownInEditor(Match match, IEditorPart editor) {
-		IEditorInput ei= editor.getEditorInput();
+		IEditorInput ei = editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
 			IFile file = getFile(match.getElement());
 			return file!=null && file.equals(Util.getFile(ei));

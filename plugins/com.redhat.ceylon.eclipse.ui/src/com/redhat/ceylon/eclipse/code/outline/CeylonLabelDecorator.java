@@ -127,7 +127,7 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
             return getDecorationAttributes(((DeclarationWithProject) entity).getDeclaration());
         }
         if (entity instanceof CeylonElement) {
-            return getNodeDecorationAttributes(((CeylonElement) entity).getNode());
+            return ((CeylonElement) entity).getDecorations();
         }
         if (entity instanceof Declaration) {
             return getDecorationAttributes((Declaration) entity);
@@ -138,7 +138,7 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
         return 0;
     }
 
-    private static int getNodeDecorationAttributes(Node node) {
+    public static int getNodeDecorationAttributes(Node node) {
         int result = 0;
         if (node instanceof Tree.Declaration || node instanceof Tree.Import) {
             ErrorCollectionVisitor ev = new ErrorCollectionVisitor(node, true);

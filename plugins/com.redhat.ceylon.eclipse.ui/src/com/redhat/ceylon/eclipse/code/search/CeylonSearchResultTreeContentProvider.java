@@ -5,16 +5,18 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
-
-import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 class CeylonSearchResultTreeContentProvider implements
     CeylonStructuredContentProvider, ITreeContentProvider {
@@ -158,33 +160,27 @@ class CeylonSearchResultTreeContentProvider implements
     }
 
     public Object getParent(Object element) {
-        IProject project = null;
-        if (element instanceof WithProject) {
-            WithProject wt = (WithProject) element;
-            project = wt.project;
-            element = wt.element;
-        }
-        if (element instanceof IProject) {
+        if (element instanceof IProject ||
+            element instanceof IJavaProject) {
             return null;
         }
+        if (element instanceof IPackageFragment ||
+            element instanceof IPackageFragmentRoot) {
+            return ((IJavaElement)element).getJavaProject().getProject();
+        }
         if (element instanceof IResource) {
-            return ((IResource) element).getParent();
-        }
-        if (element instanceof Package) {
-        	return project!=null ? project :
-        		((Package) element).getModule();
-        }
-        if (element instanceof Unit) {
-        	Package pack = ((Unit) element).getPackage();
-			return project==null ? pack : 
-				new WithProject(pack, project);
+            IContainer parent = ((IResource) element).getParent();
+            IJavaElement javaElement = JavaCore.create(parent);
+            if (javaElement instanceof IPackageFragment ||
+                javaElement instanceof IPackageFragmentRoot) {
+                return javaElement;
+            }
+            else {
+                return parent;
+            }
         }
         if (element instanceof CeylonElement) {
-            CeylonElement ce = (CeylonElement) element;
-            IFile file = ce.getFile();
-            Unit unit = ce.getNode().getUnit();
-			return file==null ? unit :
-				new WithProject(unit, file.getProject());
+            return ((CeylonElement) element).getFile();
         }
         return null;
 	}
