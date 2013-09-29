@@ -146,6 +146,10 @@ public class CeylonParserScheduler extends Job {
     public void removeModelListener(TreeLifecycleListener listener) {
         listeners.remove(listener);
     }
+    
+    public void dispose() {
+        listeners.clear();
+    }
 
     private void notifyModelListeners(Stage stage, IProgressMonitor monitor) {
         if (parseController!=null) {

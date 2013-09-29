@@ -96,9 +96,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IPropertyListener;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
@@ -255,10 +253,6 @@ public class CeylonEditor extends TextEditor {
             outlinePage = new CeylonOutlinePage(getParseController(),
                     getCeylonSourceViewer());
             parserScheduler.addModelListener(outlinePage);
-            getSourceViewer().getTextWidget().addCaretListener(outlinePage);
-            getSite().getPage().addPartListener(new EditorPartListener(outlinePage, 
-                    getCeylonSourceViewer()));
-            //myOutlinePage.update(parseController);
          }
          return outlinePage;
     }
@@ -435,30 +429,7 @@ public class CeylonEditor extends TextEditor {
         textWidget.setKeyBinding(SWT.CTRL | SWT.DEL, SWT.NULL);
         markAsStateDependentAction(DELETE_NEXT_WORD, true);
     }
-
-    private static final class EditorPartListener implements IPartListener {
-        private CeylonOutlinePage outlinePage;
-        private CeylonSourceViewer sourceViewer;
-        EditorPartListener(CeylonOutlinePage outlinePage, CeylonSourceViewer sourceViewer) {
-            this.outlinePage = outlinePage;
-            this.sourceViewer = sourceViewer;
-        }
-        @Override
-        public void partActivated(IWorkbenchPart part) {}
-
-        @Override
-        public void partClosed(IWorkbenchPart part) {
-            sourceViewer.getTextWidget().removeCaretListener(outlinePage);
-            part.getSite().getPage().removePartListener(this);
-        }
-        @Override
-        public void partBroughtToTop(IWorkbenchPart part) {}
-        @Override
-        public void partDeactivated(IWorkbenchPart part) {}
-        @Override
-        public void partOpened(IWorkbenchPart part) {}
-    }
-
+    
     /**
      * Text navigation action to navigate to the next sub-word.
      *
@@ -1262,8 +1233,10 @@ public class CeylonEditor extends TextEditor {
 
         if (parserScheduler!=null) {
             parserScheduler.cancel(); // avoid unnecessary work after the editor is asked to close down
+            parserScheduler.dispose();
+            parserScheduler = null;
         }
-        parserScheduler = null;
+        
         parseController = null;
         
         uninstallQuickAccessAction();
