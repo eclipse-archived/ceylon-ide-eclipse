@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import java.util.Collections;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -16,7 +17,27 @@ import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 
 public class FindSubtypesAction extends AbstractFindAction {
 
-	public FindSubtypesAction() {}
+	private static final class Query extends FindSearchQuery {
+        private Query(Declaration referencedDeclaration, IProject project) {
+            super(referencedDeclaration, project);
+        }
+
+        @Override
+        protected Set<Node> getNodes(Tree.CompilationUnit cu,
+                Declaration referencedDeclaration) {
+            FindSubtypesVisitor frv = new FindSubtypesVisitor((TypeDeclaration) referencedDeclaration);
+            cu.visit(frv);
+            Set<Tree.Declaration> nodes = frv.getDeclarationNodes();
+            return Collections.<Node>unmodifiableSet(nodes);
+        }
+
+        @Override
+        protected String labelString() {
+            return "subtypes of";
+        }
+    }
+
+    public FindSubtypesAction() {}
 	
     public FindSubtypesAction(IEditorPart editor) {
 		super("Find Subtypes", editor);
@@ -36,18 +57,6 @@ public class FindSubtypesAction extends AbstractFindAction {
 
     @Override
     public FindSearchQuery createSearchQuery() {
-        return new FindSearchQuery(declaration, project) {
-            @Override
-            protected Set<Node> getNodes(Tree.CompilationUnit cu) {
-                FindSubtypesVisitor frv = new FindSubtypesVisitor((TypeDeclaration) declaration);
-                cu.visit(frv);
-                Set<Tree.Declaration> nodes = frv.getDeclarationNodes();
-                return Collections.<Node>unmodifiableSet(nodes);
-            }
-            @Override
-            protected String labelString() {
-                return "subtypes of";
-            }
-        };
+        return new Query(declaration, project);
     }
 }

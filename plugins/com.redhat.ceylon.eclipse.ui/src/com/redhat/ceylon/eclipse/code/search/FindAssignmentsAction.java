@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -14,7 +15,26 @@ import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 
 public class FindAssignmentsAction extends AbstractFindAction {
 
-	public FindAssignmentsAction() {}
+	private static final class Query extends FindSearchQuery {
+        private Query(Declaration referencedDeclaration, IProject project) {
+            super(referencedDeclaration, project);
+        }
+
+        @Override
+        protected Set<Node> getNodes(Tree.CompilationUnit cu, 
+                Declaration referencedDeclaration) {
+            FindAssignmentsVisitor frv = new FindAssignmentsVisitor(referencedDeclaration);
+            cu.visit(frv);
+            return frv.getNodes();
+        }
+
+        @Override
+        protected String labelString() {
+            return "assigments to";
+        }
+    }
+
+    public FindAssignmentsAction() {}
 	
     public FindAssignmentsAction(IEditorPart editor) {
 		super("Find Assignments", editor);
@@ -34,18 +54,7 @@ public class FindAssignmentsAction extends AbstractFindAction {
 
 	@Override
 	public FindSearchQuery createSearchQuery() {
-	    return new FindSearchQuery(declaration, project) {
-	        @Override
-	        protected Set<Node> getNodes(Tree.CompilationUnit cu) {
-	            FindAssignmentsVisitor frv = new FindAssignmentsVisitor(declaration);
-	            cu.visit(frv);
-	            return frv.getNodes();
-	        }
-	        @Override
-	        protected String labelString() {
-	            return "assigments to";
-	        }
-        };
+	    return new Query(declaration, project);
 	}
 
 }
