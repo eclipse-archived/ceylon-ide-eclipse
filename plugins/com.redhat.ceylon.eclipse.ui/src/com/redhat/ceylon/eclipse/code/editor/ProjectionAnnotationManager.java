@@ -54,7 +54,10 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
     public void projectionEnabled() {
         reset();
 //        editor.scheduleParsing();
-        update(editor.getParseController(), new NullProgressMonitor());
+        CeylonParseController pc = editor.getParseController();
+        if (pc.getDocument()==editor.getCeylonSourceViewer().getDocument()) {
+            update(pc, new NullProgressMonitor());
+        }
     }
     
     @Override

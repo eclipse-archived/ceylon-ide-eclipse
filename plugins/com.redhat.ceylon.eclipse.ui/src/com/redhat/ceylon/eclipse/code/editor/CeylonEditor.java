@@ -177,6 +177,7 @@ public class CeylonEditor extends TextEditor {
         configureInsertMode(SMART_INSERT, true);
         setInsertMode(SMART_INSERT);
         problemMarkerManager= new ProblemMarkerManager();
+        parseController = new CeylonParseController();
     }
     
     static String[][] getFences() {
@@ -994,7 +995,6 @@ public class CeylonEditor extends TextEditor {
         IEditorInput editorInput = getEditorInput();
         IFile file = getFile(editorInput);
         IPath filePath = getPath(editorInput);
-        parseController = new CeylonParseController();
         IProject project = file!=null && file.exists() ? file.getProject() : null;
         parseController.initialize(filePath, project, annotationCreator);
     }
@@ -1056,13 +1056,16 @@ public class CeylonEditor extends TextEditor {
     private IPropertyListener editorInputPropertyListener = new IPropertyListener() {
         public void propertyChanged(Object source, int propId) {
             if (source == CeylonEditor.this && propId == IEditorPart.PROP_INPUT) {
-                IDocument oldDoc= getParseController().getDocument();
-                IDocument curDoc= getDocumentProvider().getDocument(getEditorInput()); 
+                IDocument oldDoc = getParseController().getDocument();
+                IDocument curDoc = getDocumentProvider().getDocument(getEditorInput()); 
                 if (curDoc!=oldDoc) {
                     // Need to unwatch the old document and watch the new document
-                    oldDoc.removeDocumentListener(documentListener);
+                    if (oldDoc!=null) {
+                        oldDoc.removeDocumentListener(documentListener);
+                    }
                     curDoc.addDocumentListener(documentListener);
                 }
+                initializeParseController();
             }
         }
     };

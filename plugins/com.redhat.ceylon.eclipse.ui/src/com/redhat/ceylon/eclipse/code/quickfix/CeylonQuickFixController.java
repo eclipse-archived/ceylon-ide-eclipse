@@ -219,8 +219,10 @@ public class CeylonQuickFixController extends QuickAssistAssistant
     public void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
             ProblemLocation location, Collection<ICompletionProposal> proposals) {
         Tree.CompilationUnit rootNode = getRootNode();
-        assistant.addProposals(quickAssistContext, location, getFile(), 
-                rootNode, proposals);
+        if (rootNode!=null) {
+            assistant.addProposals(quickAssistContext, location, getFile(), 
+                    rootNode, proposals);
+        }
     }
     
     public void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
