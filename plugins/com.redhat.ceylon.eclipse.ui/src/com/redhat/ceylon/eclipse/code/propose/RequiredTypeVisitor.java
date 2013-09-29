@@ -5,7 +5,6 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -226,8 +225,16 @@ public class RequiredTypeVisitor extends Visitor
     @Override
     public void visit(Tree.StringLiteral that) {
         ProducedType ort = requiredType;
-        if (that.getScope() instanceof Declaration) {
-            requiredType = CeylonContentProposer.type((Declaration) that.getScope());
+        super.visit(that); // pass on
+        requiredType = ort;
+    }
+    
+    @Override
+    public void visit(Tree.DocLink that) {
+        ProducedType ort = requiredType;
+        requiredType = CeylonContentProposer.type(that.getBase());
+        if (requiredType == null) {
+        	requiredType = CeylonContentProposer.fullType(that.getBase());
         }
         super.visit(that);
         requiredType = ort;
