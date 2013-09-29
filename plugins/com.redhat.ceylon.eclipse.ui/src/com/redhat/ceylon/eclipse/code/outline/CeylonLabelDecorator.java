@@ -121,7 +121,7 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
             }
         }
         if (entity instanceof CeylonOutlineNode) {
-            return getNodeDecorationAttributes((Node)((CeylonOutlineNode) entity).getTreeNode());
+            return getNodeDecorationAttributes(((CeylonOutlineNode) entity).getTreeNode());
         }
         if (entity instanceof DeclarationWithProject) {
             return getDecorationAttributes(((DeclarationWithProject) entity).getDeclaration());
