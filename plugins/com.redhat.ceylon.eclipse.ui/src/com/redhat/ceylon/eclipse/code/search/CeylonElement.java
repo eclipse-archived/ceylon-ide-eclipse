@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getNod
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
 
-import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.StyledString;
 
@@ -16,16 +15,16 @@ import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 public class CeylonElement {
     
     private VirtualFile file;
-    private Token location;
+    private int line;
 	private String imageKey;
 	private String packageLabel;
 	private StyledString label;
 	private int decorations;
 	
 	public CeylonElement(Tree.StatementOrArgument node, 
-			VirtualFile file, Token location) {
+	        VirtualFile file, int line) {
 		this.file = file;
-		this.location = location;
+		this.line = line;
 		imageKey = getImageKeyForNode(node);
 		packageLabel = CeylonLabelProvider.getPackageLabel(node);
 		label = getStyledLabelForNode(node);
@@ -51,7 +50,7 @@ public class CeylonElement {
     }
 	
 	public int getLocation() {
-		return location.getLine();
+		return line;
 	}
 	
 	public VirtualFile getVirtualFile() {

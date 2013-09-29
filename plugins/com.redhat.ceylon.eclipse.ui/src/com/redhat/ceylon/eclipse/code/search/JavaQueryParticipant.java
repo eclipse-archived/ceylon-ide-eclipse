@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.gotoLocation;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.READ_ACCESSES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
@@ -103,13 +102,8 @@ public class JavaQueryParticipant implements IQueryParticipant {
                                 else {
                                     FindContainerVisitor fcv = new FindContainerVisitor(node);
                                     cu.visit(fcv);
-                                    node = getIdentifyingNode(node);
                                     Tree.StatementOrArgument c = fcv.getStatementOrArgument();
-                                    requestor.reportMatch(new CeylonSearchMatch(c, 
-                                            pu.getUnitFile(), 
-                                            node.getStartIndex(), 
-                                            node.getStopIndex()-node.getStartIndex()+1,
-                                            node.getToken()));
+                                    requestor.reportMatch(new CeylonSearchMatch(c, pu.getUnitFile(), node));
                                 }
                             }
                         }
