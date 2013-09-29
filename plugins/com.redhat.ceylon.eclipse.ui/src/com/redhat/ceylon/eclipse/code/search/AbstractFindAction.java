@@ -26,6 +26,7 @@ import org.eclipse.ui.views.contentoutline.ContentOutline;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -44,19 +45,24 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     
 	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
-		if (outlineView==null)return;
+		if (outlineView==null) return;
 		try {
 			CeylonOutlineNode on = (CeylonOutlineNode) ((ITreeSelection) outlineView.getSelection()).getFirstElement();
-			if (on==null) return;
-			Node node = (Node) on.getTreeNode();
-			if (node instanceof Tree.Declaration) {
-				declaration = ((Tree.Declaration) node).getDeclarationModel();
-	            project =  getProject(getCurrentEditor());
-				action.setEnabled(isValidSelection());
+			if (on!=null) {
+			    IEditorPart currentEditor = getCurrentEditor();
+			    if (currentEditor instanceof CeylonEditor) {
+			        CompilationUnit rootNode = ((CeylonEditor) currentEditor).getParseController().getRootNode();
+			        if (rootNode!=null) {
+			            Node node = findNode(rootNode, on.getStartOffset());
+			            if (node instanceof Tree.Declaration) {
+			                declaration = ((Tree.Declaration) node).getDeclarationModel();
+			                project =  getProject(currentEditor);
+			                action.setEnabled(isValidSelection());
+			            }
+			        }
+			    }
 			}
-			else {
-				action.setEnabled(false);
-			}
+			action.setEnabled(false);
 		}
 		catch (Exception e) {
 			action.setEnabled(false);

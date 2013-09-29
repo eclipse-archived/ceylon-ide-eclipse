@@ -12,7 +12,6 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
 
 import org.eclipse.jface.action.Action;
@@ -35,8 +34,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.Widget;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
@@ -73,13 +70,9 @@ public class OutlinePopup extends TreeViewPopup {
         protected void internalExpandToLevel(Widget w, int level) {
             if (!fIsFiltering && w instanceof Item) {
                 Item i= (Item) w;
-                Node node = ((CeylonOutlineNode) i.getData()).getTreeNode();
-                /*if (node instanceof Declaration) {
-                	boolean shared = ((Declaration) node).getDeclarationModel().isShared();
-					setExpanded(i, shared);
-                }
-                else*/ 
-                if (node instanceof ImportList) {
+                int cat = ((CeylonOutlineNode) i.getData()).getCategory();
+                //TODO: leave unshared declarations collapsed?
+                if (cat==CeylonOutlineNode.IMPORT_LIST_CATEGORY) {
                 	setExpanded(i, false);
                 	return;
                 }
@@ -212,16 +205,9 @@ public class OutlinePopup extends TreeViewPopup {
 	        Object object = getSelectedElement();
 			if (object instanceof CeylonOutlineNode) {
 	        	dispose();
-	        	gotoNode(((CeylonOutlineNode) object).getTreeNode(),
-	        			cpc.getProject(), cpc.getTypeChecker());
+	        	CeylonOutlineNode on = (CeylonOutlineNode) object;
+	        	editor.selectAndReveal(on.getStartOffset(), 0);
 	        }
-	        /*if (object instanceof Declaration) {
-	        	dispose();
-	        	Declaration dec = (Declaration) object;
-	        	//TODO: this is broken for Java declarations
-	        	gotoNode(getReferencedNode(dec, getCompilationUnit(cpc, dec)), 
-	        			cpc.getProject(), cpc.getTypeChecker());
-	        }*/
     	}
     }
 

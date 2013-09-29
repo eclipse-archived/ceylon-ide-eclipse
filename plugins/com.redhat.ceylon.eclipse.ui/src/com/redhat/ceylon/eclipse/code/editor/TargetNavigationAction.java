@@ -7,6 +7,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 abstract class TargetNavigationAction extends Action {
@@ -48,8 +49,8 @@ abstract class TargetNavigationAction extends Action {
             curNode= pc.getRootNode();
         }
         Object prev= getNavTarget(curNode, pc.getRootNode());
-        if (prev!=null) {
-            fEditor.selectAndReveal(getStartOffset(prev), 0);
+        if (prev instanceof Node) {
+            fEditor.selectAndReveal(getStartOffset((Node)prev), 0);
         }
     }
 }

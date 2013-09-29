@@ -151,7 +151,7 @@ public class CeylonParserScheduler extends Job {
         listeners.clear();
     }
 
-    private void notifyModelListeners(Stage stage, IProgressMonitor monitor) {
+    private synchronized void notifyModelListeners(Stage stage, IProgressMonitor monitor) {
         if (parseController!=null) {
             for (TreeLifecycleListener listener: new ArrayList<TreeLifecycleListener>(listeners)) {
             	if (editor.isBackgroundParsingPaused() || 

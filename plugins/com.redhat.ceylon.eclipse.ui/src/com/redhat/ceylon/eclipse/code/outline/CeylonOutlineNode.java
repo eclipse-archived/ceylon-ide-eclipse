@@ -13,46 +13,60 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getNodeDecorationAttributes;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
 import static java.lang.System.identityHashCode;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.viewers.StyledString;
 
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.core.model.SourceFile;
 
 public class CeylonOutlineNode implements IAdaptable {
 	
     public static final int ROOT_CATEGORY = -4;
-    public static final int DEFAULT_CATEGORY = 0;
     public static final int PACKAGE_CATEGORY = -3;
     public static final int UNIT_CATEGORY = -2;
     public static final int IMPORT_LIST_CATEGORY = -1;
+    public static final int DEFAULT_CATEGORY = 0;
 
     private final List<CeylonOutlineNode> children = new ArrayList<CeylonOutlineNode>();
 
     private CeylonOutlineNode parent;
 
-    private final Node treeNode;
     private final int category;
     private final String id;
     private IResource resource;
+    private boolean declaration;
+    private boolean shared;
+    private int startOffset;
+    private int endOffset;
+    private String imageKey;
+    private StyledString label;
+    private int decorations;
+    private String name;
+    private int realStartOffset;
+    private int realEndOffset;
 
     CeylonOutlineNode(Node treeNode) {
         this(treeNode, DEFAULT_CATEGORY);
     }
 
     CeylonOutlineNode(Node treeNode, int category) {
-        this.treeNode = treeNode;
-        this.category = category;
-        id = createIdentifier();
+        this(treeNode, null, category);
     }
     
     CeylonOutlineNode(Node treeNode, CeylonOutlineNode parent) {
@@ -61,19 +75,45 @@ public class CeylonOutlineNode implements IAdaptable {
 
     CeylonOutlineNode(Node treeNode, CeylonOutlineNode parent, 
             int category) {
-        this.treeNode = treeNode;
-        this.parent = parent;
-        this.category = category;
-        id = createIdentifier();
+        this(treeNode, parent, category, null);
     }
-
+    
+    CeylonOutlineNode(Node treeNode, int category, IResource resource) {
+        this(treeNode, null, category, resource);
+    }
+    
     CeylonOutlineNode(Node treeNode, CeylonOutlineNode parent, 
             int category, IResource resource) {
-        this.treeNode = treeNode;
         this.parent = parent;
         this.category = category;
         this.resource = resource;
-        id = createIdentifier();
+        id = createIdentifier(treeNode);
+        declaration = treeNode instanceof Tree.Declaration;
+        if (declaration) {
+            Declaration model = ((Tree.Declaration) treeNode).getDeclarationModel();
+            if (model!=null) {
+                shared = model.isShared();
+            }
+            Tree.Identifier identifier = ((Tree.Declaration) treeNode).getIdentifier();
+            name = identifier==null ? null : identifier.getText();
+        }
+        else {
+            shared = true;
+        }
+        if (category==DEFAULT_CATEGORY) {
+            //span of the "identifying" node
+            startOffset = CeylonSourcePositionLocator.getStartOffset(treeNode);
+            endOffset = CeylonSourcePositionLocator.getEndOffset(treeNode);
+        }
+        if (treeNode!=null && 
+                !(treeNode instanceof PackageNode)) {
+            //whole span of the complete construct
+            realStartOffset = treeNode.getStartIndex();
+            realEndOffset = treeNode.getStopIndex()+1;
+        }
+        label = getStyledLabelForNode(treeNode);
+        imageKey = getImageKeyForNode(treeNode);
+        decorations = getNodeDecorationAttributes(treeNode);
     }
 
     void addChild(CeylonOutlineNode child) {   
@@ -87,24 +127,52 @@ public class CeylonOutlineNode implements IAdaptable {
     public CeylonOutlineNode getParent() {
         return parent;
     }
-
-    public Node getTreeNode() {
-        return treeNode;
+    
+    public boolean isShared() {
+        return shared;
     }
-
+    
+    public String getName() {
+        return name;
+    }
+    
     public int getCategory() {
         return category;
+    }
+    
+    public boolean isDeclaration() {
+        return declaration;
+    }
+    
+    public int getStartOffset() {
+        return startOffset;
+    }
+    
+    public int getEndOffset() {
+        return endOffset;
+    }
+    
+    public int getRealStartOffset() {
+        return realStartOffset;
+    }
+    
+    public int getRealEndOffset() {
+        return realEndOffset;
+    }
+    
+    public String getImageKey() {
+        return imageKey;
+    }
+    
+    public StyledString getLabel() {
+        return label;
     }
 
     @Override
     public boolean equals(Object obj) {
     	if (obj instanceof CeylonOutlineNode) {
     	    CeylonOutlineNode that = (CeylonOutlineNode) obj;
-            Node thatNode = that.treeNode;
-            Node thisNode = this.treeNode;
-            return thatNode!=null && thisNode!=null && 
-                        thatNode==thisNode ||
-                    that.id.equals(id);
+            return that.id.equals(id);
         }
         else {
             return false;
@@ -119,9 +187,12 @@ public class CeylonOutlineNode implements IAdaptable {
     public String getIdentifier() {
         return id;
     }
+    
+    public int getDecorations() {
+        return decorations;
+    }
 
-    public String createIdentifier() {
-        Node treeNode = this.getTreeNode();
+    public String createIdentifier(Node treeNode) {
         try {
             //note: we actually have two different outline
             //      nodes that both represent the same
@@ -129,7 +200,10 @@ public class CeylonOutlineNode implements IAdaptable {
             //      category to distinguish them!
             switch (category) {
             case ROOT_CATEGORY:
-                return "@root" + path();
+                String path = treeNode.getUnit() instanceof SourceFile ?
+                        ((SourceFile) treeNode.getUnit()).getRelativePath() :
+                        "unknown";
+                return "@root:" + path; 
             case PACKAGE_CATEGORY:
                 return "@package";
             case UNIT_CATEGORY:
@@ -147,7 +221,7 @@ public class CeylonOutlineNode implements IAdaptable {
                     String name = id==null ? 
                             String.valueOf(identityHashCode(treeNode)) : 
                             id.getText();
-                    if (parent!=null && parent.getTreeNode() instanceof Tree.Declaration) {
+                    if (parent!=null && parent.isDeclaration()) {
                         return getParent().getIdentifier() + ":" + name;
                     }
                     else {
@@ -176,32 +250,7 @@ public class CeylonOutlineNode implements IAdaptable {
             return "";
         }
     }
-
-    private String path() {
-        if (resource!=null) {
-            return resource.getProjectRelativePath()
-                    .toPortableString();
-        }
-        else {
-            if (treeNode!=null) {
-                Unit unit = treeNode.getUnit();
-                if (unit!=null) {
-                    return unit.getPackage().getNameAsString() + "." +
-                            unit.getFilename();
-                }
-            }
-            return "unknown";
-        }
-                
-    }
-
-//    private String filename() {
-//        Unit unit = treeNode.getUnit();
-//        return unit==null ? 
-//                resource.getName() : 
-//                unit.getFilename();
-//    }
-
+    
     private static String pathToName(Tree.ImportPath importPath, Node treeNode) {
         return importPath==null ? 
                 String.valueOf(identityHashCode(treeNode)) : 
@@ -220,7 +269,7 @@ public class CeylonOutlineNode implements IAdaptable {
             return resource;
         }
         else if (adapter.equals(IJavaElement.class) && 
-                treeNode instanceof PackageNode) {
+                resource instanceof IFolder) {
             return JavaCore.create(resource);
         }
         else {

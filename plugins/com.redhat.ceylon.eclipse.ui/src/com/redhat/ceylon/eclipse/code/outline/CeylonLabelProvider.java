@@ -236,7 +236,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return CEYLON_FILE;
         }
         if (element instanceof CeylonOutlineNode) {
-            return getImageKeyForNode(((CeylonOutlineNode) element).getTreeNode());
+            return ((CeylonOutlineNode) element).getImageKey();
         }
         if (element instanceof Node) {
             return getImageKeyForNode((Node) element);
@@ -375,7 +375,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     @Override
     public StyledString getStyledText(Object element) {
         if (element instanceof CeylonOutlineNode) {
-            return getStyledLabelForNode(((CeylonOutlineNode) element).getTreeNode());
+            return ((CeylonOutlineNode) element).getLabel();
             //TODO: add the arrow if the node is dirty vs git!
             //return new StyledString("> ", ARROW_STYLER).append(label);
         }

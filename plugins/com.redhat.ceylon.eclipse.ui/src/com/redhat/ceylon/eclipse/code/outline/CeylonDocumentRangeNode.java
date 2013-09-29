@@ -1,10 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.ROOT_CATEGORY;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 
 import java.util.Arrays;
 
@@ -32,14 +28,14 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
                         "@root" :
                         outlineNode.getIdentifier(), 
                 document,
-                getStartOffset(outlineNode), 
-                getLength(outlineNode));
+                outlineNode.getRealStartOffset(), 
+                outlineNode.getRealEndOffset()-outlineNode.getRealStartOffset());
         node = outlineNode;
     }
     
     @Override
     public Image getImage() {
-        return imageRegistry.get(getImageKeyForNode(node.getTreeNode()));
+        return imageRegistry.get(node.getImageKey());
     }
     
     @Override
@@ -48,7 +44,7 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
             return "Ceylon Compilation Unit";
         }
         else {
-            return getStyledLabelForNode(node.getTreeNode()).toString();
+            return node.getLabel().toString();
         }
     }
     

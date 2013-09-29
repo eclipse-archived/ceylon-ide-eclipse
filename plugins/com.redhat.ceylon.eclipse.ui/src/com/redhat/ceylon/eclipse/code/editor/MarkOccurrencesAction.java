@@ -3,11 +3,13 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,10 +38,13 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 /**
  * Action class that implements the "Mark Occurrences" mode. This action contains a number of
@@ -79,11 +84,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
      */
     private IDocument fDocument;
 
-    /**
-     * The language-specific "mark occurrences" service implementation, if any.
-     */
-    private CeylonOccurrenceMarker fOccurrenceMarker;
-
     private Annotation[] fOccurrenceAnnotations;
     
     /**
@@ -111,7 +111,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
                 fDocumentProvider= null;
                 fDocument= null;
                 fParseController= null;
-                fOccurrenceMarker= null;
                 fOccurrenceAnnotations= null;
             }
         }
@@ -187,14 +186,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             return;
         }
         Node selectedNode= findNode(root, offset, offset+length-1);
-        if (fOccurrenceMarker == null) {
-            // It might be possible to set the active editor at this point under
-            // some circumstances, but attempting to do so under other circumstances
-            // can lead to stack overflow, so just return.
-            return;
-        }
         try {
-            List<Object> occurrences= fOccurrenceMarker.getOccurrencesOf(fParseController, selectedNode);
+            List<Node> occurrences = getOccurrencesOf(fParseController, selectedNode);
             if (occurrences != null) {
                 Position[] positions= convertRefNodesToPositions(occurrences);
                 placeAnnotations(convertPositionsToAnnotationMap(positions, document), annotationModel);
@@ -284,11 +277,11 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         }
     }
 
-    private Position[] convertRefNodesToPositions(List<Object> refs) {
+    private Position[] convertRefNodesToPositions(List<Node> refs) {
         Position[] positions = new Position[refs.size()];
         int i= 0;
-        for(Iterator<Object> iter= refs.iterator(); iter.hasNext(); i++) {
-            Object node = iter.next();
+        for (Iterator<Node> iter= refs.iterator(); iter.hasNext(); i++) {
+            Node node = iter.next();
             positions[i]= new Position(getStartOffset(node), getLength(node));
         }
         return positions;
@@ -327,7 +320,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             return;
         }
 
-        fOccurrenceMarker = new CeylonOccurrenceMarker();
         registerListeners();
 
         ISelection selection = activeEditor.getSelectionProvider().getSelection();
@@ -385,5 +377,33 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 	public Stage getStage() {
 		return Stage.TYPE_ANALYSIS;
 	}
+	
+    private List<Node> getOccurrencesOf(CeylonParseController parseController, Node node) {
+        
+        // Check whether we even have an AST in which to find occurrences
+        Tree.CompilationUnit root = parseController.getRootNode();
+        if (root == null) {
+            return Collections.emptyList();
+        }
 
+        Declaration declaration = getReferencedExplicitDeclaration(node, root);
+        if (declaration==null) {
+            return Collections.emptyList();
+        }
+        else {
+            List<Node> occurrences = new ArrayList<Node>();
+            FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
+            root.visit(frv);
+            occurrences.addAll(frv.getNodes());
+            FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(frv.getDeclaration());
+            root.visit(fdv);
+            Tree.Declaration decNode = fdv.getDeclarationNode();
+            if (decNode!=null) {
+                occurrences.add(decNode);
+            }
+            return occurrences;
+        }
+        
+    }
+    
 }
