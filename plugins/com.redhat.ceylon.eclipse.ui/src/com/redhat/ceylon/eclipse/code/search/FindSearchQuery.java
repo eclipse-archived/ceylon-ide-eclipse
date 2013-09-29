@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
@@ -71,14 +69,9 @@ abstract class FindSearchQuery implements ISearchQuery {
 				else {
 	                FindContainerVisitor fcv = new FindContainerVisitor(node);
 	                cu.visit(fcv);
-					node = getIdentifyingNode(node);
 					Tree.StatementOrArgument c = fcv.getStatementOrArgument();
 					if (c!=null) {
-					    result.addMatch(new CeylonSearchMatch(c, 
-					            pu.getUnitFile(), 
-					            node.getStartIndex(), 
-					            node.getStopIndex()-node.getStartIndex()+1,
-					            node.getToken()));
+					    result.addMatch(new CeylonSearchMatch(c, pu.getUnitFile(), node));
 					}
 				}
 			}

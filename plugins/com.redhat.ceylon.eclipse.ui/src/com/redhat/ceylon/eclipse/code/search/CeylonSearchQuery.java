@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
@@ -97,12 +96,9 @@ class CeylonSearchQuery implements ISearchQuery {
     	            public void matchingNode(Node node) {
     	                FindContainerVisitor fcv = new FindContainerVisitor(node);
     	                cu.visit(fcv);
-    	                node = getIdentifyingNode(node);
     	                Tree.StatementOrArgument c = fcv.getStatementOrArgument();
     	                if (c!=null) {
-                            result.addMatch(new CeylonSearchMatch(c, pu.getUnitFile(), 
-        	                        node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1,
-        	                        node.getToken()));
+                            result.addMatch(new CeylonSearchMatch(c, pu.getUnitFile(), node));
     	                }
     	                count++;
     	            }

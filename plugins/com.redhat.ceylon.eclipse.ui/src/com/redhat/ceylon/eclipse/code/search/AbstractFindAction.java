@@ -58,6 +58,7 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
 			                declaration = ((Tree.Declaration) node).getDeclarationModel();
 			                project =  getProject(currentEditor);
 			                action.setEnabled(isValidSelection());
+			                return; //early exit
 			            }
 			        }
 			    }
