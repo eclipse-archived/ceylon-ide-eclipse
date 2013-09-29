@@ -29,23 +29,24 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 abstract class FindSearchQuery implements ISearchQuery {
 	
-	private final Declaration referencedDeclaration;
+	private Declaration referencedDeclaration;
 	//private final IProject project;
 	private AbstractTextSearchResult result = new CeylonSearchResult(this);
 	private int count = 0;
 	private IWorkbenchPage page;
-
+	private String name;
+	
 	FindSearchQuery(Declaration referencedDeclaration, IProject project) {
 		this.referencedDeclaration = referencedDeclaration;
 		//this.project = project;
 		this.page = Util.getActivePage();
+		name = referencedDeclaration.getName();
 	}
-
+	
 	@Override
 	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
-	    //List<PhasedUnit> units = CeylonBuilder.getUnits(project);
+	    //List<PhasedUnit> units = Ceylon Builder.getUnits(project);
 		//if (units==null) units = CeylonBuilder.getUnits();
-
 		//List<PhasedUnit> units = getUnits();
 		for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
 			findInUnits(tc.getPhasedUnits());
@@ -54,13 +55,14 @@ abstract class FindSearchQuery implements ISearchQuery {
 				findInUnits(units);
 			}
         }
+		referencedDeclaration = null;
 		return Status.OK_STATUS;
 	}
-
+	
 	public void findInUnits(PhasedUnits units) {
 		for (PhasedUnit pu: units.getPhasedUnits()) {
 			CompilationUnit cu = getRootNode(pu);
-			Set<Node> nodes = getNodes(cu);
+			Set<Node> nodes = getNodes(cu, referencedDeclaration);
 			//TODO: should really add these as we find them:
 			for (Node node: nodes) {
 				if (node.getToken()==null) {
@@ -83,7 +85,7 @@ abstract class FindSearchQuery implements ISearchQuery {
 			count+=nodes.size();
 		}
 	}
-
+	
     Tree.CompilationUnit getRootNode(PhasedUnit pu) {
         for (IEditorPart editor: page.getDirtyEditors()) {
             if (editor instanceof CeylonEditor) {
@@ -97,7 +99,8 @@ abstract class FindSearchQuery implements ISearchQuery {
         return pu.getCompilationUnit();
     }
     
-    protected abstract Set<Node> getNodes(Tree.CompilationUnit cu);
+    protected abstract Set<Node> getNodes(Tree.CompilationUnit cu, 
+            Declaration referencedDeclaration);
     
     protected abstract String labelString();
 
@@ -105,18 +108,18 @@ abstract class FindSearchQuery implements ISearchQuery {
 	public ISearchResult getSearchResult() {
 		return result;
 	}
-
+	
 	@Override
 	public String getLabel() {
 		return "Displaying " + count + " " + labelString() + 
-		        " '" + referencedDeclaration.getName() + "'";
+                " '" + name + "'";
 	}
-
+	
 	@Override
 	public boolean canRunInBackground() {
 		return true;
 	}
-
+	
 	@Override
 	public boolean canRerun() {
 		return false;
