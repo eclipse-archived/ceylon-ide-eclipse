@@ -233,7 +233,7 @@ public class RequiredTypeVisitor extends Visitor
     public void visit(Tree.DocLink that) {
         ProducedType ort = requiredType;
         requiredType = CeylonContentProposer.type(that.getBase());
-        if (requiredType == null) {
+        if (requiredType == null && that.getBase()!=null) {
         	requiredType = CeylonContentProposer.fullType(that.getBase());
         }
         super.visit(that);
