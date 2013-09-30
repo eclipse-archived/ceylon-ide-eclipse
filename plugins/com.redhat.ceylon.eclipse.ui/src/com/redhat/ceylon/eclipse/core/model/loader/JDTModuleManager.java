@@ -82,6 +82,7 @@ public class JDTModuleManager extends LazyModuleManager {
     private Set<String> sourceModules;
     private Set<File> classpath;
     private TypeChecker typeChecker;
+    private boolean loadDependenciesFromModelLoaderFirst;
 
     public Set<File> getClasspath() {
         return classpath;
@@ -98,8 +99,12 @@ public class JDTModuleManager extends LazyModuleManager {
     public JDTModuleManager(Context context, IJavaProject javaProject) {
         super(context);
         this.javaProject = javaProject;
+        this.loadDependenciesFromModelLoaderFirst = CeylonBuilder.loadDependenciesFromModelLoaderFirst(javaProject.getProject());
         sourceModules = new HashSet<String>();
         sourceModules.add(Module.LANGUAGE_MODULE_NAME);
+        if (! loadDependenciesFromModelLoaderFirst) {
+            sourceModules.add("ceylon.language");
+        }
         classpath = new HashSet<File>();
     }
     /*
@@ -154,14 +159,18 @@ public class JDTModuleManager extends LazyModuleManager {
         return modelLoader;
     }
 
+    public boolean isExternalModuleLoadedFromSource(String moduleName){
+        return sourceModules.contains(moduleName);
+    }
+    
     /**
      * Return true if this module should be loaded from source we are compiling
      * and not from its compiled artifact at all. Returns false by default, so
-     * modules will be laoded from their compiled artifact.
+     * modules will be loaded from their compiled artifact.
      */
     @Override
     protected boolean isModuleLoadedFromSource(String moduleName){
-        if (sourceModules.contains(moduleName)) {
+        if (isExternalModuleLoadedFromSource(moduleName)) {
             return true;
         }
         if (isModuleLoadedFromCompiledSource(moduleName)) {
@@ -286,7 +295,12 @@ public class JDTModuleManager extends LazyModuleManager {
     
     @Override
     public Iterable<String> getSearchedArtifactExtensions() {
-        return Arrays.asList("src", "car", "jar");
+        if (loadDependenciesFromModelLoaderFirst) {
+            return Arrays.asList("car", "src", "jar");
+        }
+        else {
+            return Arrays.asList("src", "car", "jar");
+        }
     }
     
     public void visitModuleFile() {
@@ -422,6 +436,10 @@ public class JDTModuleManager extends LazyModuleManager {
 
     public void setTypeChecker(TypeChecker typeChecker) {
         this.typeChecker = typeChecker;
+    }
+
+    public boolean isLoadDependenciesFromModelLoaderFirst() {
+        return loadDependenciesFromModelLoaderFirst;
     }
 
 }
