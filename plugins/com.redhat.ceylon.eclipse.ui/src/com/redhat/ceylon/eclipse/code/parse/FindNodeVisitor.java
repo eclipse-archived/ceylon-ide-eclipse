@@ -9,16 +9,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 public class FindNodeVisitor extends Visitor
         implements NaturalVisitor {
     
-    protected FindNodeVisitor(int fStartOffset, int fEndOffset, int fCurrentOffset) {
+    protected FindNodeVisitor(int fStartOffset, int fEndOffset) {
         this.startOffset = fStartOffset;
         this.endOffset = fEndOffset;
-        this.currentOffset = fCurrentOffset;
     }
     
     protected Node node;
     private int startOffset;
     private int endOffset;
-    private int currentOffset;
     
     public Node getNode() {
         return node;
@@ -223,13 +221,9 @@ public class FindNodeVisitor extends Visitor
     }
     
     @Override
-    public void visit(Tree.StringLiteral that) {
+    public void visit(Tree.DocLink that) {
         if (inBounds(that)) {
-            for (Node linkNode : that.getChildren()) {
-                if (currentOffset >= linkNode.getStartIndex() && currentOffset <= linkNode.getStopIndex()+1) {
-                    node = linkNode;
-                }
-            }
+            node = that;
         }
         else {
         	super.visit(that);
