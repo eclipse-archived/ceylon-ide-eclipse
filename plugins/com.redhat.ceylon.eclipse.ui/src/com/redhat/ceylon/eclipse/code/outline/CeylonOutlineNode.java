@@ -224,9 +224,13 @@ public class CeylonOutlineNode implements IAdaptable {
             //      category to distinguish them!
             switch (category) {
             case ROOT_CATEGORY:
-                String path = treeNode.getUnit() instanceof SourceFile ?
-                        ((SourceFile) treeNode.getUnit()).getRelativePath() :
-                        "unknown";
+                String path; 
+                if (treeNode.getUnit() instanceof SourceFile) {
+                    path = ((SourceFile) treeNode.getUnit()).getRelativePath();
+                }
+                else {
+                    path = treeNode.getUnit().getFilename();
+                }
                 return "@root:" + path; 
             case PACKAGE_CATEGORY:
                 return "@package";
