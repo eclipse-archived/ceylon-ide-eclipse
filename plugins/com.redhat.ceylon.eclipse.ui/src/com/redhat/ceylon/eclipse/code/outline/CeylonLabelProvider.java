@@ -512,14 +512,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.ModuleDescriptor i = (Tree.ModuleDescriptor) n;
             Tree.ImportPath p = i.getImportPath();
 			if (isNonempty(p)) {
-                return new StyledString(toPath(p), QUALIFIER_STYLER);
+                return new StyledString("module ", KW_STYLER)
+                        .append(toPath(p), QUALIFIER_STYLER);
             }
         }
         else if (n instanceof Tree.PackageDescriptor) {
             Tree.PackageDescriptor i = (Tree.PackageDescriptor) n;
             Tree.ImportPath p = i.getImportPath();
 			if (isNonempty(p)) {
-                return new StyledString(toPath(p), QUALIFIER_STYLER);
+                return new StyledString("package ", KW_STYLER)
+                        .append(toPath(p), QUALIFIER_STYLER);
             }
         }
         else if (n instanceof Tree.ImportList) {
