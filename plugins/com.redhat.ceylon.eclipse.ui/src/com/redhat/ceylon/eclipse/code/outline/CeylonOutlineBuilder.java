@@ -82,7 +82,7 @@ public class CeylonOutlineBuilder {
 	    IFile file = cpc.getProject()==null || cpc.getPath()==null ? null :
 	            cpc.getProject().getFile(cpc.getPath());
 	    Tree.CompilationUnit rootNode = cpc.getRootNode();
-	    if (rootNode==null) return null;
+	    if (rootNode==null || rootNode.getUnit()==null) return null;
 	    CeylonOutlineNode modelRoot = createTopItem(rootNode, file);
 	    itemStack.push(modelRoot);
 		try {
