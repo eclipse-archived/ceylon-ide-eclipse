@@ -115,5 +115,13 @@ public class InitDependenciesJob extends Job {
     				"could not get container", ex);
     	}
     }
-    
+
+    @Override
+    public boolean belongsTo(Object family) {
+        if (family instanceof InitDependenciesJob) {
+            InitDependenciesJob otherJob = (InitDependenciesJob) family;
+            return container.getJavaProject().getProject().equals(otherJob.container.getJavaProject().getProject());
+        }
+        return false;
+    }
 }
