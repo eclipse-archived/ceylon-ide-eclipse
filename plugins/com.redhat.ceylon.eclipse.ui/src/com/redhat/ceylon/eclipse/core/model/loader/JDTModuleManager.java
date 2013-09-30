@@ -99,11 +99,10 @@ public class JDTModuleManager extends LazyModuleManager {
     public JDTModuleManager(Context context, IJavaProject javaProject) {
         super(context);
         this.javaProject = javaProject;
-        this.loadDependenciesFromModelLoaderFirst = CeylonBuilder.loadDependenciesFromModelLoaderFirst(javaProject.getProject());
+        loadDependenciesFromModelLoaderFirst = CeylonBuilder.loadDependenciesFromModelLoaderFirst(javaProject.getProject());
         sourceModules = new HashSet<String>();
-        sourceModules.add(Module.LANGUAGE_MODULE_NAME);
         if (! loadDependenciesFromModelLoaderFirst) {
-            sourceModules.add("ceylon.language");
+            sourceModules.add(Module.LANGUAGE_MODULE_NAME);
         }
         classpath = new HashSet<File>();
     }
