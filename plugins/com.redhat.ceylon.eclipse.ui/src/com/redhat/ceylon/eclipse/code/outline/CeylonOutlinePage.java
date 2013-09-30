@@ -364,7 +364,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (suspend) return;
         if (offset==0) return; //right at the start of file, don't expand the import list
         CompilationUnit rootNode = parseController.getRootNode();
-        if (rootNode==null) return;
+        if (rootNode==null || rootNode.getUnit()==null) return;
+        if (getTreeViewer().getInput()==null) return;
         suspend = true;
         try {
             OutlineNodeVisitor visitor = new OutlineNodeVisitor(offset);
