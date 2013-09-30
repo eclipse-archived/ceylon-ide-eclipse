@@ -70,7 +70,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private static final ImageDescriptor PUBLIC = CeylonPlugin.getInstance().image("public_co.gif");
     private static final ImageDescriptor ALPHA = CeylonPlugin.getInstance().image("alphab_sort_co.gif");
     
-    private ITreeContentProvider contentProvider;
+    private final ITreeContentProvider contentProvider = new OutlineContentProvider();
     private StyledCellLabelProvider labelProvider;
     private CeylonParseController parseController;
     private CeylonSourceViewer sourceViewer;
@@ -81,10 +81,6 @@ public class CeylonOutlinePage extends ContentOutlinePage
             CeylonSourceViewer sourceViewer) {
         this.parseController = parseController;
         this.sourceViewer = sourceViewer;
-        this.contentProvider = new OutlineContentProvider();
-        this.labelProvider = new DecoratingStyledCellLabelProvider(new CeylonLabelProvider(true), 
-                PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator(), 
-                DecorationContext.DEFAULT_CONTEXT);
     }
 
     public Stage getStage() {
@@ -127,14 +123,24 @@ public class CeylonOutlinePage extends ContentOutlinePage
     public void createControl(Composite parent) {
         super.createControl(parent);
         TreeViewer viewer = getTreeViewer();
-        viewer.setContentProvider(contentProvider);
+        if (labelProvider!=null) {
+            labelProvider.dispose();
+        }
+        labelProvider = createLabelProvider();
         viewer.setLabelProvider(labelProvider);
+        viewer.setContentProvider(contentProvider);
         viewer.setComparer(new DefaultElementComparer());
         CeylonOutlineNode rootNode = new CeylonOutlineBuilder()
                 .buildTree(parseController);
         viewer.setInput(rootNode);
         expand(viewer, rootNode);
         sourceViewer.getTextWidget().addCaretListener(this);
+    }
+
+    private DecoratingStyledCellLabelProvider createLabelProvider() {
+        return new DecoratingStyledCellLabelProvider(new CeylonLabelProvider(true), 
+                PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator(), 
+                DecorationContext.DEFAULT_CONTEXT);
     }
     
     @Override
@@ -160,10 +166,6 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (labelProvider!=null) {
             labelProvider.dispose();
             labelProvider = null;
-        }
-        if (contentProvider!=null) {
-            contentProvider.dispose();
-            contentProvider = null;
         }
         sourceViewer.getTextWidget().removeCaretListener(this);
         sourceViewer = null;
