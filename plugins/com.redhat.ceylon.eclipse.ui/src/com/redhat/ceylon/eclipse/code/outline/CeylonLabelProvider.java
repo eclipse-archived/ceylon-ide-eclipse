@@ -390,29 +390,19 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (element instanceof IProject) {
             return new StyledString(((IProject) element).getName());
         }
+        else if (element instanceof IPackageFragment) {
+            return new StyledString(((IPackageFragment) element).getElementName(), 
+                    QUALIFIER_STYLER);
+        }
         else if (element instanceof IJavaElement) {
             return new StyledString(((IJavaElement) element).getElementName());
         }
         else if (element instanceof CeylonElement) {
-            CeylonElement ce = (CeylonElement) element;
-            String pkg;
-            if (includePackage()) {
-                pkg = " - " + ce.getPackageLabel();
-            }
-            else {
-                pkg = "";
-            }
-            IFile file = ce.getFile();
-			String path = file==null ? 
-					ce.getVirtualFile().getPath() : 
-					file.getFullPath().toString();
-			return ce.getLabel()
-                    .append(pkg, QUALIFIER_STYLER)
-                    .append(" - " + path, COUNTER_STYLER)
-                    .append(":" + ce.getLocation(), COUNTER_STYLER);
+            return getStyledLabelForSearchResult((CeylonElement) element);
         }
         else if (element instanceof Package) {
-            return new StyledString(getLabel((Package) element), QUALIFIER_STYLER);
+            return new StyledString(getLabel((Package) element), 
+                    QUALIFIER_STYLER);
         }
         else if (element instanceof Module) {
         	return new StyledString(getLabel((Module) element));
@@ -420,9 +410,30 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (element instanceof Unit) {
             return new StyledString(((Unit) element).getFilename());
         }
-        else {
+        else if (element instanceof Node) {
             return getStyledLabelForNode((Node) element);
         }
+        else {
+            return new StyledString("<something>");
+        }
+    }
+
+    private StyledString getStyledLabelForSearchResult(CeylonElement ce) {
+        String pkg;
+        if (includePackage()) {
+            pkg = " - " + ce.getPackageLabel();
+        }
+        else {
+            pkg = "";
+        }
+        IFile file = ce.getFile();
+        String path = file==null ? 
+        		ce.getVirtualFile().getPath() : 
+        		file.getFullPath().toString();
+        return ce.getLabel()
+                .append(pkg, QUALIFIER_STYLER)
+                .append(" - " + path, COUNTER_STYLER)
+                .append(":" + ce.getLocation(), COUNTER_STYLER);
     }
     
     public String getText(Object element) {
