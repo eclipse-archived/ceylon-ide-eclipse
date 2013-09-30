@@ -18,63 +18,61 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SyntheticVariable;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-public class CeylonOutlineBuilder {
+public class CeylonOutlineBuilder extends Visitor {
 	
-	private class CeylonModelVisitor extends Visitor {
-		// set to true to get nodes for everything in the outline
-		private static final boolean INCLUDEALL = false;
-		
-		@Override
-		public void visitAny(Node that) {
-		    if (that instanceof Tree.Parameter) {
-		        //don't make a node
-		    }
-		    else if (that instanceof Tree.Declaration && 
-					!(that instanceof Tree.TypeParameterDeclaration) &&
-					!(that instanceof Tree.TypeConstraint) &&
-					!(that instanceof Tree.Variable && 
-							((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
-				pushSubItem(that);
-				super.visitAny(that);
-				popSubItem();
-			}
-            else if (that instanceof Tree.PackageDescriptor ||
-            		that instanceof Tree.ModuleDescriptor) {
-                pushSubItem(that);
-                super.visitAny(that);
-                popSubItem();
-            }
-			else if (that instanceof Tree.ImportList) {
-			    if (!((Tree.ImportList) that).getImports().isEmpty()) {
-                    pushSubItem(that, IMPORT_LIST_CATEGORY);
-                    super.visitAny(that);
-                    popSubItem();
-			    }
-			}
-            else if (that instanceof Tree.Import) {
-                pushSubItem(that);
-                super.visitAny(that);
-                popSubItem();
-            }
-            else if (that instanceof Tree.ImportModule) {
-                pushSubItem(that);
-                super.visitAny(that);
-                popSubItem();
-            }
-			else {
-				if (INCLUDEALL) {
-					pushSubItem(that,-1);
-					super.visitAny(that);
-					popSubItem();
-				} 
-				else {
-					super.visitAny(that);
-				}
-			}
-			
-		}
-		
-	}
+    @Override
+    public void visit(Tree.Parameter that) {
+        //don't make a node
+    }
+
+    @Override
+    public void visit(Tree.Declaration that) {
+        if (!(that instanceof Tree.TypeParameterDeclaration) &&
+                !(that instanceof Tree.TypeConstraint) &&
+                !(that instanceof Tree.Variable && 
+                        ((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
+            pushSubItem(that);
+            super.visitAny(that);
+            popSubItem();
+        }
+    }
+
+    @Override
+    public void visit(Tree.PackageDescriptor that) {
+        pushSubItem(that);
+        super.visitAny(that);
+        popSubItem();
+    }
+
+    @Override
+    public void visit(Tree.ModuleDescriptor that) {
+        pushSubItem(that);
+        super.visitAny(that);
+        popSubItem();
+    }
+
+    @Override
+    public void visit(Tree.Import that) {
+        pushSubItem(that);
+        super.visitAny(that);
+        popSubItem();
+    }
+
+    @Override
+    public void visit(Tree.ImportModule that) {
+        pushSubItem(that);
+        super.visitAny(that);
+        popSubItem();
+    }
+
+    @Override
+    public void visit(Tree.ImportList that) {
+        if (!((Tree.ImportList) that).getImports().isEmpty()) {
+            pushSubItem(that, IMPORT_LIST_CATEGORY);
+            super.visitAny(that);
+            popSubItem();
+        }
+    }
 
 	private Stack<CeylonOutlineNode> itemStack = new Stack<CeylonOutlineNode>();
 
@@ -96,7 +94,7 @@ public class CeylonOutlineBuilder {
 	                    file==null ? null : file.getParent());
 	        }
 	        createSubItem(rootNode, UNIT_CATEGORY, file);
-	        rootNode.visit(new CeylonModelVisitor());
+	        rootNode.visit(this);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
