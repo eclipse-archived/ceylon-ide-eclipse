@@ -329,6 +329,10 @@ public class JDTModelLoader extends AbstractModelLoader {
          */
         Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME, JDK_MODULE_VERSION);
         loadPackage(jdkModule, "java.lang", false);
+        
+        if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
+            loadPackage(getLanguageModule(), CEYLON_LANGUAGE, true);
+        }        
     }
     
     private String getToplevelQualifiedName(final String pkgName, String name) {
