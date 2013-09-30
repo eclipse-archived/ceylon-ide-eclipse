@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
@@ -17,6 +18,15 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
+
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 class CeylonSearchResultTreeContentProvider implements
     CeylonStructuredContentProvider, ITreeContentProvider {
@@ -164,9 +174,15 @@ class CeylonSearchResultTreeContentProvider implements
             element instanceof IJavaProject) {
             return null;
         }
-        if (element instanceof IPackageFragment ||
-            element instanceof IPackageFragmentRoot) {
-            return ((IJavaElement)element).getJavaProject().getProject();
+        if (element instanceof IPackageFragment) {
+            IJavaElement container=((IPackageFragment)element).getParent();
+            while (container instanceof IPackageFragment) {
+                container = container.getParent();
+            }
+            return container; //the IPackageFragmentRoot
+        }
+        if (element instanceof IPackageFragmentRoot) {
+            return ((IPackageFragmentRoot)element).getJavaProject().getProject();
         }
         if (element instanceof IResource) {
             IContainer parent = ((IResource) element).getParent();
@@ -179,8 +195,34 @@ class CeylonSearchResultTreeContentProvider implements
                 return parent;
             }
         }
+        if (element instanceof Unit) {
+            return ((Unit) element).getPackage();
+        }
+        if (element instanceof Package) {
+            return ((Package) element).getModule();
+        }
+        if (element instanceof Module) {
+            return null;
+        }
         if (element instanceof CeylonElement) {
-            return ((CeylonElement) element).getFile();
+            IFile file = ((CeylonElement) element).getFile();
+            if (file!=null) {
+                return file;
+            }
+            VirtualFile virtualFile = ((CeylonElement) element).getVirtualFile();
+            for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
+                PhasedUnit phasedUnit = tc.getPhasedUnits().getPhasedUnit(virtualFile);
+                if (phasedUnit!=null) {
+                    return phasedUnit.getUnit();
+                }
+                for (PhasedUnits units: tc.getPhasedUnitsOfDependencies()) {
+                    phasedUnit = units.getPhasedUnit(virtualFile);
+                    if (phasedUnit!=null) {
+                        return phasedUnit.getUnit();
+                    }
+                }
+            }
+            return null;
         }
         return null;
 	}
