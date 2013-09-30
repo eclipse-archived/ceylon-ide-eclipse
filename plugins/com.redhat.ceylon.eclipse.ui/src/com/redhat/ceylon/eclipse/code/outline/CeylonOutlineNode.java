@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -226,12 +227,13 @@ public class CeylonOutlineNode implements IAdaptable {
             //      category to distinguish them!
             switch (category) {
             case ROOT_CATEGORY:
-                String path; 
-                if (treeNode.getUnit() instanceof SourceFile) {
-                    path = ((SourceFile) treeNode.getUnit()).getRelativePath();
+                String path;
+                Unit unit = treeNode.getUnit();
+                if (unit instanceof SourceFile) {
+                    path = ((SourceFile) unit).getRelativePath();
                 }
                 else {
-                    path = treeNode.getUnit().getFilename();
+                    path = unit.getFilename();
                 }
                 return "@root:" + path; 
             case PACKAGE_CATEGORY:
@@ -239,7 +241,7 @@ public class CeylonOutlineNode implements IAdaptable {
             case UNIT_CATEGORY:
                 return "@unit:" + treeNode.getUnit().getFilename();
             case IMPORT_LIST_CATEGORY:
-                return "@importlist";
+                return "@importlist" + treeNode.getUnit().getFilename();
             case DEFAULT_CATEGORY:
             default:
                 if (treeNode instanceof Tree.Import) {
