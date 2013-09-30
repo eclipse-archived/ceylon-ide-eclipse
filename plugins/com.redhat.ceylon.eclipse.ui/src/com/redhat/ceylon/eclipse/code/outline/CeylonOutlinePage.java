@@ -100,18 +100,24 @@ public class CeylonOutlinePage extends ContentOutlinePage
             treeViewer.getTree().getDisplay()
                    .syncExec(new Runnable() {
                 public void run() {
-                    TreeViewer treeViewer = getTreeViewer();
-                    if (treeViewer!=null && 
-                            !treeViewer.getTree().isDisposed()) {
-                        Object[] expanded = treeViewer.getExpandedElements();
+                    TreeViewer viewer = getTreeViewer();
+                    if (viewer!=null && 
+                            !viewer.getTree().isDisposed()) {
+                        boolean noInput = viewer.getInput()==null;
+                        Object[] expanded = viewer.getExpandedElements();
                         CeylonOutlineNode rootNode = new CeylonOutlineBuilder()
                                 .buildTree(parseController);
-                        treeViewer.setInput(rootNode);
-                        for (Object obj: expanded) {
-                            treeViewer.expandToLevel(obj, 1);
+                        viewer.setInput(rootNode);
+                        if (noInput) {
+                            expand(viewer, rootNode);
                         }
-                        treeViewer.refresh();
-                        expandCaretedNode(sourceViewer.getSelectedRange().x);
+                        else {
+                            for (Object obj: expanded) {
+                                viewer.expandToLevel(obj, 1);
+                            }
+                            viewer.refresh();
+                            expandCaretedNode(sourceViewer.getSelectedRange().x);
+                        }
                     }
                 }
             });
@@ -164,13 +170,15 @@ public class CeylonOutlinePage extends ContentOutlinePage
         parseController = null;
     }
 
-     static void expand(TreeViewer viewer, CeylonOutlineNode rootNode) {
-        for (CeylonOutlineNode con: rootNode.getChildren()) {
-            if (con.getCategory()==IMPORT_LIST_CATEGORY) {
-                viewer.collapseToLevel(con, TreeViewer.ALL_LEVELS);
-            }
-            else {
-                viewer.expandToLevel(con, TreeViewer.ALL_LEVELS);
+    static void expand(TreeViewer viewer, CeylonOutlineNode rootNode) {
+        if (rootNode!=null) {
+            for (CeylonOutlineNode con: rootNode.getChildren()) {
+                if (con.getCategory()==IMPORT_LIST_CATEGORY) {
+                    viewer.collapseToLevel(con, TreeViewer.ALL_LEVELS);
+                }
+                else {
+                    viewer.expandToLevel(con, TreeViewer.ALL_LEVELS);
+                }
             }
         }
     }
