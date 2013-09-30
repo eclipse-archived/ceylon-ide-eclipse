@@ -174,7 +174,9 @@ public class CeylonOutlineNode implements IAdaptable {
             if (currentEditor instanceof CeylonEditor) {
                 CeylonEditor ce = (CeylonEditor) currentEditor;
                 Node node = findNode(ce.getParseController().getRootNode(), startOffset);
-                if (node!=null) {
+                if (node!=null && 
+                        node.getStartIndex()==realStartOffset && 
+                        node.getStopIndex()+1==realEndOffset) {
                     return getStyledLabelForNode(node);
                 }
             }
@@ -233,9 +235,9 @@ public class CeylonOutlineNode implements IAdaptable {
                 }
                 return "@root:" + path; 
             case PACKAGE_CATEGORY:
-                return "@package";
+                return "@package:" + ((PackageNode)treeNode).getPackageName();
             case UNIT_CATEGORY:
-                return "@unit";
+                return "@unit:" + treeNode.getUnit().getFilename();
             case IMPORT_LIST_CATEGORY:
                 return "@importlist";
             case DEFAULT_CATEGORY:
