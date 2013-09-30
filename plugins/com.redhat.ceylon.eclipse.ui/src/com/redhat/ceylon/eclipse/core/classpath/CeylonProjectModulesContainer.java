@@ -377,7 +377,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 		return asList(paths.values().toArray(new IClasspathEntry[paths.size()]));
 	}
 
-	public static IPath getSourceArchive(RepositoryManager provider,
+	public static File getSourceArtifact(RepositoryManager provider,
 			Module module) {
 	    // BEWARE : here the request to the provider is done in 2 steps, because if
 	    // we do this in a single step, the Aether repo might return the .jar
@@ -388,7 +388,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 		File srcArtifact = provider.getArtifact(ctx);
 		if (srcArtifact!=null) {
 		    if (srcArtifact.getPath().endsWith(ArtifactContext.SRC)) {
-	            return new Path(srcArtifact.getPath());
+	            return srcArtifact;
 		    }
 		}
         ctx = new ArtifactContext(module.getNameAsString(), 
@@ -396,13 +396,22 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         srcArtifact = provider.getArtifact(ctx);
         if (srcArtifact!=null) {
             if (srcArtifact.getPath().endsWith(ArtifactContext.MAVEN_SRC)) {
-                return new Path(srcArtifact.getPath());
+                return srcArtifact;
             }
         }
 		return null;
 	}
 
-	public static IPath getModuleArchive(RepositoryManager provider,
+    public static IPath getSourceArchive(RepositoryManager provider,
+            Module module) {
+        File srcArtifact = getSourceArtifact(provider, module);
+        if (srcArtifact!=null) {
+            return new Path(srcArtifact.getPath());
+        }
+        return null;
+    }
+
+	public static File getModuleArtifact(RepositoryManager provider,
 			Module module) {
         ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
                 module.getVersion(), ArtifactContext.CAR);
@@ -414,11 +423,17 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                     module.getVersion(), ArtifactContext.JAR);
             moduleArtifact = provider.getArtifact(ctx);
         }
-		if (moduleArtifact!=null) {
-			return new Path(moduleArtifact.getPath());
-		}
-		return null;
+		return moduleArtifact;
 	}
+
+	public static IPath getModuleArchive(RepositoryManager provider,
+            Module module) {
+        File moduleArtifact = getModuleArtifact(provider, module);
+        if (moduleArtifact!=null) {
+            return new Path(moduleArtifact.getPath());
+        }
+        return null;
+    }
 
 	public static boolean isProjectModule(IJavaProject javaProject, Module module)
 			throws JavaModelException {
