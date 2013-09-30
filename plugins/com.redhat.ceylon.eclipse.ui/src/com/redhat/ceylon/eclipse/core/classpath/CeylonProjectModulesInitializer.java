@@ -25,6 +25,9 @@ import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ClasspathContainerInitializer;
@@ -33,7 +36,10 @@ import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.ui.InitializeAfterLoadJob;
+import org.eclipse.jdt.ui.JavaUI;
 
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.InitDependenciesJob;
 
 /**
@@ -48,7 +54,7 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
      * Initialize the container with the "persisted" classpath 
      * entries, and then schedule the refresh.
      */
-    public void initialize(IPath containerPath, IJavaProject project) throws CoreException {
+    public void initialize(IPath containerPath, final IJavaProject project) throws CoreException {
         int size = containerPath.segmentCount();
         if (size > 0) {
             if (containerPath.segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID)) {
@@ -75,12 +81,63 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
                 setClasspathContainer(containerPath, new IJavaProject[] { project },
                         new IClasspathContainer[] {container}, null);
                 
-                Job job = new InitDependenciesJob("Initializing dependencies for project " + 
+                final Job initDependenciesJob = new InitDependenciesJob("Initializing dependencies for project " + 
                         project.getElementName(), container);
-                job.setUser(false);
-                job.setPriority(Job.BUILD);
-                job.setRule(getWorkspace().getRoot());
-                job.schedule();
+                initDependenciesJob.setUser(false);
+                initDependenciesJob.setPriority(Job.BUILD);
+                initDependenciesJob.setRule(getWorkspace().getRoot());
+
+                // Before scheduling the InitDependenciesJob, we will wait for the end of the Java Tooling initialization Job 
+                final long waitUntil = System.currentTimeMillis() + 120000;
+
+                Job initDependenciesWhenJavaToolingIsInitialized = new Job("Waiting for the end of the Java Tooling Initialization before initializing Ceylon dependencies for project " + project + " ...") {
+                    private Job initJavaToolingJob = null;
+                    
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        if (initJavaToolingJob == null) {
+                            Job[] jobs = getJobManager().find(JavaUI.ID_PLUGIN);
+                            for (Job job : jobs) {
+                                if (job.getClass().getEnclosingClass().equals(InitializeAfterLoadJob.class)) {
+                                    initJavaToolingJob = job;
+                                }
+                            }
+                        }
+                        
+                        if (initJavaToolingJob != null) {
+                            if (initJavaToolingJob.getState() == Job.WAITING ||
+                                initJavaToolingJob.getState() == Job.RUNNING) {
+                                if (System.currentTimeMillis() < waitUntil) {
+                                    System.out.println("Waiting 1 seconde more for the end of the Java Tooling Initialization before initializing Ceylon dependencies for project " + project + " ...");
+                                    schedule(1000);
+                                    return Status.OK_STATUS;
+                                }
+                                else {
+                                    System.out.println("The Java Tooling is not initialized after 2 minutes, so start initializing Ceylon dependencies for project " + project + " anyway !");
+                                }
+                            }
+                        }
+                        
+                        boolean shouldSchedule = true;
+                        for (Job job : getJobManager().find(initDependenciesJob)) {
+                            if (job.getState() == Job.WAITING) {
+                                System.out.println("An InitDependenciesJob for project " + project + " is already scheduled. Finally don't schedule a new one after the Java Tooling has initialized");
+                                shouldSchedule = false;
+                                break;
+                            }
+                        }
+                
+                        if (shouldSchedule) {
+                            System.out.println("Scheduling the initialization of the Ceylon dependencies for project " + project + " after the Java Tooling has been initialized");
+                            initDependenciesJob.schedule();
+                        }   
+                        return Status.OK_STATUS;
+                    }
+                };
+                
+                initDependenciesWhenJavaToolingIsInitialized.setPriority(Job.BUILD);
+                initDependenciesWhenJavaToolingIsInitialized.setSystem(true);
+                initDependenciesWhenJavaToolingIsInitialized.schedule(1000);
             }
         }
     }
