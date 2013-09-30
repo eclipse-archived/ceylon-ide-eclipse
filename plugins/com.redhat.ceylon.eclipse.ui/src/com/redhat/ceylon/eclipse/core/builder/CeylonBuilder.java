@@ -146,8 +146,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static final String CEYLON_CLASSES_FOLDER_NAME = ".exploded";
 
-	private static boolean compileWithJDTModelLoader = false;
-    
     /**
      * Extension ID of the Ceylon builder, which matches the ID in the
      * corresponding extension definition in plugin.xml.
@@ -1302,7 +1300,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             monitor.worked(2);
         }
         
-        if (compileWithJDTModelLoader()) {
+        if (reuseEclipseModelInCompilation(project)) {
             loader.completeFromClasses();
             monitor.worked(2);
         }
@@ -1380,10 +1378,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         monitor.done();
         
         return typeChecker.getPhasedUnits().getPhasedUnits();
-    }
-
-    private boolean compileWithJDTModelLoader() {
-        return compileWithJDTModelLoader;
     }
 
     public static TypeChecker parseCeylonModel(IProject project,
@@ -1694,7 +1688,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         Iterable<? extends JavaFileObject> compilationUnits =
                 fileManager.getJavaFileObjectsFromFiles(sourceFiles);
         
-        if (compileWithJDTModelLoader()) {
+        if (reuseEclipseModelInCompilation(project)) {
             setupJDTModelLoader(project, typeChecker, context);
         }
         
@@ -1841,7 +1835,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         		args.get("enableJdtClasses")!=null;
 	}
 
-	public static boolean showWarnings(IProject project) {
+	public static boolean reuseEclipseModelInCompilation(IProject project) {
+        return loadDependenciesFromModelLoaderFirst(project) && false; 
+        // We should add another option for this. For the moment deactivate it since it can't work correctly now
+    }
+
+    public static boolean loadBinariesFirst = false;
+	public static boolean loadDependenciesFromModelLoaderFirst(IProject project) {
+        return compileToJava(project) && loadBinariesFirst;
+    }
+
+    public static boolean showWarnings(IProject project) {
 		return getBuilderArgs(project).get("hideWarnings")==null;
 	}
 	public static boolean compileToJs(IProject project) {
