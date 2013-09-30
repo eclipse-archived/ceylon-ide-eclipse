@@ -234,7 +234,7 @@ public class CeylonContentProposer {
         
         Scope scope = getRealScope(node, rn);
  
-        // set up a couple of conditioners for doc link completion
+        // special handling for doc links
         boolean inDoc = false;
         String qual = ""; //empty for all except
         if ((tt==ASTRING_LITERAL || tt==AVERBATIM_STRING) &&
@@ -242,16 +242,13 @@ public class CeylonContentProposer {
                 offset<adjustedToken.getStopIndex()) {
 
             inDoc = true;
-            // de-qualifying type here in case we need package proposal
             int qualMarker = result.prefix.lastIndexOf("::");
-            if (!result.isMemberOp && qualMarker > -1 && offset > (adjustedToken.getStartIndex() + result.start + qualMarker +1) ) {
+            if (qualMarker > -1 && offset > (adjustedToken.getStartIndex() + qualMarker +1) ) {
                 qual = result.prefix.substring(0, qualMarker + 2);
                 result.prefix = result.prefix.substring(qualMarker + 2);
-                }
-            else if (result.isMemberOp) {
-                if (result.type != null && requiredType != null) {
-                    qual = result.type + ".";
-                }
+            }
+            if (result.isMemberOp && result.type != null) {
+                qual = result.type + ".";
             } 
         }
         
@@ -372,22 +369,22 @@ public class CeylonContentProposer {
                      token.getStartIndex());
             }
             else if (token.getType() == ASTRING_LITERAL || token.getType() == AVERBATIM_STRING) {
-            	if ((docRef = getDocReference(token.getText(),  offset-token.getStartIndex(), offsetInToken)) != null) {
-	            	// if caret is after the '.' and the '.' is a member lookup
-	            	if ((offsetInToken > (docRef.start + docRef.ref.lastIndexOf('.') -1) ) 
-	            			&& docRef.ref.lastIndexOf('.') > docRef.ref.lastIndexOf("::")) {
-	            		PositionedPrefix pp = new PositionedPrefix(docRef.start, true);
-	            		if (docRef.start + docRef.ref.lastIndexOf('.') < offsetInToken) {
-	            			pp.prefix = docRef.ref.substring(docRef.ref.lastIndexOf('.') + 1, offsetInToken - docRef.start +1);
-	            			pp.type = docRef.ref.substring(0, docRef.ref.lastIndexOf('.'));
-	            		}
-	            		return pp;
-	            	} else { // type lookup, handle package later
-	           			return new PositionedPrefix(docRef.ref, token.getStartIndex()+docRef.start);
-	            	}
-            	} else {
-            		return null; // in literal but no docRef
-            	}
+                if ((docRef = getDocReference(token.getText(),  offset-token.getStartIndex(), offsetInToken)) != null) {
+                    // if caret is after the '.' and the '.' is a member lookup
+                   	if ((offsetInToken > (docRef.start + docRef.ref.lastIndexOf('.') -1) ) 
+                            && docRef.ref.lastIndexOf('.') > docRef.ref.lastIndexOf("::")) {
+                        PositionedPrefix pp = new PositionedPrefix(token.getStartIndex()+docRef.start, true);
+                        if (docRef.start + docRef.ref.lastIndexOf('.') <= offsetInToken) {
+                            pp.prefix = docRef.ref.substring(docRef.ref.lastIndexOf('.') + 1, offsetInToken - docRef.start +1);
+                            pp.type = docRef.ref.substring(0, docRef.ref.lastIndexOf('.'));
+                        }
+                        return pp;
+                   	} else { // type lookup, handle package later
+                        return new PositionedPrefix(docRef.ref, token.getStartIndex()+docRef.start);
+                   	}
+                } else {
+                    return null; // in literal but no docRef
+                }
             }
             else {
                 return new PositionedPrefix(offset, isMemberOperator(token));
@@ -551,7 +548,7 @@ public class CeylonContentProposer {
 
     private static Node getTokenNode(int adjustedStart, int adjustedEnd,
             int tokenType, Tree.CompilationUnit rn, int offset) {
-        Node node = findNode(rn, adjustedStart, adjustedEnd);
+        Node node = findNode(rn, adjustedStart, adjustedEnd, offset);
         if (tokenType==RBRACE || tokenType==SEMICOLON) {
             //We are to the right of a } or ;
             //so the returned node is the previous
@@ -584,16 +581,6 @@ public class CeylonContentProposer {
             BodyVisitor mv = new BodyVisitor(node, rn);
             mv.visit(rn);
             node = mv.result;
-        }
-        
-        //override when ref inside literal
-        if (node instanceof Tree.StringLiteral) {
-        	List<Node> links = node.getChildren();
-        	for (Node linkNode : links) {
-				if (offset >= linkNode.getStartIndex() && offset <= linkNode.getStopIndex()+1) {
-					return linkNode;
-				}
-			}
         }
         
         if (node==null) node = rn; //we're in whitespace at the start of the file
@@ -1055,12 +1042,6 @@ public class CeylonContentProposer {
      * identifier! (Yick)
      */
     static Scope getRealScope(final Node node, CompilationUnit cu) {
-        // no need to visit the CU
-        if (node instanceof Tree.DocLink) {
-            if (((Tree.DocLink)node).getPkg() != null) {
-    	        return ((Tree.DocLink)node).getPkg();
-            }
-        }
     	
         class FindScopeVisitor extends Visitor {
             Scope scope;
@@ -1076,6 +1057,11 @@ public class CeylonContentProposer {
                         }
                     }
                 }
+            }
+            
+            public void visit(Tree.DocLink that) {
+                super.visit(that);
+                scope = ((Tree.DocLink)node).getPkg();
             }
         };
         FindScopeVisitor fsv = new FindScopeVisitor();
@@ -1865,22 +1851,22 @@ public class CeylonContentProposer {
             }
         }
         else if (memberOp && (node instanceof Tree.Term || node instanceof Tree.DocLink)) {
-        	ProducedType type = null;
-        	if (node instanceof Tree.DocLink) {
-        		Declaration d = ((Tree.DocLink)node).getBase();
-        		if (d != null) {
-	        		type = CeylonContentProposer.type(d);
-	        		if (type == null) {
-	        			type = CeylonContentProposer.fullType(d);
-	        		}
-        		}
-        	}
-        	else if (node instanceof Tree.StringLiteral) {//Doclink not available
-        		type = null;  //TODO derive doclink type
-        	}
-        	else if (node instanceof Tree.Term) {
-        		type = ((Tree.Term)node).getTypeModel();
-        	} 
+            ProducedType type = null;
+            if (node instanceof Tree.DocLink) {
+                Declaration d = ((Tree.DocLink)node).getBase();
+                if (d != null) {
+                    type = CeylonContentProposer.type(d);
+                    if (type == null) {
+                        type = CeylonContentProposer.fullType(d);
+                    }
+                }
+            }
+            else if (node instanceof Tree.StringLiteral) {
+                type = null;
+            }
+            else if (node instanceof Tree.Term) {
+                type = ((Tree.Term)node).getTypeModel();
+            } 
 
         	
             if (type!=null) {
