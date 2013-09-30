@@ -61,13 +61,9 @@ public class CeylonSourcePositionLocator {
     public static Node findNode(Tree.CompilationUnit cu, int offset) {
         return findNode(cu, offset, offset+1);
     }
-
-    public static Node findNode(Tree.CompilationUnit cu, int startOffset, int endOffset) {
-        return findNode(cu, startOffset, endOffset, 0);
-    }
     
-    public static Node findNode(Tree.CompilationUnit cu, int startOffset, int endOffset, int currentOffset) {
-        FindNodeVisitor visitor = new FindNodeVisitor(startOffset, endOffset, currentOffset);
+    public static Node findNode(Node cu, int startOffset, int endOffset) {
+        FindNodeVisitor visitor = new FindNodeVisitor(startOffset, endOffset);
         cu.visit(visitor);
         return visitor.getNode();
     }

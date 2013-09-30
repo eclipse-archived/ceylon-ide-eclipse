@@ -548,7 +548,11 @@ public class CeylonContentProposer {
 
     private static Node getTokenNode(int adjustedStart, int adjustedEnd,
             int tokenType, Tree.CompilationUnit rn, int offset) {
-        Node node = findNode(rn, adjustedStart, adjustedEnd, offset);
+        Node node = findNode(rn, adjustedStart, adjustedEnd);
+        if (node instanceof Tree.StringLiteral && 
+                !((Tree.StringLiteral) node).getDocLinks().isEmpty()) {
+            node = findNode(node, offset, offset);
+        }
         if (tokenType==RBRACE || tokenType==SEMICOLON) {
             //We are to the right of a } or ;
             //so the returned node is the previous
