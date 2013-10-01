@@ -16,13 +16,12 @@ public class CeylonNature extends ProjectNatureBase {
     public static final String NATURE_ID = PLUGIN_ID + ".ceylonNature";
     
     public static boolean isEnabled(IProject project) {
-        boolean isEnabled = false;
         try {
-            isEnabled = project.hasNature(NATURE_ID);
+            return project.hasNature(NATURE_ID);
         } catch (CoreException e) {
             e.printStackTrace();
+            return false;
         }
-        return isEnabled;
     }
     
     private String systemRepo;
