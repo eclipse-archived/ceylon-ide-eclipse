@@ -1605,7 +1605,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         Options jsopts = new Options(js_repos, js_srcdir,
                 getInterpolatedCeylonSystemRepo(project),
                 js_outRepo, null/*uname*/,
-                null/*pass*/, true, true, true, true, js_verbose, false, false, false,
+                null/*pass*/, true, true, true, true, js_verbose ? "all" : null, false, false, false,
                 project.getDefaultCharset(),
                 CeylonProjectConfig.get(project).isOffline());
         JsCompiler jsc = new JsCompiler(typeChecker, jsopts).stopOnErrors(false);
