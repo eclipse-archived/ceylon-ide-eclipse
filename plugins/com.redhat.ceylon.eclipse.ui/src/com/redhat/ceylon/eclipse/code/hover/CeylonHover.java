@@ -1619,7 +1619,7 @@ public class CeylonHover
             }
         }
         
-        if (declName == null || "".equals(declName)) {
+        if (scope==null || declName == null || "".equals(declName)) {
             return null; // no point in continuing. Required for non-token auto-complete.
         }
         
