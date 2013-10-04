@@ -77,7 +77,7 @@ public class Util {
                 return ModuleQuery.Type.JS;
             }
         }
-        return ModuleQuery.Type.ALL;
+        return ModuleQuery.Type.CODE;
     }
     
 }
