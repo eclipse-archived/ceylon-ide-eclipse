@@ -11,13 +11,13 @@ import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
 import com.redhat.ceylon.cmr.api.ModuleVersionResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.code.imports.AddModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public class AddCeylonTestImport {
 
     public static void addCeylonTestImport(IProject project, Module module) throws CoreException {
-        AddModuleImportUtil.addModuleImport(project, module, CEYLON_TEST_MODULE_NAME, determineCeylonTestVersion(project));
+        ModuleImportUtil.addModuleImport(project, module, CEYLON_TEST_MODULE_NAME, determineCeylonTestVersion(project));
     }
 
     private static String determineCeylonTestVersion(IProject project) {

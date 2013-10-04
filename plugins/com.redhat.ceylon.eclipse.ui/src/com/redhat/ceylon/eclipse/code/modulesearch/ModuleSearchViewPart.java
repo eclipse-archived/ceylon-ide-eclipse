@@ -75,7 +75,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.eclipse.code.hover.CeylonHover;
 import com.redhat.ceylon.eclipse.code.hover.CeylonHover.CeylonBlockEmitter;
-import com.redhat.ceylon.eclipse.code.imports.AddModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
@@ -278,7 +278,7 @@ public class ModuleSearchViewPart extends ViewPart {
                         MessageDialog.openInformation(parent.getShell(), "Information", "Can not add module import, because module '" + 
                         		target.getNameAsString() + "' contains it already.");
                     } else {
-                        AddModuleImportUtil.addModuleImport(moduleMap.get(target), target, moduleName, moduleVersion);
+                        ModuleImportUtil.addModuleImport(moduleMap.get(target), target, moduleName, moduleVersion);
                     }
                 }
             }

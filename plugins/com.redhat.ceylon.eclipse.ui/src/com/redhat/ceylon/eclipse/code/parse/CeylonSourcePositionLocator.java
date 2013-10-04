@@ -95,15 +95,19 @@ public class CeylonSourcePositionLocator {
     }
     
     public static int getStartOffset(Node node) {
-        return getNodeStartOffset(node);
+        return getNodeStartOffset(toNode(node));
     }
     
     public static int getEndOffset(Node node) {
-        return getNodeEndOffset(node);
+        return getNodeEndOffset(toNode(node));
     }
     
     public static int getLength(Node node) {
         return getEndOffset(node) - getStartOffset(node);
+    }
+    
+    public static int getNodeLength(Node node) {
+        return getNodeEndOffset(node) - getNodeStartOffset(node);
     }
     
     public static Node getIdentifyingNode(Node node) {
@@ -187,7 +191,7 @@ public class CeylonSourcePositionLocator {
 	
 	public static void gotoNode(Node node, IProject project, TypeChecker tc) {
         gotoLocation(getNodePath(node, project, tc), 
-                getNodeStartOffset(node));
+                getStartOffset(node));
     }
 
     public static void gotoLocation(IPath path, int offset) {
@@ -217,23 +221,21 @@ public class CeylonSourcePositionLocator {
     }
     
     public static int getNodeStartOffset(Node node) {
-        Node in = toNode(node);
-        if (in==null) {
+        if (node==null) {
             return 0;
         }
         else {
-            Integer index = in.getStartIndex();
+            Integer index = node.getStartIndex();
             return index==null?0:index;
         }
     }
     
     public static int getNodeEndOffset(Node node) {
-        Node in = toNode(node);
-        if (in==null) {
+        if (node==null) {
             return 0;
         }
         else {
-            Integer index = in.getStopIndex();
+            Integer index = node.getStopIndex();
             return index==null?0:index+1;
         }
     }
