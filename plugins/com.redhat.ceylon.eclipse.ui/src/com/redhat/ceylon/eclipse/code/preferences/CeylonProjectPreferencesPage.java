@@ -93,7 +93,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         //enableBuilder.setSize(40, 40);
 
         Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sep.setLayoutData(sgd);
 
 //        Label misc = new Label(parent, SWT.LEFT | SWT.WRAP);
@@ -202,7 +202,8 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         });
         
         Link openRepoPageLink = new Link(parent, 0);
-        openRepoPageLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
+        openRepoPageLink.setLayoutData(GridDataFactory.swtDefaults()
+                .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
         openRepoPageLink.setText("<a>Configure Project Module Repositories...</a>");
         openRepoPageLink.addSelectionListener(new SelectionAdapter() {
             @Override

@@ -72,7 +72,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             op = new CreateCeylonSourceFileOperation(page.getSourceDir(), 
                     page.getPackageFragment(), "package", 
                     page.isIncludePreamble(), 
-                    (page.isShared() ? "shared " : "") + "package " + page.getPackageFragment().getElementName() + ";\n",
+                    (page.isShared() ? "shared " : "") + 
+                            "package " + page.getPackageFragment().getElementName() + ";\n",
                     getShell());
             status = op.execute(monitor, info);
             ops.add(op);
