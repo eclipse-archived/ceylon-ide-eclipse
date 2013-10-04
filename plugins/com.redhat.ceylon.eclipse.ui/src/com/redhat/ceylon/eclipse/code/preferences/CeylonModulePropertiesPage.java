@@ -51,7 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.imports.AddModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchManager;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvider;
@@ -253,6 +253,7 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
         final Table imports = new Table(composite, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan=2;
+        gd.verticalSpan=4;
         gd.grabExcessHorizontalSpace = true;
 //        gd.grabExcessVerticalSpace = true;
         gd.heightHint = 100;
@@ -333,13 +334,41 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
                             continue;
                         }
                         if (added.add(name)) {
-                            AddModuleImportUtil.addModuleImport(project, module, name, version);
+                            ModuleImportUtil.addModuleImport(project, module, name, version);
                             TableItem item = new TableItem(imports, SWT.NONE);
                             item.setImage(CeylonLabelProvider.ARCHIVE);
                             item.setText(name + "/" + version);
                         }
                     }
                 }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        button = new Button(composite, SWT.PUSH);
+        button.setText("Remove selected");
+        button.setLayoutData(bgd);
+        button.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int[] selection = imports.getSelectionIndices();
+                List<String> names = new ArrayList<String>();
+                List<Integer> removed = new ArrayList<Integer>();
+                for (int index: selection) {
+                    TableItem item = imports.getItem(index);
+                    String name = item.getText().substring(0, 
+                            item.getText().indexOf('/'));
+                    if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
+                        names.add(name);
+                        removed.add(index);
+                    }
+                }
+                ModuleImportUtil.removeModuleImports(project, module, names);
+                int[] indices = new int[removed.size()];
+                for (int i=0; i<removed.size(); i++) {
+                    indices[i] = removed.get(i);
+                }
+                imports.remove(indices);
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}

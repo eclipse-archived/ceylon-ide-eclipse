@@ -11,7 +11,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.eclipse.code.imports.AddModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 
 public class AddModuleImportProposal implements ICompletionProposal, 
@@ -38,7 +38,7 @@ public class AddModuleImportProposal implements ICompletionProposal,
     
     @Override
     public void apply(IDocument document) {
-        AddModuleImportUtil.addModuleImport(project, 
+        ModuleImportUtil.addModuleImport(project, 
                 unit.getPackage().getModule(), 
                 name, version);
     }
