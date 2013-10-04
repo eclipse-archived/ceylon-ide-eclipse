@@ -4,8 +4,12 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -15,6 +19,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -130,6 +135,8 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         layoutb.marginBottom = 1;
         composite.setLayout(layoutb);
         
+        addCharacterEncodingLabel(composite);
+        
         showWarnings = new Button(composite, SWT.CHECK);
         showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");
         showWarnings.setSelection(showCompilerWarnings);
@@ -213,6 +220,44 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             }
         });
     }
+
+    private void addCharacterEncodingLabel(Composite composite) {
+        final Link link = new Link(composite, SWT.NONE);
+        try {
+            link.setText("Default source file encoding:   " +
+                    getSelectedProject().getDefaultCharset() + 
+                    " <a>(Change...)</a>");
+            link.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    IWorkbenchPreferenceContainer container = (IWorkbenchPreferenceContainer) getContainer();
+                    container.openPage("org.eclipse.ui.propertypages.info.file", null);
+                }
+            });
+            getWorkspace().addResourceChangeListener(encodingListener=new IResourceChangeListener() {
+                @Override
+                public void resourceChanged(IResourceChangeEvent event) {
+                    if (event.getType()==IResourceChangeEvent.POST_CHANGE) {
+                        Display.getDefault().asyncExec(new Runnable() {
+                            public void run() {
+                                try {
+                                    link.setText("Default source file encoding:   " +
+                                            getSelectedProject().getDefaultCharset() + 
+                                            " <a>(Change...)</a>");
+                                }
+                                catch (CoreException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+    }
 	
     @Override
     protected Control createContents(Composite composite) {
@@ -230,6 +275,17 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
 
         addControls(composite);
         return composite;
+    }
+    
+    private IResourceChangeListener encodingListener;
+    
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (encodingListener!=null) {
+            getWorkspace().removeResourceChangeListener(encodingListener);
+            encodingListener = null;
+        }
     }
     
     private void updateOfflineButton() {
