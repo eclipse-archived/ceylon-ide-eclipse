@@ -27,6 +27,7 @@ import java.util.Map;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.CharOperation;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.env.IDependent;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
@@ -245,7 +246,7 @@ public class JDTClass implements ClassMirror {
 
     @Override
     public boolean isStatic() {
-        return klass.isStatic();
+        return (klass.modifiers & ClassFileConstants.AccStatic) != 0;
     }
 
     @Override
