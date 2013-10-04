@@ -119,7 +119,9 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         folder.setText(repositoryPath);
         if (project!=null) {
         	for (String path: getCeylonRepositories(project.getProject())) {
-        		folder.add(path);
+        		if (!path.startsWith("http://")) {
+        		    folder.add(path);
+        		}
         	}
         }
         

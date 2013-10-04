@@ -50,7 +50,15 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
             if (selectedElement!=null) {
                 project = selectedElement.getJavaProject();
                 List<String> paths = getCeylonRepositories(project.getProject());
-				repoPath = paths==null || paths.isEmpty() ? null : paths.get(paths.size()-1);
+                if (paths!=null) {
+                    for (int i=paths.size()-1; i>=0; i--) {
+                        String path = paths.get(i);
+                        if (!path.startsWith("http://")) {
+                            repoPath = path;
+                            break;
+                        }
+                    }
+                }
             }
 			if (repoPath==null) repoPath = getDefaultRepositoryPath();
             page = new ExportModuleWizardPage(repoPath, project, selectedElement);
@@ -62,7 +70,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 	public static String getDefaultRepositoryPath() {
 		String repositoryPath = CeylonPlugin.getInstance().getDialogSettings()
         		.get("repositoryPath");
-        if (repositoryPath==null) {
+        if (repositoryPath==null || repositoryPath.startsWith("http://")) {
         	repositoryPath = System.getProperty("user.home") + "/.ceylon/repo";
         }
         return repositoryPath;
