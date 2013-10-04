@@ -90,7 +90,7 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
                 // Before scheduling the InitDependenciesJob, we will wait for the end of the Java Tooling initialization Job 
                 final long waitUntil = System.currentTimeMillis() + 120000;
 
-                Job initDependenciesWhenJavaToolingIsInitialized = new Job("Waiting for the end of the Java Tooling Initialization before initializing Ceylon dependencies for project " + project + " ...") {
+                Job initDependenciesWhenJavaToolingIsInitialized = new Job("Waiting for the end of the Java Tooling Initialization before initializing Ceylon dependencies for project " + project.getElementName() + " ...") {
                     private Job initJavaToolingJob = null;
                     
                     @Override
@@ -108,12 +108,12 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
                             if (initJavaToolingJob.getState() == Job.WAITING ||
                                 initJavaToolingJob.getState() == Job.RUNNING) {
                                 if (System.currentTimeMillis() < waitUntil) {
-                                    System.out.println("Waiting 1 seconde more for the end of the Java Tooling Initialization before initializing Ceylon dependencies for project " + project + " ...");
+                                    System.out.println("Waiting 1 seconde more for the end of the Java Tooling Initialization before initializing Ceylon dependencies for project " + project.getElementName() + " ...");
                                     schedule(1000);
                                     return Status.OK_STATUS;
                                 }
                                 else {
-                                    System.out.println("The Java Tooling is not initialized after 2 minutes, so start initializing Ceylon dependencies for project " + project + " anyway !");
+                                    System.out.println("The Java Tooling is not initialized after 2 minutes, so start initializing Ceylon dependencies for project " + project.getElementName() + " anyway !");
                                 }
                             }
                         }
@@ -121,14 +121,14 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
                         boolean shouldSchedule = true;
                         for (Job job : getJobManager().find(initDependenciesJob)) {
                             if (job.getState() == Job.WAITING) {
-                                System.out.println("An InitDependenciesJob for project " + project + " is already scheduled. Finally don't schedule a new one after the Java Tooling has initialized");
+                                System.out.println("An InitDependenciesJob for project " + project.getElementName() + " is already scheduled. Finally don't schedule a new one after the Java Tooling has initialized");
                                 shouldSchedule = false;
                                 break;
                             }
                         }
                 
                         if (shouldSchedule) {
-                            System.out.println("Scheduling the initialization of the Ceylon dependencies for project " + project + " after the Java Tooling has been initialized");
+                            System.out.println("Scheduling the initialization of the Ceylon dependencies for project " + project.getElementName() + " after the Java Tooling has been initialized");
                             initDependenciesJob.schedule();
                         }   
                         return Status.OK_STATUS;
@@ -137,7 +137,7 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
                 
                 initDependenciesWhenJavaToolingIsInitialized.setPriority(Job.BUILD);
                 initDependenciesWhenJavaToolingIsInitialized.setSystem(true);
-                initDependenciesWhenJavaToolingIsInitialized.schedule(1000);
+                initDependenciesWhenJavaToolingIsInitialized.schedule();
             }
         }
     }
