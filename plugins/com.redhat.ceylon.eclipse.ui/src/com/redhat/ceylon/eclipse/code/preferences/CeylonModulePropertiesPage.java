@@ -22,8 +22,12 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -38,10 +42,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.eclipse.ui.dialogs.SearchPattern;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
@@ -295,7 +301,50 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
                             return ((ModuleVersionNode) element).getVersion();
                         }
                     }
-                }, new ModuleSearchViewContentProvider());
+                }, new ModuleSearchViewContentProvider()) {
+                    private Text createFilterText(Composite parent) {
+                        final Text text = new Text(parent, SWT.BORDER);
+                        final SearchPattern searchPattern = new SearchPattern();
+                        searchPattern.setPattern("");
+                        addFilter(new ViewerFilter() {
+                            @Override
+                            public boolean select(Viewer viewer, 
+                                    Object parentElement, 
+                                    Object element) {
+                                String name = "";
+                                if (element instanceof ModuleNode) {
+                                    name = ((ModuleNode) element).getName();
+                                }
+                                else if (element instanceof ModuleVersionNode) {
+                                    name = ((ModuleVersionNode) element).getModule().getName();
+                                }
+                                return searchPattern.matches(name);
+                            }
+                        });
+                        GridData data = new GridData();
+                        data.grabExcessVerticalSpace = false;
+                        data.grabExcessHorizontalSpace = true;
+                        data.horizontalAlignment = GridData.FILL;
+                        data.verticalAlignment = GridData.BEGINNING;
+                        text.setLayoutData(data);
+                        text.setFont(parent.getFont());
+                        text.setText("");
+                        text.addModifyListener(new ModifyListener() {
+                            @Override
+                            public void modifyText(ModifyEvent e) {
+                                searchPattern.setPattern(text.getText());
+                                getTreeViewer().refresh();
+                            }
+                        });
+                        return text;
+                    }
+                    @Override
+                    protected Label createMessageArea(Composite composite) {
+                        Label result = super.createMessageArea(composite);
+                        createFilterText(composite);
+                        return result;
+                    }
+                };
                 dialog.setTitle("Module Selection");
                 dialog.setMessage("Select modules to import:");
                 ModuleSearchResult searchResults = getModuleSearchResults("", 
