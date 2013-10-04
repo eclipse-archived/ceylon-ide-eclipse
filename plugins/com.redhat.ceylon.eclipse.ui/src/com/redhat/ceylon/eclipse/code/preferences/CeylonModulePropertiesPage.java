@@ -8,8 +8,10 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_MODULE;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -263,7 +265,7 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
                     mi.getModule().getVersion());
         }
         button = new Button(composite, SWT.PUSH);
-        button.setText("Add import...");
+        button.setText("Add imports...");
         bgd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING|GridData.HORIZONTAL_ALIGN_FILL);
         bgd.grabExcessHorizontalSpace=false;
         bgd.widthHint = 50;
@@ -294,7 +296,7 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
                     }
                 }, new ModuleSearchViewContentProvider());
                 dialog.setTitle("Module Selection");
-                dialog.setMessage("Select a module to import:");
+                dialog.setMessage("Select modules to import:");
                 ModuleSearchResult searchResults = getModuleSearchResults("", 
                         getProjectTypeChecker(project), project);
                 List<ModuleDetails> list = new ArrayList<ModuleDetails>(searchResults.getResults());
@@ -315,24 +317,28 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
                 dialog.setInput(ModuleSearchManager.convertResult(list));
                 dialog.open();
                 Object[] results = dialog.getResult();
-                if (results!=null && results.length==1) {
-                    String name; String version;
-                    Object result = results[0];
-                    if (result instanceof ModuleNode) {
-                        name = ((ModuleNode) result).getName();
-                        version = ((ModuleNode) result).getLastVersion().getVersion();
+                Set<String> added = new HashSet<String>();
+                if (results!=null) {
+                    for (Object result: results) {
+                        String name; String version;
+                        if (result instanceof ModuleNode) {
+                            name = ((ModuleNode) result).getName();
+                            version = ((ModuleNode) result).getLastVersion().getVersion();
+                        }
+                        else if (result instanceof ModuleVersionNode) {
+                            name = ((ModuleVersionNode) result).getModule().getName();
+                            version = ((ModuleVersionNode) result).getVersion();
+                        }
+                        else {
+                            continue;
+                        }
+                        if (added.add(name)) {
+                            AddModuleImportUtil.addModuleImport(project, module, name, version);
+                            TableItem item = new TableItem(imports, SWT.NONE);
+                            item.setImage(CeylonLabelProvider.ARCHIVE);
+                            item.setText(name + "/" + version);
+                        }
                     }
-                    else if (result instanceof ModuleVersionNode) {
-                        name = ((ModuleVersionNode) result).getModule().getName();
-                        version = ((ModuleVersionNode) result).getVersion();
-                    }
-                    else {
-                        return;
-                    }
-                    AddModuleImportUtil.addModuleImport(project, module, name, version);
-                    TableItem item = new TableItem(imports, SWT.NONE);
-                    item.setImage(CeylonLabelProvider.ARCHIVE);
-                    item.setText(name + "/" + version);
                 }
             }
             @Override
