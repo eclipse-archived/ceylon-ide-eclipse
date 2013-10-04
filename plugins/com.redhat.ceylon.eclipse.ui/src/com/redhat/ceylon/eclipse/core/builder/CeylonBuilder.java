@@ -1508,6 +1508,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
+            // First Scan all non-default source modules and attach the contained packages 
+            srcDirResource.accept(new ModulesScanner(defaultModule, modelLoader, moduleManager,
+                    srcDir, srcFolderPath));
             srcDirResource.accept(new SourceScanner(defaultModule, modelLoader, moduleManager,
 					srcDir, srcFolderPath, typeChecker, scannedSources,
 					phasedUnits));
