@@ -96,6 +96,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image PARAMETER_METHOD = imageRegistry.get(CEYLON_PARAMETER_METHOD);
     public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
     public static Image ARCHIVE = imageRegistry.get(CEYLON_ARCHIVE);
+    public static Image VERSION = imageRegistry.get(MODULE_VERSION);
     public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
     public static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
     public static Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
