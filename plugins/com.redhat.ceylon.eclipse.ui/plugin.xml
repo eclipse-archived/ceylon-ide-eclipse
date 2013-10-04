@@ -1475,6 +1475,20 @@
             <adapt type="org.eclipse.core.resources.IProject"/>
          </enabledWhen>
        </page>
+       <page 
+           id="com.redhat.ceylon.eclipse.ui.moduleProperties"
+           name="Ceylon Module"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonModulePropertiesPage">
+         <enabledWhen>
+            <and>
+            <adapt
+                  type="org.eclipse.jdt.core.IPackageFragment"/>
+            <test value="true"
+                  forcePluginActivation="true"
+                  property="com.redhat.ceylon.eclipse.ui.module"/>
+            </and>
+         </enabledWhen>
+       </page>
    </extension>
    <extension point="org.eclipse.ui.preferencePages">
        <page
@@ -1484,6 +1498,14 @@
            category="org.eclipse.ui.preferencePages.Editors">
        <keywordReference id="org.eclipse.ui.editors.general"/>
        </page>
+   </extension>
+   <extension point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+           properties="module"
+           namespace="com.redhat.ceylon.eclipse.ui"
+           type="org.eclipse.jdt.core.IPackageFragment"
+           id="com.redhat.ceylon.eclipse.ui.IPackageFragmentTester"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonPropertyTester"/>
    </extension>
    
    <extension point="org.eclipse.ui.intro.configExtension">
@@ -1948,7 +1970,7 @@
               id="com.redhat.ceylon.eclipse.ui.actions.enableNatureAction"
               label="Enable Ceylon Builder"
               menubarPath="org.eclipse.ui.projectConfigure/additions"
-               tooltip="Enable the ceylon builder for this project"/>
+               tooltip="Enable the Ceylon builder for this project"/>
         <visibility>
           <and>
             <objectState name="open" value="true"/>
