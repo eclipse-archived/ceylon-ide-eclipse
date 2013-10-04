@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -26,6 +27,7 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     private IStructuredSelection selection;
     private NewUnitWizardPage page;
     private IWorkbench workbench;
+    private boolean created=false;
     
     public IPackageFragment getPackageFragment() {
         return page.getPackageFragment();
@@ -33,6 +35,10 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     
     public IPackageFragmentRoot getSourceFolder() {
         return page.getSourceDir();
+    }
+    
+    public boolean isCreated() {
+        return created;
     }
     
     @Override
@@ -58,13 +64,13 @@ public class NewPackageWizard extends Wizard implements INewWizard {
                     try {
                         IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
                         op.addContext(os.getUndoContext());
-                        os.getOperationHistory()
+                        IStatus status = os.getOperationHistory()
                                 .execute(op, monitor, getUIInfoAdapter(getShell()));
+                        created=status.isOK();
                     } 
                     catch (ExecutionException e) {
                         e.printStackTrace();
                     }
-
                 }
             });
         } 

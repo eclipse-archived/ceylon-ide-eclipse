@@ -70,6 +70,7 @@ import java.util.regex.Pattern;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -699,12 +700,9 @@ public class CeylonContentProposer {
         else {
             final TypeChecker tc = cpc.getTypeChecker();
             if (tc!=null) {
-                ModuleQuery query = new ModuleQuery(pfp, 
-                        getModuleQueryType(cpc.getProject()));
-                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
-                ModuleSearchResult results = tc.getContext().getRepositoryManager()
-                        .completeModules(query);
-                for (final ModuleDetails module: results.getResults()) {
+                IProject project = cpc.getProject();
+                for (final ModuleDetails module: getModuleSearchResults(pfp, tc,project)
+                        .getResults()) {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
@@ -738,6 +736,13 @@ public class CeylonContentProposer {
         }
     }
 
+    public static ModuleSearchResult getModuleSearchResults(String prefix,
+            TypeChecker tc, IProject project) {
+        ModuleQuery query = new ModuleQuery(prefix, getModuleQueryType(project));
+        query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+        return tc.getContext().getRepositoryManager().completeModules(query);
+    }
+    
     protected static boolean moduleAlreadyImported(CeylonParseController cpc, final String mod) {
         if (mod.equals(Module.LANGUAGE_MODULE_NAME)) {
             return true;
