@@ -23,29 +23,22 @@ import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
-final class SourceScanner implements IResourceVisitor {
+final class ModulesScanner implements IResourceVisitor {
 	private final Module defaultModule;
 	private final JDTModelLoader modelLoader;
 	private final JDTModuleManager moduleManager;
 	private final ResourceVirtualFile srcDir;
 	private final IPath srcFolderPath;
-	private final TypeChecker typeChecker;
-	private final List<IFile> scannedSources;
-	private final PhasedUnits phasedUnits;
 	private Module module;
 
-	SourceScanner(Module defaultModule, JDTModelLoader modelLoader,
+	ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
 			JDTModuleManager moduleManager, ResourceVirtualFile srcDir,
-			IPath srcFolderPath, TypeChecker typeChecker,
-			List<IFile> scannedSources, PhasedUnits phasedUnits) {
+			IPath srcFolderPath) {
 		this.defaultModule = defaultModule;
 		this.modelLoader = modelLoader;
 		this.moduleManager = moduleManager;
 		this.srcDir = srcDir;
 		this.srcFolderPath = srcFolderPath;
-		this.typeChecker = typeChecker;
-		this.scannedSources = scannedSources;
-		this.phasedUnits = phasedUnits;
 	}
 
 	public boolean visit(IResource resource) throws CoreException {
@@ -89,46 +82,11 @@ final class SourceScanner implements IResourceVisitor {
 	                assert(module != null);
 	            }
 	        }
-	        if (module == defaultModule) {
-	            Module realModule = moduleManager.findLoadedModule(pkgNameAsString, null);
-	            if (realModule != null) {
-	                // The module descriptor had probably been found in another source directory
-	                module = realModule;
-	            }
-	        }
 	        
-	        pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
-	        return true;
-	    }
-
-	    if (resource instanceof IFile) {
-	        IFile file = (IFile) resource;
-	        if (file.exists() && CeylonBuilder.isCeylonOrJava(file)) {
-	            List<String> pkgName = Arrays.asList(file.getParent().getProjectRelativePath()
-	            		.makeRelativeTo(srcFolderPath).segments());
-	            String pkgNameAsString = formatPath(pkgName);
+	        if (module != defaultModule) {
 	            pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
-	            
-	            if (CeylonBuilder.isCeylon(file)) {
-	                if (scannedSources != null) {
-	                    scannedSources.add(file);
-	                }
-	                ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
-	                try {
-	                    PhasedUnit newPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
-	                    		typeChecker, virtualFile, srcDir, pkg);
-	                    phasedUnits.addPhasedUnit(virtualFile, newPhasedUnit);
-	                } 
-	                catch (Exception e) {
-	                    e.printStackTrace();
-	                }
-	            }
-	            if (CeylonBuilder.isJava((IFile)resource)) {
-	                if (scannedSources != null) {
-	                    scannedSources.add((IFile)resource);
-	                }
-	            }
 	        }
+	        return true;
 	    }
 	    return false;
 	}
