@@ -8,8 +8,10 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static java.util.Collections.singletonMap;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -32,6 +34,7 @@ public class ModuleImportUtil {
 
     public static void removeModuleImports(IProject project, Module target, 
             List<String> moduleNames) {
+        if (moduleNames.isEmpty()) return;
         PhasedUnit unit = findPhasedUnit(project, target);
         TextFileChange textFileChange = new TextFileChange("Remove Module Import", getFile(unit));
         textFileChange.setEdit(new MultiTextEdit());
@@ -47,23 +50,37 @@ public class ModuleImportUtil {
             throw new RuntimeException(e);
         }
     }
-
+    
     public static void addModuleImport(IProject project, Module target, 
             String moduleName, String moduleVersion) {
+        int offset = addModuleImports(project, target, 
+                singletonMap(moduleName, moduleVersion));
+        gotoLocation(CeylonSourcePositionLocator.getNodePath(
+                findPhasedUnit(project, target).getCompilationUnit(), project, 
+                getProjectTypeChecker(project)), 
+                offset + moduleName.length() + 
+                        getDefaultIndent().length() + 10, 
+                moduleVersion.length());
+    }
+    
+    public static int addModuleImports(IProject project, Module target, 
+            Map<String,String> moduleNamesAndVersions) {
+        if (moduleNamesAndVersions.isEmpty()) return 0;
         PhasedUnit unit = findPhasedUnit(project, target);
-        InsertEdit edit = createAddEdit(unit, moduleName, moduleVersion);
-
         TextFileChange textFileChange = new TextFileChange("Add Module Import", getFile(unit));
-        textFileChange.setEdit(edit);
+        textFileChange.setEdit(new MultiTextEdit());
+        for (Map.Entry<String, String> entry: moduleNamesAndVersions.entrySet()) {
+            InsertEdit edit = createAddEdit(unit, entry.getKey(), entry.getValue());
+            if (edit!=null) {
+                textFileChange.addEdit(edit);
+            }
+        }
         try {
             textFileChange.perform(new NullProgressMonitor());
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
-        gotoLocation(CeylonSourcePositionLocator.getNodePath(unit.getCompilationUnit(), project, 
-                getProjectTypeChecker(project)), 
-                edit.getOffset() + moduleName.length() + getDefaultIndent().length() + 10, 
-                moduleVersion.length());
+        return textFileChange.getEdit().getOffset();
     }
 
     private static PhasedUnit findPhasedUnit(IProject project, Module module) {

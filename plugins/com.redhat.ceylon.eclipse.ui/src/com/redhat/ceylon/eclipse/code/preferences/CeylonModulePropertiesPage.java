@@ -8,10 +8,10 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_MODULE;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -318,7 +318,7 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
                 dialog.setInput(ModuleSearchManager.convertResult(list));
                 dialog.open();
                 Object[] results = dialog.getResult();
-                Set<String> added = new HashSet<String>();
+                Map<String,String> added = new HashMap<String,String>();
                 if (results!=null) {
                     for (Object result: results) {
                         String name; String version;
@@ -333,12 +333,13 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
                         else {
                             continue;
                         }
-                        if (added.add(name)) {
-                            ModuleImportUtil.addModuleImport(project, module, name, version);
-                            TableItem item = new TableItem(imports, SWT.NONE);
-                            item.setImage(CeylonLabelProvider.ARCHIVE);
-                            item.setText(name + "/" + version);
-                        }
+                        added.put(name, version);
+                    }
+                    ModuleImportUtil.addModuleImports(project, module, added);
+                    for (Map.Entry<String, String> entry: added.entrySet()) {
+                        TableItem item = new TableItem(imports, SWT.NONE);
+                        item.setImage(CeylonLabelProvider.ARCHIVE);
+                        item.setText(entry.getKey() + "/" + entry.getValue());
                     }
                 }
             }
