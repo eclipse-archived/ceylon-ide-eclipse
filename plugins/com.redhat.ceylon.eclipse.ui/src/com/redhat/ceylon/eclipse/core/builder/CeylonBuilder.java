@@ -1748,13 +1748,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //            }*/
 //        }
         
-        IPath workspaceLocation = project.getWorkspace().getRoot().getLocation();
-        addProjectClasspathElements(classpathElements, workspaceLocation,
+        addProjectClasspathElements(classpathElements,
 				javaProject);
         try {
 			for (IProject p: project.getReferencedProjects()) {
 				if(p.isAccessible()){
-					addProjectClasspathElements(classpathElements, workspaceLocation,
+					addProjectClasspathElements(classpathElements,
 							JavaCore.create(p));
 				}
 			}
@@ -1797,8 +1796,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		});
 	}
 
-	private void addProjectClasspathElements(List<String> classpathElements,
-			IPath workspaceLocation, IJavaProject javaProj) {
+	private void addProjectClasspathElements(List<String> classpathElements, IJavaProject javaProj) {
 		try {
 			List<IClasspathContainer> containers = getCeylonClasspathContainers(javaProj);
 			for (IClasspathContainer container : containers) {
@@ -1814,7 +1812,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 			classpathElements.add(outputDir.getAbsolutePath());
 			for (IClasspathEntry cpEntry : javaProj.getResolvedClasspath(true)) {
 				if (isInCeylonClassesOutputFolder(cpEntry.getPath())) {
-					classpathElements.add(workspaceLocation.append(cpEntry.getPath()).toOSString());
+                    classpathElements.add(javaProj.getProject().getLocation().append(cpEntry.getPath().lastSegment()).toOSString());
 				}
 			}
 		} 
