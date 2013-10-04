@@ -168,7 +168,7 @@ public class ModuleSearchManager {
         modules = null;
     }
 
-    private List<ModuleNode> convertResult(Collection<ModuleDetails> details) {
+    public static List<ModuleNode> convertResult(Collection<ModuleDetails> details) {
         List<ModuleNode> moduleNodes = new ArrayList<ModuleNode>(details.size());
         for (ModuleDetails detail : details) {
             List<ModuleVersionNode> versionNodes = new ArrayList<ModuleVersionNode>(detail.getVersions().size());
