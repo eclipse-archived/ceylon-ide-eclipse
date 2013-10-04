@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.modulesearch;
 
 import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getModuleQueryType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +17,7 @@ import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
 import com.redhat.ceylon.cmr.api.ModuleVersionResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
@@ -35,11 +37,12 @@ public class ModuleSearchManager {
     
     public void searchModules(final String query) {
         final RepositoryManager repositoryManager = getRepositoryManager();
+        final Type type = getQueryType();
         new ModuleSearchJobTemplate("Searching modules in repositories") {
             @Override
             protected void onRun() {
                 lastQuery = query.trim();
-                lastResult = repositoryManager.searchModules(newModuleQuery(lastQuery));
+                lastResult = repositoryManager.searchModules(newModuleQuery(lastQuery, type));
                 modules = convertResult(lastResult.getResults());
             }
             @Override
@@ -51,10 +54,11 @@ public class ModuleSearchManager {
 
     public void fetchNextModules() {
         final RepositoryManager repositoryManager = getRepositoryManager();
+        final Type type = getQueryType();
         new ModuleSearchJobTemplate("Searching modules in repositories") {
             @Override
             protected void onRun() {
-                ModuleQuery moduleQuery = newModuleQuery(lastQuery);
+                ModuleQuery moduleQuery = newModuleQuery(lastQuery, type);
                 moduleQuery.setPagingInfo(lastResult.getNextPagingInfo());
                 lastResult = repositoryManager.searchModules(moduleQuery);
                 modules.addAll(convertResult(lastResult.getResults()));
@@ -66,10 +70,15 @@ public class ModuleSearchManager {
         }.schedule();
     }
     
-    private ModuleQuery newModuleQuery(String search) {
-        ModuleQuery query = new ModuleQuery(search, Type.JVM);
+    private ModuleQuery newModuleQuery(String search, Type type) {
+        ModuleQuery query = new ModuleQuery(search, type);
+        query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
         query.setCount(20l);
         return query;
+    }
+
+    private Type getQueryType() {
+        return getModuleQueryType(moduleSearchViewPart.getSelectedProject());
     }
 
     public void fetchDocumentation(final String moduleName, final String moduleVersion) {
@@ -79,11 +88,12 @@ public class ModuleSearchManager {
         }
         
         final RepositoryManager repositoryManager = getRepositoryManager();
-        
+        final Type type = getQueryType();
         new ModuleSearchJobTemplate("Loading module documentation") {
             @Override
             protected void onRun() {
-                ModuleVersionQuery query = new ModuleVersionQuery(moduleName, moduleVersion, Type.JVM);
+                ModuleVersionQuery query = new ModuleVersionQuery(moduleName, moduleVersion, type);
+                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
                 ModuleVersionResult result = repositoryManager.completeVersions(query);
                 if (result != null) {
                     ModuleVersionDetails detail = result.getVersions().get(moduleVersion);
