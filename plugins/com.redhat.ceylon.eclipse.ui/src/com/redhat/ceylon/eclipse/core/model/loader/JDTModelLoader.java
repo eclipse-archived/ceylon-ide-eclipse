@@ -655,21 +655,16 @@ public class JDTModelLoader extends AbstractModelLoader {
         return declarations;
     }
     
+    public synchronized SourceDeclarationHolder getSourceDeclaration(String declarationName) {
+        return sourceDeclarations.get(declarationName);
+    }
+
     public static interface SourceFileObjectManager {
         void setupSourceFileObjects(List<?> treeHolders);
     }
     
-    private SourceFileObjectManager additionalSourceFileObjectsManager = null;
-    
-    public synchronized void setSourceFileObjectManager(SourceFileObjectManager manager) {
-        additionalSourceFileObjectsManager = manager;
-    }
-    
     public synchronized void setupSourceFileObjects(List<?> treeHolders) {
         addSourcePhasedUnits(treeHolders, true);
-        if (additionalSourceFileObjectsManager != null) {
-            additionalSourceFileObjectsManager.setupSourceFileObjects(treeHolders);
-        }
     }
 
     public synchronized void addSourcePhasedUnits(List<?> treeHolders, final boolean isSourceToCompile) {
@@ -762,103 +757,6 @@ public class JDTModelLoader extends AbstractModelLoader {
         classMirrorCache.clear();
     }
     
-    public synchronized void completeFromClasses() {
-        for (Entry<String, SourceDeclarationHolder> entry : sourceDeclarations.entrySet()) {
-            SourceDeclarationHolder declaration = entry.getValue();
-            if (mustCompleteFromClasses(declaration)) {
-                ClassMirror classMirror = buildClassMirror(entry.getKey());
-                if (classMirror == null) {
-                    continue;
-                }
-                Module module = findModuleForClassMirror(classMirror);
-                final Declaration binaryDeclaration = getOrCreateDeclaration(module, classMirror,
-                        DeclarationType.TYPE,
-                        new ArrayList<Declaration>(), new boolean[1]);
-
-                if (binaryDeclaration == null) {
-                    continue;
-                }
-                
-                declaration.getAstDeclaration().visit(new Visitor() {
-                    @Override
-                    public void visit(Tree.AnyAttribute that) {
-                        super.visit(that);
-                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList(), false);
-                        if (binaryMember != null) {
-                        	ProducedType type = ((TypedDeclaration)binaryMember).getType();
-                        	if(type == null)
-                        		return;
-                            String underlyingType = type.getUnderlyingType();
-                            if (underlyingType != null) {
-                                ProducedType typeToComplete = that.getDeclarationModel().getType();
-                                if (typeToComplete != null) {
-                                    typeToComplete.setUnderlyingType(underlyingType);
-                                }
-                            }
-                        }
-                    }
-                    
-                    @Override
-                    public void visit(Tree.AttributeSetterDefinition that) {
-                        super.visit(that);
-                        Declaration binaryMember = binaryDeclaration.getMember(that.getDeclarationModel().getName(), Collections.<ProducedType>emptyList(), false);
-                        if (binaryMember != null) {
-                            String underlyingType = ((TypedDeclaration)binaryMember).getType().getUnderlyingType();
-                            if (underlyingType != null) {
-                                ProducedType typeToComplete = that.getDeclarationModel().getType();
-                                if (typeToComplete != null) {
-                                    typeToComplete.setUnderlyingType(underlyingType);
-                                }
-                            }
-                            
-                        }
-                    }
-
-                    @Override
-                    public void visit(Tree.AnyMethod that) {
-                        super.visit(that);
-                        Method method = that.getDeclarationModel();
-                        Method binaryMethod = (Method) binaryDeclaration.getMember(method.getName(), Collections.<ProducedType>emptyList(), false);
-                        if (binaryMethod != null) {
-                            String underlyingType = ((TypedDeclaration)binaryMethod).getType().getUnderlyingType();
-                            if (underlyingType != null) {
-                                ProducedType typeToComplete = that.getDeclarationModel().getType();
-                                if (typeToComplete != null) {
-                                    typeToComplete.setUnderlyingType(underlyingType);
-                                }
-                            }
-                            
-                            Iterator<ParameterList> binaryParamLists = binaryMethod.getParameterLists().iterator();
-                            for (ParameterList paramList : method.getParameterLists()) {
-                                if (binaryParamLists.hasNext()) {
-                                    ParameterList binaryParamList = binaryParamLists.next();
-                                    Iterator<Parameter> binaryParams = binaryParamList.getParameters().iterator();
-                                    for (Parameter param : paramList.getParameters()) {
-                                        if (binaryParams.hasNext()) {
-                                            Parameter binaryParam = binaryParams.next();
-                                            String paramUnderlyingType = binaryParam.getType().getUnderlyingType();
-                                            if (paramUnderlyingType != null) {
-                                                ProducedType typeToComplete = param.getType();
-                                                if (typeToComplete != null) {
-                                                    typeToComplete.setUnderlyingType(paramUnderlyingType);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    private boolean mustCompleteFromClasses(SourceDeclarationHolder d) {
-        return !d.isSourceToCompile() && d.getPhasedUnit().getUnit().getPackage().getQualifiedNameString()
-                .startsWith(Module.LANGUAGE_MODULE_NAME);
-    }
-
     public synchronized Package findPackage(String quotedPkgName) {
         String pkgName = quotedPkgName.replace("$", "");
         // in theory we only have one package with the same name per module in eclipse

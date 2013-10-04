@@ -1111,6 +1111,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         String packageName = getPackageName(fileToUpdate);
                         if (! cleanedPackages.contains(packageName)) {
                             modelLoader.clearCachesOnPackage(packageName);
+                            cleanedPackages.add(packageName);
                         }
                     }                    
                     continue;
@@ -1299,12 +1300,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             pu.scanTypeDeclarations();
             monitor.worked(2);
         }
-        
-        if (reuseEclipseModelInCompilation(project)) {
-            loader.completeFromClasses();
-            monitor.worked(2);
-        }
-        
+                
         for (PhasedUnit pu: dependencies) {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
         }
@@ -1788,10 +1784,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
 		context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
 		context.put(TypeFactory.class, modelLoader.getTypeFactory());
-		context.put(LanguageCompiler.phasedUnitsManagerKey, 
-				new JdtPhasedUnitsManager(modelLoader, project, typeChecker));
-		
-		modelLoader.setSourceFileObjectManager(new JdtSourceFileObjectManager(context, modelLoader));
+		context.put(LanguageCompiler.compilerDelegateKey, 
+				new JdtCompilerDelegate(modelLoader, project, typeChecker, context));
 		
 		context.put(TypeFactory.class, modelLoader.getTypeFactory());
 		context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
@@ -1835,12 +1829,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         		args.get("enableJdtClasses")!=null;
 	}
 
+	public static boolean compileWithJDTModel = true;
 	public static boolean reuseEclipseModelInCompilation(IProject project) {
-        return loadDependenciesFromModelLoaderFirst(project) && false; 
+        return loadDependenciesFromModelLoaderFirst(project) && compileWithJDTModel; 
         // We should add another option for this. For the moment deactivate it since it can't work correctly now
     }
 
-    public static boolean loadBinariesFirst = false;
+    public static boolean loadBinariesFirst = true;
 	public static boolean loadDependenciesFromModelLoaderFirst(IProject project) {
         return compileToJava(project) && loadBinariesFirst;
     }
