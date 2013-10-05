@@ -2,22 +2,17 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_MODULE;
-import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
-import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_END;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
-import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_END;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -27,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -41,7 +35,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -52,25 +45,24 @@ import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonModulePropertiesPage extends PropertyPage 
         implements IWorkbenchPropertyPage {
 
-    private IResourceChangeListener encodingListener;
+//    private IResourceChangeListener encodingListener;
     private Table moduleImportsTable;
     private Module module;
     private IProject project;
     
-    @Override
-    public void dispose() {
-        if (encodingListener!=null) {
-            getWorkspace().removeResourceChangeListener(encodingListener);
-            encodingListener = null;
-        }
-        super.dispose();
-    }
-    
+//    @Override
+//    public void dispose() {
+//        if (encodingListener!=null) {
+//            getWorkspace().removeResourceChangeListener(encodingListener);
+//            encodingListener = null;
+//        }
+//        super.dispose();
+//    }
+  
     private NewPackageWizard openPackageWizard() {
         IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
                 .findWizard(PLUGIN_ID + ".newPackageWizard");
@@ -93,14 +85,29 @@ public class CeylonModulePropertiesPage extends PropertyPage
         
     @Override
     protected Control createContents(Composite parent) {
-        IPackageFragment pf = initProjectAndModule();
+        final IPackageFragment pf = initProjectAndModule();
         if (module==null) return parent;
-        
         createModuleInfoBlock(parent, pf);
         createPackagesBlock(parent);
         createModulesBlock(parent);
-        
+        createModuleDescriptorLink(parent, pf);
         return parent;
+    }
+
+    public void createModuleDescriptorLink(Composite parent,
+            final IPackageFragment pf) {
+        final IFile moduleDescriptor = ((IFolder) pf.getResource()).getFile("module.ceylon");
+        Link openDescriptorLink = new Link(parent, 0);
+        openDescriptorLink.setLayoutData(GridDataFactory.swtDefaults()
+                .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
+        openDescriptorLink.setText("<a>Edit module descriptor...</a>");
+        openDescriptorLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                getShell().close();
+                Util.gotoLocation(moduleDescriptor, 0);
+            }
+        });
     }
 
     private IPackageFragment initProjectAndModule() {
@@ -124,8 +131,9 @@ public class CeylonModulePropertiesPage extends PropertyPage
         label.setText("Imported modules:");
         
         Composite composite = new Composite(parent, SWT.NONE);
-        GridData cgd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData cgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
         cgd.grabExcessHorizontalSpace = true;
+        cgd.grabExcessVerticalSpace = true;
         composite.setLayoutData(cgd);
         GridLayout layout = new GridLayout(3, true);
         layout.marginWidth=0;
@@ -133,7 +141,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         
         moduleImportsTable = new Table(composite, 
                 SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
         gd.horizontalSpan=2;
         gd.verticalSpan=4;
         gd.grabExcessHorizontalSpace = true;
@@ -174,6 +182,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+
     }
 
     private void createPackagesBlock(Composite parent) {
@@ -225,13 +234,12 @@ public class CeylonModulePropertiesPage extends PropertyPage
         });
     }
 
-    private void createModuleInfoBlock(Composite parent,
-            final IPackageFragment pf) {
+    private void createModuleInfoBlock(Composite parent, IPackageFragment pf) {
         Composite composite = new Composite(parent, SWT.NONE);
         GridData cgd = new GridData(FILL_HORIZONTAL);
 //        cgd.grabExcessHorizontalSpace = true;
         composite.setLayoutData(cgd);
-        GridLayout layout = new GridLayout(3, true);
+        GridLayout layout = new GridLayout(2, true);
         layout.marginWidth=0;
         composite.setLayout(layout);
         Label label = new Label(composite, SWT.NONE);
@@ -239,7 +247,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         label = new Label(composite, SWT.NONE);
         label.setText(pf.getElementName());
         
-        Label img = new Label(composite, SWT.BORDER);
+        /*Label img = new Label(composite, SWT.BORDER);
         Image image = CeylonPlugin.getInstance()
                 .getImageRegistry().get(CEYLON_NEW_MODULE);
         img.setImage(image);
@@ -248,14 +256,14 @@ public class CeylonModulePropertiesPage extends PropertyPage
         igd.verticalSpan=4;
 //        igd.horizontalSpan=2;
         igd.grabExcessHorizontalSpace=true;
-        img.setLayoutData(igd);
+        img.setLayoutData(igd);*/
         
         label = new Label(composite, SWT.NONE);
         label.setText("Project name: ");
         label = new Label(composite, SWT.NONE);
         label.setText(project.getName());
         
-        label = new Label(composite, SWT.NONE);
+        /*label = new Label(composite, SWT.NONE);
         label.setText("Module workspace path: ");
         label = new Label(composite, SWT.NONE);
         label.setText(pf.getResource().getFullPath().toPortableString());
@@ -296,19 +304,9 @@ public class CeylonModulePropertiesPage extends PropertyPage
         }
         catch (CoreException e) {
             e.printStackTrace();
-        }
+        }*/
         
-        Link openDescriptorLink = new Link(composite, 0);
-        openDescriptorLink.setLayoutData(GridDataFactory.swtDefaults()
-                .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        openDescriptorLink.setText("<a>Edit module descriptor...</a>");
-        openDescriptorLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                getShell().close();
-                Util.gotoLocation(((IFolder) pf.getResource()).getFile("module.ceylon"), 0);
-            }
-        });
+        new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
     }
     
