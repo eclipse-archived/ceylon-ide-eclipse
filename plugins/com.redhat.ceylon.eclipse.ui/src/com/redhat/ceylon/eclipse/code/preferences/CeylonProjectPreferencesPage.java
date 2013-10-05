@@ -241,9 +241,11 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                         Display.getDefault().asyncExec(new Runnable() {
                             public void run() {
                                 try {
-                                    link.setText("Default source file encoding:   " +
-                                            getSelectedProject().getDefaultCharset() + 
-                                            " <a>(Change...)</a>");
+                                    if (!link.isDisposed()) {
+                                        link.setText("Default source file encoding:   " +
+                                                getSelectedProject().getDefaultCharset() + 
+                                                " <a>(Change...)</a>");
+                                    }
                                 }
                                 catch (CoreException e) {
                                     e.printStackTrace();
@@ -281,11 +283,11 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     
     @Override
     public void dispose() {
-        super.dispose();
         if (encodingListener!=null) {
             getWorkspace().removeResourceChangeListener(encodingListener);
             encodingListener = null;
         }
+        super.dispose();
     }
     
     private void updateOfflineButton() {
