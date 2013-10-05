@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PACKAGE;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
@@ -15,8 +14,6 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.operations.IWorkbenchOperationSupport;
@@ -91,40 +88,7 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     public void addPages() {
         super.addPages();
         if (page == null) {
-            page= new NewUnitWizardPage("New Ceylon Package",
-                    "Create a Ceylon package with a package descriptor.",
-                    "package", CEYLON_NEW_PACKAGE, true) {
-                @Override
-                String getPackageLabel() {
-                    return "Package name: ";
-                }
-                @Override
-                void createControls(Composite composite) {
-                    Text name = createPackageField(composite);
-                    createSharedField(composite);
-                    createSeparator(composite);
-                    createFolderField(composite);
-                    name.forceFocus();
-                }
-                @Override
-                boolean isComplete() {
-                    return super.isComplete() && 
-                            !getPackageFragment().isDefaultPackage();
-                }
-                @Override
-                boolean packageNameIsLegal(String packageName) {
-                    return !packageName.isEmpty() && 
-                            super.packageNameIsLegal(packageName);
-                }
-                @Override
-                boolean unitIsNameLegal(String unitName) {
-                    return true;
-                }
-                @Override
-                String[] getFileNames() {
-                    return new String[] { "package" };
-                }
-            };
+            page= new NewPackageWizardPage();
             page.init(workbench, selection);
         }
         addPage(page);

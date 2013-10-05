@@ -27,7 +27,6 @@ import org.eclipse.jdt.internal.ui.wizards.NewSourceFolderCreationWizard;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -50,7 +49,7 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class NewUnitWizardPage extends WizardPage implements IWizardPage {
+public class NewUnitWizardPage extends WizardPage {
 
     private String unitName;
     private IPackageFragmentRoot sourceDir;
