@@ -60,6 +60,7 @@ import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
@@ -116,7 +117,11 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
     protected Control createContents(Composite parent) {
         final IPackageFragment pf = getSelectedPackageFragment();
         final IProject project = pf.getJavaProject().getProject();
-        for (Module m: getProjectModules(project).getListOfModules()) {
+        Modules projectModules = null;
+        while (projectModules==null) {
+            projectModules = getProjectModules(project);
+        }
+        for (Module m: projectModules.getListOfModules()) {
             if (m.getNameAsString().equals(pf.getElementName())) {
                 module = m; break;
             }

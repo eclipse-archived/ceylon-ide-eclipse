@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_MODULE;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPropertyDialogOn;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import java.lang.reflect.InvocationTargetException;
@@ -17,7 +18,9 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
@@ -31,6 +34,8 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.operations.IWorkbenchOperationSupport;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
+
+import com.redhat.ceylon.eclipse.code.editor.Util;
 
 public class NewModuleWizard extends Wizard implements INewWizard {
     
@@ -137,9 +142,17 @@ public class NewModuleWizard extends Wizard implements INewWizard {
         catch (InterruptedException e) {
             return false;
         }
+        IPackageFragment pf = page.getPackageFragment();
         BasicNewResourceWizard.selectAndReveal(op.getResult(), 
                 workbench.getActiveWorkbenchWindow());
         gotoLocation(op.getResult().getFullPath(), 0);
+        PreferenceDialog dialog = createPropertyDialogOn(Util.getShell(), 
+                pf, "com.redhat.ceylon.eclipse.ui.moduleProperties", 
+                new String[] { "com.redhat.ceylon.eclipse.ui.moduleProperties",
+                               "org.eclipse.ui.propertypages.info.file"}, 
+                null);
+        dialog.setBlockOnOpen(false);
+        dialog.open();
         return true;
     }
     
