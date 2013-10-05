@@ -108,12 +108,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
                 .getAdapter(IPackageFragment.class);
         if (pf!=null) {
             project = pf.getJavaProject().getProject();
-            Modules projectModules = null;
-            //wait for the typechecker to initialize
-            //itself (don't need this now)
-//            while (projectModules==null) {
-            projectModules = getProjectModules(project);
-//            }
+            Modules projectModules = getProjectModules(project);
             for (Module m: projectModules.getListOfModules()) {
                 if (m.getNameAsString().equals(pf.getElementName())) {
                     module = m; 
