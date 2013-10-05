@@ -40,6 +40,7 @@ class CreateCeylonSourceFileOperation extends AbstractOperation {
         this("New Ceylon Source File", sourceDir, packageFragment, unitName, 
                 includePreamble, contents, shell);
     }
+    
     CreateCeylonSourceFileOperation(String label, IPackageFragmentRoot sourceDir,
             IPackageFragment packageFragment, String unitName, boolean includePreamble, 
             String contents, Shell shell) {
@@ -110,4 +111,5 @@ class CreateCeylonSourceFileOperation extends AbstractOperation {
             return op.undo(monitor, info);
         }
     }
+    
 }
