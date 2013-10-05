@@ -428,9 +428,9 @@ public class ModuleSearchViewPart extends ViewPart {
     private SashForm sashForm;
     private TreeViewer moduleTreeViewer;
     private Browser docBrowser;
-    private String docStyleSheet = CeylonHover.getStyleSheet();
-    private RGB docForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
-    private RGB docBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
+    private static String docStyleSheet = CeylonHover.getStyleSheet();
+    private static RGB docForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
+    private static RGB docBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
     private List<String> queryHistory = new ArrayList<String>();
     private Map<String, IProject> projectMap = new ConcurrentHashMap<String, IProject>();
     private IResourceChangeListener updateProjectComboListener;
@@ -709,6 +709,10 @@ public class ModuleSearchViewPart extends ViewPart {
             versionNode = (ModuleVersionNode) selectedElement;
         }
         
+        docBrowser.setText(getModuleDoc(versionNode));
+    }
+
+    public static String getModuleDoc(ModuleVersionNode versionNode) {
         StringBuffer docBuilder = new StringBuffer();
         HTMLPrinter.insertPageProlog(docBuilder, 0, docForegroundColor, docBackgroundColor, docStyleSheet);
         
@@ -745,8 +749,7 @@ public class ModuleSearchViewPart extends ViewPart {
         }
         
         HTMLPrinter.addPageEpilog(docBuilder);
-        
-        docBrowser.setText(docBuilder.toString());
+        return docBuilder.toString();
     }
     
     private void updateProjectComboAsync() {
@@ -799,7 +802,7 @@ public class ModuleSearchViewPart extends ViewPart {
         return selectedProject;
     }
 
-    private String markdown(String text) {
+    private static String markdown(String text) {
         if( text == null || text.length() == 0 ) {
             return text;
         }

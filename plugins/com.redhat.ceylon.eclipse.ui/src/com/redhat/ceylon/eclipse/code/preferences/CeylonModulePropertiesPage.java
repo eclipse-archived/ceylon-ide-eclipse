@@ -20,12 +20,17 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -61,6 +66,7 @@ import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchManager;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvider;
+import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
@@ -342,6 +348,37 @@ public class CeylonModulePropertiesPage extends PropertyPage implements
                     protected Label createMessageArea(Composite composite) {
                         Label result = super.createMessageArea(composite);
                         createFilterText(composite);
+                        return result;
+                    }
+                    @Override
+                    protected Control createDialogArea(Composite parent) {
+                        GridData gridData = new GridData(GridData.FILL_BOTH);
+                        gridData.grabExcessHorizontalSpace = true;
+                        SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
+                        Control result = super.createDialogArea(sashForm);
+                        Composite composite = new Composite(sashForm, SWT.BORDER);
+                        composite.setLayoutData(gridData);
+                        GridLayout layout = new GridLayout(1, true);
+                        layout.marginWidth=0;
+                        layout.marginHeight=0;
+                        composite.setLayout(layout);
+                        final Browser browser = new Browser(composite, SWT.NONE);
+                        sashForm.setWeights(new int[] {3, 1});
+                        sashForm.setLayoutData(gridData);
+                        getTreeViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+                            @Override
+                            public void selectionChanged(SelectionChangedEvent event) {
+                                ModuleVersionNode versionNode = null;
+                                Object selectedElement = ((IStructuredSelection) getTreeViewer().getSelection()).getFirstElement();
+                                if (selectedElement instanceof ModuleNode) {
+                                    versionNode = ((ModuleNode) selectedElement).getLastVersion();
+                                } else if (selectedElement instanceof ModuleVersionNode) {
+                                    versionNode = (ModuleVersionNode) selectedElement;
+                                }
+                                browser.setText(ModuleSearchViewPart.getModuleDoc(versionNode));
+                            }
+                        });
+                        browser.setLayoutData(gridData);
                         return result;
                     }
                 };
