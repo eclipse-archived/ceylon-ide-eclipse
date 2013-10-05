@@ -25,7 +25,7 @@ import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvid
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 
-final class ModuleImportSelectionDialog extends FilteredElementTreeSelectionDialog {
+public final class ModuleImportSelectionDialog extends FilteredElementTreeSelectionDialog {
     
     ModuleImportSelectionDialog(Shell parent) {
         super(parent, new ModuleSelectionLabelProvider(), 
@@ -68,14 +68,23 @@ final class ModuleImportSelectionDialog extends FilteredElementTreeSelectionDial
         List<ModuleDetails> list = new ArrayList<ModuleDetails>(searchResults.getResults());
         for (Iterator<ModuleDetails> it = list.iterator(); it.hasNext();) {
             String name = it.next().getName();
-            if (module.getNameAsString().equals(name)) {
-                it.remove();
+            if (module == null) {
+                //i.e. New Ceylon Module wizard
+                if (name.equals(Module.LANGUAGE_MODULE_NAME)) {
+                    it.remove();
+                }
             }
             else {
-                for (ModuleImport mi: module.getImports()) {
-                    if (mi.getModule().getNameAsString().equals(name)) {
-                        it.remove();
-                        break;
+                //i.e. Ceylon Module properties page
+                if (module.getNameAsString().equals(name)) {
+                    it.remove();
+                }
+                else {
+                    for (ModuleImport mi: module.getImports()) {
+                        if (mi.getModule().getNameAsString().equals(name)) {
+                            it.remove();
+                            break;
+                        }
                     }
                 }
             }
