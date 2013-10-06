@@ -553,6 +553,11 @@
             description="Inline selected function or value"
             name="Inline"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.changeParameters"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Change parameters of selected function or class"
+            name="Change Parameters"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.extractFunction"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Extract selected expression to function"
@@ -696,6 +701,9 @@
             class="com.redhat.ceylon.eclipse.code.refactor.InlineHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.inline"/>
       <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.ChangeParametersHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.changeParameters"/>
+      <handler
             class="com.redhat.ceylon.eclipse.code.refactor.ExtractValueHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.extractValue"/>
       <handler
@@ -803,6 +811,11 @@
       <key
             sequence="M3+L"
             commandId="com.redhat.ceylon.eclipse.ui.action.inline"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M3+P"
+            commandId="com.redhat.ceylon.eclipse.ui.action.changeParameters"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
