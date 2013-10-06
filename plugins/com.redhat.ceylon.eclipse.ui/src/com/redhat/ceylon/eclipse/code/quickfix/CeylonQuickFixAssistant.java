@@ -208,6 +208,7 @@ public class CeylonQuickFixAssistant {
             
             RenameDeclarationProposal.add(proposals, file, editor);
             InlineDeclarationProposal.add(proposals, editor);
+            ChangeParametersProposal.add(proposals, file, editor);
             ExtractValueProposal.add(proposals, editor, node);
             ExtractFunctionProposal.add(proposals, editor, node);
             ConvertToClassProposal.add(proposals, editor);
