@@ -204,7 +204,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     private static String getImageKey(Object element) {
         if (element instanceof IFile) {
-            return getImageKeyForFile(element);
+            return getImageKeyForFile((IFile) element);
         }
         else if (element instanceof IPath) {
             String name = ((IPath) element).lastSegment();
@@ -255,8 +255,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return CEYLON_FILE;
     }
 
-    public static String getImageKeyForFile(Object element) {
-        String name = ((IFile) element).getName();
+    public static String getImageKeyForFile(IFile element) {
+        String name = element.getName();
         if (name.equals("module.ceylon")) {
             return CEYLON_MODULE_DESC;
         }
@@ -339,7 +339,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
 
     public static Image getImageForFile(IFile file) {
-        return getDecoratedImage(file, CEYLON_FILE);
+        return getDecoratedImage(file, getImageKeyForFile(file));
     }
 
     private static String getImageKeyForDeclaration(Declaration d) {

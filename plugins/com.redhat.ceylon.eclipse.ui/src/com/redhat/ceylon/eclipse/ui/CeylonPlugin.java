@@ -270,7 +270,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 	@Override
 	protected void initializeImageRegistry(ImageRegistry reg) {
         reg.put(CEYLON_PROJECT, image("prj_obj.gif"));
-        reg.put(CEYLON_FILE, image("template_obj.gif"));
+        reg.put(CEYLON_FILE, image("unit.gif"));
         reg.put(CEYLON_MODULE_DESC, image("m_desc.gif"));
         reg.put(CEYLON_PACKAGE_DESC, image("p_desc.gif"));
         reg.put(CEYLON_FOLDER, image("fldr_obj.gif"));
