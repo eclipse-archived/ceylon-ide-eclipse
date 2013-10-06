@@ -27,8 +27,6 @@ import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvid
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 
 public final class ModuleImportSelectionDialog extends FilteredElementTreeSelectionDialog {
     
@@ -95,14 +93,11 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
         if (prefix.equals(".")) {
             List<ModuleNode> list = new ArrayList<ModuleNode>();
             for (IProject p: CeylonBuilder.getProjects()) {
-                for (Module m: CeylonBuilder.getProjectModules(p).getListOfModules()) {
-                    if (m.getUnit() instanceof ProjectSourceFile ||
-                        m.getUnit() instanceof EditedSourceFile) {
-                        if (!excluded(module, m.getNameAsString())) {
-                            ModuleNode moduleNode = new ModuleNode(m.getNameAsString(), new ArrayList<ModuleVersionNode>(1));
-                            moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, m.getVersion()));
-                            list.add(moduleNode);
-                        }
+                for (Module m: CeylonBuilder.getModulesInProject(p)) {
+                    if (!excluded(module, m.getNameAsString())) {
+                        ModuleNode moduleNode = new ModuleNode(m.getNameAsString(), new ArrayList<ModuleVersionNode>(1));
+                        moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, m.getVersion()));
+                        list.add(moduleNode);
                     }
                 }
             }
