@@ -95,7 +95,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 	
 	@Override
 	public boolean isEnabled() {
-	    return declaration!=null &&
+	    return declaration instanceof Functional &&
                 project != null &&
                 inSameProject(declaration);
 	}
