@@ -13,7 +13,9 @@ package com.redhat.ceylon.eclipse.code.hover;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.hover.CeylonWordFinder.findWord;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
@@ -527,7 +529,7 @@ public class CeylonHover
 		StringBuffer buffer= new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, CeylonHover.getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
-				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + "</tt></b>", 
+				16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + "</tt></b>", 
 				20, 4);
 		buffer.append("<hr/>");
 		if (!t.containsUnknowns()) {
@@ -554,8 +556,8 @@ public class CeylonHover
 		StringBuffer buffer= new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
-				16, 16, "<b><tt>" + HTMLPrinter.convertToHTMLContent(t.getProducedTypeName()) + 
-				"&nbsp;" + HTMLPrinter.convertToHTMLContent(expr) +"</tt></b>", 
+				16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + 
+				"&nbsp;" + highlightLine(expr) +"</tt></b>", 
 				20, 4);
 		buffer.append( "<hr/>");
 		if (node instanceof Tree.StringLiteral) {
@@ -824,7 +826,7 @@ public class CeylonHover
 		StringBuffer buffer= new StringBuffer();
 		
 		addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
-				16, 16, "<b><tt>package " + getLabel(pack) +"</tt></b>", 20, 4);
+				16, 16, "<b><tt>" + highlightLine(description(pack)) +"</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		Module mod = pack.getModule();
 		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
@@ -876,13 +878,16 @@ public class CeylonHover
 			buffer.append(".<br/>");
 		}
 		
-		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
-		HTMLPrinter.addPageEpilog(buffer);
+		insertPageProlog(buffer, 0, getStyleSheet());
+		addPageEpilog(buffer);
 		return buffer.toString();
 		
 	}
 
-        
+    private static String description(Package pack) {
+        return "package " + getLabel(pack);
+    }
+    
 	public static String getDocumentationFor(ModuleDetails mod, String version) {
 	    return getDocumentationForModule(mod.getName(), version, mod.getDoc());
     }
@@ -891,24 +896,28 @@ public class CeylonHover
 		StringBuffer buffer= new StringBuffer();
 		
 		addImageAndLabel(buffer, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
-				16, 16, "<b><tt>module " + name + " \"" + version + "\"</tt></b>", 20, 4);
+				16, 16, "<b><tt>" + highlightLine(description(name, version)) + "</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		
 		if (doc!=null) {
 		    buffer.append(markdown(doc, null, null));
 		}
 				
-		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
-		HTMLPrinter.addPageEpilog(buffer);
+		insertPageProlog(buffer, 0, getStyleSheet());
+		addPageEpilog(buffer);
 		return buffer.toString();
 		
 	}
+
+	private static String description(String name, String version) {
+        return "module " + name + " \"" + version + "\"";
+    }
 
 	public static String getDocumentationFor(CeylonParseController cpc, Module mod) {
 		StringBuffer buffer= new StringBuffer();
 		
 		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
-				16, 16, "<b><tt>module " + getLabel(mod) + " \"" + mod.getVersion() + "\"</tt></b>", 20, 4);
+				16, 16, "<b><tt>" + highlightLine(description(mod)) + "</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 
 		if (mod.isJava()) {
@@ -957,11 +966,15 @@ public class CeylonHover
 			buffer.append(".<br/>");
 		}
 		
-		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
-		HTMLPrinter.addPageEpilog(buffer);
+		insertPageProlog(buffer, 0, getStyleSheet());
+		addPageEpilog(buffer);
 		return buffer.toString();
 		
 	}
+
+	private static String description(Module mod) {
+        return "module " + getLabel(mod) + " \"" + mod.getVersion() + "\"";
+    }
 
 	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec) {
 		return getDocumentationFor(cpc, dec, null);
@@ -970,13 +983,13 @@ public class CeylonHover
 	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec, Node node) {
 		if (dec==null) return null;
 		StringBuffer buffer= new StringBuffer();
-		HTMLPrinter.insertPageProlog(buffer, 0, CeylonHover.getStyleSheet());
+		insertPageProlog(buffer, 0, CeylonHover.getStyleSheet());
 		
 		Package pack = dec.getUnit().getPackage();
 		
 		addImageAndLabel(buffer, dec, fileUrl(getIcon(dec)).toExternalForm(), 
 				16, 16, "<b><tt>" + (dec.isDeprecated() ? "<s>":"") + 
-				HTMLPrinter.convertToHTMLContent(description(dec, cpc)) + 
+				highlightLine(description(dec, cpc)) + 
 				(dec.isDeprecated() ? "</s>":"") + "</tt></b>", 20, 4);
 		buffer.append("<hr/>");
 		
@@ -995,7 +1008,7 @@ public class CeylonHover
 				ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
 				addImageAndLabel(buffer, outer, fileUrl(getIcon(outer)).toExternalForm(), 16, 16, 
 						"member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
-								HTMLPrinter.convertToHTMLContent(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
+						convertToHTMLContent(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
 			}
 
 			if ((dec.isShared() || dec.isToplevel()) &&
@@ -1048,7 +1061,7 @@ public class CeylonHover
 			buffer.append("<p>");
 			addImageAndLabel(buffer, rd, fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
 					16, 16, "refines&nbsp;&nbsp;<tt><a " + link(rd) + ">" + rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
-					HTMLPrinter.convertToHTMLContent(((TypeDeclaration) rd.getContainer()).getType().getProducedTypeName()) + 
+					convertToHTMLContent(((TypeDeclaration) rd.getContainer()).getType().getProducedTypeName()) + 
 					"</tt>", 20, 2);
 			buffer.append("</p>");
 			if (!hasDoc) {
@@ -1075,10 +1088,10 @@ public class CeylonHover
 					if (pt.getDeclaration() instanceof ClassOrInterface || 
 							pt.getDeclaration() instanceof TypeParameter) {
 						buf.append("<a " + link(pt.getDeclaration()) + ">" + 
-								HTMLPrinter.convertToHTMLContent(pt.getProducedTypeName()) +"</a>");
+								convertToHTMLContent(pt.getProducedTypeName()) +"</a>");
 					}
 					else {
-						buf.append(HTMLPrinter.convertToHTMLContent(pt.getProducedTypeName()));
+						buf.append(convertToHTMLContent(pt.getProducedTypeName()));
 					}
 					buf.append("|");
 				}
@@ -1106,7 +1119,7 @@ public class CeylonHover
 						if (type==null) type = new UnknownType(dec.getUnit()).getType();
                         addImageAndLabel(buffer, p, fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
 								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(type.getDeclaration()) + ">" + 
-								HTMLPrinter.convertToHTMLContent(type.getProducedTypeName()) + 
+								convertToHTMLContent(type.getProducedTypeName()) + 
 								"</a>&nbsp;<a " + link(p.getModel()) + ">"+ p.getName() +"</a></tt>" + doc, 20, 2);
 					}
 					buffer.append("</p>");
@@ -1131,8 +1144,7 @@ public class CeylonHover
 						}
 
 						/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
-					16, 16, "<tt><a " + link(dec) + ">" + 
-			        dec.getName() + "</a></tt>", 20, 2);*/
+					          16, 16, "<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>", 20, 2);*/
 						buffer.append("<tt><a " + link(mem) + ">" + mem.getName() + "</a></tt>");
 					}
 				}
@@ -1153,36 +1165,40 @@ public class CeylonHover
 
 		    //if (dec.getUnit().getFilename().endsWith(".ceylon")) {
 		    //if (extraBreak) 
-		    buffer.append("<hr/>");
-		    addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
-		            16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
-		                    dec.getUnit().getFilename() + "</tt>", 20, 2);
-		    //}
-		    buffer.append("<hr/>");
-		    addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
-		            16, 16, "<a href='ref:" + declink(dec) + "'>find references</a> to&nbsp;&nbsp;<tt>" +
-		                    dec.getName() + "</tt>", 20, 2);
-		    if (dec instanceof ClassOrInterface) {
-		        addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
-		                16, 16, "<a href='sub:" + declink(dec) + "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
-		                        dec.getName() + "</tt>", 20, 2);
-		    }
-		    if (dec instanceof Value) {
-		        addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
-		                16, 16, "<a href='ass:" + declink(dec) + "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
-		                        dec.getName() + "</tt>", 20, 2);
-		    }
-		    if (dec.isFormal()||dec.isDefault()) {
-		        addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
-		                16, 16, "<a href='act:" + declink(dec) + "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
-		                        dec.getName() + "</tt>", 20, 2);
-		    }
+		    appendExtraActions(dec, buffer);
 
 		}
 		
-		HTMLPrinter.addPageEpilog(buffer);
+		addPageEpilog(buffer);
 		return buffer.toString();
 	}
+
+    public static void appendExtraActions(Declaration dec, StringBuffer buffer) {
+        buffer.append("<hr/>");
+        addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
+                16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
+                        dec.getUnit().getFilename() + "</tt>", 20, 2);
+        //}
+        buffer.append("<hr/>");
+        addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
+                16, 16, "<a href='ref:" + declink(dec) + "'>find references</a> to&nbsp;&nbsp;<tt>" +
+                        dec.getName() + "</tt>", 20, 2);
+        if (dec instanceof ClassOrInterface) {
+            addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
+                    16, 16, "<a href='sub:" + declink(dec) + "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
+                            dec.getName() + "</tt>", 20, 2);
+        }
+        if (dec instanceof Value) {
+            addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
+                    16, 16, "<a href='ass:" + declink(dec) + "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
+                            dec.getName() + "</tt>", 20, 2);
+        }
+        if (dec.isFormal()||dec.isDefault()) {
+            addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
+                    16, 16, "<a href='act:" + declink(dec) + "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
+                            dec.getName() + "</tt>", 20, 2);
+        }
+    }
 
 	private static void documentInheritance(TypeDeclaration dec, StringBuffer buffer) {
 		if (dec instanceof Class) {
@@ -1201,10 +1217,10 @@ public class CeylonHover
 			if (!sts.isEmpty()) {
 				buffer.append("<p>");
 				for (ProducedType td: sts) {
-					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
-							16, 16, "satisfies <tt><a " + link(td.getDeclaration()) + ">" + 
-									HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
-					//extraBreak = true;
+				    addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
+				    16, 16, "satisfies <tt><a " + link(td.getDeclaration()) + ">" + 
+				    convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
+				    //extraBreak = true;
 				}
 				buffer.append("</p>");
 			}
@@ -1214,8 +1230,8 @@ public class CeylonHover
 				for (ProducedType td: cts) {
 					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("sub_co.gif").toExternalForm(), 
 							16, 16, (td.getDeclaration().isSelfType() ? "has self type" : "has case") + 
-									" <tt><a " + link(td.getDeclaration()) + ">" + 
-									HTMLPrinter.convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
+							" <tt><a " + link(td.getDeclaration()) + ">" + 
+							convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
 					//extraBreak = true;
 				}
 				buffer.append("</p>");
@@ -1677,21 +1693,31 @@ public class CeylonHover
                 }
 
                 for (String s: lines) {
-                    //TODO: this is lame because the syntax highlight gets applied
-                    //      to keywords and typenames in string literals
-                    s = convertToHTMLContent(s);
-                    s = s.replaceAll("'[^']'|#[0-9a-fA-F_]+|\\$[01]+|\\b(\\d|_)+(\\.(\\d|_)+)?([Ee][+-]?\\d+)?\\b", "<span style='color:#0000FF'>$0</span>");
-                    for (String kw: CeylonTokenColorer.keywords) {
-                        s = s.replaceAll("\\b"+kw+"\\b", "<b style='color:#8B008B'>"+kw+"</b>");
-                    }
-                    s = s.replaceAll("&quot;", "\"").replaceAll("\"([^\"]*)\"", "<span style='color:#0000FF'>&quot;$1&quot;</span>");
-                    s = s.replaceAll("\\b\\p{Lu}\\p{L}*\\b", "<span style='color:#000080'>$0</span>");
-                    out.append(s).append('\n');
+                    out.append(highlightLine(s)).append('\n');
                 }
                 out.append("</pre>\n");
             }
         }
-        
+
     }
 
+    public static String highlightLine(String s) {
+        //TODO: this is lame because the syntax highlight gets applied
+        //      to keywords and typenames in string literals
+        s = convertToHTMLContent(s);
+        s = s.replaceAll("'[^']'|#[0-9a-fA-F_]+|\\$[01]+|\\b(\\d|_)+(\\.(\\d|_)+)?([Ee][+-]?\\d+)?\\b", 
+                "<span style='color:#0000FF'>$0</span>"); //character and numeric literals in blue
+        s = s.replaceAll("\\b(module|package|import)\\s+(\\p{Ll}+(\\.\\p{Ll}+)*)\\b", 
+                "$1 <span style='color:#808080'>$2</span>"); //package/module names in dark blue
+        s = s.replaceAll("\\b\\p{Lu}\\p{L}*\\b", 
+                "<span style='color:#000080'>$0</span>"); //uppercase identifiers in dark blue
+        for (String kw: CeylonTokenColorer.keywords) {
+            s = s.replaceAll("\\b"+kw+"\\b", 
+                    "<b style='color:#8B008B'>"+kw+"</b>"); //keywords in magenta
+        }
+        s = s.replaceAll("&quot;", "\"").replaceAll("\"([^\"]*)\"", 
+                "<span style='color:#0000FF'>&quot;$1&quot;</span>");  //string literals in blue
+        return s;
+    }
+    
 }
