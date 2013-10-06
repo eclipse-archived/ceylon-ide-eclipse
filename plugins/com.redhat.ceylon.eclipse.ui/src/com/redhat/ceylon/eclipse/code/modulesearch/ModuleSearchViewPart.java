@@ -26,7 +26,9 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
+
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -718,7 +720,7 @@ public class ModuleSearchViewPart extends ViewPart {
         
         if (versionNode != null) {
         	addImageAndLabel(docBuilder, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
-    				16, 16, "<b><tt>module " + versionNode.getModule().getName() + " '" + versionNode.getVersion() + "'" +"</tt></b>", 20, 4);
+    				16, 16, "<b><tt>" + CeylonHover.highlightLine(description(versionNode)) +"</tt></b>", 20, 4);
         	docBuilder.append("<hr/>");
             
             if (versionNode.isFilled()) {
@@ -744,12 +746,19 @@ public class ModuleSearchViewPart extends ViewPart {
                 
             } else {
                 docBuilder.append("<p>");
-                docBuilder.append("<i>Click here to <a href='module:" + versionNode.getModule().getName() + ":" + versionNode.getVersion() + "'>fetch documentation</a></i> for this module version.");
+                docBuilder.append("<i>Click here to <a href='module:" + 
+                        versionNode.getModule().getName() + ":" + versionNode.getVersion() + 
+                        "'>fetch documentation</a></i> for this module version.");
             }
         }
         
         HTMLPrinter.addPageEpilog(docBuilder);
         return docBuilder.toString();
+    }
+
+    public static String description(ModuleVersionNode versionNode) {
+        return "module " + versionNode.getModule().getName() + 
+                " \"" + versionNode.getVersion() + "\"";
     }
     
     private void updateProjectComboAsync() {
