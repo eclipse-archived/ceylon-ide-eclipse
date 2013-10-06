@@ -203,8 +203,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static String getImageKey(Object element) {
-        if (element instanceof IFile || 
-            element instanceof IPath) {
+        if (element instanceof IFile) {
+            return getImageKeyForFile(element);
+        }
+        else if (element instanceof IPath) {
+            String name = ((IPath) element).lastSegment();
+            if (name.equals("module.ceylon")) {
+                return CEYLON_MODULE_DESC;
+            }
+            else if (name.equals("package.ceylon")) {
+                return CEYLON_PACKAGE_DESC;
+            }
             return CEYLON_FILE;
         }
         if (element instanceof IFolder ||
@@ -242,6 +251,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         if (element instanceof Node) {
             return getImageKeyForNode((Node) element);
+        }
+        return CEYLON_FILE;
+    }
+
+    public static String getImageKeyForFile(Object element) {
+        String name = ((IFile) element).getName();
+        if (name.equals("module.ceylon")) {
+            return CEYLON_MODULE_DESC;
+        }
+        else if (name.equals("package.ceylon")) {
+            return CEYLON_PACKAGE_DESC;
         }
         return CEYLON_FILE;
     }

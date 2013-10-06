@@ -12,6 +12,7 @@ package com.redhat.ceylon.eclipse.code.explorer;
  *     Matt Chapman, mpchapman@gmail.com - 89977 Make JDT .java agnostic
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ARCHIVE;
 
 import org.eclipse.core.resources.IFile;
@@ -42,6 +43,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -116,6 +118,10 @@ public class JavaElementImageProvider {
 			IFile file= (IFile) element;
 			if (JavaCore.isJavaLikeFileName(file.getName())) {
 				return getCUResourceImageDescriptor(file, flags); // image for a CU not on the build path
+			}
+			if (CeylonBuilder.isCeylon(file)) {
+			    return CeylonPlugin.getInstance().getImageRegistry()
+			            .getDescriptor(getImageKeyForFile(file));
 			}
 			return getWorkbenchImageDescriptor(file, flags);
 		} else if (element instanceof IAdaptable) {
