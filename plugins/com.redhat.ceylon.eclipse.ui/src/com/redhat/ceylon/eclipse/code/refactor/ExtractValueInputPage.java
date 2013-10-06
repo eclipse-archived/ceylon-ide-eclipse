@@ -20,9 +20,6 @@ public class ExtractValueInputPage extends UserInputWizardPage {
 		super(name);
 	}
 
-	/**
-	 * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
-	 */
 	public void createControl(Composite parent) {
 		Composite result = new Composite(parent, SWT.NONE);
 		setControl(result);

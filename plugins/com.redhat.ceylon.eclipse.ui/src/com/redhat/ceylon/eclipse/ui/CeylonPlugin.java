@@ -299,6 +299,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(CEYLON_RENAME, image("correction_rename.png"));
         reg.put(CEYLON_MOVE, image("file_change.png"));
         reg.put(CEYLON_ADD, image("add_obj.gif"));
+        reg.put(CEYLON_REORDER, image("order_obj.gif"));
         reg.put(CEYLON_ADD_CORRECTION, image("add_correction.gif"));
         reg.put(CEYLON_REMOVE_CORRECTION, image("remove_correction.gif"));
         reg.put(CEYLON_NEW_PROJECT, image("newprj_wiz.png"));

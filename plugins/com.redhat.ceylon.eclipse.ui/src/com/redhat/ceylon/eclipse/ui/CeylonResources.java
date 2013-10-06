@@ -40,6 +40,7 @@ public interface CeylonResources {
     public static final String CEYLON_RENAME = "rename";
     public static final String CEYLON_MOVE = "move";
     public static final String CEYLON_ADD = "add";
+    public static final String CEYLON_REORDER = "reorder";
     public static final String CEYLON_ADD_CORRECTION = "add_correction";
     public static final String CEYLON_REMOVE_CORRECTION = "remove_correction";
     public static final String CEYLON_DELETE_IMPORT = "delete_import";
