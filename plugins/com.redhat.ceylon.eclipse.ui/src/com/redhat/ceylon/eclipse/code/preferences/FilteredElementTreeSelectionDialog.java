@@ -32,6 +32,10 @@ public abstract class FilteredElementTreeSelectionDialog extends
     
     protected abstract String getElementName(Object element);
     
+    protected boolean isCategory(Object element) {
+        return false;
+    }
+    
     private Text createFilterText(Composite parent) {
         final Text text = new Text(parent, SWT.BORDER);
         final SearchPattern searchPattern = new SearchPattern();
@@ -40,7 +44,25 @@ public abstract class FilteredElementTreeSelectionDialog extends
             @Override
             public boolean select(Viewer viewer, 
                     Object parentElement, Object element) {
-                return searchPattern.matches(getElementName(element));
+                if (searchPattern.matches(getElementName(element))) {
+                    return true;
+                }
+//                if (isCategory(element) && 
+//                        !getTreeViewer().getExpandedState(element)) {
+//                    //don't go to the server and 
+//                    //fetch children just to filter
+//                    //out an unexpanded category
+//                    return true;
+//                }
+                Object[] children = ((ITreeContentProvider)getTreeViewer().getContentProvider())
+                        .getChildren(element);
+                if (children==null) return false;
+                for (Object child: children) {
+                    if (select(viewer, element, child)) {
+                        return true;
+                    }
+                }
+                return false;
             }
         });
         GridData data = new GridData();
