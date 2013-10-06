@@ -26,6 +26,9 @@ import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchManager;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvider;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 
 public final class ModuleImportSelectionDialog extends FilteredElementTreeSelectionDialog {
     
@@ -89,13 +92,29 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
     }
     
     static List<ModuleNode> getImportableModuleNodes(IProject project, Module module, String prefix) {
-        if (prefix.startsWith("java.")) {
+        if (prefix.equals(".")) {
+            List<ModuleNode> list = new ArrayList<ModuleNode>();
+            for (IProject p: CeylonBuilder.getProjects()) {
+                for (Module m: CeylonBuilder.getProjectModules(p).getListOfModules()) {
+                    if (m.getUnit() instanceof ProjectSourceFile ||
+                        m.getUnit() instanceof EditedSourceFile) {
+                        if (!excluded(module, m.getNameAsString())) {
+                            ModuleNode moduleNode = new ModuleNode(m.getNameAsString(), new ArrayList<ModuleVersionNode>(1));
+                            moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, m.getVersion()));
+                            list.add(moduleNode);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+        else if (prefix.startsWith("java.")) {
             List<ModuleNode> list = new ArrayList<ModuleNode>();
             for (String name: JDKUtils.getJDKModuleNames()) {
                 if (name.startsWith(prefix) && !excluded(module, name)) {
                     ModuleNode moduleNode = new ModuleNode(name, new ArrayList<ModuleVersionNode>(1));
-                    list.add(moduleNode);
                     moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, JDK_MODULE_VERSION));
+                    list.add(moduleNode);
                 }
             }
             return list;
