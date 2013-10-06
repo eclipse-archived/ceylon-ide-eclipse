@@ -116,6 +116,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         if (pf!=null) {
             project = pf.getJavaProject().getProject();
             Modules projectModules = getProjectModules(project);
+            if (projectModules==null) return null;
             for (Module m: projectModules.getListOfModules()) {
                 if (m.getNameAsString().equals(pf.getElementName())) {
                     module = m; 

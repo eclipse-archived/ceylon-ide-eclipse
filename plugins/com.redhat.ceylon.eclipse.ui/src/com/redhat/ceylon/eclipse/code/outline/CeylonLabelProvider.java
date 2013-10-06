@@ -111,6 +111,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image REMOVE_CORR = imageRegistry.get(CEYLON_REMOVE_CORRECTION);
     public static Image LOCAL_NAME = imageRegistry.get(CEYLON_LOCAL_NAME);
     public static Image MULTIPLE_TYPES_IMAGE = imageRegistry.get(MULTIPLE_TYPES);
+    public static Image REPO = imageRegistry.get(RUNTIME_OBJ);
 
     public static Image ERROR = imageRegistry.get(CeylonResources.ERROR);
     public static Image WARNING = imageRegistry.get(CeylonResources.WARNING);
