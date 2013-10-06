@@ -51,8 +51,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
 
 //    private IResourceChangeListener encodingListener;
     private Table moduleImportsTable;
-    private Module module;
     private IProject project;
+    private IPackageFragment packageFragment;
     
 //    @Override
 //    public void dispose() {
@@ -85,18 +85,17 @@ public class CeylonModulePropertiesPage extends PropertyPage
         
     @Override
     protected Control createContents(Composite parent) {
-        final IPackageFragment pf = initProjectAndModule();
-        if (module==null) return parent;
-        createModuleInfoBlock(parent, pf);
+        initProjectAndModule();
+        if (packageFragment==null) return parent;
+        createModuleInfoBlock(parent);
         createPackagesBlock(parent);
         createModulesBlock(parent);
-        createModuleDescriptorLink(parent, pf);
+        createModuleDescriptorLink(parent);
         return parent;
     }
 
-    public void createModuleDescriptorLink(Composite parent,
-            final IPackageFragment pf) {
-        final IFile moduleDescriptor = ((IFolder) pf.getResource()).getFile("module.ceylon");
+    public void createModuleDescriptorLink(Composite parent) {
+        final IFile moduleDescriptor = ((IFolder) packageFragment.getResource()).getFile("module.ceylon");
         Link openDescriptorLink = new Link(parent, 0);
         openDescriptorLink.setLayoutData(GridDataFactory.swtDefaults()
                 .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
@@ -110,21 +109,24 @@ public class CeylonModulePropertiesPage extends PropertyPage
         });
     }
 
-    private IPackageFragment initProjectAndModule() {
-        IPackageFragment pf = (IPackageFragment) getElement()
+    private void initProjectAndModule() {
+        packageFragment = (IPackageFragment) getElement()
                 .getAdapter(IPackageFragment.class);
-        if (pf!=null) {
-            project = pf.getJavaProject().getProject();
-            Modules projectModules = getProjectModules(project);
-            if (projectModules==null) return null;
-            for (Module m: projectModules.getListOfModules()) {
-                if (m.getNameAsString().equals(pf.getElementName())) {
-                    module = m; 
-                    break;
-                }
+        if (packageFragment!=null) {
+            project = packageFragment.getJavaProject().getProject();
+        }
+    }
+
+    public Module getModule() {
+        if (project==null) return null;
+        Modules projectModules = getProjectModules(project);
+        if (projectModules==null) return null;
+        for (Module m: projectModules.getListOfModules()) {
+            if (m.getNameAsString().equals(packageFragment.getElementName())) {
+                return m; 
             }
         }
-        return pf;
+        return null;
     }
     
     private void createModulesBlock(Composite parent) {
@@ -150,7 +152,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         gd.heightHint = 100;
         gd.widthHint = 250;
         moduleImportsTable.setLayoutData(gd);
-        for (ModuleImport mi: module.getImports()) {
+        for (ModuleImport mi: getModule().getImports()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
             item.setImage(CeylonLabelProvider.ARCHIVE);
             item.setText(mi.getModule().getNameAsString() + "/" + 
@@ -207,7 +209,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         gd.heightHint = 100;
         gd.widthHint = 250;
         packagesTable.setLayoutData(gd);
-        for (Package p: module.getPackages()) {
+        for (Package p: getModule().getPackages()) {
             TableItem item = new TableItem(packagesTable, SWT.NONE);
             item.setImage(CeylonLabelProvider.PACKAGE);
             item.setText(p.getNameAsString());
@@ -235,7 +237,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         });
     }
 
-    private void createModuleInfoBlock(Composite parent, IPackageFragment pf) {
+    private void createModuleInfoBlock(Composite parent) {
         Composite composite = new Composite(parent, SWT.NONE);
         GridData cgd = new GridData(FILL_HORIZONTAL);
 //        cgd.grabExcessHorizontalSpace = true;
@@ -246,7 +248,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         Label label = new Label(composite, SWT.NONE);
         label.setText("Module name: ");
         label = new Label(composite, SWT.NONE);
-        label.setText(pf.getElementName());
+        label.setText(packageFragment.getElementName());
         
         /*Label img = new Label(composite, SWT.BORDER);
         Image image = CeylonPlugin.getInstance()
@@ -319,8 +321,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
 
     private void selectAndAddModules() {
         Map<String, String> added = ModuleImportSelectionDialog.selectModules(getShell(), 
-                project, module);
-        ModuleImportUtil.addModuleImports(project, module, added);
+                project, getModule());
+        ModuleImportUtil.addModuleImports(project, getModule(), added);
         for (Map.Entry<String, String> entry: added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
             item.setImage(CeylonLabelProvider.ARCHIVE);
@@ -341,7 +343,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
                 removed.add(index);
             }
         }
-        ModuleImportUtil.removeModuleImports(project, module, names);
+        ModuleImportUtil.removeModuleImports(project, getModule(), names);
         int[] indices = new int[removed.size()];
         for (int i=0; i<removed.size(); i++) {
             indices[i] = removed.get(i);
