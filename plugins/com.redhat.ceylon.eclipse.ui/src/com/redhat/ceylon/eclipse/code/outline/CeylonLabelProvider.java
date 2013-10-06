@@ -216,9 +216,18 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             return CEYLON_FILE;
         }
-        if (element instanceof IFolder ||
-            element instanceof IPackageFragmentRoot) { //should be the source folder icon
+        if (element instanceof IFolder) {
+            IFolder folder = (IFolder) element;
+            if (folder.getAdapter(IPackageFragmentRoot.class)!=null) {
+                return CEYLON_SOURCE_FOLDER;
+            }
+            else if (folder.getAdapter(IPackageFragment.class)!=null) {
+                return CEYLON_PACKAGE;
+            }
             return CEYLON_FOLDER;
+        }
+        else if (element instanceof IPackageFragmentRoot) { //should be the source folder icon
+            return CEYLON_SOURCE_FOLDER;
         }
         if (element instanceof IProject ||
             element instanceof IJavaProject) {
