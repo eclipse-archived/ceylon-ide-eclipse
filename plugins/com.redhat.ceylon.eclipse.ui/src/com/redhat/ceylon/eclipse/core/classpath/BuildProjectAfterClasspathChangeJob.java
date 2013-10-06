@@ -13,7 +13,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.internal.debug.ui.actions.ForceReturnAction;
 
 public class BuildProjectAfterClasspathChangeJob extends Job {
 	protected final IProject project;
@@ -31,7 +30,7 @@ public class BuildProjectAfterClasspathChangeJob extends Job {
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		if (forceRebuild || ! isModelTypeChecked(project)) {
+		if (project.isOpen() && (forceRebuild || !isModelTypeChecked(project))) {
 			try {
 				List<IBuildConfiguration> configs = new ArrayList<IBuildConfiguration>();
 				configs.add(project.getBuildConfig(IBuildConfiguration.DEFAULT_CONFIG_NAME));
