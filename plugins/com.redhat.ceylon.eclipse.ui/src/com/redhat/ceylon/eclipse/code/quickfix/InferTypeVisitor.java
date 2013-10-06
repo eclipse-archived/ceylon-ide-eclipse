@@ -113,6 +113,9 @@ class InferTypeVisitor extends Visitor {
                 if (p!=null && pr!=null) {
                     ProducedType ft = pr.getTypedParameter(p)
                             .getFullType();
+                    if (p.isSequenced()) {
+                        ft = unit.getIteratedType(ft);
+                    }
                 	intersect(ft);
                 }
             }
