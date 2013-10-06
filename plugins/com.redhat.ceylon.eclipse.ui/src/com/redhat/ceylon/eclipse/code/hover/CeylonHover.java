@@ -1175,7 +1175,7 @@ public class CeylonHover
 
     public static void appendExtraActions(Declaration dec, StringBuffer buffer) {
         buffer.append("<hr/>");
-        addImageAndLabel(buffer, null, fileUrl("template_obj.gif").toExternalForm(), 
+        addImageAndLabel(buffer, null, fileUrl("unit.gif").toExternalForm(), 
                 16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
                         dec.getUnit().getFilename() + "</tt>", 20, 2);
         //}
