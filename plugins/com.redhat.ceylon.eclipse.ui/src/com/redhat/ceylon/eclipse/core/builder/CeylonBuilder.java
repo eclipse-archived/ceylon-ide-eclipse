@@ -69,6 +69,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
@@ -2104,8 +2105,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (!module.isDefault() && !module.isJava()) {
                     try {
                         for (IPackageFragment pkg : javaProject.getPackageFragments()) {
-                            if (!pkg.isReadOnly() && pkg.getElementName().equals(module.getNameAsString())) {
-                                moduleList.add(module);
+                            if (pkg.getKind()==IPackageFragmentRoot.K_SOURCE) {
+                                if (!pkg.isReadOnly() && pkg.getElementName().equals(module.getNameAsString())) {
+                                    moduleList.add(module);
+                                }
                             }
                         }
                     } catch (JavaModelException e) {
