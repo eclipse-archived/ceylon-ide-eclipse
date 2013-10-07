@@ -445,10 +445,10 @@
                icon="icons/mark_occurrences.gif"
                id="com.redhat.ceylon.eclipse.ui.action.MarkOccurrences"
                label="&amp;Toggle Mark Occurrences"
-               state="false"
+               state="true"
                style="toggle"
-               toolbarPath="additions"
-               tooltip="Mark references to a Ceylon declaration"/>
+               toolbarPath="org.eclipse.ui.edit.text.actionSet.presentation/Presentation"
+               tooltip="Highlight References to Ceylon declaration"/>
       </editorContribution-->
    </extension>
 
@@ -457,7 +457,7 @@
       <actionSet
             id="com.redhat.ceylon.eclipse.ui.actionSet.markOccurrences"
             label="Ceylon Occurrence Marking"
-            visible="true">
+            visible="false">
          <action
                class="com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction"
                icon="icons/mark_occurrences.gif"
@@ -465,11 +465,18 @@
                label="&amp;Toggle Mark Occurrences"
                state="true"
                style="toggle"
-               toolbarPath="analysisGroup"
+               toolbarPath="org.eclipse.ui.edit.text.actionSet.presentation/Presentation"
                tooltip="Highlight References to Ceylon Declaration"/>
       </actionSet>
    </extension>
-   
+   <extension
+         point="org.eclipse.ui.actionSetPartAssociations">
+      <actionSetPartAssociation
+            targetID="com.redhat.ceylon.eclipse.ui.actionSet.markOccurrences">
+         <part id="com.redhat.ceylon.eclipse.ui.editor"/>
+      </actionSetPartAssociation>
+   </extension>
+      
    <extension
          point="org.eclipse.ui.commands">
        <category
