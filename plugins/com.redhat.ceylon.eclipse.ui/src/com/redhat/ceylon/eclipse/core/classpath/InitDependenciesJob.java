@@ -103,7 +103,7 @@ public class InitDependenciesJob extends Job {
             
             buildWhenAllContainersAreInitialized.setPriority(BUILD);
             buildWhenAllContainersAreInitialized.setSystem(true);
-            buildWhenAllContainersAreInitialized.schedule(3000);
+            buildWhenAllContainersAreInitialized.schedule();
 
             CeylonBuilder.setContainerInitialized(project);
     		return Status.OK_STATUS;
