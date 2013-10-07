@@ -1605,7 +1605,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             String js_outRepo, PrintWriter printWriter) throws CoreException {
         Options jsopts = new Options(js_repos, js_srcdir,
                 getInterpolatedCeylonSystemRepo(project),
-                js_outRepo, null/*uname*/,
+                null/*cache*/, js_outRepo, null/*uname*/,
                 null/*pass*/, true, true, true, true, js_verbose ? "all" : null, false, false, false,
                 project.getDefaultCharset(),
                 CeylonProjectConfig.get(project).isOffline());
