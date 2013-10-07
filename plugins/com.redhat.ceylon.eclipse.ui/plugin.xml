@@ -1083,7 +1083,7 @@
             <command
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
-                  icon="icons/glyph2.gif"
+                  icon="icons/correctindent.gif"
                   label="Correct &amp;Indentation"/>
             <command
                   id="toggleComment"
@@ -1121,7 +1121,7 @@
             <command
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
-                  icon="icons/glyph2.gif"
+                  icon="icons/correctindent.gif"
                   label="Correct &amp;Indentation"/>
             <command
                   id="toggleComment"
