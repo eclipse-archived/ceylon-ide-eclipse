@@ -50,5 +50,5 @@ Import-Package: org.eclipse.core.filesystem,
  org.eclipse.ui,
  org.eclipse.ui.ide
 Bundle-ClassPath: .,
- lib/compiler-tests-0.6.1.jar
+ lib/compiler-tests-1.0.0.jar
 Eclipse-BundleShape: dir
