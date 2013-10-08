@@ -77,7 +77,7 @@ import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
  */
 public class JDTModuleManager extends LazyModuleManager {
 
-    private AbstractModelLoader modelLoader;
+    private JDTModelLoader modelLoader;
     private IJavaProject javaProject;
     private Set<String> sourceModules;
     private Set<File> classpath;
@@ -150,7 +150,7 @@ public class JDTModuleManager extends LazyModuleManager {
     }
 
     @Override
-    public AbstractModelLoader getModelLoader() {
+    public synchronized JDTModelLoader getModelLoader() {
         if(modelLoader == null){
             Modules modules = getContext().getModules();
             modelLoader = new JDTModelLoader(this, modules);
