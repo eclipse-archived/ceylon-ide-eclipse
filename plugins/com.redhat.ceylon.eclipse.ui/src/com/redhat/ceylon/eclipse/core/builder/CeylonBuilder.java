@@ -1833,10 +1833,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	public static boolean compileWithJDTModel = true;
 	public static boolean reuseEclipseModelInCompilation(IProject project) {
         return loadDependenciesFromModelLoaderFirst(project) && compileWithJDTModel; 
-        // We should add another option for this. For the moment deactivate it since it can't work correctly now
     }
 
-    public static boolean loadBinariesFirst = true;
+	// Keep it false on master until we fix the associated cross-reference and search issues 
+    // by correctly managing source to binary links and indexes
+	public static boolean loadBinariesFirst = false;
 	public static boolean loadDependenciesFromModelLoaderFirst(IProject project) {
         return compileToJava(project) && loadBinariesFirst;
     }
