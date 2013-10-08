@@ -118,7 +118,12 @@ public class JDTModule extends LazyModule {
         return moduleManager.getModelLoader();
     }
 
+    
+    public JDTModuleManager getModuleManager() {
+        return moduleManager;
+    }
 
+    
     @Override
     public List<Package> getAllPackages() {
         synchronized (getModelLoader()) {
