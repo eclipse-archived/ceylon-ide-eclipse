@@ -41,9 +41,9 @@ public class ProjectChangeListener implements IResourceChangeListener {
                                 if (project.hasNature(CeylonNature.NATURE_ID)) {
                                     IJavaProject javaProject = JavaCore.create(project);
                                     if (javaProject != null) {
-                                        //List<CeylonClasspathContainer> cpContainers = 
+                                        //List<CeylonApplicationModulesContainer> cpContainers = 
                                         getCeylonClasspathContainers(javaProject);
-                                        /*for (CeylonClasspathContainer container : cpContainers) {
+                                        /*for (CeylonApplicationModulesContainer container : cpContainers) {
                                             container.launchResolve(false, null);
                                         }*/
                                     }

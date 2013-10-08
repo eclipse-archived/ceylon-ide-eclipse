@@ -68,6 +68,10 @@ public class JDTUtils {
             return new Float(constant.floatValue());
         case Constant.T_int :
             return new Integer(constant.intValue());
+        case Constant.T_short :
+            return new Short(constant.shortValue());
+        case Constant.T_long :
+            return new Long(constant.longValue());
         case Constant.T_JavaLangString :
             return new String(constant.stringValue());
         }

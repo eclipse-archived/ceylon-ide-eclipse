@@ -50,15 +50,15 @@ public final class CeylonClasspathUtil {
      * @return
      * @throws JavaModelException
      */
-    public static CeylonClasspathContainer getCeylonClasspathContainer(IStructuredSelection selection) {
+    public static CeylonProjectModulesContainer getCeylonClasspathContainer(IStructuredSelection selection) {
         if (selection == null) {
             return null;
         }
         for (@SuppressWarnings("rawtypes") Iterator it = selection.iterator(); 
                 it.hasNext();) {
             Object element = it.next();
-            CeylonClasspathContainer cp = (CeylonClasspathContainer) CeylonPlugin.adapt(element,
-                CeylonClasspathContainer.class);
+            CeylonProjectModulesContainer cp = (CeylonProjectModulesContainer) CeylonPlugin.adapt(element,
+                CeylonProjectModulesContainer.class);
             if (cp != null) {
                 return cp;
             }
@@ -75,16 +75,16 @@ public final class CeylonClasspathUtil {
      * Work around the non adaptability of ClassPathContainer
      * 
      * @param cpc
-     *            the container to transform into an CeylonClasspathContainer
-     * @return the CeylonClasspathContainer is such, null, if not
+     *            the container to transform into an CeylonApplicationModulesContainer
+     * @return the CeylonApplicationModulesContainer is such, null, if not
      */
-    public static CeylonClasspathContainer jdt2CeylonCPC(ClassPathContainer cpc) {
+    public static CeylonProjectModulesContainer jdt2CeylonCPC(ClassPathContainer cpc) {
         IClasspathEntry entry = cpc.getClasspathEntry();
         try {
             IClasspathContainer icp = JavaCore.getClasspathContainer(entry.getPath(), cpc
                     .getJavaProject());
-            if (icp instanceof CeylonClasspathContainer) {
-                return (CeylonClasspathContainer) icp;
+            if (icp instanceof CeylonProjectModulesContainer) {
+                return (CeylonProjectModulesContainer) icp;
             }
         } 
         catch (JavaModelException e) {
@@ -95,7 +95,24 @@ public final class CeylonClasspathUtil {
     }
 
     public static boolean isCeylonClasspathContainer(IPath containerPath) {
-        return containerPath.segment(0).equals(CeylonClasspathContainer.CONTAINER_ID);
+        return isLanguageModuleClasspathContainer(containerPath) ||
+                isProjectModulesClasspathContainer(containerPath);
+    }
+
+    public static boolean isLanguageModuleClasspathContainer(IPath containerPath) {
+        int size = containerPath.segmentCount();
+        if (size > 0) {
+            return (containerPath.segment(0).equals(CeylonLanguageModuleContainer.CONTAINER_ID));
+        }
+        return false;
+    }
+
+    public static boolean isProjectModulesClasspathContainer(IPath containerPath) {
+        int size = containerPath.segmentCount();
+        if (size > 0) {
+            return (containerPath.segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID));
+        }
+        return false;        
     }
 
     /**
@@ -105,9 +122,9 @@ public final class CeylonClasspathUtil {
      *            the project to search into
      * @return the Ceylon classpath container if found
      */
-    public static List <CeylonClasspathContainer> getCeylonClasspathContainers(
+    public static List <IClasspathContainer> getCeylonClasspathContainers(
             IJavaProject javaProject) {
-        List<CeylonClasspathContainer> containers = new ArrayList<CeylonClasspathContainer>();
+        List<IClasspathContainer> containers = new ArrayList<IClasspathContainer>();
         if (FakeProjectManager.isFake(javaProject) || !javaProject.exists()) {
             return containers;
         }
@@ -119,8 +136,9 @@ public final class CeylonClasspathUtil {
                     IPath path = entry.getPath();
                     if (isCeylonClasspathContainer(path)) {
                         IClasspathContainer cp = JavaCore.getClasspathContainer(path, javaProject);
-                        if (cp instanceof CeylonClasspathContainer) {
-                            containers.add((CeylonClasspathContainer) cp);
+                        if (cp instanceof CeylonProjectModulesContainer ||
+                                cp instanceof CeylonLanguageModuleContainer) {
+                            containers.add(cp);
                         }
                     }
                 }
