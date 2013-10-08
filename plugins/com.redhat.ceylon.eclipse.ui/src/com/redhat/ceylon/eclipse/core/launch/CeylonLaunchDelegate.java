@@ -3,8 +3,8 @@ package com.redhat.ceylon.eclipse.core.launch;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer.getModuleArchive;
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer.isProjectModule;
+import static com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer.getModuleArchive;
+import static com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer.isProjectModule;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static java.util.Arrays.asList;
 
@@ -23,7 +23,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMRunner;
@@ -34,7 +36,7 @@ import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonLaunchDelegate extends JavaLaunchDelegate {
@@ -173,10 +175,13 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
     protected String[] getCeylonProjectClasspath(IJavaProject javaProject) throws JavaModelException {
         final List<String> classpathList = new ArrayList<String>();
         
-        for (CeylonClasspathContainer container : getCeylonClasspathContainers(javaProject)) {
-            boolean changed = container.resolveClasspath(new NullProgressMonitor(), false);
-            if(changed) {
-                container.refreshClasspathContainer(new NullProgressMonitor(), javaProject);
+        for (IClasspathContainer container : getCeylonClasspathContainers(javaProject)) {
+            if (container instanceof CeylonProjectModulesContainer) {
+                CeylonProjectModulesContainer applicationModulesContainer = (CeylonProjectModulesContainer) container;
+                boolean changed = applicationModulesContainer.resolveClasspath(new NullProgressMonitor(), false);
+                if(changed) {
+                    applicationModulesContainer.refreshClasspathContainer(new NullProgressMonitor());
+                }
             }
         }
         

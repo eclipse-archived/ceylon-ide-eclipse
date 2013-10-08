@@ -33,14 +33,27 @@ public class BuildProjectAfterClasspathChangeJob extends Job {
 		if (project.isOpen() && (forceRebuild || !isModelTypeChecked(project))) {
 			try {
 				List<IBuildConfiguration> configs = new ArrayList<IBuildConfiguration>();
+                List<IProject> projectsToTouch = new ArrayList<IProject>();
 				configs.add(project.getBuildConfig(IBuildConfiguration.DEFAULT_CONFIG_NAME));
-				if (buildReferencingProjects) {
-	                for (IProject p: project.getReferencingProjects()) {
-	                    if (p.isOpen()) {
-	                        configs.add(p.getBuildConfig(IBuildConfiguration.DEFAULT_CONFIG_NAME));
-	                    }
-	                }
-				}
+                projectsToTouch.add(project);
+                if (buildReferencingProjects) {
+                    for (IProject p: project.getReferencingProjects()) {
+                        if (p.isOpen()) {
+                            configs.add(p.getBuildConfig(IBuildConfiguration.DEFAULT_CONFIG_NAME));
+                            projectsToTouch.add(project);
+                        }
+                    }
+                }
+                if (buildReferencedProjects) {
+                    for (IProject p: project.getReferencingProjects()) {
+                        if (p.isOpen()) {
+                            projectsToTouch.add(project);
+                        }
+                    }
+                }
+                for (IProject p : projectsToTouch) {
+                    p.touch(monitor);
+                }
 				project.getWorkspace().build(configs.toArray(new IBuildConfiguration[1]), 
 						INCREMENTAL_BUILD, buildReferencedProjects, monitor);    	            			
 			}
