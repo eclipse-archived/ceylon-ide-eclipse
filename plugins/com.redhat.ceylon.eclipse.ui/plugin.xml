@@ -1669,6 +1669,11 @@
                   closeable="false"
                   ratio="0.72"
                   relationship="right"/>
+            <view id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"
+                  relative="org.eclipse.ui.views.ContentOutline"
+                  closeable="true"
+                  visible="true"
+                  relationship="stack"/>
             <actionSet
                   id="org.eclipse.debug.ui.launchActionSet"/>
             <actionSet
