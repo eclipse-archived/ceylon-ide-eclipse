@@ -36,20 +36,30 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ViewForm;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.part.ViewPart;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class HierarchyView extends ViewPart {
 
+	private static final Image GOTO_IMAGE = CeylonPlugin.getInstance()
+			.getImageRegistry().get(CeylonResources.GOTO);
+
+	
 	private CeylonHierarchyLabelProvider labelProvider;
 	private CeylonHierarchyContentProvider contentProvider;
 	private MembersLabelProvider membersLabelProvider;
@@ -198,6 +208,41 @@ public class HierarchyView extends ViewPart {
 				gotoDeclaration(firstElement, project);
 			}
 		});
+        Menu menu = new Menu(tree);
+    	MenuItem item = new MenuItem(menu, SWT.PUSH);
+    	item.setText("Focus on Selection");
+    	item.setImage(getTitleImage());
+		tree.setMenu(menu);
+		item.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+        		Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
+        		if (firstElement!=null) {
+        			TypeChecker checker = ((HierarchyInput)treeViewer.getInput()).typeChecker;
+        			treeViewer.setInput(new HierarchyInput(((CeylonHierarchyNode)firstElement).getDeclaration(),checker));
+        		}
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		item = new MenuItem(menu, SWT.PUSH);
+    	item.setText("Go To Selection");
+		item.setImage(GOTO_IMAGE);
+		tree.setMenu(menu);
+		item.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+        		Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
+        		if (firstElement instanceof CeylonHierarchyNode) {
+        			gotoDeclaration(((CeylonHierarchyNode) firstElement).getDeclaration(), project);
+        		}
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {}
+		});	
 	}
 
 	private int getDefaultLevel() {
