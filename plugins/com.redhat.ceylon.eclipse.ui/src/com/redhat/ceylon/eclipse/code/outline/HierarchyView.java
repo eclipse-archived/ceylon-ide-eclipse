@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUPERTYPES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
@@ -12,20 +13,29 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -51,7 +61,11 @@ public class HierarchyView extends ViewPart {
 	private ModeAction hierarchyAction;
 	private ModeAction supertypesAction;
 	private ModeAction subtypesAction;
-
+	
+	private IProject project;
+	
+	private CLabel title;
+	
 	private final class MembersContentProvider implements IStructuredContentProvider {
 		@Override
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
@@ -65,7 +79,7 @@ public class HierarchyView extends ViewPart {
 				return ((TypeDeclaration) inputElement).getMembers().toArray();
 			}
 			else {
-				return null;
+				return new Object[0];
 			}
 		}
 	}
@@ -118,6 +132,7 @@ public class HierarchyView extends ViewPart {
 	
 	@Override
 	public void createPartControl(Composite parent) {
+		setContentDescription("");
 		SashForm sash = new SashForm(parent, SWT.VERTICAL);
         final Tree tree = new Tree(sash, SWT.SINGLE);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -129,6 +144,27 @@ public class HierarchyView extends ViewPart {
         treeViewer.setContentProvider(contentProvider);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.setAutoExpandLevel(getDefaultLevel());
+        treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				TreeSelection selection = (TreeSelection) event.getSelection();
+				CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
+				Declaration dec = firstElement.getDeclaration();
+				if (dec!=null) {
+					title.setImage(getImageForDeclaration(dec));
+					title.setText(dec.getName());
+					tableViewer.setInput(dec);
+				}
+			}
+		});
+        treeViewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
+			public void doubleClick(DoubleClickEvent event) {
+				TreeSelection selection = (TreeSelection) event.getSelection();
+				CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
+				gotoDeclaration(firstElement.getDeclaration(), project);
+			}
+		});
         IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
         tbm.add(hierarchyAction=new ModeAction("Hierarchy", 
         		"Switch to hierarchy mode", 
@@ -140,19 +176,26 @@ public class HierarchyView extends ViewPart {
         		"Switch to subtypes mode", 
         				CEYLON_SUB, SUBTYPES));
         updateActions(HIERARCHY);
-//        ViewForm viewForm = new ViewForm(sash, SWT.FLAT);
-//        GridLayout layout = new GridLayout(1, false);
-//        layout.horizontalSpacing = 0;
-//        layout.verticalSpacing = 0;
-//        viewForm.setLayout(layout);
+        ViewForm viewForm = new ViewForm(sash, SWT.FLAT);
 		GridData vfgd = new GridData(GridData.FILL_BOTH);
-//		viewForm.setLayoutData(vfgd);
-        tableViewer = new TableViewer(sash);
+        tableViewer = new TableViewer(viewForm);
+		viewForm.setContent(tableViewer.getTable());
+		title = new CLabel(viewForm, SWT.NONE);
+		viewForm.setTopLeft(title);
+		viewForm.setTopCenter(title);
         tableViewer.getTable().setLayoutData(vfgd);
         membersLabelProvider=new MembersLabelProvider();
         membersContentProvider=new MembersContentProvider();
         tableViewer.setLabelProvider(membersLabelProvider);
         tableViewer.setContentProvider(membersContentProvider);
+        tableViewer.addDoubleClickListener(new IDoubleClickListener() {
+			@Override
+			public void doubleClick(DoubleClickEvent event) {
+				StructuredSelection selection = (StructuredSelection) event.getSelection();
+				Declaration firstElement = (Declaration) selection.getFirstElement();
+				gotoDeclaration(firstElement, project);
+			}
+		});
 	}
 
 	private int getDefaultLevel() {
@@ -186,10 +229,14 @@ public class HierarchyView extends ViewPart {
 		Node node = findNode(editor.getParseController().getRootNode(), editor.getSelection().getOffset());
 		Declaration dec = getReferencedDeclaration(node);
 		if (dec!=null) {
+			setContentDescription(dec.getName());
+			title.setImage(getImageForDeclaration(dec));
+			title.setText(dec.getName());
 			tableViewer.setInput(dec);
 			treeViewer.setInput(new HierarchyInput(dec, 
 					editor.getParseController().getTypeChecker()));
 		}
+		project = editor.getParseController().getProject();
 	}
 
 	private class ModeAction extends Action {
