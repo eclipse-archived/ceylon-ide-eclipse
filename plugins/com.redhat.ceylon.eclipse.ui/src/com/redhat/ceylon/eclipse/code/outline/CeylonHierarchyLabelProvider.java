@@ -20,9 +20,12 @@ final class CeylonHierarchyLabelProvider extends
 	
 	private static final String VIEW_INTERFACES = " (" + HierarchyPopup.KEY + " to view)";
 	private final CeylonHierarchyContentProvider contentProvider;
+	private boolean popup;
 	
-	public CeylonHierarchyLabelProvider(CeylonHierarchyContentProvider contentProvider) {
+	public CeylonHierarchyLabelProvider(CeylonHierarchyContentProvider contentProvider,
+			boolean popup) {
 		this.contentProvider = contentProvider;
+		this.popup = popup;
 	}
 
 	@Override
@@ -53,7 +56,8 @@ final class CeylonHierarchyLabelProvider extends
 	    result.append(" - ", QUALIFIER_STYLER)
 	            .append(CeylonLabelProvider.getPackageLabel(d), QUALIFIER_STYLER);
 	    if (n.isNonUnique()) {
-	    	result.append(" - and other supertypes").append(VIEW_INTERFACES);
+	    	result.append(" - and other supertypes");
+	    	if (popup) result.append(VIEW_INTERFACES);
 	    }
 	    return result;
 	}
