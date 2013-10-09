@@ -139,18 +139,18 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	
 	private void initGroupingActions() {
 		fGroupProjectAction= new GroupAction("Project", "Group by Project", 
-				PROJECT_MODE, this, LEVEL_PROJECT);
+				PROJECT_MODE, LEVEL_PROJECT);
 		fGroupFolderAction= new GroupAction("Source Folder", "Group by Source Folder", 
-				FOLDER_MODE, this, LEVEL_FOLDER);
+				FOLDER_MODE, LEVEL_FOLDER);
 		fGroupPackageAction= new GroupAction("Package", "Group by Package", 
-				PACKAGE_MODE ,this, LEVEL_PACKAGE);
+				PACKAGE_MODE, LEVEL_PACKAGE);
 		fGroupFileAction= new GroupAction("Source File", "Group by Source File", 
-				UNIT_MODE, this, LEVEL_FILE);
+				UNIT_MODE, LEVEL_FILE);
 		
 		fLayoutTreeAction= new LayoutAction("Tree", "Tree Layout", 
-				TREE_MODE, this, FLAG_LAYOUT_TREE);
+				TREE_MODE, FLAG_LAYOUT_TREE);
 		fLayoutFlatAction= new LayoutAction("Float", "Flat Layout", 
-				FLAT_MODE, this, FLAG_LAYOUT_FLAT);
+				FLAT_MODE, FLAG_LAYOUT_FLAT);
 	}
 	
 	private void updateGroupingActions() {
@@ -194,17 +194,14 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	
 	private class GroupAction extends Action {
 		private int fGrouping;
-		private CeylonSearchResultPage fPage;
 
 		public GroupAction(String label, String tooltip, 
-				String imageKey, CeylonSearchResultPage page, 
-				int grouping) {
+				String imageKey, int grouping) {
 			super(label);
 			setToolTipText(tooltip);
 			setImageDescriptor(CeylonPlugin.getInstance()
 					.getImageRegistry()
 					.getDescriptor(imageKey));
-			fPage = page;
 			fGrouping = grouping;
 		}
 		
@@ -215,30 +212,27 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 
 		@Override
 		public void run() {
-			fPage.setGrouping(fGrouping);
+			setGrouping(fGrouping);
 		}
 
 	}
 
 	private class LayoutAction extends Action {
 		private int fLayout;
-		private CeylonSearchResultPage fPage;
 
 		public LayoutAction(String label, String tooltip, 
-				String imageKey, CeylonSearchResultPage page, 
-				int layout) {
+				String imageKey, int layout) {
 			super(label);
 			setToolTipText(tooltip);
 			setImageDescriptor(CeylonPlugin.getInstance()
 					.getImageRegistry()
 					.getDescriptor(imageKey));
-			fPage = page;
 			fLayout = layout;
 		}
 
 		@Override
 		public void run() {
-			fPage.setLayout(fLayout);
+			setLayout(fLayout);
 			setChecked(getLayout()==fLayout);
 		}
 	}
