@@ -350,6 +350,11 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(ALIAS_IMAGE, image(ALIAS_IMAGE));
         reg.put(DEPRECATED_IMAGE, image(DEPRECATED_IMAGE));
         
+        reg.put(PROJECT_MODE, image("prj_mode.gif"));
+        reg.put(PACKAGE_MODE, image("package_mode.gif"));
+        reg.put(FOLDER_MODE, image("folder_mode.gif"));
+        reg.put(UNIT_MODE, image("unit_mode.gif"));
+        
 	}
 	
     private void registerProjectOpenCloseListener() {
