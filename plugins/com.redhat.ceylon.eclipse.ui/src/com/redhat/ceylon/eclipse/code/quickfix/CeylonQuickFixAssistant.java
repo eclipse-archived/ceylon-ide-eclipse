@@ -2063,7 +2063,7 @@ public class CeylonQuickFixAssistant {
 
     private void addAddAnnotationProposal(Node node, String annotation, String desc,
             Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
-        if (dec!=null && !(node instanceof Tree.MissingDeclaration)) {
+        if (dec!=null && dec.getName()!=null && !(node instanceof Tree.MissingDeclaration)) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
@@ -2081,7 +2081,7 @@ public class CeylonQuickFixAssistant {
 
     private void addRemoveAnnotationProposal(Node node, String annotation, String desc,
             Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
-        if (dec!=null) {
+        if (dec!=null && dec.getName()!=null) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?
