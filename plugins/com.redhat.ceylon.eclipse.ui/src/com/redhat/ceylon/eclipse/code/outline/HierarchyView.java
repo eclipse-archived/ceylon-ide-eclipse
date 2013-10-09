@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
+import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
@@ -51,6 +52,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -140,6 +142,15 @@ public class HierarchyView extends ViewPart {
 
 	}
 	
+	private void gotoCeylonOrJavaDeclaration(Declaration dec) {
+		if (dec.getUnit() instanceof JavaClassFile) { //TODO: is this right?!
+			gotoJavaNode(dec, project);
+		}
+		else {
+			gotoDeclaration(dec, project);
+		}
+	}
+	
 	@Override
 	public void createPartControl(Composite parent) {
 		setContentDescription("");
@@ -174,7 +185,8 @@ public class HierarchyView extends ViewPart {
 			public void doubleClick(DoubleClickEvent event) {
 				TreeSelection selection = (TreeSelection) event.getSelection();
 				CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
-				gotoDeclaration(firstElement.getDeclaration(), project);
+				Declaration dec = firstElement.getDeclaration();
+				gotoCeylonOrJavaDeclaration(dec);
 			}
 		});
         IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
@@ -205,7 +217,7 @@ public class HierarchyView extends ViewPart {
 			public void doubleClick(DoubleClickEvent event) {
 				StructuredSelection selection = (StructuredSelection) event.getSelection();
 				Declaration firstElement = (Declaration) selection.getFirstElement();
-				gotoDeclaration(firstElement, project);
+				gotoCeylonOrJavaDeclaration(firstElement);
 			}
 		});
         Menu menu = new Menu(tree);
@@ -218,15 +230,13 @@ public class HierarchyView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
         		Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
         		if (firstElement!=null) {
-        			TypeChecker checker = ((HierarchyInput)treeViewer.getInput()).typeChecker;
-        			treeViewer.setInput(new HierarchyInput(((CeylonHierarchyNode)firstElement).getDeclaration(),checker));
+        			TypeChecker checker = ((HierarchyInput) treeViewer.getInput()).typeChecker;
+        			Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration();
+					treeViewer.setInput(new HierarchyInput(declaration,checker));
         		}
 			}
 			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void widgetDefaultSelected(SelectionEvent e) {}
 		});
 		item = new MenuItem(menu, SWT.PUSH);
     	item.setText("Go To Selection");
@@ -237,7 +247,8 @@ public class HierarchyView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
         		Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
         		if (firstElement instanceof CeylonHierarchyNode) {
-        			gotoDeclaration(((CeylonHierarchyNode) firstElement).getDeclaration(), project);
+        			Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration();
+					gotoCeylonOrJavaDeclaration(declaration);
         		}
 			}
 			@Override
