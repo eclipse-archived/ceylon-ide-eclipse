@@ -12,6 +12,7 @@ import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -24,7 +25,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 	
-    private final CeylonHierarchyContentProvider ceylonHierarchyContentProvider;
     private final Declaration declaration;
     
     private CeylonHierarchyNode hierarchyRoot;
@@ -37,9 +37,11 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
     private final Map<Declaration, CeylonHierarchyNode> subtypesOfAllTypes = new HashMap<Declaration, CeylonHierarchyNode>();
     private final Map<Declaration, CeylonHierarchyNode> supertypesOfAllTypes = new HashMap<Declaration, CeylonHierarchyNode>();
 
-	CeylonHierarchyBuilder(CeylonHierarchyContentProvider ceylonHierarchyContentProvider, Declaration declaration) {
-		this.ceylonHierarchyContentProvider = ceylonHierarchyContentProvider;
+	private TypeChecker typechecker;
+
+	CeylonHierarchyBuilder(Declaration declaration, TypeChecker typechecker) {
         this.declaration = declaration;
+		this.typechecker = typechecker;
 	}
 
 	private void add(Declaration td, Declaration etd) {
@@ -102,9 +104,8 @@ final class CeylonHierarchyBuilder implements IRunnableWithProgress {
 		
 		monitor.beginTask("Building hierarchy", 100000);
 		
-		Set<Module> allModules = ceylonHierarchyContentProvider.getEditor()
-		        .getParseController().getTypeChecker()
-	            .getPhasedUnits().getModuleManager().getCompiledModules();
+		Set<Module> allModules = typechecker.getPhasedUnits()
+				.getModuleManager().getCompiledModules();
 		
 		boolean isFromUnversionedModule = declaration.getUnit().getPackage()
 				.getModule().getVersion()==null;

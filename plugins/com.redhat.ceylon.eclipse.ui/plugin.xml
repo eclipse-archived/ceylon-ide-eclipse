@@ -520,6 +520,11 @@
             description="Show popup code view"
             name="Show Ceylon Code"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.editor.showInHierarchyView"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Show in hierarchy view"
+            name="Show In Ceylon Hierarchy View"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.findReferences"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Find references to selected declaration"
@@ -963,6 +968,14 @@
             </dynamic>
             <separator
                   visible="true"
+                  name="sep8"/>
+            <command 
+                  id="showInHierarchy"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.showInHierarchyView"
+                  icon="icons/class_hi.gif"
+                  label="Show In Hierarchy &amp;View"/>
+            <separator
+                  visible="true"
                   name="belowOpen"/>
       </menuContribution>
       <menuContribution
@@ -1191,6 +1204,14 @@
                   commandId="com.redhat.ceylon.eclipse.ui.editor.code"
                   icon="icons/source.gif"
                   label="Show Code"/>
+            <separator
+                  visible="true"
+                  name="sep8"/>
+            <command 
+                  id="showInHierarchy"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.showInHierarchyView"
+                  icon="icons/class_hi.gif"
+                  label="Show In Hierarchy &amp;View"/>
       </menuContribution>
       <menuContribution
          locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
@@ -1670,6 +1691,7 @@
             <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
             <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
+            <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"/>
             <viewShortcut id="org.eclipse.ui.console.ConsoleView"/>
             <viewShortcut id="org.eclipse.ui.views.ProblemView"/>
             <viewShortcut id="org.eclipse.ui.views.TaskList"/>
@@ -2050,8 +2072,13 @@
             class="com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart"
             icon="icons/repositories.gif"
             id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"
-            name="Ceylon Repository Explorer">
-      </view>
+            name="Ceylon Repository Explorer"/>
+      <view
+            category="com.redhat.ceylon.eclipse.ui.views"
+            class="com.redhat.ceylon.eclipse.code.outline.HierarchyView"
+            icon="icons/class_hi.gif"
+            id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"
+            name="Ceylon Type Hierarchy"/>
    </extension>
 
    <extension

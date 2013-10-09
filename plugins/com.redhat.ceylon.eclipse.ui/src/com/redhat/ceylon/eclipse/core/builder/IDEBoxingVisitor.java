@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.core.builder;
 
 import com.redhat.ceylon.compiler.java.codegen.BoxingVisitor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 
 public class IDEBoxingVisitor extends BoxingVisitor {
@@ -25,4 +26,10 @@ public class IDEBoxingVisitor extends BoxingVisitor {
     protected boolean isTypeParameter(ProducedType type) {
         return IDEBoxingUtil.isTypeParameter(type);
     }
+
+	@Override
+	protected boolean hasErasedTypeParameters(ProducedReference arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

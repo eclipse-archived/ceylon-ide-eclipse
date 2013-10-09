@@ -26,7 +26,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyContentProvider.RootNode;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -40,7 +39,7 @@ public class HierarchyPopup extends TreeViewPopup {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if (e.character == 't' && (e.stateMask&SWT.MOD1)!=0) {
-				contentProvider.mode=contentProvider.mode.next();
+				contentProvider.setMode(contentProvider.getMode().next());
 				updateStatusFieldText();
 				updateTitle();
 				updateIcon();
@@ -80,7 +79,7 @@ public class HierarchyPopup extends TreeViewPopup {
         gd.heightHint= tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
         final TreeViewer treeViewer = new TreeViewer(tree);
-        contentProvider = new CeylonHierarchyContentProvider(editor);
+        contentProvider = new CeylonHierarchyContentProvider(editor.getSite());
         labelProvider = new CeylonHierarchyLabelProvider(contentProvider);
         treeViewer.setContentProvider(contentProvider);
         treeViewer.setLabelProvider(labelProvider);
@@ -100,7 +99,7 @@ public class HierarchyPopup extends TreeViewPopup {
 	
 	@Override
 	protected String getStatusFieldText() {
-		switch (contentProvider.mode) {
+		switch (contentProvider.getMode()) {
 		case SUBTYPES:
 			return KEY + " to show hierarchy";
 		case SUPERTYPES:
@@ -113,13 +112,13 @@ public class HierarchyPopup extends TreeViewPopup {
 	}
 	
 	private String getTitleText() {
-		Declaration dec = contentProvider.declaration;
+		Declaration dec = contentProvider.getDeclaration();
 		String desc = getDescriptionFor(dec);
 		if (contentProvider.isShowingRefinements()) {
 			if (dec.isClassOrInterfaceMember()) {
 				desc += " in " + ((ClassOrInterface) dec.getContainer()).getName();
 			}
-			switch (contentProvider.mode) {
+			switch (contentProvider.getMode()) {
 			case HIERARCHY:
 				return "Refinement hierarchy of " + desc;
 			case SUPERTYPES:
@@ -131,7 +130,7 @@ public class HierarchyPopup extends TreeViewPopup {
 			}
 		}
 		else {
-			switch (contentProvider.mode) {
+			switch (contentProvider.getMode()) {
 			case HIERARCHY:
 				return "Type hierarchy of " + desc;
 			case SUPERTYPES:
@@ -162,7 +161,7 @@ public class HierarchyPopup extends TreeViewPopup {
 	
 	private Image getIcon() {
 		String img = contentProvider==null ? 
-				CEYLON_HIER : contentProvider.mode.image();
+				CEYLON_HIER : contentProvider.getMode().image();
 		return CeylonPlugin.getInstance().getImageRegistry().get(img);
 	}
 	
@@ -173,11 +172,11 @@ public class HierarchyPopup extends TreeViewPopup {
 
 	@Override
 	public void setInput(Object information) {
-        if (!(information instanceof RootNode)) {
+        if (!(information instanceof HierarchyInput)) {
             inputChanged(null, null);
         }
         else {
-            RootNode rn = (RootNode) information;
+            HierarchyInput rn = (HierarchyInput) information;
             if (rn.declaration==null) {
                 inputChanged(null, null);
             }
@@ -216,15 +215,15 @@ public class HierarchyPopup extends TreeViewPopup {
 	
 	@Override
 	protected void reveal() {
-	    if (contentProvider.builder==null) return;
+	    if (contentProvider.getBuilder()==null) return;
 	    int depth;
-	    if (contentProvider.mode==HierarchyMode.HIERARCHY) {
-	        depth = contentProvider.builder.getDepthInHierarchy();
+	    if (contentProvider.getMode()==HierarchyMode.HIERARCHY) {
+	        depth = contentProvider.getBuilder().getDepthInHierarchy();
 	    }
 	    else {
 	        depth = 1;
 	    }
-        String name = contentProvider.builder.getDeclaration().getQualifiedNameString();
+        String name = contentProvider.getBuilder().getDeclaration().getQualifiedNameString();
         if (name.equals("ceylon.language::Object")||name.equals("ceylon.language::Anything")||
                 name.equals("ceylon.language::Basic")||name.equals("ceylon.language::Identifiable")) {
             depth+=1;

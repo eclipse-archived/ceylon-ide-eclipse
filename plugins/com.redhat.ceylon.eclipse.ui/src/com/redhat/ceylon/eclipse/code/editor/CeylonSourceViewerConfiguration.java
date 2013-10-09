@@ -48,8 +48,8 @@ import com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.CeylonHover;
 import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
-import com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyContentProvider;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
+import com.redhat.ceylon.eclipse.code.outline.HierarchyInput;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -459,7 +459,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     				declaration = ((Tree.Declaration) node).getDeclarationModel();
     			}
     		}
-    		return new CeylonHierarchyContentProvider.RootNode(declaration);
+    		return new HierarchyInput(declaration, 
+    				getParseController().getTypeChecker());
     	}
     	//TODO: this is a copy/paste from AbstractFindAction
     	private Node getSelectedNode() {

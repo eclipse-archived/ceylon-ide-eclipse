@@ -14,6 +14,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
@@ -53,6 +54,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -62,6 +64,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.outline.HierarchyView;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonSourceViewer extends ProjectionViewer {
@@ -105,6 +108,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
      */
     public static final int CORRECT_INDENTATION= 60;
 
+    /**
+     * Text operation code for requesting the hierarchy for the current input.
+     */
+    public static final int SHOW_IN_HIERARCHY_VIEW= 70;
+
     private IInformationPresenter outlinePresenter;
     private IInformationPresenter structurePresenter;
     private IInformationPresenter hierarchyPresenter;
@@ -128,6 +136,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
             return hierarchyPresenter!=null;
         case SHOW_CODE:
             return codePresenter!=null;
+        case SHOW_IN_HIERARCHY_VIEW:
+        	return true;
         case ADD_BLOCK_COMMENT: //TODO: check if something is selected! 
         case REMOVE_BLOCK_COMMENT: //TODO: check if there is a block comment in the selection!
         case TOGGLE_COMMENT:
@@ -163,6 +173,15 @@ public class CeylonSourceViewer extends ProjectionViewer {
             if (codePresenter!=null)
                 codePresenter.showInformation();
             return;
+        case SHOW_IN_HIERARCHY_VIEW:
+        	try {
+				((HierarchyView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+				        .showView(PLUGIN_ID + ".view.HierarchyView")).focusOnSelection(editor);
+			}
+        	catch (Exception e) {
+				e.printStackTrace();
+			}
+        	return;
         case TOGGLE_COMMENT:
             doToggleComment();
             return;
