@@ -91,4 +91,9 @@ public interface CeylonResources {
 	public static final String ERROR = "ceylon_error";
     public static final String WARNING = "ceylon_warning";
     
+    public static final String PROJECT_MODE = "project_mode";
+    public static final String FOLDER_MODE = "folder_mode";
+    public static final String PACKAGE_MODE = "package_mode";
+    public static final String UNIT_MODE = "unit_mode";
+    
 }

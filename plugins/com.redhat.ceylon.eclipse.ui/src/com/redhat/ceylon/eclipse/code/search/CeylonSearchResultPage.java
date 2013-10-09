@@ -2,14 +2,18 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FILE;
+import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FOLDER;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PACKAGE;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.FOLDER_MODE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE_MODE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT_MODE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.UNIT_MODE;
 import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -24,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	
@@ -121,21 +126,25 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	
 	private GroupAction fGroupFileAction;
 	private GroupAction fGroupPackageAction;
+	private GroupAction fGroupFolderAction;
 	private GroupAction fGroupProjectAction;
 	
 	private int fCurrentGrouping;
 	
 	private void initGroupingActions() {
-		fGroupProjectAction= new GroupAction("Project", "Group by Project", this, LEVEL_PROJECT);
-		JavaPluginImages.setLocalImageDescriptors(fGroupProjectAction, "prj_mode.gif");
-		fGroupPackageAction= new GroupAction("Package", "Group by Package", this, LEVEL_PACKAGE);
-		JavaPluginImages.setLocalImageDescriptors(fGroupPackageAction, "package_mode.gif");
-		fGroupFileAction= new GroupAction("Source File", "Group by Source File", this, LEVEL_FILE);
-		JavaPluginImages.setLocalImageDescriptors(fGroupFileAction, "file_mode.gif");
+		fGroupProjectAction= new GroupAction("Project", "Group by Project", 
+				PROJECT_MODE, this, LEVEL_PROJECT);
+		fGroupFolderAction= new GroupAction("Source Folder", "Group by Source Folder", 
+				FOLDER_MODE, this, LEVEL_FOLDER);
+		fGroupPackageAction= new GroupAction("Package", "Group by Package", 
+				PACKAGE_MODE ,this, LEVEL_PACKAGE);
+		fGroupFileAction= new GroupAction("Source File", "Group by Source File", 
+				UNIT_MODE, this, LEVEL_FILE);
 	}
 	
 	private void updateGroupingActions() {
 		fGroupProjectAction.setChecked(fCurrentGrouping == LEVEL_PROJECT);
+		fGroupFolderAction.setChecked(fCurrentGrouping == LEVEL_FOLDER);
 		fGroupPackageAction.setChecked(fCurrentGrouping == LEVEL_PACKAGE);
 		fGroupFileAction.setChecked(fCurrentGrouping == LEVEL_FILE);
 	}
@@ -146,6 +155,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 		if (getLayout()!= FLAG_LAYOUT_FLAT) {
 			tbm.appendToGroup(GROUP_VIEWER_SETUP, new Separator(GROUP_GROUPING));
 			tbm.appendToGroup(GROUP_GROUPING, fGroupProjectAction);
+			tbm.appendToGroup(GROUP_GROUPING, fGroupFolderAction);
 			tbm.appendToGroup(GROUP_GROUPING, fGroupPackageAction);
 			tbm.appendToGroup(GROUP_GROUPING, fGroupFileAction);
 			try {
@@ -164,9 +174,14 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 		private int fGrouping;
 		private CeylonSearchResultPage fPage;
 
-		public GroupAction(String label, String tooltip, CeylonSearchResultPage page, int grouping) {
+		public GroupAction(String label, String tooltip, 
+				String imageKey, CeylonSearchResultPage page, 
+				int grouping) {
 			super(label);
 			setToolTipText(tooltip);
+			setImageDescriptor(CeylonPlugin.getInstance()
+					.getImageRegistry()
+					.getDescriptor(imageKey));
 			fPage = page;
 			fGrouping = grouping;
 		}
