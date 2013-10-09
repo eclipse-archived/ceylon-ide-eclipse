@@ -20,6 +20,9 @@ public class JavaProjectStateMirror extends CompilationParticipant {
 
     @Override
     public boolean isActive(IJavaProject javaProject) {
+        if (! javaProject.getProject().isAccessible()) {
+            return false;
+        }
         return CeylonNature.isEnabled(javaProject.getProject());
     }
 
