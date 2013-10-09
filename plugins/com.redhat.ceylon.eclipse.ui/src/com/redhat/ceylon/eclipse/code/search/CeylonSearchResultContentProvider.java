@@ -62,4 +62,9 @@ class CeylonSearchResultContentProvider implements
         viewer.refresh();
     }
     
+    @Override
+    public void setLevel(int grouping) {
+    	//ignore
+    }
+    
 }
