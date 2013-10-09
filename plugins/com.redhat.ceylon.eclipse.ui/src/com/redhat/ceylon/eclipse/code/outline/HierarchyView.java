@@ -161,7 +161,7 @@ public class HierarchyView extends ViewPart {
         tree.setLayoutData(gd);
         treeViewer = new TreeViewer(tree);
         contentProvider = new CeylonHierarchyContentProvider(getSite());
-        labelProvider = new CeylonHierarchyLabelProvider(contentProvider);
+        labelProvider = new CeylonHierarchyLabelProvider(contentProvider, false);
         treeViewer.setContentProvider(contentProvider);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.setAutoExpandLevel(getDefaultLevel());

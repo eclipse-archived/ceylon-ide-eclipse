@@ -80,7 +80,7 @@ public class HierarchyPopup extends TreeViewPopup {
         tree.setLayoutData(gd);
         final TreeViewer treeViewer = new TreeViewer(tree);
         contentProvider = new CeylonHierarchyContentProvider(editor.getSite());
-        labelProvider = new CeylonHierarchyLabelProvider(contentProvider);
+        labelProvider = new CeylonHierarchyLabelProvider(contentProvider, true);
         treeViewer.setContentProvider(contentProvider);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new HierarchyNamePatternFilter(filterText));
