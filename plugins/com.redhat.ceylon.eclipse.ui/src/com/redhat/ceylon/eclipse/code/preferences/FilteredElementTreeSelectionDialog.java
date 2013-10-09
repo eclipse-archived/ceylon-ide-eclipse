@@ -96,6 +96,7 @@ public abstract class FilteredElementTreeSelectionDialog extends
         gridData.grabExcessHorizontalSpace = true;
         SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
         Control result = super.createDialogArea(sashForm);
+//        getTreeViewer().setSorter(new ViewerSorter());
         Composite composite = new Composite(sashForm, SWT.BORDER);
         composite.setLayoutData(gridData);
         GridLayout layout = new GridLayout(1, true);

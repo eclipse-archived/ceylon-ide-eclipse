@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -92,20 +94,24 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
     static List<ModuleNode> getImportableModuleNodes(IProject project, Module module, String prefix) {
         if (prefix.equals(".")) {
             List<ModuleNode> list = new ArrayList<ModuleNode>();
+            TreeMap<String, String> map = new TreeMap<String, String>();
             for (IProject p: CeylonBuilder.getProjects()) {
                 for (Module m: CeylonBuilder.getModulesInProject(p)) {
                     if (!excluded(module, m.getNameAsString())) {
-                        ModuleNode moduleNode = new ModuleNode(m.getNameAsString(), new ArrayList<ModuleVersionNode>(1));
-                        moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, m.getVersion()));
-                        list.add(moduleNode);
+                    	map.put(m.getNameAsString(), m.getVersion());
                     }
                 }
+            }
+            for (Map.Entry<String, String> entry: map.entrySet()) {
+                ModuleNode moduleNode = new ModuleNode(entry.getKey(), new ArrayList<ModuleVersionNode>(1));
+                moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, entry.getValue()));
+                list.add(moduleNode);
             }
             return list;
         }
         else if (prefix.startsWith("java.")) {
             List<ModuleNode> list = new ArrayList<ModuleNode>();
-            for (String name: JDKUtils.getJDKModuleNames()) {
+            for (String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if (name.startsWith(prefix) && !excluded(module, name)) {
                     ModuleNode moduleNode = new ModuleNode(name, new ArrayList<ModuleVersionNode>(1));
                     moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, JDK_MODULE_VERSION));
