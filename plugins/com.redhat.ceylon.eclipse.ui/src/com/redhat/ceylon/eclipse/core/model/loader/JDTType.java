@@ -40,6 +40,7 @@ import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
+import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 
 public class JDTType implements TypeMirror {
 
@@ -189,4 +190,10 @@ public class JDTType implements TypeMirror {
         }
         return declaredClass;
     }
+
+	@Override
+	public TypeParameterMirror getTypeParameter() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

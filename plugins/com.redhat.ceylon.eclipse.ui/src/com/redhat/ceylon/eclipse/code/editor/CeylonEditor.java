@@ -346,6 +346,11 @@ public class CeylonEditor extends TextEditor {
         action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_HIERARCHY);
         setAction(EditorActionIds.SHOW_CEYLON_HIERARCHY, action);
 
+        action= new TextOperationAction(bundle, "ShowInHierarchyView.", this, 
+                CeylonSourceViewer.SHOW_IN_HIERARCHY_VIEW, true);
+        action.setActionDefinitionId(EditorActionIds.SHOW_IN_CEYLON_HIERARCHY_VIEW);
+        setAction(EditorActionIds.SHOW_IN_CEYLON_HIERARCHY_VIEW, action);
+
         action= new TextOperationAction(bundle, "ShowCode.", this, 
                 CeylonSourceViewer.SHOW_CODE, true);
         action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_CODE);
