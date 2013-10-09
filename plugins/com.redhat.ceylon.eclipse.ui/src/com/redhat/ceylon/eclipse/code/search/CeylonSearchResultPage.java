@@ -6,9 +6,11 @@ import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeConten
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PACKAGE;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FOLDER_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT_MODE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.UNIT_MODE;
 import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 
@@ -121,6 +123,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         }
     }
 	
+	private static final String GROUP_LAYOUT =  PLUGIN_ID + ".search.CeylonSearchResultPage.layout";
 	private static final String GROUP_GROUPING =  PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
 	private static final String KEY_GROUPING = PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
 	
@@ -128,6 +131,9 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	private GroupAction fGroupPackageAction;
 	private GroupAction fGroupFolderAction;
 	private GroupAction fGroupProjectAction;
+	
+	private LayoutAction fLayoutFlatAction;
+	private LayoutAction fLayoutTreeAction;
 	
 	private int fCurrentGrouping;
 	
@@ -140,6 +146,11 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 				PACKAGE_MODE ,this, LEVEL_PACKAGE);
 		fGroupFileAction= new GroupAction("Source File", "Group by Source File", 
 				UNIT_MODE, this, LEVEL_FILE);
+		
+		fLayoutTreeAction= new LayoutAction("Tree", "Tree Layout", 
+				TREE_MODE, this, FLAG_LAYOUT_TREE);
+		fLayoutFlatAction= new LayoutAction("Float", "Flat Layout", 
+				FLAT_MODE, this, FLAG_LAYOUT_FLAT);
 	}
 	
 	private void updateGroupingActions() {
@@ -149,9 +160,19 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 		fGroupFileAction.setChecked(fCurrentGrouping == LEVEL_FILE);
 	}
 	
+	private void updateLayoutActions() {
+		int layout = getLayout();
+		fLayoutFlatAction.setChecked(layout==FLAG_LAYOUT_FLAT);
+		fLayoutTreeAction.setChecked(layout==FLAG_LAYOUT_TREE);
+	}
+	
 	@Override
 	protected void fillToolbar(IToolBarManager tbm) {
 		super.fillToolbar(tbm);
+		tbm.appendToGroup(GROUP_VIEWER_SETUP, new Separator(GROUP_LAYOUT));
+		tbm.appendToGroup(GROUP_LAYOUT, fLayoutTreeAction);
+		tbm.appendToGroup(GROUP_LAYOUT, fLayoutFlatAction);
+		updateLayoutActions();
 		if (getLayout()!= FLAG_LAYOUT_FLAT) {
 			tbm.appendToGroup(GROUP_VIEWER_SETUP, new Separator(GROUP_GROUPING));
 			tbm.appendToGroup(GROUP_GROUPING, fGroupProjectAction);
@@ -168,9 +189,10 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 			contentProvider.setLevel(fCurrentGrouping);
 			updateGroupingActions();
 		}
+		this.getSite().getActionBars().updateActionBars();
 	}
 	
-	public class GroupAction extends Action {
+	private class GroupAction extends Action {
 		private int fGrouping;
 		private CeylonSearchResultPage fPage;
 
@@ -185,14 +207,39 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 			fPage = page;
 			fGrouping = grouping;
 		}
+		
+		@Override
+		public boolean isEnabled() {
+			return getLayout()!= FLAG_LAYOUT_FLAT;
+		}
 
 		@Override
 		public void run() {
 			fPage.setGrouping(fGrouping);
 		}
 
-		public int getGrouping() {
-			return fGrouping;
+	}
+
+	private class LayoutAction extends Action {
+		private int fLayout;
+		private CeylonSearchResultPage fPage;
+
+		public LayoutAction(String label, String tooltip, 
+				String imageKey, CeylonSearchResultPage page, 
+				int layout) {
+			super(label);
+			setToolTipText(tooltip);
+			setImageDescriptor(CeylonPlugin.getInstance()
+					.getImageRegistry()
+					.getDescriptor(imageKey));
+			fPage = page;
+			fLayout = layout;
+		}
+
+		@Override
+		public void run() {
+			fPage.setLayout(fLayout);
+			setChecked(getLayout()==fLayout);
 		}
 	}
 
