@@ -1,9 +1,18 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
+import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FILE;
+import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PACKAGE;
+import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PROJECT;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.internal.ui.JavaPluginImages;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -50,6 +59,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 	public CeylonSearchResultPage() {
 		super(FLAG_LAYOUT_FLAT|FLAG_LAYOUT_TREE);
 		setElementLimit(50);
+		initGroupingActions();
 	}
 	
 	@Override
@@ -105,4 +115,78 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         	}
         }
     }
+	
+	private static final String GROUP_GROUPING =  PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
+	private static final String KEY_GROUPING = PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
+	
+	private GroupAction fGroupFileAction;
+	private GroupAction fGroupPackageAction;
+	private GroupAction fGroupProjectAction;
+	
+	private int fCurrentGrouping;
+	
+	private void initGroupingActions() {
+		fGroupProjectAction= new GroupAction("Project", "Group by Project", this, LEVEL_PROJECT);
+		JavaPluginImages.setLocalImageDescriptors(fGroupProjectAction, "prj_mode.gif");
+		fGroupPackageAction= new GroupAction("Package", "Group by Package", this, LEVEL_PACKAGE);
+		JavaPluginImages.setLocalImageDescriptors(fGroupPackageAction, "package_mode.gif");
+		fGroupFileAction= new GroupAction("Source File", "Group by Source File", this, LEVEL_FILE);
+		JavaPluginImages.setLocalImageDescriptors(fGroupFileAction, "file_mode.gif");
+	}
+	
+	private void updateGroupingActions() {
+		fGroupProjectAction.setChecked(fCurrentGrouping == LEVEL_PROJECT);
+		fGroupPackageAction.setChecked(fCurrentGrouping == LEVEL_PACKAGE);
+		fGroupFileAction.setChecked(fCurrentGrouping == LEVEL_FILE);
+	}
+	
+	@Override
+	protected void fillToolbar(IToolBarManager tbm) {
+		super.fillToolbar(tbm);
+		if (getLayout()!= FLAG_LAYOUT_FLAT) {
+			tbm.appendToGroup(GROUP_VIEWER_SETUP, new Separator(GROUP_GROUPING));
+			tbm.appendToGroup(GROUP_GROUPING, fGroupProjectAction);
+			tbm.appendToGroup(GROUP_GROUPING, fGroupPackageAction);
+			tbm.appendToGroup(GROUP_GROUPING, fGroupFileAction);
+			try {
+				fCurrentGrouping = getSettings().getInt(KEY_GROUPING);
+			}
+			catch (NumberFormatException nfe) {
+				//missing key
+				fCurrentGrouping = LEVEL_PROJECT;
+			}
+			contentProvider.setLevel(fCurrentGrouping);
+			updateGroupingActions();
+		}
+	}
+	
+	public class GroupAction extends Action {
+		private int fGrouping;
+		private CeylonSearchResultPage fPage;
+
+		public GroupAction(String label, String tooltip, CeylonSearchResultPage page, int grouping) {
+			super(label);
+			setToolTipText(tooltip);
+			fPage = page;
+			fGrouping = grouping;
+		}
+
+		@Override
+		public void run() {
+			fPage.setGrouping(fGrouping);
+		}
+
+		public int getGrouping() {
+			return fGrouping;
+		}
+	}
+
+	void setGrouping(int grouping) {
+		fCurrentGrouping= grouping;
+		contentProvider.setLevel(grouping);
+		updateGroupingActions();
+		getSettings().put(KEY_GROUPING, fCurrentGrouping);
+		getViewPart().updateLabel();
+	}
+	
 }
