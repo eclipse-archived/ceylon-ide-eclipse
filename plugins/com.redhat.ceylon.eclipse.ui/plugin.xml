@@ -764,6 +764,11 @@
             commandId="com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="F4"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.showInHierarchyView"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
             
       <!-- Ouline, Heirarchy, and Code popups -->
       <key
