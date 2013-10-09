@@ -682,7 +682,7 @@ public class CeylonContentProposer {
     		List<ICompletionProposal> result, final int len, String pfp,
             final CeylonParseController cpc, final boolean withBody) {
         if (pfp.startsWith("java.")) {
-            for (final String name: JDKUtils.getJDKModuleNames()) {
+            for (final String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if (name.startsWith(pfp) &&
                         !moduleAlreadyImported(cpc, name)) {
                     String versioned = withBody ? getModuleString(name, JDK_MODULE_VERSION) + ";" : name;

@@ -59,6 +59,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -691,7 +692,7 @@ public class CeylonQuickFixAssistant {
         List<Identifier> ids = ((ImportPath) node).getIdentifiers();
         String pkg = formatPath(ids);
         if (JDKUtils.isJDKAnyPackage(pkg)) {
-            for (String mod: JDKUtils.getJDKModuleNames()) {
+            for (String mod: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if (JDKUtils.isJDKPackage(mod, pkg)) {
                     proposals.add(new AddModuleImportProposal(project, cu.getUnit(), mod, 
                             JDK_MODULE_VERSION));
