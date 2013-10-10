@@ -10,7 +10,8 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
 	private final Declaration declaration;
 	private boolean nonUnique;
 	//private final CeylonHierarchyNode parent;
-	private final List<CeylonHierarchyNode> children= new ArrayList<CeylonHierarchyNode>();
+	private final List<CeylonHierarchyNode> children = 
+	        new ArrayList<CeylonHierarchyNode>();
 
 	CeylonHierarchyNode(Declaration declaration) {
 		this.declaration = declaration;
@@ -87,10 +88,10 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
             return -1;
         }
         else {
-            int ct = declaration.getName().compareTo( node.declaration.getName());
+            int ct = declaration.getName().compareTo(node.declaration.getName());
             if (ct!=0) return ct;
             return declaration.getQualifiedNameString()
-                    .compareTo( node.declaration.getQualifiedNameString());
+                    .compareTo(node.declaration.getQualifiedNameString());
         }
     }
 }
