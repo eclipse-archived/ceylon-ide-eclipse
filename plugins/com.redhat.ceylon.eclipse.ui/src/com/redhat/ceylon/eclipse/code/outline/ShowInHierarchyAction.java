@@ -1,8 +1,10 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -26,7 +28,7 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
 	
     private IWorkbenchPartSite site;
     protected Declaration declaration;
-    protected CeylonParseController parseController;
+    protected IProject project;
     private ContentOutline outlineView;
     
 	@Override
@@ -37,7 +39,8 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
 			if (on!=null) {
 			    IEditorPart currentEditor = getCurrentEditor();
 			    if (currentEditor instanceof CeylonEditor) {
-			    	parseController = ((CeylonEditor) currentEditor).getParseController();
+			        CeylonParseController parseController = ((CeylonEditor) currentEditor).getParseController();
+                    project = parseController.getProject();
 			        CompilationUnit rootNode = parseController.getRootNode();
 			        if (rootNode!=null) {
 			            Node node = findNode(rootNode, on.getStartOffset());
@@ -49,6 +52,8 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
 			        }
 			    }
 			}
+			project=null;
+			declaration=null;
 			action.setEnabled(false);
 		}
 		catch (Exception e) {
@@ -71,7 +76,7 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
     public void run() {
         if (isValidSelection()) {
         	try {
-				HierarchyView.showHierarchyView().focusOn(parseController, declaration);
+				showHierarchyView().focusOn(project, declaration);
 			}
         	catch (PartInitException e) {
 				e.printStackTrace();

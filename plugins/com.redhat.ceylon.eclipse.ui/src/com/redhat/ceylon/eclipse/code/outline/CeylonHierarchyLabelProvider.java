@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImag
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -15,19 +16,9 @@ import org.eclipse.swt.custom.StyleRange;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
-final class CeylonHierarchyLabelProvider extends
+abstract class CeylonHierarchyLabelProvider extends
 		StyledCellLabelProvider {
-	
-	private static final String VIEW_INTERFACES = " (" + HierarchyPopup.KEY + " to view)";
-	private final CeylonHierarchyContentProvider contentProvider;
-	private boolean popup;
-	
-	public CeylonHierarchyLabelProvider(CeylonHierarchyContentProvider contentProvider,
-			boolean popup) {
-		this.contentProvider = contentProvider;
-		this.popup = popup;
-	}
-
+		
 	@Override
 	public void removeListener(ILabelProviderListener listener) {}
 
@@ -57,15 +48,21 @@ final class CeylonHierarchyLabelProvider extends
 	            .append(CeylonLabelProvider.getPackageLabel(d), QUALIFIER_STYLER);
 	    if (n.isNonUnique()) {
 	    	result.append(" - and other supertypes");
-	    	if (popup) result.append(VIEW_INTERFACES);
+	    	result.append(getViewInterfacesShortcut());
 	    }
 	    return result;
 	}
 
+    String getViewInterfacesShortcut() {
+        return "";
+    }
+    
+    abstract IProject getProject();
+    abstract boolean isShowingRefinements();
+
 	Declaration getDisplayedDeclaration(CeylonHierarchyNode n) {
-	    Declaration d = n.getDeclaration();
-	    if (contentProvider.isShowingRefinements() && 
-	    		d.isClassOrInterfaceMember()) {
+	    Declaration d = n.getDeclaration(getProject());
+	    if (isShowingRefinements() && d.isClassOrInterfaceMember()) {
 	        d = (ClassOrInterface) d.getContainer();
 	    }
 	    return d;
@@ -75,8 +72,8 @@ final class CeylonHierarchyLabelProvider extends
 	@Override
 	public void update(ViewerCell cell) {
 		CeylonHierarchyNode n = (CeylonHierarchyNode) cell.getElement();
-		if (n.getDeclaration()==null) {
-			cell.setText("multiple supertypes" + VIEW_INTERFACES);
+		if (n.isMultiple()) {
+			cell.setText("multiple supertypes" + getViewInterfacesShortcut());
 			cell.setStyleRanges(new StyleRange[0]);
             cell.setImage(MULTIPLE_TYPES_IMAGE);
 		}

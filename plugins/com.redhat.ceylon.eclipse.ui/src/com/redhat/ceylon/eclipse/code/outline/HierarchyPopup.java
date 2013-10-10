@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -31,6 +32,9 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends TreeViewPopup {
 	
+    private static final String KEY = KeyStroke.getInstance(SWT.MOD1, 'T').format();
+    private static final String VIEW_INTERFACES = " (" + KEY + " to view)";
+    
 	private final class ChangeViewListener implements KeyListener {
 		@Override
 		public void keyReleased(KeyEvent e) {}
@@ -47,8 +51,6 @@ public class HierarchyPopup extends TreeViewPopup {
 			}
 		}
 	}
-
-	static final String KEY = KeyStroke.getInstance(SWT.MOD1, 'T').format();
 	
 	private CeylonHierarchyLabelProvider labelProvider;
 	private CeylonHierarchyContentProvider contentProvider;
@@ -79,7 +81,20 @@ public class HierarchyPopup extends TreeViewPopup {
         tree.setLayoutData(gd);
         final TreeViewer treeViewer = new TreeViewer(tree);
         contentProvider = new CeylonHierarchyContentProvider(editor.getSite());
-        labelProvider = new CeylonHierarchyLabelProvider(contentProvider, true);
+        labelProvider = new CeylonHierarchyLabelProvider() {
+            @Override
+            String getViewInterfacesShortcut() {
+                return VIEW_INTERFACES;
+            }
+            @Override
+            IProject getProject() {
+                return editor.getParseController().getProject();
+            }
+            @Override
+            boolean isShowingRefinements() {
+                return contentProvider.isShowingRefinements();
+            }
+        };
         treeViewer.setContentProvider(contentProvider);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new HierarchyNamePatternFilter(filterText));
@@ -167,7 +182,7 @@ public class HierarchyPopup extends TreeViewPopup {
 	        if (object instanceof CeylonHierarchyNode) {
 	        	dispose();
 	        	CeylonHierarchyNode hn = (CeylonHierarchyNode) object;
-	        	Declaration dec = hn.getDeclaration();
+	        	Declaration dec = hn.getDeclaration(cpc.getProject());
 	        	if (dec!=null) {
 	        		//TODO: this is broken for Java declarations
 	        		CompilationUnit cu = getCompilationUnit(cpc, dec);

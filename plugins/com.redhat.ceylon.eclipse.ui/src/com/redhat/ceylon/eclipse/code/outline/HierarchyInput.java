@@ -1,13 +1,14 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.core.resources.IProject;
+
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
 public final class HierarchyInput {
 	Declaration declaration;
-	TypeChecker typeChecker;
-	public HierarchyInput(Declaration declaration, TypeChecker typeChecker) {
+	IProject project;
+	public HierarchyInput(Declaration declaration, IProject project) {
 		this.declaration = declaration;
-		this.typeChecker = typeChecker;
+		this.project = project;
 	}
 }

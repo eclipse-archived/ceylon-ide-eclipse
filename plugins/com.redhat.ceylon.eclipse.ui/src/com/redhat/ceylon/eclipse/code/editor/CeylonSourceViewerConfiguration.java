@@ -460,7 +460,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     			}
     		}
     		return new HierarchyInput(declaration, 
-    				getParseController().getTypeChecker());
+    				getParseController().getProject());
     	}
     	//TODO: this is a copy/paste from AbstractFindAction
     	private Node getSelectedNode() {
