@@ -344,6 +344,7 @@ public class HierarchyView extends ViewPart {
         			TypeChecker checker = ((HierarchyInput) treeViewer.getInput()).typeChecker;
         			Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration();
 					treeViewer.setInput(new HierarchyInput(declaration,checker));
+					setDescription(declaration);
         		}
 			}
 			@Override
@@ -379,7 +380,9 @@ public class HierarchyView extends ViewPart {
                 Object firstElement = ((StructuredSelection) tableViewer.getSelection()).getFirstElement();
                 if (firstElement instanceof Declaration) {
                     TypeChecker checker = ((HierarchyInput) treeViewer.getInput()).typeChecker;
-                    treeViewer.setInput(new HierarchyInput((Declaration) firstElement, checker));
+                    Declaration declaration = (Declaration) firstElement;
+                    treeViewer.setInput(new HierarchyInput(declaration, checker));
+                    setDescription(declaration);
                 }
             }
             @Override
@@ -439,20 +442,21 @@ public class HierarchyView extends ViewPart {
 
 	public void focusOn(CeylonParseController cpc, Declaration dec) {
 		if (dec!=null) {
-			setDescription(dec);
 			title.setImage(getImageForDeclaration(dec));
 			title.setText(dec.getName());
 			tableViewer.setInput(dec);
 			treeViewer.setInput(new HierarchyInput(dec, 
 					cpc.getTypeChecker()));
+            setDescription(dec);
 		}
 		project = cpc.getProject();
 	}
 
 	private void setDescription(Declaration dec) {
-		setContentDescription("Displaying " +
-				contentProvider.getMode().name().toLowerCase() + 
-				" of '" + dec.getName() + "'");
+//		setContentDescription("Displaying " +
+//				contentProvider.getMode().name().toLowerCase() + 
+//				" of '" + dec.getName() + "'");
+	    setContentDescription(contentProvider.getDescription());
 	}
 
 	public static HierarchyView showHierarchyView() throws PartInitException {
