@@ -2,8 +2,15 @@ package com.redhat.ceylon.test.eclipse.plugin.util;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_IGNORED;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_IGNORED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
@@ -23,8 +30,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import com.redhat.ceylon.compiler.typechecker.model.Annotation;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
-import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
@@ -143,46 +151,58 @@ public class CeylonTestUtil {
         return false;
     }
 
-    public static boolean isTestableClass(Class clazz) {
-        boolean isTestableClass = false;
-        if (clazz.isToplevel() 
-                && !clazz.isAbstract() 
-                && !clazz.isParameterized()
-                && isWithoutParameters(clazz) ) {
-            isTestableClass = true;
+    private static boolean isTestableClass(Class clazz) {
+        if (clazz.isToplevel() && !clazz.isAbstract()) {
+            for (Declaration decl : clazz.getMembers()) {
+                if (decl instanceof Method && containsTestAnnotation((Method) decl)) {
+                    return true;
+                }
+            }
         }
-        return isTestableClass;
+        return false;
     }
 
-    public static boolean isTestableMethod(Method method) {
+    private static boolean isTestableMethod(Method method) {
         boolean isTestableMethod = false;
-        if (method.isToplevel()
-                || (method.getContainer() instanceof Class && isTestableClass((Class) method.getContainer()))) {
-            if (method.isDeclaredVoid() && !method.isFormal() && isWithoutParameters(method)) {
+        if (method.isToplevel() || (method.getContainer() instanceof Class && isTestableClass((Class) method.getContainer()))) {
+            if (method.isDeclaredVoid() && !method.isFormal() && containsTestAnnotation(method) ) {
                 isTestableMethod = true;
             }
         }
         return isTestableMethod;
     }
-
-    private static boolean isWithoutParameters(Functional functional) {
-        boolean isWithoutParameters = false;
-        if (functional.getParameterLists().size() == 1
-                && functional.getParameterLists().get(0).getParameters().size() == 0) {
-            isWithoutParameters = true;
+    
+    private static boolean containsTestAnnotation(Method method) {
+        List<Annotation> annotations = method.getAnnotations();
+        for (Annotation annotation : annotations) {
+            if (annotation.getName().equals("test")) {
+                return true;
+            }
         }
-        return isWithoutParameters;
+        return false;
     }
     
     public static Image getTestStateImage(TestElement testElement) {
         Image image = null;
         if(testElement != null) {
-            switch(testElement.getState()) {
+            if( testElement.getChildren() == null || testElement.getChildren().length == 0 ) {
+                switch(testElement.getState()) {
                 case RUNNING: image = getImage(TEST_RUNNING); break;
                 case SUCCESS: image = getImage(TEST_SUCCESS); break;
                 case FAILURE: image = getImage(TEST_FAILED); break;
                 case ERROR: image = getImage(TEST_ERROR); break;
+                case IGNORED: image = getImage(TEST_IGNORED); break;
                 default: image = getImage(TEST); break;
+                }
+            } else {
+                switch(testElement.getState()) {
+                case RUNNING: image = getImage(TESTS_RUNNING); break;
+                case SUCCESS: image = getImage(TESTS_SUCCESS); break;
+                case FAILURE: image = getImage(TESTS_FAILED); break;
+                case ERROR: image = getImage(TESTS_ERROR); break;
+                case IGNORED: image = getImage(TESTS_IGNORED); break;
+                default: image = getImage(TESTS); break;
+                }
             }
         }
         return image;

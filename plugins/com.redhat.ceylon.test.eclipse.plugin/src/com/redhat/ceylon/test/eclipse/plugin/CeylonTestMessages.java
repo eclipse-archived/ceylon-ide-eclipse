@@ -32,8 +32,6 @@ public class CeylonTestMessages extends NLS {
     public static String errorCanNotFindPackage;
     public static String errorCanNotFindClass;
     public static String errorCanNotFindMethod;
-    public static String errorClassIsNotTestable;
-    public static String errorMethodIsNotTestable;
     public static String errorNoSocket;
     public static String errorMissingCeylonTestImport;
     
@@ -52,7 +50,7 @@ public class CeylonTestMessages extends NLS {
     public static String showNextFailureLabel;
     public static String showPreviousFailureLabel;
     public static String showFailuresOnlyLabel;
-    public static String showTestsGroupedByPackages;
+    public static String showTestsInHierarchy;
     public static String showTestsElapsedTime;
     public static String relaunchLabel;
     public static String stopLabel;
@@ -70,6 +68,7 @@ public class CeylonTestMessages extends NLS {
     public static String historyColumnSuccess;
     public static String historyColumnFailures;
     public static String historyColumnErrors;
+    public static String historyColumnIgnored;
     public static String historyDlgCanNotCompareRunningTest;
     public static String historyDlgCanNotRemoveRunningTest;
     
@@ -86,6 +85,7 @@ public class CeylonTestMessages extends NLS {
     public static String compareRunsDlgSuccess;
     public static String compareRunsDlgFailures;
     public static String compareRunsDlgErrors;
+    public static String compareRunsDlgIgnored;
     public static String compareRunsDlgShowOnly;
     public static String compareRunsDlgFixed;
     public static String compareRunsDlgRegressedError;

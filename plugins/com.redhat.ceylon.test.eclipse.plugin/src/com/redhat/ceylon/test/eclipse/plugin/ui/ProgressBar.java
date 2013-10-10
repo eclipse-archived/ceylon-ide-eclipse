@@ -67,8 +67,13 @@ public class ProgressBar extends Canvas {
         if (currentTestRun != null) {
             isSuccess = currentTestRun.isSuccess();
             isInterrupted = currentTestRun.isInterrupted();
-            value = currentTestRun.getFinishedCount();
-            total = currentTestRun.getTotalCount();
+            if (currentTestRun.isRunning()) {
+                value = currentTestRun.getFinishedCount();
+                total = currentTestRun.getTotalCount();
+            } else {
+                value = currentTestRun.getTotalCount();
+                total = currentTestRun.getTotalCount();
+            }
         } else {
             isSuccess = false;
             isInterrupted = false;

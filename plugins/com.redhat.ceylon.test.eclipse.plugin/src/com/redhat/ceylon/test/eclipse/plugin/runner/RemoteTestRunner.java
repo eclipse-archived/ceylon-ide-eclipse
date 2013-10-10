@@ -6,8 +6,14 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import ceylon.test.PrintingTestListener;
+import ceylon.language.ArraySequence;
+import ceylon.language.Sequential;
+import ceylon.test.TestListener;
+import ceylon.test.TestRunResult;
 import ceylon.test.TestRunner;
+import ceylon.test.createTestRunner_;
+
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 
 public class RemoteTestRunner {
     
@@ -65,15 +71,23 @@ public class RemoteTestRunner {
     }
 
     private void run() {
-        TestRunner runner = new TestRunner();
-        runner.addTestListener(new PrintingTestListener());
-        runner.addTestListener(new RemoteTestEventPublisher(oos));
-        
-        for (String test : tests) {
-            runner.addTest(test, new TestCallable(test));
+        List<ceylon.language.String> sourcesList = new ArrayList<ceylon.language.String>();
+        for(String test : tests) {
+            sourcesList.add(ceylon.language.String.instance(test));
         }
         
-        runner.run();
+        Sequential<Object> sources = ArraySequence.instance(
+                TypeDescriptor.klass(Object.class),
+                sourcesList.toArray());
+        
+        Sequential<TestListener> listeners = ArraySequence.instance(
+                TypeDescriptor.klass(TestListener.class), 
+                new Object[] { new RemoteTestEventPublisher(oos) });
+        
+        TestRunner testRunner = createTestRunner_.createTestRunner(sources, listeners);
+        TestRunResult result = testRunner.run();
+        
+        System.out.println(result);
     }
 
     private void dispose() {

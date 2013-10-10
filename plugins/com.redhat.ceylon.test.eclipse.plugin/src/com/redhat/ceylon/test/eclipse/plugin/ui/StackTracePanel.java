@@ -45,7 +45,9 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 public class StackTracePanel extends Composite {
 
     private static final String[] STACK_TRACE_FILTER_PATTERNS = new String[] {
+        "ceylon.test.internal.*",
         "com.redhat.ceylon.test.eclipse.plugin.*",
+        "com.redhat.ceylon.compiler.*",
         "java.lang.reflect.Method.invoke",
         "sun.reflect.*",
     };

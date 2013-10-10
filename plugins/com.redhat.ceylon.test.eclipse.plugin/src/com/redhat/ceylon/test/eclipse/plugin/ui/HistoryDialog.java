@@ -8,6 +8,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compare;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnErrors;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnFailures;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnIgnored;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnName;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnStartDate;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSuccess;
@@ -67,6 +68,7 @@ public class HistoryDialog extends TitleAreaDialog {
     private DateFormat startDateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
     private Color successColor = new Color(getDisplay(), 95, 191, 95);
     private Color failureColor = new Color(getDisplay(), 159, 63, 63);
+    private Color ignoredColor = new Color(getDisplay(), 160, 160, 160);
 
     public HistoryDialog(Shell shell) {
         super(shell);
@@ -138,7 +140,7 @@ public class HistoryDialog extends TitleAreaDialog {
 
     private void createColumnName() {
         TableViewerColumn colName = new TableViewerColumn(tableViewer, SWT.NONE);
-        colName.getColumn().setWidth(300);
+        colName.getColumn().setWidth(270);
         colName.getColumn().setText(historyColumnName);
         colName.setLabelProvider(new ColumnLabelProvider() {
             @Override
@@ -168,7 +170,7 @@ public class HistoryDialog extends TitleAreaDialog {
 
     private void createColumnStartDate() {
         TableViewerColumn colStartDate = new TableViewerColumn(tableViewer, SWT.NONE);
-        colStartDate.getColumn().setWidth(180);
+        colStartDate.getColumn().setWidth(160);
         colStartDate.getColumn().setText(historyColumnStartDate);
         colStartDate.setLabelProvider(new ColumnLabelProvider() {
             @Override
@@ -180,7 +182,7 @@ public class HistoryDialog extends TitleAreaDialog {
 
     private void createColumnCounts() {
         TableViewerColumn colTotal = new TableViewerColumn(tableViewer, SWT.NONE);
-        colTotal.getColumn().setWidth(70);
+        colTotal.getColumn().setWidth(65);
         colTotal.getColumn().setText(historyColumnTotal);
         colTotal.setLabelProvider(new ColumnLabelProvider() {
             @Override
@@ -190,7 +192,7 @@ public class HistoryDialog extends TitleAreaDialog {
         });
 
         TableViewerColumn colSuccess = new TableViewerColumn(tableViewer, SWT.NONE);
-        colSuccess.getColumn().setWidth(70);
+        colSuccess.getColumn().setWidth(65);
         colSuccess.getColumn().setText(historyColumnSuccess);
         colSuccess.setLabelProvider(new ColumnLabelProvider() {
             @Override
@@ -204,7 +206,7 @@ public class HistoryDialog extends TitleAreaDialog {
         });
 
         TableViewerColumn colFailures = new TableViewerColumn(tableViewer, SWT.NONE);
-        colFailures.getColumn().setWidth(70);
+        colFailures.getColumn().setWidth(65);
         colFailures.getColumn().setText(historyColumnFailures);
         colFailures.setLabelProvider(new ColumnLabelProvider() {
             @Override
@@ -218,7 +220,7 @@ public class HistoryDialog extends TitleAreaDialog {
         });
 
         TableViewerColumn colErrors = new TableViewerColumn(tableViewer, SWT.NONE);
-        colErrors.getColumn().setWidth(70);
+        colErrors.getColumn().setWidth(65);
         colErrors.getColumn().setText(historyColumnErrors);
         colErrors.setLabelProvider(new ColumnLabelProvider() {
             @Override
@@ -230,6 +232,21 @@ public class HistoryDialog extends TitleAreaDialog {
                 return failureColor;
             }
         });
+        
+        TableViewerColumn colIgnored = new TableViewerColumn(tableViewer, SWT.NONE);
+        colIgnored.getColumn().setWidth(65);
+        colIgnored.getColumn().setText(historyColumnIgnored);
+        colIgnored.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                return Integer.toString(((TestRun) element).getIgnoreCount());
+            }
+            @Override
+            public Color getForeground(Object element) {
+                return ignoredColor;
+            }
+        });
+        
     }
 
     private void createButtonCompare() {
@@ -329,6 +346,7 @@ public class HistoryDialog extends TitleAreaDialog {
         testRunContainer.removeTestRunListener(testRunListener);
         successColor.dispose();
         failureColor.dispose();
+        ignoredColor.dispose();
         return super.close();
     }
 

@@ -6,8 +6,6 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_C
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProjects;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getWorkspaceRoot;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestable;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableClass;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableMethod;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -43,10 +41,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 
-import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
@@ -66,7 +62,8 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
     private Button buttonShowCompleteDescription;
 
     public CeylonTestSelectionDialog(Shell parent) {
-        this(parent, new CeylonTestSelectionDialogLabelProvider(true), 
+        this(parent, 
+                new CeylonTestSelectionDialogLabelProvider(true), 
                 new CeylonTestSelectionDialogContentProvider());
     }
 
@@ -248,7 +245,7 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
         @Override
         public Image getImage(Object element) {
             if (element instanceof Declaration) {
-                return getImage((Declaration) element);
+                return CeylonLabelProvider.getImageForDeclaration((Declaration) element);
             }
             return super.getImage(element);
         }
@@ -288,16 +285,7 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            if (element instanceof Declaration) {
-                if (element instanceof Class) {
-                    return isTestableClass((Class) element);
-                } else if (element instanceof Method) {
-                    return isTestableMethod((Method) element);
-                } else {
-                    return false;
-                }
-            }
-            return true;
+            return isTestable(element);
         }
 
     }    

@@ -8,24 +8,15 @@ public class TestElement implements Serializable {
 
     public enum State {
 
-        UNDEFINED(0),
-        RUNNING(2),
-        SUCCESS(1),
-        FAILURE(3),
-        ERROR(4);
-
-        private final int priority;
-
-        private State(int priority) {
-            this.priority = priority;
-        }
-
-        public int getPriority() {
-            return priority;            
-        }
+        UNDEFINED,
+        RUNNING,
+        SUCCESS,
+        FAILURE,
+        ERROR,
+        IGNORED;
 
         public boolean isFinished() {
-            return this == SUCCESS || this == FAILURE || this == ERROR;
+            return this == SUCCESS || this == FAILURE || this == ERROR || this == IGNORED;
         }
 
         public boolean isFailureOrError() {
@@ -34,7 +25,7 @@ public class TestElement implements Serializable {
 
     }
 
-    private String name;
+    private String shortName;
     private String packageName;
     private String qualifiedName;
     private State state;
@@ -42,9 +33,10 @@ public class TestElement implements Serializable {
     private String expectedValue;
     private String actualValue;
     private long elapsedTimeInMilis;
+    private TestElement[] children;
 
-    public String getName() {
-        return name;
+    public String getShortName() {
+        return shortName;
     }
 
     public String getPackageName() {
@@ -60,10 +52,16 @@ public class TestElement implements Serializable {
 
         int packageSeparatorIndex = qualifiedName.indexOf("::");
         if (packageSeparatorIndex != -1) {
-            name = qualifiedName.substring(packageSeparatorIndex + 2);
+            String tmp = qualifiedName.substring(packageSeparatorIndex + 2);
+            int memberSeparatorIndex = tmp.lastIndexOf(".");
+            if (memberSeparatorIndex != -1) {
+                shortName = tmp.substring(memberSeparatorIndex + 1);
+            } else {
+                shortName = tmp;
+            }
             packageName = qualifiedName.substring(0, packageSeparatorIndex);
         } else {
-            name = qualifiedName;
+            shortName = qualifiedName;
             packageName = "";
         }
     }
@@ -107,7 +105,15 @@ public class TestElement implements Serializable {
     public void setElapsedTimeInMilis(long elapsedTimeInMilis) {
         this.elapsedTimeInMilis = elapsedTimeInMilis;
     }
-
+    
+    public TestElement[] getChildren() {
+        return children;
+    }
+    
+    public void setChildren(TestElement[] children) {
+        this.children = children;
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
