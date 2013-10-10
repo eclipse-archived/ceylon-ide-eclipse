@@ -14,7 +14,6 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
@@ -54,7 +53,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -175,8 +174,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             return;
         case SHOW_IN_HIERARCHY_VIEW:
         	try {
-				((HierarchyView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-				        .showView(PLUGIN_ID + ".view.HierarchyView")).focusOnSelection(editor);
+				showHierarchy();
 			}
         	catch (Exception e) {
 				e.printStackTrace();
@@ -214,7 +212,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
     }
 
-    private void afterCopyCut(String selection, Map<Declaration,String> imports) {
+	public void showHierarchy() throws PartInitException {
+		HierarchyView.showHierarchyView().focusOnSelection(editor);
+	}
+
+	private void afterCopyCut(String selection, Map<Declaration,String> imports) {
         if (!editor.isBlockSelectionModeEnabled()) {
             Clipboard clipboard= new Clipboard(getTextWidget().getDisplay());
             try {
