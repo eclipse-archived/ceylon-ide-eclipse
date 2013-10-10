@@ -2,12 +2,8 @@ package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_PORT;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProject;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableClass;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableMethod;
 import static java.util.Arrays.asList;
 
 import java.io.IOException;
@@ -31,16 +27,13 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 
-import com.redhat.ceylon.compiler.typechecker.model.Class;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.launch.CeylonLaunchDelegate;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.ui.TestRunViewPart;
+import com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
 
 public class CeylonTestLaunchDelegate extends CeylonLaunchDelegate {
     
@@ -103,40 +96,30 @@ public class CeylonTestLaunchDelegate extends CeylonLaunchDelegate {
         programArguments.append(portThreadLocal.get());
         
         List<CeylonTestLaunchConfigEntry> entries = CeylonTestLaunchConfigEntry.buildFromLaunchConfig(config);
-        for(CeylonTestLaunchConfigEntry entry : entries) {
+        for (CeylonTestLaunchConfigEntry entry : entries) {
             IProject project = getProject(entry.getProjectName());
             switch (entry.getType()) {
             case PROJECT:
                 List<Module> modules = getModulesInProject(project);
-                for(Module module : modules) {
-                    List<Package> packages = module.getPackages();
-                    for(Package pkg : packages) {
-                        tmpAppendTestFromPackage(programArguments, pkg);
+                for (Module module : modules) {
+                    if (CeylonTestUtil.containsCeylonTestImport(module)) {
+                        programArguments.append(" -test \"module ").append(module.getNameAsString()).append("\"");
                     }
                 }
                 break;
             case MODULE:
-                Module module = getModule(project, entry.getModPkgDeclName());
-                List<Package> packages = module.getPackages();
-                for(Package pkg : packages) {
-                    tmpAppendTestFromPackage(programArguments, pkg);
-                }
+                programArguments.append(" -test \"module ").append(entry.getModPkgDeclName()).append("\"");
                 break;
             case PACKAGE:
-                Package pkg = getPackage(project, entry.getModPkgDeclName());
-                tmpAppendTestFromPackage(programArguments, pkg);
+                programArguments.append(" -test \"package ").append(entry.getModPkgDeclName()).append("\"");
                 break;
             case CLASS:
             case CLASS_LOCAL:
-                String[] split = entry.getModPkgDeclName().split("::");
-                String pkgName = split[0];
-                String className = split[1];
-                Declaration clazz = getPackage(project, pkgName).getMember(className, null, false);
-                tmpAppendTestFromClass(programArguments, (Class) clazz);
+                programArguments.append(" -test \"class ").append(entry.getModPkgDeclName()).append("\"");
                 break;
             case METHOD:
             case METHOD_LOCAL:
-                programArguments.append(" -test ").append(entry.getModPkgDeclName());
+                programArguments.append(" -test \"function ").append(entry.getModPkgDeclName()).append("\"");
                 break;
             }
         }
@@ -216,42 +199,6 @@ public class CeylonTestLaunchDelegate extends CeylonLaunchDelegate {
                     CeylonTestMessages.errorNoSocket));
         }
         return String.valueOf(port);
-    }
-    
-    // temporary methods, will be removed, waiting for support annotations and metamodel
-
-    private void tmpAppendTestFromPackage(StringBuilder programArguments, Package pkg) {
-        List<Declaration> members = pkg.getMembers();
-        for (Declaration member : members) {
-            if (member instanceof Class) {
-                Class clazz = (Class) member;
-                tmpAppendTestFromClass(programArguments, clazz);
-            }
-            else if (member instanceof Method) {
-                Method method = (Method) member;
-                if (isTestableMethod(method) && tmpIsTestMethod(method)) {
-                    programArguments.append(" -test ").append(method.getQualifiedNameString());
-                }
-            }
-        }
-    }
-
-    private void tmpAppendTestFromClass(StringBuilder programArguments, Class clazz) {
-        if (isTestableClass(clazz)) {
-            List<Declaration> members = clazz.getMembers();
-            for (Declaration member : members) {
-                if (member instanceof Method) {
-                    Method clazzMethod = (Method) member;
-                    if (isTestableMethod(clazzMethod) && tmpIsTestMethod(clazzMethod)) {
-                        programArguments.append(" -test ").append(clazzMethod.getQualifiedNameString());
-                    }
-                }
-            }
-        }
-    }   
-
-    private boolean tmpIsTestMethod(Method method) {
-        return method.getName().startsWith("test") || method.getName().startsWith("should");
     }
 
 }

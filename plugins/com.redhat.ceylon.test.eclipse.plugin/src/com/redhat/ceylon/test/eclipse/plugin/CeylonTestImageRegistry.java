@@ -26,6 +26,7 @@ public class CeylonTestImageRegistry {
     public static final String TESTS = "tests.gif";
     public static final String TESTS_ERROR = "tests_error.gif";
     public static final String TESTS_FAILED = "tests_failed.gif";
+    public static final String TESTS_IGNORED = "tests_ignored.gif";
     public static final String TESTS_RUNNING = "tests_running.gif";
     public static final String TESTS_SUCCESS = "tests_success.gif";
     public static final String TESTS_INTERRUPTED = "tests_interrupted.gif";
@@ -79,6 +80,7 @@ public class CeylonTestImageRegistry {
         imageRegistry.put(TESTS, image(TESTS));
         imageRegistry.put(TESTS_ERROR, image(TESTS_ERROR));
         imageRegistry.put(TESTS_FAILED, image(TESTS_FAILED));
+        imageRegistry.put(TESTS_IGNORED, image(TESTS_IGNORED));
         imageRegistry.put(TESTS_RUNNING, image(TESTS_RUNNING));
         imageRegistry.put(TESTS_SUCCESS, image(TESTS_SUCCESS));
         imageRegistry.put(TESTS_INTERRUPTED, image(TESTS_INTERRUPTED));

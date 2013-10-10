@@ -13,8 +13,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModul
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isCeylonFile;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isCeylonProject;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableClass;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableMethod;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestable;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
@@ -167,13 +166,13 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
                 if( d.isToplevel() ) {
                     if( d instanceof Class ) {
                         Class clazz = (Class) d;
-                        if( isTestableClass(clazz) ) {
+                        if( isTestable(clazz) ) {
                             entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL, clazz.getQualifiedNameString())); 
                         }
                     }
                     else if( d instanceof Method ) {
                         Method method = (Method) d;
-                        if( isTestableMethod(method) ) {
+                        if( isTestable(method) ) {
                             entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL, method.getQualifiedNameString()));
                         }
                     }
@@ -202,14 +201,14 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
 
         if (node instanceof Tree.AnyMethod) {
             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
-            if (isTestableMethod(method)) {
+            if (isTestable(method)) {
                 name.append(method.getName());
                 entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL, method.getQualifiedNameString()));
             }
         }
         if (node instanceof Tree.AnyClass) {
             Class clazz = ((Tree.AnyClass) node).getDeclarationModel();
-            if (isTestableClass(clazz)) {
+            if (isTestable(clazz)) {
                 name.append(clazz.getName());
                 entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL, clazz.getQualifiedNameString()));
             }

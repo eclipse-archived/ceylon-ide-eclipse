@@ -5,8 +5,6 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONF
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProject;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableClass;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestableMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +86,7 @@ public class CeylonTestLaunchConfigEntry {
         return entries;
     }
 
-    public static CeylonTestLaunchConfigEntry buildFromLaunchConfigAttribute(String attribute) {
+    private static CeylonTestLaunchConfigEntry buildFromLaunchConfigAttribute(String attribute) {
         CeylonTestLaunchConfigEntry entry = new CeylonTestLaunchConfigEntry();
 
         int projectSeparatorIndex = attribute.indexOf(PROJECT_SEPARATOR);
@@ -105,7 +103,7 @@ public class CeylonTestLaunchConfigEntry {
         return entry;
     }
 
-    public static String buildLaunchConfigAttribute(CeylonTestLaunchConfigEntry entry) {
+    private static String buildLaunchConfigAttribute(CeylonTestLaunchConfigEntry entry) {
         StringBuilder attribute = new StringBuilder();
         attribute.append(Type.PROJECT);
         attribute.append(TYPE_SEPARATOR);
@@ -208,8 +206,6 @@ public class CeylonTestLaunchConfigEntry {
             Declaration member = pkg.getMember(className, null, false);
             if( !(member instanceof Class) ) {
                 errorMessage = msg(CeylonTestMessages.errorCanNotFindClass, modPkgDeclName, projectName);
-            } else if ( !isTestableClass((Class) member) ) {
-                errorMessage = msg(CeylonTestMessages.errorClassIsNotTestable, modPkgDeclName, projectName);
             } else {
                 clazz = (Class) member;
             }
@@ -223,8 +219,6 @@ public class CeylonTestLaunchConfigEntry {
             Declaration member = methodScope.getMember(methodName, null, false);
             if( !(member instanceof Method) ) {
                 errorMessage = msg(CeylonTestMessages.errorCanNotFindMethod, modPkgDeclName, projectName);
-            } else if ( !isTestableMethod((Method) member) ) {
-                errorMessage = msg(CeylonTestMessages.errorMethodIsNotTestable, modPkgDeclName, projectName);
             }
         }
     }

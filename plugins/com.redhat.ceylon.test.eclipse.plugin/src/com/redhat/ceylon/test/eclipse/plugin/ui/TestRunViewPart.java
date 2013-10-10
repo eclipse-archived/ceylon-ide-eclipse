@@ -52,7 +52,7 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 public class TestRunViewPart extends ViewPart {
 
     private static final String NAME = "com.redhat.ceylon.test.eclipse.plugin.testview";
-    private static final int REFRESH_INTERVAL= 200;
+    private static final int REFRESH_INTERVAL = 200;
 
     private CounterPanel counterPanel;
     private ProgressBar progressBar;

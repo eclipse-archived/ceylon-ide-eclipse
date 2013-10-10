@@ -9,6 +9,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_IGNORED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
@@ -20,15 +21,16 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showFailu
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showNextFailureLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showPreviousFailureLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsElapsedTime;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsGroupedByPackages;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showTestsInHierarchy;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SCROLL_LOCK;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_FAILURES_ONLY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_ELAPSED_TIME;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_GROUPED_BY_PACKAGES;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_IN_HIERARCHY;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getTestStateImage;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +74,7 @@ import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestRun.TestVisitor;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
@@ -87,7 +90,7 @@ public class TestsPanel extends Composite {
     private ShowNextFailureAction showNextFailureAction = new ShowNextFailureAction();
     private ShowFailuresOnlyFilter showFailuresOnlyFilter = new ShowFailuresOnlyFilter();
     private ShowTestsElapsedTimeAction showTestsElapsedTimeAction = new ShowTestsElapsedTimeAction();
-    private ShowTestsGroupedByPackagesAction showTestsGroupedByPackagesAction = new ShowTestsGroupedByPackagesAction();
+    private ShowTestsInHierarchyAction showTestsInHierarchyAction = new ShowTestsInHierarchyAction();
     private ScrollLockAction scrollLockAction = new ScrollLockAction();
     private ExpandAllAction expandAllAction = new ExpandAllAction();
     private CollapseAllAction collapseAllAction = new CollapseAllAction();
@@ -95,6 +98,7 @@ public class TestsPanel extends Composite {
     private TestRunListenerAdapter testRunListener;
     private TestElement lastStartedTestElement;
     private Set<String> lastFinishedPackages = new LinkedHashSet<String>();
+    private Set<TestElement> lastFinishedTestElements = new LinkedHashSet<TestElement>();
 
     public TestsPanel(TestRunViewPart viewPart, Composite parent) {
         super(parent, SWT.NONE);
@@ -119,6 +123,7 @@ public class TestsPanel extends Composite {
         synchronized (TestRun.acquireLock(this.currentTestRun)) {
             this.currentTestRun = currentTestRun;
             this.lastStartedTestElement = null;
+            this.lastFinishedTestElements.clear();
             this.lastFinishedPackages.clear();
         }
     }
@@ -139,7 +144,7 @@ public class TestsPanel extends Composite {
     private void createMenuBar() {
         IMenuManager menuManager = viewPart.getViewSite().getActionBars().getMenuManager();
         menuManager.add(showTestsElapsedTimeAction);
-        menuManager.add(showTestsGroupedByPackagesAction);
+        menuManager.add(showTestsInHierarchyAction);
         menuManager.update(true);
     }
 
@@ -174,11 +179,33 @@ public class TestsPanel extends Composite {
     }
 
     private TreePath createTreePath(TestElement testElement) {
-        if (showTestsGroupedByPackagesAction.isChecked()) {
-            return new TreePath(new Object[] { testElement.getPackageName(), testElement });
+        if (showTestsInHierarchyAction.isChecked()) {
+            List<Object> path = new ArrayList<Object>();
+            findPath(testElement, currentTestRun.getRoot(), path);
+            if (!path.isEmpty()) {
+                path.add(0, ((TestElement) path.get(0)).getPackageName());
+            }
+            return new TreePath(path.toArray());
         } else {
             return new TreePath(new Object[] { testElement });
         }
+    }
+    
+    private boolean findPath(TestElement e, TestElement parent, List<Object> path) {
+        if (e.equals(parent)) {
+            path.add(e);
+            return true;
+        } else if (parent.getChildren() != null) {
+            for (TestElement child : parent.getChildren()) {
+                if (findPath(e, child, path)) {
+                    if (!parent.equals(currentTestRun.getRoot())) {
+                        path.add(0, parent);
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void createTestRunListener() {
@@ -192,6 +219,7 @@ public class TestsPanel extends Composite {
             @Override
             public void testFinished(TestRun testRun, TestElement testElement) {
                 if (currentTestRun == testRun) {
+                    lastFinishedTestElements.add(testElement);
                     lastFinishedPackages.add(testElement.getPackageName());
                 }
             }
@@ -223,7 +251,7 @@ public class TestsPanel extends Composite {
 
         if (currentTestRun != null) {
             containsFailures = !currentTestRun.isSuccess();
-            if (showTestsGroupedByPackagesAction.isChecked()) {
+            if (showTestsInHierarchyAction.isChecked()) {
                 canExpandCollapse = true;
             }
         }
@@ -244,15 +272,21 @@ public class TestsPanel extends Composite {
 
     private void automaticCollapseLastSuccessPackages() {
         if (currentTestRun != null &&
-                showTestsGroupedByPackagesAction.isChecked() &&
-                !scrollLockAction.isChecked() &&
-                !lastFinishedPackages.isEmpty()) {
+                showTestsInHierarchyAction.isChecked() &&
+                !scrollLockAction.isChecked() ) {
+            for (TestElement lastFinishedTestElement : lastFinishedTestElements) {
+                if (!currentTestRun.getAtomicTests().contains(lastFinishedTestElement)
+                        && lastFinishedTestElement.getState() == State.SUCCESS) {
+                    viewer.collapseToLevel(lastFinishedTestElement, TreeViewer.ALL_LEVELS);
+                }
+            }
             for (String packageName : lastFinishedPackages) {
                 State packageState = currentTestRun.getPackageState(packageName);
                 if (packageState == State.SUCCESS) {
                     viewer.collapseToLevel(packageName, TreeViewer.ALL_LEVELS);
                 }
             }
+            lastFinishedTestElements.clear();
             lastFinishedPackages.clear();
         }
     }
@@ -294,25 +328,32 @@ public class TestsPanel extends Composite {
         if (project != null) {
             List<Module> modules = CeylonBuilder.getModulesInProject(project);
             for (Module module : modules) {
-                Package pkg = module.getDirectPackage(testElement.getPackageName());
-                if (pkg != null) {
-                    Declaration d = null;
-
-                    int separatorIndex = testElement.getName().indexOf(".");
-                    if (separatorIndex == -1) {
-                        d = pkg.getMember(testElement.getName(), null, false);
-                    } else {
-                        String className = testElement.getName().substring(0, separatorIndex);
-                        String methodName = testElement.getName().substring(separatorIndex + 1);
-                        d = pkg.getMember(className, null, false);
-                        if (d != null) {
-                            d = d.getMember(methodName, null, false);
+                if( testElement.getPackageName() != null ) {
+                    Package pkg = module.getDirectPackage(testElement.getPackageName());
+                    if (pkg != null) {
+                        Declaration d = null;
+                        
+                        String qn = testElement.getQualifiedName();
+                        int pkgSepIndex = qn.indexOf("::");
+                        if( pkgSepIndex != -1 ) {
+                            int memberSepIndex = qn.indexOf(".", pkgSepIndex);
+                            if( memberSepIndex != -1 ) {
+                                String className = qn.substring(pkgSepIndex+2, memberSepIndex);
+                                String methodName = qn.substring(memberSepIndex+1);
+                                d = pkg.getMember(className, null, false);
+                                if( d != null ) {
+                                    d = d.getMember(methodName, null, false);
+                                }
+                            } else {
+                                String fceName = qn.substring(pkgSepIndex+2);
+                                d = pkg.getMember(fceName, null, false);
+                            }
                         }
-                    }
 
-                    if (d != null) {
-                        CeylonSourcePositionLocator.gotoDeclaration(d, project);
-                        return;
+                        if (d != null) {
+                            CeylonSourcePositionLocator.gotoDeclaration(d, project);
+                            return;
+                        }
                     }
                 }
             }
@@ -334,13 +375,12 @@ public class TestsPanel extends Composite {
 
         @Override
         public Object[] getElements(Object inputElement) {
-            boolean isGrouped = showTestsGroupedByPackagesAction.isChecked();
             if (inputElement instanceof TestRun) {
                 TestRun testRun = (TestRun) inputElement;
-                if (isGrouped) {
-                    return testRun.getTestElementsByPackages().keySet().toArray();
+                if (showTestsInHierarchyAction.isChecked()) {
+                    return testRun.getTestsByPackages().keySet().toArray();
                 } else {
-                    return testRun.getTestElements().toArray();
+                    return testRun.getAtomicTests().toArray();
                 }
             }
             return null;
@@ -348,12 +388,15 @@ public class TestsPanel extends Composite {
 
         @Override
         public Object[] getChildren(Object parentElement) {
-            boolean isGrouped = showTestsGroupedByPackagesAction.isChecked();
-            if (isGrouped && parentElement instanceof String) {
-                String packageName = (String) parentElement;
-                List<TestElement> testElementsInPackage = currentTestRun.getTestElementsByPackages().get(packageName);
-                if (testElementsInPackage != null) {
-                    return testElementsInPackage.toArray();
+            if (showTestsInHierarchyAction.isChecked()) {
+                if( parentElement instanceof String ) {
+                    String packageName = (String) parentElement;
+                    List<TestElement> testElementsInPackage = currentTestRun.getTestsByPackages().get(packageName);
+                    if (testElementsInPackage != null) {
+                        return testElementsInPackage.toArray();
+                    }
+                } else {
+                    return ((TestElement)parentElement).getChildren(); 
                 }
             }
             return null;
@@ -361,9 +404,15 @@ public class TestsPanel extends Composite {
 
         @Override
         public boolean hasChildren(Object element) {
-            boolean isGrouped = showTestsGroupedByPackagesAction.isChecked();
-            if (isGrouped && element instanceof String) {
-                return true;
+            if (showTestsInHierarchyAction.isChecked()) {
+                if (element instanceof String) {
+                    return true;
+                } else {
+                    TestElement e = (TestElement) element;
+                    if (e.getChildren() != null && e.getChildren().length != 0) {
+                        return true;
+                    }
+                }
             }
             return false;
         }
@@ -387,15 +436,13 @@ public class TestsPanel extends Composite {
 
         @Override
         public void update(ViewerCell cell) {
-            boolean isGrouped = showTestsGroupedByPackagesAction.isChecked();
-
             String text = null;
             Image image = null;
             long elapsedTimeInMilis = -1;
 
             if (cell.getElement() instanceof TestElement) {
                 TestElement testElement = (TestElement) cell.getElement();
-                text = isGrouped ? testElement.getName() : testElement.getQualifiedName();
+                text = showTestsInHierarchyAction.isChecked() ? testElement.getShortName() : testElement.getQualifiedName();
                 image = getTestStateImage(testElement);
 
                 if( testElement.getState().isFinished() ) {
@@ -412,6 +459,7 @@ public class TestsPanel extends Composite {
                 case SUCCESS: image = getImage(TESTS_SUCCESS); break;
                 case FAILURE: image = getImage(TESTS_FAILED); break;
                 case ERROR: image = getImage(TESTS_ERROR); break;
+                case IGNORED: image = getImage(TESTS_IGNORED); break;
                 default: image = getImage(TESTS); break;
                 }
 
@@ -451,31 +499,9 @@ public class TestsPanel extends Composite {
                 if( currentTestRun == null ) {
                     return;
                 }
-
-                Object currentElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-
-                int fromIndex = 0;
-                if (currentElement instanceof String ) {
-                    List<TestElement> testElementsByPackage = currentTestRun.getTestElementsByPackages().get(currentElement);
-                    if (testElementsByPackage != null && !testElementsByPackage.isEmpty()) {
-                        fromIndex = currentTestRun.getTestElements().indexOf(testElementsByPackage.get(0));
-                    }
-                } else if (currentElement instanceof TestElement) {
-                    fromIndex = currentTestRun.getTestElements().indexOf(currentElement) + 1;
-                }
-
-                TestElement nextElement = null;
-                if (fromIndex < currentTestRun.getTestElements().size()) {
-                    for (int i = fromIndex; i < currentTestRun.getTestElements().size(); i++) {
-                        TestElement testElement = currentTestRun.getTestElements().get(i);
-                        if (testElement.getState().isFailureOrError()) {
-                            nextElement = testElement;
-                            break;
-                        }
-                    }
-                }
-
-                moveTo(nextElement);
+                NextFailureVisitor nfv = new NextFailureVisitor(((IStructuredSelection) viewer.getSelection()).getFirstElement());
+                nfv.visitElements(currentTestRun.getRoot());
+                moveTo(nfv.next);
             }
         }
 
@@ -497,33 +523,9 @@ public class TestsPanel extends Composite {
                 if( currentTestRun == null ) {
                     return;
                 }
-
-                Object currentElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-
-                int fromIndex = -1;
-                if (currentElement instanceof String) {
-                    List<TestElement> testElementsByPackage = currentTestRun.getTestElementsByPackages().get(currentElement);
-                    if (testElementsByPackage != null && !testElementsByPackage.isEmpty()) {
-                        fromIndex = currentTestRun.getTestElements().indexOf(testElementsByPackage.get(0)) - 1;
-                    }
-                } else if (currentElement instanceof TestElement) {
-                    fromIndex = currentTestRun.getTestElements().indexOf(currentElement) - 1;
-                } else {
-                    fromIndex = currentTestRun.getTestElements().size() - 1;
-                }
-
-                TestElement prevElement = null;
-                if (fromIndex >= 0) {
-                    for (int i = fromIndex; i >= 0; i--) {
-                        TestElement testElement = currentTestRun.getTestElements().get(i);
-                        if (testElement.getState().isFailureOrError()) {
-                            prevElement = testElement;
-                            break;
-                        }
-                    }
-                }
-
-                moveTo(prevElement);
+                PreviousFailureVisitor pfv = new PreviousFailureVisitor(((IStructuredSelection) viewer.getSelection()).getFirstElement());
+                pfv.visitElements(currentTestRun.getRoot());
+                moveTo(pfv.previous);
             }
         }
 
@@ -603,21 +605,21 @@ public class TestsPanel extends Composite {
 
     }
 
-    private class ShowTestsGroupedByPackagesAction extends Action {
+    private class ShowTestsInHierarchyAction extends Action {
 
-        public ShowTestsGroupedByPackagesAction() {
-            super(showTestsGroupedByPackages, AS_CHECK_BOX);
-            setDescription(showTestsGroupedByPackages);
-            setToolTipText(showTestsGroupedByPackages);
+        public ShowTestsInHierarchyAction() {
+            super(showTestsInHierarchy, AS_CHECK_BOX);
+            setDescription(showTestsInHierarchy);
+            setToolTipText(showTestsInHierarchy);
 
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
-            setChecked(preferenceStore.getBoolean(PREF_SHOW_TESTS_GROUPED_BY_PACKAGES));
+            setChecked(preferenceStore.getBoolean(PREF_SHOW_TESTS_IN_HIERARCHY));
         }
 
         @Override
         public void run() {
             IPreferenceStore preferenceStore = CeylonTestPlugin.getDefault().getPreferenceStore();
-            preferenceStore.setValue(PREF_SHOW_TESTS_GROUPED_BY_PACKAGES, isChecked());
+            preferenceStore.setValue(PREF_SHOW_TESTS_IN_HIERARCHY, isChecked());
 
             updateView();
         }
@@ -695,6 +697,62 @@ public class TestsPanel extends Composite {
                     gotoTest((TestElement) selectedElement);
                 } catch (CoreException e) {
                     CeylonTestPlugin.logError("", e);
+                }
+            }
+        }
+
+    }
+    
+    private static class NextFailureVisitor extends TestVisitor {
+
+        private boolean isBehindCurrentSelection = false;
+        private Object currentSelection;
+        private TestElement next = null;
+
+        public NextFailureVisitor(Object currentSelection) {
+            this.currentSelection = currentSelection;
+        }
+
+        @Override
+        public void visitElement(TestElement e) {
+            if (!isBehindCurrentSelection) {
+                if( currentSelection == null ) {
+                  isBehindCurrentSelection = true;  
+                } else if (currentSelection instanceof String && currentSelection.equals(e.getPackageName())) {
+                    isBehindCurrentSelection = true;
+                } else if (e.equals(currentSelection)) {
+                    isBehindCurrentSelection = true;
+                    return;
+                }
+            }
+            if (isBehindCurrentSelection && next == null && e.getChildren() == null && e.getState().isFailureOrError()) {
+                next = e;
+            }
+        }
+
+    }
+    
+    private static class PreviousFailureVisitor extends TestVisitor {
+
+        private boolean isBeforeCurrentSelection = true;
+        private Object currentSelection;
+        private TestElement previous = null;
+
+        public PreviousFailureVisitor(Object currentSelection) {
+            this.currentSelection = currentSelection;
+        }
+
+        @Override
+        public void visitElement(TestElement e) {
+            if (isBeforeCurrentSelection) {
+                if (currentSelection instanceof String && currentSelection.equals(e.getPackageName())) {
+                    isBeforeCurrentSelection = false;
+                } else if (e.equals(currentSelection)) {
+                    isBeforeCurrentSelection = false;
+                }
+
+                if (isBeforeCurrentSelection && e.getChildren() == null && e.getState().isFailureOrError()) {
+                    previous = e;
                 }
             }
         }

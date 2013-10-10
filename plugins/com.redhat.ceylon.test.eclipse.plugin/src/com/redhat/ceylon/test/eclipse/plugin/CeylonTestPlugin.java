@@ -16,7 +16,7 @@ public class CeylonTestPlugin extends AbstractUIPlugin {
     public static final String PLUGIN_ID = "com.redhat.ceylon.test.eclipse.plugin";
     
     public static final String CEYLON_TEST_MODULE_NAME = "ceylon.test";
-    public static final String CEYLON_TEST_MODULE_DEFAULT_VERSION = "0.6.1";
+    public static final String CEYLON_TEST_MODULE_DEFAULT_VERSION = "1.0.0";
     
     public static final String LAUNCH_CONFIG_TYPE = PLUGIN_ID + ".ceylonTestLaunchConfigurationType";
     public static final String LAUNCH_CONFIG_ENTRIES_KEY = PLUGIN_ID + ".entries";
@@ -25,7 +25,7 @@ public class CeylonTestPlugin extends AbstractUIPlugin {
     public static final String PREF_SHOW_COMPLATE_TREE = PLUGIN_ID + ".showComplateTree";
     public static final String PREF_SHOW_COMPLETE_DESCRIPTION = PLUGIN_ID + ".showCompleteDescription";
     public static final String PREF_SHOW_FAILURES_ONLY = PLUGIN_ID + ".showFailuresOnly";
-    public static final String PREF_SHOW_TESTS_GROUPED_BY_PACKAGES = PLUGIN_ID + ".showTestsGroupedByPackages";
+    public static final String PREF_SHOW_TESTS_IN_HIERARCHY = PLUGIN_ID + ".showTestsInHierarchy";
     public static final String PREF_SHOW_TESTS_ELAPSED_TIME = PLUGIN_ID + ".showTestsElapsedTime";
     public static final String PREF_SCROLL_LOCK = PLUGIN_ID + ".scrollLock";
     public static final String PREF_STACK_TRACE_FILTER = PLUGIN_ID + ".stackTraceFilter";

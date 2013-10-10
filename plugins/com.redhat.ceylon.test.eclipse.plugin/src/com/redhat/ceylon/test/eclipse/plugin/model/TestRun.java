@@ -24,8 +24,9 @@ public class TestRun {
 
     private final Date startDate;
     private final ILaunch launch;
-    private final List<TestElement> testElements = new ArrayList<TestElement>();
-    private final Map<String, List<TestElement>> testElementsByPackages = new LinkedHashMap<String, List<TestElement>>();
+    private TestElement root;
+    private List<TestElement> atomicTests = new ArrayList<TestElement>();
+    private Map<String, List<TestElement>> testsByPackages = new LinkedHashMap<String, List<TestElement>>();
     private boolean isRunning;
     private boolean isFinished;
     private boolean isInterrupted;
@@ -33,6 +34,7 @@ public class TestRun {
     private int successCount = 0;
     private int failureCount = 0;
     private int errorCount = 0;
+    private int ignoreCount = 0;
 
     public TestRun(ILaunch launch) {
         this.launch = launch;
@@ -42,13 +44,17 @@ public class TestRun {
     public ILaunch getLaunch() {
         return launch;
     }
-
-    public List<TestElement> getTestElements() {
-        return testElements;
+    
+    public TestElement getRoot() {
+        return root;
     }
-
-    public Map<String, List<TestElement>> getTestElementsByPackages() {
-        return testElementsByPackages;
+    
+    public List<TestElement> getAtomicTests() {
+        return atomicTests;
+    }
+    
+    public Map<String, List<TestElement>> getTestsByPackages() {
+        return testsByPackages;
     }
 
     public boolean isRunning() {
@@ -72,7 +78,7 @@ public class TestRun {
     }
 
     public int getTotalCount() {
-        return testElements.size();
+        return atomicTests.size();
     }
 
     public int getStartedCount() {
@@ -90,32 +96,60 @@ public class TestRun {
     public int getErrorCount() {
         return errorCount;
     }
+    
+    public int getIgnoreCount() {
+        return ignoreCount;
+    }
 
     public int getFinishedCount() {
         return successCount + failureCount + errorCount;
     }
 
     public State getPackageState(String packageName) {
-        State result = State.UNDEFINED;
-
-        List<TestElement> testElementsInPackage = testElementsByPackages.get(packageName);
-        if (testElementsInPackage != null) {
-            for (TestElement testElement : testElementsInPackage) {
-                if (testElement.getState().getPriority() > result.getPriority()) {
-                    result = testElement.getState();
+        int undefined = 0;
+        int success = 0;
+        int failure = 0;
+        int error = 0;
+        int ignored = 0;
+        int total = 0;
+        
+        List<TestElement> testsInPackage = testsByPackages.get(packageName);
+        if (testsInPackage != null) {
+            total = testsInPackage.size();
+            for (TestElement testElement : testsInPackage) {
+                switch(testElement.getState()) {
+                    case UNDEFINED : undefined++; break;
+                    case SUCCESS: success++; break;
+                    case FAILURE: failure++; break;
+                    case ERROR: error++; break;
+                    case IGNORED: ignored++; break;
+                    default: /* noop */ break;
                 }
             }
         }
-
-        return result;
+        
+        if (error > 0) {
+            return State.ERROR;
+        } else if (failure > 0) {
+            return State.FAILURE;
+        } else if (ignored == total) {
+            return State.IGNORED;
+        } else if (undefined == total) {
+            return State.UNDEFINED;
+        } else if (success + ignored == total) {
+            return State.SUCCESS;
+        } else if (total > 0) {
+            return State.RUNNING;
+        }
+        return State.UNDEFINED;
     }
 
     public long getPackageElapsedTimeInMilis(String packageName) {
         long elapsedTimeInMilis = 0;
 
-        List<TestElement> testElementsInPackage = testElementsByPackages.get(packageName);
-        if (testElementsInPackage != null) {
-            for (TestElement testElement : testElementsInPackage) {
+        List<TestElement> testsInPackage = testsByPackages.get(packageName);
+        if (testsInPackage != null) {
+            for (TestElement testElement : testsInPackage) {
                 if (testElement.getState().isFinished()) {
                     elapsedTimeInMilis += testElement.getElapsedTimeInMilis();
                 }
@@ -137,9 +171,11 @@ public class TestRun {
     public long getRunElapsedTimeInMilis() {
         long elapsedTimeInMilis = 0;
 
-        for (TestElement testElement : testElements) {
-            if (testElement.getState().isFinished()) {
-                elapsedTimeInMilis += testElement.getElapsedTimeInMilis();
+        if( root.getChildren() != null ) {
+            for (TestElement testElement : root.getChildren()) {
+                if (testElement.getState().isFinished()) {
+                    elapsedTimeInMilis += testElement.getElapsedTimeInMilis();
+                }
             }
         }
 
@@ -153,7 +189,7 @@ public class TestRun {
     public synchronized void processRemoteTestEvent(RemoteTestEvent event) {
         switch (event.getType()) {
         case TEST_RUN_STARTED:
-            updateTestElements(event.getTestElements());
+            updateRootElement(event.getTestElement());
             isRunning = true;
             isFinished = false;
             isInterrupted = false;
@@ -180,41 +216,61 @@ public class TestRun {
 
     public synchronized void processLaunchTerminatedEvent() {
         if( isRunning ) {
-            for (TestElement testElement : testElements) {
-                if (testElement.getState() == State.RUNNING) {
-                    testElement.setState(State.UNDEFINED);
+            new TestVisitor() {
+                @Override
+                public void visitElement(TestElement e) {
+                    if (e.getState() == State.RUNNING) {
+                        e.setState(State.UNDEFINED);
+                    }
                 }
-            }
+            }.visitElements(root);
+            
             isRunning = false;
             isFinished = false;
             isInterrupted = true;
             fireTestRunInterrupted();
         }
     }
-
-    private void updateTestElements(List<TestElement> testElementList) {
-        testElements.clear();
-        testElements.addAll(testElementList);
-
-        testElementsByPackages.clear();
-        for (TestElement testElement : testElements) {
-            String packageName = testElement.getPackageName();
-            List<TestElement> testElementsInPackage = testElementsByPackages.get(packageName);
-            if (testElementsInPackage == null) {
-                testElementsInPackage = new ArrayList<TestElement>();
-                testElementsByPackages.put(packageName, testElementsInPackage);
+    
+    private void updateRootElement(final TestElement root) {
+        this.root = root;
+        
+        new TestVisitor() {
+            @Override
+            public void visitElement(TestElement e) {
+                if (e != root && (e.getChildren() == null || e.getChildren().length == 0)) {
+                    atomicTests.add(e);
+                }
             }
-            testElementsInPackage.add(testElement);
+
+        }.visitElements(root);
+        
+        testsByPackages.clear();
+        if( root.getChildren() != null ) {
+            for(TestElement e : root.getChildren()) {
+                List<TestElement> testElementsInPackage = testsByPackages.get(e.getPackageName());
+                if (testElementsInPackage == null) {
+                    testElementsInPackage = new ArrayList<TestElement>();
+                    testsByPackages.put(e.getPackageName(), testElementsInPackage);
+                }
+                testElementsInPackage.add(e);
+            }
         }
     }
 
-    private void updateTestElement(TestElement testElement) {
-        int index = testElements.indexOf(testElement);
-        testElements.set(index, testElement);
-
-        List<TestElement> testElementsInPackage = testElementsByPackages.get(testElement.getPackageName());
-        index = testElementsInPackage.indexOf(testElement);
-        testElementsInPackage.set(index, testElement);
+    private void updateTestElement(final TestElement testElement) {
+        new TestVisitor() {
+            @Override
+            public void visitElement(TestElement e) {
+                if (e.equals(testElement)) {
+                    e.setState(testElement.getState());
+                    e.setException(testElement.getException());
+                    e.setExpectedValue(testElement.getExpectedValue());
+                    e.setActualValue(testElement.getActualValue());
+                    e.setElapsedTimeInMilis(testElement.getElapsedTimeInMilis());
+                }
+            }
+        }.visitElements(root);
     }
 
     private void updateCounters(RemoteTestEvent event) {
@@ -225,13 +281,22 @@ public class TestRun {
             State state = event.getTestElement().getState();
             switch (state) {
             case SUCCESS:
-                successCount++;
+                if (atomicTests.contains(event.getTestElement())) {
+                    successCount++;
+                }
                 break;
             case FAILURE:
-                failureCount++;
+                if (event.getTestElement().getException() != null) {
+                    failureCount++;
+                }
                 break;
             case ERROR:
-                errorCount++;
+                if (event.getTestElement().getException() != null) {
+                    errorCount++;
+                }
+                break;
+            case IGNORED:
+                ignoreCount++;
                 break;
             default:
                 throw new IllegalStateException(event.toString());
@@ -271,6 +336,24 @@ public class TestRun {
         for (TestRunListener listener : getTestRunListeners()) {
             listener.testFinished(this, testElement);
         }
+    }
+
+    public static abstract class TestVisitor {
+
+        public final void visitElements(TestElement e) {
+            if (e != null) {
+                visitElement(e);
+                TestElement[] children = e.getChildren();
+                if (children != null) {
+                    for (TestElement child : children) {
+                        visitElements(child);
+                    }
+                }
+            }
+        }
+
+        public abstract void visitElement(TestElement e);
+
     }
 
 }
