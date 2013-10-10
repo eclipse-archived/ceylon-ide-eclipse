@@ -87,10 +87,6 @@ public class CeylonOutlinePage extends ContentOutlinePage
         return Stage.DONE;
     }
     
-    public CeylonSourceViewer getSourceViewer() {
-		return sourceViewer;
-	}
-    
     @Override
     public void update(final CeylonParseController parseController, 
             IProgressMonitor monitor) {
