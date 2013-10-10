@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDe
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
@@ -45,6 +46,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -52,6 +55,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -285,23 +289,33 @@ public class HierarchyView extends ViewPart {
 	public void setFocus() {}
 
 	public void focusOnSelection(CeylonEditor editor) {
-		Node node = findNode(editor.getParseController().getRootNode(), editor.getSelection().getOffset());
+		CeylonParseController cpc = editor.getParseController();
+		Node node = findNode(cpc.getRootNode(), editor.getSelection().getOffset());
 		Declaration dec = getReferencedDeclaration(node);
+		focusOn(cpc, dec);
+	}
+
+	public void focusOn(CeylonParseController cpc, Declaration dec) {
 		if (dec!=null) {
 			setDescription(dec);
 			title.setImage(getImageForDeclaration(dec));
 			title.setText(dec.getName());
 			tableViewer.setInput(dec);
 			treeViewer.setInput(new HierarchyInput(dec, 
-					editor.getParseController().getTypeChecker()));
+					cpc.getTypeChecker()));
 		}
-		project = editor.getParseController().getProject();
+		project = cpc.getProject();
 	}
 
 	private void setDescription(Declaration dec) {
 		setContentDescription("Displaying " +
 				contentProvider.getMode().name().toLowerCase() + 
 				" of '" + dec.getName() + "'");
+	}
+
+	public static HierarchyView showHierarchyView() throws PartInitException {
+		return (HierarchyView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+		        .showView(PLUGIN_ID + ".view.HierarchyView");
 	}
 
 	private class ModeAction extends Action {
