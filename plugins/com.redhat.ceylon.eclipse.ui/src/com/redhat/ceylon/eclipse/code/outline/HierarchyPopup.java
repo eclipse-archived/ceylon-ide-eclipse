@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
@@ -21,7 +21,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -112,36 +111,9 @@ public class HierarchyPopup extends TreeViewPopup {
 	}
 	
 	private String getTitleText() {
-		Declaration dec = contentProvider.getDeclaration();
-		String desc = getDescriptionFor(dec);
-		if (contentProvider.isShowingRefinements()) {
-			if (dec.isClassOrInterfaceMember()) {
-				desc += " in " + ((ClassOrInterface) dec.getContainer()).getName();
-			}
-			switch (contentProvider.getMode()) {
-			case HIERARCHY:
-				return "Refinement hierarchy of " + desc;
-			case SUPERTYPES:
-				return "Supertypes generalizing " + desc;
-			case SUBTYPES:
-				return "Subtypes refining " + desc;
-			default:
-				throw new RuntimeException();
-			}
-		}
-		else {
-			switch (contentProvider.getMode()) {
-			case HIERARCHY:
-				return "Type hierarchy of " + desc;
-			case SUPERTYPES:
-				return "Supertypes of " + desc;
-			case SUBTYPES:
-				return "Subtypes of " + desc;
-			default:
-				throw new RuntimeException();
-			}
-		}
+		return contentProvider.getDescription();
 	}
+
 	
 	@Override
 	protected Control createTitleControl(Composite parent) {
@@ -215,17 +187,15 @@ public class HierarchyPopup extends TreeViewPopup {
 	
 	@Override
 	protected void reveal() {
-	    if (contentProvider.getBuilder()==null) return;
+	    if (contentProvider.isEmpty()) return;
 	    int depth;
-	    if (contentProvider.getMode()==HierarchyMode.HIERARCHY) {
-	        depth = contentProvider.getBuilder().getDepthInHierarchy();
+	    if (contentProvider.getMode()==HIERARCHY) {
+	        depth = contentProvider.getDepthInHierarchy();
 	    }
 	    else {
 	        depth = 1;
 	    }
-        String name = contentProvider.getBuilder().getDeclaration().getQualifiedNameString();
-        if (name.equals("ceylon.language::Object")||name.equals("ceylon.language::Anything")||
-                name.equals("ceylon.language::Basic")||name.equals("ceylon.language::Identifiable")) {
+        if (contentProvider.isVeryAbstractType()) {
             depth+=1;
         }
         else {
