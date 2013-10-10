@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -33,7 +33,7 @@ public final class CeylonHierarchyContentProvider
 	
 	private final IWorkbenchPartSite site;
 	
-	private HierarchyMode mode = HierarchyMode.HIERARCHY;
+	private HierarchyMode mode = HIERARCHY;
 	
     private CeylonHierarchyNode hierarchyRoot;
     private CeylonHierarchyNode supertypesRoot;
@@ -65,7 +65,10 @@ public final class CeylonHierarchyContentProvider
 			            name.equals("ceylon.language::Anything") ||
 		                name.equals("ceylon.language::Basic") ||
 		                name.equals("ceylon.language::Identifiable");
-	            description = description(declaration);
+	            description = declaration.getName();//getDescriptionFor(declaration);
+	            if (isShowingRefinements() && declaration.isClassOrInterfaceMember()) {
+	                description = ((ClassOrInterface) declaration.getContainer()).getName() + '.' + description;
+	            }
 			    try {
 			        site.getWorkbenchWindow().run(true, true, 
 			                new Runnable(rootNode.typeChecker, declaration));
@@ -317,22 +320,14 @@ public final class CeylonHierarchyContentProvider
     }
     
     public String getDescription() {
-        return description;
-    }
-
-    private String description(Declaration dec) {
-        String desc = getDescriptionFor(dec);
         if (isShowingRefinements()) {
-            if (dec.isClassOrInterfaceMember()) {
-                desc += " in " + ((ClassOrInterface) dec.getContainer()).getName();
-            }
             switch (getMode()) {
             case HIERARCHY:
-                return "Refinement hierarchy of " + desc;
+                return "Refinement hierarchy of " + description;
             case SUPERTYPES:
-                return "Supertypes generalizing " + desc;
+                return "Supertypes generalizing " + description;
             case SUBTYPES:
-                return "Subtypes refining " + desc;
+                return "Subtypes refining " + description;
             default:
                 throw new RuntimeException();
             }
@@ -340,11 +335,11 @@ public final class CeylonHierarchyContentProvider
         else {
             switch (getMode()) {
             case HIERARCHY:
-                return "Type hierarchy of " + desc;
+                return "Type hierarchy of " + description;
             case SUPERTYPES:
-                return "Supertypes of " + desc;
+                return "Supertypes of " + description;
             case SUBTYPES:
-                return "Subtypes of " + desc;
+                return "Subtypes of " + description;
             default:
                 throw new RuntimeException();
             }
