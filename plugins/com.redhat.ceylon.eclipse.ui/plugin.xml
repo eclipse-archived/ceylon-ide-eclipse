@@ -943,7 +943,23 @@
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/-->
-      
+   </extension>      
+   <extension
+         point="org.eclipse.ui.bindings">
+         
+      <sequenceModifier
+            find="M2+M3" replace="M1+M3"
+            platforms="cocoa,carbon"/>
+      <key
+            commandId="org.eclipse.ui.views.showView"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
+            sequence="M2+M3+Q P">
+          <parameter
+              id="org.eclipse.ui.views.showView.viewId"
+              value="com.redhat.ceylon.eclipse.ui.view.PackageExplorer">
+          </parameter>
+      </key>
       <key
             commandId="org.eclipse.ui.views.showView"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -955,44 +971,10 @@
           </parameter>
       </key>
       <key
-            platform="carbon"
-            sequence="M2+M3+Q T"
-            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
-            commandId=""
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            commandId="org.eclipse.ui.views.showView"
-            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
-            platform="carbon"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="COMMAND+ALT+Q T">
-          <parameter
-              id="org.eclipse.ui.views.showView.viewId"
-              value="com.redhat.ceylon.eclipse.ui.view.HierarchyView">
-          </parameter>
-      </key>
-      <key
             commandId="org.eclipse.ui.views.showView"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
             sequence="M2+M3+Q E">
-          <parameter
-              id="org.eclipse.ui.views.showView.viewId"
-              value="com.redhat.ceylon.eclipse.ui.view.ModuleSearch">
-          </parameter>
-      </key>
-      <key
-            platform="carbon"
-            sequence="M2+M3+Q E"
-            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
-            commandId=""
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            commandId="org.eclipse.ui.views.showView"
-            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
-            platform="carbon"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="COMMAND+ALT+Q E">
           <parameter
               id="org.eclipse.ui.views.showView.viewId"
               value="com.redhat.ceylon.eclipse.ui.view.ModuleSearch">
@@ -1740,6 +1722,7 @@
             <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
             <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
+            <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
             <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"/>
