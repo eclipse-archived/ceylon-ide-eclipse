@@ -99,6 +99,13 @@
       </view>
    </extension>
    <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+         <perspectiveExtension
+            targetID="com.redhat.ceylon.eclipse.ui.perspective">
+            <viewShortcut id="com.redhat.ceylon.test.eclipse.plugin.testview"/>
+         </perspectiveExtension>
+   </extension>
+   <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
             class="com.redhat.ceylon.test.eclipse.plugin.CeylonTestPreferenceInitializer">
