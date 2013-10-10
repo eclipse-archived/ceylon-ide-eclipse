@@ -18,6 +18,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_INHERITED;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
 
 import java.util.ArrayList;
 
@@ -40,6 +41,7 @@ import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
@@ -74,7 +76,8 @@ public class HierarchyView extends ViewPart {
 			.getImageRegistry().get(GOTO);
     private static final Image INHERITED_IMAGE = CeylonPlugin.getInstance()
             .getImageRegistry().get(CEYLON_INHERITED);
-
+    private static final Image SORT_IMAGE = CeylonPlugin.getInstance()
+            .getImageRegistry().get(TYPE_MODE);
 	
 	private CeylonHierarchyLabelProvider labelProvider;
 	private CeylonHierarchyContentProvider contentProvider;
@@ -98,7 +101,24 @@ public class HierarchyView extends ViewPart {
         showInherited=!showInherited;
     }
     
-	private final class MembersContentProvider implements IStructuredContentProvider {
+	private final class MemberSorter extends ViewerSorter {
+	    private boolean sortByType;
+        @Override
+        public int compare(Viewer viewer, Object x, Object y) {
+            if (sortByType) {
+                int result = super.compare(viewer, 
+                        ((Declaration) x).getContainer(), 
+                        ((Declaration) y).getContainer());
+                if (result!=0) return result;
+            }
+            return super.compare(viewer, x, y);
+        }
+        public void toggle() {
+            sortByType = !sortByType;
+        }
+    }
+
+    private final class MembersContentProvider implements IStructuredContentProvider {
 	    
 		@Override
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
@@ -155,7 +175,7 @@ public class HierarchyView extends ViewPart {
 		public String getText(Object element) {
 			Declaration dec = (Declaration) element;
             String desc = getDescriptionFor(dec);
-			if (showInherited) {
+			if (showInherited && dec.getContainer() instanceof Declaration) {
 			    desc += " - " + ((Declaration)dec.getContainer()).getName();
 			}
             return desc;
@@ -165,7 +185,7 @@ public class HierarchyView extends ViewPart {
 		public StyledString getStyledText(Object element) {
             Declaration dec = (Declaration) element;
             StyledString desc = getStyledDescriptionFor((Declaration) element);
-            if (showInherited) {
+            if (showInherited && dec.getContainer() instanceof Declaration) {
                 desc.append(" - ", PACKAGE_STYLER)
                     .append(((Declaration)dec.getContainer()).getName(), 
                             TYPE_STYLER);
@@ -258,6 +278,20 @@ public class HierarchyView extends ViewPart {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 toggle();
+                tableViewer.refresh();
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+		toolItem = new ToolItem(toolBar, SWT.CHECK);
+        toolItem.setImage(SORT_IMAGE);
+        toolItem.setToolTipText("Sort members by declaring type");
+        final MemberSorter sorter = new MemberSorter();
+        tableViewer.setSorter(sorter);
+        toolItem.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                sorter.toggle();
                 tableViewer.refresh();
             }
             @Override

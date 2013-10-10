@@ -97,6 +97,7 @@ public interface CeylonResources {
     public static final String FOLDER_MODE = "folder_mode";
     public static final String PACKAGE_MODE = "package_mode";
     public static final String UNIT_MODE = "unit_mode";
+    public static final String TYPE_MODE = "type_mode";
     
     public static final String FLAT_MODE = "flat_mode";
     public static final String TREE_MODE = "tree_mode";
