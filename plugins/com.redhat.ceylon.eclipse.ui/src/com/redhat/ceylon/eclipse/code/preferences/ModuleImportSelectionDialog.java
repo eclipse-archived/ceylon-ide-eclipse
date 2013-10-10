@@ -109,10 +109,10 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
             }
             return list;
         }
-        else if (prefix.startsWith("java.")) {
+        else if (prefix.startsWith("java.")||prefix.equals("java.|javax.")) {
             List<ModuleNode> list = new ArrayList<ModuleNode>();
             for (String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
-                if (name.startsWith(prefix) && !excluded(module, name)) {
+                if ((prefix.equals("java.|javax.")||name.startsWith(prefix)) && !excluded(module, name)) {
                     ModuleNode moduleNode = new ModuleNode(name, new ArrayList<ModuleVersionNode>(1));
                     moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, JDK_MODULE_VERSION));
                     list.add(moduleNode);
