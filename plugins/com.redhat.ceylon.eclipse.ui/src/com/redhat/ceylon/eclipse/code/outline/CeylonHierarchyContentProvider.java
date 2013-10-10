@@ -217,7 +217,7 @@ public final class CeylonHierarchyContentProvider
             for (Module m: allModules) {
                 if (m.getVersion()!=null || isFromUnversionedModule) {
                     packages.addAll(m.getAllPackages());
-                    monitor.worked(20000/ams);
+                    monitor.worked(10000/ams);
                     if (monitor.isCanceled()) return;
                 }
             }
@@ -304,7 +304,7 @@ public final class CeylonHierarchyContentProvider
                                     throw e;
                                 }
                             }
-                            monitor.worked(70000/ps/ms);
+                            monitor.worked(15000/ps/ms);
                             if (monitor.isCanceled()) return;
                         }
                     }
