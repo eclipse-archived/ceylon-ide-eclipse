@@ -520,7 +520,7 @@
             description="Show popup code view"
             name="Show Ceylon Code"/>
        <command
-            id="com.redhat.ceylon.eclipse.ui.editor.showInHierarchyView"
+            id="com.redhat.ceylon.eclipse.ui.action.showInHierarchyView"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Show in hierarchy view"
             name="Show In Ceylon Hierarchy View"/>
@@ -766,7 +766,7 @@
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
             sequence="F4"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.showInHierarchyView"
+            commandId="com.redhat.ceylon.eclipse.ui.action.showInHierarchyView"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
             
@@ -963,22 +963,17 @@
                   commandId="com.redhat.ceylon.eclipse.ui.action.openType"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openType"/>
-            <dynamic id="openSelectedDeclaration"
-                      class="com.redhat.ceylon.eclipse.code.open.OpenSelectedDeclarationMenuItem">
+            <separator
+                  visible="true"
+                  name="sep8"/>
+            <dynamic id="selectedDeclaration"
+                      class="com.redhat.ceylon.eclipse.code.open.SelectedDeclarationMenuItems">
               <visibleWhen>
                   <with variable="activeEditorId">
                       <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
                   </with>
               </visibleWhen>
             </dynamic>
-            <separator
-                  visible="true"
-                  name="sep8"/>
-            <command 
-                  id="showInHierarchy"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.showInHierarchyView"
-                  icon="icons/class_hi.gif"
-                  label="Show In Hierarchy &amp;View"/>
             <separator
                   visible="true"
                   name="belowOpen"/>
@@ -1179,8 +1174,8 @@
             <separator
                   visible="true"
                   name="sep4"/>
-            <dynamic id="openSelectedDeclaration"
-                      class="com.redhat.ceylon.eclipse.code.open.OpenSelectedDeclarationMenuItem"/>
+            <dynamic id="selectedDeclaration"
+                      class="com.redhat.ceylon.eclipse.code.open.SelectedDeclarationMenuItems"/>
             <separator
                   visible="true"
                   name="sep5"/>
@@ -1209,14 +1204,6 @@
                   commandId="com.redhat.ceylon.eclipse.ui.editor.code"
                   icon="icons/source.gif"
                   label="Show Code"/>
-            <separator
-                  visible="true"
-                  name="sep8"/>
-            <command 
-                  id="showInHierarchy"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.showInHierarchyView"
-                  icon="icons/class_hi.gif"
-                  label="Show In Hierarchy &amp;View"/>
       </menuContribution>
       <menuContribution
          locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
