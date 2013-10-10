@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIERARCHY;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -11,24 +12,29 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class OpenSelectedDeclarationMenuItem extends CompoundContributionItem {
+public class SelectedDeclarationMenuItems extends CompoundContributionItem {
     
     private static final ImageDescriptor GOTO_IMAGE = CeylonPlugin.getInstance()
     		.getImageRegistry().getDescriptor(GOTO);
+    private static final ImageDescriptor HIERARCHY_IMAGE = CeylonPlugin.getInstance()
+    		.getImageRegistry().getDescriptor(HIERARCHY);
 
-	public OpenSelectedDeclarationMenuItem() {}
+	public SelectedDeclarationMenuItems() {}
     
-    public OpenSelectedDeclarationMenuItem(String id) {
+    public SelectedDeclarationMenuItems(String id) {
         super(id);
     }
     
     @Override
     protected IContributionItem[] getContributionItems() {
-        return new IContributionItem[] {
+        boolean enabled = new OpenSelectedDeclarationHandler().isEnabled();
+		return new IContributionItem[] {
                 new DynamicMenuItem(PLUGIN_ID + ".action.openSelectedDeclaration", 
                         "Go To Selected Declaration",
-                        new OpenSelectedDeclarationHandler().isEnabled(), 
-                        GOTO_IMAGE)
+                        enabled, GOTO_IMAGE),
+                new DynamicMenuItem(PLUGIN_ID + ".action.showInHierarchyView", 
+                        "Show In Type Hierarchy &View",
+                        enabled, HIERARCHY_IMAGE)
             };
     }
     
