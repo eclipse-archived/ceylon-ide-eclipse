@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
@@ -90,8 +91,13 @@ public class HierarchyView extends ViewPart {
 	
 	private CLabel title;
 	
+    private boolean showInherited;
+    
+    void toggle() {
+        showInherited=!showInherited;
+    }
+    
 	private final class MembersContentProvider implements IStructuredContentProvider {
-	    private boolean showInherited;
 	    
 		@Override
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
@@ -120,9 +126,6 @@ public class HierarchyView extends ViewPart {
 			}
 		}
 
-        public void toggle() {
-            showInherited=!showInherited;
-        }
 	}
 
 	class MembersLabelProvider extends StyledCellLabelProvider 
@@ -149,12 +152,24 @@ public class HierarchyView extends ViewPart {
 
 		@Override
 		public String getText(Object element) {
-			return getDescriptionFor((Declaration) element);
+			Declaration dec = (Declaration) element;
+            String desc = getDescriptionFor(dec);
+			if (showInherited) {
+			    desc += " - " + ((Declaration)dec.getContainer()).getName();
+			}
+            return desc;
 		}
 
 		@Override
 		public StyledString getStyledText(Object element) {
-			return getStyledDescriptionFor((Declaration) element);
+            Declaration dec = (Declaration) element;
+            StyledString desc = getStyledDescriptionFor((Declaration) element);
+            if (showInherited) {
+                desc.append(" - ")
+                    .append(((Declaration)dec.getContainer()).getName(), 
+                            TYPE_STYLER);
+            }
+			return desc;
 		}
 
 		@Override
@@ -241,7 +256,7 @@ public class HierarchyView extends ViewPart {
 		toolItem.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                membersContentProvider.toggle();
+                toggle();
                 tableViewer.refresh();
             }
             @Override
