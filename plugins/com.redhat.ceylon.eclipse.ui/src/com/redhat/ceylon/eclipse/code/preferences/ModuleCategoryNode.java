@@ -27,7 +27,7 @@ public class ModuleCategoryNode {
         List<ModuleCategoryNode> list = new ArrayList<ModuleCategoryNode>();
         list.add(new ModuleCategoryNode(".", "Workspace Modules"));
         list.add(new ModuleCategoryNode("ceylon.", "Ceylon Platform Modules"));
-        list.add(new ModuleCategoryNode("java.", "Java SE Modules"));
+        list.add(new ModuleCategoryNode("java.|javax.", "Java SE Modules"));
         list.add(new ModuleCategoryNode("", "All Modules"));
         return list;
     }
