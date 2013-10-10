@@ -6,8 +6,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-
 /**
  * The NamePatternFilter selects the elements which
  * match the given string patterns.
@@ -37,8 +35,7 @@ class HierarchyNamePatternFilter extends ViewerFilter {
 		return hasUnfilteredChild(treeViewer, element);*/
 		TreeViewer treeViewer= (TreeViewer) viewer;
 		if (element instanceof CeylonHierarchyNode) {
-			Declaration dec = ((CeylonHierarchyNode) element).getDeclaration();
-			String name = dec==null ? null : dec.getName();
+		    String name = ((CeylonHierarchyNode) element).getName();
 			return name!=null && name.toLowerCase()
 					.startsWith(filterText.getText().toLowerCase()) ||
 					hasUnfilteredChild(treeViewer, element);

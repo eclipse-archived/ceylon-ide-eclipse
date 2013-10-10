@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -71,11 +72,12 @@ public final class CeylonHierarchyContentProvider
 	            }
 			    try {
 			        site.getWorkbenchWindow().run(true, true, 
-			                new Runnable(rootNode.typeChecker, declaration));
+			                new Runnable(rootNode.project, declaration));
 			    } 
 			    catch (Exception e) {
 			        e.printStackTrace();
 			    }
+			    rootNode.declaration=null;//don't hang onto hard ref
 			}
 		}
 	}
@@ -149,7 +151,7 @@ public final class CeylonHierarchyContentProvider
     
     private class Runnable implements IRunnableWithProgress {
         
-        private final TypeChecker typeChecker;
+        private final IProject project;
         private final Declaration declaration;
                 
         private final Map<Declaration, CeylonHierarchyNode> subtypesOfSupertypes = 
@@ -193,8 +195,8 @@ public final class CeylonHierarchyContentProvider
             return n;
         }
         
-        public Runnable(TypeChecker typeChecker, Declaration declaration) {
-            this.typeChecker = typeChecker;
+        public Runnable(IProject project, Declaration declaration) {
+            this.project = project;
             this.declaration = declaration;
         }
         
@@ -204,8 +206,11 @@ public final class CeylonHierarchyContentProvider
             
             monitor.beginTask("Building hierarchy", 100000);
             
-            Set<Module> allModules = typeChecker.getPhasedUnits()
-                    .getModuleManager().getCompiledModules();
+            TypeChecker tc = CeylonHierarchyNode.getTypeChecker(project, 
+                    declaration.getUnit().getPackage().getModule().getNameAsString());
+            //TODO: if this is a popup hierarchy, use the current  
+            //      editor typechecker here instead!
+            Set<Module> allModules = tc.getPhasedUnits().getModuleManager().getCompiledModules();
             
             boolean isFromUnversionedModule = declaration.getUnit().getPackage()
                     .getModule().getVersion()==null;
@@ -241,7 +246,8 @@ public final class CeylonHierarchyContentProvider
                         List<Declaration> directlyInheritedMembers = ((TypeDeclaration)dec.getContainer())
                                 .getInheritedMembers(dec.getName());
                         if (!directlyInheritedMembers.contains(superDec)) {
-                            CeylonHierarchyNode n = new CeylonHierarchyNode(null);
+                            CeylonHierarchyNode n = new CeylonHierarchyNode(superDec);
+                            n.setMultiple(true);
                             n.addChild(getSubtypePathNode(dec));
                             getSubtypePathNode(superDec).addChild(n);
                             dec = superDec;
@@ -319,7 +325,7 @@ public final class CeylonHierarchyContentProvider
         
     }
     
-    public String getDescription() {
+    String getDescription() {
         if (isShowingRefinements()) {
             switch (getMode()) {
             case HIERARCHY:
