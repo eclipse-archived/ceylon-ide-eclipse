@@ -12,8 +12,12 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_INHERITED;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
+
+import java.util.ArrayList;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
@@ -45,6 +49,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -52,18 +58,20 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class HierarchyView extends ViewPart {
 
 	private static final Image GOTO_IMAGE = CeylonPlugin.getInstance()
-			.getImageRegistry().get(CeylonResources.GOTO);
+			.getImageRegistry().get(GOTO);
+    private static final Image INHERITED_IMAGE = CeylonPlugin.getInstance()
+            .getImageRegistry().get(CEYLON_INHERITED);
 
 	
 	private CeylonHierarchyLabelProvider labelProvider;
@@ -83,6 +91,8 @@ public class HierarchyView extends ViewPart {
 	private CLabel title;
 	
 	private final class MembersContentProvider implements IStructuredContentProvider {
+	    private boolean showInherited;
+	    
 		@Override
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
@@ -92,12 +102,27 @@ public class HierarchyView extends ViewPart {
 		@Override
 		public Object[] getElements(Object inputElement) {
 			if (inputElement instanceof TypeDeclaration) {
-				return ((TypeDeclaration) inputElement).getMembers().toArray();
+			    TypeDeclaration declaration = (TypeDeclaration) inputElement;
+                if (showInherited) {
+                    ArrayList<Declaration> list = new ArrayList<Declaration>();
+                    for (DeclarationWithProximity dwp: declaration.getMatchingMemberDeclarations(declaration, "", 0).values()) {
+                        list.add(dwp.getDeclaration());
+                    }
+                    //TODO: sort by declaring type?
+			        return list.toArray();
+			    }
+			    else {
+			        return declaration.getMembers().toArray();
+			    }
 			}
 			else {
 				return new Object[0];
 			}
 		}
+
+        public void toggle() {
+            showInherited=!showInherited;
+        }
 	}
 
 	class MembersLabelProvider extends StyledCellLabelProvider 
@@ -209,6 +234,20 @@ public class HierarchyView extends ViewPart {
         tableViewer = new TableViewer(viewForm);
 		viewForm.setContent(tableViewer.getTable());
 		title = new CLabel(viewForm, SWT.NONE);
+		ToolBar toolBar = new ToolBar(viewForm, SWT.NONE);
+		ToolItem toolItem = new ToolItem(toolBar, SWT.CHECK);
+		toolItem.setImage(INHERITED_IMAGE);
+		toolItem.setToolTipText("Show inherited members");
+		toolItem.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                membersContentProvider.toggle();
+                tableViewer.refresh();
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        viewForm.setTopRight(toolBar);
 		viewForm.setTopLeft(title);
 		viewForm.setTopCenter(title);
         tableViewer.getTable().setLayoutData(vfgd);
@@ -317,6 +356,22 @@ public class HierarchyView extends ViewPart {
 		return (HierarchyView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 		        .showView(PLUGIN_ID + ".view.HierarchyView");
 	}
+	
+	/*private class MembersAction extends Action {
+	    MembersAction() {
+	        super("Show Inherited Members");
+	        setToolTipText("Show inherited members");
+	        setImageDescriptor(CeylonPlugin.getInstance()
+                    .getImageRegistry()
+                    .getDescriptor(CEYLON_INHERITED));
+	    }
+	    @Override
+	    public void run() {
+	        membersContentProvider.toggle();
+	        update();
+	        setChecked(!isChecked());
+	    }
+	}*/
 
 	private class ModeAction extends Action {
 		HierarchyMode mode;
