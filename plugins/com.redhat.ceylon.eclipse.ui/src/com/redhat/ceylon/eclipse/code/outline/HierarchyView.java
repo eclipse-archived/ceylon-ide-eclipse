@@ -53,6 +53,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
@@ -220,6 +221,12 @@ public class HierarchyView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		setContentDescription("");
 		SashForm sash = new SashForm(parent, SWT.VERTICAL);
+        createMainToolBar();
+		createTreeMenu(createTree(sash));
+        createTableMenu(createTable(sash));
+	}
+
+    public Tree createTree(SashForm sash) {
         final Tree tree = new Tree(sash, SWT.SINGLE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = tree.getItemHeight() * 12;
@@ -254,17 +261,10 @@ public class HierarchyView extends ViewPart {
 				gotoCeylonOrJavaDeclaration(dec);
 			}
 		});
-        IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
-        tbm.add(hierarchyAction=new ModeAction("Hierarchy", 
-        		"Switch to hierarchy mode", 
-        				CEYLON_HIER, HIERARCHY));
-        tbm.add(supertypesAction=new ModeAction("Supertypes", 
-        		"Switch to supertypes mode", 
-        				CEYLON_SUP, SUPERTYPES));
-        tbm.add(subtypesAction=new ModeAction("Subtypes", 
-        		"Switch to subtypes mode", 
-        				CEYLON_SUB, SUBTYPES));
-        updateActions(HIERARCHY);
+        return tree;
+    }
+
+    public Table createTable(SashForm sash) {
         ViewForm viewForm = new ViewForm(sash, SWT.FLAT);
 		GridData vfgd = new GridData(GridData.FILL_BOTH);
         tableViewer = new TableViewer(viewForm);
@@ -313,6 +313,24 @@ public class HierarchyView extends ViewPart {
 				gotoCeylonOrJavaDeclaration(firstElement);
 			}
 		});
+        return tableViewer.getTable();
+    }
+
+    public void createMainToolBar() {
+        IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
+        tbm.add(hierarchyAction=new ModeAction("Hierarchy", 
+        		"Switch to hierarchy mode", 
+        				CEYLON_HIER, HIERARCHY));
+        tbm.add(supertypesAction=new ModeAction("Supertypes", 
+        		"Switch to supertypes mode", 
+        				CEYLON_SUP, SUPERTYPES));
+        tbm.add(subtypesAction=new ModeAction("Subtypes", 
+        		"Switch to subtypes mode", 
+        				CEYLON_SUB, SUBTYPES));
+        updateActions(HIERARCHY);
+    }
+
+    public void createTreeMenu(final Tree tree) {
         Menu menu = new Menu(tree);
     	MenuItem item = new MenuItem(menu, SWT.PUSH);
     	item.setText("Focus on Selection");
@@ -322,7 +340,7 @@ public class HierarchyView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
         		Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
-        		if (firstElement!=null) {
+        		if (firstElement instanceof CeylonHierarchyNode) {
         			TypeChecker checker = ((HierarchyInput) treeViewer.getInput()).typeChecker;
         			Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration();
 					treeViewer.setInput(new HierarchyInput(declaration,checker));
@@ -346,8 +364,43 @@ public class HierarchyView extends ViewPart {
 			}
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {}
-		});	
-	}
+		});
+    }
+
+    public void createTableMenu(final Table table) {
+        Menu menu = new Menu(table);
+        MenuItem item = new MenuItem(menu, SWT.PUSH);
+        item.setText("Focus on Selection");
+        item.setImage(getTitleImage());
+        table.setMenu(menu);
+        item.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object firstElement = ((StructuredSelection) tableViewer.getSelection()).getFirstElement();
+                if (firstElement instanceof Declaration) {
+                    TypeChecker checker = ((HierarchyInput) treeViewer.getInput()).typeChecker;
+                    treeViewer.setInput(new HierarchyInput((Declaration) firstElement, checker));
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        item = new MenuItem(menu, SWT.PUSH);
+        item.setText("Go To Selection");
+        item.setImage(GOTO_IMAGE);
+        table.setMenu(menu);
+        item.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object firstElement = ((StructuredSelection)tableViewer.getSelection()).getFirstElement();
+                if (firstElement instanceof Declaration) {
+                    gotoCeylonOrJavaDeclaration((Declaration) firstElement);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+    }
 
 	private int getDefaultLevel() {
 		return 4;
