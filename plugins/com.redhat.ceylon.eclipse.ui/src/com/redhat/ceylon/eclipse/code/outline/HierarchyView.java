@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
@@ -165,7 +166,7 @@ public class HierarchyView extends ViewPart {
             Declaration dec = (Declaration) element;
             StyledString desc = getStyledDescriptionFor((Declaration) element);
             if (showInherited) {
-                desc.append(" - ")
+                desc.append(" - ", PACKAGE_STYLER)
                     .append(((Declaration)dec.getContainer()).getName(), 
                             TYPE_STYLER);
             }
