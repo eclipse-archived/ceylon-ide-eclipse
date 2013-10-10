@@ -13,6 +13,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
+import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
@@ -63,7 +64,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.outline.HierarchyView;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonSourceViewer extends ProjectionViewer {
@@ -212,11 +212,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
     }
 
-	public void showHierarchy() throws PartInitException {
-		HierarchyView.showHierarchyView().focusOnSelection(editor);
-	}
-
-	private void afterCopyCut(String selection, Map<Declaration,String> imports) {
+    public void showHierarchy() throws PartInitException {
+        showHierarchyView().focusOnSelection(editor);
+    }
+    
+    private void afterCopyCut(String selection, Map<Declaration,String> imports) {
         if (!editor.isBlockSelectionModeEnabled()) {
             Clipboard clipboard= new Clipboard(getTextWidget().getDisplay());
             try {
