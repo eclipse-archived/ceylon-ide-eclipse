@@ -60,6 +60,7 @@ public interface CeylonResources {
     public static final String CEYLON_HIER = "ceylon_hier";
     public static final String CEYLON_SUP = "ceylon_sup";
     public static final String CEYLON_SUB = "ceylon_sub";
+    public static final String CEYLON_INHERITED = "ceylon_inherited";
     
     public static final String CEYLON_ERR = "ceylon_err";
     public static final String CEYLON_WARN = "ceylon_warn";
