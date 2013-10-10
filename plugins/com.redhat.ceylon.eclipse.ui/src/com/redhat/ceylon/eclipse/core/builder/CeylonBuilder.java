@@ -1616,13 +1616,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private boolean compileJs(IProject project, TypeChecker typeChecker,
             List<String> js_srcdir, List<String> js_repos, boolean js_verbose,
             String js_outRepo, PrintWriter printWriter) throws CoreException {
-        Options jsopts = new Options(js_repos, js_srcdir,
-                getInterpolatedCeylonSystemRepo(project),
-                null/*cache*/, js_outRepo, null/*uname*/,
-                null/*pass*/, true, true, true, true, js_verbose ? "all" : null, false, false, false,
-                project.getDefaultCharset(),
-                CeylonProjectConfig.get(project).isOffline(),
-                false/*no default repos*/);
+        Options jsopts = new Options()
+                .repos(js_repos)
+                .sources(js_srcdir)
+                .systemRepo(getInterpolatedCeylonSystemRepo(project))
+                .outDir(js_outRepo)
+                .optimize(true)
+                .verbose(js_verbose ? "all" : null)
+                .generateSourceArchive(false)
+                .encoding(project.getDefaultCharset())
+                .offline(CeylonProjectConfig.get(project).isOffline());
         JsCompiler jsc = new JsCompiler(typeChecker, jsopts).stopOnErrors(false);
         try {
             if (!jsc.generate()) {
