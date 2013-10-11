@@ -199,8 +199,10 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
             }
             else {
                 for (IMethod method: type.getMethods()) {
-                    if (dec instanceof Value) {
-                        if (("get" + dec.getName()).equalsIgnoreCase(method.getElementName())) {
+                    String methodName = method.getElementName();
+                    if (dec instanceof Value && method.getParameters().length==0) {
+                        if (("get" + dec.getName()).equalsIgnoreCase(methodName)||
+                            ("is" + dec.getName()).equalsIgnoreCase(methodName)) {
                             return method;
                         }
                     }
@@ -209,7 +211,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                             //TODO: some kind of half-assed attempt to match up
                             //      the parameter types for overloaded methods?
                             List<ParameterList> pls = ((Method) dec).getParameterLists();
-                            if (dec.getName().equalsIgnoreCase(method.getElementName()) &&
+                            if (dec.getName().equalsIgnoreCase(methodName) &&
                                     !pls.isEmpty() && pls.get(0).getParameters().size()==
                                                 method.getNumberOfParameters()) {
                                 return method;
