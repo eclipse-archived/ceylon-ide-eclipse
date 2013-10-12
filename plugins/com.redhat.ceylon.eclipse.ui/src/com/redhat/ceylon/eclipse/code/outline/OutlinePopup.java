@@ -55,6 +55,7 @@ public class OutlinePopup extends TreeViewPopup {
             super(tree);
         }
 
+        @Override
         protected Object[] getFilteredChildren(Object parent) {
             Object[] result= getRawChildren(parent);
             int unfilteredChildren= result.length;
@@ -67,6 +68,7 @@ public class OutlinePopup extends TreeViewPopup {
             return result;
         }
 
+        @Override
         protected void internalExpandToLevel(Widget w, int level) {
             if (!fIsFiltering && w instanceof Item) {
                 Item i= (Item) w;
@@ -86,12 +88,14 @@ public class OutlinePopup extends TreeViewPopup {
 
         private static final int OTHER= 1;
 
+        @Override
         public void sort(Viewer viewer, Object[] elements) {
             if (!lexicalSortingAction.isChecked())
                 return;
             super.sort(viewer, elements);
         }
 
+        @Override
         public int compare(Viewer viewer, Object e1, Object e2) {
             int cat1= category(e1);
             int cat2= category(e2);
@@ -103,6 +107,7 @@ public class OutlinePopup extends TreeViewPopup {
             return label1.compareTo(label2);
         }
 
+        @Override
         public int category(Object element) {
             return OTHER;
         }
@@ -121,6 +126,7 @@ public class OutlinePopup extends TreeViewPopup {
             setChecked(getDialogSettings().getBoolean(STORE_LEXICAL_SORTING_CHECKED));
         }
 
+        @Override
         public void run() {
             valueChanged(isChecked(), true);
         }
@@ -128,12 +134,14 @@ public class OutlinePopup extends TreeViewPopup {
         private void valueChanged(final boolean on, boolean store) {
             setChecked(on);
             BusyIndicator.showWhile(fOutlineViewer.getControl().getDisplay(), new Runnable() {
+                @Override
                 public void run() {
                     fOutlineViewer.refresh(false);
                 }
             });
-            if (store)
+            if (store) {
                 getDialogSettings().put(STORE_LEXICAL_SORTING_CHECKED, on);
+            }
         }
     }
 
@@ -179,6 +187,7 @@ public class OutlinePopup extends TreeViewPopup {
 		return super.createTitleControl(parent);
 	}
 	
+    @Override
     public void setInput(Object information) {
         if (information == null || information instanceof String) {
             inputChanged(null, null);

@@ -468,6 +468,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 .append(":" + ce.getLocation(), COUNTER_STYLER);
     }
     
+    @Override
     public String getText(Object element) {
         return getStyledText(element).toString();
     }
@@ -686,16 +687,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
     }
     
+    @Override
     public void addListener(ILabelProviderListener listener) {
         fListeners.add(listener);
     }
     
+    @Override
     public void dispose() {}
     
+    @Override
     public boolean isLabelProperty(Object element, String property) {
         return false;
     }
     
+    @Override
     public void removeListener(ILabelProviderListener listener) {
         fListeners.remove(listener);
     }
