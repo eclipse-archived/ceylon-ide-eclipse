@@ -33,7 +33,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
     
     //private IStructuredSelection selection;
 	private String moduleName;
-	private String version = DEFAULT_VERSION;
+	private String version = "";
 	private String jarPath;
     private String repositoryPath;
     private IJavaProject project;
@@ -66,8 +66,8 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         layout.numColumns = 4;
         composite.setLayout(layout);
         
+        addSelectArchive(composite);
         addSpecifyModule(composite);
-        addSelectProject(composite);
 		addSelectRepo(composite);
         
         setControl(composite);
@@ -103,22 +103,21 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         if(nameVersion.isEmpty())
             return;
         int dash = nameVersion.indexOf('-');
+        String name;
+        String version;
         if (dash != -1){
-            String version = nameVersion.substring(dash+1);
-            if (versionField.getText().isEmpty() ||
-                versionField.getText().equals(DEFAULT_VERSION)) {
-                versionField.setText(version);
-            }
-            String name = nameVersion.substring(0,dash);
-            if (nameField.getText().isEmpty()) {
-                nameField.setText(name);
-            }
+            version = nameVersion.substring(dash+1);
+            name = nameVersion.substring(0,dash);
         }
         else {
-            String name = nameVersion;
-            if (nameField.getText().isEmpty()) {
-                nameField.setText(name);
-            }
+            name = nameVersion;
+            version = DEFAULT_VERSION;
+        }
+        if (nameField.getText().isEmpty()) {
+            nameField.setText(name);
+        }
+        if (versionField.getText().isEmpty()) {
+            versionField.setText(version);
         }
     }
 
@@ -126,14 +125,14 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 //        if (project==null) {
 //            setErrorMessage("Please select a project");
 //        }
-    	if (!packageNameIsLegal()) {
+        if (!isValidJar()) {
+            setErrorMessage("Please select an existing Java archive");
+        }
+        else if (!packageNameIsLegal()) {
     		setErrorMessage("Please enter a legal module name");
     	}
     	else if (version.isEmpty()) {
     		setErrorMessage("Please enter a version");
-    	}
-    	else if (!isValidJar()) {
-    		setErrorMessage("Please select an existing Java archive");
     	}
         else if (!isValidRepo()) {
             setErrorMessage("Please select an existing local repository");
@@ -249,7 +248,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         new Label(composite, SWT.NONE).setLayoutData(jlgd);
     }
     
-    void addSelectProject(Composite composite) {
+    void addSelectArchive(Composite composite) {
         
         Label jarLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         jarLabel.setText("Select Java archive: ");
