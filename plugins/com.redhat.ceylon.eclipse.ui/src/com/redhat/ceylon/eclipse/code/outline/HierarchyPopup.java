@@ -38,7 +38,6 @@ public class HierarchyPopup extends TreeViewPopup {
 	private final class ChangeViewListener implements KeyListener {
 		@Override
 		public void keyReleased(KeyEvent e) {}
-
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if (e.character == 't' && (e.stateMask&SWT.MOD1)!=0) {

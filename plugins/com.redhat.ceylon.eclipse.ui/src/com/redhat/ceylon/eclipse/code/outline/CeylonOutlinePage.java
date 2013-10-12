@@ -96,6 +96,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                 !treeViewer.getTree().isDisposed()) {
             treeViewer.getTree().getDisplay()
                    .syncExec(new Runnable() {
+                @Override
                 public void run() {
                     TreeViewer viewer = getTreeViewer();
                     if (viewer!=null && 
