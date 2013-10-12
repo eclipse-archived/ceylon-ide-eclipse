@@ -1,8 +1,9 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getHoverInfo;
-import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getModel;
-import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverInfo;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.internalGetHoverInfo;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 
 import org.eclipse.jface.resource.JFaceResources;
@@ -15,11 +16,9 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.ViewPart;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
 
 public class DocumentationView extends ViewPart {
     
@@ -35,7 +34,7 @@ public class DocumentationView extends ViewPart {
     
     private Browser control;
     private CeylonEditor editor;
-    private CeylonBrowserInformationControlInput info;
+    private CeylonBrowserInput info;
     
     @Override
     public void createPartControl(Composite parent) {
@@ -80,15 +79,10 @@ public class DocumentationView extends ViewPart {
     @Override
     public void setFocus() {}
     
-    public void update(int offset, int length) { 
-        IEditorPart currentEditor = Util.getCurrentEditor();
-        if (currentEditor instanceof CeylonEditor) {
-            editor = (CeylonEditor) currentEditor;
-            CeylonHover hover = new CeylonHover(editor);
-            info = hover.internalGetHoverInfo(editor.getCeylonSourceViewer(), 
-                    new Region(offset, length));
-            if (info!=null) control.setText(info.getHtml());
-        }
+    public void update(CeylonEditor editor, int offset, int length) { 
+        this.editor = editor;
+        info = internalGetHoverInfo(editor, new Region(offset, length));
+        if (info!=null) control.setText(info.getHtml());
     }
 
 }

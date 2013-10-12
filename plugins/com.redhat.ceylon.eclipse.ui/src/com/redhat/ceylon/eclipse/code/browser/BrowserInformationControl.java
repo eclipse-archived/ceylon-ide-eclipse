@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package com.redhat.ceylon.eclipse.code.browser;
 
 /*******************************************************************************
  * Copyright (c) 2000, 2010 IBM Corporation and others.
@@ -75,8 +75,7 @@ import org.eclipse.swt.widgets.Slider;
  */
 public class BrowserInformationControl extends AbstractInformationControl 
         implements IInformationControlExtension2, IDelayedInputChangeProvider {
-
-
+    
 	/**
 	 * Tells whether the SWT Browser widget and hence this information
 	 * control is available.
@@ -143,7 +142,7 @@ public class BrowserInformationControl extends AbstractInformationControl
 	/** Bold text style */
 	private TextStyle fBoldStyle;
 
-	private BrowserInformationControlInput fInput;
+	private BrowserInput fInput;
 
 	/**
 	 * <code>true</code> iff the browser has completed loading of the last
@@ -252,13 +251,13 @@ public class BrowserInformationControl extends AbstractInformationControl
 	 * @deprecated use {@link #setInput(Object)}
 	 */
 	public void setInformation(final String content) {
-		setInput(new BrowserInformationControlInput(null) {
+		setInput(new BrowserInput(null) {
 			public String getHtml() {
 				return content;
 			}
 
 			public String getInputName() {
-				return ""; //$NON-NLS-1$
+				return "";
 			}
 
 			public Object getInputElement() {
@@ -272,14 +271,14 @@ public class BrowserInformationControl extends AbstractInformationControl
 	 * {@link BrowserInformationControlInput}.
 	 */
 	public void setInput(Object input) {
-		Assert.isLegal(input == null || input instanceof String || input instanceof BrowserInformationControlInput);
+		Assert.isLegal(input == null || input instanceof String || input instanceof BrowserInput);
 
 		if (input instanceof String) {
 			setInformation((String)input);
 			return;
 		}
 
-		fInput= (BrowserInformationControlInput)input;
+		fInput= (BrowserInput) input;
 
 		String content= null;
 		if (fInput != null)
@@ -471,7 +470,7 @@ public class BrowserInformationControl extends AbstractInformationControl
 			int lineWidth= rect.x + rect.width;
 			if (i==0) {
 				lineWidth*=1.25; //to accommodate it is not only bold but also monospace
-				lineWidth+= fInput.getLeadingImageWidth();
+				lineWidth+= 20;
 			}
 			textWidth= Math.max(textWidth, lineWidth);
 		}
@@ -614,7 +613,7 @@ public class BrowserInformationControl extends AbstractInformationControl
 	/**
 	 * @return the current browser input or <code>null</code>
 	 */
-	public BrowserInformationControlInput getInput() {
+	public BrowserInput getInput() {
 		return fInput;
 	}
 

@@ -204,7 +204,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         }
         DocumentationView documentationView = DocumentationView.getInstance();
         if (documentationView!=null) {
-            documentationView.update(offset, length);
+            documentationView.update(activeEditor, offset, length);
         }
     }
 

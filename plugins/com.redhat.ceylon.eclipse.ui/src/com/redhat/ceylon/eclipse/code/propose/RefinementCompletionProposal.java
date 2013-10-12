@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
-import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
