@@ -57,12 +57,12 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     /**
      * The ID for the kind of annotations created for "mark occurrences"
      */
-    public static final String OCCURRENCE_ANNOTATION= PLUGIN_ID + ".occurrenceAnnotation";
+    public static final String OCCURRENCE_ANNOTATION = PLUGIN_ID + ".occurrenceAnnotation";
 
     /**
      * True if "mark occurrences" is currently on/enabled
      */
-    private boolean fMarkingEnabled = true;
+    private boolean markingEnabled = true;
 
     private CeylonEditor activeEditor;
 
@@ -70,56 +70,60 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
      * The IParseController for the currently-active editor, if any. Could be null
      * if the current editor is not an IMP editor.
      */
-    private CeylonParseController fParseController;
+    private CeylonParseController parseController;
 
     /**
      * The document provider for the currently-active editor. Could be null if
      * the current editor is not an IMP editor.
      */
-    private IDocumentProvider fDocumentProvider;
+    private IDocumentProvider documentProvider;
 
     /**
      * The document for the currently-active editor, if any. Could be null if
      * the current editor is not an IMP editor.
      */
-    private IDocument fDocument;
+    private IDocument document;
 
-    private Annotation[] fOccurrenceAnnotations;
+    private Annotation[] occurrenceAnnotations;
     
     /**
      * Listens to part-related events from the workbench to monitor when text editors are
      * activated/closed, and keep the necessary listeners pointed at the active editor.
      */
     private final class EditorPartListener implements IPartListener {
+        @Override
         public void partActivated(IWorkbenchPart part) {
             if (part instanceof CeylonEditor) {
             	setUpActiveEditor((CeylonEditor) part);
-            	if (fDocumentProvider!=null) {
+            	if (documentProvider!=null) {
             		retrieveOccurrenceAnnotations();
-            		if (!fMarkingEnabled) {
+            		if (!markingEnabled) {
             			unregisterListeners();
             			removeExistingOccurrenceAnnotations();
             		}
             	}
             }
         }
-
+        @Override
         public void partClosed(IWorkbenchPart part) {
             if (part == activeEditor) {
                 unregisterListeners();
                 activeEditor= null;
-                fDocumentProvider= null;
-                fDocument= null;
-                fParseController= null;
-                fOccurrenceAnnotations= null;
+                documentProvider= null;
+                document= null;
+                parseController= null;
+                occurrenceAnnotations= null;
             }
         }
-
+        @Override
         public void partBroughtToTop(IWorkbenchPart part) { }
+        @Override
         public void partDeactivated(IWorkbenchPart part) { }
+        @Override
         public void partOpened(IWorkbenchPart part) { }
     }
 
+    @Override
     public void caretMoved(CaretEvent event) {
     	if (!activeEditor.isBackgroundParsingPaused() &&
     	        !activeEditor.isBlockSelectionModeEnabled() &&
@@ -132,13 +136,14 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     			offset = selection.getOffset();
     			length = selection.getLength();
     		}
-    		recomputeAnnotationsForSelection(offset, length, fDocument);
+    		recomputeAnnotationsForSelection(offset, length, document);
     	}
     }
 
+    @Override
     public void run(IAction action) {
-        fMarkingEnabled = action.isChecked();
-        if (fMarkingEnabled) {
+        markingEnabled = action.isChecked();
+        if (markingEnabled) {
             setUpActiveEditor((CeylonEditor) PlatformUI.getWorkbench()
             		.getActiveWorkbenchWindow().getActivePage().getActiveEditor());
         } 
@@ -175,7 +180,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     }
 
     private void recomputeAnnotationsForSelection(int offset, int length, IDocument document) {
-        IAnnotationModel annotationModel = fDocumentProvider.getAnnotationModel(getEditorInput());
+        IAnnotationModel annotationModel = documentProvider.getAnnotationModel(getEditorInput());
         Tree.CompilationUnit root = getCompilationUnit();
         if (root == null) {
             // Get this when "selecting" an error message that is shown in the editor view
@@ -187,7 +192,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         }
         Node selectedNode= findNode(root, offset, offset+length-1);
         try {
-            List<Node> occurrences = getOccurrencesOf(fParseController, selectedNode);
+            List<Node> occurrences = getOccurrencesOf(parseController, selectedNode);
             if (occurrences != null) {
                 Position[] positions= convertRefNodesToPositions(occurrences);
                 placeAnnotations(convertPositionsToAnnotationMap(positions, document), annotationModel);
@@ -217,7 +222,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         if (annotationModel==null) return;
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-            	((IAnnotationModelExtension) annotationModel).replaceAnnotations(fOccurrenceAnnotations, annotationMap);
+            	((IAnnotationModelExtension) annotationModel).replaceAnnotations(occurrenceAnnotations, annotationMap);
             } 
             else {
                 removeExistingOccurrenceAnnotations();
@@ -227,12 +232,12 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
                     annotationModel.addAnnotation((Annotation) mapEntry.getKey(), (Position) mapEntry.getValue());
                 }
             }
-            fOccurrenceAnnotations= (Annotation[]) annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
+            occurrenceAnnotations= (Annotation[]) annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
         }
     }
 
 	private void retrieveOccurrenceAnnotations() {
-		IAnnotationModel annotationModel= fDocumentProvider.getAnnotationModel(getEditorInput());
+		IAnnotationModel annotationModel= documentProvider.getAnnotationModel(getEditorInput());
 		// Need to initialize the set of pre-existing annotations in order
 		// for them to be removed properly when new occurrences are marked
 		if (annotationModel != null) {
@@ -246,7 +251,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 		            annotationList.add(ann);
 		        }
 		    }
-		    fOccurrenceAnnotations = annotationList.toArray(new Annotation[annotationList.size()]);
+		    occurrenceAnnotations = annotationList.toArray(new Annotation[annotationList.size()]);
 		}
 	}
 
@@ -258,31 +263,31 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         // (on MacOS?), and then we can't properly initialize this MarkOccurrencesAction instance.
         // When that happens, fDocumentProvider will be null. Initialization needs a fix for that,
         // rather than this simple-minded null guard.
-        if (fDocumentProvider == null)
+        if (documentProvider == null)
             return;
-        IAnnotationModel annotationModel= fDocumentProvider.getAnnotationModel(getEditorInput());
-        if (annotationModel == null || fOccurrenceAnnotations == null)
+        IAnnotationModel annotationModel= documentProvider.getAnnotationModel(getEditorInput());
+        if (annotationModel == null || occurrenceAnnotations == null)
             return;
 
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-            	((IAnnotationModelExtension) annotationModel).replaceAnnotations(fOccurrenceAnnotations, null);
+            	((IAnnotationModelExtension) annotationModel).replaceAnnotations(occurrenceAnnotations, null);
             } 
             else {
-                for (int i= 0, length= fOccurrenceAnnotations.length; i < length; i++) {
-                	annotationModel.removeAnnotation(fOccurrenceAnnotations[i]);
+                for (int i=0, length= occurrenceAnnotations.length; i<length; i++) {
+                	annotationModel.removeAnnotation(occurrenceAnnotations[i]);
                 }
             }
-            fOccurrenceAnnotations= null;
+            occurrenceAnnotations= null;
         }
     }
 
     private Position[] convertRefNodesToPositions(List<Node> refs) {
         Position[] positions = new Position[refs.size()];
         int i= 0;
-        for (Iterator<Node> iter= refs.iterator(); iter.hasNext(); i++) {
+        for (Iterator<Node> iter=refs.iterator(); iter.hasNext(); i++) {
             Node node = iter.next();
-            positions[i]= new Position(getStartOffset(node), getLength(node));
+            positions[i] = new Position(getStartOffset(node), getLength(node));
         }
         return positions;
     }
@@ -296,7 +301,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         // get the current AST (but in the future do something more
         // sophisticated to avoid needless recomputation but only
         // when it is truly needless).
-        return fParseController.getRootNode();
+        return parseController.getRootNode();
     }
 
     private IEditorInput getEditorInput() {
@@ -304,19 +309,20 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     }
 
     private IDocumentProvider getDocumentProvider() {
-        fDocumentProvider = activeEditor.getDocumentProvider();
-        return fDocumentProvider;
+        documentProvider = activeEditor.getDocumentProvider();
+        return documentProvider;
     }
 
     private void setUpActiveEditor(CeylonEditor textEditor) {
         unregisterListeners();
-        if (textEditor == null)
+        if (textEditor == null) {
             return;
+        }
         activeEditor = textEditor;
-        fDocument = getDocumentFromEditor();
-        fParseController = activeEditor.getParseController();
+        document = getDocumentFromEditor();
+        parseController = activeEditor.getParseController();
 
-        if (fParseController == null) {
+        if (parseController == null) {
             return;
         }
 
@@ -325,23 +331,28 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         ISelection selection = activeEditor.getSelectionProvider().getSelection();
         if (selection instanceof ITextSelection) {
             ITextSelection textSelection = (ITextSelection) selection;
-            recomputeAnnotationsForSelection(textSelection.getOffset(), textSelection.getLength(), fDocument);
+            recomputeAnnotationsForSelection(textSelection.getOffset(), textSelection.getLength(), document);
         }
     }
 
     private Object getLockObject(IAnnotationModel annotationModel) {
-        if (annotationModel instanceof ISynchronizable)
+        if (annotationModel instanceof ISynchronizable) {
             return ((ISynchronizable) annotationModel).getLockObject();
-        else
+        }
+        else {
         	return annotationModel;
+        }
     }
 
+    @Override
     public void selectionChanged(IAction action, ISelection selection) { }
 
+    @Override
     public void dispose() {
     	unregisterListeners();
     }
 
+    @Override
     public void init(IWorkbenchWindow window) {
     	window.getActivePage().addPartListener(new EditorPartListener());
     }
@@ -361,7 +372,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     							IRegion selection = activeEditor.getSelection();
     							int offset = selection.getOffset();
     							int length = selection.getLength();
-    							recomputeAnnotationsForSelection(offset, length, fDocument);
+    							recomputeAnnotationsForSelection(offset, length, document);
     						}
     					}, null);
     				} 
