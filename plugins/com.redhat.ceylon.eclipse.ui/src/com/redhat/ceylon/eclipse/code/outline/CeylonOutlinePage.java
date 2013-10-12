@@ -82,7 +82,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
         this.parseController = parseController;
         this.sourceViewer = sourceViewer;
     }
-
+    
+    @Override
     public Stage getStage() {
         return Stage.DONE;
     }
@@ -120,6 +121,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         }
     }
 
+    @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
         TreeViewer viewer = getTreeViewer();
@@ -187,16 +189,20 @@ public class CeylonOutlinePage extends ContentOutlinePage
     
     private static final class OutlineContentProvider 
             implements ITreeContentProvider {
+        @Override
         public Object[] getChildren(Object element) {
             return ((CeylonOutlineNode) element).getChildren().toArray();
         }
+        @Override
         public Object getParent(Object element) {
             return ((CeylonOutlineNode) element).getParent();
         }
+        @Override
         public boolean hasChildren(Object element) {
             Object[] children= getChildren(element);
             return children!=null && children.length > 0;
         }
+        @Override
         public Object[] getElements(Object inputElement) {
             return getChildren(inputElement);
         }
@@ -218,6 +224,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             setImageDescriptor(desc);
         }
 
+        @Override
         public void run() {
             TreeViewer outlineViewer = getTreeViewer();
             if (outlineViewer != null) {
@@ -265,6 +272,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             valueChanged(checked, false);
         }
 
+        @Override
         public void run() {
             valueChanged(isChecked(), true);
         }
@@ -273,6 +281,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             final TreeViewer outlineViewer = getTreeViewer();
             setChecked(on);
             BusyIndicator.showWhile(outlineViewer.getControl().getDisplay(), new Runnable() {
+                @Override
                 public void run() {
                     outlineViewer.setComparator(on?fElementComparator:fPositionComparator);
                 }
@@ -307,6 +316,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             valueChanged(checked, false);
         }
 
+        @Override
         public void run() {
             valueChanged(isChecked(), true);
         }
@@ -315,6 +325,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             final TreeViewer outlineViewer = getTreeViewer();
             setChecked(on);
             BusyIndicator.showWhile(outlineViewer.getControl().getDisplay(), new Runnable() {
+                @Override
                 public void run() {
                     if (on) {
                         outlineViewer.addFilter(filter);
