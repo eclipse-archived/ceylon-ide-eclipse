@@ -25,19 +25,16 @@ import org.eclipse.swt.widgets.TableItem;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class ImportModulesWizardPage extends WizardPage {
+public abstract class ImportModulesWizardPage extends WizardPage {
     
     private Table moduleImportsTable;
-    private NewModuleWizardPage newModuleWizardPage;
     
-    ImportModulesWizardPage(NewModuleWizardPage newModuleWizardPage) {
+    ImportModulesWizardPage() {
         super("Add Module Imports", "Add Module Imports", 
                 CeylonPlugin.getInstance().getImageRegistry()
                         .getDescriptor(CEYLON_NEW_MODULE));
-        this.newModuleWizardPage = newModuleWizardPage;
         setDescription("Add module imports to new module.");
     }
 
@@ -120,14 +117,15 @@ public class ImportModulesWizardPage extends WizardPage {
     }
 
     private void selectAndAddModules() {
-        Map<String, String> added = ModuleImportSelectionDialog.selectModules(getShell(), 
-                newModuleWizardPage.getSourceDir().getJavaProject().getProject(), null);
+        Map<String, String> added = getModules();
         for (Map.Entry<String, String> entry: added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
             item.setImage(CeylonLabelProvider.ARCHIVE);
             item.setText(entry.getKey() + "/" + entry.getValue());
         }
     }
+
+    abstract Map<String, String> getModules();
 
     private void removeSelectedModules() {
         int[] selection = moduleImportsTable.getSelectionIndices();

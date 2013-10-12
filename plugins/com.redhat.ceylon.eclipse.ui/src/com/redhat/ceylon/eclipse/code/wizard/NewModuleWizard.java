@@ -2,6 +2,9 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendImportStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
+import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getModuleSearchResults;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
@@ -14,6 +17,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -26,6 +30,10 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.operations.IWorkbenchOperationSupport;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
+
+import com.redhat.ceylon.cmr.api.ModuleSearchResult;
+import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
+import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 
 public class NewModuleWizard extends Wizard implements INewWizard {
     
@@ -169,7 +177,21 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             page.init(workbench, selection);
         }
         if (importsPage == null) {
-            importsPage = new ImportModulesWizardPage(page);
+            importsPage = new ImportModulesWizardPage() {
+                @Override
+                Map<String, String> getModules() {
+                    return selectModules(new ModuleImportSelectionDialog(getShell(), 
+                            new ModuleImportContentProvider(null) {
+                        @Override
+                        public ModuleSearchResult getModules(String prefix) {
+                            IProject project = page.getSourceDir().getJavaProject()
+                                    .getProject();
+                            return getModuleSearchResults(prefix, 
+                                    getProjectTypeChecker(project), project);
+                        }
+                    }));
+                }
+            };
         }
         addPage(page);
         addPage(importsPage);

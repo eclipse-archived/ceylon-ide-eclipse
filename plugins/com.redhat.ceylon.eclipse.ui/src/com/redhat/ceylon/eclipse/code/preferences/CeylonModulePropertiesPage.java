@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getModuleSearchResults;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
@@ -37,6 +40,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
+import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -320,8 +324,14 @@ public class CeylonModulePropertiesPage extends PropertyPage
     }
 
     private void selectAndAddModules() {
-        Map<String, String> added = ModuleImportSelectionDialog.selectModules(getShell(), 
-                project, getModule());
+        Map<String, String> added = selectModules(new ModuleImportSelectionDialog(getShell(), 
+                new ModuleImportContentProvider(getModule()) {
+            @Override
+            public ModuleSearchResult getModules(String prefix) {
+                return getModuleSearchResults(prefix, 
+                        getProjectTypeChecker(project), project);
+            }
+        }));
         ModuleImportUtil.addModuleImports(project, getModule(), added);
         for (Map.Entry<String, String> entry: added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);

@@ -1,59 +1,23 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
-import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getModuleSearchResults;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static java.util.Collections.emptyMap;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 
-import com.redhat.ceylon.cmr.api.JDKUtils;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchManager;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvider;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public final class ModuleImportSelectionDialog extends FilteredElementTreeSelectionDialog {
     
-    ModuleImportSelectionDialog(Shell parent, final IProject project, final Module module) {
+    public ModuleImportSelectionDialog(Shell parent,
+            ModuleImportContentProvider contentProvider) {
         super(parent, new ModuleSelectionLabelProvider(), 
-                new ModuleSearchViewContentProvider() {
-            @Override
-            public Object[] getChildren(Object parentElement) {
-                if (parentElement instanceof ModuleCategoryNode) {
-                    ModuleCategoryNode cat = (ModuleCategoryNode) parentElement;
-                    List<ModuleNode> result = cat.getModules();
-                    if (result==null) {
-                        result = getImportableModuleNodes(project, module, cat.getName());
-                        cat.setModules(result);
-                    }
-                    return result.toArray();
-                }
-                return super.getChildren(parentElement);
-            }
-            @Override
-                    public boolean hasChildren(Object element) {
-                        return super.hasChildren(element)|| 
-                                element instanceof ModuleCategoryNode;
-                    }
-        });
+                contentProvider);
         setTitle("Module Selection");
         setMessage("Select modules to import:");
     }
@@ -91,75 +55,6 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
         return ModuleSearchViewPart.getModuleDoc(versionNode);
     }
     
-    static List<ModuleNode> getImportableModuleNodes(IProject project, Module module, String prefix) {
-        if (prefix.equals(".")) {
-            List<ModuleNode> list = new ArrayList<ModuleNode>();
-            TreeMap<String, String> map = new TreeMap<String, String>();
-            for (IProject p: CeylonBuilder.getProjects()) {
-                for (Module m: CeylonBuilder.getModulesInProject(p)) {
-                    if (!excluded(module, m.getNameAsString())) {
-                    	map.put(m.getNameAsString(), m.getVersion());
-                    }
-                }
-            }
-            for (Map.Entry<String, String> entry: map.entrySet()) {
-                ModuleNode moduleNode = new ModuleNode(entry.getKey(), new ArrayList<ModuleVersionNode>(1));
-                moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, entry.getValue()));
-                list.add(moduleNode);
-            }
-            return list;
-        }
-        else if (prefix.startsWith("java.")||prefix.equals("java.|javax.")) {
-            List<ModuleNode> list = new ArrayList<ModuleNode>();
-            for (String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
-                if ((prefix.equals("java.|javax.")||name.startsWith(prefix)) && !excluded(module, name)) {
-                    ModuleNode moduleNode = new ModuleNode(name, new ArrayList<ModuleVersionNode>(1));
-                    moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, JDK_MODULE_VERSION));
-                    list.add(moduleNode);
-                }
-            }
-            return list;
-        }
-        else {
-            ModuleSearchResult searchResults = getModuleSearchResults(prefix, 
-                    getProjectTypeChecker(project), project);
-            List<ModuleDetails> list = new ArrayList<ModuleDetails>(searchResults.getResults());
-            for (Iterator<ModuleDetails> it = list.iterator(); it.hasNext();) {
-                String name = it.next().getName();
-                if (excluded(module, name)) {
-                    it.remove();
-                }
-            }
-            return ModuleSearchManager.convertResult(list);
-        }
-    }
-        
-    private static boolean excluded(Module module, String name) {
-        if (module == null) {
-            //i.e. New Ceylon Module wizard
-            if (name.equals(Module.LANGUAGE_MODULE_NAME)) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-        else {
-            //i.e. Ceylon Module properties page
-            if (module.getNameAsString().equals(name)) {
-                return true;
-            }
-            else {
-                for (ModuleImport mi: module.getImports()) {
-                    if (mi.getModule().getNameAsString().equals(name)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }
-    }
-    
     static Map<String, String> getAddedModulesWithVersions(Object[] results) {
         Map<String,String> added = new HashMap<String,String>();
         for (Object result: results) {
@@ -180,8 +75,7 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
         return added;
     }
     
-    public static Map<String,String> selectModules(Shell shell, IProject project, Module module) {
-        ElementTreeSelectionDialog dialog = new ModuleImportSelectionDialog(shell, project, module);
+    public static Map<String,String> selectModules(ModuleImportSelectionDialog dialog) {
         dialog.setInput(ModuleCategoryNode.getCategoryNodes());
         dialog.open();
         Object[] results = dialog.getResult();
