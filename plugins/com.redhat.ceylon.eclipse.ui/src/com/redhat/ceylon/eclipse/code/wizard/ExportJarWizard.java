@@ -7,6 +7,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +36,7 @@ import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -60,7 +63,15 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
             if (selectedElement!=null) {
                 project = selectedElement.getJavaProject();
                 List<String> paths = getCeylonRepositories(project.getProject());
-				repoPath = paths==null || paths.isEmpty() ? null : paths.get(paths.size()-1);
+                if (paths!=null) {
+                    for (int i=paths.size()-1; i>=0; i--) {
+                        String path = paths.get(i);
+                        if (!path.startsWith("http://")) {
+                            repoPath = path;
+                            break;
+                        }
+                    }
+                }
             }
 			if (repoPath==null) repoPath = getDefaultRepositoryPath();
             page = new ExportJarWizardPage(repoPath, project, selectedElement);
@@ -90,7 +101,7 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
 	public static String getDefaultRepositoryPath() {
 		String repositoryPath = CeylonPlugin.getInstance().getDialogSettings()
         		.get("repositoryPath");
-        if (repositoryPath==null) {
+        if (repositoryPath==null || repositoryPath.startsWith("http://")) {
         	repositoryPath = System.getProperty("user.home") + "/.ceylon/repo";
         }
         return repositoryPath;
@@ -117,6 +128,11 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
     
 	@Override
 	public boolean performFinish() {
+        final String name = page.getModuleName();
+        final String version = page.getVersion();
+        final String dir = name.replace('.', File.separatorChar) + File.separatorChar + version;
+        final String fileName = name + "-" + version + ".jar";
+	    final String xml = renderModuleDescriptor(name, version, fileName);
 		final String repositoryPath = page.getRepositoryPath();
 //		final IJavaProject project = page.getProject();
 //		if (project==null) {
@@ -154,10 +170,6 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
                                 return Status.CANCEL_STATUS;
                             }
 						}
-						String name = page.getModuleName();
-						String version = page.getVersion();
-						String dir = name.replace('.', File.separatorChar) + File.separatorChar + version;
-						String fileName = name + "-" + version + ".jar";
 						Path repoModulePath = repoPath.resolve(dir);
 						try {
 							Files.createDirectories(repoModulePath);
@@ -182,6 +194,17 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
 								}
 							};
 							ShaSigner.sign(targetPath.toFile(), log, false);
+                            Path descriptorPath = repoModulePath.resolve("module.xml");
+							OutputStream stream = Files.newOutputStream(descriptorPath);
+							try {
+							    OutputStreamWriter writer = new OutputStreamWriter(stream);
+                                writer.append(xml);
+                                writer.flush();
+							}
+							finally {
+							    stream.close();
+							}
+							
 						}
 						catch (Exception e) {
 							ex = e;
@@ -206,6 +229,48 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
 //		}
 		return true;
 	}
+
+    public String renderModuleDescriptor(final String name,
+            final String version, final String fileName) {
+        StringBuilder builder = new StringBuilder();
+	    String newline = System.lineSeparator();
+        builder.append("<module xmlns=\"urn:jboss:module:1.1\" name=\"")
+	            .append(name)
+	            .append("\" slot=\"")
+	            .append(version)
+	            .append("\">")
+	            .append(newline)
+	            .append("    ")
+	            .append("<resources>")
+	            .append(newline)
+	            .append("        ")
+	            .append("<resource-root path=\"")
+	            .append(fileName)
+	            .append("\"/>")
+	            .append(newline)
+	            .append("    ")
+	            .append("</resources>")
+	            .append(newline)
+	            .append("    ")
+	            .append("<dependencies>")
+	            .append(newline);
+	    for (Map.Entry<String, String> entry: 
+	        importsPage.getImports().entrySet()) {
+	        if (name.equals(Module.LANGUAGE_MODULE_NAME)) continue;
+	        builder.append("        ")
+	                .append("<module name=\"")
+	                .append(entry.getKey())
+	                .append("\" slot=\"")
+	                .append(entry.getValue())
+	                .append("\"/>")
+	                .append(newline);
+	    }
+	    builder.append("     ")
+	            .append("</dependencies>")
+	            .append(newline)
+	            .append("</modules>");
+	    return builder.toString();
+    }
 	
 	public static void persistDefaultRepositoryPath(String repositoryPath) {
 		if (repositoryPath!=null && !repositoryPath.isEmpty()) {
