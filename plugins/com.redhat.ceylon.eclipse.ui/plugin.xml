@@ -1671,6 +1671,10 @@
                   relative="org.eclipse.ui.views.ProblemView"
                   visible="false"
                   relationship="stack"/>
+            <view id="com.redhat.ceylon.eclipse.ui.view.DocumentationView"
+                  relative="org.eclipse.ui.views.ProblemView"
+                  visible="true"
+                  relationship="stack"/>
             <view id="org.eclipse.ui.console.ConsoleView"
                   relative="org.eclipse.ui.views.ProblemView"
                   relationship="right"
@@ -1726,6 +1730,7 @@
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
             <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"/>
+            <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.DocumentationView"/>
             <viewShortcut id="org.eclipse.ui.console.ConsoleView"/>
             <viewShortcut id="org.eclipse.ui.views.ProblemView"/>
             <viewShortcut id="org.eclipse.ui.views.TaskList"/>
