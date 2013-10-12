@@ -84,5 +84,11 @@ public class DocumentationView extends ViewPart {
         info = internalGetHoverInfo(editor, new Region(offset, length));
         if (info!=null) control.setText(info.getHtml());
     }
+    
+    @Override
+    public void dispose() {
+        instance = null;
+        super.dispose();
+    }
 
 }

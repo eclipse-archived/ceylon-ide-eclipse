@@ -2068,7 +2068,7 @@
                label="Show In Type Hierarchy &amp;View"
                class="com.redhat.ceylon.eclipse.code.outline.ShowInHierarchyAction"
                enablesFor="1"
-               icon="icons/class_hi.gif"
+               icon="icons/class_hi_view.gif"
                id="showInHierarchy"
                menubarPath="showIn"/>
      </objectContribution>
@@ -2114,13 +2114,13 @@
       <view
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.outline.HierarchyView"
-            icon="icons/class_hi.gif"
+            icon="icons/class_hi_view.gif"
             id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"
             name="Ceylon Type Hierarchy"/>
       <view
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.hover.DocumentationView"
-            icon="icons/container_obj.gif"
+            icon="icons/show_doc.gif"
             id="com.redhat.ceylon.eclipse.ui.view.DocumentationView"
             name="Ceylon Documentation"/>
    </extension>
