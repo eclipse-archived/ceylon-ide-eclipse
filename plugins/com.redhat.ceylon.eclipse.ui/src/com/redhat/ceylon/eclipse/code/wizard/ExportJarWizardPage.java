@@ -423,7 +423,8 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 	
 	private boolean isValidRepo() {
 	    return repositoryPath!=null &&
-                !repositoryPath.isEmpty();
+                !repositoryPath.isEmpty() &&
+                !repositoryPath.startsWith("http://");
 	}
 	
 	private boolean isValidJar() {
