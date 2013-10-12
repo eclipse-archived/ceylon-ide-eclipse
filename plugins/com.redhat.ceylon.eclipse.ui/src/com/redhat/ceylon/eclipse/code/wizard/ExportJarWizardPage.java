@@ -29,9 +29,11 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 
+    private static final String DEFAULT_VERSION = "1.0.0";
+    
     //private IStructuredSelection selection;
 	private String moduleName;
-	private String version = "1.0.0";
+	private String version = DEFAULT_VERSION;
 	private String jarPath;
     private String repositoryPath;
     private IJavaProject project;
@@ -100,15 +102,23 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         String nameVersion = lastPart.substring(0, suffix);
         if(nameVersion.isEmpty())
             return;
-        int dash = nameVersion.lastIndexOf('-');
-        if(dash != -1){
+        int dash = nameVersion.indexOf('-');
+        if (dash != -1){
             String version = nameVersion.substring(dash+1);
-            versionField.setText(version);
+            if (versionField.getText().isEmpty() ||
+                versionField.getText().equals(DEFAULT_VERSION)) {
+                versionField.setText(version);
+            }
             String name = nameVersion.substring(0,dash);
-            nameField.setText(name);
-        }else{
+            if (nameField.getText().isEmpty()) {
+                nameField.setText(name);
+            }
+        }
+        else {
             String name = nameVersion;
-            nameField.setText(name);
+            if (nameField.getText().isEmpty()) {
+                nameField.setText(name);
+            }
         }
     }
 
