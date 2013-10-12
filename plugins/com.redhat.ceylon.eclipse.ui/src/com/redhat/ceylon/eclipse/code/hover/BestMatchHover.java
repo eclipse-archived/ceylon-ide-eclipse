@@ -46,9 +46,10 @@ public class BestMatchHover
 	private void installTextHovers() {
 		fInstantiatedTextHovers= new ArrayList<ITextHover>(2);
 		fInstantiatedTextHovers.add(new ProblemHover(editor));
-		fInstantiatedTextHovers.add(new CeylonHover(editor));
+		fInstantiatedTextHovers.add(new DocumentationHover(editor));
 	}
-
+	
+	@Override
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 
 		fBestHover= null;
@@ -68,6 +69,7 @@ public class BestMatchHover
 		return null;
 	}
 	
+    @Override
 	public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
 
 		fBestHover= null;
@@ -96,10 +98,12 @@ public class BestMatchHover
 		return null;
 	}
 
+    @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
         return new Region(offset, 0);
     }
     
+    @Override
 	public IInformationControlCreator getHoverControlCreator() {
 		if (fBestHover instanceof ITextHoverExtension)
 			return ((ITextHoverExtension)fBestHover).getHoverControlCreator();

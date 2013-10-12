@@ -4,17 +4,18 @@ import org.eclipse.core.runtime.Assert;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
 
 /**
  * Browser input for Javadoc hover.
  *
  * @since 3.4
  */
-class CeylonBrowserInformationControlInput extends BrowserInformationControlInput {
+class CeylonBrowserInput extends BrowserInput {
 
 	private final Object model;
-	private final String fHtml;
-	private final int fLeadingImageWidth;
+	private final String html;
+	
 	/**
 	 * Creates a new browser information control input.
 	 *
@@ -23,28 +24,22 @@ class CeylonBrowserInformationControlInput extends BrowserInformationControlInpu
 	 * @param html HTML contents, must not be null
 	 * @param leadingImageWidth the indent required for the element image
 	 */
-	public CeylonBrowserInformationControlInput(BrowserInformationControlInput previous, 
-			Object model, String html, int leadingImageWidth) {
+	public CeylonBrowserInput(BrowserInput previous, 
+			Object model, String html) {
 		super(previous);
 		Assert.isNotNull(html);
-		this.model= model;
-		fHtml= html;
-		fLeadingImageWidth= leadingImageWidth;
-	}
-
-	@Override
-	public int getLeadingImageWidth() {
-		return fLeadingImageWidth;
+		this.model = model;
+		this.html = html;
 	}
 
 	@Override
 	public String getHtml() {
-		return fHtml;
+		return html;
 	}
 
 	@Override
 	public Object getInputElement() {
-		return model == null ? (Object) fHtml : model;
+		return model == null ? (Object) html : model;
 	}
 
 	@Override

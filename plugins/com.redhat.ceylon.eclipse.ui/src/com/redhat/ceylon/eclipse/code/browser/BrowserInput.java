@@ -1,4 +1,6 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package com.redhat.ceylon.eclipse.code.browser;
+
+import org.eclipse.jface.text.DefaultInformationControl;
 
 
 /**
@@ -46,6 +48,11 @@ public abstract class BrowserInput {
 		return fNext;
 	}
 
+    /**
+     * @return the HTML contents
+     */
+    public abstract String getHtml();
+
 	/**
 	 * The element to use to set the browsers input.
 	 *
@@ -59,4 +66,16 @@ public abstract class BrowserInput {
 	 * @return the input name
 	 */
 	public abstract String getInputName();
+
+    /**
+     * Returns the HTML from {@link #getHtml()}.
+     * This is a fallback mode for platforms where the {@link BrowserInformationControl}
+     * is not available and this input is passed to a {@link DefaultInformationControl}.
+     *
+     * @return {@link #getHtml()}
+     */
+    public String toString() {
+        return getHtml();
+    }
+
 }

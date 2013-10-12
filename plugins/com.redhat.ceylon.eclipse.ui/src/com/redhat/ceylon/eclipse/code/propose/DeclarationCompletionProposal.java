@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
-import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.propose.CompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.propose.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;

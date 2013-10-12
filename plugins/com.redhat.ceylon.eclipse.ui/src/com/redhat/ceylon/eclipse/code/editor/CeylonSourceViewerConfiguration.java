@@ -43,10 +43,10 @@ import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
-import com.redhat.ceylon.eclipse.code.hover.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
-import com.redhat.ceylon.eclipse.code.hover.CeylonHover;
+import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyInput;
@@ -148,7 +148,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 		contentAssistant.setRepeatedInvocationTrigger(KeySequence.getInstance(key));
         contentAssistant.setStatusMessage(key.format() + " to toggle filter by type");
         contentAssistant.setStatusLineVisible(true);
-        contentAssistant.setInformationControlCreator(new CeylonHover(editor).getHoverControlCreator("Click for focus"));
+        contentAssistant.setInformationControlCreator(new DocumentationHover(editor).getHoverControlCreator("Click for focus"));
         contentAssistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 //      ca.setContextInformationPopupBackground(Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
         //ca.enablePrefixCompletion(true); //TODO: prefix completion stuff in ICompletionProposalExtension3

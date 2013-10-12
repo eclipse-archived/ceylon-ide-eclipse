@@ -24,8 +24,8 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getDocumentationFor;
-import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.getDocumentationForModule;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;

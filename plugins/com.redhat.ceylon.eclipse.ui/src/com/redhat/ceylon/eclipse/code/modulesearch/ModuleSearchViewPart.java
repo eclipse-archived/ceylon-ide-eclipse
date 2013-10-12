@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.modulesearch;
 
-import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.addImageAndLabel;
-import static com.redhat.ceylon.eclipse.code.hover.CeylonHover.fileUrl;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.addImageAndLabel;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.fileUrl;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ADD;
@@ -75,8 +75,8 @@ import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
-import com.redhat.ceylon.eclipse.code.hover.CeylonHover;
-import com.redhat.ceylon.eclipse.code.hover.CeylonHover.CeylonBlockEmitter;
+import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
+import com.redhat.ceylon.eclipse.code.hover.DocumentationHover.CeylonBlockEmitter;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
@@ -430,7 +430,7 @@ public class ModuleSearchViewPart extends ViewPart {
     private SashForm sashForm;
     private TreeViewer moduleTreeViewer;
     private Browser docBrowser;
-    private static String docStyleSheet = CeylonHover.getStyleSheet();
+    private static String docStyleSheet = DocumentationHover.getStyleSheet();
     private static RGB docForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
     private static RGB docBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
     private List<String> queryHistory = new ArrayList<String>();
@@ -720,7 +720,7 @@ public class ModuleSearchViewPart extends ViewPart {
         
         if (versionNode != null) {
         	addImageAndLabel(docBuilder, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
-    				16, 16, "<b><tt>" + CeylonHover.highlightLine(description(versionNode)) +"</tt></b>", 20, 4);
+    				16, 16, "<b><tt>" + DocumentationHover.highlightLine(description(versionNode)) +"</tt></b>", 20, 4);
         	docBuilder.append("<hr/>");
             
             if (versionNode.isFilled()) {
