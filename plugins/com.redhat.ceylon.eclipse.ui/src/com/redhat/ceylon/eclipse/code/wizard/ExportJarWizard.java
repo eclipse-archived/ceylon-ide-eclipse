@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
+import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -9,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
@@ -27,19 +30,26 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.cmr.api.Logger;
+import com.redhat.ceylon.cmr.api.ModuleQuery;
+import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
+import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
+import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EclipseLogger;
 
 public class ExportJarWizard extends Wizard implements IExportWizard {
 
     private IStructuredSelection selection;
     private ExportJarWizardPage page;
+    private ImportModulesWizardPage importsPage;
     
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
 	}
-
+	
     @Override
     public void addPages() {
         super.addPages();
@@ -56,9 +66,27 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
             page = new ExportJarWizardPage(repoPath, project, selectedElement);
             //page.init(selection);
         }
+        if (importsPage == null) {
+            importsPage = new ImportModulesWizardPage() {
+                @Override
+                Map<String, String> getModules() {
+                    return selectModules(new ModuleImportSelectionDialog(getShell(), 
+                            new ModuleImportContentProvider(null) {
+                        @Override
+                        public ModuleSearchResult getModules(String prefix) {
+                            ModuleQuery query = new ModuleQuery(prefix, ModuleQuery.Type.JVM);
+                            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                            return repoManager().logger(new EclipseLogger()).isJDKIncluded(true)
+                                    .buildManager().completeModules(query);
+                        }
+                    }));
+                }
+            };
+        }
         addPage(page);
+        addPage(importsPage);
     }
-
+    
 	public static String getDefaultRepositoryPath() {
 		String repositoryPath = CeylonPlugin.getInstance().getDialogSettings()
         		.get("repositoryPath");
@@ -67,7 +95,7 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
         }
         return repositoryPath;
 	}
-
+	
 	//TODO: fix copy/paste from NewUnitWizardPage
     private IJavaElement getSelectedElement() {
         if (selection!=null && selection.size()==1) {
@@ -178,7 +206,7 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
 //		}
 		return true;
 	}
-
+	
 	public static void persistDefaultRepositoryPath(String repositoryPath) {
 		if (repositoryPath!=null && !repositoryPath.isEmpty()) {
 		    CeylonPlugin.getInstance().getDialogSettings()

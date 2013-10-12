@@ -448,8 +448,8 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 		return version;
 	}
 	
-//	public IJavaProject getProject() {
-//		return project;
-//	}
+	public IJavaProject getProject() {
+		return project;
+	}
 	
 }
