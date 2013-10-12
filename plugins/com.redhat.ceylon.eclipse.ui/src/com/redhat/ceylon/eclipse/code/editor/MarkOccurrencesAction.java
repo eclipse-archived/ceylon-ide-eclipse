@@ -41,6 +41,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.hover.DocumentationView;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
@@ -190,7 +191,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             // a parse error
             return;
         }
-        Node selectedNode= findNode(root, offset, offset+length-1);
+        Node selectedNode = findNode(root, offset, offset+length-1);
         try {
             List<Node> occurrences = getOccurrencesOf(parseController, selectedNode);
             if (occurrences != null) {
@@ -200,6 +201,10 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         } 
         catch (Exception e) {
             e.printStackTrace();
+        }
+        DocumentationView documentationView = DocumentationView.getInstance();
+        if (documentationView!=null) {
+            documentationView.update(offset, length);
         }
     }
 

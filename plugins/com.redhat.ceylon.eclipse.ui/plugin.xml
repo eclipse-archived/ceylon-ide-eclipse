@@ -2112,6 +2112,12 @@
             icon="icons/class_hi.gif"
             id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"
             name="Ceylon Type Hierarchy"/>
+      <view
+            category="com.redhat.ceylon.eclipse.ui.views"
+            class="com.redhat.ceylon.eclipse.code.hover.DocumentationView"
+            icon="icons/container_obj.gif"
+            id="com.redhat.ceylon.eclipse.ui.view.DocumentationView"
+            name="Ceylon Documentation"/>
    </extension>
 
    <extension

@@ -142,7 +142,111 @@ public class CeylonHover
 	public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
 		return findWord(textViewer.getDocument(), offset);
 	}
-	private final class GetSelection implements Runnable {
+	
+	final class CeylonLocationListener implements LocationListener {
+        private final BrowserInformationControl control;
+
+        CeylonLocationListener(BrowserInformationControl control) {
+            this.control = control;
+        }
+
+        @Override
+        public void changing(LocationEvent event) {
+        	String location = event.location;
+        	
+        	//necessary for windows environment (fix for blank page)
+        	//somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
+        	if (!"about:blank".equals(location)) {
+        		event.doit= false;
+        	}
+        	
+        	if (location.startsWith("dec:")) {
+        		Object target = getModel(control.getInput(), editor, location);
+        		if (target!=null) {
+                    close(control); //FIXME: should have protocol to hide, rather than dispose
+        			gotoDeclaration(editor, target);
+        		}
+        	}
+        	else if (location.startsWith("doc:")) {
+        		Object target = getModel(control.getInput(), editor, location);
+        		if (target!=null) {
+        			control.setInput(getHoverInfo(target, control.getInput(), editor, null));
+        		}
+        	}
+        	else if (location.startsWith("ref:")) {
+        		Object target = getModel(control.getInput(), editor, location);
+        		close(control);
+        		new FindReferencesAction(editor, (Declaration) target).run();
+        	}
+        	else if (location.startsWith("sub:")) {
+        		Object target = getModel(control.getInput(), editor, location);
+        		close(control);
+        		new FindSubtypesAction(editor, (Declaration) target).run();
+        	}
+        	else if (location.startsWith("act:")) {
+        		Object target = getModel(control.getInput(), editor, location);
+        		close(control);
+        		new FindRefinementsAction(editor, (Declaration) target).run();
+        	}
+        	else if (location.startsWith("ass:")) {
+        		Object target = getModel(control.getInput(), editor, location);
+        		close(control);
+        		new FindAssignmentsAction(editor, (Declaration) target).run();
+        	}
+        	else if (location.startsWith("stp:")) {
+        		close(control);
+        		CompilationUnit rn = editor.getParseController().getRootNode();
+        		Node node = findNode(rn, Integer.parseInt(location.substring(4)));
+        		SpecifyTypeProposal.create(rn, node, Util.getFile(editor.getEditorInput()))
+        		        .apply(editor.getParseController().getDocument());
+        	}
+        	else if (location.startsWith("exv:")) {
+        		close(control);
+        		new ExtractValueProposal(editor).apply(editor.getParseController().getDocument());
+        	}
+        	else if (location.startsWith("exf:")) {
+        		close(control);
+        		new ExtractFunctionProposal(editor).apply(editor.getParseController().getDocument());
+        	}
+        	/*else if (location.startsWith("javadoc:")) {
+        		final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
+        		int beginIndex = input.getHtml().indexOf("javadoc:")+8;
+        		final String handle = input.getHtml().substring(beginIndex, input.getHtml().indexOf("\"",beginIndex));
+        		new Job("Fetching Javadoc") {
+        			@Override
+        			protected IStatus run(IProgressMonitor monitor) {
+        				final IJavaElement elem = JavaCore.create(handle);
+        				try {
+        					final String javadoc = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
+        					if (javadoc!=null) {
+        						PlatformUI.getWorkbench().getProgressService()
+        						        .runInUI(editor.getSite().getWorkbenchWindow(), new IRunnableWithProgress() {
+        							@Override
+        							public void run(IProgressMonitor monitor) 
+        									throws InvocationTargetException, InterruptedException {
+        								StringBuffer sb = new StringBuffer();
+        								HTMLPrinter.insertPageProlog(sb, 0, getStyleSheet());
+        								appendJavadoc(elem, javadoc, sb);
+        								HTMLPrinter.addPageEpilog(sb);
+        								control.setInput(new DocBrowserInformationControlInput(input, null, sb.toString(), 0));
+        							}
+        						}, null);
+        					}
+        				} 
+        				catch (Exception e) {
+        					e.printStackTrace();
+        				}
+        				return Status.OK_STATUS;
+        			}
+        		}.schedule();
+        	}*/
+        }
+
+        @Override
+        public void changed(LocationEvent event) {}
+    }
+
+    private final class GetSelection implements Runnable {
         ITextSelection selection;
         @Override
         public void run() {
@@ -222,7 +326,7 @@ public class CeylonHover
 			}
 		}
 	}
-
+	
 	/**
 	 * Action that shows the current hover contents in the Javadoc view.
 	 */
@@ -248,7 +352,7 @@ public class CeylonHover
 			}
 		}
 	}*/
-
+	
 	/**
 	 * Action that opens the current hover input element.
 	 */
@@ -263,14 +367,15 @@ public class CeylonHover
 
 		@Override
 		public void run() {
-			gotoDeclaration(fInfoControl, fInfoControl.getInput().getInputElement());
+	        close(fInfoControl); //FIXME: should have protocol to hide, rather than dispose
+			gotoDeclaration(editor, 
+			        fInfoControl.getInput().getInputElement());
 		}
 	}
 	
-	private void gotoDeclaration(BrowserInformationControl control, Object model) {
-		close(control); //FIXME: should have protocol to hide, rather than dispose
+	static void gotoDeclaration(CeylonEditor editor, Object model) {
 		CeylonParseController cpc = editor.getParseController();
-		Declaration dec = (Declaration)model;
+		Declaration dec = (Declaration) model;
 		Node refNode = getReferencedNode(dec, cpc);
 		if (refNode!=null) {
 			gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
@@ -279,13 +384,12 @@ public class CeylonHover
 			gotoJavaNode(dec, cpc);
 		}
 	}
-
+	
 	private static void close(BrowserInformationControl control) {
 		control.notifyDelayedInputChange(null);
 		control.dispose();
 	}
-
-
+	
 	/**
 	 * The style sheet (css).
 	 */
@@ -322,109 +426,17 @@ public class CeylonHover
 	}
 
 	void addLinkListener(final BrowserInformationControl control) {
-		control.addLocationListener(new LocationListener() {
-			@Override
-			public void changing(LocationEvent event) {
-				String location = event.location;
-				
-				//necessary for windows environment (fix for blank page)
-				//somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
-				if (!"about:blank".equals(location)) {
-					event.doit= false;
-				}
-				
-				if (location.startsWith("dec:")) {
-					Object target = getModel(control, location);
-					if (target!=null) {
-						gotoDeclaration(control, target);
-					}
-				}
-				else if (location.startsWith("doc:")) {
-					Object target = getModel(control, location);
-					if (target!=null) {
-						control.setInput(getHoverInfo(target, control.getInput(), null));
-					}
-				}
-				else if (location.startsWith("ref:")) {
-					Object target = getModel(control, location);
-					close(control);
-					new FindReferencesAction(editor, (Declaration) target).run();
-				}
-				else if (location.startsWith("sub:")) {
-					Object target = getModel(control, location);
-					close(control);
-					new FindSubtypesAction(editor, (Declaration) target).run();
-				}
-				else if (location.startsWith("act:")) {
-					Object target = getModel(control, location);
-					close(control);
-					new FindRefinementsAction(editor, (Declaration) target).run();
-				}
-				else if (location.startsWith("ass:")) {
-					Object target = getModel(control, location);
-					close(control);
-					new FindAssignmentsAction(editor, (Declaration) target).run();
-				}
-				else if (location.startsWith("stp:")) {
-					close(control);
-					CompilationUnit rn = editor.getParseController().getRootNode();
-					Node node = findNode(rn, Integer.parseInt(location.substring(4)));
-					SpecifyTypeProposal.create(rn, node, Util.getFile(editor.getEditorInput()))
-					        .apply(editor.getParseController().getDocument());
-				}
-				else if (location.startsWith("exv:")) {
-					close(control);
-					new ExtractValueProposal(editor).apply(editor.getParseController().getDocument());
-				}
-				else if (location.startsWith("exf:")) {
-					close(control);
-					new ExtractFunctionProposal(editor).apply(editor.getParseController().getDocument());
-				}
-				/*else if (location.startsWith("javadoc:")) {
-					final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
-					int beginIndex = input.getHtml().indexOf("javadoc:")+8;
-					final String handle = input.getHtml().substring(beginIndex, input.getHtml().indexOf("\"",beginIndex));
-					new Job("Fetching Javadoc") {
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							final IJavaElement elem = JavaCore.create(handle);
-							try {
-								final String javadoc = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
-								if (javadoc!=null) {
-									PlatformUI.getWorkbench().getProgressService()
-									        .runInUI(editor.getSite().getWorkbenchWindow(), new IRunnableWithProgress() {
-										@Override
-										public void run(IProgressMonitor monitor) 
-												throws InvocationTargetException, InterruptedException {
-											StringBuffer sb = new StringBuffer();
-											HTMLPrinter.insertPageProlog(sb, 0, getStyleSheet());
-											appendJavadoc(elem, javadoc, sb);
-											HTMLPrinter.addPageEpilog(sb);
-											control.setInput(new DocBrowserInformationControlInput(input, null, sb.toString(), 0));
-										}
-									}, null);
-								}
-							} 
-							catch (Exception e) {
-								e.printStackTrace();
-							}
-							return Status.OK_STATUS;
-						}
-					}.schedule();
-				}*/
-			}
-			@Override
-			public void changed(LocationEvent event) {}
-		});
+		control.addLocationListener(new CeylonLocationListener(control));
 	}
 
-	public Object getModel(final BrowserInformationControl control,
-			String location) {
+	public static Object getModel(BrowserInformationControlInput input,
+	        CeylonEditor editor, String location) {
 		String[] bits = location.split(":");
-		Object model = control.getInput().getInputElement();
+		Object model = input.getInputElement();
 		Module module;
 		if (model instanceof String) {
-			module = editor.getParseController().getRootNode().getUnit().getPackage().getModule();
+			module = editor.getParseController().getRootNode()
+			        .getUnit().getPackage().getModule();
 		}
 		else if (model instanceof Declaration) {
 			Declaration dec = (Declaration) model;
@@ -471,7 +483,7 @@ public class CeylonHover
 	}
 
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		CeylonBrowserInformationControlInput info= (CeylonBrowserInformationControlInput) getHoverInfo2(textViewer, hoverRegion);
+		CeylonBrowserInformationControlInput info = (CeylonBrowserInformationControlInput) getHoverInfo2(textViewer, hoverRegion);
 		return info!=null ? info.getHtml() : null;
 	}
 
@@ -480,7 +492,7 @@ public class CeylonHover
 		return internalGetHoverInfo(textViewer, hoverRegion);
 	}
 
-	private CeylonBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
+	CeylonBrowserInformationControlInput internalGetHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		if (editor==null) return null;
 	    CeylonParseController parseController = editor.getParseController();
 	    if (parseController==null) return null;
@@ -507,7 +519,7 @@ public class CeylonHover
 			if (node instanceof Tree.ImportPath) {
 				Referenceable r = ((Tree.ImportPath) node).getModel();
 				if (r!=null) {
-					return getHoverInfo(r, null, node);
+					return getHoverInfo(r, null, editor, node);
 				}
 			}
 			else if (node instanceof Tree.LocalModifier) {
@@ -517,7 +529,7 @@ public class CeylonHover
 				return getTermTypeHoverInfo(node, null, textViewer.getDocument());
 			}
 			else {
-				return getHoverInfo(getReferencedDeclaration(node), null, node);
+				return getHoverInfo(getReferencedDeclaration(node), null, editor, node);
 			}
 		}
 		return null;
@@ -748,8 +760,8 @@ public class CeylonHover
 	 *         if no information is available
 	 * @since 3.4
 	 */
-	private CeylonBrowserInformationControlInput getHoverInfo(Object model, 
-			BrowserInformationControlInput previousInput, Node node) {
+	static CeylonBrowserInformationControlInput getHoverInfo(Object model, 
+			BrowserInformationControlInput previousInput, CeylonEditor editor, Node node) {
 		if (model instanceof Declaration) {
 			Declaration dec = (Declaration) model;
 			return new CeylonBrowserInformationControlInput(previousInput, dec, 
