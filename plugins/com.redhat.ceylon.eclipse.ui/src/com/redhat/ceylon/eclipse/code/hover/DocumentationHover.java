@@ -648,7 +648,7 @@ public class DocumentationHover
 			    .append(toHex(getCurrentThemeColor(STRINGS)))
 			    .append("'><pre>")
 			    .append('\"')
-			    .append(node.getText())
+			    .append(convertToHTMLContent(node.getText()))
 			    .append('\"')
 			    .append("</pre></code>")
 			    .append("<hr/>");
@@ -705,7 +705,7 @@ public class DocumentationHover
             .append(toHex(getCurrentThemeColor(CHARS)))
             .append("'>")
             .append('\'')
-            .append(character)
+            .append(convertToHTMLContent(character))
             .append('\'')
             .append("</code>");
         int codepoint = Character.codePointAt(character, 0);
