@@ -201,11 +201,11 @@ public class DocumentationHover
 	
 	final class CeylonLocationListener implements LocationListener {
         private final BrowserInformationControl control;
-
+        
         CeylonLocationListener(BrowserInformationControl control) {
             this.control = control;
         }
-
+        
         @Override
         public void changing(LocationEvent event) {
         	String location = event.location;
@@ -217,6 +217,42 @@ public class DocumentationHover
         	}
         	
         	CeylonBrowserInput input = (CeylonBrowserInput) control.getInput();
+            handleLink(input, location);
+        	/*else if (location.startsWith("javadoc:")) {
+        		final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
+        		int beginIndex = input.getHtml().indexOf("javadoc:")+8;
+        		final String handle = input.getHtml().substring(beginIndex, input.getHtml().indexOf("\"",beginIndex));
+        		new Job("Fetching Javadoc") {
+        			@Override
+        			protected IStatus run(IProgressMonitor monitor) {
+        				final IJavaElement elem = JavaCore.create(handle);
+        				try {
+        					final String javadoc = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
+        					if (javadoc!=null) {
+        						PlatformUI.getWorkbench().getProgressService()
+        						        .runInUI(editor.getSite().getWorkbenchWindow(), new IRunnableWithProgress() {
+        							@Override
+        							public void run(IProgressMonitor monitor) 
+        									throws InvocationTargetException, InterruptedException {
+        								StringBuffer sb = new StringBuffer();
+        								HTMLPrinter.insertPageProlog(sb, 0, getStyleSheet());
+        								appendJavadoc(elem, javadoc, sb);
+        								HTMLPrinter.addPageEpilog(sb);
+        								control.setInput(new DocBrowserInformationControlInput(input, null, sb.toString(), 0));
+        							}
+        						}, null);
+        					}
+        				} 
+        				catch (Exception e) {
+        					e.printStackTrace();
+        				}
+        				return Status.OK_STATUS;
+        			}
+        		}.schedule();
+        	}*/
+        }
+        
+        private void handleLink(CeylonBrowserInput input, String location) {
             if (location.startsWith("dec:")) {
         		Referenceable target = getLinkedModel(input, editor, location);
         		if (target!=null) {
@@ -265,44 +301,12 @@ public class DocumentationHover
         		close(control);
         		new ExtractFunctionProposal(editor).apply(editor.getParseController().getDocument());
         	}
-        	/*else if (location.startsWith("javadoc:")) {
-        		final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
-        		int beginIndex = input.getHtml().indexOf("javadoc:")+8;
-        		final String handle = input.getHtml().substring(beginIndex, input.getHtml().indexOf("\"",beginIndex));
-        		new Job("Fetching Javadoc") {
-        			@Override
-        			protected IStatus run(IProgressMonitor monitor) {
-        				final IJavaElement elem = JavaCore.create(handle);
-        				try {
-        					final String javadoc = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
-        					if (javadoc!=null) {
-        						PlatformUI.getWorkbench().getProgressService()
-        						        .runInUI(editor.getSite().getWorkbenchWindow(), new IRunnableWithProgress() {
-        							@Override
-        							public void run(IProgressMonitor monitor) 
-        									throws InvocationTargetException, InterruptedException {
-        								StringBuffer sb = new StringBuffer();
-        								HTMLPrinter.insertPageProlog(sb, 0, getStyleSheet());
-        								appendJavadoc(elem, javadoc, sb);
-        								HTMLPrinter.addPageEpilog(sb);
-        								control.setInput(new DocBrowserInformationControlInput(input, null, sb.toString(), 0));
-        							}
-        						}, null);
-        					}
-        				} 
-        				catch (Exception e) {
-        					e.printStackTrace();
-        				}
-        				return Status.OK_STATUS;
-        			}
-        		}.schedule();
-        	}*/
         }
-
+        
         @Override
         public void changed(LocationEvent event) {}
     }
-
+	
     /**
 	 * Action to go back to the previous input in the hover control.
 	 */
