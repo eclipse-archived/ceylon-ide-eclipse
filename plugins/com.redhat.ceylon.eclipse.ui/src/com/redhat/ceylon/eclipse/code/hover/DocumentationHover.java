@@ -12,6 +12,7 @@ package com.redhat.ceylon.eclipse.code.hover;
  *     Genady Beryozkin <eclipse@genady.org> - [hovering] tooltip for constant string does not show constant value - https://bugs.eclipse.org/bugs/show_bug.cgi?id=85382
  *******************************************************************************/
 
+import static com.redhat.ceylon.compiler.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.isAvailable;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
@@ -26,6 +27,7 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -90,6 +92,7 @@ import com.github.rjeschke.txtmark.Processor;
 import com.github.rjeschke.txtmark.SpanEmitter;
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -99,7 +102,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -133,6 +135,7 @@ import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 
@@ -475,57 +478,41 @@ public class DocumentationHover
 
 	public static Referenceable getLinkedModel(CeylonBrowserInput input,
 	        CeylonEditor editor, String location) {
-		String[] bits = location.split(":");
-		Referenceable model = input.getModel();
-		Module module;
-		/*if (model instanceof String) {
-			module = editor.getParseController().getRootNode()
-			        .getUnit().getPackage().getModule();
-		}
-		else*/ if (model instanceof Declaration) {
-			Declaration dec = (Declaration) model;
-			module = dec.getUnit().getPackage().getModule();
-		}
-		else if (model instanceof Package){
-			Package pack = (Package) model;
-			module = pack.getModule();
-		}
-		else if (model instanceof Module){
-			module = (Module) model;
+        TypeChecker tc = editor.getParseController().getTypeChecker();
+        String[] bits = location.split(":");
+		JDTModelLoader modelLoader = getModelLoader(tc);
+        String pname = bits[1];
+        if (pname.startsWith("/")) {
+			pname = pname.substring(1);
+	        return modelLoader.getLoadedModule(pname);
 		}
 		else {
-			return null;
+		    //TODO: to avoid the following, we could include
+		    //      the module name separately in the link
+		    Module module = pname.equals(LANGUAGE_MODULE_NAME) ? 
+		            //this special case because java.base does not 
+		            //seem to express its dependency to ceylon.language
+		            modelLoader.getLanguageModule() :
+		            modelLoader.getLoadedModule(input.getModuleName());
+		    if (module==null) return null;
+		    Referenceable target = module.getPackage(pname);
+		    for (int i=2; i<bits.length; i++) {
+		        Scope scope;
+		        if (target instanceof Scope) {
+		            scope = (Scope) target;
+		        }
+		        else if (target instanceof TypedDeclaration) {
+		            scope = ((TypedDeclaration) target).getType().getDeclaration();
+		        }
+		        else {
+		            return null;
+		        }
+		        target = scope.getDirectMember(bits[i], null, false);
+		    }
+		    return target;
 		}
-		if (bits[1].startsWith("/")) {
-			String pname = bits[1].substring(1);
-			if (pname.equals(module.getNameAsString())) {
-				return module;
-			}
-			for (ModuleImport mi: module.getImports()) {
-				if (pname.equals(mi.getModule().getNameAsString())) {
-					return mi.getModule();
-				}
-			}
-			return null;
-			//return module.getPackage(pname).getModule();
-		}
-		Referenceable target = module.getPackage(bits[1]);
-		for (int i=2; i<bits.length; i++) {
-			Scope scope;
-			if (target instanceof Scope) {
-				scope = (Scope) target;
-			}
-			else if (target instanceof TypedDeclaration) {
-				scope = ((TypedDeclaration) target).getType().getDeclaration();
-			}
-			else {
-				return null;
-			}
-			target = scope.getDirectMember(bits[i], null, false);
-		}
-		return target;
 	}
-
+	
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		CeylonBrowserInput info = (CeylonBrowserInput) getHoverInfo2(textViewer, hoverRegion);
 		return info!=null ? info.getHtml() : null;
@@ -556,7 +543,8 @@ public class DocumentationHover
 				}
 				if (node instanceof Tree.Term) {
 					return getTermTypeHoverInfo(node, selection.getText(), 
-					        editor.getCeylonSourceViewer().getDocument());
+					        editor.getCeylonSourceViewer().getDocument(),
+		                    editor.getParseController().getProject());
 				}
 			}
 			Node node = findNode(rn, hoffset);
@@ -567,11 +555,13 @@ public class DocumentationHover
 				}
 			}
 			else if (node instanceof Tree.LocalModifier) {
-				return getInferredTypeHoverInfo(node);
+				return getInferredTypeHoverInfo(node,
+	                    editor.getParseController().getProject());
 			}
 			else if (node instanceof Tree.Literal) {
 				return getTermTypeHoverInfo(node, null, 
-				        editor.getCeylonSourceViewer().getDocument());
+				        editor.getCeylonSourceViewer().getDocument(),
+	                    editor.getParseController().getProject());
 			}
 			else {
 				return getHoverInfo(getReferencedDeclaration(node), 
@@ -596,10 +586,10 @@ public class DocumentationHover
         return new GetSelection().getSelection();
     }
 
-	private static CeylonBrowserInput getInferredTypeHoverInfo(Node node) {
+	private static CeylonBrowserInput getInferredTypeHoverInfo(Node node, IProject project) {
 		ProducedType t = ((Tree.LocalModifier) node).getTypeModel();
 		if (t==null) return null;
-		StringBuffer buffer= new StringBuffer();
+		StringBuffer buffer = new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, DocumentationHover.getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
 				16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + "</tt></b>", 
@@ -613,10 +603,11 @@ public class DocumentationHover
 		}
 		//buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
 		HTMLPrinter.addPageEpilog(buffer);
-		return new CeylonBrowserInput(null, null, buffer.toString());
+		return new CeylonBrowserInput(null, null, buffer.toString(), project);
 	}
 	
-	private static CeylonBrowserInput getTermTypeHoverInfo(Node node, String selectedText, IDocument doc) {
+	private static CeylonBrowserInput getTermTypeHoverInfo(Node node, String selectedText, 
+	        IDocument doc, IProject project) {
 		ProducedType t = ((Tree.Term) node).getTypeModel();
 		if (t==null) return null;
 		String expr = "";
@@ -673,7 +664,7 @@ public class DocumentationHover
 				16, 16, "<a href=\"exf:\">Extract function</a>", 
 				20, 4);
 		HTMLPrinter.addPageEpilog(buffer);
-		return new CeylonBrowserInput(null, null, buffer.toString());
+		return new CeylonBrowserInput(null, null, buffer.toString(), project);
 	}
 
     private static void appendCharacterHoverInfo(StringBuffer buffer, String character) {
@@ -826,17 +817,20 @@ public class DocumentationHover
 		if (model instanceof Declaration) {
 			Declaration dec = (Declaration) model;
 			return new CeylonBrowserInput(previousInput, dec, 
-					getDocumentationFor(editor.getParseController(), dec, node));
+					getDocumentationFor(editor.getParseController(), dec, node),
+					editor.getParseController().getProject());
 		}
 		else if (model instanceof Package) {
 			Package dec = (Package) model;
 			return new CeylonBrowserInput(previousInput, dec, 
-					getDocumentationFor(editor.getParseController(), dec));
+					getDocumentationFor(editor.getParseController(), dec),
+                    editor.getParseController().getProject());
 		}
 		else if (model instanceof Module) {
 			Module dec = (Module) model;
 			return new CeylonBrowserInput(previousInput, dec, 
-					getDocumentationFor(editor.getParseController(), dec));
+					getDocumentationFor(editor.getParseController(), dec),
+                    editor.getParseController().getProject());
 		}
 		else {
 			return null;
