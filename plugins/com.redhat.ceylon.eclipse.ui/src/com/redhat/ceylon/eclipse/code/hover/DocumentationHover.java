@@ -17,11 +17,19 @@ import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.i
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.CHARS;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.KEYWORDS;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.NUMBERS;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.PACKAGES;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.STRINGS;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.TYPES;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getCurrentThemeColor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
@@ -613,18 +621,18 @@ public class DocumentationHover
 	        IDocument doc, IProject project) {
 		ProducedType t = ((Tree.Term) node).getTypeModel();
 		if (t==null) return null;
-		String expr = "";
-		try {
-			expr = doc.get(node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1);
-		} 
-		catch (BadLocationException e) {
-			e.printStackTrace();
-		}
+//		String expr = "";
+//		try {
+//			expr = doc.get(node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1);
+//		} 
+//		catch (BadLocationException e) {
+//			e.printStackTrace();
+//		}
 		StringBuffer buffer= new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
 				16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + 
-				"&nbsp;" + highlightLine(expr) +"</tt></b>", 
+				/*"&nbsp;" + highlightLine(expr) +*/"</tt></b>", 
 				20, 4);
 		buffer.append( "<hr/>");
 		if (node instanceof Tree.StringLiteral) {
@@ -1783,19 +1791,26 @@ public class DocumentationHover
     public static String highlightLine(String s) {
         //TODO: this is lame because the syntax highlight gets applied
         //      to keywords and typenames in string literals
+        String kwc = toHex(getCurrentThemeColor(KEYWORDS));
+        String tc = toHex(getCurrentThemeColor(TYPES));
+        String sc = toHex(getCurrentThemeColor(STRINGS));
+        String nc = toHex(getCurrentThemeColor(NUMBERS));
+        String cc = toHex(getCurrentThemeColor(CHARS));
+        String pc = toHex(getCurrentThemeColor(PACKAGES));
         s = convertToHTMLContent(s);
-        s = s.replaceAll("'[^']'|#[0-9a-fA-F_]+|\\$[01]+|\\b(\\d|_)+(\\.(\\d|_)+)?([Ee][+-]?\\d+)?\\b", 
-                "<span style='color:#0000FF'>$0</span>"); //character and numeric literals in blue
+        s = s.replaceAll("'[^']'", "<span style='color:"+cc+"'>$0</span>"); //character literals in blue
+        s = s.replaceAll("#[0-9a-fA-F_]+|\\$[01]+|\\b(\\d|_)+(\\.(\\d|_)+)?([Ee][+-]?\\d+)?\\b", 
+                "<span style='color:"+nc+"'>$0</span>"); //numeric literals in blue
         s = s.replaceAll("\\b(module|package|import)\\s+(\\p{Ll}+(\\.\\p{Ll}+)*)\\b", 
-                "$1 <span style='color:#808080'>$2</span>"); //package/module names in dark blue
+                "$1 <span style='color:"+pc+"'>$2</span>"); //package/module names in grey
         s = s.replaceAll("\\b\\p{Lu}\\p{L}*\\b", 
-                "<span style='color:#000080'>$0</span>"); //uppercase identifiers in dark blue
+                "<span style='color:"+tc+"'>$0</span>"); //uppercase identifiers in dark blue
         for (String kw: CeylonTokenColorer.keywords) {
             s = s.replaceAll("\\b"+kw+"\\b", 
-                    "<b style='color:#8B008B'>"+kw+"</b>"); //keywords in magenta
+                    "<b style='color:"+kwc+"'>"+kw+"</b>"); //keywords in magenta
         }
         s = s.replaceAll("&quot;", "\"").replaceAll("\"([^\"]*)\"", 
-                "<span style='color:#0000FF'>&quot;$1&quot;</span>");  //string literals in blue
+                "<span style='color:"+sc+"'>&quot;$1&quot;</span>");  //string literals in blue
         return s;
     }
     
