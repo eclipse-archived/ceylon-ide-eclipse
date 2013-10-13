@@ -231,9 +231,9 @@ public class DocumentationHover
         	if (!"about:blank".equals(location)) {
         		event.doit= false;
         	}
-        	
-        	CeylonBrowserInput input = (CeylonBrowserInput) control.getInput();
-            handleLink(input, location);
+        	if (control.getInput() instanceof CeylonBrowserInput) {
+        	    handleLink((CeylonBrowserInput) control.getInput(), location);
+        	}
         	/*else if (location.startsWith("javadoc:")) {
         		final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
         		int beginIndex = input.getHtml().indexOf("javadoc:")+8;
