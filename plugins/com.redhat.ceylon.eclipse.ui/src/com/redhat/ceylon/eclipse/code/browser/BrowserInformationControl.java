@@ -270,7 +270,9 @@ public class BrowserInformationControl extends AbstractInformationControl
 	 */
     @Override
 	public void setInput(Object input) {
-		Assert.isLegal(input == null || input instanceof String || input instanceof BrowserInput);
+		Assert.isLegal(input == null || 
+		        input instanceof String || 
+		        input instanceof BrowserInput);
 
 		if (input instanceof String) {
 			setInformation((String)input);
