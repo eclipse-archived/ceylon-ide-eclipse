@@ -1806,10 +1806,11 @@ public class DocumentationHover
                 } else {
                     out.append("<pre class=\"brush: ").append(meta).append("\">");
                 }
-
+                StringBuilder code = new StringBuilder();
                 for (String s: lines) {
-                    out.append(highlightLine(s)).append('\n');
+                    code.append(s).append('\n');
                 }
+                out.append(highlightLine(code.toString()));
                 out.append("</pre>\n");
             }
         }
