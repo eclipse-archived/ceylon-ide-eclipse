@@ -29,6 +29,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.part.ViewPart;
 
@@ -107,6 +108,9 @@ public class DocumentationView extends ViewPart {
             @Override
             public void changed(LocationEvent event) {}
         });
+        // Replace browser's built-in context menu with none
+        control.setMenu(new Menu(getSite().getShell(), SWT.NONE));
+
         update(null, -1, -1);
     }
 
