@@ -12,7 +12,6 @@ package com.redhat.ceylon.eclipse.code.hover;
  *     Genady Beryozkin <eclipse@genady.org> - [hovering] tooltip for constant string does not show constant value - https://bugs.eclipse.org/bugs/show_bug.cgi?id=85382
  *******************************************************************************/
 
-import static com.redhat.ceylon.compiler.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.isAvailable;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
@@ -231,9 +230,9 @@ public class DocumentationHover
         	if (!"about:blank".equals(location)) {
         		event.doit= false;
         	}
-        	if (control.getInput() instanceof CeylonBrowserInput) {
-        	    handleLink((CeylonBrowserInput) control.getInput(), location);
-        	}
+        	
+        	handleLink(location);
+        	
         	/*else if (location.startsWith("javadoc:")) {
         		final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
         		int beginIndex = input.getHtml().indexOf("javadoc:")+8;
@@ -268,37 +267,37 @@ public class DocumentationHover
         	}*/
         }
         
-        private void handleLink(CeylonBrowserInput input, String location) {
+        private void handleLink(String location) {
             if (location.startsWith("dec:")) {
-        		Referenceable target = getLinkedModel(input, editor, location);
+        		Referenceable target = getLinkedModel(editor, location);
         		if (target!=null) {
                     close(control); //FIXME: should have protocol to hide, rather than dispose
         			gotoDeclaration(editor, target);
         		}
         	}
         	else if (location.startsWith("doc:")) {
-        	    Referenceable target = getLinkedModel(input, editor, location);
+        	    Referenceable target = getLinkedModel(editor, location);
         		if (target!=null) {
         			control.setInput(getHoverInfo(target, control.getInput(), editor, null));
         		}
         	}
         	else if (location.startsWith("ref:")) {
-        	    Referenceable target = getLinkedModel(input, editor, location);
+        	    Referenceable target = getLinkedModel(editor, location);
         		close(control);
         		new FindReferencesAction(editor, (Declaration) target).run();
         	}
         	else if (location.startsWith("sub:")) {
-        	    Referenceable target = getLinkedModel(input, editor, location);
+        	    Referenceable target = getLinkedModel(editor, location);
         		close(control);
         		new FindSubtypesAction(editor, (Declaration) target).run();
         	}
         	else if (location.startsWith("act:")) {
-        	    Referenceable target = getLinkedModel(input, editor, location);
+        	    Referenceable target = getLinkedModel(editor, location);
         		close(control);
         		new FindRefinementsAction(editor, (Declaration) target).run();
         	}
         	else if (location.startsWith("ass:")) {
-        	    Referenceable target = getLinkedModel(input, editor, location);
+        	    Referenceable target = getLinkedModel(editor, location);
         		close(control);
         		new FindAssignmentsAction(editor, (Declaration) target).run();
         	}
@@ -436,7 +435,7 @@ public class DocumentationHover
 		public void run() {
 	        close(fInfoControl); //FIXME: should have protocol to hide, rather than dispose
 	        CeylonBrowserInput input = (CeylonBrowserInput) fInfoControl.getInput();
-			gotoDeclaration(editor, getLinkedModel(input, editor, input.getAddress()));
+			gotoDeclaration(editor, getLinkedModel(editor, input.getAddress()));
 		}
 	}
 	
@@ -495,41 +494,30 @@ public class DocumentationHover
 		control.addLocationListener(new CeylonLocationListener(control));
 	}
 
-	public static Referenceable getLinkedModel(CeylonBrowserInput input,
-	        CeylonEditor editor, String location) {
+	public static Referenceable getLinkedModel(CeylonEditor editor, String location) {
         TypeChecker tc = editor.getParseController().getTypeChecker();
         String[] bits = location.split(":");
 		JDTModelLoader modelLoader = getModelLoader(tc);
-        String pname = bits[1];
-        if (pname.startsWith("/")) {
-			pname = pname.substring(1);
-	        return modelLoader.getLoadedModule(pname);
-		}
-		else {
-		    //TODO: to avoid the following, we could include
-		    //      the module name separately in the link
-		    Module module = pname.equals(LANGUAGE_MODULE_NAME) ? 
-		            //this special case because java.base does not 
-		            //seem to express its dependency to ceylon.language
-		            modelLoader.getLanguageModule() :
-		            modelLoader.getLoadedModule(input.getModuleName());
-		    if (module==null) return null;
-		    Referenceable target = module.getPackage(pname);
-		    for (int i=2; i<bits.length; i++) {
-		        Scope scope;
-		        if (target instanceof Scope) {
-		            scope = (Scope) target;
-		        }
-		        else if (target instanceof TypedDeclaration) {
-		            scope = ((TypedDeclaration) target).getType().getDeclaration();
-		        }
-		        else {
-		            return null;
-		        }
-		        target = scope.getDirectMember(bits[i], null, false);
-		    }
-		    return target;
-		}
+        String moduleName = bits[1];
+	    Module module = modelLoader.getLoadedModule(moduleName);
+	    if (module==null || bits.length==2) {
+	        return module;
+	    }
+	    Referenceable target = module.getPackage(bits[2]);
+	    for (int i=3; i<bits.length; i++) {
+	        Scope scope;
+	        if (target instanceof Scope) {
+	            scope = (Scope) target;
+	        }
+	        else if (target instanceof TypedDeclaration) {
+	            scope = ((TypedDeclaration) target).getType().getDeclaration();
+	        }
+	        else {
+	            return null;
+	        }
+	        target = scope.getDirectMember(bits[i], null, false);
+	    }
+	    return target;
 	}
 	
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
@@ -1401,10 +1389,11 @@ public class DocumentationHover
 	
 	private static String declink(Referenceable model) {
 		if (model instanceof Package) {
-			return ((Package)model).getNameAsString();
+			Package p = (Package) model;
+            return declink(p.getModule()) + ":" + p.getNameAsString();
 		}
 		if (model instanceof Module) {
-			return "/" + ((Module)model).getNameAsString();
+			return  ((Module) model).getNameAsString();
 		}
 		else if (model instanceof Declaration) {
 		    String result = ":" + ((Declaration) model).getName();

@@ -138,13 +138,13 @@ public class DocumentationView extends ViewPart {
     //TODO: big copy/paste from DocumentationHover.handleLink
     private void handleLink(String location) {
         if (location.startsWith("dec:")) {
-            Referenceable target = getLinkedModel(info, editor, location);
+            Referenceable target = getLinkedModel(editor, location);
             if (target!=null) {
                 gotoDeclaration(editor, target);
             }
         }
         else if (location.startsWith("doc:")) {
-            Referenceable target = getLinkedModel(info, editor, location);
+            Referenceable target = getLinkedModel(editor, location);
             if (target!=null) {
                 info = getHoverInfo(target, info, editor, null);
                 if (info!=null) control.setText(info.getHtml());
@@ -153,19 +153,19 @@ public class DocumentationView extends ViewPart {
             }
         }
         else if (location.startsWith("ref:")) {
-            Referenceable target = getLinkedModel(info, editor, location);
+            Referenceable target = getLinkedModel(editor, location);
             new FindReferencesAction(editor, (Declaration) target).run();
         }
         else if (location.startsWith("sub:")) {
-            Referenceable target = getLinkedModel(info, editor, location);
+            Referenceable target = getLinkedModel(editor, location);
             new FindSubtypesAction(editor, (Declaration) target).run();
         }
         else if (location.startsWith("act:")) {
-            Referenceable target = getLinkedModel(info, editor, location);
+            Referenceable target = getLinkedModel(editor, location);
             new FindRefinementsAction(editor, (Declaration) target).run();
         }
         else if (location.startsWith("ass:")) {
-            Referenceable target = getLinkedModel(info, editor, location);
+            Referenceable target = getLinkedModel(editor, location);
             new FindAssignmentsAction(editor, (Declaration) target).run();
         }
         else if (location.startsWith("stp:")) {
@@ -305,7 +305,7 @@ public class DocumentationView extends ViewPart {
         }
         @Override
         public void run() {
-            gotoDeclaration(editor, getLinkedModel(info, editor, info.getAddress()));
+            gotoDeclaration(editor, getLinkedModel(editor, info.getAddress()));
         }
     }
     
