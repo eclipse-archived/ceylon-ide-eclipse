@@ -1813,16 +1813,16 @@ public class DocumentationHover
                 BrowserInformationControl control = new BrowserInformationControl(parent, 
                         APPEARANCE_JAVADOC_FONT, tbm);
 
-                final BackAction backAction = new DocumentationHover.BackAction(control);
+                final BackAction backAction = new BackAction(control);
                 backAction.setEnabled(false);
                 tbm.add(backAction);
-                final ForwardAction forwardAction = new DocumentationHover.ForwardAction(control);
+                final ForwardAction forwardAction = new ForwardAction(control);
                 tbm.add(forwardAction);
                 forwardAction.setEnabled(false);
 
                 //final ShowInJavadocViewAction showInJavadocViewAction= new ShowInJavadocViewAction(iControl);
                 //tbm.add(showInJavadocViewAction);
-                final OpenDeclarationAction openDeclarationAction = docHover.new OpenDeclarationAction(control);
+                final OpenDeclarationAction openDeclarationAction = new OpenDeclarationAction(control);
                 tbm.add(openDeclarationAction);
 
 //                final SimpleSelectionProvider selectionProvider = new SimpleSelectionProvider();
