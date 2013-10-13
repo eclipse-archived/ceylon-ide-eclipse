@@ -6,14 +6,13 @@ import java.net.URL;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-
 import org.eclipse.jface.util.Util;
-
 import org.eclipse.jface.text.DefaultInformationControl;
 
 /**
@@ -171,7 +170,13 @@ public class HTMLPrinter {
 		appendColor(pageProlog, bgRGB);
 		pageProlog.append("\">"); //$NON-NLS-1$
 	}
-
+	
+	public static String toHex(Color color) {
+	    StringBuffer buffer = new StringBuffer();
+	    appendColor(buffer, color.getRGB());
+	    return buffer.toString();
+	}
+	
 	private static void appendColor(StringBuffer buffer, RGB rgb) {
 		buffer.append('#');
 		appendAsHexString(buffer, rgb.red);
