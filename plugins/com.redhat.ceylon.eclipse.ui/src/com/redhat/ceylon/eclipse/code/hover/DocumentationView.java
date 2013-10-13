@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getStyleSh
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.internalGetHoverInfo;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -24,12 +25,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.part.ViewPart;
 
@@ -48,8 +53,12 @@ import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class DocumentationView extends ViewPart {
+    
+    private static final Image GOTO_IMAGE = CeylonPlugin.getInstance()
+            .getImageRegistry().get(GOTO);
     
     private static DocumentationView instance;
     
@@ -109,7 +118,19 @@ public class DocumentationView extends ViewPart {
             public void changed(LocationEvent event) {}
         });
         // Replace browser's built-in context menu with none
-        control.setMenu(new Menu(getSite().getShell(), SWT.NONE));
+        Menu menu = new Menu(getSite().getShell(), SWT.NONE);
+        MenuItem menuItem = new MenuItem(menu, SWT.NONE);
+        menuItem.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                openDeclarationAction.run();
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        menuItem.setImage(GOTO_IMAGE);
+        menuItem.setText("Open Declaration");
+        control.setMenu(menu);
 
         update(null, -1, -1);
     }
