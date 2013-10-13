@@ -415,9 +415,8 @@ public class DocumentationHover
 		@Override
 		public void run() {
 	        close(fInfoControl); //FIXME: should have protocol to hide, rather than dispose
-			gotoDeclaration(editor, 
-			        ((CeylonBrowserInput) fInfoControl.getInput())
-			                .getModel());
+	        CeylonBrowserInput input = (CeylonBrowserInput) fInfoControl.getInput();
+			gotoDeclaration(editor, getLinkedModel(input, editor, input.getAddress()));
 		}
 	}
 	
@@ -603,7 +602,7 @@ public class DocumentationHover
 		}
 		//buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
 		HTMLPrinter.addPageEpilog(buffer);
-		return new CeylonBrowserInput(null, null, buffer.toString(), project);
+		return new CeylonBrowserInput(null, null, buffer.toString());
 	}
 	
 	private static CeylonBrowserInput getTermTypeHoverInfo(Node node, String selectedText, 
@@ -664,7 +663,7 @@ public class DocumentationHover
 				16, 16, "<a href=\"exf:\">Extract function</a>", 
 				20, 4);
 		HTMLPrinter.addPageEpilog(buffer);
-		return new CeylonBrowserInput(null, null, buffer.toString(), project);
+		return new CeylonBrowserInput(null, null, buffer.toString());
 	}
 
     private static void appendCharacterHoverInfo(StringBuffer buffer, String character) {
@@ -817,20 +816,17 @@ public class DocumentationHover
 		if (model instanceof Declaration) {
 			Declaration dec = (Declaration) model;
 			return new CeylonBrowserInput(previousInput, dec, 
-					getDocumentationFor(editor.getParseController(), dec, node),
-					editor.getParseController().getProject());
+					getDocumentationFor(editor.getParseController(), dec, node));
 		}
 		else if (model instanceof Package) {
 			Package dec = (Package) model;
 			return new CeylonBrowserInput(previousInput, dec, 
-					getDocumentationFor(editor.getParseController(), dec),
-                    editor.getParseController().getProject());
+					getDocumentationFor(editor.getParseController(), dec));
 		}
 		else if (model instanceof Module) {
 			Module dec = (Module) model;
 			return new CeylonBrowserInput(previousInput, dec, 
-					getDocumentationFor(editor.getParseController(), dec),
-                    editor.getParseController().getProject());
+					getDocumentationFor(editor.getParseController(), dec));
 		}
 		else {
 			return null;
@@ -1184,7 +1180,7 @@ public class DocumentationHover
 						}
 						ProducedType type = p.getType();
 						if (type==null) type = new UnknownType(dec.getUnit()).getType();
-                        addImageAndLabel(buffer, p, fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
+                        addImageAndLabel(buffer, p.getModel(), fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
 								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(type.getDeclaration()) + ">" + 
 								convertToHTMLContent(type.getProducedTypeName()) + 
 								"</a>&nbsp;<a " + link(p.getModel()) + ">"+ p.getName() +"</a></tt>" + doc, 20, 2);
@@ -1354,11 +1350,16 @@ public class DocumentationHover
 		return result;
 	}
 	
-	private static String link(Object model) {
+	static String getAddress(Referenceable model) {
+	    if (model==null) return null;
+	    return "dec:" + declink(model);
+	}
+	
+	private static String link(Referenceable model) {
 		return "href='doc:" + declink(model) + "'";
 	}
 	
-	private static String declink(Object model) {
+	private static String declink(Referenceable model) {
 		if (model instanceof Package) {
 			return ((Package)model).getNameAsString();
 		}
@@ -1366,8 +1367,15 @@ public class DocumentationHover
 			return "/" + ((Module)model).getNameAsString();
 		}
 		else if (model instanceof Declaration) {
-			return declink(((Declaration) model).getContainer())
-					+ ":" + ((Declaration) model).getName();
+		    String result = ":" + ((Declaration) model).getName();
+			Scope container = ((Declaration) model).getContainer();
+			if (container instanceof Referenceable) {
+			    return declink((Referenceable) container)
+			            + result;
+			}
+			else {
+			    return result;
+			}
 		}
 		else {
 		   return "";
@@ -1546,7 +1554,7 @@ public class DocumentationHover
 	 */
 	public static String getStyleSheet() {
 		if (fgStyleSheet == null)
-			fgStyleSheet= loadStyleSheet();
+			fgStyleSheet = loadStyleSheet();
 		//Color c = CeylonTokenColorer.getCurrentThemeColor("docHover");
 		//String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
 		String css= fgStyleSheet;// + "body { background-color: #" + color+ " }";
@@ -1592,7 +1600,7 @@ public class DocumentationHover
 		return null;
 	}
 
-	public static void addImageAndLabel(StringBuffer buf, Object model, String imageSrcPath, 
+	public static void addImageAndLabel(StringBuffer buf, Referenceable model, String imageSrcPath, 
 			int imageWidth, int imageHeight, String label, int labelLeft, int labelTop) {
 		buf.append("<div style='word-wrap: break-word; position: relative; "); 
 		
@@ -1843,7 +1851,7 @@ public class DocumentationHover
 //                            Object inputElement = ((CeylonBrowserInput) newInput).getInputElement();
 //                            selectionProvider.setSelection(new StructuredSelection(inputElement));
                             //showInJavadocViewAction.setEnabled(isJavaElementInput);
-                            isDeclaration = ((CeylonBrowserInput) newInput).isDeclaration();
+                            isDeclaration = ((CeylonBrowserInput) newInput).getAddress()!=null;
                         }
                         openDeclarationAction.setEnabled(isDeclaration);
                     }
