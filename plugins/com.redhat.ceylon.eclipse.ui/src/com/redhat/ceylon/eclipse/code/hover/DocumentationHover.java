@@ -213,36 +213,37 @@ public class DocumentationHover
         		event.doit= false;
         	}
         	
-        	if (location.startsWith("dec:")) {
-        		Object target = getModel(control.getInput(), editor, location);
+        	CeylonBrowserInput input = (CeylonBrowserInput) control.getInput();
+            if (location.startsWith("dec:")) {
+        		Referenceable target = getLinkedModel(input, editor, location);
         		if (target!=null) {
                     close(control); //FIXME: should have protocol to hide, rather than dispose
         			gotoDeclaration(editor, target);
         		}
         	}
         	else if (location.startsWith("doc:")) {
-        		Object target = getModel(control.getInput(), editor, location);
+        	    Referenceable target = getLinkedModel(input, editor, location);
         		if (target!=null) {
         			control.setInput(getHoverInfo(target, control.getInput(), editor, null));
         		}
         	}
         	else if (location.startsWith("ref:")) {
-        		Object target = getModel(control.getInput(), editor, location);
+        	    Referenceable target = getLinkedModel(input, editor, location);
         		close(control);
         		new FindReferencesAction(editor, (Declaration) target).run();
         	}
         	else if (location.startsWith("sub:")) {
-        		Object target = getModel(control.getInput(), editor, location);
+        	    Referenceable target = getLinkedModel(input, editor, location);
         		close(control);
         		new FindSubtypesAction(editor, (Declaration) target).run();
         	}
         	else if (location.startsWith("act:")) {
-        		Object target = getModel(control.getInput(), editor, location);
+        	    Referenceable target = getLinkedModel(input, editor, location);
         		close(control);
         		new FindRefinementsAction(editor, (Declaration) target).run();
         	}
         	else if (location.startsWith("ass:")) {
-        		Object target = getModel(control.getInput(), editor, location);
+        	    Referenceable target = getLinkedModel(input, editor, location);
         		close(control);
         		new FindAssignmentsAction(editor, (Declaration) target).run();
         	}
@@ -403,30 +404,28 @@ public class DocumentationHover
 	 */
 	final class OpenDeclarationAction extends Action {
 		private final BrowserInformationControl fInfoControl;
-
 		public OpenDeclarationAction(BrowserInformationControl infoControl) {
-			fInfoControl= infoControl;
+			fInfoControl = infoControl;
 			setText("Open Declaration");
 			setLocalImageDescriptors(this, "goto_input.gif");
 		}
-
 		@Override
 		public void run() {
 	        close(fInfoControl); //FIXME: should have protocol to hide, rather than dispose
 			gotoDeclaration(editor, 
-			        fInfoControl.getInput().getInputElement());
+			        ((CeylonBrowserInput) fInfoControl.getInput())
+			                .getModel());
 		}
 	}
 	
-	static void gotoDeclaration(CeylonEditor editor, Object model) {
+	static void gotoDeclaration(CeylonEditor editor, Referenceable model) {
 		CeylonParseController cpc = editor.getParseController();
-		Declaration dec = (Declaration) model;
-		Node refNode = getReferencedNode(dec, cpc);
+		Node refNode = getReferencedNode(model, cpc);
 		if (refNode!=null) {
 			gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
 		}
-		else {
-			gotoJavaNode(dec, cpc);
+		else if (model instanceof Declaration) {
+	        gotoJavaNode((Declaration) model, cpc);
 		}
 	}
 	
@@ -474,16 +473,16 @@ public class DocumentationHover
 		control.addLocationListener(new CeylonLocationListener(control));
 	}
 
-	public static Object getModel(BrowserInput input,
+	public static Referenceable getLinkedModel(CeylonBrowserInput input,
 	        CeylonEditor editor, String location) {
 		String[] bits = location.split(":");
-		Object model = input.getInputElement();
+		Referenceable model = input.getModel();
 		Module module;
-		if (model instanceof String) {
+		/*if (model instanceof String) {
 			module = editor.getParseController().getRootNode()
 			        .getUnit().getPackage().getModule();
 		}
-		else if (model instanceof Declaration) {
+		else*/ if (model instanceof Declaration) {
 			Declaration dec = (Declaration) model;
 			module = dec.getUnit().getPackage().getModule();
 		}
@@ -510,7 +509,7 @@ public class DocumentationHover
 			return null;
 			//return module.getPackage(pname).getModule();
 		}
-		Object target = module.getPackage(bits[1]);
+		Referenceable target = module.getPackage(bits[1]);
 		for (int i=2; i<bits.length; i++) {
 			Scope scope;
 			if (target instanceof Scope) {
@@ -822,7 +821,7 @@ public class DocumentationHover
 	 *         if no information is available
 	 * @since 3.4
 	 */
-	static CeylonBrowserInput getHoverInfo(Object model, 
+	static CeylonBrowserInput getHoverInfo(Referenceable model, 
 			BrowserInput previousInput, CeylonEditor editor, Node node) {
 		if (model instanceof Declaration) {
 			Declaration dec = (Declaration) model;
@@ -1845,13 +1844,14 @@ public class DocumentationHover
 //                            selectionProvider.setSelection(new StructuredSelection());
 //                        }
 //                        else 
-                        if (newInput instanceof BrowserInput) {
-                            Object inputElement = ((BrowserInput) newInput).getInputElement();
+                        boolean isDeclaration = false;
+                        if (newInput instanceof CeylonBrowserInput) {
+//                            Object inputElement = ((CeylonBrowserInput) newInput).getInputElement();
 //                            selectionProvider.setSelection(new StructuredSelection(inputElement));
-                            boolean isDeclarationElementInput = inputElement instanceof Declaration;
                             //showInJavadocViewAction.setEnabled(isJavaElementInput);
-                            openDeclarationAction.setEnabled(isDeclarationElementInput);
+                            isDeclaration = ((CeylonBrowserInput) newInput).isDeclaration();
                         }
+                        openDeclarationAction.setEnabled(isDeclaration);
                     }
                 };
                 control.addInputChangeListener(inputChangeListener);

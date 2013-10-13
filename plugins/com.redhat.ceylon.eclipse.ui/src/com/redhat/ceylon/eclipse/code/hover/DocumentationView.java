@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverInfo;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.internalGetHoverInfo;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.ViewPart;
 
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class DocumentationView extends ViewPart {
@@ -58,13 +59,13 @@ public class DocumentationView extends ViewPart {
                 }
                 
                 if (location.startsWith("dec:")) {
-                    Object target = getModel(info, editor, location);
+                    Referenceable target = getLinkedModel(info, editor, location);
                     if (target!=null) {
                         gotoDeclaration(editor, target);
                     }
                 }
                 else if (location.startsWith("doc:")) {
-                    Object target = getModel(info, editor, location);
+                    Referenceable target = getLinkedModel(info, editor, location);
                     if (target!=null) {
                         info = getHoverInfo(target, info, editor, null);
                         if (info!=null) control.setText(info.getHtml());

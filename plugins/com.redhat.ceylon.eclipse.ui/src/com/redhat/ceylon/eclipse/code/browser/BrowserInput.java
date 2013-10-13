@@ -52,14 +52,7 @@ public abstract class BrowserInput {
      * @return the HTML contents
      */
     public abstract String getHtml();
-
-	/**
-	 * The element to use to set the browsers input.
-	 *
-	 * @return the input element
-	 */
-	public abstract Object getInputElement();
-
+    
 	/**
 	 * A human readable name for the input.
 	 *
