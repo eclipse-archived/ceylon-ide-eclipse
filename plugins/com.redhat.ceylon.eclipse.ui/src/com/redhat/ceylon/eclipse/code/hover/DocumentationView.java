@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverIn
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.internalGetHoverInfo;
+import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
@@ -48,6 +49,7 @@ public class DocumentationView extends ViewPart {
     private CeylonBrowserInput info;
     private BackAction back;
     private ForwardAction forward;
+    private OpenDeclarationAction openDeclarationAction;
     
     @Override
     public void createPartControl(Composite parent) {
@@ -58,6 +60,9 @@ public class DocumentationView extends ViewPart {
         forward = new ForwardAction();
         forward.setEnabled(false);
         tbm.add(forward);
+        openDeclarationAction = new OpenDeclarationAction();
+        tbm.add(openDeclarationAction);
+        openDeclarationAction.setEnabled(false);
         control = new Browser(parent, SWT.NONE); 
         control.setJavascriptEnabled(false);
         Display display = getSite().getShell().getDisplay();
@@ -112,6 +117,7 @@ public class DocumentationView extends ViewPart {
             control.setText(info.getHtml());
             back.update();
             forward.update();
+            openDeclarationAction.setEnabled(true);
         }
     }
     
@@ -191,6 +197,17 @@ public class DocumentationView extends ViewPart {
             }
         }
         
+    }
+    
+    final class OpenDeclarationAction extends Action {
+        public OpenDeclarationAction() {
+            setText("Open Declaration");
+            setLocalImageDescriptors(this, "goto_input.gif");
+        }
+        @Override
+        public void run() {
+            gotoDeclaration(editor, getLinkedModel(info, editor, info.getAddress()));
+        }
     }
     
 }
