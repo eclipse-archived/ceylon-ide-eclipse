@@ -109,11 +109,15 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         public void partClosed(IWorkbenchPart part) {
             if (part == activeEditor) {
                 unregisterListeners();
-                activeEditor= null;
-                documentProvider= null;
-                document= null;
-                parseController= null;
-                occurrenceAnnotations= null;
+                activeEditor = null;
+                documentProvider = null;
+                document = null;
+                parseController = null;
+                occurrenceAnnotations = null;
+                DocumentationView documentationView = DocumentationView.getInstance();
+                if (documentationView!=null) {
+                    documentationView.update(null, -1, -1);
+                }
             }
         }
         @Override

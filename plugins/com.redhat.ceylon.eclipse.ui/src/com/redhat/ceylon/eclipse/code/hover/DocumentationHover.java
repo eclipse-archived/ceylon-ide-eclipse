@@ -1046,7 +1046,7 @@ public class DocumentationHover
 	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec, Node node) {
 		if (dec==null) return null;
 		StringBuffer buffer = new StringBuffer();
-		insertPageProlog(buffer, 0, DocumentationHover.getStyleSheet());
+		insertPageProlog(buffer, 0, getStyleSheet());
 		
 		Package pack = dec.getUnit().getPackage();
 		
