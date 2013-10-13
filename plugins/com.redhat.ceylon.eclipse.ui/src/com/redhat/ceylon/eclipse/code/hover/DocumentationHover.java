@@ -36,6 +36,9 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
+import static java.lang.Character.codePointCount;
+import static java.lang.Float.parseFloat;
+import static java.lang.Integer.parseInt;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -628,44 +631,58 @@ public class DocumentationHover
 //		catch (BadLocationException e) {
 //			e.printStackTrace();
 //		}
-		StringBuffer buffer= new StringBuffer();
+		StringBuffer buffer = new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
 				16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + 
-				/*"&nbsp;" + highlightLine(expr) +*/"</tt></b>", 
+				"</tt> literal</b>", 
 				20, 4);
 		buffer.append( "<hr/>");
 		if (node instanceof Tree.StringLiteral) {
-			buffer.append('\"').append(node.getText()).append('\"');
-			buffer.append("<hr/>");
+			buffer.append("<code style='color:")
+			    .append(toHex(getCurrentThemeColor(STRINGS)))
+			    .append("'><pre>")
+			    .append('\"')
+			    .append(node.getText())
+			    .append('\"')
+			    .append("</pre></code>")
+			    .append("<hr/>");
 			// If a single char selection, then append info on that character too
 			if (selectedText != null
-			        && Character.codePointCount(selectedText, 0, selectedText.length()) == 1) {
+			        && codePointCount(selectedText, 0, selectedText.length()) == 1) {
 			    appendCharacterHoverInfo(buffer, selectedText);
 			}
 		}
 		else if (node instanceof Tree.CharLiteral) {
 		    String character = node.getText();
-		    character = character.substring(1, character.length()-1);
-			appendCharacterHoverInfo(buffer, character);
+		    if (character.length()>2) {
+		        appendCharacterHoverInfo(buffer, 
+		                character.substring(1, character.length()-1));
+		    }
 		}
 		else if (node instanceof Tree.NaturalLiteral) {
+		    buffer.append("<code style='color:")
+                .append(toHex(getCurrentThemeColor(NUMBERS)))
+                .append("'>");
 			String text = node.getText().replace("_", "");
 		    switch (text.charAt(0)) {
 		    case '#':
-				buffer.append(Integer.parseInt(text.substring(1),16));
+				buffer.append(parseInt(text.substring(1),16));
 				break;
 		    case '$':
-				buffer.append(Integer.parseInt(text.substring(1),2));
+				buffer.append(parseInt(text.substring(1),2));
 				break;
 			default:
-				buffer.append(Integer.parseInt(text));
+				buffer.append(parseInt(text));
 		    }
-			buffer.append("<hr/>");
+			buffer.append("</code>").append("<hr/>");
 		}
 		else if (node instanceof Tree.FloatLiteral) {
-			buffer.append(Float.parseFloat(node.getText().replace("_", "")));
-			buffer.append("<hr/>");
+            buffer.append("<code style='color:")
+            .append(toHex(getCurrentThemeColor(NUMBERS)))
+            .append("'>");
+			buffer.append(parseFloat(node.getText().replace("_", "")));
+            buffer.append("</code>").append("<hr/>");
 		}
 		buffer.append("Two quick assists available:<br/>");
 		addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
@@ -679,20 +696,26 @@ public class DocumentationHover
 	}
 
     private static void appendCharacterHoverInfo(StringBuffer buffer, String character) {
-        buffer.append('\'').append(character).append('\'');
+        buffer.append("<code style='color:")
+            .append(toHex(getCurrentThemeColor(CHARS)))
+            .append("'>")
+            .append('\'')
+            .append(character)
+            .append('\'')
+            .append("</code>");
         int codepoint = Character.codePointAt(character, 0);
         String name = Character.getName(codepoint);
-        buffer.append("<hr/>Unicode Name: ").append(name);
+        buffer.append("<hr/>Unicode Name: <code>").append(name).append("</code>");
         String hex = Integer.toHexString(codepoint).toUpperCase();
         while (hex.length() < 4) {
             hex = "0" + hex;
         }
-        buffer.append("<br/>Codepoint: ").append("U+").append(hex);
-        buffer.append("<br/>General Category: ").append(getCodepointGeneralCategoryName(codepoint));
+        buffer.append("<br/>Codepoint: <code>").append("U+").append(hex).append("</code>");
+        buffer.append("<br/>General Category: <code>").append(getCodepointGeneralCategoryName(codepoint)).append("</code>");
         Character.UnicodeScript script = Character.UnicodeScript.of(codepoint);
-        buffer.append("<br/>Script: ").append(script.name());
+        buffer.append("<br/>Script: <code>").append(script.name()).append("</code>");
         Character.UnicodeBlock block = Character.UnicodeBlock.of(codepoint);
-        buffer.append("<br/>Block: ").append(block).append("<hr/>");
+        buffer.append("<br/>Block: <code>").append(block).append("<hr/>").append("</code>");
     }
 
     private static String getCodepointGeneralCategoryName(int codepoint) {
