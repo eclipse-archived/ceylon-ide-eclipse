@@ -116,30 +116,38 @@ public class DocumentationView extends ViewPart {
     public void setFocus() {}
     
     public void update(CeylonEditor editor, int offset, int length) { 
-        this.editor = editor;
         if (editor==null) {
-            StringBuffer buffer = new StringBuffer();
-            HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
-            addImageAndLabel(buffer, null, 
-                    fileUrl("information.gif").toExternalForm(), 
-                    16, 16, "<i>Nothing selected in Ceylon editor.</i>", 20, 2);
-//            buffer.append("<p>Nothing selected.</p>");
-            HTMLPrinter.addPageProlog(buffer);
-            control.setText(buffer.toString());
-            info=null;
-            back.update();
-            forward.update();
-            openDeclarationAction.setEnabled(false);
+            clear();
         }
         else {
-            info = internalGetHoverInfo(editor, new Region(offset, length));
+            info = internalGetHoverInfo(editor, 
+                    new Region(offset, length));
             if (info!=null && info.getAddress()!=null) {
                 control.setText(info.getHtml());
                 back.update();
                 forward.update();
                 openDeclarationAction.setEnabled(true);
             }
+            else if (this.editor!=editor) {
+                clear();
+            }
         }
+        this.editor = editor;
+    }
+
+    private void clear() {
+        StringBuffer buffer = new StringBuffer();
+        HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
+        addImageAndLabel(buffer, null, 
+                fileUrl("information.gif").toExternalForm(), 
+                16, 16, "<i>Nothing selected in Ceylon editor.</i>", 20, 2);
+//            buffer.append("<p>Nothing selected.</p>");
+        HTMLPrinter.addPageProlog(buffer);
+        control.setText(buffer.toString());
+        info=null;
+        back.update();
+        forward.update();
+        openDeclarationAction.setEnabled(false);
     }
     
     @Override
