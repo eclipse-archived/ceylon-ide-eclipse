@@ -73,7 +73,6 @@ import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
@@ -1809,14 +1808,14 @@ public class DocumentationHover
         @Override
         public IInformationControl doCreateInformationControl(Shell parent) {
             if (isAvailable(parent)) {
-                ToolBarManager tbm= new ToolBarManager(SWT.FLAT);
-                BrowserInformationControl control= new BrowserInformationControl(parent, 
+                ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
+                BrowserInformationControl control = new BrowserInformationControl(parent, 
                         APPEARANCE_JAVADOC_FONT, tbm);
 
-                final BackAction backAction= new DocumentationHover.BackAction(control);
+                final BackAction backAction = new DocumentationHover.BackAction(control);
                 backAction.setEnabled(false);
                 tbm.add(backAction);
-                final ForwardAction forwardAction= new DocumentationHover.ForwardAction(control);
+                final ForwardAction forwardAction = new DocumentationHover.ForwardAction(control);
                 tbm.add(forwardAction);
                 forwardAction.setEnabled(false);
 
@@ -1825,7 +1824,7 @@ public class DocumentationHover
                 final OpenDeclarationAction openDeclarationAction = docHover.new OpenDeclarationAction(control);
                 tbm.add(openDeclarationAction);
 
-                final SimpleSelectionProvider selectionProvider= new SimpleSelectionProvider();
+//                final SimpleSelectionProvider selectionProvider = new SimpleSelectionProvider();
                 //TODO: an action to open the generated ceylondoc  
                 //      from the doc archive, in a browser window
                 /*if (fSite != null) {
@@ -1838,17 +1837,17 @@ public class DocumentationHover
                     tbm.add(openAttachedJavadocAction);
                 }*/
 
-                IInputChangedListener inputChangeListener= new IInputChangedListener() {
+                IInputChangedListener inputChangeListener = new IInputChangedListener() {
                     public void inputChanged(Object newInput) {
                         backAction.update();
                         forwardAction.update();
-                        if (newInput == null) {
-                            selectionProvider.setSelection(new StructuredSelection());
-                        }
-                        else if (newInput instanceof BrowserInput) {
-                            BrowserInput input= (BrowserInput) newInput;
-                            Object inputElement = input.getInputElement();
-                            selectionProvider.setSelection(new StructuredSelection(inputElement));
+//                        if (newInput == null) {
+//                            selectionProvider.setSelection(new StructuredSelection());
+//                        }
+//                        else 
+                        if (newInput instanceof BrowserInput) {
+                            Object inputElement = ((BrowserInput) newInput).getInputElement();
+//                            selectionProvider.setSelection(new StructuredSelection(inputElement));
                             boolean isDeclarationElementInput = inputElement instanceof Declaration;
                             //showInJavadocViewAction.setEnabled(isJavaElementInput);
                             openDeclarationAction.setEnabled(isDeclarationElementInput);
