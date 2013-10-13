@@ -24,6 +24,8 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPack
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.CHARS;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.COMMENTS;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.KEYWORDS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.NUMBERS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.PACKAGES;
@@ -54,6 +56,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.FileLocator;
@@ -128,6 +132,7 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnonymousAnnotation;
@@ -1811,30 +1816,70 @@ public class DocumentationHover
 
     }
 
-    public static String highlightLine(String s) {
+    public static String highlightLine(String line) {
         //TODO: this is lame because the syntax highlight gets applied
         //      to keywords and typenames in string literals
         String kwc = toHex(getCurrentThemeColor(KEYWORDS));
         String tc = toHex(getCurrentThemeColor(TYPES));
+        String ic = toHex(getCurrentThemeColor(IDENTIFIERS));
         String sc = toHex(getCurrentThemeColor(STRINGS));
         String nc = toHex(getCurrentThemeColor(NUMBERS));
         String cc = toHex(getCurrentThemeColor(CHARS));
         String pc = toHex(getCurrentThemeColor(PACKAGES));
-        s = convertToHTMLContent(s);
-        s = s.replaceAll("'[^']'", "<span style='color:"+cc+"'>$0</span>"); //character literals in blue
-        s = s.replaceAll("#[0-9a-fA-F_]+|\\$[01]+|\\b(\\d|_)+(\\.(\\d|_)+)?([Ee][+-]?\\d+)?\\b", 
-                "<span style='color:"+nc+"'>$0</span>"); //numeric literals in blue
-        s = s.replaceAll("\\b(module|package|import)\\s+(\\p{Ll}+(\\.\\p{Ll}+)*)\\b", 
-                "$1 <span style='color:"+pc+"'>$2</span>"); //package/module names in grey
-        s = s.replaceAll("\\b\\p{Lu}\\p{L}*\\b", 
-                "<span style='color:"+tc+"'>$0</span>"); //uppercase identifiers in dark blue
-        for (String kw: CeylonTokenColorer.keywords) {
-            s = s.replaceAll("\\b"+kw+"\\b", 
-                    "<b style='color:"+kwc+"'>"+kw+"</b>"); //keywords in magenta
+        String lcc = toHex(getCurrentThemeColor(COMMENTS));
+        CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(line));
+        Token token;
+        boolean inPackageName = false;
+        StringBuilder result = new StringBuilder();
+        while ((token=lexer.nextToken()).getType()!=CeylonLexer.EOF) {
+            String s = convertToHTMLContent(token.getText());
+            int type = token.getType();
+            if (type!=CeylonLexer.LIDENTIFIER &&
+                type!=CeylonLexer.MEMBER_OP) {
+                inPackageName = false;
+            }
+            else if (inPackageName) {
+                result.append("<span style='color:"+pc+"'>").append(s).append("</span>");
+                continue;
+            }
+            switch (type) {
+            case CeylonLexer.FLOAT_LITERAL:
+            case CeylonLexer.NATURAL_LITERAL:
+                result.append("<span style='color:"+nc+"'>").append(s).append("</span>");
+                break;
+            case CeylonLexer.CHAR_LITERAL:
+                result.append("<span style='color:"+cc+"'>").append(s).append("</span>");
+                break;
+            case CeylonLexer.STRING_LITERAL:
+            case CeylonLexer.STRING_START:
+            case CeylonLexer.STRING_MID:
+            case CeylonLexer.VERBATIM_STRING:
+                result.append("<span style='color:"+sc+"'>").append(s).append("</span>");
+                break;
+            case CeylonLexer.UIDENTIFIER:
+                result.append("<span style='color:"+tc+"'>").append(s).append("</span>");
+                break;
+            case CeylonLexer.LIDENTIFIER:
+                result.append("<span style='color:"+ic+"'>").append(s).append("</span>");
+                break;
+            case CeylonLexer.MULTI_COMMENT:
+            case CeylonLexer.LINE_COMMENT:
+                result.append("<span style='color:"+lcc+"'>").append(s).append("</span>");
+                break;
+            case CeylonLexer.IMPORT:
+            case CeylonLexer.PACKAGE:
+            case CeylonLexer.MODULE:
+                inPackageName = true; //then fall through!
+            default:
+                if (CeylonTokenColorer.keywords.contains(s)) {
+                    result.append("<span style='color:"+kwc+"'>").append(s).append("</span>");
+                }
+                else {
+                    result.append(s);
+                }
+            }
         }
-        s = s.replaceAll("&quot;", "\"").replaceAll("\"([^\"]*)\"", 
-                "<span style='color:"+sc+"'>&quot;$1&quot;</span>");  //string literals in blue
-        return s;
+        return result.toString();
     }
     
     /**
