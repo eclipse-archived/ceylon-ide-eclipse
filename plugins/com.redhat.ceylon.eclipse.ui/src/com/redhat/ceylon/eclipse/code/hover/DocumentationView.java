@@ -12,6 +12,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
@@ -41,9 +42,13 @@ public class DocumentationView extends ViewPart {
     public void createPartControl(Composite parent) {
         control = new Browser(parent, SWT.NONE); 
         control.setJavascriptEnabled(false);
-        Display display= getSite().getShell().getDisplay();
-        control.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-        control.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+        Display display = getSite().getShell().getDisplay();
+        Color fg = display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
+        Color bg = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+        control.setForeground(fg);
+        control.setBackground(bg);
+        parent.setForeground(fg);
+        parent.setBackground(bg);
         FontData fontData = JFaceResources.getFontRegistry()
                 .getFontData(APPEARANCE_JAVADOC_FONT)[0];
         control.setFont(new Font(Display.getDefault(), fontData));
@@ -83,7 +88,9 @@ public class DocumentationView extends ViewPart {
     public void update(CeylonEditor editor, int offset, int length) { 
         this.editor = editor;
         info = internalGetHoverInfo(editor, new Region(offset, length));
-        if (info!=null) control.setText(info.getHtml());
+        if (info!=null && info.getAddress()!=null) {
+            control.setText(info.getHtml());
+        }
     }
     
     @Override

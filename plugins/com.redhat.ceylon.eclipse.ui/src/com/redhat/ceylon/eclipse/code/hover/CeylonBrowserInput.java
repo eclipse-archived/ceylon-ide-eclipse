@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Assert;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -16,11 +15,10 @@ import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
  */
 class CeylonBrowserInput extends BrowserInput {
 
-	private final Referenceable model;
 	private final String html;
-	private final boolean declaration;
-	private final IProject project;
 	private final String moduleName;
+	private final String address;
+	private final String name;
 	
 	/**
 	 * Creates a new browser information control input.
@@ -31,51 +29,45 @@ class CeylonBrowserInput extends BrowserInput {
 	 * @param leadingImageWidth the indent required for the element image
 	 */
 	public CeylonBrowserInput(BrowserInput previous, 
-	        Referenceable model, String html, IProject project) {
+	        Referenceable model, String html) {
 		super(previous);
 		Assert.isNotNull(html);
-		this.model = model;
 		this.html = html;
-		this.declaration = model instanceof Declaration;
-		this.project = project;
+		this.address = DocumentationHover.getAddress(model);
 		if (model instanceof Module) {
 		    moduleName = model.getNameAsString();
+		    name = moduleName;
 		}
 		else if (model instanceof Package) {
 		    moduleName = ((Package) model).getModule().getNameAsString();
+		    name = model.getNameAsString();
 		}
 		else if (model instanceof Declaration) {
 		    moduleName = model.getUnit().getPackage().getModule().getNameAsString();
+		    name = ((Declaration) model).getName();
 		}
 		else {
 		    moduleName = null;
+		    name = null;
 		}
 	}
-	
-	public boolean isDeclaration() {
-        return declaration;
-    }
 	
 	@Override
 	public String getHtml() {
 		return html;
-	}
-
-	public Referenceable getModel() {
-		return model;
 	}
 	
 	public String getModuleName() {
         return moduleName;
     }
 	
-	public IProject getProject() {
-        return project;
+	public String getAddress() {
+        return address;
     }
-
+	
 	@Override
 	public String getInputName() {
-		return model==null ? null : model.getNameAsString();
+		return name;
 	}
 
 }
