@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 import org.eclipse.core.runtime.Assert;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
 
 /**
@@ -13,8 +13,9 @@ import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
  */
 class CeylonBrowserInput extends BrowserInput {
 
-	private final Object model;
+	private final Referenceable model;
 	private final String html;
+	private final boolean declaration;
 	
 	/**
 	 * Creates a new browser information control input.
@@ -25,34 +26,30 @@ class CeylonBrowserInput extends BrowserInput {
 	 * @param leadingImageWidth the indent required for the element image
 	 */
 	public CeylonBrowserInput(BrowserInput previous, 
-			Object model, String html) {
+	        Referenceable model, String html) {
 		super(previous);
 		Assert.isNotNull(html);
 		this.model = model;
 		this.html = html;
+		this.declaration = model instanceof Declaration;
 	}
-
+	
+	public boolean isDeclaration() {
+        return declaration;
+    }
+	
 	@Override
 	public String getHtml() {
 		return html;
 	}
 
-	@Override
-	public Object getInputElement() {
-		return model == null ? (Object) html : model;
+	public Referenceable getModel() {
+		return model;
 	}
 
 	@Override
 	public String getInputName() {
-		if (model instanceof Declaration) {
-			return ((Declaration) model).getName();
-		}
-		else if (model instanceof Package) {
-			return ((Package) model).getQualifiedNameString();
-		}
-		else {
-			return null;
-		}
+		return model==null ? null : model.getNameAsString();
 	}
 
 }
