@@ -532,7 +532,7 @@ public class DocumentationHover
 
 	static CeylonBrowserInput internalGetHoverInfo(final CeylonEditor editor, 
 	        IRegion hoverRegion) {
-		if (editor==null) return null;
+		if (editor==null || editor.getSelectionProvider()==null) return null;
 	    CeylonParseController parseController = editor.getParseController();
 	    if (parseController==null) return null;
         Tree.CompilationUnit rn = parseController.getRootNode();
