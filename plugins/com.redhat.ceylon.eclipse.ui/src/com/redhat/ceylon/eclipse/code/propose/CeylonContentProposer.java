@@ -1957,6 +1957,9 @@ public class CeylonContentProposer {
     }
 
     private static String name(Declaration d, String alias) {
+        if (alias==null) {
+            return "";
+        }
         char c = alias.charAt(0);
         if (d instanceof TypedDeclaration &&
                 (isUpperCase(c)||"object".equals(alias))) {
