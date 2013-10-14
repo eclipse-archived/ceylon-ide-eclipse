@@ -28,8 +28,13 @@ public class IDEBoxingVisitor extends BoxingVisitor {
     }
 
 	@Override
-	protected boolean hasErasedTypeParameters(ProducedReference arg0) {
-		// TODO Auto-generated method stub
+	protected boolean hasErasedTypeParameters(ProducedReference pr) {
+		// TODO!!!! This is wrong!
 		return false;
 	}
+
+    @Override
+    protected boolean isRaw(ProducedType pt) {
+        return IDEBoxingUtil.isTurnedToRaw(pt);
+    }
 }
