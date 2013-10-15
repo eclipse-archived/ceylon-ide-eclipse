@@ -74,19 +74,19 @@ public class InitDependenciesJob extends Job {
                 protected IStatus run(IProgressMonitor monitor) {
                     if (! CeylonBuilder.allClasspathContainersInitialized()) {
                         if (System.currentTimeMillis() < waitUntil) {
-                            System.out.println("Waiting 1 seconde more for classpath container initialization before building project " + project + " ...");
+                            //System.out.println("Waiting 1 seconde more for classpath container initialization before building project " + project + " ...");
                             schedule(1000);
                             return Status.OK_STATUS;
                         }
                         else {
-                            System.out.println("All the classpath containers are not initialized after 1 minute, so build project " + project + " anyway !");
+                            //System.out.println("All the classpath containers are not initialized after 1 minute, so build project " + project + " anyway !");
                         }
                     }
 
                     boolean shouldSchedule = true;
                     for (Job job : getJobManager().find(buildJob)) {
                         if (job.getState() == Job.WAITING) {
-                            System.out.println("A build of project " + project + " is already scheduled. Finally don't schedule a new one after all classpath containers have been initialized");
+                            //System.out.println("A build of project " + project + " is already scheduled. Finally don't schedule a new one after all classpath containers have been initialized");
                             shouldSchedule = false;
                             break;
                         }
@@ -94,7 +94,7 @@ public class InitDependenciesJob extends Job {
             
             
                     if (shouldSchedule) {
-                        System.out.println("Scheduling build of project " + project + " after all classpath containers have been initialized");
+                        //System.out.println("Scheduling build of project " + project + " after all classpath containers have been initialized");
                         buildJob.schedule();
                     }   
                     return Status.OK_STATUS;
