@@ -108,12 +108,12 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
                             if (initJavaToolingJob.getState() == Job.WAITING ||
                                 initJavaToolingJob.getState() == Job.RUNNING) {
                                 if (System.currentTimeMillis() < waitUntil) {
-                                    System.out.println("Waiting 1 seconde more for the end of the Java Tooling Initialization before initializing Ceylon dependencies for project " + project.getElementName() + " ...");
+//                                    System.out.println("Waiting 1 seconde more for the end of the Java Tooling Initialization before initializing Ceylon dependencies for project " + project.getElementName() + " ...");
                                     schedule(1000);
                                     return Status.OK_STATUS;
                                 }
                                 else {
-                                    System.out.println("The Java Tooling is not initialized after 2 minutes, so start initializing Ceylon dependencies for project " + project.getElementName() + " anyway !");
+//                                    System.out.println("The Java Tooling is not initialized after 2 minutes, so start initializing Ceylon dependencies for project " + project.getElementName() + " anyway !");
                                 }
                             }
                         }
@@ -121,14 +121,14 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
                         boolean shouldSchedule = true;
                         for (Job job : getJobManager().find(initDependenciesJob)) {
                             if (job.getState() == Job.WAITING) {
-                                System.out.println("An InitDependenciesJob for project " + project.getElementName() + " is already scheduled. Finally don't schedule a new one after the Java Tooling has initialized");
+//                                System.out.println("An InitDependenciesJob for project " + project.getElementName() + " is already scheduled. Finally don't schedule a new one after the Java Tooling has initialized");
                                 shouldSchedule = false;
                                 break;
                             }
                         }
                 
                         if (shouldSchedule) {
-                            System.out.println("Scheduling the initialization of the Ceylon dependencies for project " + project.getElementName() + " after the Java Tooling has been initialized");
+//                            System.out.println("Scheduling the initialization of the Ceylon dependencies for project " + project.getElementName() + " after the Java Tooling has been initialized");
                             initDependenciesJob.schedule();
                         }   
                         return Status.OK_STATUS;
