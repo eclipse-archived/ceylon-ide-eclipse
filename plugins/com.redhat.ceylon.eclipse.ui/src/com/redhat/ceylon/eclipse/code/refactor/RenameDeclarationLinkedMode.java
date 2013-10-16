@@ -90,6 +90,9 @@ public final class RenameDeclarationLinkedMode extends
 		    }
 		    super.done();
 		}
+		else {
+		    super.cancel();
+		}
 	}
 
     private void saveEditorState() {
