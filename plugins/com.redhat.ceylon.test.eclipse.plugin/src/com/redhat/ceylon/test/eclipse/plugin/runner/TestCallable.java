@@ -16,7 +16,7 @@ public class TestCallable implements Callable<Object> {
     }
 
     @Override
-    public Object $call() {
+    public Object $call$() {
         try {
             int pkgSeparatorIndex = ceylonQualifiedName.indexOf("::");
             int methodSeparatorIndex = ceylonQualifiedName.indexOf(".", pkgSeparatorIndex);
@@ -56,73 +56,73 @@ public class TestCallable implements Callable<Object> {
     }
 
     @Override
-    public Object $call(Object arg0) {
-        return $call();
+    public Object $call$(Object arg0) {
+        return $call$();
     }
 
     @Override
-    public Object $call(Object... arg0) {
-        return $call();
+    public Object $call$(Object... arg0) {
+        return $call$();
     }
 
     @Override
-    public Object $call(Object arg0, Object arg1) {
-        return $call();
+    public Object $call$(Object arg0, Object arg1) {
+        return $call$();
     }
 
     @Override
-    public Object $call(Object arg0, Object arg1, Object arg2) {
-        return $call();
+    public Object $call$(Object arg0, Object arg1, Object arg2) {
+        return $call$();
     }
 
     @Override
-    public short $getVariadicParameterIndex() {
+    public short $getVariadicParameterIndex$() {
         return -1;
     }
 
     @Override
-    public Object $call$variadic() {
-        return $call();
+    public Object $callvariadic$() {
+        return $call$();
     }
 
     @Override
-    public Object $call$variadic(Sequential<?> arg0) {
-        return $call();
+    public Object $callvariadic$(Sequential<?> arg0) {
+        return $call$();
     }
 
     @Override
-    public Object $call$variadic(Object arg0) {
-        return $call();
+    public Object $callvariadic$(Object arg0) {
+        return $call$();
     }
 
     @Override
-    public Object $call$variadic(Object... arg0) {
-        return $call();
+    public Object $callvariadic$(Object... arg0) {
+        return $call$();
     }
 
     @Override
-    public Object $call$variadic(Object arg0, Sequential<?> arg1) {
-        return $call();
+    public Object $callvariadic$(Object arg0, Sequential<?> arg1) {
+        return $call$();
     }
 
     @Override
-    public Object $call$variadic(Object arg0, Object arg1) {
-        return $call();
+    public Object $callvariadic$(Object arg0, Object arg1) {
+        return $call$();
     }
 
     @Override
-    public Object $call$variadic(Object arg0, Object arg1, Sequential<?> arg2) {
-        return $call();
+    public Object $callvariadic$(Object arg0, Object arg1, Sequential<?> arg2) {
+        return $call$();
     }
 
     @Override
-    public Object $call$variadic(Object arg0, Object arg1, Object arg2) {
-        return $call();
+    public Object $callvariadic$(Object arg0, Object arg1, Object arg2) {
+        return $call$();
     }
 
     @Override
-    public Object $call$variadic(Object arg0, Object arg1, Object arg2, Sequential<?> arg3) {
-        return $call();
+    public Object $callvariadic$(Object arg0, Object arg1, Object arg2, Sequential<?> arg3) {
+        return $call$();
     }
 
 }
