@@ -43,6 +43,9 @@ public class CompletionProposal implements ICompletionProposal,
         this.offset = offset;
         this.prefix = prefix;
         this.description = desc;
+        if (description==null) {
+            throw new NullPointerException();
+        }
     }
     
     @Override
