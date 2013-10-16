@@ -1149,14 +1149,14 @@
             <separator 
                   name="sep5" 
                   visible="true"/>
-            <command
+            <!--command
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
                   icon="icons/correctindent.gif"
                   label="Correct &amp;Indentation"/>
             <separator 
                   name="sep6" 
-                  visible="true"/>
+                  visible="true"/-->
             <dynamic id="source"
                   class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
             <!--command
@@ -1195,14 +1195,14 @@
             <separator 
                   name="sep1" 
                   visible="true"/>
-            <command
+            <!--command
                   id="correctIndentation"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
                   icon="icons/correctindent.gif"
                   label="Correct &amp;Indentation"/>
             <separator 
                   name="sep2" 
-                  visible="true"/>
+                  visible="true"/-->
             <dynamic id="source"
                   class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
             <!--command

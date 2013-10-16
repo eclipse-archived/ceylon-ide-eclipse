@@ -106,5 +106,6 @@ public interface CeylonResources {
     public static final String ADD_COMMENT = "add_comment";
     public static final String REMOVE_COMMENT = "remove_comment";
     public static final String TOGGLE_COMMENT = "toggle_comment";
+    public static final String CORRECT_INDENT = "correct_indent";
     
 }
