@@ -257,7 +257,15 @@ public class CeylonEditor extends TextEditor {
          }
          return outlinePage;
     }
-
+    
+    @Override
+    protected void editorContextMenuAboutToShow(IMenuManager menu) {
+        super.editorContextMenuAboutToShow(menu);
+        menu.remove(ITextEditorActionConstants.SHIFT_LEFT);
+        menu.remove(ITextEditorActionConstants.SHIFT_RIGHT);
+        menu.remove(ITextEditorActionConstants.QUICK_ASSIST);    
+    }
+    
     protected void createActions() {
         super.createActions();
 
@@ -362,17 +370,17 @@ public class CeylonEditor extends TextEditor {
 
         foldingActionGroup= new FoldingActionGroup(this, this.getSourceViewer());
         
-        getAction(ITextEditorActionConstants.SHIFT_LEFT)
-            .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-                    .getDescriptor(CeylonResources.SHIFT_LEFT));
-        getAction(ITextEditorActionConstants.SHIFT_RIGHT)
-            .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-                .getDescriptor(CeylonResources.SHIFT_RIGHT));
+//        getAction(ITextEditorActionConstants.SHIFT_LEFT)
+//            .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
+//                    .getDescriptor(CeylonResources.SHIFT_LEFT));
+//        getAction(ITextEditorActionConstants.SHIFT_RIGHT)
+//            .setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
+//                .getDescriptor(CeylonResources.SHIFT_RIGHT));
         
-        IAction qaa=getAction(ITextEditorActionConstants.QUICK_ASSIST);
-        qaa.setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
-                .getDescriptor(CeylonResources.QUICK_ASSIST));
-        qaa.setText("Quick Fix/Assist");
+//        IAction qaa=getAction(ITextEditorActionConstants.QUICK_ASSIST);
+//        qaa.setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
+//                .getDescriptor(CeylonResources.QUICK_ASSIST));
+//        qaa.setText("Quick Fix/Assist");
         
         installQuickAccessAction();
         
