@@ -843,12 +843,14 @@ public class CeylonEditor extends TextEditor {
         setKeyBindingScopes(new String[] { PLUGIN_ID + ".context" });
     }
 
+    private IHandlerActivation fSourceQuickAccessHandlerActivation;
     private IHandlerActivation fFindQuickAccessHandlerActivation;
     private IHandlerActivation fRefactorQuickAccessHandlerActivation;
     private IHandlerService fHandlerService;
 
     public static final String REFACTOR_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu";
     public static final String FIND_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.findQuickMenu";
+    public static final String SOURCE_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.sourceQuickMenu";
     
     private class RefactorQuickAccessAction extends QuickMenuAction {
         public RefactorQuickAccessAction() {
@@ -874,6 +876,18 @@ public class CeylonEditor extends TextEditor {
         }
     }
     
+    private class SourceQuickAccessAction extends QuickMenuAction {
+        public SourceQuickAccessAction() {
+            super(SOURCE_MENU_ID);
+        }
+        protected void fillMenu(IMenuManager menu) {
+            IContributionItem[] cis = new SourceMenuItems().getContributionItems();
+            for (IContributionItem ci: cis) {
+                menu.add(ci);
+            }
+        }
+    }
+    
     private void installQuickAccessAction() {
         fHandlerService= (IHandlerService) getSite().getService(IHandlerService.class);
         if (fHandlerService != null) {
@@ -881,8 +895,11 @@ public class CeylonEditor extends TextEditor {
             fRefactorQuickAccessHandlerActivation= fHandlerService.activateHandler(refactorQuickAccessAction.getActionDefinitionId(), 
                     new ActionHandler(refactorQuickAccessAction));
             QuickMenuAction findQuickAccessAction= new FindQuickAccessAction();
-            fRefactorQuickAccessHandlerActivation= fHandlerService.activateHandler(findQuickAccessAction.getActionDefinitionId(), 
+            fFindQuickAccessHandlerActivation= fHandlerService.activateHandler(findQuickAccessAction.getActionDefinitionId(), 
                     new ActionHandler(findQuickAccessAction));
+            QuickMenuAction sourceQuickAccessAction= new SourceQuickAccessAction();
+            fSourceQuickAccessHandlerActivation= fHandlerService.activateHandler(sourceQuickAccessAction.getActionDefinitionId(), 
+                    new ActionHandler(sourceQuickAccessAction));
         }
     }
     
@@ -890,6 +907,7 @@ public class CeylonEditor extends TextEditor {
         if (fHandlerService != null) {
             fHandlerService.deactivateHandler(fRefactorQuickAccessHandlerActivation); 
             fHandlerService.deactivateHandler(fFindQuickAccessHandlerActivation); 
+            fHandlerService.deactivateHandler(fSourceQuickAccessHandlerActivation); 
         }
     }
 

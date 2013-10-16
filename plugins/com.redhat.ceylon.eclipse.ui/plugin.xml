@@ -599,6 +599,11 @@
              description="Open find quick menu"
              id="com.redhat.ceylon.eclipse.ui.menu.findQuickMenu"
              name="Find Menu"/>
+       <command
+             categoryId="com.redhat.ceylon.eclipse.ui"
+             description="Open source quick menu"
+             id="com.redhat.ceylon.eclipse.ui.menu.sourceQuickMenu"
+             name="Source Menu"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Show the quick outline for the editor input"
@@ -862,6 +867,11 @@
             contextId="com.redhat.ceylon.eclipse.ui.context"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+F"/>
+      <key 
+            commandId="com.redhat.ceylon.eclipse.ui.menu.sourceQuickMenu"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+S"/>
             
       <!-- Edit actions -->
       <key
@@ -1147,7 +1157,9 @@
             <separator 
                   name="sep6" 
                   visible="true"/>
-            <command
+            <dynamic id="source"
+                  class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
+            <!--command
                   id="toggleComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
                   icon="icons/url.gif"
@@ -1169,7 +1181,7 @@
                   id="terminateStatement"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
                   icon="icons/correction_cast.gif"
-                  label="&amp;Terminate Statement"/>
+                  label="&amp;Terminate Statement"/-->
           </menu>
       </menuContribution>
       <menuContribution
@@ -1191,7 +1203,9 @@
             <separator 
                   name="sep2" 
                   visible="true"/>
-            <command
+            <dynamic id="source"
+                  class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
+            <!--command
                   id="toggleComment"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
                   icon="icons/url.gif"
@@ -1213,15 +1227,15 @@
                   id="terminateStatement"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
                   icon="icons/correction_cast.gif"
-                  label="&amp;Terminate Statement"/>
+                  label="&amp;Terminate Statement"/-->
+            <separator
+                  visible="true"
+                  name="sep6"/>
+            <dynamic id="refactor"
+                  class="com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems"/>
       </menuContribution>
       <menuContribution
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=additions">
-            <separator
-                  visible="true"
-                  name="sep4"/>
-            <dynamic id="selectedDeclaration"
-                      class="com.redhat.ceylon.eclipse.code.open.SelectedDeclarationMenuItems"/>
             <separator
                   visible="true"
                   name="sep5"/>
@@ -1229,9 +1243,9 @@
                   class="com.redhat.ceylon.eclipse.code.search.FindMenuItems"/>
             <separator
                   visible="true"
-                  name="sep6"/>
-            <dynamic id="refactor"
-                  class="com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems"/>
+                  name="sep4"/>
+            <dynamic id="selectedDeclaration"
+                      class="com.redhat.ceylon.eclipse.code.open.SelectedDeclarationMenuItems"/>
             <separator
                   visible="true"
                   name="sep7"/>

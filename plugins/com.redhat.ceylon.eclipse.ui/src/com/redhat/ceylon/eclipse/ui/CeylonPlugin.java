@@ -360,6 +360,10 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(FLAT_MODE, image("flatLayout.gif"));
         reg.put(TREE_MODE, image("hierarchicalLayout.gif"));
         
+        reg.put(TERMINATE_STATEMENT, image("correction_cast.gif"));
+        reg.put(REMOVE_COMMENT, image("remove_comment_edit.gif"));
+        reg.put(ADD_COMMENT, image("comment_edit.gif"));
+        reg.put(TOGGLE_COMMENT, image("url.gif"));
 	}
 	
     private void registerProjectOpenCloseListener() {
