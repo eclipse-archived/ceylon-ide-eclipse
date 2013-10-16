@@ -50,6 +50,7 @@ import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_PAR
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getModuleQueryType;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
@@ -125,7 +126,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -1181,26 +1181,30 @@ public class CeylonContentProposer {
             String prefix, List<ICompletionProposal> result) {
         if (!"module".startsWith(prefix)) return; 
         IFile file = cpc.getProject().getFile(cpc.getPath());
-        String moduleName = CeylonBuilder.getPackageName(file);
-        String moduleDesc = "module " + moduleName;
-        String moduleText = "module " + moduleName + " \"1.0.0\" {}";
-        final int selectionStart = offset - prefix.length() + moduleName.length() + 9;
-        final int selectionLength = 5;
-        
-        result.add(new CompletionProposal(offset, prefix, ARCHIVE, moduleDesc, moduleText, false) {
-            @Override
-            public Point getSelection(IDocument document) {
-                return new Point(selectionStart, selectionLength);
-            }});
+        String moduleName = getPackageName(file);
+        if (moduleName!=null) {
+            String moduleDesc = "module " + moduleName;
+            String moduleText = "module " + moduleName + " \"1.0.0\" {}";
+            final int selectionStart = offset - prefix.length() + moduleName.length() + 9;
+            final int selectionLength = 5;
+
+            result.add(new CompletionProposal(offset, prefix, ARCHIVE, moduleDesc, moduleText, false) {
+                @Override
+                public Point getSelection(IDocument document) {
+                    return new Point(selectionStart, selectionLength);
+                }});
+        }
     }
     
     private static void addCurrentPackageNameCompletion(CeylonParseController cpc, int offset, 
             String prefix, List<ICompletionProposal> result) {
         IFile file = cpc.getProject().getFile(cpc.getPath());
-        String moduleName = CeylonBuilder.getPackageName(file);
-        result.add(new CompletionProposal(offset, prefix, 
-                isModuleDescriptor(cpc) ? ARCHIVE : PACKAGE, 
-                        moduleName, moduleName, false));
+        String moduleName = getPackageName(file);
+        if (moduleName!=null) {
+            result.add(new CompletionProposal(offset, prefix, 
+                    isModuleDescriptor(cpc) ? ARCHIVE : PACKAGE, 
+                            moduleName, moduleName, false));
+        }
     }
     
     private static boolean isEmptyPackageDescriptor(CeylonParseController cpc) {
@@ -1214,11 +1218,13 @@ public class CeylonContentProposer {
             String prefix, List<ICompletionProposal> result) {
         if (!"package".startsWith(prefix)) return; 
         IFile file = cpc.getProject().getFile(cpc.getPath());
-        String packageName = CeylonBuilder.getPackageName(file);
-        String packageDesc = "package " + packageName;
-        String packageText = "package " + packageName + ";";
+        String packageName = getPackageName(file);
+        if (packageName!=null) {
+            String packageDesc = "package " + packageName;
+            String packageText = "package " + packageName + ";";
 
-        result.add(new CompletionProposal(offset, prefix, PACKAGE, packageDesc, packageText, false));
+            result.add(new CompletionProposal(offset, prefix, PACKAGE, packageDesc, packageText, false));
+        }
     }    
 
     private static boolean noParametersFollow(CommonToken nextToken) {
