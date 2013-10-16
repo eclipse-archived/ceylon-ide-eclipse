@@ -209,14 +209,15 @@ public abstract class AbstractRenameLinkedMode {
     }
 
     public LinkedPosition getCurrentLinkedPosition() {
-        Point selection= editor.getCeylonSourceViewer().getSelectedRange();
+        Point selection = editor.getCeylonSourceViewer().getSelectedRange();
         int start = selection.x;
         int end = start + selection.y;
         LinkedPosition[] positions = linkedPositionGroup.getPositions();
-        for (int i= 0; i < positions.length; i++) {
+        for (int i=0; i<positions.length; i++) {
             LinkedPosition position = positions[i];
-            if (position.includes(start) && position.includes(end))
+            if (position.includes(start) && position.includes(end)) {
                 return position;
+            }
         }
         return null;
     }
@@ -237,7 +238,7 @@ public abstract class AbstractRenameLinkedMode {
     public boolean isEnabled() {
     	String newName = getNewName();
     	return !originalName.equals(newName) &&
-    			newName.matches("^\\w(\\w|\\d)+$") &&
+    			newName.matches("^\\w(\\w|\\d)*$") &&
     			!CeylonTokenColorer.keywords.contains(newName);
     }
     
