@@ -364,6 +364,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(REMOVE_COMMENT, image("remove_comment_edit.gif"));
         reg.put(ADD_COMMENT, image("comment_edit.gif"));
         reg.put(TOGGLE_COMMENT, image("url.gif"));
+        reg.put(CORRECT_INDENT, image("correctindent.gif"));
 	}
 	
     private void registerProjectOpenCloseListener() {

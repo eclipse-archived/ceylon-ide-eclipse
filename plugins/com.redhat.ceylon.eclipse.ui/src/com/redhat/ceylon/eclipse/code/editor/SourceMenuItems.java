@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_COMMENT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CORRECT_INDENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REMOVE_COMMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TERMINATE_STATEMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TOGGLE_COMMENT;
@@ -23,6 +24,7 @@ public class SourceMenuItems extends CompoundContributionItem {
     public static ImageDescriptor ADD = imageRegistry.getDescriptor(ADD_COMMENT);
     public static ImageDescriptor REMOVE = imageRegistry.getDescriptor(REMOVE_COMMENT);
     public static ImageDescriptor TOGGLE = imageRegistry.getDescriptor(TOGGLE_COMMENT);
+    public static ImageDescriptor CORRECT = imageRegistry.getDescriptor(CORRECT_INDENT);
     
     public SourceMenuItems() {}
     
@@ -48,6 +50,8 @@ public class SourceMenuItems extends CompoundContributionItem {
 
     private IContributionItem[] getItems(IEditorPart editor) {
         return new IContributionItem[] {
+                new DynamicMenuItem(PLUGIN_ID + ".editor.correctIndentation", "Correct &Indentation", true, CORRECT),
+                new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.toggleComment", "Togg&le Comment", true, TOGGLE),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.addBlockComment", "Add Block Comment", true, ADD),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.removeBlockComment", "Remove Block Comment", true, REMOVE),
