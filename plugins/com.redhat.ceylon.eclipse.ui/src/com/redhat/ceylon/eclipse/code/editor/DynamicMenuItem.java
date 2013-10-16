@@ -42,7 +42,7 @@ public class DynamicMenuItem extends CommandContributionItem {
                 Display.getCurrent().getBounds().height < 1024;
     }
     
-    private static boolean isContextMenu(IContributionManager parent) {
+    static boolean isContextMenu(IContributionManager parent) {
         return parent instanceof IContributionItem && 
                 ((IContributionItem) parent).getId().equals("#TextEditorContext");
     }
