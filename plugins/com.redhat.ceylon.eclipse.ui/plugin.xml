@@ -1103,21 +1103,11 @@
                       <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
                   </with>
               </visibleWhen>
-            <!--dynamic id="find"
-                  class="com.redhat.ceylon.eclipse.imp.search.FindMenuItems"/-->
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems"/>
             <separator
                   visible="true"
                   name="sep2"/>
-            <command 
-                  id="quickAssist"
-                  commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
-                  icon="icons/quickassist_obj.gif"
-                  label="&amp;Quick Fix/Assist"/>
-            <separator
-                  visible="true"
-                  name="sep3"/>
             <command 
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
@@ -1136,106 +1126,19 @@
             <separator
                   name="sep4" 
                   visible="true"/>
-            <command
-                  id="shiftRight"
-                  commandId="org.eclipse.ui.edit.text.shiftRight"
-                  icon="icons/shift_r_edit.gif"
-                  label="Shift Right"/>
-            <command
-                  id="shiftLeft"
-                  commandId="org.eclipse.ui.edit.text.shiftLeft"
-                  icon="icons/shift_l_edit.gif"
-                  label="Shift Left"/>
-            <separator 
-                  name="sep5" 
-                  visible="true"/>
-            <!--command
-                  id="correctIndentation"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
-                  icon="icons/correctindent.gif"
-                  label="Correct &amp;Indentation"/>
-            <separator 
-                  name="sep6" 
-                  visible="true"/-->
             <dynamic id="source"
                   class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
-            <!--command
-                  id="toggleComment"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
-                  icon="icons/url.gif"
-                  label="Togg&amp;le Comment"/>
-            <command
-                  id="addBlockComment"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-                  label="Add Block Comment"
-                  icon="icons/comment_edit.gif"/>
-            <command
-                  id="removeBlockComment"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-                  label="Remove Block Comment"
-                  icon="icons/remove_comment_edit.gif"/>
-            <separator 
-                  name="sep7" 
-                  visible="true"/>
-            <command 
-                  id="terminateStatement"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
-                  icon="icons/correction_cast.gif"
-                  label="&amp;Terminate Statement"/-->
           </menu>
       </menuContribution>
       <menuContribution
-            locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=ShiftRight">
-            <separator 
-                  name="sep0" 
-                  visible="true"/>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?after=ShiftLeft">
+            locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=additions">
             <separator 
                   name="sep1" 
                   visible="true"/>
-            <!--command
-                  id="correctIndentation"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.correctIndentation"
-                  icon="icons/correctindent.gif"
-                  label="Correct &amp;Indentation"/>
-            <separator 
-                  name="sep2" 
-                  visible="true"/-->
             <dynamic id="source"
                   class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
-            <!--command
-                  id="toggleComment"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.toggleComment"
-                  icon="icons/url.gif"
-                  label="Togg&amp;le Comment"/>
-            <command
-                  id="addBlockComment"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-                  label="Add Block Comment"
-                  icon="icons/comment_edit.gif"/>
-            <command
-                  id="removeBlockComment"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-                  label="Remove Block Comment"
-                  icon="icons/remove_comment_edit.gif"/>
-            <separator
-                  visible="true"
-                  name="sep3"/>
-            <command 
-                  id="terminateStatement"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
-                  icon="icons/correction_cast.gif"
-                  label="&amp;Terminate Statement"/-->
-            <separator
-                  visible="true"
-                  name="sep6"/>
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems"/>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?before=additions">
             <separator
                   visible="true"
                   name="sep5"/>
