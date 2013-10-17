@@ -7,7 +7,6 @@
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lib/antlr-3.4-complete.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/zip4j_1.2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/org/jboss/jandex/main/org.jboss.jandex-main.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/maven-support/main/com.redhat.ceylon.maven-support-main.jar"/>
@@ -26,5 +25,6 @@
 	<classpathentry exported="true" kind="lib" path="defaultRepository/org/slf4j/api/1.6.1/org.slf4j.api-1.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/github/rjeschke/txtmark/0.8-c0dcd373ce/com.github.rjeschke.txtmark-0.8-c0dcd373ce.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/net/minidev/json-smart/1.1.1/net.minidev.json-smart-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/org/antlr-runtime/3.4/org.antlr-runtime-3.4.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
