@@ -9,14 +9,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr-3.4-complete.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/zip4j_1.2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/org/jboss/jandex/main/org.jboss.jandex-main.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/sardine-314.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/json-smart-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/txtmark-0.8-c0dcd373ce.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/maven-support/main/com.redhat.ceylon.maven-support-main.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ceylon-bootstrap.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/ceylon/language/1.0.0/ceylon.language-1.0.0.car"/>
@@ -26,5 +19,12 @@
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/js/1.0.0/com.redhat.ceylon.compiler.js-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/module-resolver/1.0.0/com.redhat.ceylon.module-resolver-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/typechecker/1.0.0/com.redhat.ceylon.typechecker-1.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/org/apache/commons/logging/1.1.1/org.apache.commons.logging-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/org/apache/httpcomponents/httpclient/4.1.1/org.apache.httpcomponents.httpclient-4.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/org/apache/httpcomponents/httpcore/4.1.1/org.apache.httpcomponents.httpcore-4.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/googlecode/sardine/314/com.googlecode.sardine-314.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/org/slf4j/api/1.6.1/org.slf4j.api-1.6.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/github/rjeschke/txtmark/0.8-c0dcd373ce/com.github.rjeschke.txtmark-0.8-c0dcd373ce.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/net/minidev/json-smart/1.1.1/net.minidev.json-smart-1.1.1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
