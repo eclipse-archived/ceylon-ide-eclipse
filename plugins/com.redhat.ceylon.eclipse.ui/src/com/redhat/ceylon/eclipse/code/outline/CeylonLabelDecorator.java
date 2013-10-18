@@ -200,9 +200,11 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
                 result |= ALIAS;
             }
         }
-        Declaration refined = getRefinedDeclaration(model);
-        if (refined!=null) {
-            result |= refined.isFormal() ? IMPLEMENTS : REFINES;
+        if (model.isActual()) {
+            Declaration refined = getRefinedDeclaration(model);
+            if (refined!=null) {
+                result |= refined.isFormal() ? IMPLEMENTS : REFINES;
+            }
         }
         return result;
     }
