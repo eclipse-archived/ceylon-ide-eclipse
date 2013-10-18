@@ -626,9 +626,10 @@ public class DocumentationHover
 //		}
 		StringBuffer buffer = new StringBuffer();
 		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
+		String desc = node instanceof Tree.Literal ? "literal" : "expression";
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
 				16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + 
-				"</tt> literal</b>", 
+				"</tt> "+desc+"</b>", 
 				20, 4);
 		buffer.append( "<hr/>");
 		if (node instanceof Tree.StringLiteral) {
