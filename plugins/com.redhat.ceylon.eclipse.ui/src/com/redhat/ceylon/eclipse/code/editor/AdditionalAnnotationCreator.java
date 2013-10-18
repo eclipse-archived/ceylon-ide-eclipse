@@ -107,7 +107,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     }
     
     public static Declaration getRefinedDeclaration(Declaration dec) {
-        if (!dec.isClassOrInterfaceMember()) {
+        if (!dec.isClassOrInterfaceMember() || !dec.isShared()) {
             return null;
         }
         else {
