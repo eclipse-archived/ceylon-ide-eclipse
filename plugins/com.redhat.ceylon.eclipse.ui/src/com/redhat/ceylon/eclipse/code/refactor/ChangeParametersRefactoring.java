@@ -24,6 +24,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
@@ -77,11 +78,17 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 	    if (rootNode!=null) {
 	    	Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);
 	    	if (refDec instanceof Functional) {
-	    		declaration = refDec.getRefinedDeclaration();
-	    		int len = ((Functional) declaration).getParameterLists().get(0)
-	    		        .getParameters().size();
-	    		for (int i=0; i<len; i++) {
-	    		    order.add(i);
+	    	    refDec = refDec.getRefinedDeclaration();
+	    		List<ParameterList> pls = ((Functional) refDec).getParameterLists();
+	    		if (pls.isEmpty()) {
+	    		    declaration = null;
+	    		}
+	    		else {
+	    		    declaration = refDec;
+	    		    int len = pls.get(0).getParameters().size();
+	    		    for (int i=0; i<len; i++) {
+	    		        order.add(i);
+	    		    }
 	    		}
 	    	}
 	    	else {
