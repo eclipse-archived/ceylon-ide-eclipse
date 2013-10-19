@@ -44,6 +44,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationView;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
+import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
@@ -59,6 +60,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
      * The ID for the kind of annotations created for "mark occurrences"
      */
     public static final String OCCURRENCE_ANNOTATION = PLUGIN_ID + ".occurrenceAnnotation";
+    public static final String ASSIGNMENT_ANNOTATION = PLUGIN_ID + ".assignmentAnnotation";
 
     /**
      * True if "mark occurrences" is currently on/enabled
@@ -198,10 +200,14 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         Node selectedNode = findNode(root, offset, offset+length-1);
         try {
             List<Node> occurrences = getOccurrencesOf(parseController, selectedNode);
-            if (occurrences != null) {
-                Position[] positions= convertRefNodesToPositions(occurrences);
-                placeAnnotations(convertPositionsToAnnotationMap(positions, document), annotationModel);
-            }
+            List<Node> assignments = getAssignmentsOf(parseController, selectedNode);
+            Map<Annotation,Position> annotationMap = new HashMap<Annotation,Position>
+                    (occurrences.size()+assignments.size());
+            addPositionsToAnnotationMap(convertRefNodesToPositions(occurrences), 
+                    OCCURRENCE_ANNOTATION, document, annotationMap);
+            addPositionsToAnnotationMap(convertRefNodesToPositions(assignments), 
+                    ASSIGNMENT_ANNOTATION, document, annotationMap);
+            placeAnnotations(annotationMap, annotationModel);
         } 
         catch (Exception e) {
             e.printStackTrace();
@@ -212,19 +218,18 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         }
     }
 
-    private Map<Annotation, Position> convertPositionsToAnnotationMap(Position[] positions, IDocument document) {
-        Map<Annotation, Position> annotationMap= new HashMap<Annotation, Position>(positions.length);
+    private void addPositionsToAnnotationMap(Position[] positions, String type, 
+            IDocument document, Map<Annotation, Position> annotationMap) {
         for(int i=0; i<positions.length; i++) {
             Position position = positions[i];
             try { // Create & add annotation
                 String message= document.get(position.offset, position.length);
-                annotationMap.put(new Annotation(OCCURRENCE_ANNOTATION, false, message), position);
+                annotationMap.put(new Annotation(type, false, message), position);
             } 
             catch (BadLocationException ex) {
                 continue; // skip apparently bogus position
             }
         }
-        return annotationMap;
     }
 
     private void placeAnnotations(Map<Annotation,Position> annotationMap, IAnnotationModel annotationModel) {
@@ -256,7 +261,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 		    while (annotationIterator.hasNext()) {
 		        // SMS 23 Jul 2008:  added test for annotation type
 		        Annotation ann = (Annotation) annotationIterator.next();
-		        if (ann.getType().indexOf(OCCURRENCE_ANNOTATION) > -1) {
+		        if (ann.getType().startsWith(OCCURRENCE_ANNOTATION) ||
+		            ann.getType().startsWith(ASSIGNMENT_ANNOTATION)) {
 		            annotationList.add(ann);
 		        }
 		    }
@@ -421,6 +427,28 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             if (decNode!=null) {
                 occurrences.add(decNode);
             }
+            return occurrences;
+        }
+        
+    }
+    
+    private List<Node> getAssignmentsOf(CeylonParseController parseController, Node node) {
+        
+        // Check whether we even have an AST in which to find occurrences
+        Tree.CompilationUnit root = parseController.getRootNode();
+        if (root == null) {
+            return Collections.emptyList();
+        }
+
+        Declaration declaration = getReferencedExplicitDeclaration(node, root);
+        if (declaration==null) {
+            return Collections.emptyList();
+        }
+        else {
+            List<Node> occurrences = new ArrayList<Node>();
+            FindAssignmentsVisitor frv = new FindAssignmentsVisitor(declaration);
+            root.visit(frv);
+            occurrences.addAll(frv.getNodes());
             return occurrences;
         }
         
