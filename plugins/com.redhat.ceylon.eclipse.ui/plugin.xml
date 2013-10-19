@@ -257,6 +257,8 @@
             name="com.redhat.ceylon.eclipse.ui.todo"/>
       <type
             name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"/>
+      <type
+            name="com.redhat.ceylon.eclipse.ui.assignmentAnnotation"/>
       <type 
             name="com.redhat.ceylon.eclipse.ui.refinement"/>
    </extension>
@@ -402,6 +404,35 @@
             <!-- colorPreferenceValue="206,236,245"
                  colorPreferenceValue="224,240,224" 
                  colorPreferenceValue="224,224,240" -->
+            
+      <specification
+            annotationType="com.redhat.ceylon.eclipse.ui.assignmentAnnotation"
+            label="Ceylon Assigments"
+            presentationLayer="3"
+            contributesToHeader="false"
+            includeOnPreferencePage="true"
+            icon="icons/occ_match.gif"
+                        
+            isGoToNextNavigationTarget="false"
+            isGoToNextNavigationTargetKey="assignmentAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="false"
+            isGoToPreviousNavigationTargetKey="assignmentAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarActionKey="assignmentAnnotationIsShownInDropdown"
+            showInNextPrevDropdownToolbarAction="true"
+            
+            colorPreferenceKey="assignmentColorPreference"
+            textPreferenceKey="assignmentTextPreference"
+            textStylePreferenceKey="assignmentAnnotationTextStyleKey"
+            highlightPreferenceKey="assignmentHighlightKey"
+            verticalRulerPreferenceKey="assignmentVerticalRulerPreference"
+            overviewRulerPreferenceKey="assignmentOverviewRulerPreference"
+            
+            colorPreferenceValue="255,239,213"
+            textPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="true"
+            verticalRulerPreferenceValue="false"
+            overviewRulerPreferenceValue="true"/>
             
    </extension>
    
