@@ -737,6 +737,10 @@ public class NewUnitWizardPage extends WizardPage {
             !packageName.matches(".*\\b("+KEYWORDS+")\\b.*");
     }
     
+    private boolean packageNameIsDiscouraged() {
+        return packageName.matches("^(ceylon|java|javax)\\b.*");
+    }
+    
     private boolean packageNameIsLegal() {
         return packageName!=null &&
                 packageNameIsLegal(packageName);
@@ -752,7 +756,12 @@ public class NewUnitWizardPage extends WizardPage {
 
     @Override
     public void setPageComplete(boolean complete) {
-        setMessage(null);
+        if (packageNameIsDiscouraged()) {
+            setMessage(getDiscouragedNamespaceMessage(), WARNING);
+        }
+        else {
+            setMessage(null);
+        }
         if (complete) {
             for (String file: getFileNames()) {
                 IPath path = packageFragment.getPath()
@@ -767,6 +776,10 @@ public class NewUnitWizardPage extends WizardPage {
             }
         }
         super.setPageComplete(complete);
+    }
+
+    String getDiscouragedNamespaceMessage() {
+        return "Discouraged namespace: " + packageName.split("\\.")[0];
     }
 
     String[] getFileNames() {
