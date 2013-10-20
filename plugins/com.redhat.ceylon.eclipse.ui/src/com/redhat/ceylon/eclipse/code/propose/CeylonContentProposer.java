@@ -196,7 +196,6 @@ public class CeylonContentProposer {
                 tt==STRING_MID ||
                 tt==STRING_START ||
                 tt==VERBATIM_STRING ||
-                tt==AVERBATIM_STRING ||
                 tt==CHAR_LITERAL ||
                 tt==FLOAT_LITERAL ||
                 tt==NATURAL_LITERAL) {
@@ -1991,25 +1990,20 @@ public class CeylonContentProposer {
         Declaration decl = d.getDeclaration();
         Package pkg = decl.getUnit().getPackage();
         
-        // handle language package
-        if (pkg != null && Module.LANGUAGE_MODULE_NAME.equals(pkg.getNameAsString())) {
+        // handle language package or same module and package
+        if (pkg != null && (Module.LANGUAGE_MODULE_NAME.equals(pkg.getNameAsString())
+                            ||(cpc.getRootNode().getUnit() != null && pkg.equals(
+                                    cpc.getRootNode().getUnit().getPackage())))
+                ) {
             if (decl.isToplevel()) {
                 result.append(decl.getNameAsString());
             } else { // not top level in language module
-                int loc = decl.getScope().getQualifiedNameString().indexOf("::");
+                int loc = decl.getQualifiedNameString().indexOf("::");
                 if (loc != -1) {
-                    result.append(decl.getScope().getQualifiedNameString().substring(loc + 2)
-                        + "." + decl.getNameAsString());
+                    result.append(decl.getQualifiedNameString().substring(loc + 2));
                 }
             }
         } 
-        
-        // same module and package
-        if (pkg != null && cpc.getRootNode().getUnit() != null && pkg.equals(
-                cpc.getRootNode().getUnit().getPackage())
-                ) {
-            result.append(decl.getNameAsString());
-        }
         
         // no special case
         if (result.length() == 0) {
