@@ -420,6 +420,29 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             return project.getReferencedProjects();
         }
         
+        /* Begin issue #471 */
+        ICommand[] builders = project.getDescription().getBuildSpec();
+        int javaOrder=0, ceylonOrder = 0;
+        for (int n=0; n<builders.length; n++) {
+            if (builders[n].getBuilderName().equals(JavaCore.BUILDER_ID)) {
+                javaOrder = n;
+            }
+            else if (builders[n].getBuilderName().equals(CeylonBuilder.BUILDER_ID)) {
+                ceylonOrder = n;
+            }
+        }
+        if (ceylonOrder < javaOrder) {
+            //if the build order is not correct, add an error and return
+            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+            marker.setAttribute(IMarker.MESSAGE, "The Ceylon Builder should run after the Java Builder. Change order of builders in project properties for project: " + 
+                    project.getName());
+            marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
+            return project.getReferencedProjects();
+        }
+        /* End issue #471 */      
+        
         List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
         
         final BooleanHolder mustDoFullBuild = new BooleanHolder();
