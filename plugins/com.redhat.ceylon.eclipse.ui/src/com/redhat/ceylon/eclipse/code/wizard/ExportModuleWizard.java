@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.File;
@@ -8,7 +7,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
@@ -49,7 +47,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
             IJavaProject project=null;
             if (selectedElement!=null) {
                 project = selectedElement.getJavaProject();
-                List<String> paths = getCeylonRepositories(project.getProject());
+                /*List<String> paths = getCeylonRepositories(project.getProject());
                 if (paths!=null) {
                     for (int i=paths.size()-1; i>=0; i--) {
                         String path = paths.get(i);
@@ -58,7 +56,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                             break;
                         }
                     }
-                }
+                }*/
             }
 			if (repoPath==null) repoPath = getDefaultRepositoryPath();
             page = new ExportModuleWizardPage(repoPath, project, selectedElement);
