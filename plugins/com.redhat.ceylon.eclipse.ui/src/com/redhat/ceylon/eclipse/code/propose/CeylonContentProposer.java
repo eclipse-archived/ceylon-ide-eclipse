@@ -1425,8 +1425,10 @@ public class CeylonContentProposer {
             DeclarationWithProximity dwp, Declaration d, Scope scope,
             OccurrenceLocation ol) {
         result.add(new DeclarationCompletionProposal(offset, prefix,
-                getDescriptionFor(dwp, ol), getTextFor(dwp, ol), 
-                true, cpc, d, ol==OccurrenceLocation.DOCLINK?false:dwp.isUnimported(), 
+                getDescriptionFor(dwp, ol), 
+                ol==OccurrenceLocation.DOCLINK?getTextForDocLink(cpc, dwp, ol):getTextFor(dwp, ol), 
+                true, cpc, d, 
+                ol==OccurrenceLocation.DOCLINK?false:dwp.isUnimported(), 
                 d.getProducedReference(null, Collections.<ProducedType>emptyList()), 
                 scope));
     }
@@ -1981,14 +1983,46 @@ public class CeylonContentProposer {
         }
     }
     
+    private static String getTextForDocLink( CeylonParseController cpc, DeclarationWithProximity d, 
+            OccurrenceLocation ol) {
+        
+        StringBuilder result = new StringBuilder();
+        
+        Declaration decl = d.getDeclaration();
+        Package pkg = decl.getUnit().getPackage();
+        
+        // handle language package
+        if (pkg != null && Module.LANGUAGE_MODULE_NAME.equals(pkg.getNameAsString())) {
+            if (decl.isToplevel()) {
+                result.append(decl.getNameAsString());
+            } else { // not top level in language module
+                int loc = decl.getScope().getQualifiedNameString().indexOf("::");
+                if (loc != -1) {
+                    result.append(decl.getScope().getQualifiedNameString().substring(loc + 2)
+                        + "." + decl.getNameAsString());
+                }
+            }
+        } 
+        
+        // same module and package
+        if (pkg != null && cpc.getRootNode().getUnit() != null && pkg.equals(
+                cpc.getRootNode().getUnit().getPackage())
+                ) {
+            result.append(decl.getNameAsString());
+        }
+        
+        // no special case
+        if (result.length() == 0) {
+            result.append(decl.getQualifiedNameString());
+        }
+        
+        return result.toString();
+    }
+    
     private static String getTextFor(DeclarationWithProximity d, 
             OccurrenceLocation ol) {
         StringBuilder result = new StringBuilder();
-        if (ol!= DOCLINK) {
-        	result.append(name(d));
-        } else {
-       		result.append(d.getDeclaration().getQualifiedNameString()); // TODO escape \i ?
-        }
+        result.append(name(d));
         if (ol!=IMPORT && ol!= DOCLINK) appendTypeParameters(d.getDeclaration(), result);
         return result.toString();
     }
