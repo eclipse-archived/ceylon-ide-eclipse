@@ -3,9 +3,9 @@ package com.redhat.ceylon.eclipse.core.launch;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer.getModuleArchive;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer.isProjectModule;
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static java.util.Arrays.asList;
 
 import java.io.File;
@@ -25,7 +25,6 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMRunner;
@@ -92,6 +91,18 @@ public class CeylonLaunchDelegate extends JavaLaunchDelegate {
             if(module.isDefault())
                 seenDefault = true;
             IPath modulePath = getModuleArchive(provider, module);
+            
+            // If CMR did not find and it exists in the project, 
+            // assume it is in output folder (for corner cases like beginning with "ceylon" etc.)
+            // there is a file exists check right after this, so it can't hurt
+            if (modulePath == null && isProjectModule(javaProject, module)) {
+                IPath modulesFolder = getCeylonModulesOutputFolder(project).getLocation();
+                modulePath = modulesFolder
+                        .append(module.getNameAsString().replace(".", File.separator))
+                        .append(module.getVersion())
+                        .append(module.getNameAsString()+"-"+module.getVersion()+".car");                
+            }
+            
             if (modulePath != null && modulePath.toFile().exists()) {
                 String path = modulePath.toOSString();
                 System.err.println("Adding module: "+module.getNameAsString()+"/"+module.getVersion()+": "+path);
