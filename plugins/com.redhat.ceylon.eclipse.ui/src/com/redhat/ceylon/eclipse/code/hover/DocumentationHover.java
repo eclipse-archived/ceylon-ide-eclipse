@@ -1808,8 +1808,6 @@ public class DocumentationHover
     }
 
     public static String highlightLine(String line) {
-        //TODO: this is lame because the syntax highlight gets applied
-        //      to keywords and typenames in string literals
         String kwc = toHex(getCurrentThemeColor(KEYWORDS));
         String tc = toHex(getCurrentThemeColor(TYPES));
         String ic = toHex(getCurrentThemeColor(IDENTIFIERS));
