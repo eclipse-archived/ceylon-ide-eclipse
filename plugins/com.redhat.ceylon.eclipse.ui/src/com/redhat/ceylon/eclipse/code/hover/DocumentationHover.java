@@ -1791,16 +1791,24 @@ public class DocumentationHover
         @Override
         public void emitBlock(StringBuilder out, List<String> lines, String meta) {
             if (!lines.isEmpty()) {
-                if (meta == null || meta.length() == 0) {
+                out.append("<pre>");
+                /*if (meta == null || meta.length() == 0) {
                     out.append("<pre>");
                 } else {
                     out.append("<pre class=\"brush: ").append(meta).append("\">");
-                }
+                }*/
                 StringBuilder code = new StringBuilder();
                 for (String s: lines) {
                     code.append(s).append('\n');
                 }
-                out.append(highlightLine(code.toString()));
+                String highlighted;
+                if (meta == null || meta.length() == 0 || "ceylon".equals(meta)) {
+                    highlighted = highlightLine(code.toString());
+                }
+                else {
+                    highlighted = code.toString();
+                }
+                out.append(highlighted);
                 out.append("</pre>\n");
             }
         }
