@@ -669,14 +669,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 }
             }
             @Override
-            public void visit(Tree.BaseMemberExpression that) {
-                if (inSelection(that)) {
-                    addDeclaration(that.getDeclaration(), that.getIdentifier());
-                }
-                super.visit(that);
-            }
-            @Override
-            public void visit(Tree.BaseTypeExpression that) {
+            public void visit(Tree.BaseMemberOrTypeExpression that) {
                 if (inSelection(that)) {
                     addDeclaration(that.getDeclaration(), that.getIdentifier());
                 }
@@ -686,6 +679,13 @@ public class CeylonSourceViewer extends ProjectionViewer {
             public void visit(Tree.BaseType that) {
                 if (inSelection(that)) {
                     addDeclaration(that.getDeclarationModel(), that.getIdentifier());
+                }
+                super.visit(that);
+            }
+            @Override
+            public void visit(Tree.MemberLiteral that) {
+                if (inSelection(that) && that.getType()==null) {
+                    addDeclaration(that.getDeclaration(), that.getIdentifier());
                 }
                 super.visit(that);
             }
