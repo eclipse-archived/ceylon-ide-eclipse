@@ -36,10 +36,13 @@ class DetectUnusedImportsVisitor extends Visitor {
     @Override
     public void visit(Tree.BaseMemberOrTypeExpression that) {
         super.visit(that);
-        for (Iterator<Declaration> it = result.iterator();
-                it.hasNext();) {
-            if ( it.next().equals(that.getDeclaration()) ) {
-                it.remove();
+        Declaration d = that.getDeclaration();
+        if (d!=null) {
+            for (Iterator<Declaration> it = result.iterator();
+                    it.hasNext();) {
+                if ( it.next().equals(d) ) {
+                    it.remove();
+                }
             }
         }
     }
@@ -55,4 +58,18 @@ class DetectUnusedImportsVisitor extends Visitor {
         }
     } 
     
+    @Override
+    public void visit(Tree.MemberLiteral that) {
+        super.visit(that);
+        Declaration d = that.getDeclaration();
+        if (d!=null && that.getType()==null) {
+            for (Iterator<Declaration> it = result.iterator();
+                    it.hasNext();) {
+                if ( it.next().equals(d) ) {
+                    it.remove();
+                }
+            }
+        }
+    }
+
 }
