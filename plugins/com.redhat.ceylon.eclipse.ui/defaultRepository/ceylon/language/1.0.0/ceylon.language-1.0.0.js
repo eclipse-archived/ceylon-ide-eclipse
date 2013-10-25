@@ -305,10 +305,10 @@ function Exception(description$1, cause, $$exception){
     if(cause===undefined){cause=null;}
     if (typeof($init$native$Exception$before)==='function')$init$native$Exception$before($$exception);
     $$exception.cause$2_=cause;
-    $$exception.$prop$getCause={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Exception}]},$cont:Exception,$an:function(){return[doc(String$("The underlying cause of this exception.",39)),shared()];},d:['ceylon.language','Exception','$at','cause']};}};
+    $$exception.$prop$getCause={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Exception}]},$cont:Exception,$an:function(){return[doc(String$("The underlying cause of this exception.",39)),shared()];},d:['ceylon.language','Exception','$at','cause']};}};
     $$exception.$prop$getCause.get=function(){return cause};
     $$exception.description$1_=description$1;
-    $$exception.$prop$getDescription$1={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:String$}]},$cont:Exception,$an:function(){return[doc(String$("A description of the problem.",29))];},d:['ceylon.language','Exception','$at','description']};}};
+    $$exception.$prop$getDescription$1={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:String$}]},$cont:Exception,$an:function(){return[doc(String$("A description of the problem.",29))];},d:['ceylon.language','Exception','$at','description']};}};
     $$exception.$prop$getDescription$1.get=function(){return description$1};
     $$exception.$prop$getMessage={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:String$},$cont:Exception,$an:function(){return[doc(String$("A message describing the problem. This default \nimplementation returns the description, if any, or \notherwise the message of the cause, if any.",143)),see([$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Exception.$$.prototype.$prop$getCause)].reifyCeylonType({Absent:{t:Null},Element:{t:ValueDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','Exception','$at','message']};}};
     $$exception.$prop$getMessage.get=function(){return message};
@@ -317,14 +317,14 @@ function Exception(description$1, cause, $$exception){
     if (typeof($init$native$Exception$after)==='function')$init$native$Exception$after($$exception);
     return $$exception;
 }
-Exception.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[{$nm:'description',$mt:'prm',$def:1,$t:{ t:'u', l:[{t:Null},{t:String$}]},$an:function(){return[doc("A description of the problem.")];}},{$nm:'cause',$mt:'prm',$def:1,$t:{ t:'u', l:[{t:Null},{t:Exception}]},$an:function(){return[doc("The underlying cause of this exception."),shared()];}}],$an:function(){return[doc(String$("The supertype of all exceptions. A subclass represents\na more specific kind of problem, and may define \nadditional attributes which propagate information about\nproblems of that kind.",182)),by([String$("Gavin",5),String$("Tom",3)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared(),$native()];},d:['ceylon.language','Exception']};};
+Exception.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[{$nm:'description',$mt:'prm',$def:1,$t:{t:'u', l:[{t:Null},{t:String$}]},$an:function(){return[doc("A description of the problem.")];}},{$nm:'cause',$mt:'prm',$def:1,$t:{t:'u', l:[{t:Null},{t:Exception}]},$an:function(){return[doc("The underlying cause of this exception."),shared()];}}],$an:function(){return[doc(String$("The supertype of all exceptions. A subclass represents\na more specific kind of problem, and may define \nadditional attributes which propagate information about\nproblems of that kind.",182)),by([String$("Gavin",5),String$("Tom",3)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared(),$native()];},d:['ceylon.language','Exception']};};
 exports.Exception=Exception;
 function $init$Exception(){
     if (Exception.$$===undefined){
         initTypeProto(Exception,'ceylon.language::Exception',Basic);
         (function($$exception){
-            defineAttr($$exception,'cause',function(){return this.cause$2_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Exception}]},$cont:Exception,$an:function(){return[doc(String$("The underlying cause of this exception.",39)),shared()];},d:['ceylon.language','Exception','$at','cause']};});
-            defineAttr($$exception,'description$1',function(){return this.description$1_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:String$}]},$cont:Exception,$an:function(){return[doc(String$("A description of the problem.",29))];},d:['ceylon.language','Exception','$at','description']};});
+            defineAttr($$exception,'cause',function(){return this.cause$2_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Exception}]},$cont:Exception,$an:function(){return[doc(String$("The underlying cause of this exception.",39)),shared()];},d:['ceylon.language','Exception','$at','cause']};});
+            defineAttr($$exception,'description$1',function(){return this.description$1_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:String$}]},$cont:Exception,$an:function(){return[doc(String$("A description of the problem.",29))];},d:['ceylon.language','Exception','$at','description']};});
             defineAttr($$exception,'message',function(){
                 var $$exception=this;
                 return (opt$3=(opt$4=$$exception.description$1,opt$4!==null?opt$4:(opt$5=$$exception.cause,opt$5!==null?opt$5.message:null)),opt$3!==null?opt$3:String$("",0));
@@ -377,13 +377,13 @@ function Iterable($$targs$$,$$iterable){
     $$iterable.$prop$getEmpty.get=function(){return empty};
     $$iterable.$prop$getSize={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Integer},$cont:Iterable,$an:function(){return[shared(),$default()];},d:['ceylon.language','Iterable','$at','size']};}};
     $$iterable.$prop$getSize.get=function(){return size};
-    $$iterable.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Absent','Element']},$cont:Iterable,$an:function(){return[doc(String$("The first element returned by the iterator, if any.\nThis should always produce the same value as\n`iterable.iterator().head`.",124)),shared(),actual(),$default()];},d:['ceylon.language','Iterable','$at','first']};}};
+    $$iterable.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Absent','Element']},$cont:Iterable,$an:function(){return[doc(String$("The first element returned by the iterator, if any.\nThis should always produce the same value as\n`iterable.iterator().head`.",124)),shared(),actual(),$default()];},d:['ceylon.language','Iterable','$at','first']};}};
     $$iterable.$prop$getFirst.get=function(){return first};
     $$iterable.$prop$getRest={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$cont:Iterable,$an:function(){return[doc(String$("Returns an iterable object containing all but the \nfirst element of this container.",83)),shared(),$default()];},d:['ceylon.language','Iterable','$at','rest']};}};
     $$iterable.$prop$getRest.get=function(){return rest};
     $$iterable.$prop$getSequence={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$cont:Iterable,$an:function(){return[doc(String$("A sequence containing the elements returned by the\niterator.",60)),shared(),$default()];},d:['ceylon.language','Iterable','$at','sequence']};}};
     $$iterable.$prop$getSequence.get=function(){return sequence};
-    $$iterable.$prop$getCoalesced={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{ t:'i', l:['Element',{t:Object$}]}}},$cont:Iterable,$an:function(){return[doc(String$("The non-null elements of this `Iterable`, in their\noriginal order. For null elements of the original \n`Iterable`, there is no entry in the resulting \niterable object.",166)),shared(),$default()];},d:['ceylon.language','Iterable','$at','coalesced']};}};
+    $$iterable.$prop$getCoalesced={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{t:'i', l:['Element',{t:Object$}]}}},$cont:Iterable,$an:function(){return[doc(String$("The non-null elements of this `Iterable`, in their\noriginal order. For null elements of the original \n`Iterable`, there is no entry in the resulting \niterable object.",166)),shared(),$default()];},d:['ceylon.language','Iterable','$at','coalesced']};}};
     $$iterable.$prop$getCoalesced.get=function(){return coalesced};
 }
 Iterable.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Element:{'var':'out'},Absent:{'var':'out','satisfies':[{t:Null}],'def':{t:Null}}},satisfies:[{t:Container,a:{Absent:'Absent',Element:'Element'}}],$an:function(){return[doc(String$("Abstract supertype of containers whose elements may be \niterated. An iterable container need not be finite, but\nits elements must at least be countable. There may not\nbe a well-defined iteration order, and so the order of\niterated elements may not be stable.\n\nThe type `Iterable<Element,Null>`, usually abbreviated\n`{Element*}` represents a possibly-empty iterable \ncontainer. The type `Iterable<Element,Nothing>`, \nusually abbreviated `{Element+}` represents a nonempty \niterable container.\n\nAn instance of `Iterable` may be constructed by \nsurrounding a value list in braces:\n\n    {String+} words = { \"hello\", \"world\" };\n\nAn instance of `Iterable` may be iterated using a `for`\nloop:\n\n    for (c in \"hello world\") { ... }\n\n`Iterable` and its subtypes define various operations\nthat return other iterable objects. Such operations \ncome in two flavors:\n\n- _Lazy_ operations return a *view* of the receiving\n  iterable object. If the underlying iterable object is\n  mutable, then changes to the underlying object will\n  be reflected in the resulting view. Lazy operations\n  are usually efficient, avoiding memory allocation or\n  iteration of the receiving iterable object.\n- _Eager_ operations return an immutable object. If the\n  receiving iterable object is mutable, changes to this\n  object will not be reflected in the resulting \n  immutable object. Eager operations are often \n  expensive, involving memory allocation and iteration\n  of the receiving iterable object.\n\nLazy operations are preferred, because they can be \nefficiently chained. For example:\n\n    string.filter((Character c) => c.letter)\n          .map((Character c) => c.uppercased)\n\nis much less expensive than:\n\n    string.select((Character c) => c.letter)\n          .collect((Character c) => c.uppercased)\n\nFurthermore, it is always easy to produce a new \nimmutable iterable object given the view produced by a\nlazy operation. For example:\n\n    [ *string.filter((Character c) => c.letter)\n          .map((Character c) => c.uppercased) ]\n\nLazy operations normally return an instance of \n`Iterable` or `Map`.\n\nHowever, there are certain scenarios where an eager \noperation is more useful, more convenient, or no more \nexpensive than a lazy operation, including:\n\n- sorting operations, which are eager by nature,\n- operations which preserve emptiness/nonemptiness of\n  the receiving iterable object.\n\nEager operations normally return a sequence.",2413)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Collection)].reifyCeylonType({Absent:{t:Null},Element:{t:InterfaceDeclaration$meta$declaration}})),by([String$("Gavin",5)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];},d:['ceylon.language','Iterable']};};
@@ -401,7 +401,7 @@ function $init$Iterable(){
                 return $$iterable.count($JsCallable(function (e$6){
                     var $$iterable=this;
                     return true;
-                },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$iterable.$$targs$$.Element,Element:$$iterable.$$targs$$.Element}},Return:{t:Boolean$}}));
+                },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$iterable.$$targs$$.Element]},Return:{t:Boolean$}}));
             },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Integer},$cont:Iterable,$an:function(){return[shared(),$default()];},d:['ceylon.language','Iterable','$at','size']};});
             $$iterable.longerThan=function longerThan(length$7){
                 var $$iterable=this;
@@ -436,18 +436,18 @@ function $init$Iterable(){
             };$$iterable.shorterThan.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$ps:[{$nm:'length',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Iterable,$an:function(){return[doc(String$("Determines if this iterable object has fewer elements\nthan the given length. This is an efficient operation \nfor iterable objects with many elements.",149)),see([$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.$prop$getSize)].reifyCeylonType({Absent:{t:Null},Element:{t:ValueDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','Iterable','$m','shorterThan']};};
             $$iterable.contains=function (element$18){
                 var $$iterable=this;
-                return $$iterable.any($JsCallable(ifExists($JsCallable((opt$19=element$18,JsCallable(opt$19,opt$19!==null?opt$19.equals:null)),[{$nm:'that',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:{t:Object$},Element:{t:Object$}}},Return:{t:Boolean$}})),[{$nm:'p1',$mt:'prm',$t:{t:Anything}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:{t:Anything},Element:{t:Anything}}},Return:{t:Boolean$}}));
+                return $$iterable.any($JsCallable(ifExists($JsCallable((opt$19=element$18,JsCallable(opt$19,opt$19!==null?opt$19.equals:null)),[{$nm:'that',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],{Arguments:{t:'T', l:[{t:Object$}]},Return:{t:Boolean$}})),[{$nm:'p1',$mt:'prm',$t:{t:Anything}}],{Arguments:{t:'T', l:[{t:Anything}]},Return:{t:Boolean$}}));
             };
             $$iterable.contains.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$ps:[{$nm:'element',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],$cont:Iterable,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','Iterable','$m','contains']};};
             defineAttr($$iterable,'first',function(){
                 var $$iterable=this;
                 return first($$iterable,{Value:$$iterable.$$targs$$.Element,Absent:$$iterable.$$targs$$.Absent});
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Absent','Element']},$cont:Iterable,$an:function(){return[doc(String$("The first element returned by the iterator, if any.\nThis should always produce the same value as\n`iterable.iterator().head`.",124)),shared(),actual(),$default()];},d:['ceylon.language','Iterable','$at','first']};});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Absent','Element']},$cont:Iterable,$an:function(){return[doc(String$("The first element returned by the iterator, if any.\nThis should always produce the same value as\n`iterable.iterator().head`.",124)),shared(),actual(),$default()];},d:['ceylon.language','Iterable','$at','first']};});
             defineAttr($$iterable,'last',function(){
                 var $$iterable=this;
                 var e$20=$$iterable.first;
                 function setE$20(e$21){return e$20=e$21;};
-                $prop$getE$20={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Absent','Element']},$an:function(){return[variable()];},d:['ceylon.language','Iterable','$at','last','$at','e']};}};
+                $prop$getE$20={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Absent','Element']},$an:function(){return[variable()];},d:['ceylon.language','Iterable','$at','last','$at','e']};}};
                 $prop$getE$20.get=function(){return e$20};
                 $prop$getE$20.set=setE$20;
                 if (setE$20.$$metamodel$$===undefined)setE$20.$$metamodel$$=$prop$getE$20.$$metamodel$$;
@@ -456,7 +456,7 @@ function $init$Iterable(){
                     e$20=x$23;
                 }
                 return e$20;
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Absent','Element']},$cont:Iterable,$an:function(){return[doc(String$("The last element returned by the iterator, if any.\nIterables are potentially infinite, so calling this\nmight never return; also, this implementation will\niterate through all the elements, which might be\nvery time-consuming.",223)),shared(),actual(),$default()];},d:['ceylon.language','Iterable','$at','last']};});defineAttr($$iterable,'rest',function(){
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Absent','Element']},$cont:Iterable,$an:function(){return[doc(String$("The last element returned by the iterator, if any.\nIterables are potentially infinite, so calling this\nmight never return; also, this implementation will\niterate through all the elements, which might be\nvery time-consuming.",223)),shared(),actual(),$default()];},d:['ceylon.language','Iterable','$at','last']};});defineAttr($$iterable,'rest',function(){
                 var $$iterable=this;
                 return $$iterable.skipping((1));
             },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$cont:Iterable,$an:function(){return[doc(String$("Returns an iterable object containing all but the \nfirst element of this container.",83)),shared(),$default()];},d:['ceylon.language','Iterable','$at','rest']};});
@@ -542,7 +542,7 @@ function $init$Iterable(){
                     }
                 }
                 return null;
-            };$$iterable.find.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[doc("The predicate the element must satisfy.")];}}],$cont:Iterable,$an:function(){return[doc(String$("The first element which satisfies the given \npredicate, if any, or `null` otherwise.",84)),shared(),$default()];},d:['ceylon.language','Iterable','$m','find']};};
+            };$$iterable.find.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[doc("The predicate the element must satisfy.")];}}],$cont:Iterable,$an:function(){return[doc(String$("The first element which satisfies the given \npredicate, if any, or `null` otherwise.",84)),shared(),$default()];},d:['ceylon.language','Iterable','$m','find']};};
             $$iterable.findLast=function findLast(selecting$47){
                 var $$iterable=this;
                 var last$48=null;
@@ -554,20 +554,20 @@ function $init$Iterable(){
                     }
                 }
                 return last$48;
-            };$$iterable.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[doc("The predicate the element must satisfy.")];}}],$cont:Iterable,$an:function(){return[doc(String$("The last element which satisfies the given\npredicate, if any, or `null` otherwise.",82)),shared(),$default()];},d:['ceylon.language','Iterable','$m','findLast']};};
+            };$$iterable.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[doc("The predicate the element must satisfy.")];}}],$cont:Iterable,$an:function(){return[doc(String$("The last element which satisfies the given\npredicate, if any, or `null` otherwise.",82)),shared(),$default()];},d:['ceylon.language','Iterable','$m','findLast']};};
             $$iterable.$sort=function (comparing$52){
                 var $$iterable=this;
-                return internalSort($JsCallable(comparing$52,[{$nm:'x',$mt:'prm',$t:'Element',$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:$$iterable.$$targs$$.Element,Element:$$iterable.$$targs$$.Element}},First:$$iterable.$$targs$$.Element,Element:$$iterable.$$targs$$.Element}},Return:{t:Comparison}}),$$iterable,{Element:$$iterable.$$targs$$.Element});
+                return internalSort($JsCallable(comparing$52,[{$nm:'x',$mt:'prm',$t:'Element',$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$iterable.$$targs$$.Element,$$iterable.$$targs$$.Element]},Return:{t:Comparison}}),$$iterable,{Element:$$iterable.$$targs$$.Element});
             };
             $$iterable.$sort.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$ps:[{$nm:'comparing',$mt:'prm',$pt:'f',$t:{t:Comparison},$an:function(){return[doc("The function comparing pairs of elements.")];}}],$cont:Iterable,$an:function(){return[doc(String$("A sequence containing the elements of this\ncontainer, sorted according to a function \nimposing a partial order upon the elements.\n\nFor convenience, the functions `byIncreasing()` \nand `byDecreasing()` produce a suitable \ncomparison function:\n\n    \"Hello World!\".sort(byIncreasing((Character c) => c.lowercased))\n\nThis operation is eager by nature.",347)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),byIncreasing),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),byDecreasing)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','Iterable','$m','sort']};};
             $$iterable.collect=function (collecting$53,$$$mptypes){
                 var $$iterable=this;
-                return $$iterable.$map($JsCallable(collecting$53,[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$iterable.$$targs$$.Element,Element:$$iterable.$$targs$$.Element}},Return:$$$mptypes.Result}),{Result:$$$mptypes.Result}).sequence;
+                return $$iterable.$map($JsCallable(collecting$53,[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$iterable.$$targs$$.Element]},Return:$$$mptypes.Result}),{Result:$$$mptypes.Result}).sequence;
             };
             $$iterable.collect.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Result'}},$ps:[{$nm:'collecting',$mt:'prm',$pt:'f',$t:'Result',$an:function(){return[doc("The transformation applied to the elements.")];}}],$cont:Iterable,$tp:{Result:{}},$an:function(){return[doc(String$("A sequence containing the results of applying the\ngiven mapping to the elements of this container. An \neager counterpart to `map()`.",132)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.$map)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','Iterable','$m','collect']};};
             $$iterable.select=function (selecting$54){
                 var $$iterable=this;
-                return $$iterable.$filter($JsCallable(selecting$54,[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$iterable.$$targs$$.Element,Element:$$iterable.$$targs$$.Element}},Return:{t:Boolean$}})).sequence;
+                return $$iterable.$filter($JsCallable(selecting$54,[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$iterable.$$targs$$.Element]},Return:{t:Boolean$}})).sequence;
             };
             $$iterable.select.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[doc("The predicate the elements must satisfy.")];}}],$cont:Iterable,$an:function(){return[doc(String$("A sequence containing the elements of this \ncontainer that satisfy the given predicate. An \neager counterpart to `filter()`.",124)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.$filter)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','Iterable','$m','select']};};
             $$iterable.any=function any(selecting$55){
@@ -683,7 +683,7 @@ function $init$Iterable(){
                                         var $$iterator$77=this;
                                         return (opt$80=(($$iterator$77.i$78=$$iterator$77.i$78.successor).compare(take$71).equals(getLarger())?getFinished():null),opt$80!==null?opt$80:iter$76.next());
                                         var opt$80;
-                                    };$$iterator$77.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$77,$an:function(){return[actual(),shared()];},d:['ceylon.language','Iterable','$m','taking','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
+                                    };$$iterator$77.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$77,$an:function(){return[actual(),shared()];},d:['ceylon.language','Iterable','$m','taking','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
                                 })(iterator$77.$$.prototype);
                                 var iterator$81;
                                 function getIterator$81(){
@@ -697,7 +697,7 @@ function $init$Iterable(){
                             defineAttr($$iterable$75,'first',function(){
                                 var $$iterable$75=this;
                                 return $$iterable.first;
-                            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$cont:iterable$75,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','taking','$o','iterable','$at','first']};});
+                            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$cont:iterable$75,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','taking','$o','iterable','$at','first']};});
                         })(iterable$75.$$.prototype);
                         var iterable$82;
                         function getIterable$82(){
@@ -762,7 +762,7 @@ function $init$Iterable(){
                                             }else {
                                                 return iter$85.next();
                                             }
-                                        };$$iterator$90.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$90,$an:function(){return[actual(),shared()];},d:['ceylon.language','Iterable','$m','skippingWhile','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
+                                        };$$iterator$90.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$90,$an:function(){return[actual(),shared()];},d:['ceylon.language','Iterable','$m','skippingWhile','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
                                     })(iterator$90.$$.prototype);
                                     var iterator$93;
                                     function getIterator$93(){
@@ -836,7 +836,7 @@ function $init$Iterable(){
                                     }
                                 }
                                 return getFinished();
-                            };$$iterator$98.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$98,$an:function(){return[actual(),shared()];},d:['ceylon.language','Iterable','$m','takingWhile','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
+                            };$$iterator$98.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$98,$an:function(){return[actual(),shared()];},d:['ceylon.language','Iterable','$m','takingWhile','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
                         })(iterator$98.$$.prototype);
                         var iterator$102;
                         function getIterator$102(){
@@ -905,7 +905,7 @@ function $init$Iterable(){
                                         function setI$112(i$113){return i$112=i$113;};
                                         while(((i$112=i$112.successor).compare(step$104).equals(getSmaller())&&(!isOfType(iter$109.next(),{t:Finished})))){}
                                         return next$111;
-                                    };$$iterator$110.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$110,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','by','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
+                                    };$$iterator$110.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$110,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','by','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
                                 })(iterator$110.$$.prototype);
                                 var iterator$114;
                                 function getIterator$114(){
@@ -967,20 +967,20 @@ function $init$Iterable(){
                         }
                         return getFinished();
                     }
-                },{Absent:{t:Null},Element:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}});
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{ t:'i', l:['Element',{t:Object$}]}}},$cont:Iterable,$an:function(){return[doc(String$("The non-null elements of this `Iterable`, in their\noriginal order. For null elements of the original \n`Iterable`, there is no entry in the resulting \niterable object.",166)),shared(),$default()];},d:['ceylon.language','Iterable','$at','coalesced']};});
+                },{Absent:{t:Null},Element:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{t:'i', l:['Element',{t:Object$}]}}},$cont:Iterable,$an:function(){return[doc(String$("The non-null elements of this `Iterable`, in their\noriginal order. For null elements of the original \n`Iterable`, there is no entry in the resulting \niterable object.",166)),shared(),$default()];},d:['ceylon.language','Iterable','$at','coalesced']};});
             defineAttr($$iterable,'indexed',function(){
                 var $$iterable=this;
                 function indexes$128($$targs$$){
                     var $$indexes$128=new indexes$128.$$;
                     $$indexes$128.$$targs$$=$$targs$$;
-                    Iterable({Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}},$$indexes$128);
+                    Iterable({Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}},$$indexes$128);
                     add_type_arg($$indexes$128,'Absent',{t:Null});
-                    add_type_arg($$indexes$128,'Element',{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}});
+                    add_type_arg($$indexes$128,'Element',{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}});
                     $$indexes$128.$prop$getOrig$129={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:'Absent',Element:'Element'}},$cont:indexes$128,d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$at','orig']};}};
                     $$indexes$128.$prop$getOrig$129.get=function(){return orig$129};
                     return $$indexes$128;
-                };indexes$128.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterable,a:{Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:['Element',{t:Object$}]}}}}}],d:['ceylon.language','Iterable','$at','indexed','$o','indexes']};};
+                };indexes$128.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterable,a:{Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:['Element',{t:Object$}]}}}}}],d:['ceylon.language','Iterable','$at','indexed','$o','indexes']};};
                 function $init$indexes$128(){
                     if (indexes$128.$$===undefined){
                         initTypeProto(indexes$128,'ceylon.language::Iterable.indexed.indexes',Basic,$init$Iterable());
@@ -998,8 +998,8 @@ function $init$Iterable(){
                         function iterator$130($$targs$$){
                             var $$iterator$130=new iterator$130.$$;
                             $$iterator$130.$$targs$$=$$targs$$;
-                            Iterator({Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}},$$iterator$130);
-                            add_type_arg($$iterator$130,'Element',{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}});
+                            Iterator({Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}},$$iterator$130);
+                            add_type_arg($$iterator$130,'Element',{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}});
                             $$iterator$130.iter$131_=$$indexes$128.orig$129.iterator();
                             $$iterator$130.$prop$getIter$131={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$cont:iterator$130,d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator','$o','iterator','$at','iter']};}};
                             $$iterator$130.$prop$getIter$131.get=function(){return iter$131};
@@ -1007,7 +1007,7 @@ function $init$Iterable(){
                             $$iterator$130.$prop$getI$132={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Integer},$cont:iterator$130,$an:function(){return[variable()];},d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator','$o','iterator','$at','i']};}};
                             $$iterator$130.$prop$getI$132.get=function(){return i$132};
                             return $$iterator$130;
-                        };iterator$130.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterator,a:{Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:['Element',{t:Object$}]}}}}}],d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator','$o','iterator']};};
+                        };iterator$130.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterator,a:{Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:['Element',{t:Object$}]}}}}}],d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator','$o','iterator']};};
                         function $init$iterator$130(){
                             if (iterator$130.$$===undefined){
                                 initTypeProto(iterator$130,'ceylon.language::Iterable.indexed.indexes.iterator.iterator',Basic,$init$Iterator());
@@ -1032,39 +1032,39 @@ function $init$Iterable(){
                                 if (!((n$137=next$134)!==null)) {throw wrapexc(AssertionException("Assertion failed: \'exists n = next\' at Iterable.ceylon (469:31-469:47)"),'469:24-469:48','Iterable.ceylon'); }
                                 var n$138;
                                 if(!isOfType((n$138=n$137),{t:Finished})){
-                                    return Entry((oldi$139=$$iterator$130.i$132,$$iterator$130.i$132=oldi$139.successor,oldi$139),n$138,{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}});
+                                    return Entry((oldi$139=$$iterator$130.i$132,$$iterator$130.i$132=oldi$139.successor,oldi$139),n$138,{Key:{t:Integer},Item:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}});
                                     var oldi$139;
                                 }else {
                                     return getFinished();
                                 }
-                            };$$iterator$130.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:['Element',{t:Object$}]}}},{t:Finished}]},$ps:[],$cont:iterator$130,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator','$o','iterator','$m','next']};};
+                            };$$iterator$130.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:['Element',{t:Object$}]}}},{t:Finished}]},$ps:[],$cont:iterator$130,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator','$o','iterator','$m','next']};};
                         })(iterator$130.$$.prototype);
                         var iterator$140;
                         function getIterator$140(){
-                            if (iterator$140===undefined){iterator$140=$init$iterator$130()({Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});iterator$140.$$metamodel$$=getIterator$140.$$metamodel$$;}
+                            if (iterator$140===undefined){iterator$140=$init$iterator$130()({Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});iterator$140.$$metamodel$$=getIterator$140.$$metamodel$$;}
                             return iterator$140;
                         }
                         getIterator$140.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$130},d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator','$at','iterator']};};
                         $prop$getIterator$140={get:getIterator$140,$$metamodel$$:getIterator$140.$$metamodel$$};
                         return getIterator$140();
-                    };$$indexes$128.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:['Element',{t:Object$}]}}}}},$ps:[],$cont:indexes$128,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator']};};
+                    };$$indexes$128.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:['Element',{t:Object$}]}}}}},$ps:[],$cont:indexes$128,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator']};};
                 })(indexes$128.$$.prototype);
                 var indexes$141;
                 function getIndexes$141(){
-                    if (indexes$141===undefined){indexes$141=$init$indexes$128()({Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});indexes$141.$$metamodel$$=getIndexes$141.$$metamodel$$;}
+                    if (indexes$141===undefined){indexes$141=$init$indexes$128()({Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});indexes$141.$$metamodel$$=getIndexes$141.$$metamodel$$;}
                     return indexes$141;
                 }
                 getIndexes$141.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:indexes$128},d:['ceylon.language','Iterable','$at','indexed','$at','indexes']};};
                 $prop$getIndexes$141={get:getIndexes$141,$$metamodel$$:getIndexes$141.$$metamodel$$};
                 return getIndexes$141();
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:['Element',{t:Object$}]}}}}},$cont:Iterable,$an:function(){return[doc(String$("All entries of form `index->element` where `index` \nis the position at which `element` occurs, for every\nnon-null element of this `Iterable`, ordered by\nincreasing `index`. For a null element at a given\nposition in the original `Iterable`, there is no \nentry with the corresponding index in the resulting \niterable object. The expression \n\n    { \"hello\", null, \"world\" }.indexed\n    \nresults in an iterable object with the entries\n`0->\"hello\"` and `2->\"world\"`.",461)),shared(),$default()];},d:['ceylon.language','Iterable','$at','indexed']};});$$iterable.following=function following(head$142,$$$mptypes){
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:['Element',{t:Object$}]}}}}},$cont:Iterable,$an:function(){return[doc(String$("All entries of form `index->element` where `index` \nis the position at which `element` occurs, for every\nnon-null element of this `Iterable`, ordered by\nincreasing `index`. For a null element at a given\nposition in the original `Iterable`, there is no \nentry with the corresponding index in the resulting \niterable object. The expression \n\n    { \"hello\", null, \"world\" }.indexed\n    \nresults in an iterable object with the entries\n`0->\"hello\"` and `2->\"world\"`.",461)),shared(),$default()];},d:['ceylon.language','Iterable','$at','indexed']};});$$iterable.following=function following(head$142,$$$mptypes){
                 var $$iterable=this;
                 function cons$143($$targs$$){
                     var $$cons$143=new cons$143.$$;
                     $$cons$143.$$targs$$=$$targs$$;
-                    Iterable({Absent:{t:Nothing},Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}},$$cons$143);
+                    Iterable({Absent:{t:Nothing},Element:{t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}},$$cons$143);
                     return $$cons$143;
-                };cons$143.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterable,a:{Absent:{t:Nothing},Element:{ t:'u', l:['Element','Other']}}}],d:['ceylon.language','Iterable','$m','following','$o','cons']};};
+                };cons$143.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterable,a:{Absent:{t:Nothing},Element:{t:'u', l:['Element','Other']}}}],d:['ceylon.language','Iterable','$m','following','$o','cons']};};
                 function $init$cons$143(){
                     if (cons$143.$$===undefined){
                         initTypeProto(cons$143,'ceylon.language::Iterable.following.cons',Basic,$init$Iterable());
@@ -1079,12 +1079,12 @@ function $init$Iterable(){
                         function iterator$145($$targs$$){
                             var $$iterator$145=new iterator$145.$$;
                             $$iterator$145.$$targs$$=$$targs$$;
-                            Iterator({Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}},$$iterator$145);
+                            Iterator({Element:{t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}},$$iterator$145);
                             $$iterator$145.first$146_=true;
                             $$iterator$145.$prop$getFirst$146={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$cont:iterator$145,$an:function(){return[variable()];},d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator','$o','iterator','$at','first']};}};
                             $$iterator$145.$prop$getFirst$146.get=function(){return first$146};
                             return $$iterator$145;
-                        };iterator$145.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterator,a:{Element:{ t:'u', l:['Element','Other']}}}],d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator','$o','iterator']};};
+                        };iterator$145.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterator,a:{Element:{t:'u', l:['Element','Other']}}}],d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator','$o','iterator']};};
                         function $init$iterator$145(){
                             if (iterator$145.$$===undefined){
                                 initTypeProto(iterator$145,'ceylon.language::Iterable.following.cons.iterator.iterator',Basic,$init$Iterator());
@@ -1102,35 +1102,35 @@ function $init$Iterable(){
                                 }else {
                                     return iter$144.next();
                                 }
-                            };$$iterator$145.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element','Other',{t:Finished}]},$ps:[],$cont:iterator$145,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator','$o','iterator','$m','next']};};
+                            };$$iterator$145.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element','Other',{t:Finished}]},$ps:[],$cont:iterator$145,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator','$o','iterator','$m','next']};};
                         })(iterator$145.$$.prototype);
                         var iterator$148;
                         function getIterator$148(){
-                            if (iterator$148===undefined){iterator$148=$init$iterator$145()({Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});iterator$148.$$metamodel$$=getIterator$148.$$metamodel$$;}
+                            if (iterator$148===undefined){iterator$148=$init$iterator$145()({Element:{t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});iterator$148.$$metamodel$$=getIterator$148.$$metamodel$$;}
                             return iterator$148;
                         }
                         getIterator$148.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$145},d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator','$at','iterator']};};
                         $prop$getIterator$148={get:getIterator$148,$$metamodel$$:getIterator$148.$$metamodel$$};
                         return getIterator$148();
-                    };$$cons$143.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{ t:'u', l:['Element','Other']}}},$ps:[],$cont:cons$143,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator']};};
+                    };$$cons$143.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{t:'u', l:['Element','Other']}}},$ps:[],$cont:cons$143,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator']};};
                 })(cons$143.$$.prototype);
                 var cons$149;
                 function getCons$149(){
-                    if (cons$149===undefined){cons$149=$init$cons$143()({Absent:{t:Nothing},Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});cons$149.$$metamodel$$=getCons$149.$$metamodel$$;}
+                    if (cons$149===undefined){cons$149=$init$cons$143()({Absent:{t:Nothing},Element:{t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});cons$149.$$metamodel$$=getCons$149.$$metamodel$$;}
                     return cons$149;
                 }
                 getCons$149.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:cons$143},d:['ceylon.language','Iterable','$m','following','$at','cons']};};
                 $prop$getCons$149={get:getCons$149,$$metamodel$$:getCons$149.$$metamodel$$};
                 return getCons$149();
-            };$$iterable.following.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Nothing},Element:{ t:'u', l:['Element','Other']}}},$ps:[{$nm:'head',$mt:'prm',$t:'Other',$an:function(){return[];}}],$cont:Iterable,$tp:{Other:{}},$an:function(){return[doc(String$("An `Iterable` with the given inital element followed \nby the elements of this iterable object.",94)),shared(),$default()];},d:['ceylon.language','Iterable','$m','following']};};
+            };$$iterable.following.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Nothing},Element:{t:'u', l:['Element','Other']}}},$ps:[{$nm:'head',$mt:'prm',$t:'Other',$an:function(){return[];}}],$cont:Iterable,$tp:{Other:{}},$an:function(){return[doc(String$("An `Iterable` with the given inital element followed \nby the elements of this iterable object.",94)),shared(),$default()];},d:['ceylon.language','Iterable','$m','following']};};
             $$iterable.chain=function chain(other$150,$$$mptypes){
                 var $$iterable=this;
                 function chained$151($$targs$$){
                     var $$chained$151=new chained$151.$$;
                     $$chained$151.$$targs$$=$$targs$$;
-                    Iterable({Absent:{ t:'i', l:[$$iterable.$$targs$$.Absent,$$$mptypes.OtherAbsent]},Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}},$$chained$151);
+                    Iterable({Absent:{t:'i', l:[$$iterable.$$targs$$.Absent,$$$mptypes.OtherAbsent]},Element:{t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}},$$chained$151);
                     return $$chained$151;
-                };chained$151.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterable,a:{Absent:{ t:'i', l:['Absent','OtherAbsent']},Element:{ t:'u', l:['Element','Other']}}}],d:['ceylon.language','Iterable','$m','chain','$o','chained']};};
+                };chained$151.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterable,a:{Absent:{t:'i', l:['Absent','OtherAbsent']},Element:{t:'u', l:['Element','Other']}}}],d:['ceylon.language','Iterable','$m','chain','$o','chained']};};
                 function $init$chained$151(){
                     if (chained$151.$$===undefined){
                         initTypeProto(chained$151,'ceylon.language::Iterable.chain.chained',Basic,$init$Iterable());
@@ -1143,17 +1143,17 @@ function $init$Iterable(){
                         var $$chained$151=this;
                         return ChainedIterator($$iterable,other$150,{Other:$$$mptypes.Other,Element:$$iterable.$$targs$$.Element});
                     };
-                    $$chained$151.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{ t:'u', l:['Element','Other']}}},$ps:[],$cont:chained$151,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','chain','$o','chained','$m','iterator']};};
+                    $$chained$151.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{t:'u', l:['Element','Other']}}},$ps:[],$cont:chained$151,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','chain','$o','chained','$m','iterator']};};
                 })(chained$151.$$.prototype);
                 var chained$152;
                 function getChained$152(){
-                    if (chained$152===undefined){chained$152=$init$chained$151()({Absent:{ t:'i', l:[$$iterable.$$targs$$.Absent,$$$mptypes.OtherAbsent]},Element:{ t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});chained$152.$$metamodel$$=getChained$152.$$metamodel$$;}
+                    if (chained$152===undefined){chained$152=$init$chained$151()({Absent:{t:'i', l:[$$iterable.$$targs$$.Absent,$$$mptypes.OtherAbsent]},Element:{t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});chained$152.$$metamodel$$=getChained$152.$$metamodel$$;}
                     return chained$152;
                 }
                 getChained$152.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:chained$151},d:['ceylon.language','Iterable','$m','chain','$at','chained']};};
                 $prop$getChained$152={get:getChained$152,$$metamodel$$:getChained$152.$$metamodel$$};
                 return getChained$152();
-            };$$iterable.chain.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{ t:'i', l:['Absent','OtherAbsent']},Element:{ t:'u', l:['Element','Other']}}},$ps:[{$nm:'other',$mt:'prm',$t:{t:Iterable,a:{Absent:'OtherAbsent',Element:'Other'}},$an:function(){return[];}}],$cont:Iterable,$tp:{Other:{},OtherAbsent:{'satisfies':[{t:Null}]}},$an:function(){return[doc(String$("The elements of this iterable object, in their\noriginal order, followed by the elements of the \ngiven iterable object also in their original order.",147)),shared(),$default()];},d:['ceylon.language','Iterable','$m','chain']};};
+            };$$iterable.chain.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:'i', l:['Absent','OtherAbsent']},Element:{t:'u', l:['Element','Other']}}},$ps:[{$nm:'other',$mt:'prm',$t:{t:Iterable,a:{Absent:'OtherAbsent',Element:'Other'}},$an:function(){return[];}}],$cont:Iterable,$tp:{Other:{},OtherAbsent:{'satisfies':[{t:Null}]}},$an:function(){return[doc(String$("The elements of this iterable object, in their\noriginal order, followed by the elements of the \ngiven iterable object also in their original order.",147)),shared(),$default()];},d:['ceylon.language','Iterable','$m','chain']};};
             $$iterable.defaultNullElements=function (defaultValue$153,$$$mptypes){
                 var $$iterable=this;
                 return Comprehension(function(){
@@ -1170,9 +1170,9 @@ function $init$Iterable(){
                         }
                         return getFinished();
                     }
-                },{Absent:{t:Null},Element:{ t:'u', l:[$$$mptypes.Default,{ t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}]}});
+                },{Absent:{t:Null},Element:{t:'u', l:[$$$mptypes.Default,{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}]}});
             };
-            $$iterable.defaultNullElements.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:'Absent',Element:{ t:'u', l:[{ t:'i', l:['Element',{t:Object$}]},'Default']}}},$ps:[{$nm:'defaultValue',$mt:'prm',$t:'Default',$an:function(){return[doc("A default value that replaces `null` elements.")];}}],$cont:Iterable,$tp:{Default:{}},$an:function(){return[doc(String$("An `Iterable` that produces the elements of this \niterable object, replacing every `null` element \nwith the given default value. The resulting iterable\nobject does not produce the value `null`.",193)),shared(),$default()];},d:['ceylon.language','Iterable','$m','defaultNullElements']};};
+            $$iterable.defaultNullElements.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:'Absent',Element:{t:'u', l:[{t:'i', l:['Element',{t:Object$}]},'Default']}}},$ps:[{$nm:'defaultValue',$mt:'prm',$t:'Default',$an:function(){return[doc("A default value that replaces `null` elements.")];}}],$cont:Iterable,$tp:{Default:{}},$an:function(){return[doc(String$("An `Iterable` that produces the elements of this \niterable object, replacing every `null` element \nwith the given default value. The resulting iterable\nobject does not produce the value `null`.",193)),shared(),$default()];},d:['ceylon.language','Iterable','$m','defaultNullElements']};};
             defineAttr($$iterable,'string',function(){
                 var $$iterable=this;
                 if($$iterable.empty){
@@ -1235,7 +1235,7 @@ function $init$Iterable(){
                                     $$iterator$163.iter$164=$$iterable$161.orig$162.iterator();
                                     return $$iterator$163.iter$164.next();
                                 }
-                            };$$iterator$163.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$163,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$at','cycled','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
+                            };$$iterator$163.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$163,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$at','cycled','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
                         })(iterator$163.$$.prototype);
                         var iterator$167;
                         function getIterator$167(){
@@ -1316,7 +1316,7 @@ function $init$Iterable(){
                                     }
                                     return $$iterator$172.iter$173.next();
                                 }
-                            };$$iterator$172.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$172,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','cycle','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
+                            };$$iterator$172.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$172,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','cycle','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
                         })(iterator$172.$$.prototype);
                         var iterator$179;
                         function getIterator$179(){
@@ -1336,7 +1336,7 @@ function $init$Iterable(){
                 getIterable$180.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$170},d:['ceylon.language','Iterable','$m','cycle','$at','iterable']};};
                 $prop$getIterable$180={get:getIterable$180,$$metamodel$$:getIterable$180.$$metamodel$$};
                 return getIterable$180();
-            };$$iterable.cycle.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:'Absent',Element:'Element'}},$ps:[{$nm:'times',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Iterable,$an:function(){return[doc(String$("A finite iterable object that produces the elements of \nthis iterable object, repeatedly, the given number of\ntimes.",116)),see([$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.$prop$getCycled),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.repeat)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared(),$default()];},d:['ceylon.language','Iterable','$m','cycle']};};
+            };$$iterable.cycle.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:'Absent',Element:'Element'}},$ps:[{$nm:'times',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Iterable,$an:function(){return[doc(String$("A finite iterable object that produces the elements of \nthis iterable object, repeatedly, the given number of\ntimes.",116)),see([$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.$prop$getCycled),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.repeat)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared(),$default()];},d:['ceylon.language','Iterable','$m','cycle']};};
             $$iterable.repeat=function repeat(times$181){
                 var $$iterable=this;
                 var sb$182=SequenceBuilder({Element:$$iterable.$$targs$$.Element});
@@ -1432,17 +1432,17 @@ function $init$Sequential(){
             };$$sequential.terminal.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$ps:[{$nm:'length',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Sequential,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','Sequential','$m','terminal']};};
             $$sequential.trim=function (trimming$202){
                 var $$sequential=this;
-                return $$sequential.getT$all()['ceylon.language::List'].$$.prototype.trim.call(this,$JsCallable(trimming$202,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$sequential.$$targs$$.Element,Element:$$sequential.$$targs$$.Element}},Return:{t:Boolean$}})).sequence;
+                return $$sequential.getT$all()['ceylon.language::List'].$$.prototype.trim.call(this,$JsCallable(trimming$202,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$sequential.$$targs$$.Element]},Return:{t:Boolean$}})).sequence;
             };
             $$sequential.trim.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$ps:[{$nm:'trimming',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Sequential,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','Sequential','$m','trim']};};
             $$sequential.trimLeading=function (trimming$203){
                 var $$sequential=this;
-                return $$sequential.getT$all()['ceylon.language::List'].$$.prototype.trimLeading.call(this,$JsCallable(trimming$203,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$sequential.$$targs$$.Element,Element:$$sequential.$$targs$$.Element}},Return:{t:Boolean$}})).sequence;
+                return $$sequential.getT$all()['ceylon.language::List'].$$.prototype.trimLeading.call(this,$JsCallable(trimming$203,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$sequential.$$targs$$.Element]},Return:{t:Boolean$}})).sequence;
             };
             $$sequential.trimLeading.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$ps:[{$nm:'trimming',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Sequential,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','Sequential','$m','trimLeading']};};
             $$sequential.trimTrailing=function (trimming$204){
                 var $$sequential=this;
-                return $$sequential.getT$all()['ceylon.language::List'].$$.prototype.trimTrailing.call(this,$JsCallable(trimming$204,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$sequential.$$targs$$.Element,Element:$$sequential.$$targs$$.Element}},Return:{t:Boolean$}})).sequence;
+                return $$sequential.getT$all()['ceylon.language::List'].$$.prototype.trimTrailing.call(this,$JsCallable(trimming$204,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$sequential.$$targs$$.Element]},Return:{t:Boolean$}})).sequence;
             };
             $$sequential.trimTrailing.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$ps:[{$nm:'trimming',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Sequential,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','Sequential','$m','trimTrailing']};};
             defineAttr($$sequential,'clone',function(){
@@ -1496,7 +1496,7 @@ function $init$Sequence(){
             $$sequence.$prop$getRest={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$cont:Sequence,$an:function(){return[doc(String$("The rest of the sequence, without the first \n    element.",57)),shared(),actual(),formal()];},d:['ceylon.language','Sequence','$at','rest']};}};
             $$sequence.$sort=function $sort(comparing$206){
                 var $$sequence=this;
-                var s$207=internalSort($JsCallable(comparing$206,[{$nm:'x',$mt:'prm',$t:'Element',$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:$$sequence.$$targs$$.Element,Element:$$sequence.$$targs$$.Element}},First:$$sequence.$$targs$$.Element,Element:$$sequence.$$targs$$.Element}},Return:{t:Comparison}}),$$sequence,{Element:$$sequence.$$targs$$.Element});
+                var s$207=internalSort($JsCallable(comparing$206,[{$nm:'x',$mt:'prm',$t:'Element',$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$sequence.$$targs$$.Element,$$sequence.$$targs$$.Element]},Return:{t:Comparison}}),$$sequence,{Element:$$sequence.$$targs$$.Element});
                 //assert at Sequence.ceylon (63:8-63:27)
                 var s$208;
                 if (!(nonempty((s$208=s$207)))) {throw wrapexc(AssertionException("Assertion failed: \'nonempty s\' at Sequence.ceylon (63:15-63:26)"),'63:8-63:27','Sequence.ceylon'); }
@@ -1504,7 +1504,7 @@ function $init$Sequence(){
             };$$sequence.$sort.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequence,a:{Element:'Element'}},$ps:[{$nm:'comparing',$mt:'prm',$pt:'f',$t:{t:Comparison},$an:function(){return[doc("The function comparing pairs of elements.")];}}],$cont:Sequence,$an:function(){return[doc(String$("A nonempty sequence containing the elements of this\ncontainer, sorted according to a function \nimposing a partial order upon the elements.",138)),shared(),$default(),actual()];},d:['ceylon.language','Sequence','$m','sort']};};
             $$sequence.collect=function collect(collecting$209,$$$mptypes){
                 var $$sequence=this;
-                var s$210=$$sequence.$map($JsCallable(collecting$209,[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$sequence.$$targs$$.Element,Element:$$sequence.$$targs$$.Element}},Return:$$$mptypes.Result}),{Result:$$$mptypes.Result}).sequence;
+                var s$210=$$sequence.$map($JsCallable(collecting$209,[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$sequence.$$targs$$.Element]},Return:$$$mptypes.Result}),{Result:$$$mptypes.Result}).sequence;
                 //assert at Sequence.ceylon (74:8-74:27)
                 var s$211;
                 if (!(nonempty((s$211=s$210)))) {throw wrapexc(AssertionException("Assertion failed: \'nonempty s\' at Sequence.ceylon (74:15-74:26)"),'74:8-74:27','Sequence.ceylon'); }
@@ -1530,9 +1530,9 @@ function $init$Sequence(){
             $$sequence.longerThan.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$ps:[{$nm:'length',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Sequence,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','Sequence','$m','longerThan']};};
             $$sequence.findLast=function (selecting$214){
                 var $$sequence=this;
-                return $$sequence.getT$all()['ceylon.language::List'].$$.prototype.findLast.call(this,$JsCallable(selecting$214,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$sequence.$$targs$$.Element,Element:$$sequence.$$targs$$.Element}},Return:{t:Boolean$}}));
+                return $$sequence.getT$all()['ceylon.language::List'].$$.prototype.findLast.call(this,$JsCallable(selecting$214,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$sequence.$$targs$$.Element]},Return:{t:Boolean$}}));
             };
-            $$sequence.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Sequence,$an:function(){return[shared(),$default(),actual()];},d:['ceylon.language','Sequence','$m','findLast']};};
+            $$sequence.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Sequence,$an:function(){return[shared(),$default(),actual()];},d:['ceylon.language','Sequence','$m','findLast']};};
             $$sequence.repeat=function (times$215){
                 var $$sequence=this;
                 return $$sequence.getT$all()['ceylon.language::Sequential'].$$.prototype.repeat.call(this,times$215);
@@ -1744,12 +1744,12 @@ function $init$Empty(){
                 var $$empty=this;
                 return Tuple(element$241,getEmpty(),{Rest:{t:Empty},First:$$$mptypes.Element,Element:$$$mptypes.Element});
             };
-            $$empty.withLeading.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Tuple,a:{Rest:{t:Empty},First:'Element',Element:'Element'}},$ps:[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],$cont:Empty,$tp:{Element:{}},$an:function(){return[shared(),actual()];},d:['ceylon.language','Empty','$m','withLeading']};};
+            $$empty.withLeading.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'T', l:['Element']},$ps:[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],$cont:Empty,$tp:{Element:{}},$an:function(){return[shared(),actual()];},d:['ceylon.language','Empty','$m','withLeading']};};
             $$empty.withTrailing=function (element$242,$$$mptypes){
                 var $$empty=this;
                 return Tuple(element$242,getEmpty(),{Rest:{t:Empty},First:$$$mptypes.Element,Element:$$$mptypes.Element});
             };
-            $$empty.withTrailing.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Tuple,a:{Rest:{t:Empty},First:'Element',Element:'Element'}},$ps:[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],$cont:Empty,$tp:{Element:{}},$an:function(){return[shared(),actual()];},d:['ceylon.language','Empty','$m','withTrailing']};};
+            $$empty.withTrailing.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'T', l:['Element']},$ps:[{$nm:'element',$mt:'prm',$t:'Element',$an:function(){return[];}}],$cont:Empty,$tp:{Element:{}},$an:function(){return[shared(),actual()];},d:['ceylon.language','Empty','$m','withTrailing']};};
             $$empty.following=function (head$243,$$$mptypes){
                 var $$empty=this;
                 return Singleton(head$243,{Element:$$$mptypes.Other});
@@ -1857,7 +1857,7 @@ function $init$Correspondence(){
                 var $$correspondence=this;
                 return exists($$correspondence.$get(key$250));
             };
-            $$correspondence.defines.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$ps:[{$nm:'key',$mt:'prm',$t:'Key',$an:function(){return[];}}],$cont:Correspondence,$an:function(){return[doc(String$("Determines if there is a value defined for the \ngiven key.",58)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Correspondence.$$.prototype.definesAny),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Correspondence.$$.prototype.definesEvery),$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Correspondence.$$.prototype.$prop$getKeys)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:FunctionDeclaration$meta$declaration},{t:ValueDeclaration$meta$declaration}]}})),shared(),$default()];},d:['ceylon.language','Correspondence','$m','defines']};};
+            $$correspondence.defines.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$ps:[{$nm:'key',$mt:'prm',$t:'Key',$an:function(){return[];}}],$cont:Correspondence,$an:function(){return[doc(String$("Determines if there is a value defined for the \ngiven key.",58)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Correspondence.$$.prototype.definesAny),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Correspondence.$$.prototype.definesEvery),$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Correspondence.$$.prototype.$prop$getKeys)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:FunctionDeclaration$meta$declaration},{t:ValueDeclaration$meta$declaration}]}})),shared(),$default()];},d:['ceylon.language','Correspondence','$m','defines']};};
             defineAttr($$correspondence,'keys',function(){
                 var $$correspondence=this;
                 return Keys($$correspondence,{Key:$$correspondence.$$targs$$.Key,Item:$$correspondence.$$targs$$.Item});
@@ -1902,9 +1902,9 @@ function $init$Correspondence(){
                         }
                         return getFinished();
                     }
-                },{Absent:{t:Null},Element:{ t:'u', l:[{t:Null},$$correspondence.$$targs$$.Item]}}).sequence;
+                },{Absent:{t:Null},Element:{t:'u', l:[{t:Null},$$correspondence.$$targs$$.Item]}}).sequence;
             };
-            $$correspondence.items.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:{ t:'u', l:[{t:Null},'Item']}}},$ps:[{$nm:'keys',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Key'}},$an:function(){return[];}}],$cont:Correspondence,$an:function(){return[doc(String$("Returns the items defined for the given keys, in\nthe same order as the corresponding keys.",90)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Correspondence.$$.prototype.$get)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','Correspondence','$m','items']};};
+            $$correspondence.items.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:{t:'u', l:[{t:Null},'Item']}}},$ps:[{$nm:'keys',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Key'}},$an:function(){return[];}}],$cont:Correspondence,$an:function(){return[doc(String$("Returns the items defined for the given keys, in\nthe same order as the corresponding keys.",90)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Correspondence.$$.prototype.$get)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','Correspondence','$m','items']};};
         })(Correspondence.$$.prototype);
     }
     return Correspondence;
@@ -2011,7 +2011,7 @@ $init$Closeable();
 function Ranged($$targs$$,$$ranged){
     set_type_args($$ranged,$$targs$$);
 }
-Ranged.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Index:{'var':'in','satisfies':[{t:Comparable,a:{Other:'Index'}}]},Span:{'var':'out'}},of:['Span'],$an:function(){return[doc(String$("Abstract supertype of ranged objects which map a range\nof `Comparable` keys to ranges of values. The type\nparameter `Span` abstracts the type of the resulting\nrange.\n\nA span may be obtained from an instance of `Ranged`\nusing the span operator:\n\n    print(\"hello world\"[0..5])\n",276)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),List),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Sequence),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),String)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','Ranged']};};
+Ranged.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Index:{'var':'in','satisfies':[{t:Comparable,a:{Other:'Index'}}]},Span:{'var':'out'}},of:['Span'],$an:function(){return[doc(String$("Abstract supertype of ranged objects which map a range\nof `Comparable` keys to ranges of values. The type\nparameter `Span` abstracts the type of the resulting\nrange.\n\nA span may be obtained from an instance of `Ranged`\nusing the span operator:\n\n    print(\"hello world\"[0..5])\n",276)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),List),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Sequence),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),String)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','Ranged']};};
 exports.Ranged=Ranged;
 function $init$Ranged(){
     if (Ranged.$$===undefined){
@@ -2034,8 +2034,8 @@ function $init$Container(){
         initTypeProtoI(Container,'ceylon.language::Container',$init$Category());
         (function($$container){
             $$container.$prop$getEmpty={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$cont:Container,$an:function(){return[doc(String$("Determine if the container is empty, that is, if\nit has no elements.",68)),shared(),formal()];},d:['ceylon.language','Container','$at','empty']};}};
-            $$container.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Absent','Element']},$cont:Container,$an:function(){return[doc(String$("The first element. Should produce `null` if the \ncontainer is empty, that is, for any instance for\n    which `empty` evaluates to `true`.",137)),shared(),formal()];},d:['ceylon.language','Container','$at','first']};}};
-            $$container.$prop$getLast={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Absent','Element']},$cont:Container,$an:function(){return[doc(String$("The last element. Should produce `null` if the\ncontainer is empty, that is, for any instance for\nwhich `empty` evaluates to `true`.",131)),shared(),formal()];},d:['ceylon.language','Container','$at','last']};}};
+            $$container.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Absent','Element']},$cont:Container,$an:function(){return[doc(String$("The first element. Should produce `null` if the \ncontainer is empty, that is, for any instance for\n    which `empty` evaluates to `true`.",137)),shared(),formal()];},d:['ceylon.language','Container','$at','first']};}};
+            $$container.$prop$getLast={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Absent','Element']},$cont:Container,$an:function(){return[doc(String$("The last element. Should produce `null` if the\ncontainer is empty, that is, for any instance for\nwhich `empty` evaluates to `true`.",131)),shared(),formal()];},d:['ceylon.language','Container','$at','last']};}};
         })(Container.$$.prototype);
     }
     return Container;
@@ -2152,16 +2152,16 @@ function List($$targs$$,$$list){
     set_type_args($$list,$$targs$$);
     $$list.$prop$getSize={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Integer},$cont:List,$an:function(){return[doc(String$("The number of elements in this sequence, always\n`sequence.lastIndex+1`.",71)),see([$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),List.$$.prototype.$prop$getLastIndex)].reifyCeylonType({Absent:{t:Null},Element:{t:ValueDeclaration$meta$declaration}})),shared(),actual(),$default()];},d:['ceylon.language','List','$at','size']};}};
     $$list.$prop$getSize.get=function(){return size};
-    $$list.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$cont:List,$an:function(){return[doc(String$("Returns the first element of this `List`, if any.",49)),shared(),actual(),$default()];},d:['ceylon.language','List','$at','first']};}};
+    $$list.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$cont:List,$an:function(){return[doc(String$("Returns the first element of this `List`, if any.",49)),shared(),actual(),$default()];},d:['ceylon.language','List','$at','first']};}};
     $$list.$prop$getFirst.get=function(){return first};
 }
-List.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Element:{'var':'out'}},satisfies:[{t:Collection,a:{Element:'Element'}},{t:Correspondence,a:{Key:{t:Integer},Item:'Element'}},{t:Ranged,a:{Index:{t:Integer},Span:{t:List,a:{Element:'Element'}}}},{t:Cloneable,a:{Clone:{t:List,a:{Element:'Element'}}}}],$an:function(){return[doc(String$("Represents a collection in which every element has a \nunique non-negative integer index.\n\nA `List` is a `Collection` of its elements, and a \n`Correspondence` from indices to elements.\n\nDirect access to a list element by index produces a\nvalue of optional type. The following idiom may be\nused instead of upfront bounds-checking, as long as \nthe list element type is a non-`null` type:\n\n    value char = \"hello world\"[index];\n    if (exists char) { /*do something*/ }\n    else { /*out of bounds*/ }\n\nTo iterate the indexes of a `List`, use the following\nidiom:\n\n    for (i->char in \"hello world\".indexed) { ... }",611)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Sequence),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Empty),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Array)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','List']};};
+List.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Element:{'var':'out'}},satisfies:[{t:Collection,a:{Element:'Element'}},{t:Correspondence,a:{Key:{t:Integer},Item:'Element'}},{t:Ranged,a:{Index:{t:Integer},Span:{t:List,a:{Element:'Element'}}}},{t:Cloneable,a:{Clone:{t:List,a:{Element:'Element'}}}}],$an:function(){return[doc(String$("Represents a collection in which every element has a \nunique non-negative integer index.\n\nA `List` is a `Collection` of its elements, and a \n`Correspondence` from indices to elements.\n\nDirect access to a list element by index produces a\nvalue of optional type. The following idiom may be\nused instead of upfront bounds-checking, as long as \nthe list element type is a non-`null` type:\n\n    value char = \"hello world\"[index];\n    if (exists char) { /*do something*/ }\n    else { /*out of bounds*/ }\n\nTo iterate the indexes of a `List`, use the following\nidiom:\n\n    for (i->char in \"hello world\".indexed) { ... }",611)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Sequence),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Empty),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Array)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','List']};};
 exports.List=List;
 function $init$List(){
     if (List.$$===undefined){
         initTypeProtoI(List,'ceylon.language::List',$init$Collection(),$init$Correspondence(),$init$Ranged(),$init$Cloneable());
         (function($$list){
-            $$list.$prop$getLastIndex={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$cont:List,$an:function(){return[doc(String$("The index of the last element of the list, or\nnull if the list is empty.",72)),see([$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),List.$$.prototype.$prop$getSize)].reifyCeylonType({Absent:{t:Null},Element:{t:ValueDeclaration$meta$declaration}})),shared(),formal()];},d:['ceylon.language','List','$at','lastIndex']};}};
+            $$list.$prop$getLastIndex={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$cont:List,$an:function(){return[doc(String$("The index of the last element of the list, or\nnull if the list is empty.",72)),see([$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),List.$$.prototype.$prop$getSize)].reifyCeylonType({Absent:{t:Null},Element:{t:ValueDeclaration$meta$declaration}})),shared(),formal()];},d:['ceylon.language','List','$at','lastIndex']};}};
             defineAttr($$list,'size',function(){
                 var $$list=this;
                 return (opt$278=$$list.lastIndex,opt$278!==null?opt$278:(-(1))).plus((1));
@@ -2214,7 +2214,7 @@ function $init$List(){
                             return getFinished();
                         }
                         var opt$286;
-                    };$$listIterator$283.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:listIterator$283,$an:function(){return[shared(),actual()];},d:['ceylon.language','List','$m','iterator','$o','listIterator','$m','next']};};
+                    };$$listIterator$283.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:listIterator$283,$an:function(){return[shared(),actual()];},d:['ceylon.language','List','$m','iterator','$o','listIterator','$m','next']};};
                 })(listIterator$283.$$.prototype);
                 var listIterator$289;
                 function getListIterator$289(){
@@ -2234,7 +2234,7 @@ function $init$List(){
                         var it$292 = Range((0),$$list.size.minus((1)),{Element:{t:Integer}}).iterator();
                         var i$293;while ((i$293=it$292.next())!==getFinished()){
                             var x$294=$$list.$get(i$293);
-                            $prop$getX$294={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},d:['ceylon.language','List','$m','equals','$at','x']};}};
+                            $prop$getX$294={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},d:['ceylon.language','List','$m','equals','$at','x']};}};
                             $prop$getX$294.get=function(){return x$294};
                             var y$295=that$291.$get(i$293);
                             $prop$getY$295={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Anything},d:['ceylon.language','List','$m','equals','$at','y']};}};
@@ -2301,11 +2301,11 @@ function $init$List(){
                     }
                 }
                 return null;
-            };$$list.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:List,$an:function(){return[shared(),$default(),actual()];},d:['ceylon.language','List','$m','findLast']};};
+            };$$list.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:List,$an:function(){return[shared(),$default(),actual()];},d:['ceylon.language','List','$m','findLast']};};
             defineAttr($$list,'first',function(){
                 var $$list=this;
                 return $$list.$get((0));
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$cont:List,$an:function(){return[doc(String$("Returns the first element of this `List`, if any.",49)),shared(),actual(),$default()];},d:['ceylon.language','List','$at','first']};});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$cont:List,$an:function(){return[doc(String$("Returns the first element of this `List`, if any.",49)),shared(),actual(),$default()];},d:['ceylon.language','List','$at','first']};});
             defineAttr($$list,'last',function(){
                 var $$list=this;
                 var i$310;
@@ -2314,9 +2314,9 @@ function $init$List(){
                 }else {
                     return null;
                 }
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$cont:List,$an:function(){return[doc(String$("Returns the last element of this `List`, if any.",48)),shared(),actual(),$default()];},d:['ceylon.language','List','$at','last']};});$$list.withLeading=function withLeading(element$311,$$$mptypes){
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$cont:List,$an:function(){return[doc(String$("Returns the last element of this `List`, if any.",48)),shared(),actual(),$default()];},d:['ceylon.language','List','$at','last']};});$$list.withLeading=function withLeading(element$311,$$$mptypes){
                 var $$list=this;
-                var sb$312=SequenceBuilder({Element:{ t:'u', l:[$$list.$$targs$$.Element,$$$mptypes.Other]}});
+                var sb$312=SequenceBuilder({Element:{t:'u', l:[$$list.$$targs$$.Element,$$$mptypes.Other]}});
                 sb$312.append(element$311);
                 if((!$$list.empty)){
                     sb$312.appendAll($$list);
@@ -2325,10 +2325,10 @@ function $init$List(){
                 var seq$313;
                 if (!(nonempty((seq$313=sb$312.sequence)))) {throw wrapexc(AssertionException("Assertion failed: \'nonempty seq=sb.sequence\' at List.ceylon (169:15-169:40)"),'169:8-169:41','List.ceylon'); }
                 return seq$313;
-            };$$list.withLeading.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequence,a:{Element:{ t:'u', l:['Element','Other']}}},$ps:[{$nm:'element',$mt:'prm',$t:'Other',$an:function(){return[doc("The first element of the resulting sequence.")];}}],$cont:List,$tp:{Other:{}},$an:function(){return[doc(String$("Returns a new `List` that starts with the specified\nelement, followed by the elements of this `List`.",101)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.following)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','List','$m','withLeading']};};
+            };$$list.withLeading.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequence,a:{Element:{t:'u', l:['Element','Other']}}},$ps:[{$nm:'element',$mt:'prm',$t:'Other',$an:function(){return[doc("The first element of the resulting sequence.")];}}],$cont:List,$tp:{Other:{}},$an:function(){return[doc(String$("Returns a new `List` that starts with the specified\nelement, followed by the elements of this `List`.",101)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.following)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','List','$m','withLeading']};};
             $$list.withTrailing=function withTrailing(element$314,$$$mptypes){
                 var $$list=this;
-                var sb$315=SequenceBuilder({Element:{ t:'u', l:[$$list.$$targs$$.Element,$$$mptypes.Other]}});
+                var sb$315=SequenceBuilder({Element:{t:'u', l:[$$list.$$targs$$.Element,$$$mptypes.Other]}});
                 if((!$$list.empty)){
                     sb$315.appendAll($$list);
                 }
@@ -2337,7 +2337,7 @@ function $init$List(){
                 var seq$316;
                 if (!(nonempty((seq$316=sb$315.sequence)))) {throw wrapexc(AssertionException("Assertion failed: \'nonempty seq=sb.sequence\' at List.ceylon (184:15-184:40)"),'184:8-184:41','List.ceylon'); }
                 return seq$316;
-            };$$list.withTrailing.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequence,a:{Element:{ t:'u', l:['Element','Other']}}},$ps:[{$nm:'element',$mt:'prm',$t:'Other',$an:function(){return[doc("The last element of the resulting sequence.")];}}],$cont:List,$tp:{Other:{}},$an:function(){return[doc(String$("Returns a new `List` that contains the specified\nelement appended to the end of the elements of this \n`List`.",109)),shared(),$default()];},d:['ceylon.language','List','$m','withTrailing']};};
+            };$$list.withTrailing.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequence,a:{Element:{t:'u', l:['Element','Other']}}},$ps:[{$nm:'element',$mt:'prm',$t:'Other',$an:function(){return[doc("The last element of the resulting sequence.")];}}],$cont:List,$tp:{Other:{}},$an:function(){return[doc(String$("Returns a new `List` that contains the specified\nelement appended to the end of the elements of this \n`List`.",109)),shared(),$default()];},d:['ceylon.language','List','$m','withTrailing']};};
             $$list.startsWith=function (sublist$317){
                 var $$list=this;
                 return $$list.includesAt((0),sublist$317);
@@ -2359,7 +2359,7 @@ function $init$List(){
                 }else return getEmpty();}()).iterator();
                 var i$322;while ((i$322=it$321.next())!==getFinished()){
                     var x$326=$$list.$get(index$319.plus(i$322));
-                    $prop$getX$326={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},d:['ceylon.language','List','$m','includesAt','$at','x']};}};
+                    $prop$getX$326={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},d:['ceylon.language','List','$m','includesAt','$at','x']};}};
                     $prop$getX$326.get=function(){return x$326};
                     var y$327=sublist$320.$get(i$322);
                     $prop$getY$327={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Anything},d:['ceylon.language','List','$m','includesAt','$at','y']};}};
@@ -2450,7 +2450,7 @@ function $init$List(){
                 if (getFinished() === index$347){
                     return null;
                 }
-            };$$list.firstInclusion.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'sublist',$mt:'prm',$t:{t:List,a:{Element:{t:Anything}}},$an:function(){return[];}}],$cont:List,$an:function(){return[doc(String$("The first index in this list at which the given list \noccurs.",61)),shared(),$default()];},d:['ceylon.language','List','$m','firstInclusion']};};
+            };$$list.firstInclusion.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'sublist',$mt:'prm',$t:{t:List,a:{Element:{t:Anything}}},$an:function(){return[];}}],$cont:List,$an:function(){return[doc(String$("The first index in this list at which the given list \noccurs.",61)),shared(),$default()];},d:['ceylon.language','List','$m','firstInclusion']};};
             $$list.lastInclusion=function lastInclusion(sublist$351){
                 var $$list=this;
                 var it$352 = (function(){var tmpvar$354=$$list.size;
@@ -2468,7 +2468,7 @@ function $init$List(){
                 if (getFinished() === index$353){
                     return null;
                 }
-            };$$list.lastInclusion.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'sublist',$mt:'prm',$t:{t:List,a:{Element:{t:Anything}}},$an:function(){return[];}}],$cont:List,$an:function(){return[doc(String$("The last index in this list at which the given list \noccurs.",60)),shared(),$default()];},d:['ceylon.language','List','$m','lastInclusion']};};
+            };$$list.lastInclusion.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'sublist',$mt:'prm',$t:{t:List,a:{Element:{t:Anything}}},$an:function(){return[];}}],$cont:List,$an:function(){return[doc(String$("The last index in this list at which the given list \noccurs.",60)),shared(),$default()];},d:['ceylon.language','List','$m','lastInclusion']};};
             $$list.occursAt=function occursAt(index$357,element$358){
                 var $$list=this;
                 var elem$359=$$list.$get(index$357);
@@ -2554,7 +2554,7 @@ function $init$List(){
                 if (getFinished() === index$379){
                     return null;
                 }
-            };$$list.firstOccurrence.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'element',$mt:'prm',$t:{t:Anything},$an:function(){return[];}}],$cont:List,$an:function(){return[doc(String$("The first index in this list at which the given element \noccurs.",64)),shared(),$default()];},d:['ceylon.language','List','$m','firstOccurrence']};};
+            };$$list.firstOccurrence.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'element',$mt:'prm',$t:{t:Anything},$an:function(){return[];}}],$cont:List,$an:function(){return[doc(String$("The first index in this list at which the given element \noccurs.",64)),shared(),$default()];},d:['ceylon.language','List','$m','firstOccurrence']};};
             $$list.lastOccurrence=function lastOccurrence(element$383){
                 var $$list=this;
                 var it$384 = (function(){var tmpvar$386=$$list.size;
@@ -2572,7 +2572,7 @@ function $init$List(){
                 if (getFinished() === index$385){
                     return null;
                 }
-            };$$list.lastOccurrence.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'element',$mt:'prm',$t:{t:Anything},$an:function(){return[];}}],$cont:List,$an:function(){return[doc(String$("The last index in this list at which the given element \noccurs.",63)),shared(),$default()];},d:['ceylon.language','List','$m','lastOccurrence']};};
+            };$$list.lastOccurrence.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'element',$mt:'prm',$t:{t:Anything},$an:function(){return[];}}],$cont:List,$an:function(){return[doc(String$("The last index in this list at which the given element \noccurs.",63)),shared(),$default()];},d:['ceylon.language','List','$m','lastOccurrence']};};
             $$list.indexes=function (selecting$389){
                 var $$list=this;
                 return Comprehension(function(){
@@ -2703,8 +2703,8 @@ function Tuple(first, rest, $$targs$$,$$tuple){
     set_type_args($$tuple,$$targs$$);
     Object$($$tuple);
     Sequence($$tuple.$$targs$$===undefined?$$targs$$:{Element:$$tuple.$$targs$$.Element},$$tuple);
-    Cloneable($$tuple.$$targs$$===undefined?$$targs$$:{Clone:{t:Tuple,a:{Rest:$$tuple.$$targs$$.Rest,First:$$tuple.$$targs$$.First,Element:$$tuple.$$targs$$.Element}}},$$tuple);
-    add_type_arg($$tuple,'Clone',{t:Tuple,a:{Rest:$$tuple.$$targs$$.Rest,First:$$tuple.$$targs$$.First,Element:$$tuple.$$targs$$.Element}});
+    Cloneable($$tuple.$$targs$$===undefined?$$targs$$:{Clone:{t:'T', l:[$$tuple.$$targs$$.First]}},$$tuple);
+    add_type_arg($$tuple,'Clone',{t:'T', l:[$$tuple.$$targs$$.First]});
     $$tuple.first$423_=first;
     $$tuple.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:'First',$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$at','first']};}};
     $$tuple.$prop$getFirst.get=function(){return first};
@@ -2715,11 +2715,11 @@ function Tuple(first, rest, $$targs$$,$$tuple){
     $$tuple.$prop$getSize.get=function(){return size};
     $$tuple.$prop$getReversed={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequence,a:{Element:'Element'}},$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$at','reversed']};}};
     $$tuple.$prop$getReversed.get=function(){return reversed};
-    $$tuple.$prop$getClone={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Tuple,a:{Rest:'Rest',First:'First',Element:'Element'}},$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$at','clone']};}};
+    $$tuple.$prop$getClone={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'T', l:['First']},$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$at','clone']};}};
     $$tuple.$prop$getClone.get=function(){return clone};
     return $$tuple;
 }
-Tuple.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Object$},$ps:[{$nm:'first',$mt:'prm',$t:'First',$an:function(){return[shared(),actual()];}},{$nm:'rest',$mt:'prm',$t:'Rest',$an:function(){return[shared(),actual()];}}],$tp:{Element:{'var':'out'},First:{'var':'out','satisfies':['Element']},Rest:{'var':'out','satisfies':[{t:Sequential,a:{Element:'Element'}}],'def':{t:Empty}}},satisfies:[{t:Sequence,a:{Element:'Element'}},{t:Cloneable,a:{Clone:{t:Tuple,a:{Rest:'Rest',First:'First',Element:'Element'}}}}],$an:function(){return[doc(String$("A _tuple_ is a typed linked list. Each instance of \n`Tuple` represents the value and type of a single link.\nThe attributes `first` and `rest` allow us to retrieve\na value form the list without losing its static type \ninformation.\n\n    value point = Tuple(0.0, Tuple(0.0, Tuple(\"origin\")));\n    Float x = point.first;\n    Float y = point.rest.first;\n    String label = point.rest.rest.first;\n\nUsually, we abbreviate code involving tuples.\n\n    [Float,Float,String] point = [0.0, 0.0, \"origin\"];\n    Float x = point[0];\n    Float y = point[1];\n    String label = point[2];\n\nA list of types enclosed in brackets is an abbreviated \ntuple type. An instance of `Tuple` may be constructed \nby surrounding a value list in brackets:\n\n    [String,String] words = [\"hello\", \"world\"];\n\nThe index operator with a literal integer argument is a \nshortcut for a chain of evaluations of `rest` and \n`first`. For example, `point[1]` means `point.rest.first`.\n\nA _terminated_ tuple type is a tuple where the type of\nthe last link in the chain is `Empty`. An _unterminated_ \ntuple type is a tuple where the type of the last link\nin the chain is `Sequence` or `Sequential`. Thus, a \nterminated tuple type has a length that is known\nstatically. For an unterminated tuple type only a lower\nbound on its length is known statically.\n\nHere, `point` is an unterminated tuple:\n\n    String[] labels = ... ;\n    [Float,Float,String*] point = [0.0, 0.0, *labels];\n    Float x = point[0];\n    Float y = point[1];\n    String? firstLabel = point[2];\n    String[] allLabels = point[2...];",1553)),by([String$("Gavin",5)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared(),$final()];},d:['ceylon.language','Tuple']};};
+Tuple.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Object$},$ps:[{$nm:'first',$mt:'prm',$t:'First',$an:function(){return[shared(),actual()];}},{$nm:'rest',$mt:'prm',$t:'Rest',$an:function(){return[shared(),actual()];}}],$tp:{Element:{'var':'out'},First:{'var':'out','satisfies':['Element']},Rest:{'var':'out','satisfies':[{t:Sequential,a:{Element:'Element'}}],'def':{t:Empty}}},satisfies:[{t:Sequence,a:{Element:'Element'}},{t:Cloneable,a:{Clone:{t:'T', l:['First']}}}],$an:function(){return[doc(String$("A _tuple_ is a typed linked list. Each instance of \n`Tuple` represents the value and type of a single link.\nThe attributes `first` and `rest` allow us to retrieve\na value form the list without losing its static type \ninformation.\n\n    value point = Tuple(0.0, Tuple(0.0, Tuple(\"origin\")));\n    Float x = point.first;\n    Float y = point.rest.first;\n    String label = point.rest.rest.first;\n\nUsually, we abbreviate code involving tuples.\n\n    [Float,Float,String] point = [0.0, 0.0, \"origin\"];\n    Float x = point[0];\n    Float y = point[1];\n    String label = point[2];\n\nA list of types enclosed in brackets is an abbreviated \ntuple type. An instance of `Tuple` may be constructed \nby surrounding a value list in brackets:\n\n    [String,String] words = [\"hello\", \"world\"];\n\nThe index operator with a literal integer argument is a \nshortcut for a chain of evaluations of `rest` and \n`first`. For example, `point[1]` means `point.rest.first`.\n\nA _terminated_ tuple type is a tuple where the type of\nthe last link in the chain is `Empty`. An _unterminated_ \ntuple type is a tuple where the type of the last link\nin the chain is `Sequence` or `Sequential`. Thus, a \nterminated tuple type has a length that is known\nstatically. For an unterminated tuple type only a lower\nbound on its length is known statically.\n\nHere, `point` is an unterminated tuple:\n\n    String[] labels = ... ;\n    [Float,Float,String*] point = [0.0, 0.0, *labels];\n    Float x = point[0];\n    Float y = point[1];\n    String? firstLabel = point[2];\n    String[] allLabels = point[2...];",1553)),by([String$("Gavin",5)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared(),$final()];},d:['ceylon.language','Tuple']};};
 exports.Tuple=Tuple;
 function $init$Tuple(){
     if (Tuple.$$===undefined){
@@ -2742,7 +2742,7 @@ function $init$Tuple(){
                 }else if (case$426===getLarger()) {
                     return $$tuple.rest.$get(index$425.minus((1)));
                 }
-            };$$tuple.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'index',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$m','get']};};
+            };$$tuple.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'index',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$m','get']};};
             defineAttr($$tuple,'lastIndex',function(){
                 var $$tuple=this;
                 var restLastIndex$427;
@@ -2801,7 +2801,7 @@ function $init$Tuple(){
             defineAttr($$tuple,'clone',function(){
                 var $$tuple=this;
                 return $$tuple;
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Tuple,a:{Rest:'Rest',First:'First',Element:'Element'}},$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$at','clone']};});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'T', l:['First']},$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$at','clone']};});
             $$tuple.iterator=function iterator(){
                 var $$tuple=this;
                 function iterator$444($$targs$$){
@@ -2831,7 +2831,7 @@ function $init$Tuple(){
                         }else {
                             return getFinished();
                         }
-                    };$$iterator$444.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$444,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$m','iterator','$o','iterator','$m','next']};};
+                    };$$iterator$444.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$444,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$m','iterator','$o','iterator','$m','next']};};
                 })(iterator$444.$$.prototype);
                 var iterator$448;
                 function getIterator$448(){
@@ -2853,9 +2853,9 @@ function $init$Tuple(){
             };$$tuple.contains.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$ps:[{$nm:'element',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$m','contains']};};
             $$tuple.withLeading=function (element$451,$$$mptypes){
                 var $$tuple=this;
-                return Tuple(element$451,$$tuple,{Rest:{t:Tuple,a:{Rest:$$tuple.$$targs$$.Rest,First:$$tuple.$$targs$$.First,Element:$$tuple.$$targs$$.Element}},First:$$$mptypes.Other,Element:{ t:'u', l:[$$$mptypes.Other,$$tuple.$$targs$$.Element]}});
+                return Tuple(element$451,$$tuple,{Rest:{t:'T', l:[$$tuple.$$targs$$.First]},First:$$$mptypes.Other,Element:{t:'u', l:[$$$mptypes.Other,$$tuple.$$targs$$.Element]}});
             };
-            $$tuple.withLeading.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:'Rest',First:'First',Element:'Element'}},First:'Other',Element:{ t:'u', l:['Element','Other']}}},$ps:[{$nm:'element',$mt:'prm',$t:'Other',$an:function(){return[doc("The first element of the resulting tuple.")];}}],$cont:Tuple,$tp:{Other:{}},$an:function(){return[doc(String$("Returns a new tuple that starts with the specified\nelement, followed by the elements of this tuple.",99)),shared(),actual()];},d:['ceylon.language','Tuple','$m','withLeading']};};
+            $$tuple.withLeading.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'T', l:['Other','First']},$ps:[{$nm:'element',$mt:'prm',$t:'Other',$an:function(){return[doc("The first element of the resulting tuple.")];}}],$cont:Tuple,$tp:{Other:{}},$an:function(){return[doc(String$("Returns a new tuple that starts with the specified\nelement, followed by the elements of this tuple.",99)),shared(),actual()];},d:['ceylon.language','Tuple','$m','withLeading']};};
         })(Tuple.$$.prototype);
     }
     return Tuple;
@@ -2869,21 +2869,21 @@ function ChainedIterator(first$452, second$453, $$targs$$,$$chainedIterator){
     set_type_args($$chainedIterator,$$targs$$);
     $$chainedIterator.first$452_=first$452;
     $$chainedIterator.second$453_=second$453;
-    Iterator($$chainedIterator.$$targs$$===undefined?$$targs$$:{Element:{ t:'u', l:[$$chainedIterator.$$targs$$.Element,$$chainedIterator.$$targs$$.Other]}},$$chainedIterator);
+    Iterator($$chainedIterator.$$targs$$===undefined?$$targs$$:{Element:{t:'u', l:[$$chainedIterator.$$targs$$.Element,$$chainedIterator.$$targs$$.Other]}},$$chainedIterator);
     $$chainedIterator.iter$454_=$$chainedIterator.first$452.iterator();
-    $$chainedIterator.$prop$getIter$454={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{ t:'u', l:['Element','Other']}}},$cont:ChainedIterator,$an:function(){return[variable()];},d:['ceylon.language','ChainedIterator','$at','iter']};}};
+    $$chainedIterator.$prop$getIter$454={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{t:'u', l:['Element','Other']}}},$cont:ChainedIterator,$an:function(){return[variable()];},d:['ceylon.language','ChainedIterator','$at','iter']};}};
     $$chainedIterator.$prop$getIter$454.get=function(){return iter$454};
     $$chainedIterator.more$455_=true;
     $$chainedIterator.$prop$getMore$455={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$cont:ChainedIterator,$an:function(){return[variable()];},d:['ceylon.language','ChainedIterator','$at','more']};}};
     $$chainedIterator.$prop$getMore$455.get=function(){return more$455};
     return $$chainedIterator;
 }
-ChainedIterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[{$nm:'first',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$an:function(){return[];}},{$nm:'second',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Other'}},$an:function(){return[];}}],$tp:{Element:{'var':'out'},Other:{'var':'out'}},satisfies:[{t:Iterator,a:{Element:{ t:'u', l:['Element','Other']}}}],$an:function(){return[doc(String$("An `Iterator` that returns the elements of two\n`Iterable`s, as if they were chained together.",93)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.chain)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),by([String$("Enrique Zamudio",15)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}}))];},d:['ceylon.language','ChainedIterator']};};
+ChainedIterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[{$nm:'first',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$an:function(){return[];}},{$nm:'second',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Other'}},$an:function(){return[];}}],$tp:{Element:{'var':'out'},Other:{'var':'out'}},satisfies:[{t:Iterator,a:{Element:{t:'u', l:['Element','Other']}}}],$an:function(){return[doc(String$("An `Iterator` that returns the elements of two\n`Iterable`s, as if they were chained together.",93)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.chain)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),by([String$("Enrique Zamudio",15)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}}))];},d:['ceylon.language','ChainedIterator']};};
 function $init$ChainedIterator(){
     if (ChainedIterator.$$===undefined){
         initTypeProto(ChainedIterator,'ceylon.language::ChainedIterator',Basic,$init$Iterator());
         (function($$chainedIterator){
-            defineAttr($$chainedIterator,'iter$454',function(){return this.iter$454_;},function(iter$456){return this.iter$454_=iter$456;},function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{ t:'u', l:['Element','Other']}}},$cont:ChainedIterator,$an:function(){return[variable()];},d:['ceylon.language','ChainedIterator','$at','iter']};});
+            defineAttr($$chainedIterator,'iter$454',function(){return this.iter$454_;},function(iter$456){return this.iter$454_=iter$456;},function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{t:'u', l:['Element','Other']}}},$cont:ChainedIterator,$an:function(){return[variable()];},d:['ceylon.language','ChainedIterator','$at','iter']};});
             defineAttr($$chainedIterator,'more$455',function(){return this.more$455_;},function(more$457){return this.more$455_=more$457;},function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$cont:ChainedIterator,$an:function(){return[variable()];},d:['ceylon.language','ChainedIterator','$at','more']};});
             $$chainedIterator.next=function next(){
                 var $$chainedIterator=this;
@@ -2898,7 +2898,7 @@ function $init$ChainedIterator(){
                     }
                 }
                 return e$458;
-            };$$chainedIterator.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element','Other',{t:Finished}]},$ps:[],$cont:ChainedIterator,$an:function(){return[shared(),actual()];},d:['ceylon.language','ChainedIterator','$m','next']};};
+            };$$chainedIterator.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element','Other',{t:Finished}]},$ps:[],$cont:ChainedIterator,$an:function(){return[shared(),actual()];},d:['ceylon.language','ChainedIterator','$m','next']};};
             defineAttr($$chainedIterator,'first$452',function(){return this.first$452_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$cont:ChainedIterator,d:['ceylon.language','ChainedIterator','$at','first']};});
             defineAttr($$chainedIterator,'second$453',function(){return this.second$453_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:'Other'}},$cont:ChainedIterator,d:['ceylon.language','ChainedIterator','$at','second']};});
         })(ChainedIterator.$$.prototype);
@@ -2918,7 +2918,7 @@ function Entry(key, item, $$targs$$,$$entry){
     $$entry.item$462_=item;
     $$entry.$prop$getItem={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:'Item',$cont:Entry,$an:function(){return[doc(String$("The value associated with the key.",34)),shared()];},d:['ceylon.language','Entry','$at','item']};}};
     $$entry.$prop$getItem.get=function(){return item};
-    $$entry.$prop$getPair={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:'Item',Element:'Item'}},First:'Key',Element:{ t:'u', l:['Key','Item']}}},$cont:Entry,$an:function(){return[shared()];},d:['ceylon.language','Entry','$at','pair']};}};
+    $$entry.$prop$getPair={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'T', l:['Key','Item']},$cont:Entry,$an:function(){return[shared()];},d:['ceylon.language','Entry','$at','pair']};}};
     $$entry.$prop$getPair.get=function(){return pair};
     $$entry.$prop$getHash={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Integer},$cont:Entry,$an:function(){return[shared(),actual()];},d:['ceylon.language','Entry','$at','hash']};}};
     $$entry.$prop$getHash.get=function(){return hash};
@@ -2936,8 +2936,8 @@ function $init$Entry(){
             defineAttr($$entry,'item',function(){return this.item$462_;},undefined,function(){return{mod:$$METAMODEL$$,$t:'Item',$cont:Entry,$an:function(){return[doc(String$("The value associated with the key.",34)),shared()];},d:['ceylon.language','Entry','$at','item']};});
             defineAttr($$entry,'pair',function(){
                 var $$entry=this;
-                return Tuple($$entry.key,Tuple($$entry.item,getEmpty(),{Rest:{t:Empty},First:$$entry.$$targs$$.Item,Element:$$entry.$$targs$$.Item}),{Rest:{t:Tuple,a:{Rest:{t:Empty},First:$$entry.$$targs$$.Item,Element:$$entry.$$targs$$.Item}},First:$$entry.$$targs$$.Key,Element:{ t:'u', l:[$$entry.$$targs$$.Key,$$entry.$$targs$$.Item]}});
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:'Item',Element:'Item'}},First:'Key',Element:{ t:'u', l:['Key','Item']}}},$cont:Entry,$an:function(){return[shared()];},d:['ceylon.language','Entry','$at','pair']};});
+                return Tuple($$entry.key,Tuple($$entry.item,getEmpty(),{Rest:{t:Empty},First:$$entry.$$targs$$.Item,Element:$$entry.$$targs$$.Item}),{Rest:{t:'T', l:[$$entry.$$targs$$.Item]},First:$$entry.$$targs$$.Key,Element:{t:'u', l:[$$entry.$$targs$$.Key,$$entry.$$targs$$.Item]}});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'T', l:['Key','Item']},$cont:Entry,$an:function(){return[shared()];},d:['ceylon.language','Entry','$at','pair']};});
             $$entry.equals=function equals(that$463){
                 var $$entry=this;
                 var that$464;
@@ -2996,7 +2996,7 @@ $init$Invertable();
 function Summable($$targs$$,$$summable){
     set_type_args($$summable,$$targs$$);
 }
-Summable.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Other:{'satisfies':[{t:Summable,a:{Other:'Other'}}]}},of:['Other'],$an:function(){return[doc(String$("Abstraction of types which support a binary addition\noperator. For numeric types, this is just familiar \nnumeric addition. For strings, it is string \nconcatenation. In general, the addition operation \nshould be a binary associative operation.",242)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),String),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Numeric)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:InterfaceDeclaration$meta$declaration}]}})),by([String$("Gavin",5)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];},d:['ceylon.language','Summable']};};
+Summable.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Other:{'satisfies':[{t:Summable,a:{Other:'Other'}}]}},of:['Other'],$an:function(){return[doc(String$("Abstraction of types which support a binary addition\noperator. For numeric types, this is just familiar \nnumeric addition. For strings, it is string \nconcatenation. In general, the addition operation \nshould be a binary associative operation.",242)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),String),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Numeric)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:InterfaceDeclaration$meta$declaration}]}})),by([String$("Gavin",5)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];},d:['ceylon.language','Summable']};};
 exports.Summable=Summable;
 function $init$Summable(){
     if (Summable.$$===undefined){
@@ -3011,7 +3011,7 @@ $init$Summable();
 function Ordinal($$targs$$,$$ordinal){
     set_type_args($$ordinal,$$targs$$);
 }
-Ordinal.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Other:{'var':'out','satisfies':[{t:Ordinal,a:{Other:'Other'}}]}},of:['Other'],$an:function(){return[doc(String$("Abstraction of ordinal types, that is, types with \nsuccessor and predecessor operations, including\n`Integer` and other `Integral` numeric types.\n`Character` is also considered an ordinal type. \n`Ordinal` types may be used to generate a `Range`.",244)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Character),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Integer),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Integral),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Range)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:InterfaceDeclaration$meta$declaration}]}})),by([String$("Gavin",5)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];},d:['ceylon.language','Ordinal']};};
+Ordinal.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Other:{'var':'out','satisfies':[{t:Ordinal,a:{Other:'Other'}}]}},of:['Other'],$an:function(){return[doc(String$("Abstraction of ordinal types, that is, types with \nsuccessor and predecessor operations, including\n`Integer` and other `Integral` numeric types.\n`Character` is also considered an ordinal type. \n`Ordinal` types may be used to generate a `Range`.",244)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Character),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Integer),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Integral),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Range)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:InterfaceDeclaration$meta$declaration}]}})),by([String$("Gavin",5)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];},d:['ceylon.language','Ordinal']};};
 exports.Ordinal=Ordinal;
 function $init$Ordinal(){
     if (Ordinal.$$===undefined){
@@ -3047,7 +3047,7 @@ function Numeric($$targs$$,$$numeric){
     Invertable($$numeric.$$targs$$===undefined?$$targs$$:{Inverse:$$numeric.$$targs$$.Other},$$numeric);
     set_type_args($$numeric,$$targs$$);
 }
-Numeric.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Other:{'satisfies':[{t:Numeric,a:{Other:'Other'}}]}},satisfies:[{t:Summable,a:{Other:'Other'}},{t:Invertable,a:{Inverse:'Other'}}],of:['Other'],$an:function(){return[doc(String$("Abstraction of numeric types supporting addition,\nsubtraction, multiplication, and division, including\n`Integer` and `Float`. Additionally, a numeric type \nis expected to define a total order via an \nimplementation of `Comparable`.",231)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Integer),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Float),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:InterfaceDeclaration$meta$declaration}]}})),by([String$("Gavin",5)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];},d:['ceylon.language','Numeric']};};
+Numeric.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Other:{'satisfies':[{t:Numeric,a:{Other:'Other'}}]}},satisfies:[{t:Summable,a:{Other:'Other'}},{t:Invertable,a:{Inverse:'Other'}}],of:['Other'],$an:function(){return[doc(String$("Abstraction of numeric types supporting addition,\nsubtraction, multiplication, and division, including\n`Integer` and `Float`. Additionally, a numeric type \nis expected to define a total order via an \nimplementation of `Comparable`.",231)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Integer),$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Float),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:InterfaceDeclaration$meta$declaration}]}})),by([String$("Gavin",5)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];},d:['ceylon.language','Numeric']};};
 exports.Numeric=Numeric;
 function $init$Numeric(){
     if (Numeric.$$===undefined){
@@ -3516,7 +3516,7 @@ function $init$Range(){
                     }
                 }
                 return x$524;
-            };$$range.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'n',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[doc(String$("The element of the range that occurs `n` values after\nthe start of the range. Note that this operation \nis inefficient for large ranges.",136)),shared(),actual()];},d:['ceylon.language','Range','$m','get']};};
+            };$$range.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'n',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[doc(String$("The element of the range that occurs `n` values after\nthe start of the range. Note that this operation \nis inefficient for large ranges.",136)),shared(),actual()];},d:['ceylon.language','Range','$m','get']};};
             $$range.iterator=function iterator(){
                 var $$range=this;
                 function RangeIterator$526($$rangeIterator$526){
@@ -3525,7 +3525,7 @@ function $init$Range(){
                     $$rangeIterator$526.$$targs$$={Element:$$range.$$targs$$.Element};
                     Iterator({Element:$$range.$$targs$$.Element},$$rangeIterator$526);
                     $$rangeIterator$526.current$527_=$$range.first;
-                    $$rangeIterator$526.$prop$getCurrent$527={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$cont:RangeIterator$526,$an:function(){return[variable()];},d:['ceylon.language','Range','$m','iterator','$c','RangeIterator','$at','current']};}};
+                    $$rangeIterator$526.$prop$getCurrent$527={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$cont:RangeIterator$526,$an:function(){return[variable()];},d:['ceylon.language','Range','$m','iterator','$c','RangeIterator','$at','current']};}};
                     $$rangeIterator$526.$prop$getCurrent$527.get=function(){return current$527};
                     return $$rangeIterator$526;
                 }
@@ -3534,7 +3534,7 @@ function $init$Range(){
                     if (RangeIterator$526.$$===undefined){
                         initTypeProto(RangeIterator$526,'ceylon.language::Range.iterator.RangeIterator',Basic,$init$Iterator());
                         (function($$rangeIterator$526){
-                            defineAttr($$rangeIterator$526,'current$527',function(){return this.current$527_;},function(current$528){return this.current$527_=current$528;},function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$cont:RangeIterator$526,$an:function(){return[variable()];},d:['ceylon.language','Range','$m','iterator','$c','RangeIterator','$at','current']};});
+                            defineAttr($$rangeIterator$526,'current$527',function(){return this.current$527_;},function(current$528){return this.current$527_=current$528;},function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$cont:RangeIterator$526,$an:function(){return[variable()];},d:['ceylon.language','Range','$m','iterator','$c','RangeIterator','$at','current']};});
                             $$rangeIterator$526.next=function next(){
                                 var $$rangeIterator$526=this;
                                 var result$529=$$rangeIterator$526.current$527;
@@ -3548,7 +3548,7 @@ function $init$Range(){
                                     var opt$531;
                                 }
                                 return result$529;
-                            };$$rangeIterator$526.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:RangeIterator$526,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','iterator','$c','RangeIterator','$m','next']};};
+                            };$$rangeIterator$526.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:RangeIterator$526,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','iterator','$c','RangeIterator','$m','next']};};
                             defineAttr($$rangeIterator$526,'string',function(){
                                 var $$rangeIterator$526=this;
                                 return String$("RangeIterator",13);
@@ -3660,7 +3660,7 @@ function $init$Range(){
                 }
                 var oldj$565;
                 return Range(x$556,y$561,{Element:$$range.$$targs$$.Element});
-            };$$range.segment.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'length',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','segment']};};
+            };$$range.segment.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'length',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','segment']};};
             $$range.span=function span(from$566,to$567){
                 var $$range=this;
                 var toIndex$568=to$567;
@@ -3704,16 +3704,16 @@ function $init$Range(){
                 }
                 var oldj$581;
                 return Range(x$572,y$577,{Element:$$range.$$targs$$.Element});
-            };$$range.span.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'to',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','span']};};
+            };$$range.span.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'to',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','span']};};
             $$range.spanTo=function spanTo(to$582){
                 var $$range=this;
                 return (opt$583=(to$582.compare((0)).equals(getSmaller())?getEmpty():null),opt$583!==null?opt$583:$$range.span((0),to$582));
                 var opt$583;
-            };$$range.spanTo.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'to',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','spanTo']};};
+            };$$range.spanTo.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'to',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','spanTo']};};
             $$range.spanFrom=function spanFrom(from$584){
                 var $$range=this;
                 return $$range.span(from$584,$$range.size);
-            };$$range.spanFrom.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','spanFrom']};};
+            };$$range.spanFrom.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','spanFrom']};};
             defineAttr($$range,'reversed',function(){
                 var $$range=this;
                 return Range($$range.last,$$range.first,{Element:$$range.$$targs$$.Element});
@@ -3730,7 +3730,7 @@ function $init$Range(){
                 var oldx$590;
                 return (opt$591=($$range.containsElement(e$588)?Range(e$588,$$range.last,{Element:$$range.$$targs$$.Element}):null),opt$591!==null?opt$591:getEmpty());
                 var opt$591;
-            };$$range.skipping.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'skip',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','skipping']};};
+            };$$range.skipping.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'skip',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','skipping']};};
             $$range.taking=function taking(take$592){
                 var $$range=this;
                 if(take$592.equals((0))){
@@ -3745,7 +3745,7 @@ function $init$Range(){
                 }
                 return (opt$597=($$range.containsElement(e$595)?Range($$range.first,e$595,{Element:$$range.$$targs$$.Element}):null),opt$597!==null?opt$597:$$range);
                 var opt$597;
-            };$$range.taking.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'take',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','taking']};};
+            };$$range.taking.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Range,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'take',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Range,$an:function(){return[shared(),actual()];},d:['ceylon.language','Range','$m','taking']};};
             defineAttr($$range,'coalesced',function(){
                 var $$range=this;
                 return $$range;
@@ -3821,7 +3821,7 @@ function $init$Singleton(){
                 }else {
                     return null;
                 }
-            };$$singleton.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'index',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[doc(String$("Returns the contained element, if the specified \nindex is `0`.",62)),shared(),actual()];},d:['ceylon.language','Singleton','$m','get']};};
+            };$$singleton.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'index',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[doc(String$("Returns the contained element, if the specified \nindex is `0`.",62)),shared(),actual()];},d:['ceylon.language','Singleton','$m','get']};};
             defineAttr($$singleton,'clone',function(){
                 var $$singleton=this;
                 return $$singleton;
@@ -3852,7 +3852,7 @@ function $init$Singleton(){
                                     $$singletonIterator$600.done$601=true;
                                     return $$singleton.element$598;
                                 }
-                            };$$singletonIterator$600.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:SingletonIterator$600,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','iterator','$c','SingletonIterator','$m','next']};};
+                            };$$singletonIterator$600.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:SingletonIterator$600,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','iterator','$c','SingletonIterator','$m','next']};};
                             defineAttr($$singletonIterator$600,'string',function(){
                                 var $$singletonIterator$600=this;
                                 return String$("SingletonIterator",17);
@@ -3872,22 +3872,22 @@ function $init$Singleton(){
                 var $$singleton=this;
                 return (opt$607=(((from$605.compare((0))!==getLarger())&&from$605.plus(length$606).compare((0)).equals(getLarger()))?$$singleton:null),opt$607!==null?opt$607:getEmpty());
             };
-            $$singleton.segment.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Empty},{t:Singleton,a:{Element:'Element'}}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'length',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[doc(String$("Returns a `Singleton` if the given starting index \nis `0` and the given `length` is greater than `0`.\nOtherwise, returns an instance of `Empty`.",144)),shared(),actual()];},d:['ceylon.language','Singleton','$m','segment']};};
+            $$singleton.segment.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Empty},{t:Singleton,a:{Element:'Element'}}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'length',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[doc(String$("Returns a `Singleton` if the given starting index \nis `0` and the given `length` is greater than `0`.\nOtherwise, returns an instance of `Empty`.",144)),shared(),actual()];},d:['ceylon.language','Singleton','$m','segment']};};
             $$singleton.span=function (from$608,to$609){
                 var $$singleton=this;
                 return (opt$610=((((from$608.compare((0))!==getLarger())&&(to$609.compare((0))!==getSmaller()))||((from$608.compare((0))!==getSmaller())&&(to$609.compare((0))!==getLarger())))?$$singleton:null),opt$610!==null?opt$610:getEmpty());
             };
-            $$singleton.span.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Empty},{t:Singleton,a:{Element:'Element'}}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'to',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[doc(String$("Returns a `Singleton` if the given starting index \nis `0`. Otherwise, returns an instance of `Empty`.",101)),shared(),actual()];},d:['ceylon.language','Singleton','$m','span']};};
+            $$singleton.span.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Empty},{t:Singleton,a:{Element:'Element'}}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'to',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[doc(String$("Returns a `Singleton` if the given starting index \nis `0`. Otherwise, returns an instance of `Empty`.",101)),shared(),actual()];},d:['ceylon.language','Singleton','$m','span']};};
             $$singleton.spanTo=function (to$611){
                 var $$singleton=this;
                 return (opt$612=(to$611.compare((0)).equals(getSmaller())?getEmpty():null),opt$612!==null?opt$612:$$singleton);
             };
-            $$singleton.spanTo.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Empty},{t:Singleton,a:{Element:'Element'}}]},$ps:[{$nm:'to',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','spanTo']};};
+            $$singleton.spanTo.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Empty},{t:Singleton,a:{Element:'Element'}}]},$ps:[{$nm:'to',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','spanTo']};};
             $$singleton.spanFrom=function (from$613){
                 var $$singleton=this;
                 return (opt$614=(from$613.compare((0)).equals(getLarger())?getEmpty():null),opt$614!==null?opt$614:$$singleton);
             };
-            $$singleton.spanFrom.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Empty},{t:Singleton,a:{Element:'Element'}}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','spanFrom']};};
+            $$singleton.spanFrom.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Empty},{t:Singleton,a:{Element:'Element'}}]},$ps:[{$nm:'from',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','spanFrom']};};
             defineAttr($$singleton,'reversed',function(){
                 var $$singleton=this;
                 return $$singleton;
@@ -3935,7 +3935,7 @@ function $init$Singleton(){
                 var $$singleton=this;
                 return (opt$627=(selecting$626($$singleton.element$598)?$$singleton:null),opt$627!==null?opt$627:getEmpty());
             };
-            $$singleton.$filter.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Singleton,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','filter']};};
+            $$singleton.$filter.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Singleton,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','filter']};};
             $$singleton.fold=function (initial$628,accumulating$629,$$$mptypes){
                 var $$singleton=this;
                 return accumulating$629(initial$628,$$singleton.element$598);
@@ -3947,12 +3947,12 @@ function $init$Singleton(){
                     return $$singleton.element$598;
                 }
                 return null;
-            };$$singleton.find.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','find']};};
+            };$$singleton.find.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','find']};};
             $$singleton.findLast=function (selecting$631){
                 var $$singleton=this;
-                return $$singleton.find($JsCallable(selecting$631,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$singleton.$$targs$$.Element,Element:$$singleton.$$targs$$.Element}},Return:{t:Boolean$}}));
+                return $$singleton.find($JsCallable(selecting$631,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$singleton.$$targs$$.Element]},Return:{t:Boolean$}}));
             };
-            $$singleton.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','Singleton','$m','findLast']};};
+            $$singleton.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','Singleton','$m','findLast']};};
             $$singleton.$sort=function (comparing$632){
                 var $$singleton=this;
                 return $$singleton;
@@ -3972,12 +3972,12 @@ function $init$Singleton(){
                 var $$singleton=this;
                 return (opt$636=(skip$635.compare((1)).equals(getSmaller())?$$singleton:null),opt$636!==null?opt$636:getEmpty());
             };
-            $$singleton.skipping.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Singleton,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'skip',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','skipping']};};
+            $$singleton.skipping.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Singleton,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'skip',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','skipping']};};
             $$singleton.taking=function (take$637){
                 var $$singleton=this;
                 return (opt$638=(take$637.compare((0)).equals(getLarger())?$$singleton:null),opt$638!==null?opt$638:getEmpty());
             };
-            $$singleton.taking.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Singleton,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'take',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','taking']};};
+            $$singleton.taking.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Singleton,a:{Element:'Element'}},{t:Empty}]},$ps:[{$nm:'take',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$m','taking']};};
             defineAttr($$singleton,'coalesced',function(){
                 var $$singleton=this;
                 var self$639;
@@ -3985,7 +3985,7 @@ function $init$Singleton(){
                     return self$639;
                 }
                 return getEmpty();
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{ t:'i', l:['Element',{t:Object$}]}}},$cont:Singleton,$an:function(){return[doc(String$("Returns the Singleton itself, or empty",38)),shared(),actual()];},d:['ceylon.language','Singleton','$at','coalesced']};});defineAttr($$singleton,'element$598',function(){return this.element$598_;},undefined,function(){return{mod:$$METAMODEL$$,$t:'Element',$cont:Singleton,d:['ceylon.language','Singleton','$at','element']};});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{t:'i', l:['Element',{t:Object$}]}}},$cont:Singleton,$an:function(){return[doc(String$("Returns the Singleton itself, or empty",38)),shared(),actual()];},d:['ceylon.language','Singleton','$at','coalesced']};});defineAttr($$singleton,'element$598',function(){return this.element$598_;},undefined,function(){return{mod:$$METAMODEL$$,$t:'Element',$cont:Singleton,d:['ceylon.language','Singleton','$at','element']};});
         })(Singleton.$$.prototype);
     }
     return Singleton;
@@ -4028,7 +4028,7 @@ function Map($$targs$$,$$map){
     $$map.$prop$getInverse={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Map,a:{Key:'Item',Item:{t:Set,a:{Element:'Key'}}}},$cont:Map,$an:function(){return[doc(String$("Returns a `Map` in which every key is an `Item` in \nthis map, and every value is the set of keys that \nstored the `Item` in this map.",133)),shared(),$default()];},d:['ceylon.language','Map','$at','inverse']};}};
     $$map.$prop$getInverse.get=function(){return inverse};
 }
-Map.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Key:{'var':'out','satisfies':[{t:Object$}]},Item:{'var':'out','satisfies':[{t:Object$}]}},satisfies:[{t:Collection,a:{Element:{t:Entry,a:{Key:'Key',Item:'Item'}}}},{t:Correspondence,a:{Key:{t:Object$},Item:'Item'}},{t:Cloneable,a:{Clone:{t:Map,a:{Key:'Key',Item:'Item'}}}}],$an:function(){return[doc(String$("Represents a collection which maps _keys_ to _items_,\nwhere a key can map to at most one item. Each such \nmapping may be represented by an `Entry`.\n\nA `Map` is a `Collection` of its `Entry`s, and a \n`Correspondence` from keys to items.\n\nThe presence of an entry in a map may be tested\nusing the `in` operator:\n\n    if (\"lang\"->\"en_AU\" in settings) { ... }\n\nThe entries of the map may be iterated using `for`:\n\n    for (key->item in settings) { ... }\n\nThe item for a key may be obtained using the item\noperator:\n\n    String lang = settings[\"lang\"] else \"en_US\";",560)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Entry),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),forKey),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),forItem),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),byItem),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),byKey)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','Map']};};
+Map.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Key:{'var':'out','satisfies':[{t:Object$}]},Item:{'var':'out','satisfies':[{t:Object$}]}},satisfies:[{t:Collection,a:{Element:{t:Entry,a:{Key:'Key',Item:'Item'}}}},{t:Correspondence,a:{Key:{t:Object$},Item:'Item'}},{t:Cloneable,a:{Clone:{t:Map,a:{Key:'Key',Item:'Item'}}}}],$an:function(){return[doc(String$("Represents a collection which maps _keys_ to _items_,\nwhere a key can map to at most one item. Each such \nmapping may be represented by an `Entry`.\n\nA `Map` is a `Collection` of its `Entry`s, and a \n`Correspondence` from keys to items.\n\nThe presence of an entry in a map may be tested\nusing the `in` operator:\n\n    if (\"lang\"->\"en_AU\" in settings) { ... }\n\nThe entries of the map may be iterated using `for`:\n\n    for (key->item in settings) { ... }\n\nThe item for a key may be obtained using the item\noperator:\n\n    String lang = settings[\"lang\"] else \"en_US\";",560)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Entry),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),forKey),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),forItem),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),byItem),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),byKey)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','Map']};};
 exports.Map=Map;
 function $init$Map(){
     if (Map.$$===undefined){
@@ -4369,9 +4369,9 @@ function LazyMap(entries$709, $$targs$$,$$lazyMap){
     set_type_args($$lazyMap,$$targs$$);
     $$lazyMap.entries$709_=entries$709;
     Map($$lazyMap.$$targs$$===undefined?$$targs$$:{Key:$$lazyMap.$$targs$$.Key,Item:$$lazyMap.$$targs$$.Item},$$lazyMap);
-    $$lazyMap.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Entry,a:{Key:'Key',Item:'Item'}}]},$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$at','first']};}};
+    $$lazyMap.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Entry,a:{Key:'Key',Item:'Item'}}]},$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$at','first']};}};
     $$lazyMap.$prop$getFirst.get=function(){return first};
-    $$lazyMap.$prop$getLast={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Entry,a:{Key:'Key',Item:'Item'}}]},$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$at','last']};}};
+    $$lazyMap.$prop$getLast={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Entry,a:{Key:'Key',Item:'Item'}}]},$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$at','last']};}};
     $$lazyMap.$prop$getLast.get=function(){return last};
     $$lazyMap.$prop$getClone={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:LazyMap,a:{Key:'Key',Item:'Item'}},$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$at','clone']};}};
     $$lazyMap.$prop$getClone.get=function(){return clone};
@@ -4388,11 +4388,11 @@ function $init$LazyMap(){
             defineAttr($$lazyMap,'first',function(){
                 var $$lazyMap=this;
                 return $$lazyMap.entries$709.first;
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Entry,a:{Key:'Key',Item:'Item'}}]},$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$at','first']};});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Entry,a:{Key:'Key',Item:'Item'}}]},$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$at','first']};});
             defineAttr($$lazyMap,'last',function(){
                 var $$lazyMap=this;
                 return $$lazyMap.entries$709.last;
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Entry,a:{Key:'Key',Item:'Item'}}]},$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$at','last']};});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Entry,a:{Key:'Key',Item:'Item'}}]},$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$at','last']};});
             defineAttr($$lazyMap,'clone',function(){
                 var $$lazyMap=this;
                 return $$lazyMap;
@@ -4405,9 +4405,9 @@ function $init$LazyMap(){
                 var $$lazyMap=this;
                 return (opt$711=$$lazyMap.entries$709.find($JsCallable(function (e$712){
                     return e$712.key.equals(key$710);
-                },[{$nm:'e',$mt:'prm',$t:{t:Entry,a:{Key:'Key',Item:'Item'}},$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:{t:Entry,a:{Key:$$lazyMap.$$targs$$.Key,Item:$$lazyMap.$$targs$$.Item}},Element:{t:Entry,a:{Key:$$lazyMap.$$targs$$.Key,Item:$$lazyMap.$$targs$$.Item}}}},Return:{t:Boolean$}})),opt$711!==null?opt$711.item:null);
+                },[{$nm:'e',$mt:'prm',$t:{t:Entry,a:{Key:'Key',Item:'Item'}},$an:function(){return[];}}],{Arguments:{t:'T', l:[{t:Entry,a:{Key:$$lazyMap.$$targs$$.Key,Item:$$lazyMap.$$targs$$.Item}}]},Return:{t:Boolean$}})),opt$711!==null?opt$711.item:null);
             };
-            $$lazyMap.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Item']},$ps:[{$nm:'key',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$m','get']};};
+            $$lazyMap.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Item']},$ps:[{$nm:'key',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],$cont:LazyMap,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyMap','$m','get']};};
             $$lazyMap.iterator=function (){
                 var $$lazyMap=this;
                 return $$lazyMap.entries$709.iterator();
@@ -4469,9 +4469,9 @@ function LazyList(elems$722, $$targs$$,$$lazyList){
     $$lazyList.$prop$getReversed.get=function(){return reversed};
     $$lazyList.$prop$getClone={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:List,a:{Element:'Element'}},$cont:LazyList,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyList','$at','clone']};}};
     $$lazyList.$prop$getClone.get=function(){return clone};
-    $$lazyList.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$cont:LazyList,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','LazyList','$at','first']};}};
+    $$lazyList.$prop$getFirst={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$cont:LazyList,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','LazyList','$at','first']};}};
     $$lazyList.$prop$getFirst.get=function(){return first};
-    $$lazyList.$prop$getLast={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$cont:LazyList,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','LazyList','$at','last']};}};
+    $$lazyList.$prop$getLast={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$cont:LazyList,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','LazyList','$at','last']};}};
     $$lazyList.$prop$getLast.get=function(){return last};
     return $$lazyList;
 }
@@ -4488,14 +4488,14 @@ function $init$LazyList(){
                 $prop$getSize$723.get=function(){return size$723};
                 return (opt$724=(size$723.compare((0)).equals(getLarger())?size$723.minus((1)):null),opt$724!==null?opt$724:null);
                 var opt$724;
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$cont:LazyList,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyList','$at','lastIndex']};});$$lazyList.$get=function $get(index$725){
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$cont:LazyList,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyList','$at','lastIndex']};});$$lazyList.$get=function $get(index$725){
                 var $$lazyList=this;
                 if(index$725.equals((0))){
                     return $$lazyList.elems$722.first;
                 }else {
                     return $$lazyList.elems$722.skipping(index$725).first;
                 }
-            };$$lazyList.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'index',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:LazyList,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyList','$m','get']};};
+            };$$lazyList.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'index',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:LazyList,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazyList','$m','get']};};
             defineAttr($$lazyList,'rest',function(){
                 var $$lazyList=this;
                 return LazyList($$lazyList.elems$722.rest,{Element:$$lazyList.$$targs$$.Element});
@@ -4567,7 +4567,7 @@ function $init$LazyList(){
                         var it$745 = Range((0),size$744.minus((1)),{Element:{t:Integer}}).iterator();
                         var i$746;while ((i$746=it$745.next())!==getFinished()){
                             var x$747=$$lazyList.$get(i$746);
-                            $prop$getX$747={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},d:['ceylon.language','LazyList','$m','equals','$at','x']};}};
+                            $prop$getX$747={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},d:['ceylon.language','LazyList','$m','equals','$at','x']};}};
                             $prop$getX$747.get=function(){return x$747};
                             var y$748=that$743.$get(i$746);
                             $prop$getY$748={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Anything},d:['ceylon.language','LazyList','$m','equals','$at','y']};}};
@@ -4615,17 +4615,17 @@ function $init$LazyList(){
                 return hash$752;
             },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Integer},$cont:LazyList,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','LazyList','$at','hash']};});$$lazyList.findLast=function (selecting$757){
                 var $$lazyList=this;
-                return $$lazyList.elems$722.findLast($JsCallable(selecting$757,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$lazyList.$$targs$$.Element,Element:$$lazyList.$$targs$$.Element}},Return:{t:Boolean$}}));
+                return $$lazyList.elems$722.findLast($JsCallable(selecting$757,[{$nm:'elem',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$lazyList.$$targs$$.Element]},Return:{t:Boolean$}}));
             };
-            $$lazyList.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:LazyList,$an:function(){return[shared(),$default(),actual()];},d:['ceylon.language','LazyList','$m','findLast']};};
+            $$lazyList.findLast.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$ps:[{$nm:'selecting',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:LazyList,$an:function(){return[shared(),$default(),actual()];},d:['ceylon.language','LazyList','$m','findLast']};};
             defineAttr($$lazyList,'first',function(){
                 var $$lazyList=this;
                 return $$lazyList.elems$722.first;
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$cont:LazyList,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','LazyList','$at','first']};});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$cont:LazyList,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','LazyList','$at','first']};});
             defineAttr($$lazyList,'last',function(){
                 var $$lazyList=this;
                 return $$lazyList.elems$722.last;
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Element']},$cont:LazyList,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','LazyList','$at','last']};});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Element']},$cont:LazyList,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','LazyList','$at','last']};});
             defineAttr($$lazyList,'elems$722',function(){return this.elems$722_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$cont:LazyList,d:['ceylon.language','LazyList','$at','elems']};});
         })(LazyList.$$.prototype);
     }
@@ -4664,7 +4664,7 @@ function $init$LazySet(){
                 if (setC$759.$$metamodel$$===undefined)setC$759.$$metamodel$$=$prop$getC$759.$$metamodel$$;
                 var sorted$761=$$lazySet.elems$758.$sort($JsCallable(byIncreasing($JsCallable(function (e$762){
                     return e$762.hash;
-                },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},Return:{t:Integer}}),{Value:{t:Integer},Element:$$lazySet.$$targs$$.Element}),[{$nm:'p1',$mt:'prm',$t:'Element'},{$nm:'p2',$mt:'prm',$t:'Element'}],{Arguments:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},Return:{t:Comparison}}));
+                },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$lazySet.$$targs$$.Element]},Return:{t:Integer}}),{Value:{t:Integer},Element:$$lazySet.$$targs$$.Element}),[{$nm:'p1',$mt:'prm',$t:'Element'},{$nm:'p2',$mt:'prm',$t:'Element'}],{Arguments:{t:'T', l:[$$lazySet.$$targs$$.Element,$$lazySet.$$targs$$.Element]},Return:{t:Comparison}}));
                 $prop$getSorted$761={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},d:['ceylon.language','LazySet','$at','size','$at','sorted']};}};
                 $prop$getSorted$761.get=function(){return sorted$761};
                 var l$763;
@@ -4694,11 +4694,11 @@ function $init$LazySet(){
                     Iterator({Element:$$lazySet.$$targs$$.Element},$$iterator$769);
                     $$iterator$769.sorted$770_=$$lazySet.elems$758.$sort($JsCallable(byIncreasing($JsCallable(function (e$771){
                         return e$771.hash;
-                    },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},Return:{t:Integer}}),{Value:{t:Integer},Element:$$lazySet.$$targs$$.Element}),[{$nm:'p1',$mt:'prm',$t:'Element'},{$nm:'p2',$mt:'prm',$t:'Element'}],{Arguments:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},First:$$lazySet.$$targs$$.Element,Element:$$lazySet.$$targs$$.Element}},Return:{t:Comparison}})).iterator();
+                    },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$lazySet.$$targs$$.Element]},Return:{t:Integer}}),{Value:{t:Integer},Element:$$lazySet.$$targs$$.Element}),[{$nm:'p1',$mt:'prm',$t:'Element'},{$nm:'p2',$mt:'prm',$t:'Element'}],{Arguments:{t:'T', l:[$$lazySet.$$targs$$.Element,$$lazySet.$$targs$$.Element]},Return:{t:Comparison}})).iterator();
                     $$iterator$769.$prop$getSorted$770={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$cont:iterator$769,d:['ceylon.language','LazySet','$m','iterator','$o','iterator','$at','sorted']};}};
                     $$iterator$769.$prop$getSorted$770.get=function(){return sorted$770};
                     $$iterator$769.ready$772_=$$iterator$769.sorted$770.next();
-                    $$iterator$769.$prop$getReady$772={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$cont:iterator$769,$an:function(){return[variable()];},d:['ceylon.language','LazySet','$m','iterator','$o','iterator','$at','ready']};}};
+                    $$iterator$769.$prop$getReady$772={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$cont:iterator$769,$an:function(){return[variable()];},d:['ceylon.language','LazySet','$m','iterator','$o','iterator','$at','ready']};}};
                     $$iterator$769.$prop$getReady$772.get=function(){return ready$772};
                     return $$iterator$769;
                 };iterator$769.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},satisfies:[{t:Iterator,a:{Element:'Element'}}],d:['ceylon.language','LazySet','$m','iterator','$o','iterator']};};
@@ -4711,7 +4711,7 @@ function $init$LazySet(){
                 $init$iterator$769();
                 (function($$iterator$769){
                     defineAttr($$iterator$769,'sorted$770',function(){return this.sorted$770_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$cont:iterator$769,d:['ceylon.language','LazySet','$m','iterator','$o','iterator','$at','sorted']};});
-                    defineAttr($$iterator$769,'ready$772',function(){return this.ready$772_;},function(ready$773){return this.ready$772_=ready$773;},function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$cont:iterator$769,$an:function(){return[variable()];},d:['ceylon.language','LazySet','$m','iterator','$o','iterator','$at','ready']};});
+                    defineAttr($$iterator$769,'ready$772',function(){return this.ready$772_;},function(ready$773){return this.ready$772_=ready$773;},function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$cont:iterator$769,$an:function(){return[variable()];},d:['ceylon.language','LazySet','$m','iterator','$o','iterator','$at','ready']};});
                     $$iterator$769.next=function next(){
                         var $$iterator$769=this;
                         var next$774=$$iterator$769.ready$772;
@@ -4722,7 +4722,7 @@ function $init$LazySet(){
                             }
                         }
                         return next$774;
-                    };$$iterator$769.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$769,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','iterator','$o','iterator','$m','next']};};
+                    };$$iterator$769.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Element',{t:Finished}]},$ps:[],$cont:iterator$769,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','iterator','$o','iterator','$m','next']};};
                 })(iterator$769.$$.prototype);
                 var iterator$776;
                 function getIterator$776(){
@@ -4735,9 +4735,9 @@ function $init$LazySet(){
             };$$lazySet.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$ps:[],$cont:LazySet,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','iterator']};};
             $$lazySet.union=function (set$777,$$$mptypes){
                 var $$lazySet=this;
-                return LazySet($$lazySet.elems$758.chain(set$777,{Other:$$$mptypes.Other,OtherAbsent:{t:Null}}),{Element:{ t:'u', l:[$$lazySet.$$targs$$.Element,$$$mptypes.Other]}});
+                return LazySet($$lazySet.elems$758.chain(set$777,{Other:$$$mptypes.Other,OtherAbsent:{t:Null}}),{Element:{t:'u', l:[$$lazySet.$$targs$$.Element,$$$mptypes.Other]}});
             };
-            $$lazySet.union.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Set,a:{Element:{ t:'u', l:['Element','Other']}}},$ps:[{$nm:'set',$mt:'prm',$t:{t:Set,a:{Element:'Other'}},$an:function(){return[];}}],$cont:LazySet,$tp:{Other:{'satisfies':[{t:Object$}]}},$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','union']};};
+            $$lazySet.union.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Set,a:{Element:{t:'u', l:['Element','Other']}}},$ps:[{$nm:'set',$mt:'prm',$t:{t:Set,a:{Element:'Other'}},$an:function(){return[];}}],$cont:LazySet,$tp:{Other:{'satisfies':[{t:Object$}]}},$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','union']};};
             $$lazySet.intersection=function (set$778,$$$mptypes){
                 var $$lazySet=this;
                 return LazySet(Comprehension(function(){
@@ -4763,9 +4763,9 @@ function $init$LazySet(){
                         }
                         return getFinished();
                     }
-                },{Absent:{t:Null},Element:{ t:'i', l:[$$$mptypes.Other,$$lazySet.$$targs$$.Element]}}),{Element:{ t:'i', l:[$$$mptypes.Other,$$lazySet.$$targs$$.Element]}});
+                },{Absent:{t:Null},Element:{t:'i', l:[$$$mptypes.Other,$$lazySet.$$targs$$.Element]}}),{Element:{t:'i', l:[$$$mptypes.Other,$$lazySet.$$targs$$.Element]}});
             };
-            $$lazySet.intersection.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Set,a:{Element:{ t:'i', l:['Element','Other']}}},$ps:[{$nm:'set',$mt:'prm',$t:{t:Set,a:{Element:'Other'}},$an:function(){return[];}}],$cont:LazySet,$tp:{Other:{'satisfies':[{t:Object$}]}},$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','intersection']};};
+            $$lazySet.intersection.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Set,a:{Element:{t:'i', l:['Element','Other']}}},$ps:[{$nm:'set',$mt:'prm',$t:{t:Set,a:{Element:'Other'}},$an:function(){return[];}}],$cont:LazySet,$tp:{Other:{'satisfies':[{t:Object$}]}},$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','intersection']};};
             $$lazySet.exclusiveUnion=function exclusiveUnion(other$784,$$$mptypes){
                 var $$lazySet=this;
                 var hereNotThere$785=Comprehension(function(){
@@ -4812,8 +4812,8 @@ function $init$LazySet(){
                         return getFinished();
                     }
                 },{Absent:{t:Null},Element:$$$mptypes.Other});
-                return LazySet(hereNotThere$785.chain(thereNotHere$790,{Other:$$$mptypes.Other,OtherAbsent:{t:Null}}),{Element:{ t:'u', l:[$$lazySet.$$targs$$.Element,$$$mptypes.Other]}});
-            };$$lazySet.exclusiveUnion.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Set,a:{Element:{ t:'u', l:['Element','Other']}}},$ps:[{$nm:'other',$mt:'prm',$t:{t:Set,a:{Element:'Other'}},$an:function(){return[];}}],$cont:LazySet,$tp:{Other:{'satisfies':[{t:Object$}]}},$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','exclusiveUnion']};};
+                return LazySet(hereNotThere$785.chain(thereNotHere$790,{Other:$$$mptypes.Other,OtherAbsent:{t:Null}}),{Element:{t:'u', l:[$$lazySet.$$targs$$.Element,$$$mptypes.Other]}});
+            };$$lazySet.exclusiveUnion.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Set,a:{Element:{t:'u', l:['Element','Other']}}},$ps:[{$nm:'other',$mt:'prm',$t:{t:Set,a:{Element:'Other'}},$an:function(){return[];}}],$cont:LazySet,$tp:{Other:{'satisfies':[{t:Object$}]}},$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','exclusiveUnion']};};
             $$lazySet.complement=function (set$795,$$$mptypes){
                 var $$lazySet=this;
                 return LazySet(Comprehension(function(){
@@ -4929,7 +4929,7 @@ exports.byKey=byKey;
 var coalesce=function (values$823,$$$mptypes){
     return values$823.coalesced;
 };
-coalesce.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{ t:'i', l:['Element',{t:Object$}]}}},$ps:[{$nm:'values',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$an:function(){return[doc("The values, some of which may be null.")];}}],$tp:{Element:{}},$an:function(){return[doc(String$("Return a sequence containing the given values which are\nnot null. If there are no values which are not null,\nreturn an empty sequence.",134)),shared()];},d:['ceylon.language','coalesce']};};
+coalesce.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{t:'i', l:['Element',{t:Object$}]}}},$ps:[{$nm:'values',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$an:function(){return[doc("The values, some of which may be null.")];}}],$tp:{Element:{}},$an:function(){return[doc(String$("Return a sequence containing the given values which are\nnot null. If there are no values which are not null,\nreturn an empty sequence.",134)),shared()];},d:['ceylon.language','coalesce']};};
 exports.coalesce=coalesce;
 function count(values$824){
     var count$825=(0);
@@ -4954,29 +4954,29 @@ function emptyOrSingleton(element$830,$$$mptypes){
     }
 }
 exports.emptyOrSingleton=emptyOrSingleton;
-emptyOrSingleton.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$ps:[{$nm:'element',$mt:'prm',$t:{ t:'u', l:[{t:Null},'Element']},$an:function(){return[];}}],$tp:{Element:{'satisfies':[{t:Object$}]}},$an:function(){return[doc(String$("A `Singleton` if the given element is non-null, otherwise `Empty`.",66)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Singleton),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Empty)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:InterfaceDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','emptyOrSingleton']};};
+emptyOrSingleton.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$ps:[{$nm:'element',$mt:'prm',$t:{t:'u', l:[{t:Null},'Element']},$an:function(){return[];}}],$tp:{Element:{'satisfies':[{t:Object$}]}},$an:function(){return[doc(String$("A `Singleton` if the given element is non-null, otherwise `Empty`.",66)),see([$init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Singleton),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Empty)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:InterfaceDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','emptyOrSingleton']};};
 var curry=function (f$832,$$$mptypes){
     return function(first$833){{
         return flatten($JsCallable(function (args$834){
-            return unflatten($JsCallable(f$832,[],{Arguments:{t:Tuple,a:{Rest:$$$mptypes.Rest,First:$$$mptypes.First,Element:$$$mptypes.Argument}},Return:$$$mptypes.Return}),{Args:{t:Tuple,a:{Rest:$$$mptypes.Rest,First:$$$mptypes.First,Element:$$$mptypes.Argument}},Return:$$$mptypes.Return})(Tuple(first$833,args$834,{Rest:$$$mptypes.Rest,First:$$$mptypes.First,Element:$$$mptypes.Argument}),{Args:{t:Tuple,a:{Rest:$$$mptypes.Rest,First:$$$mptypes.First,Element:$$$mptypes.Argument}},Return:$$$mptypes.Return});
-        },[{$nm:'args',$mt:'prm',$t:'Rest',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$$mptypes.Rest,Element:$$$mptypes.Rest}},Return:$$$mptypes.Return}),{Args:$$$mptypes.Rest,Return:$$$mptypes.Return});
+            return unflatten($JsCallable(f$832,[],{Arguments:{t:'T', l:[$$$mptypes.First]},Return:$$$mptypes.Return}),{Args:{t:'T', l:[$$$mptypes.First]},Return:$$$mptypes.Return})(Tuple(first$833,args$834,{Rest:$$$mptypes.Rest,First:$$$mptypes.First,Element:$$$mptypes.Argument}),{Args:{t:'T', l:[$$$mptypes.First]},Return:$$$mptypes.Return});
+        },[{$nm:'args',$mt:'prm',$t:'Rest',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$$mptypes.Rest]},Return:$$$mptypes.Return}),{Args:$$$mptypes.Rest,Return:$$$mptypes.Return});
     }
 }
 }
 ;
-curry.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Callable,a:{Arguments:'Rest',Return:'Return'}},$ps:[{$nm:'f',$mt:'prm',$t:{t:Callable,a:{Arguments:{t:Tuple,a:{Rest:'Rest',First:'First',Element:'Argument'}},Return:'Return'}},$an:function(){return[];}}],$tp:{Return:{},Argument:{},First:{'satisfies':['Argument']},Rest:{'satisfies':[{t:Sequential,a:{Element:'Argument'}}]}},$an:function(){return[doc(String$("Curries a function, returning a function of multiple parameter lists,\ngiven a function of multiple parameters.",110)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),uncurry),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),compose)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','curry']};};
+curry.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Callable,a:{Arguments:'Rest',Return:'Return'}},$ps:[{$nm:'f',$mt:'prm',$t:{t:Callable,a:{Arguments:{t:'T', l:['First']},Return:'Return'}},$an:function(){return[];}}],$tp:{Return:{},Argument:{},First:{'satisfies':['Argument']},Rest:{'satisfies':[{t:Sequential,a:{Element:'Argument'}}]}},$an:function(){return[doc(String$("Curries a function, returning a function of multiple parameter lists,\ngiven a function of multiple parameters.",110)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),uncurry),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),compose)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','curry']};};
 exports.curry=curry;
 var uncurry=function (f$835,$$$mptypes){
 return flatten($JsCallable(function (args$836){
     return unflatten($JsCallable(f$835(args$836.first),[],{Arguments:$$$mptypes.Rest,Return:$$$mptypes.Return}),{Args:$$$mptypes.Rest,Return:$$$mptypes.Return})(args$836.rest,{Args:$$$mptypes.Rest,Return:$$$mptypes.Return});
-},[{$nm:'args',$mt:'prm',$t:{t:Tuple,a:{Rest:'Rest',First:'First',Element:'Argument'}},$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:{t:Tuple,a:{Rest:$$$mptypes.Rest,First:$$$mptypes.First,Element:$$$mptypes.Argument}},Element:{t:Tuple,a:{Rest:$$$mptypes.Rest,First:$$$mptypes.First,Element:$$$mptypes.Argument}}}},Return:$$$mptypes.Return}),{Args:{t:Tuple,a:{Rest:$$$mptypes.Rest,First:$$$mptypes.First,Element:$$$mptypes.Argument}},Return:$$$mptypes.Return});
+},[{$nm:'args',$mt:'prm',$t:{t:'T', l:['First']},$an:function(){return[];}}],{Arguments:{t:'T', l:[{t:'T', l:[$$$mptypes.First]}]},Return:$$$mptypes.Return}),{Args:{t:'T', l:[$$$mptypes.First]},Return:$$$mptypes.Return});
 };
-uncurry.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Callable,a:{Arguments:{t:Tuple,a:{Rest:'Rest',First:'First',Element:'Argument'}},Return:'Return'}},$ps:[{$nm:'f',$mt:'prm',$pt:'f',$t:{t:Callable,a:{Arguments:'Rest',Return:'Return'}},$an:function(){return[];}}],$tp:{Return:{},Argument:{},First:{'satisfies':['Argument']},Rest:{'satisfies':[{t:Sequential,a:{Element:'Argument'}}]}},$an:function(){return[doc(String$("Uncurries a function, returning a function with multiple parameters, \ngiven a function with multiple parameter lists.",117)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),curry),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),compose)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','uncurry']};};
+uncurry.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Callable,a:{Arguments:{t:'T', l:['First']},Return:'Return'}},$ps:[{$nm:'f',$mt:'prm',$pt:'f',$t:{t:Callable,a:{Arguments:'Rest',Return:'Return'}},$an:function(){return[];}}],$tp:{Return:{},Argument:{},First:{'satisfies':['Argument']},Rest:{'satisfies':[{t:Sequential,a:{Element:'Argument'}}]}},$an:function(){return[doc(String$("Uncurries a function, returning a function with multiple parameters, \ngiven a function with multiple parameter lists.",117)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),curry),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),compose)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','uncurry']};};
 exports.uncurry=uncurry;
 var entries=function (elements$837,$$$mptypes){
     return elements$837.indexed;
 };
-entries.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{ t:'i', l:['Element',{t:Object$}]}}}}},$ps:[{$nm:'elements',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$an:function(){return[];}}],$tp:{Element:{}},$an:function(){return[doc(String$("Produces a sequence of each index to element `Entry` \nfor the given sequence of values.",87)),shared()];},d:['ceylon.language','entries']};};
+entries.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:['Element',{t:Object$}]}}}}},$ps:[{$nm:'elements',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$an:function(){return[];}}],$tp:{Element:{}},$an:function(){return[doc(String$("Produces a sequence of each index to element `Entry` \nfor the given sequence of values.",87)),shared()];},d:['ceylon.language','entries']};};
 exports.entries=entries;
 var equalTo=function (val$838,$$$mptypes){
     return function(element$839){{
@@ -5013,11 +5013,11 @@ function first(values$845,$$$mptypes){
     }
     //assert at first.ceylon (12:4-12:34)
     var first$848;
-    if (!(isOfType((first$848=first$846),{ t:'u', l:[$$$mptypes.Absent,$$$mptypes.Value]}))) {throw wrapexc(AssertionException("Assertion failed: \'is Absent|Value first\' at first.ceylon (12:11-12:33)"),'12:4-12:34','first.ceylon'); }
+    if (!(isOfType((first$848=first$846),{t:'u', l:[$$$mptypes.Absent,$$$mptypes.Value]}))) {throw wrapexc(AssertionException("Assertion failed: \'is Absent|Value first\' at first.ceylon (12:11-12:33)"),'12:4-12:34','first.ceylon'); }
     return first$848;
 }
 exports.first=first;
-first.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Absent','Value']},$ps:[{$nm:'values',$mt:'prm',$t:{t:Iterable,a:{Absent:'Absent',Element:'Value'}},$an:function(){return[];}}],$tp:{Value:{},Absent:{'satisfies':[{t:Null}]}},$an:function(){return[doc(String$("The first of the given values (usually a comprehension),\nif any.",64)),shared()];},d:['ceylon.language','first']};};
+first.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Absent','Value']},$ps:[{$nm:'values',$mt:'prm',$t:{t:Iterable,a:{Absent:'Absent',Element:'Value'}},$an:function(){return[];}}],$tp:{Value:{},Absent:{'satisfies':[{t:Null}]}},$an:function(){return[doc(String$("The first of the given values (usually a comprehension),\nif any.",64)),shared()];},d:['ceylon.language','first']};};
 var forItem=function (resulting$849,$$$mptypes){
     return function(entry$850){{
         return resulting$849(entry$850.item);
@@ -5080,7 +5080,7 @@ exports.concatenate=concatenate;
 var largest=function (x$862,y$863,$$$mptypes){
     return (opt$864=(x$862.compare(y$863).equals(getLarger())?x$862:null),opt$864!==null?opt$864:y$863);
 };
-largest.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:'Element',$ps:[{$nm:'x',$mt:'prm',$t:'Element',$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:'Element',$an:function(){return[];}}],$tp:{Element:{'satisfies':[{t:Comparable,a:{Other:'Element'}}]}},$an:function(){return[doc(String$("Given two `Comparable` values, return largest of the\ntwo.",57)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),smallest),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),max)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','largest']};};
+largest.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:'Element',$ps:[{$nm:'x',$mt:'prm',$t:'Element',$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:'Element',$an:function(){return[];}}],$tp:{Element:{'satisfies':[{t:Comparable,a:{Other:'Element'}}]}},$an:function(){return[doc(String$("Given two `Comparable` values, return largest of the\ntwo.",57)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),smallest),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),max)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','largest']};};
 exports.largest=largest;
 var opt$864;
 var lessThan=function (val$865,$$$mptypes){
@@ -5114,7 +5114,7 @@ function max(values$867,$$$mptypes){
     }
 }
 exports.max=max;
-max.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Absent','Value']},$ps:[{$nm:'values',$mt:'prm',$t:{t:Iterable,a:{Absent:'Absent',Element:'Value'}},$an:function(){return[];}}],$tp:{Value:{'satisfies':[{t:Comparable,a:{Other:'Value'}}]},Absent:{'satisfies':[{t:Null}]}},$an:function(){return[doc(String$("Given a nonempty stream of `Comparable` values, \nreturn the largest value in the stream.",88)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),min),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),largest)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','max']};};
+max.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Absent','Value']},$ps:[{$nm:'values',$mt:'prm',$t:{t:Iterable,a:{Absent:'Absent',Element:'Value'}},$an:function(){return[];}}],$tp:{Value:{'satisfies':[{t:Comparable,a:{Other:'Value'}}]},Absent:{'satisfies':[{t:Null}]}},$an:function(){return[doc(String$("Given a nonempty stream of `Comparable` values, \nreturn the largest value in the stream.",88)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),min),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),largest)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','max']};};
 function min(values$874,$$$mptypes){
     var first$875=values$874.first;
     var first$876;
@@ -5137,11 +5137,11 @@ function min(values$874,$$$mptypes){
     }
 }
 exports.min=min;
-min.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Absent','Value']},$ps:[{$nm:'values',$mt:'prm',$t:{t:Iterable,a:{Absent:'Absent',Element:'Value'}},$an:function(){return[];}}],$tp:{Value:{'satisfies':[{t:Comparable,a:{Other:'Value'}}]},Absent:{'satisfies':[{t:Null}]}},$an:function(){return[doc(String$("Given a nonempty stream of `Comparable` values, \nreturn the smallest value in the stream.",89)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),max),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),smallest)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','min']};};
+min.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Absent','Value']},$ps:[{$nm:'values',$mt:'prm',$t:{t:Iterable,a:{Absent:'Absent',Element:'Value'}},$an:function(){return[];}}],$tp:{Value:{'satisfies':[{t:Comparable,a:{Other:'Value'}}]},Absent:{'satisfies':[{t:Null}]}},$an:function(){return[doc(String$("Given a nonempty stream of `Comparable` values, \nreturn the smallest value in the stream.",89)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),max),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),smallest)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','min']};};
 var smallest=function (x$881,y$882,$$$mptypes){
     return (opt$883=(x$881.compare(y$882).equals(getSmaller())?x$881:null),opt$883!==null?opt$883:y$882);
 };
-smallest.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:'Element',$ps:[{$nm:'x',$mt:'prm',$t:'Element',$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:'Element',$an:function(){return[];}}],$tp:{Element:{'satisfies':[{t:Comparable,a:{Other:'Element'}}]}},$an:function(){return[doc(String$("Given two `Comparable` values, return smallest of the\ntwo.",58)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),largest),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),min)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','smallest']};};
+smallest.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:'Element',$ps:[{$nm:'x',$mt:'prm',$t:'Element',$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:'Element',$an:function(){return[];}}],$tp:{Element:{'satisfies':[{t:Comparable,a:{Other:'Element'}}]}},$an:function(){return[doc(String$("Given two `Comparable` values, return smallest of the\ntwo.",58)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),largest),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),min)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','smallest']};};
 exports.smallest=smallest;
 var opt$883;
 function sum(values$884,$$$mptypes){
@@ -5236,16 +5236,16 @@ exports.identical=identical;
 var compose=function (x$913,y$914,$$$mptypes){
     return flatten($JsCallable(function (args$915){
         return x$913(unflatten($JsCallable(y$914,[],{Arguments:$$$mptypes.Args,Return:$$$mptypes.Y}),{Args:$$$mptypes.Args,Return:$$$mptypes.Y})(args$915,{Args:$$$mptypes.Args,Return:$$$mptypes.Y}));
-    },[{$nm:'args',$mt:'prm',$t:'Args',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$$mptypes.Args,Element:$$$mptypes.Args}},Return:$$$mptypes.X}),{Args:$$$mptypes.Args,Return:$$$mptypes.X});
+    },[{$nm:'args',$mt:'prm',$t:'Args',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$$mptypes.Args]},Return:$$$mptypes.X}),{Args:$$$mptypes.Args,Return:$$$mptypes.X});
 };
-compose.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Callable,a:{Arguments:'Args',Return:'X'}},$ps:[{$nm:'x',$mt:'prm',$t:{t:Callable,a:{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:'Y',Element:'Y'}},Return:'X'}},$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:{t:Callable,a:{Arguments:'Args',Return:'Y'}},$an:function(){return[];}}],$tp:{X:{},Y:{},Args:{'satisfies':[{t:Sequential,a:{Element:{t:Anything}}}]}},$an:function(){return[doc(String$("Composes two functions, returning a function equivalent to \ninvoking `x(y(args))`.",82)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),curry),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),uncurry)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','compose']};};
+compose.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Callable,a:{Arguments:'Args',Return:'X'}},$ps:[{$nm:'x',$mt:'prm',$t:{t:Callable,a:{Arguments:{t:'T', l:['Y']},Return:'X'}},$an:function(){return[];}},{$nm:'y',$mt:'prm',$t:{t:Callable,a:{Arguments:'Args',Return:'Y'}},$an:function(){return[];}}],$tp:{X:{},Y:{},Args:{'satisfies':[{t:Sequential,a:{Element:{t:Anything}}}]}},$an:function(){return[doc(String$("Composes two functions, returning a function equivalent to \ninvoking `x(y(args))`.",82)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),curry),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),uncurry)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','compose']};};
 exports.compose=compose;
 var shuffle=function (f$916,$$$mptypes){
     return flatten($JsCallable(function (secondArgs$917){
         return flatten($JsCallable(function (firstArgs$918){
             return unflatten($JsCallable(unflatten($JsCallable(f$916,[],{Arguments:$$$mptypes.FirstArgs,Return:{t:Callable,a:{Arguments:$$$mptypes.SecondArgs,Return:$$$mptypes.Result}}}),{Args:$$$mptypes.FirstArgs,Return:{t:Callable,a:{Arguments:$$$mptypes.SecondArgs,Return:$$$mptypes.Result}}})(firstArgs$918,{Args:$$$mptypes.FirstArgs,Return:{t:Callable,a:{Arguments:$$$mptypes.SecondArgs,Return:$$$mptypes.Result}}}),[],{Arguments:$$$mptypes.SecondArgs,Return:$$$mptypes.Result}),{Args:$$$mptypes.SecondArgs,Return:$$$mptypes.Result})(secondArgs$917,{Args:$$$mptypes.SecondArgs,Return:$$$mptypes.Result});
-        },[{$nm:'firstArgs',$mt:'prm',$t:'FirstArgs',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$$mptypes.FirstArgs,Element:$$$mptypes.FirstArgs}},Return:$$$mptypes.Result}),{Args:$$$mptypes.FirstArgs,Return:$$$mptypes.Result});
-    },[{$nm:'secondArgs',$mt:'prm',$t:'SecondArgs',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$$mptypes.SecondArgs,Element:$$$mptypes.SecondArgs}},Return:{t:Callable,a:{Arguments:$$$mptypes.FirstArgs,Return:$$$mptypes.Result}}}),{Args:$$$mptypes.SecondArgs,Return:{t:Callable,a:{Arguments:$$$mptypes.FirstArgs,Return:$$$mptypes.Result}}});
+        },[{$nm:'firstArgs',$mt:'prm',$t:'FirstArgs',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$$mptypes.FirstArgs]},Return:$$$mptypes.Result}),{Args:$$$mptypes.FirstArgs,Return:$$$mptypes.Result});
+    },[{$nm:'secondArgs',$mt:'prm',$t:'SecondArgs',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$$mptypes.SecondArgs]},Return:{t:Callable,a:{Arguments:$$$mptypes.FirstArgs,Return:$$$mptypes.Result}}}),{Args:$$$mptypes.SecondArgs,Return:{t:Callable,a:{Arguments:$$$mptypes.FirstArgs,Return:$$$mptypes.Result}}});
 };
 shuffle.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Callable,a:{Arguments:'SecondArgs',Return:{t:Callable,a:{Arguments:'FirstArgs',Return:'Result'}}}},$ps:[{$nm:'f',$mt:'prm',$t:{t:Callable,a:{Arguments:'FirstArgs',Return:{t:Callable,a:{Arguments:'SecondArgs',Return:'Result'}}}},$an:function(){return[];}}],$tp:{Result:{},FirstArgs:{'satisfies':[{t:Sequential,a:{Element:{t:Anything}}}]},SecondArgs:{'satisfies':[{t:Sequential,a:{Element:{t:Anything}}}]}},$an:function(){return[shared()];},d:['ceylon.language','shuffle']};};
 exports.shuffle=shuffle;
@@ -5309,7 +5309,7 @@ function combine(combination$923,elements$924,otherElements$925,$$$mptypes){
                     }else {
                         return getFinished();
                     }
-                };$$iterator$927.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:['Result',{t:Finished}]},$ps:[],$cont:iterator$927,$an:function(){return[shared(),actual()];},d:['ceylon.language','combine','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
+                };$$iterator$927.next.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:['Result',{t:Finished}]},$ps:[],$cont:iterator$927,$an:function(){return[shared(),actual()];},d:['ceylon.language','combine','$o','iterable','$m','iterator','$o','iterator','$m','next']};};
             })(iterator$927.$$.prototype);
             var iterator$934;
             function getIterator$934(){
@@ -5335,7 +5335,7 @@ combine.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Abse
 var sort=function (elements$936,$$$mptypes){
     return internalSort($JsCallable(byIncreasing($JsCallable(function (e$937){
         return e$937;
-    },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$$mptypes.Element,Element:$$$mptypes.Element}},Return:$$$mptypes.Element}),{Value:$$$mptypes.Element,Element:$$$mptypes.Element}),[{$nm:'p1',$mt:'prm',$t:'Element'},{$nm:'p2',$mt:'prm',$t:'Element'}],{Arguments:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:$$$mptypes.Element,Element:$$$mptypes.Element}},First:$$$mptypes.Element,Element:$$$mptypes.Element}},Return:{t:Comparison}}),elements$936,{Element:$$$mptypes.Element});
+    },[{$nm:'e',$mt:'prm',$t:'Element',$an:function(){return[];}}],{Arguments:{t:'T', l:[$$$mptypes.Element]},Return:$$$mptypes.Element}),{Value:$$$mptypes.Element,Element:$$$mptypes.Element}),[{$nm:'p1',$mt:'prm',$t:'Element'},{$nm:'p2',$mt:'prm',$t:'Element'}],{Arguments:{t:'T', l:[$$$mptypes.Element,$$$mptypes.Element]},Return:{t:Comparison}}),elements$936,{Element:$$$mptypes.Element});
 };
 sort.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:'Element'}},$ps:[{$nm:'elements',$mt:'prm',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$an:function(){return[];}}],$tp:{Element:{'satisfies':[{t:Comparable,a:{Other:'Element'}}]}},$an:function(){return[doc(String$("Sort the given elements, returning a new sequence.",50)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Comparable)].reifyCeylonType({Absent:{t:Null},Element:{t:InterfaceDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','sort']};};
 exports.sort=sort;
@@ -6443,7 +6443,7 @@ function parseInteger(string$940,radix$941){
             if(((!sep$954.equals((-(1))))&&digitIndex$956.minus(sep$954).equals(groupingSize$958.plus((1))))){
                 return null;
             }
-            if(((ii$942.plus((1)).equals(length$951)&&radix$941.equals((10)))&&Tuple(Character(107),Tuple(Character(77),Tuple(Character(71),Tuple(Character(84),Tuple(Character(80),getEmpty(),{Rest:{t:Empty},First:{t:Character},Element:{t:Character}}),{Rest:{t:Tuple,a:{Rest:{t:Empty},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}),{Rest:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}),{Rest:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}),{Rest:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Tuple,a:{Rest:{t:Empty},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}},First:{t:Character},Element:{t:Character}}).contains(ch$960))){
+            if(((ii$942.plus((1)).equals(length$951)&&radix$941.equals((10)))&&Tuple(Character(107),Tuple(Character(77),Tuple(Character(71),Tuple(Character(84),Tuple(Character(80),getEmpty(),{Rest:{t:Empty},First:{t:Character},Element:{t:Character}}),{Rest:{t:'T', l:[{t:Character}]},First:{t:Character},Element:{t:Character}}),{Rest:{t:'T', l:[{t:Character},{t:Character}]},First:{t:Character},Element:{t:Character}}),{Rest:{t:'T', l:[{t:Character},{t:Character},{t:Character}]},First:{t:Character},Element:{t:Character}}),{Rest:{t:'T', l:[{t:Character},{t:Character},{t:Character},{t:Character}]},First:{t:Character},Element:{t:Character}}).contains(ch$960))){
                 var magnitude$963;
                 if((magnitude$963=computeMagnitude(radix$941,string$940.$get((oldii$964=ii$942,ii$942=oldii$964.successor,oldii$964))))!==null){
                     if(limit$949.divided(magnitude$963).compare(result$952).equals(getSmaller())){
@@ -6487,7 +6487,7 @@ function parseInteger(string$940,radix$941){
     var opt$968;
 }
 exports.parseInteger=parseInteger;
-parseInteger.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'string',$mt:'prm',$t:{t:String$},$an:function(){return[];}},{$nm:'radix',$mt:'prm',$def:1,$t:{t:Integer},$an:function(){return[];}}],$an:function(){return[doc(String$("The `Integer` value of the given string representation \nof an integer, or `null` if the string does not represent \nan integer or if the mathematical integer it represents \nis too large in magnitude to be represented by an \n`Integer`.\n\nThe syntax accepted by this function is the same as the \nsyntax for an `Integer` literal in the Ceylon language \nexcept that it may optionally begin with a sign \ncharacter (`+` or `-`).\n\nA radix can be given in input to specify what is the base\nto take in consideration for the parsing. radix has to be\nbetween `minRadix` and `maxRadix` included.\nThe list of available digits starts from `0` to `9` followed\nby `a` to `z`.\nWhen parsing in a specific base, the first `radix` digits\nfrom the available digits list can be used.\nThis function is not case sensitive; `a` and `A` both\ncorrespond to the `a` digit which decimal value is `10`.\n \n`_` character can be used to separate groups of digits\nfor bases 2, 10 and 16 as for `Integer` literal in the\nCeylon language. For any other bases, no grouping is\nsupported.",1046)),$throws($init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),AssertionException),String$("if `radix` is not between `minRadix` and `maxRadix`",51)),shared()];},d:['ceylon.language','parseInteger']};};
+parseInteger.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'string',$mt:'prm',$t:{t:String$},$an:function(){return[];}},{$nm:'radix',$mt:'prm',$def:1,$t:{t:Integer},$an:function(){return[];}}],$an:function(){return[doc(String$("The `Integer` value of the given string representation \nof an integer, or `null` if the string does not represent \nan integer or if the mathematical integer it represents \nis too large in magnitude to be represented by an \n`Integer`.\n\nThe syntax accepted by this function is the same as the \nsyntax for an `Integer` literal in the Ceylon language \nexcept that it may optionally begin with a sign \ncharacter (`+` or `-`).\n\nA radix can be given in input to specify what is the base\nto take in consideration for the parsing. radix has to be\nbetween `minRadix` and `maxRadix` included.\nThe list of available digits starts from `0` to `9` followed\nby `a` to `z`.\nWhen parsing in a specific base, the first `radix` digits\nfrom the available digits list can be used.\nThis function is not case sensitive; `a` and `A` both\ncorrespond to the `a` digit which decimal value is `10`.\n \n`_` character can be used to separate groups of digits\nfor bases 2, 10 and 16 as for `Integer` literal in the\nCeylon language. For any other bases, no grouping is\nsupported.",1046)),$throws($init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),AssertionException),String$("if `radix` is not between `minRadix` and `maxRadix`",51)),shared()];},d:['ceylon.language','parseInteger']};};
 function computeDigitGroupingSize(radix$969,digitIndex$970,string$971,ii$972){
     var groupingSize$973;
     if(radix$969.equals((2))){
@@ -6509,7 +6509,7 @@ function computeDigitGroupingSize(radix$969,digitIndex$970,string$971,ii$972){
         }
     }
     return groupingSize$973;
-};computeDigitGroupingSize.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'radix',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'digitIndex',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'string',$mt:'prm',$t:{t:String$},$an:function(){return[];}},{$nm:'ii',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],d:['ceylon.language','computeDigitGroupingSize']};};
+};computeDigitGroupingSize.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'radix',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'digitIndex',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'string',$mt:'prm',$t:{t:String$},$an:function(){return[];}},{$nm:'ii',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],d:['ceylon.language','computeDigitGroupingSize']};};
 function computeMagnitude(radix$975,char$976){
     var power$977;
     var char$978;
@@ -6543,7 +6543,7 @@ function computeMagnitude(radix$975,char$976){
         return radix$975.power(power$979);
     }
     return null;
-};computeMagnitude.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'radix',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'char',$mt:'prm',$t:{ t:'u', l:[{t:Null},{t:Character}]},$an:function(){return[];}}],d:['ceylon.language','computeMagnitude']};};
+};computeMagnitude.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'radix',$mt:'prm',$t:{t:Integer},$an:function(){return[];}},{$nm:'char',$mt:'prm',$t:{t:'u', l:[{t:Null},{t:Character}]},$an:function(){return[];}}],d:['ceylon.language','computeMagnitude']};};
 var aInt$980;function $valinit$aInt$980(){if (aInt$980===undefined)aInt$980=Character(97).integer;return aInt$980;};$valinit$aInt$980();
 function getAInt(){return $valinit$aInt$980();}
 exports.getAInt=getAInt;
@@ -6571,7 +6571,7 @@ function parseDigit(digit$982,radix$983){
         }
     }
     return (figure$984.compare(radix$983).equals(getSmaller())?figure$984:null);
-};parseDigit.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'digit',$mt:'prm',$t:{t:Character},$an:function(){return[];}},{$nm:'radix',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],d:['ceylon.language','parseDigit']};};
+};parseDigit.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Integer}]},$ps:[{$nm:'digit',$mt:'prm',$t:{t:Character},$an:function(){return[];}},{$nm:'radix',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],d:['ceylon.language','parseDigit']};};
 function formatInteger(integer$988,radix$989){
     if(radix$989===undefined){radix$989=(10);}
     //assert at parseInteger.ceylon (195:4-195:49)
@@ -6637,7 +6637,7 @@ exports.$init$Annotated=$init$Annotated;
 $init$Annotated();
 function Annotation($$annotation){
 }
-Annotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,of:[{t:ConstrainedAnnotation,a:{Values:{t:Anything},Value:{t:Annotation},ProgramElement:{t:Nothing}}}],$an:function(){return[doc(String$("The supertype of all *annotation classes*. \n\n### Annotation classes\n\nAn *annotation class* must satisfy `Annotation`,\n[[OptionalAnnotation]],  or [[SequencedAnnotation]] and must be \nannotated `final annotation`. For example:\n\n    \"An annotation class.\"\n    final annotation class Example(shared String description) \n          satisfies Annotation {}\n\nAnnotation classes which satisfy `Annotation` directly may be applied \nto any program element that supports annotations (see [[Annotated]]). \nIn practice, annotation classes often satisfy [[OptionalAnnotation]] \nor [[SequencedAnnotation]] in order to prevent annotations being \napplied to inappropriate program elements.\n\nEach initializer parameter of an annotation class must have one of the \nfollowing types:\n\n* `Integer`, `Float`, `Character`, or `String`,\n* an enumerated type whose cases are all anonymous classes, \n  such as `Boolean`,\n* a subtype of [[ceylon.language.meta.declaration::Declaration]]\n* an annotation class,\n* `{T*}` or `[T*]` where `T` is a legal annotation parameter type, or\n* any tuple type whose element types are legal annotation parameter types.\n\nAn initializer parameter of an annotation class may be variadic \nor defaulted.\n\n### Annotation constructors\n\nAn *annotation constructor* is simply a top level function, annotated with \n`annotation` whose return type is an annotation class type. For example:\n\n    \"An annotation constructor.\"\n    annotation Example example(String description=\"\") \n        => Example(description);\n\nEach parameter of an annotation constructor must have one of the \nfollowing types:\n\n* `Integer`, `Float`, `Character`, or `String`,\n* an enumerated type whose cases are all anonymous classes, \n  such as `Boolean`,\n* a subtype of [[ceylon.language.meta.declaration::Declaration]],\n* an annotation type,\n* `{T*}` or `[T*]` where `T` is a legal annotation constructor parameter \n  type, or\n* any tuple type whose element types are legal annotation constructor \n  parameter types.\n\nA parameter of an annotation constructor may be variadic or defaulted.\n\nThe constructor must simply instantiate and return the annotation class, \nand there are strict rules about the arguments to the instantiation.\n\nAn annotation class can have multiple annotation constructors.\n",2266)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),OptionalAnnotation),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),SequencedAnnotation),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta'),annotations$meta),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta'),optionalAnnotation$meta),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta'),sequencedAnnotations$meta)].reifyCeylonType({Absent:{t:Null},Element:{ t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','Annotation']};};
+Annotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,of:[{t:ConstrainedAnnotation,a:{Values:{t:Anything},Value:{t:Annotation},ProgramElement:{t:Nothing}}}],$an:function(){return[doc(String$("The supertype of all *annotation classes*. \n\n### Annotation classes\n\nAn *annotation class* must satisfy `Annotation`,\n[[OptionalAnnotation]],  or [[SequencedAnnotation]] and must be \nannotated `final annotation`. For example:\n\n    \"An annotation class.\"\n    final annotation class Example(shared String description) \n          satisfies Annotation {}\n\nAnnotation classes which satisfy `Annotation` directly may be applied \nto any program element that supports annotations (see [[Annotated]]). \nIn practice, annotation classes often satisfy [[OptionalAnnotation]] \nor [[SequencedAnnotation]] in order to prevent annotations being \napplied to inappropriate program elements.\n\nEach initializer parameter of an annotation class must have one of the \nfollowing types:\n\n* `Integer`, `Float`, `Character`, or `String`,\n* an enumerated type whose cases are all anonymous classes, \n  such as `Boolean`,\n* a subtype of [[ceylon.language.meta.declaration::Declaration]]\n* an annotation class,\n* `{T*}` or `[T*]` where `T` is a legal annotation parameter type, or\n* any tuple type whose element types are legal annotation parameter types.\n\nAn initializer parameter of an annotation class may be variadic \nor defaulted.\n\n### Annotation constructors\n\nAn *annotation constructor* is simply a top level function, annotated with \n`annotation` whose return type is an annotation class type. For example:\n\n    \"An annotation constructor.\"\n    annotation Example example(String description=\"\") \n        => Example(description);\n\nEach parameter of an annotation constructor must have one of the \nfollowing types:\n\n* `Integer`, `Float`, `Character`, or `String`,\n* an enumerated type whose cases are all anonymous classes, \n  such as `Boolean`,\n* a subtype of [[ceylon.language.meta.declaration::Declaration]],\n* an annotation type,\n* `{T*}` or `[T*]` where `T` is a legal annotation constructor parameter \n  type, or\n* any tuple type whose element types are legal annotation constructor \n  parameter types.\n\nA parameter of an annotation constructor may be variadic or defaulted.\n\nThe constructor must simply instantiate and return the annotation class, \nand there are strict rules about the arguments to the instantiation.\n\nAn annotation class can have multiple annotation constructors.\n",2266)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),OptionalAnnotation),$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),SequencedAnnotation),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta'),annotations$meta),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta'),optionalAnnotation$meta),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta'),sequencedAnnotations$meta)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:InterfaceDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared()];},d:['ceylon.language','Annotation']};};
 exports.Annotation=Annotation;
 function $init$Annotation(){
     if (Annotation.$$===undefined){
@@ -6669,10 +6669,10 @@ function $init$ConstrainedAnnotation(){
 exports.$init$ConstrainedAnnotation=$init$ConstrainedAnnotation;
 $init$ConstrainedAnnotation();
 function OptionalAnnotation($$targs$$,$$optionalAnnotation){
-    ConstrainedAnnotation($$optionalAnnotation.$$targs$$===undefined?$$targs$$:{Values:{ t:'u', l:[{t:Null},$$optionalAnnotation.$$targs$$.Value]},Value:$$optionalAnnotation.$$targs$$.Value,ProgramElement:$$optionalAnnotation.$$targs$$.ProgramElement},$$optionalAnnotation);
+    ConstrainedAnnotation($$optionalAnnotation.$$targs$$===undefined?$$targs$$:{Values:{t:'u', l:[{t:Null},$$optionalAnnotation.$$targs$$.Value]},Value:$$optionalAnnotation.$$targs$$.Value,ProgramElement:$$optionalAnnotation.$$targs$$.ProgramElement},$$optionalAnnotation);
     set_type_args($$optionalAnnotation,$$targs$$);
 }
-OptionalAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Value:{'var':'out','satisfies':[{t:OptionalAnnotation,a:{Value:'Value',ProgramElement:'ProgramElement'}}]},ProgramElement:{'var':'in','satisfies':[{t:Annotated}],'def':{t:Annotated}}},satisfies:[{t:ConstrainedAnnotation,a:{Values:{ t:'u', l:[{t:Null},'Value']},Value:'Value',ProgramElement:'ProgramElement'}}],of:['Value'],$an:function(){return[doc(String$("An annotation that may occur at most once at a single program element and \nonly on certain program elements.\n\nAn optional annotation is declared simply by having the annotation class\nsatisfy OptionalAnnotation instead of [[Annotation]]. For example \nthe following would only be allowed on `class` declarations:\n\n    final annotation class ExampleClass() \n            satisfies OptionalAnnotation<Example, ClassDeclaration> {}\n\nAt runtime a [[ceylon.language.meta.declaration::Declaration]] instance \ncan be queried for its `OptionalAnnotation`s of a certain type using \n[[ceylon.language.meta::annotations]] or [[ceylon.language.meta::optionalAnnotation]].\n",657)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Annotation)].reifyCeylonType({Absent:{t:Null},Element:{t:InterfaceDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','OptionalAnnotation']};};
+OptionalAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Value:{'var':'out','satisfies':[{t:OptionalAnnotation,a:{Value:'Value',ProgramElement:'ProgramElement'}}]},ProgramElement:{'var':'in','satisfies':[{t:Annotated}],'def':{t:Annotated}}},satisfies:[{t:ConstrainedAnnotation,a:{Values:{t:'u', l:[{t:Null},'Value']},Value:'Value',ProgramElement:'ProgramElement'}}],of:['Value'],$an:function(){return[doc(String$("An annotation that may occur at most once at a single program element and \nonly on certain program elements.\n\nAn optional annotation is declared simply by having the annotation class\nsatisfy OptionalAnnotation instead of [[Annotation]]. For example \nthe following would only be allowed on `class` declarations:\n\n    final annotation class ExampleClass() \n            satisfies OptionalAnnotation<Example, ClassDeclaration> {}\n\nAt runtime a [[ceylon.language.meta.declaration::Declaration]] instance \ncan be queried for its `OptionalAnnotation`s of a certain type using \n[[ceylon.language.meta::annotations]] or [[ceylon.language.meta::optionalAnnotation]].\n",657)),see([$init$OpenInterface()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Annotation)].reifyCeylonType({Absent:{t:Null},Element:{t:InterfaceDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','OptionalAnnotation']};};
 exports.OptionalAnnotation=OptionalAnnotation;
 function $init$OptionalAnnotation(){
     if (OptionalAnnotation.$$===undefined){
@@ -6698,10 +6698,10 @@ function $init$SequencedAnnotation(){
 exports.$init$SequencedAnnotation=$init$SequencedAnnotation;
 $init$SequencedAnnotation();
 function optionalAnnotation$meta(annotationType$999,programElement$1000,$$$mptypes){
-    return annotations$meta(annotationType$999,programElement$1000,{Values:{ t:'u', l:[{t:Null},$$$mptypes.Value]},Value:$$$mptypes.Value,ProgramElement:$$$mptypes.ProgramElement});
+    return annotations$meta(annotationType$999,programElement$1000,{Values:{t:'u', l:[{t:Null},$$$mptypes.Value]},Value:$$$mptypes.Value,ProgramElement:$$$mptypes.ProgramElement});
 }
 exports.optionalAnnotation$meta=optionalAnnotation$meta;
-optionalAnnotation$meta.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},'Value']},$ps:[{$nm:'annotationType',$mt:'prm',$t:{t:Class$meta$model,a:{Arguments:{t:Nothing},Type:{t:OptionalAnnotation,a:{Value:'Value',ProgramElement:'ProgramElement'}}}},$an:function(){return[];}},{$nm:'programElement',$mt:'prm',$t:'ProgramElement',$an:function(){return[];}}],$tp:{Value:{'satisfies':[{t:OptionalAnnotation,a:{Value:'Value',ProgramElement:'ProgramElement'}}]},ProgramElement:{'var':'in','satisfies':[{t:Annotated}]}},$an:function(){return[doc(String$("The value of given optional annotation type on the given program element, \nor null if the program element was not annotated with that annotation type.\nFor example:\n\n    // Does the process declaration have the Shared annotation?\n    value isShared = optionalAnnotation(`Shared`, `value process`) exists;\n",304)),shared()];},d:['ceylon.language.meta','optionalAnnotation']};};
+optionalAnnotation$meta.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},'Value']},$ps:[{$nm:'annotationType',$mt:'prm',$t:{t:Class$meta$model,a:{Arguments:{t:Nothing},Type:{t:OptionalAnnotation,a:{Value:'Value',ProgramElement:'ProgramElement'}}}},$an:function(){return[];}},{$nm:'programElement',$mt:'prm',$t:'ProgramElement',$an:function(){return[];}}],$tp:{Value:{'satisfies':[{t:OptionalAnnotation,a:{Value:'Value',ProgramElement:'ProgramElement'}}]},ProgramElement:{'var':'in','satisfies':[{t:Annotated}]}},$an:function(){return[doc(String$("The value of given optional annotation type on the given program element, \nor null if the program element was not annotated with that annotation type.\nFor example:\n\n    // Does the process declaration have the Shared annotation?\n    value isShared = optionalAnnotation(`Shared`, `value process`) exists;\n",304)),shared()];},d:['ceylon.language.meta','optionalAnnotation']};};
 function sequencedAnnotations$meta(annotationType$1001,programElement$1002,$$$mptypes){
     return annotations$meta(annotationType$1001,programElement$1002,{Values:{t:Sequential,a:{Element:$$$mptypes.Value}},Value:$$$mptypes.Value,ProgramElement:$$$mptypes.ProgramElement});
 }
@@ -6710,7 +6710,7 @@ sequencedAnnotations$meta.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{
 function modules$1003$meta(){
     var $$modules=new modules$1003$meta.$$;
     $$modules.$prop$getList={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:{t:Module$meta$declaration}}},$cont:modules$1003$meta,$an:function(){return[doc(String$("Returns the list of all currently loaded modules. This may include modules that\nwere not imported directly but your module, and multiple versions of the same\nmodule.",165)),shared(),$native()];},d:['ceylon.language.meta','modules','$at','list']};}};
-    $$modules.$prop$getDefault={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Module$meta$declaration}]},$cont:modules$1003$meta,$an:function(){return[doc(String$("Returns the default module, if there is one. This is only the case when\nyou are running the default module.",107)),shared(),$native()];},d:['ceylon.language.meta','modules','$at','default']};}};
+    $$modules.$prop$getDefault={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Module$meta$declaration}]},$cont:modules$1003$meta,$an:function(){return[doc(String$("Returns the default module, if there is one. This is only the case when\nyou are running the default module.",107)),shared(),$native()];},d:['ceylon.language.meta','modules','$at','default']};}};
     return $$modules;
 };modules$1003$meta.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$an:function(){return[doc("Represents the list of Ceylon modules currently loaded at runtime.\n\nNote that this contains all loaded modules, including those that are\nnot imported by your module.\n\nSince Ceylon supports module isolation at runtime, it is possible that\nthere are more than one version of a given module loaded at the same time.\n\n### Usage example\n\nHere\'s how you would iterate all the loaded modules and print their name and version:\n\n    import ceylon.language.meta { modules }\n\n    for(mod in modules.list){\n        print(\"Module: ``mod.name``/``mod.version``\");\n    }\n"),shared(),$native()];},d:['ceylon.language.meta','modules']};};
 function $init$modules$1003$meta(){
@@ -6763,7 +6763,7 @@ function $init$ClassOrInterface$meta$model(){
         initTypeProtoI(ClassOrInterface$meta$model,'ceylon.language.meta.model::ClassOrInterface',$init$Model$meta$model(),$init$Generic$meta$model(),$init$Type$meta$model());
         (function($$classOrInterface){
             $$classOrInterface.$prop$getDeclaration={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:ClassOrInterfaceDeclaration$meta$declaration},$cont:ClassOrInterface$meta$model,$an:function(){return[doc(String$("The declaration for this class or interface.",44)),shared(),formal(),actual()];},d:['ceylon.language.meta.model','ClassOrInterface','$at','declaration']};}};
-            $$classOrInterface.$prop$getExtendedType={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:ClassModel$meta$model,a:{Arguments:{t:Nothing},Type:{t:Anything}}}]},$cont:ClassOrInterface$meta$model,$an:function(){return[doc(String$("The extended closed type for this class or interface. Note that the [[Anything|ceylon.language::Anything]] type\nhas no extended type since it is the top of the type hierarchy.",175)),shared(),formal()];},d:['ceylon.language.meta.model','ClassOrInterface','$at','extendedType']};}};
+            $$classOrInterface.$prop$getExtendedType={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:ClassModel$meta$model,a:{Arguments:{t:Nothing},Type:{t:Anything}}}]},$cont:ClassOrInterface$meta$model,$an:function(){return[doc(String$("The extended closed type for this class or interface. Note that the [[Anything|ceylon.language::Anything]] type\nhas no extended type since it is the top of the type hierarchy.",175)),shared(),formal()];},d:['ceylon.language.meta.model','ClassOrInterface','$at','extendedType']};}};
             $$classOrInterface.$prop$getSatisfiedTypes={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:{t:InterfaceModel$meta$model,a:{Type:{t:Anything}}}}},$cont:ClassOrInterface$meta$model,$an:function(){return[doc(String$("The list of closed types that this class or interface satisfies.",64)),shared(),formal()];},d:['ceylon.language.meta.model','ClassOrInterface','$at','satisfiedTypes']};}};
         })(ClassOrInterface$meta$model.$$.prototype);
     }
@@ -7155,11 +7155,11 @@ function $init$IntersectionType$meta$model(){
 exports.$init$IntersectionType$meta$model=$init$IntersectionType$meta$model;
 $init$IntersectionType$meta$model();
 function Member$meta$model($$targs$$,$$member){
-    Callable($$member.$$targs$$===undefined?$$targs$$:{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:$$member.$$targs$$.Container,Element:$$member.$$targs$$.Container}},Return:$$member.$$targs$$.Kind},$$member);
-    add_type_arg($$member,'Arguments',{t:Tuple,a:{Rest:{t:Empty},First:$$member.$$targs$$.Container,Element:$$member.$$targs$$.Container}});
+    Callable($$member.$$targs$$===undefined?$$targs$$:{Arguments:{t:'T', l:[$$member.$$targs$$.Container]},Return:$$member.$$targs$$.Kind},$$member);
+    add_type_arg($$member,'Arguments',{t:'T', l:[$$member.$$targs$$.Container]});
     set_type_args($$member,$$targs$$);
 }
-Member$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Container:{'var':'in'},Kind:{'var':'out','satisfies':[{t:Model$meta$model}]}},satisfies:[{t:Callable,a:{Arguments:{t:Tuple,a:{Rest:{t:Empty},First:'Container',Element:'Container'}},Return:'Kind'}}],$an:function(){return[doc(String$("Model for members that can be bound to a containing instance to turn them into toplevel models.\n\nYou can bind a member to an instance by invoking that member with the instance as parameter:\n\n    shared class Outer(String name){\n        shared class Inner(){\n            shared String hello => \"Hello \"+name;\n        }\n    }\n    \n    void test(){\n        Member<Outer,Class<Outer.Inner,[]>> memberClass = `Outer.Inner`;\n        Class<Outer.Inner,[]> c = memberClass(Outer(\"Stef\"));\n        // This will print: Hello Stef\n        print(c().hello);\n    }\n",552)),shared()];},d:['ceylon.language.meta.model','Member']};};
+Member$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Container:{'var':'in'},Kind:{'var':'out','satisfies':[{t:Model$meta$model}]}},satisfies:[{t:Callable,a:{Arguments:{t:'T', l:['Container']},Return:'Kind'}}],$an:function(){return[doc(String$("Model for members that can be bound to a containing instance to turn them into toplevel models.\n\nYou can bind a member to an instance by invoking that member with the instance as parameter:\n\n    shared class Outer(String name){\n        shared class Inner(){\n            shared String hello => \"Hello \"+name;\n        }\n    }\n    \n    void test(){\n        Member<Outer,Class<Outer.Inner,[]>> memberClass = `Outer.Inner`;\n        Class<Outer.Inner,[]> c = memberClass(Outer(\"Stef\"));\n        // This will print: Hello Stef\n        print(c().hello);\n    }\n",552)),shared()];},d:['ceylon.language.meta.model','Member']};};
 exports.Member$meta$model=Member$meta$model;
 function $init$Member$meta$model(){
     if (Member$meta$model.$$===undefined){
@@ -7266,7 +7266,7 @@ function $init$Model$meta$model(){
     if (Model$meta$model.$$===undefined){
         initTypeProtoI(Model$meta$model,'ceylon.language.meta.model::Model');
         (function($$model){
-            $$model.$prop$getContainer={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Type$meta$model,a:{Type:{t:Anything}}}]},$cont:Model$meta$model,$an:function(){return[doc(String$("The container type of this model, or `null` if this is a toplevel model.",72)),shared(),formal()];},d:['ceylon.language.meta.model','Model','$at','container']};}};
+            $$model.$prop$getContainer={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:Type$meta$model,a:{Type:{t:Anything}}}]},$cont:Model$meta$model,$an:function(){return[doc(String$("The container type of this model, or `null` if this is a toplevel model.",72)),shared(),formal()];},d:['ceylon.language.meta.model','Model','$at','container']};}};
             $$model.$prop$getDeclaration={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:NestableDeclaration$meta$declaration},$cont:Model$meta$model,$an:function(){return[doc(String$("The declaration for this model.",31)),shared(),formal()];},d:['ceylon.language.meta.model','Model','$at','declaration']};}};
         })(Model$meta$model.$$.prototype);
     }
@@ -7570,7 +7570,7 @@ function $init$NestableDeclaration$meta$declaration(){
             $$nestableDeclaration.$prop$getShared={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$cont:NestableDeclaration$meta$declaration,$an:function(){return[doc(String$("True if this declaration is annotated with [[shared|ceylon.language::shared]].",78)),shared(),formal()];},d:['ceylon.language.meta.declaration','NestableDeclaration','$at','shared']};}};
             $$nestableDeclaration.$prop$getContainingPackage={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Package$meta$declaration},$cont:NestableDeclaration$meta$declaration,$an:function(){return[doc(String$("This declaration\'s package container.",37)),shared(),formal()];},d:['ceylon.language.meta.declaration','NestableDeclaration','$at','containingPackage']};}};
             $$nestableDeclaration.$prop$getContainingModule={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Module$meta$declaration},$cont:NestableDeclaration$meta$declaration,$an:function(){return[doc(String$("This declaration\'s module container.",36)),shared(),formal()];},d:['ceylon.language.meta.declaration','NestableDeclaration','$at','containingModule']};}};
-            $$nestableDeclaration.$prop$getContainer={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:NestableDeclaration$meta$declaration},{t:Package$meta$declaration}]},$cont:NestableDeclaration$meta$declaration,$an:function(){return[doc(String$("This declaration\'s immediate container, which can be either a [[NestableDeclaration]]\nor a [[Package]].",103)),shared(),formal()];},d:['ceylon.language.meta.declaration','NestableDeclaration','$at','container']};}};
+            $$nestableDeclaration.$prop$getContainer={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:NestableDeclaration$meta$declaration},{t:Package$meta$declaration}]},$cont:NestableDeclaration$meta$declaration,$an:function(){return[doc(String$("This declaration\'s immediate container, which can be either a [[NestableDeclaration]]\nor a [[Package]].",103)),shared(),formal()];},d:['ceylon.language.meta.declaration','NestableDeclaration','$at','container']};}};
             $$nestableDeclaration.$prop$getToplevel={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$cont:NestableDeclaration$meta$declaration,$an:function(){return[doc(String$("True if this declaration is a toplevel declaration.",51)),shared(),formal()];},d:['ceylon.language.meta.declaration','NestableDeclaration','$at','toplevel']};}};
         })(NestableDeclaration$meta$declaration.$$.prototype);
     }
@@ -7644,7 +7644,7 @@ function $init$ClassOrInterfaceDeclaration$meta$declaration(){
     if (ClassOrInterfaceDeclaration$meta$declaration.$$===undefined){
         initTypeProtoI(ClassOrInterfaceDeclaration$meta$declaration,'ceylon.language.meta.declaration::ClassOrInterfaceDeclaration',$init$NestableDeclaration$meta$declaration(),$init$GenericDeclaration$meta$declaration());
         (function($$classOrInterfaceDeclaration){
-            $$classOrInterfaceDeclaration.$prop$getExtendedType={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:OpenClassType$meta$declaration}]},$cont:ClassOrInterfaceDeclaration$meta$declaration,$an:function(){return[doc(String$("This type\'s extended type, unless this is the class for [[Anything|ceylon.language::Anything]], which\nis the root of the type hierarchy and thus does not have any extended type.",177)),shared(),formal()];},d:['ceylon.language.meta.declaration','ClassOrInterfaceDeclaration','$at','extendedType']};}};
+            $$classOrInterfaceDeclaration.$prop$getExtendedType={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:OpenClassType$meta$declaration}]},$cont:ClassOrInterfaceDeclaration$meta$declaration,$an:function(){return[doc(String$("This type\'s extended type, unless this is the class for [[Anything|ceylon.language::Anything]], which\nis the root of the type hierarchy and thus does not have any extended type.",177)),shared(),formal()];},d:['ceylon.language.meta.declaration','ClassOrInterfaceDeclaration','$at','extendedType']};}};
             $$classOrInterfaceDeclaration.$prop$getSatisfiedTypes={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:{t:OpenInterfaceType$meta$declaration}}},$cont:ClassOrInterfaceDeclaration$meta$declaration,$an:function(){return[doc(String$("The list of types satisfied by this type.",41)),shared(),formal()];},d:['ceylon.language.meta.declaration','ClassOrInterfaceDeclaration','$at','satisfiedTypes']};}};
             $$classOrInterfaceDeclaration.$prop$getCaseTypes={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:{t:OpenType$meta$declaration}}},$cont:ClassOrInterfaceDeclaration$meta$declaration,$an:function(){return[doc(String$("If this type has an `of` clause, this is the list of case types for the current type.",85)),shared(),formal()];},d:['ceylon.language.meta.declaration','ClassOrInterfaceDeclaration','$at','caseTypes']};}};
             $$classOrInterfaceDeclaration.$prop$getIsAlias={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$cont:ClassOrInterfaceDeclaration$meta$declaration,$an:function(){return[doc(String$("True if this type is an alias type, in which case the [[extendedType]] will \ncontain the substituted type.",106)),shared(),formal()];},d:['ceylon.language.meta.declaration','ClassOrInterfaceDeclaration','$at','isAlias']};}};
@@ -7908,7 +7908,7 @@ function $init$ValueDeclaration$meta$declaration(){
             $$valueDeclaration.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Anything},$ps:[],$cont:ValueDeclaration$meta$declaration,$an:function(){return[doc(String$("Reads the current value of this toplevel value.",47)),shared(),$default()];},d:['ceylon.language.meta.declaration','ValueDeclaration','$m','get']};};
             $$valueDeclaration.memberGet=function (container$1016){
                 var $$valueDeclaration=this;
-                return $$valueDeclaration.memberApply(/*TODO: closed type literalcom.redhat.ceylon.compiler.typechecker.tree.Tree$TypeLiteral*/typeLiteral$meta({Type:{t:Nothing}}),{Type:{t:Anything},Container:{t:Nothing}}).bind(container$1016).$get();
+                return $$valueDeclaration.memberApply(/*TODO: closed type literalcom.redhat.ceylon.compiler.typechecker.tree.Tree$TypeLiteral*/typeLiteral$meta({Type:{t:Nothing}}),{Type:{t:Anything},Container:{t:Nothing}}).$bind(container$1016).$get();
             };
             $$valueDeclaration.memberGet.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Anything},$ps:[{$nm:'container',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],$cont:ValueDeclaration$meta$declaration,$an:function(){return[doc(String$("Reads the current value of this attribute on the given container instance.",74)),$throws($init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta.model'),IncompatibleTypeException$meta$model),String$("If the specified container is not compatible with this attribute.",65)),shared(),$default()];},d:['ceylon.language.meta.declaration','ValueDeclaration','$m','memberGet']};};
         })(ValueDeclaration$meta$declaration.$$.prototype);
@@ -7945,7 +7945,7 @@ function $init$ClassDeclaration$meta$declaration(){
                 var $$classDeclaration=this;
                 if(typeArguments$1020===undefined){typeArguments$1020=$$classDeclaration.memberInstantiate$defs$typeArguments(container$1019,typeArguments$1020,arguments$1021);}
                 if(arguments$1021===undefined){arguments$1021=getEmpty();}
-                return $$classDeclaration.memberClassApply(/*TODO: closed type literalcom.redhat.ceylon.compiler.typechecker.tree.Tree$TypeLiteral*/typeLiteral$meta({Type:{t:Nothing}}),typeArguments$1020,{Arguments:{t:Nothing},Type:{t:Anything},Container:{t:Nothing}}).bind(container$1019).$apply(arguments$1021);
+                return $$classDeclaration.memberClassApply(/*TODO: closed type literalcom.redhat.ceylon.compiler.typechecker.tree.Tree$TypeLiteral*/typeLiteral$meta({Type:{t:Nothing}}),typeArguments$1020,{Arguments:{t:Nothing},Type:{t:Anything},Container:{t:Nothing}}).$bind(container$1019).$apply(arguments$1021);
             };
             $$classDeclaration.memberInstantiate.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Anything},$ps:[{$nm:'container',$mt:'prm',$t:{t:Object$},$an:function(){return[];}},{$nm:'typeArguments',$mt:'prm',$def:1,$t:{t:Sequential,a:{Element:{t:Type$meta$model,a:{Type:{t:Anything}}}}},$an:function(){return[];}},{$nm:'arguments',$mt:'prm',seq:1,$t:{t:Sequential,a:{Element:{t:Anything}}},$an:function(){return[];}}],$cont:ClassDeclaration$meta$declaration,$an:function(){return[doc(String$("Creates a new instance of this member class, by applying the specified type arguments and value arguments.",106)),$throws($init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta.model'),IncompatibleTypeException$meta$model),String$("If the specified container, type or value arguments are not compatible with this method.",88)),shared(),$default()];},d:['ceylon.language.meta.declaration','ClassDeclaration','$m','memberInstantiate']};};
         })(ClassDeclaration$meta$declaration.$$.prototype);
@@ -7980,7 +7980,7 @@ function $init$FunctionDeclaration$meta$declaration(){
                 var $$functionDeclaration=this;
                 if(typeArguments$1025===undefined){typeArguments$1025=$$functionDeclaration.memberInvoke$defs$typeArguments(container$1024,typeArguments$1025,arguments$1026);}
                 if(arguments$1026===undefined){arguments$1026=getEmpty();}
-                return $$functionDeclaration.memberApply(/*TODO: closed type literalcom.redhat.ceylon.compiler.typechecker.tree.Tree$TypeLiteral*/typeLiteral$meta({Type:{t:Nothing}}),typeArguments$1025,{Arguments:{t:Nothing},Return:{t:Anything},Container:{t:Nothing}}).bind(container$1024).$apply(arguments$1026);
+                return $$functionDeclaration.memberApply(/*TODO: closed type literalcom.redhat.ceylon.compiler.typechecker.tree.Tree$TypeLiteral*/typeLiteral$meta({Type:{t:Nothing}}),typeArguments$1025,{Arguments:{t:Nothing},Return:{t:Anything},Container:{t:Nothing}}).$bind(container$1024).$apply(arguments$1026);
             };
             $$functionDeclaration.memberInvoke.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Anything},$ps:[{$nm:'container',$mt:'prm',$t:{t:Object$},$an:function(){return[];}},{$nm:'typeArguments',$mt:'prm',$def:1,$t:{t:Sequential,a:{Element:{t:Type$meta$model,a:{Type:{t:Anything}}}}},$an:function(){return[];}},{$nm:'arguments',$mt:'prm',seq:1,$t:{t:Sequential,a:{Element:{t:Anything}}},$an:function(){return[];}}],$cont:FunctionDeclaration$meta$declaration,$an:function(){return[doc(String$("Invokes the underlying method, by applying the specified type arguments and value arguments.",92)),$throws($init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta.model'),IncompatibleTypeException$meta$model),String$("If the specified container, type or value arguments are not compatible with this method.",88)),shared(),$default()];},d:['ceylon.language.meta.declaration','FunctionDeclaration','$m','memberInvoke']};};
         })(FunctionDeclaration$meta$declaration.$$.prototype);
@@ -8085,7 +8085,7 @@ function $init$OpenClassOrInterfaceType$meta$declaration(){
         initTypeProtoI(OpenClassOrInterfaceType$meta$declaration,'ceylon.language.meta.declaration::OpenClassOrInterfaceType',$init$OpenType$meta$declaration());
         (function($$openClassOrInterfaceType){
             $$openClassOrInterfaceType.$prop$getDeclaration={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:ClassOrInterfaceDeclaration$meta$declaration},$cont:OpenClassOrInterfaceType$meta$declaration,$an:function(){return[doc(String$("The class or interface declaration for this open type.",54)),shared(),formal()];},d:['ceylon.language.meta.declaration','OpenClassOrInterfaceType','$at','declaration']};}};
-            $$openClassOrInterfaceType.$prop$getExtendedType={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:OpenClassType$meta$declaration}]},$cont:OpenClassOrInterfaceType$meta$declaration,$an:function(){return[doc(String$("The extended type of this open type.",36)),shared(),formal()];},d:['ceylon.language.meta.declaration','OpenClassOrInterfaceType','$at','extendedType']};}};
+            $$openClassOrInterfaceType.$prop$getExtendedType={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:OpenClassType$meta$declaration}]},$cont:OpenClassOrInterfaceType$meta$declaration,$an:function(){return[doc(String$("The extended type of this open type.",36)),shared(),formal()];},d:['ceylon.language.meta.declaration','OpenClassOrInterfaceType','$at','extendedType']};}};
             $$openClassOrInterfaceType.$prop$getSatisfiedTypes={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:{t:OpenInterfaceType$meta$declaration}}},$cont:OpenClassOrInterfaceType$meta$declaration,$an:function(){return[doc(String$("The satisfied types of this open type.",38)),shared(),formal()];},d:['ceylon.language.meta.declaration','OpenClassOrInterfaceType','$at','satisfiedTypes']};}};
             $$openClassOrInterfaceType.$prop$getTypeArguments={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Map,a:{Key:{t:TypeParameter$meta$declaration},Item:{t:OpenType$meta$declaration}}},$cont:OpenClassOrInterfaceType$meta$declaration,$an:function(){return[doc(String$("The set of open type arguments.",31)),shared(),formal()];},d:['ceylon.language.meta.declaration','OpenClassOrInterfaceType','$at','typeArguments']};}};
         })(OpenClassOrInterfaceType$meta$declaration.$$.prototype);
@@ -8244,7 +8244,7 @@ function $init$TypeParameter$meta$declaration(){
         (function($$typeParameter){
             $$typeParameter.$prop$getContainer={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:NestableDeclaration$meta$declaration},$cont:TypeParameter$meta$declaration,$an:function(){return[doc(String$("The declaration that declared this type parameter. This is either a [[ClassOrInterfaceDeclaration]] or a\n[[FunctionDeclaration]].",129)),shared(),formal()];},d:['ceylon.language.meta.declaration','TypeParameter','$at','container']};}};
             $$typeParameter.$prop$getDefaulted={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Boolean$},$cont:TypeParameter$meta$declaration,$an:function(){return[doc(String$("True if this type parameter has a default type argument and can be omitted.",75)),shared(),formal()];},d:['ceylon.language.meta.declaration','TypeParameter','$at','defaulted']};}};
-            $$typeParameter.$prop$getDefaultTypeArgument={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:OpenType$meta$declaration}]},$cont:TypeParameter$meta$declaration,$an:function(){return[doc(String$("This type parameter\'s default type argument, if it has one.",59)),shared(),formal()];},d:['ceylon.language.meta.declaration','TypeParameter','$at','defaultTypeArgument']};}};
+            $$typeParameter.$prop$getDefaultTypeArgument={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:OpenType$meta$declaration}]},$cont:TypeParameter$meta$declaration,$an:function(){return[doc(String$("This type parameter\'s default type argument, if it has one.",59)),shared(),formal()];},d:['ceylon.language.meta.declaration','TypeParameter','$at','defaultTypeArgument']};}};
             $$typeParameter.$prop$getVariance={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Variance$meta$declaration},$cont:TypeParameter$meta$declaration,$an:function(){return[doc(String$("This type parameter\'s variance, as defined by `in` or `out` keywords.",69)),shared(),formal()];},d:['ceylon.language.meta.declaration','TypeParameter','$at','variance']};}};
             $$typeParameter.$prop$getSatisfiedTypes={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:{t:OpenType$meta$declaration}}},$cont:TypeParameter$meta$declaration,$an:function(){return[doc(String$("The `satisfies` upper bounds for this type parameter.",53)),shared(),formal()];},d:['ceylon.language.meta.declaration','TypeParameter','$at','satisfiedTypes']};}};
             $$typeParameter.$prop$getCaseTypes={$$metamodel$$:function(){return{mod:$$METAMODEL$$,$t:{t:Sequential,a:{Element:{t:OpenType$meta$declaration}}},$cont:TypeParameter$meta$declaration,$an:function(){return[doc(String$("The `of` enumerated bounds for this type parameter.",51)),shared(),formal()];},d:['ceylon.language.meta.declaration','TypeParameter','$at','caseTypes']};}};
@@ -8440,12 +8440,12 @@ exports.$prop$getContravariant$meta$declaration=$prop$getContravariant$meta$decl
 function AnnotationAnnotation($$annotationAnnotation){
     $init$AnnotationAnnotation();
     if ($$annotationAnnotation===undefined)$$annotationAnnotation=new AnnotationAnnotation.$$;
-    $$annotationAnnotation.$$targs$$={Value:{t:AnnotationAnnotation},ProgramElement:{ t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}};
-    OptionalAnnotation({Value:{t:AnnotationAnnotation},ProgramElement:{ t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}},$$annotationAnnotation);
+    $$annotationAnnotation.$$targs$$={Value:{t:AnnotationAnnotation},ProgramElement:{t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}};
+    OptionalAnnotation({Value:{t:AnnotationAnnotation},ProgramElement:{t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}},$$annotationAnnotation);
     add_type_arg($$annotationAnnotation,'Value',{t:AnnotationAnnotation});
     return $$annotationAnnotation;
 }
-AnnotationAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:AnnotationAnnotation},ProgramElement:{ t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[annotation]].",40)),shared(),$final(),annotation()];},d:['ceylon.language','AnnotationAnnotation']};};
+AnnotationAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:AnnotationAnnotation},ProgramElement:{t:'u', l:[{t:ClassDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[annotation]].",40)),shared(),$final(),annotation()];},d:['ceylon.language','AnnotationAnnotation']};};
 exports.AnnotationAnnotation=AnnotationAnnotation;
 function $init$AnnotationAnnotation(){
     if (AnnotationAnnotation.$$===undefined){
@@ -8463,12 +8463,12 @@ exports.annotation=annotation;
 function SharedAnnotation($$sharedAnnotation){
     $init$SharedAnnotation();
     if ($$sharedAnnotation===undefined)$$sharedAnnotation=new SharedAnnotation.$$;
-    $$sharedAnnotation.$$targs$$={Value:{t:SharedAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration},{t:Package$meta$declaration},{t:Import$meta$declaration}]}};
-    OptionalAnnotation({Value:{t:SharedAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration},{t:Package$meta$declaration},{t:Import$meta$declaration}]}},$$sharedAnnotation);
+    $$sharedAnnotation.$$targs$$={Value:{t:SharedAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration},{t:Package$meta$declaration},{t:Import$meta$declaration}]}};
+    OptionalAnnotation({Value:{t:SharedAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration},{t:Package$meta$declaration},{t:Import$meta$declaration}]}},$$sharedAnnotation);
     add_type_arg($$sharedAnnotation,'Value',{t:SharedAnnotation});
     return $$sharedAnnotation;
 }
-SharedAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:SharedAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration},{t:Package$meta$declaration},{t:Import$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[shared]].",36)),shared(),$final(),annotation()];},d:['ceylon.language','SharedAnnotation']};};
+SharedAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:SharedAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration},{t:Package$meta$declaration},{t:Import$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[shared]].",36)),shared(),$final(),annotation()];},d:['ceylon.language','SharedAnnotation']};};
 exports.SharedAnnotation=SharedAnnotation;
 function $init$SharedAnnotation(){
     if (SharedAnnotation.$$===undefined){
@@ -8558,12 +8558,12 @@ exports.$final=$final;
 function ActualAnnotation($$actualAnnotation){
     $init$ActualAnnotation();
     if ($$actualAnnotation===undefined)$$actualAnnotation=new ActualAnnotation.$$;
-    $$actualAnnotation.$$targs$$={Value:{t:ActualAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}};
-    OptionalAnnotation({Value:{t:ActualAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}},$$actualAnnotation);
+    $$actualAnnotation.$$targs$$={Value:{t:ActualAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}};
+    OptionalAnnotation({Value:{t:ActualAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}},$$actualAnnotation);
     add_type_arg($$actualAnnotation,'Value',{t:ActualAnnotation});
     return $$actualAnnotation;
 }
-ActualAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:ActualAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[actual]].",36)),shared(),$final(),annotation()];},d:['ceylon.language','ActualAnnotation']};};
+ActualAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:ActualAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[actual]].",36)),shared(),$final(),annotation()];},d:['ceylon.language','ActualAnnotation']};};
 exports.ActualAnnotation=ActualAnnotation;
 function $init$ActualAnnotation(){
     if (ActualAnnotation.$$===undefined){
@@ -8581,12 +8581,12 @@ exports.actual=actual;
 function FormalAnnotation($$formalAnnotation){
     $init$FormalAnnotation();
     if ($$formalAnnotation===undefined)$$formalAnnotation=new FormalAnnotation.$$;
-    $$formalAnnotation.$$targs$$={Value:{t:FormalAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}};
-    OptionalAnnotation({Value:{t:FormalAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}},$$formalAnnotation);
+    $$formalAnnotation.$$targs$$={Value:{t:FormalAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}};
+    OptionalAnnotation({Value:{t:FormalAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}},$$formalAnnotation);
     add_type_arg($$formalAnnotation,'Value',{t:FormalAnnotation});
     return $$formalAnnotation;
 }
-FormalAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:FormalAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[formal]].",36)),shared(),$final(),annotation()];},d:['ceylon.language','FormalAnnotation']};};
+FormalAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:FormalAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[formal]].",36)),shared(),$final(),annotation()];},d:['ceylon.language','FormalAnnotation']};};
 exports.FormalAnnotation=FormalAnnotation;
 function $init$FormalAnnotation(){
     if (FormalAnnotation.$$===undefined){
@@ -8604,12 +8604,12 @@ exports.formal=formal;
 function DefaultAnnotation($$defaultAnnotation){
     $init$DefaultAnnotation();
     if ($$defaultAnnotation===undefined)$$defaultAnnotation=new DefaultAnnotation.$$;
-    $$defaultAnnotation.$$targs$$={Value:{t:DefaultAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}};
-    OptionalAnnotation({Value:{t:DefaultAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}},$$defaultAnnotation);
+    $$defaultAnnotation.$$targs$$={Value:{t:DefaultAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}};
+    OptionalAnnotation({Value:{t:DefaultAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}},$$defaultAnnotation);
     add_type_arg($$defaultAnnotation,'Value',{t:DefaultAnnotation});
     return $$defaultAnnotation;
 }
-DefaultAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:DefaultAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[default]].",37)),shared(),$final(),annotation()];},d:['ceylon.language','DefaultAnnotation']};};
+DefaultAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],satisfies:[{t:OptionalAnnotation,a:{Value:{t:DefaultAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassOrInterfaceDeclaration$meta$declaration}]}}}],$an:function(){return[doc(String$("The annotation class for [[default]].",37)),shared(),$final(),annotation()];},d:['ceylon.language','DefaultAnnotation']};};
 exports.DefaultAnnotation=DefaultAnnotation;
 function $init$DefaultAnnotation(){
     if (DefaultAnnotation.$$===undefined){
@@ -8763,14 +8763,14 @@ exports.by=by;
 function ThrownExceptionAnnotation(type, when, $$thrownExceptionAnnotation){
     $init$ThrownExceptionAnnotation();
     if ($$thrownExceptionAnnotation===undefined)$$thrownExceptionAnnotation=new ThrownExceptionAnnotation.$$;
-    $$thrownExceptionAnnotation.$$targs$$={Value:{t:ThrownExceptionAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}};
+    $$thrownExceptionAnnotation.$$targs$$={Value:{t:ThrownExceptionAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}};
     $$thrownExceptionAnnotation.type_=type;
     $$thrownExceptionAnnotation.when_=when;
-    SequencedAnnotation({Value:{t:ThrownExceptionAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}},$$thrownExceptionAnnotation);
+    SequencedAnnotation({Value:{t:ThrownExceptionAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}},$$thrownExceptionAnnotation);
     add_type_arg($$thrownExceptionAnnotation,'Value',{t:ThrownExceptionAnnotation});
     return $$thrownExceptionAnnotation;
 }
-ThrownExceptionAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[{$nm:'type',$mt:'prm',$t:{t:Declaration$meta$declaration},$an:function(){return[doc("The [[Exception]] type that this thrown."),shared()];}},{$nm:'when',$mt:'prm',$t:{t:String$},$an:function(){return[doc("A description, in Markdown syntax, of the circumstances that \ncause this exception to be thrown."),shared()];}}],satisfies:[{t:SequencedAnnotation,a:{Value:{t:ThrownExceptionAnnotation},ProgramElement:{ t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}}}],$an:function(){return[shared(),$final(),annotation()];},d:['ceylon.language','ThrownExceptionAnnotation']};};
+ThrownExceptionAnnotation.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[{$nm:'type',$mt:'prm',$t:{t:Declaration$meta$declaration},$an:function(){return[doc("The [[Exception]] type that this thrown."),shared()];}},{$nm:'when',$mt:'prm',$t:{t:String$},$an:function(){return[doc("A description, in Markdown syntax, of the circumstances that \ncause this exception to be thrown."),shared()];}}],satisfies:[{t:SequencedAnnotation,a:{Value:{t:ThrownExceptionAnnotation},ProgramElement:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration},{t:ClassDeclaration$meta$declaration}]}}}],$an:function(){return[shared(),$final(),annotation()];},d:['ceylon.language','ThrownExceptionAnnotation']};};
 exports.ThrownExceptionAnnotation=ThrownExceptionAnnotation;
 function $init$ThrownExceptionAnnotation(){
     if (ThrownExceptionAnnotation.$$===undefined){
@@ -8812,7 +8812,7 @@ function $init$DeprecationAnnotation(){
                     return null;
                 }
                 return $$deprecationAnnotation.description;
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:String$}]},$cont:DeprecationAnnotation,$an:function(){return[doc(String$("A description, in Markdown syntax, of why the element is deprecated, \nand what replacements are available, or null.",115)),shared()];},d:['ceylon.language','DeprecationAnnotation','$at','reason']};});defineAttr($$deprecationAnnotation,'description',function(){return this.description_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},$cont:DeprecationAnnotation,$an:function(){return[doc("A description, in Markdown syntax, of why the element is deprecated, \nand what replacements are available."),shared()];},d:['ceylon.language','DeprecationAnnotation','$at','description']};});
+            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:String$}]},$cont:DeprecationAnnotation,$an:function(){return[doc(String$("A description, in Markdown syntax, of why the element is deprecated, \nand what replacements are available, or null.",115)),shared()];},d:['ceylon.language','DeprecationAnnotation','$at','reason']};});defineAttr($$deprecationAnnotation,'description',function(){return this.description_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},$cont:DeprecationAnnotation,$an:function(){return[doc("A description, in Markdown syntax, of why the element is deprecated, \nand what replacements are available."),shared()];},d:['ceylon.language','DeprecationAnnotation','$at','description']};});
         })(DeprecationAnnotation.$$.prototype);
     }
     return DeprecationAnnotation;
@@ -9309,7 +9309,7 @@ function extendsType(t1, t2) { //true if t1 is subtype of t2
         return _ints ? inters||unions : unions;
     }
     if (t2.t === 'u' || t2.t === 'i') {
-        if (t2.t==='i') removeSupertypes(t2.l);
+        if (t2.t==='i')removeSupertypes(t2.l);
         var unions = false;
         var inters = true;
         var _ints = false;
@@ -9323,6 +9323,20 @@ function extendsType(t1, t2) { //true if t1 is subtype of t2
             }
         }
         return _ints ? inters||unions : unions;
+    }
+    if (t1.t==='T') {
+      if (t2.t==='T') {
+        if (t1.l.length===t2.l.length) {
+          for (var i=0; i < t1.l.length;i++) {
+            if (!extendsType(t1.l[i],t2.l[i]))return false;
+          }
+          return true;
+        } else return false;
+      } else {
+        t1=$retuple(t1);
+      }
+    } else if (t2.t==='T') {
+      t2=$retuple(t2);
     }
     for (t in t1.t.$$.T$all) {
         if (t === t2.t.$$.T$name || t === 'ceylon.language::Nothing') {
@@ -9454,7 +9468,7 @@ function flatten(tf, $$$mptypes) {
         var e = null;
         var argc = arguments.length;
         var last = argc>0 ? arguments[argc-1] : undefined;
-        if (typeof(last) === 'object' && typeof(last.Args) === 'object' && typeof(last.Args.t) === 'function') {
+        if (typeof(last) === 'object' && typeof(last.Args) === 'object' && (last.Args.t==='T'||typeof(last.Args.t) === 'function')) {
             argc--;
         }
         for (var i=0; i < argc; i++) {
@@ -9882,6 +9896,26 @@ function suppressedExceptions(/*Exception*/e) {
     return e.$sups$===undefined?getEmpty():e.$sups$;
 }
 exports.suppressedExceptions=suppressedExceptions;
+function $retuple(t) { //receives {t:'T',l:[...]}
+  if (t.t!=='T')return t;
+  var e;
+  var r={t:Empty};
+  for (var i=t.l.length-1;i>=0;i--){
+    var f=$retuple(t.l[i]);
+    var e=(r.a&&r.a.Element)||f;
+    if (r.a&&r.a.Element) {
+      if (e.l) {
+        var l2=[];for(var j=0;j<e.l.length;j++)l2.push(e.l[j]);
+        l2.unshift(f);
+        e={t:'u',l:l2};
+      } else {
+        e = {t:'u',l:[f,e]};
+      }
+    }
+    r={t:Tuple,a:{First:f,Element:e,Rest:r}};
+  }
+  return r;
+}
 /*Native Implementation of annotations() */
 function annotations$meta(anntype, progelem, $$$mptypes) {
   var mm = progelem.tipo?progelem.tipo.$$metamodel$$:progelem.$$metamodel$$;
@@ -10984,7 +11018,19 @@ function AppliedAttribute(pname, atr,$$targs$$,$$appliedAttribute){
     var pkg = getModules$meta().find(mm.mod['$mod-name'],mm.mod['$mod-version']).findPackage(mm.d[0]);
     return ($$atr.tipo.set ? OpenVariable:OpenValue)(pkg, $$atr.tipo);
   },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:ValueDeclaration$meta$declaration},$cont:AppliedAttribute,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','Attribute','$at','declaration']};});
-    return $$appliedAttribute;
+  $$appliedAttribute.$bind=function(cont){
+    return AppliedValue(cont,atr,{Type:$$targs$$.Type});
+  }
+  defineAttr($$appliedAttribute,'string',function(){
+    var mm=atr.$$metamodel$$;
+    var qn=mm.d[0];
+    for (var i=1; i<mm.d.length; i++)if(mm.d[i][0]!=='$')qn+=(i==1?"::":".")+mm.d[i];
+    return qn;
+  },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},d:['ceylon.language','Object','$at','string']};});
+  $$appliedAttribute.equals=function(o) {
+    return isOfType(o,{t:AppliedAttribute}) && o.string.equals(this.string);
+  }
+  return $$appliedAttribute;
 }
 AppliedAttribute.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$tp:{Container:{'var':'in'},Type:{'var':'out','def':{t:Anything}}},satisfies:[{t:Attribute$meta$model,a:{Type:'Type',Container:'Container'}}],$an:function(){return[shared()];},d:['ceylon.language.meta.model','Attribute']};};
 exports.AppliedAttribute=AppliedAttribute;
@@ -11404,11 +11450,14 @@ function OpenVariable(pkg, meta, $$openVariable){
 }
 OpenVariable.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:OpenValue},satisfies:[{t:VariableDeclaration$meta$declaration}],d:['ceylon.language.meta.declaration','VariableDeclaration']};};
 function $init$OpenVariable(){
-    if (OpenVariable.$$===undefined){
-        initTypeProto(OpenVariable,'ceylon.language.meta.declaration::OpenVariable',OpenValue,VariableDeclaration$meta$declaration);
-        (function($$openVariable){
-            
-            //AttributeGetterDefinition setter at opentypes.ceylon (61:4-61:52)
+  if (OpenVariable.$$===undefined){
+    initTypeProto(OpenVariable,'ceylon.language.meta.declaration::OpenVariable',OpenValue,VariableDeclaration$meta$declaration);
+    (function($$openVariable){
+      $$openVariable.memberSet=function(c,v) {
+        if (!isOfType(c,{t:this.tipo.$$metamodel$$.$cont}))throw IncompatibleTypeException$meta$model("Incompatible container type");
+        if (!isOfType(v,this.tipo.$$metamodel$$.$t))throw IncompatibleTypeException$meta$model("Incompatible value type");
+        c[this.name]=v;
+      };
             defineAttr($$openVariable,'setter',function(){
               var $$openVariable=this;
               return OpenSetter(this);
@@ -12110,7 +12159,12 @@ function type$meta(x,$$targs$$) {
     if (x.$$metamodel$$.$t) //it's an object
       return AppliedValue(undefined,x.$$metamodel$$.$t.t, {Type:x.$$metamodel$$.$t});
   }
-  var c=AppliedClass($$targs$$.Type.t, {Type:$$targs$$.Type, Arguments:{t:Sequential,a:{Element:{t:Anything}}}});
+  var c;
+  if ($$targs$$.Type.t==='T') {
+    var rt=$retuple($$targs$$.Type);
+    c=AppliedClass(Tuple,{Type:$$targs$$.Type, Arguments:{t:'T',l:[$$targs$$.Type.l[0],rt.Rest]}});
+  }
+  c=AppliedClass($$targs$$.Type.t, {Type:$$targs$$.Type, Arguments:{t:Sequential,a:{Element:{t:Anything}}}});
   if ($$targs$$.Type.a)c.$targs=$$targs$$.Type.a;
   return c;
 }
@@ -12127,6 +12181,10 @@ function typeLiteral$meta($$targs$$) {
       throw Exception("'Type' argument should be an open or closed type");
     } else if (t === 'u' || t === 'i') {
       return t === 'u' ? applyUnionType($$targs$$.Type) : applyIntersectionType($$targs$$.Type);
+    } else if (t === 'T') {
+      //TODO arguments
+      var _tt=$retuple($$targs$$.Type);
+      return AppliedClass(Tuple,{Type:_tt,Arguments:{t:'T',l:[_tt.a.First,_tt.a.Rest]}});
     } else if (t.$$metamodel$$ === undefined) {
       throw Exception("JS Interop not supported / incomplete metamodel for " + /*require('util').inspect(*/t);
     } else {
