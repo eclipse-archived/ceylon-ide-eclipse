@@ -123,13 +123,15 @@ public class JDTModelLoader extends AbstractModelLoader {
         this.moduleManager = moduleManager;
         this.modules = modules;
         javaProject = moduleManager.getJavaProject();
-        compilerOptions = new CompilerOptions(javaProject.getOptions(true));
-        compilerOptions.ignoreMethodBodies = true;
-        compilerOptions.storeAnnotations = true;
-        problemReporter = new ProblemReporter(
-                DefaultErrorHandlingPolicies.proceedWithAllProblems(),
-                compilerOptions,
-                new DefaultProblemFactory());
+        if (javaProject != null) {
+            compilerOptions = new CompilerOptions(javaProject.getOptions(true));
+            compilerOptions.ignoreMethodBodies = true;
+            compilerOptions.storeAnnotations = true;
+            problemReporter = new ProblemReporter(
+                    DefaultErrorHandlingPolicies.proceedWithAllProblems(),
+                    compilerOptions,
+                    new DefaultProblemFactory());
+        }
         this.timer = new Timer(false);
         internalCreate();
     }
@@ -173,6 +175,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     public void createLookupEnvironment() {
+        if (javaProject == null) {
+            return;
+        }
         try {
             lookupEnvironment = new LookupEnvironment(new ITypeRequestor() {
                 
@@ -453,6 +458,10 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     private ClassMirror buildClassMirror(String name) {
+        if (javaProject == null) {
+            return null;
+        }
+        
         try {
             NameEnvironmentAnswer answer = null;
             LookupEnvironment theLookupEnvironment = getLookupEnvironment();
@@ -493,11 +502,11 @@ public class JDTModelLoader extends AbstractModelLoader {
                     }
 
                     IFile classFileRsrc = (IFile) classFile.getCorrespondingResource();
-					IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
-					if (classFileRsrc!=null && !classFileRsrc.exists()) {
-						//the .class file has been deleted
-						return null;
-					}
+                    IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
+                    if (classFileRsrc!=null && !classFileRsrc.exists()) {
+                        //the .class file has been deleted
+                        return null;
+                    }
                     BinaryTypeBinding binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
                     if (binaryTypeBinding == null) {
                         ReferenceBinding existingType = theLookupEnvironment.getCachedType(compoundName);
@@ -572,11 +581,13 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
 
         ITypeRoot typeRoot = null;
-        try {
-            typeRoot = (ITypeRoot) javaProject.findElement(new Path(jdtClass.getJavaModelPath()));
-            
-        } catch (JavaModelException e) {
-            e.printStackTrace();
+        if (javaProject != null) {
+            try {
+                typeRoot = (ITypeRoot) javaProject.findElement(new Path(jdtClass.getJavaModelPath()));
+                
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+            }
         }
         
         if (!jdtClass.isBinary()) {
