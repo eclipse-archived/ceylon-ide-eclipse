@@ -117,8 +117,7 @@ public class ModuleSearchManager {
 
         IProject selectedProject = moduleSearchViewPart.getSelectedProject();
         if (selectedProject != null) {
-            TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(selectedProject);
-            repositoryManager = typeChecker.getContext().getRepositoryManager();
+            repositoryManager = CeylonBuilder.getProjectRepositoryManager(selectedProject);
         }
 
         return repositoryManager;
