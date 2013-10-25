@@ -24,6 +24,8 @@ public abstract class CeylonUnit extends IdeUnit {
         return setPhasedUnitIfNecessary();
     }
     
+    abstract public String getSourceFullPath();
+    
     public Tree.CompilationUnit getCompilationUnit() {
         IdePhasedUnit pu = getPhasedUnit();
         if (pu == null) {
