@@ -343,7 +343,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public synchronized boolean loadPackage(Module module, String packageName, boolean loadDeclarations) {
         packageName = Util.quoteJavaKeywords(packageName);
-        if(loadDeclarations && !loadedPackages.add(packageName)){
+        if(loadDeclarations && !loadedPackages.add(cacheKeyByModule(module, packageName))){
             return true;
         }
         
