@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.L
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
@@ -15,6 +14,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -28,39 +29,47 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
-import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 
 public class CeylonParseController {
     
@@ -164,6 +173,8 @@ public class CeylonParseController {
     	IPath path = this.filePath;
     	IProject project = this.project;
         IPath resolvedPath = path;
+        IdePhasedUnit builtPhasedUnit = null;
+        
         if (path!=null) {
         	String ext = path.getFileExtension();
 			if (ext==null || !ext.equals("ceylon")) {
@@ -176,6 +187,38 @@ public class CeylonParseController {
                 	// file has been deleted for example
                 	path = null;
                 	project = null;
+                }
+            }
+            
+            if (path.isAbsolute()) {
+                for (IProject p : CeylonBuilder.getProjects()) {
+                    if (project != null && project != p) continue;
+                    
+                    JDTModuleManager moduleManager = (JDTModuleManager) CeylonBuilder.getProjectTypeChecker(p).getPhasedUnits().getModuleManager();
+                    JDTModule module = moduleManager.getArchiveModuleFromSourcePath(path);
+                    if (module != null) {
+                        builtPhasedUnit = module.getPhasedUnit(path);
+                        if (builtPhasedUnit != null) {
+                            project = p;
+                            phasedUnit = builtPhasedUnit;
+                            typeChecker = builtPhasedUnit.getTypeChecker();
+                            rootNode = builtPhasedUnit.getCompilationUnit();
+                            tokens = builtPhasedUnit.getTokens();
+                            if (stager!=null) {
+                                stager.afterStage(LEXICAL_ANALYSIS, monitor);
+                                stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
+                            }
+                            phasedUnit.analyseTypes();
+                            if (showWarnings(project)) {
+                                phasedUnit.analyseUsage();
+                            }
+                            if (stager!=null) {
+                                stager.afterStage(TYPE_ANALYSIS, monitor);
+                                stager.afterStage(DONE, monitor);
+                                return;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -221,13 +264,21 @@ public class CeylonParseController {
             return;
         }
         
-        VirtualFile srcDir = null;        
+        VirtualFile srcDir = null;
         if (project!=null) {
             srcDir = getSourceFolder(project, resolvedPath);
         }
         else if (path!=null) { //path==null in structured compare editor
         	srcDir = inferSrcDir(path);
         	project = findProject(path);
+        }
+        
+        if (! CeylonBuilder.allClasspathContainersInitialized()) {
+            // Ceylon projects have not been setup, so don't try to typecheck 
+            if (stager!=null) {
+                stager.afterStage(DONE, monitor);
+            }
+            return; 
         }
         
         if (project!=null) {
@@ -242,13 +293,13 @@ public class CeylonParseController {
             }
             typeChecker = getProjectTypeChecker(project);
         }
+
+        boolean showWarnings = showWarnings(project);
         
         if (isCanceling(monitor)) {
             return;
         }
 
-        boolean showWarnings = showWarnings(project);
-        
         if (typeChecker==null) {
         	try {
         		typeChecker = createTypeChecker(project, showWarnings);
@@ -263,7 +314,7 @@ public class CeylonParseController {
         }
 
         VirtualFile file = createSourceCodeVirtualFile(contents, path);
-        PhasedUnit builtPhasedUnit = typeChecker.getPhasedUnit(file);
+        builtPhasedUnit = (IdePhasedUnit) typeChecker.getPhasedUnit(file); // TODO : refactor !
         phasedUnit = typecheck(path, file, cu, srcDir, showWarnings, builtPhasedUnit);
         rootNode = phasedUnit.getCompilationUnit();
         collectErrors(rootNode);
@@ -352,9 +403,11 @@ public class CeylonParseController {
                         typeChecker, tokens, (ProjectPhasedUnit) builtPhasedUnit);  
             }
             else {
+                JDTModuleManager moduleManager = (JDTModuleManager) typeChecker.getPhasedUnits().getModuleManager();
                 phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
-                        typeChecker.getPhasedUnits().getModuleManager(), 
+                        moduleManager, 
                         typeChecker, tokens, null);
+                moduleManager.getModelLoader().setupSourceFileObjects(Arrays.asList(phasedUnit));
             }
             
             phasedUnit.validateTree();
@@ -377,8 +430,15 @@ public class CeylonParseController {
 	private static TypeChecker createTypeChecker(IProject project, 
 			boolean showWarnings) 
 	        throws CoreException {
-		TypeCheckerBuilder tcb = new TypeCheckerBuilder()
+	    final IJavaProject javaProject = project != null ? JavaCore.create(project) : null;
+	    TypeCheckerBuilder tcb = new TypeCheckerBuilder()
 		        .verbose(false)
+		        .moduleManagerFactory(new ModuleManagerFactory(){
+                    @Override
+                    public ModuleManager createModuleManager(Context context) {
+                        return new JDTModuleManager(context, javaProject);
+                    }
+                })
 		        .usageWarnings(showWarnings);
 		
 		File cwd;
@@ -389,7 +449,7 @@ public class CeylonParseController {
 			//in the structure compare editor, so
 			//it does not really matter what repo
 			//we use as long as it has the language
-			//module
+			//module.
             cwd = null;
 		    systemRepo = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
 		    isOffline = CeylonConfig.get().getBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, false);
@@ -412,7 +472,49 @@ public class CeylonParseController {
         tcb.setRepositoryManager(repositoryManager);
 		
 		TypeChecker tc = tcb.getTypeChecker();
-		tc.process();
+        PhasedUnits phasedUnits = tc.getPhasedUnits();
+
+        JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
+        moduleManager.setTypeChecker(tc);
+        Context context = tc.getContext();
+        JDTModelLoader modelLoader = (JDTModelLoader) moduleManager.getModelLoader();
+
+        phasedUnits.getModuleManager().prepareForTypeChecking();
+        phasedUnits.visitModules();
+
+        //By now the language module version should be known (as local)
+        //or we should use the default one.
+        Module languageModule = context.getModules().getLanguageModule();
+        if (languageModule.getVersion() == null) {
+            languageModule.setVersion(TypeChecker.LANGUAGE_MODULE_VERSION);
+        }
+
+        final ModuleValidator moduleValidator = new ModuleValidator(context, phasedUnits) {
+            @Override
+            protected void executeExternalModulePhases() {}
+        };
+        
+        moduleValidator.verifyModuleDependencyTree();
+        tc.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
+        
+        List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
+        for (PhasedUnits dependencyPhasedUnits: tc.getPhasedUnitsOfDependencies()) {
+            modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
+            for (PhasedUnit phasedUnit: dependencyPhasedUnits.getPhasedUnits()) {
+                dependencies.add(phasedUnit);
+            }
+        }
+
+        for (PhasedUnit pu: dependencies) {
+            pu.scanDeclarations();
+        }
+        for (PhasedUnit pu: dependencies) {
+            pu.scanTypeDeclarations();
+        }
+        for (PhasedUnit pu: dependencies) {
+            pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+        }
+        
 		return tc;
 	}
 
@@ -449,61 +551,43 @@ public class CeylonParseController {
 
 	private Package getPackage(VirtualFile file, VirtualFile srcDir,
 			PhasedUnit builtPhasedUnit) {
-		Package pkg = null;
-		if (builtPhasedUnit!=null) {
-			// Editing an already built file
-			Package sourcePackage = builtPhasedUnit.getPackage();
-			if (sourcePackage instanceof LazyPackage) {
-				JDTModelLoader modelLoader = getProjectModelLoader(getProject());
-				if (modelLoader != null) {
-					pkg = new LazyPackage(modelLoader);
-				}
-				else {
-					pkg = new Package();
-				}
-			}
-			else {
-				pkg = new Package();
-			}
+        Package pkg = null;
+        if (builtPhasedUnit!=null) {
+            // Editing an already built file
+            pkg = builtPhasedUnit.getPackage();
+        }
+        else {
+            // Editing a new file
+            Modules modules = typeChecker.getContext().getModules();
+            // Retrieve the target package from the file src-relative path
+            //TODO: this is very fragile!
+            String packageName = constructPackageName(file, srcDir);
+            for (Module module: modules.getListOfModules()) {
+                for (Package p: module.getPackages()) {
+                    if (p.getQualifiedNameString().equals(packageName)) {
+                        pkg = p;
+                        break;
+                    }
+                }
+                if (pkg!=null) {
+                    break;
+                }
+            }
+            if (pkg==null) {
+                // assume the default package
+                pkg = modules.getDefaultModule().getPackages().get(0);
 
-			pkg.setName(sourcePackage.getName());
-			pkg.setModule(sourcePackage.getModule());
-			for (Unit pkgUnit : sourcePackage.getUnits()) {
-				pkg.addUnit(pkgUnit);
-			}
-		}
-		else {
-			// Editing a new file
-			Modules modules = typeChecker.getContext().getModules();
-			// Retrieve the target package from the file src-relative path
-			//TODO: this is very fragile!
-			String packageName = constructPackageName(file, srcDir);
-			for (Module module: modules.getListOfModules()) {
-				for (Package p: module.getPackages()) {
-					if (p.getQualifiedNameString().equals(packageName)) {
-						pkg = p;
-						break;
-					}
-				}
-				if (pkg!=null) {
-					break;
-				}
-			}
-			if (pkg==null) {
-				// assume the default package
-				pkg = modules.getDefaultModule().getPackages().get(0);
-
-				// TODO : iterate through parents to get the sub-package 
-				// in which the package has been created, until we find the module
-				// Then the package can be created.
-				// However this should preferably be done on notification of the 
-				// resource creation
-				// A more global/systematic integration between the model element 
-				// (modules, packages, Units) and the IResourceModel should
-				// maybe be considered. But for now it is not required.
-			}
-		}
-		return pkg;
+                // TODO : iterate through parents to get the sub-package 
+                // in which the package has been created, until we find the module
+                // Then the package can be created.
+                // However this should preferably be done on notification of the 
+                // resource creation
+                // A more global/systematic integration between the model element 
+                // (modules, packages, Units) and the IResourceModel should
+                // maybe be considered. But for now it is not required.
+            }
+        }
+        return new SingleSourceUnitPackage(pkg, file.getPath());
 	}
 
 	public boolean isExternalPath(IPath path) {
