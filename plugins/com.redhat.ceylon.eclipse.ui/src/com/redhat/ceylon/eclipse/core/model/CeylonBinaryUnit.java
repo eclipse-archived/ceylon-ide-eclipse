@@ -52,12 +52,12 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
     }
 
     @Override
-    protected void setPhasedUnitIfNecessary() {
+    protected ExternalPhasedUnit setPhasedUnitIfNecessary() {
+        ExternalPhasedUnit phasedUnit = null;
         if (phasedUnitRef == null) {
             // Look into the mapping.txt of the module archive, and get the name of the source unit
             // Then get the PhasedUnits related to this module, and search for the relative path in it.
             // Then set it into the WeakRef with createPhasedUnit
-            ExternalPhasedUnit phasedUnit = null;
             
             String[] splittedPath = getFullPath().split("!/");
             if (splittedPath.length == 2) {
@@ -110,8 +110,11 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
                     e.printStackTrace();
                 }
             }
-            createPhasedUnitRef(phasedUnit);
+            phasedUnit = createPhasedUnitRef(phasedUnit);
+        } else {
+        	phasedUnit = (ExternalPhasedUnit) phasedUnitRef.get();
         }
+        return phasedUnit;
     }
 
     @Override

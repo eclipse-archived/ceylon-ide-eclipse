@@ -9,6 +9,6 @@ public abstract class SourceFile extends CeylonUnit {
     }
 
     @Override
-    protected void setPhasedUnitIfNecessary() { }
+    protected IdePhasedUnit setPhasedUnitIfNecessary() { return phasedUnitRef.get(); }
     
 }
