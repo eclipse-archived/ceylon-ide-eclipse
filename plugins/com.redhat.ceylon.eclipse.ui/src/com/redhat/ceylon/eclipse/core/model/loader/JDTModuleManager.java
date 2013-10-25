@@ -197,7 +197,7 @@ public class JDTModuleManager extends LazyModuleManager {
             IProject project = javaProject.getProject();
             for (IProject p: project.getReferencedProjects()) {
                 if (p.isAccessible() && 
-                		moduleFileInProject(moduleName, JavaCore.create(p))) {
+                    moduleFileInProject(moduleName, JavaCore.create(p))) {
                     return true;
                 }
             }
@@ -213,23 +213,23 @@ public class JDTModuleManager extends LazyModuleManager {
             return false;
         }
         try {
-			for (IPackageFragmentRoot sourceFolder: p.getPackageFragmentRoots()) {
-				if (!sourceFolder.isArchive() &&
-	                sourceFolder.exists() &&
-				    sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
-					sourceFolder.getPackageFragment(moduleName).exists()) {
-					return true;
-				}
-			    /*IPath moduleFile = sourceFolder.append(moduleName.replace('.', '/') + 
-			    		"/module.ceylon").makeRelativeTo(p.getFullPath());
-			    if (p.getFile(moduleFile).exists()) {
-			        return true;
-			    }*/
-			}
-		} 
+            for (IPackageFragmentRoot sourceFolder: p.getPackageFragmentRoots()) {
+                if (!sourceFolder.isArchive() &&
+                    sourceFolder.exists() &&
+                    sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
+                    sourceFolder.getPackageFragment(moduleName).exists()) {
+                    return true;
+                }
+                /*IPath moduleFile = sourceFolder.append(moduleName.replace('.', '/') + 
+                        "/module.ceylon").makeRelativeTo(p.getFullPath());
+                if (p.getFile(moduleFile).exists()) {
+                    return true;
+                }*/
+            }
+        } 
         catch (JavaModelException e) {
-			e.printStackTrace();
-		}
+            e.printStackTrace();
+        }
         return false;
     }
     
@@ -290,7 +290,10 @@ public class JDTModuleManager extends LazyModuleManager {
 
     @Override
     public void resolveModule(ArtifactResult artifact, Module module, ModuleImport moduleImport, 
-		LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies, boolean forCompiledModule) {
+        LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies, boolean forCompiledModule) {
+        if (module instanceof JDTModule) {
+            ((JDTModule) module).setArtifact(artifact.artifact());
+        }
         if (! isModuleLoadedFromCompiledSource(module.getNameAsString())) {
             File file = artifact.artifact();
             if (artifact.artifact().getName().endsWith(".src")) {
@@ -331,7 +334,7 @@ public class JDTModuleManager extends LazyModuleManager {
         if (addErrorToModuleMethod == null) {
             try {
                 addErrorToModuleMethod = ModuleManager.class.getDeclaredMethod("addErrorToModule", 
-                		new Class[] {List.class, String.class});
+                        new Class[] {List.class, String.class});
                 addErrorToModuleMethod.setAccessible(true);
                 addErrorToModuleMethod.invoke(this, new Object[] {moduleName, error});
             } catch (SecurityException e) {
@@ -353,10 +356,10 @@ public class JDTModuleManager extends LazyModuleManager {
     // Todo : to push into the base ModelManager class
     public void addTopLevelModuleError() {
         addErrorToModule(new ArrayList<String>(), 
-        		"A module cannot be defined at the top level of the hierarchy");
+                "A module cannot be defined at the top level of the hierarchy");
     }
     public void addTwoModulesInHierarchyError(List<String> existingModuleName, 
-    		List<String> newModulePackageName) {
+            List<String> newModulePackageName) {
         StringBuilder error = new StringBuilder("Found two modules within the same hierarchy: '");
         error.append( formatPath( existingModuleName ) )
             .append( "' and '" )
@@ -375,6 +378,7 @@ public class JDTModuleManager extends LazyModuleManager {
             }
         };
         
+
         return new PhasedUnits(getContext(), moduleManagerFactory) {
 
             private IProject referencedProject = null;
@@ -390,7 +394,7 @@ public class JDTModuleManager extends LazyModuleManager {
                             javaProject.getProject().getDefaultCharset()
                             : ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset();
                     CeylonLexer lexer = new CeylonLexer(new ANTLRInputStream(file.getInputStream(),
-                    		charSet));
+                            charSet));
                     CommonTokenStream tokenStream = new CommonTokenStream(lexer);
                     CeylonParser parser = new CeylonParser(tokenStream);
                     Tree.CompilationUnit cu = parser.compilationUnit();
@@ -457,5 +461,34 @@ public class JDTModuleManager extends LazyModuleManager {
 
     public boolean isLoadDependenciesFromModelLoaderFirst() {
         return loadDependenciesFromModelLoaderFirst;
+    }
+
+    public JDTModule getArchiveModuleFromSourcePath(String sourceUnitPath) {
+        for (Module m : typeChecker.getContext().getModules().getListOfModules()) {
+            if (m instanceof JDTModule) {
+                JDTModule module = (JDTModule) m;
+                if (module.isArchive()) {
+                    if (sourceUnitPath.startsWith(module.getSourceArchivePath() + "!")) {
+                        return module;
+                    }
+                }
+            }
+        }
+        return null; 
+    }
+    
+    public JDTModule getArchiveModuleFromSourcePath(IPath sourceUnitPath) {
+        return getArchiveModuleFromSourcePath(sourceUnitPath.toOSString());
+    }
+
+    @Override
+    protected void addToPhasedUnitsOfDependencies(
+            PhasedUnits modulePhasedUnits,
+            List<PhasedUnits> phasedUnitsOfDependencies, Module module) {
+        super.addToPhasedUnitsOfDependencies(modulePhasedUnits,
+                phasedUnitsOfDependencies, module);
+        if (module instanceof JDTModule) {
+            ((JDTModule) module).setSourcePhasedUnits(modulePhasedUnits);
+        }
     }
 }
