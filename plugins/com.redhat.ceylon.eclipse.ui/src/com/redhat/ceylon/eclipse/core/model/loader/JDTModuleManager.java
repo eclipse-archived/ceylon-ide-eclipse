@@ -37,7 +37,9 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -99,7 +101,11 @@ public class JDTModuleManager extends LazyModuleManager {
     public JDTModuleManager(Context context, IJavaProject javaProject) {
         super(context);
         this.javaProject = javaProject;
-        loadDependenciesFromModelLoaderFirst = CeylonBuilder.loadDependenciesFromModelLoaderFirst(javaProject.getProject());
+        if (javaProject == null) {
+            loadDependenciesFromModelLoaderFirst = false;
+        } else {
+            loadDependenciesFromModelLoaderFirst = CeylonBuilder.loadDependenciesFromModelLoaderFirst(javaProject.getProject());
+        }
         sourceModules = new HashSet<String>();
         if (! loadDependenciesFromModelLoaderFirst) {
             sourceModules.add(Module.LANGUAGE_MODULE_NAME);
@@ -179,6 +185,10 @@ public class JDTModuleManager extends LazyModuleManager {
     }
 
     public boolean isModuleLoadedFromCompiledSource(String moduleName) {
+        if (javaProject == null) {
+            return false;
+        }
+        
         if (moduleFileInProject(moduleName, javaProject)) {
             return true;
         }
@@ -199,6 +209,9 @@ public class JDTModuleManager extends LazyModuleManager {
     }
 
     private static boolean moduleFileInProject(String moduleName, IJavaProject p) {
+        if (p == null) {
+            return false;
+        }
         try {
 			for (IPackageFragmentRoot sourceFolder: p.getPackageFragmentRoots()) {
 				if (!sourceFolder.isArchive() &&
@@ -225,45 +238,47 @@ public class JDTModuleManager extends LazyModuleManager {
         JDTModule module = null;
         String moduleNameString = Util.getName(moduleName);
         List<IPackageFragmentRoot> roots = new ArrayList<IPackageFragmentRoot>();
-        try {
-            if(moduleNameString.equals(Module.DEFAULT_MODULE_NAME)){
-                // Add the list of source package fragment roots
-                for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                    if (root.exists()) {
-                        IClasspathEntry entry = root.getResolvedClasspathEntry();
-                        if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE && !root.isExternal()) {
-                            roots.add(root);
+        if (javaProject != null) {
+            try {
+                if(moduleNameString.equals(Module.DEFAULT_MODULE_NAME)){
+                    // Add the list of source package fragment roots
+                    for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                        if (root.exists()) {
+                            IClasspathEntry entry = root.getResolvedClasspathEntry();
+                            if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE && !root.isExternal()) {
+                                roots.add(root);
+                            }
+                        }
+                    }
+                } else {
+                    for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                        if(JDKUtils.isJDKModule(moduleNameString)){
+                            // find the first package that exists in this root
+                            for(String pkg : JDKUtils.getJDKPackagesByModule(moduleNameString)){
+                                if (root.getPackageFragment(pkg).exists()) {
+                                    roots.add(root);
+                                    break;
+                                }
+                            }
+                        }else if(JDKUtils.isOracleJDKModule(moduleNameString)){
+                            // find the first package that exists in this root
+                            for(String pkg : JDKUtils.getOracleJDKPackagesByModule(moduleNameString)){
+                                if (root.getPackageFragment(pkg).exists()) {
+                                    roots.add(root);
+                                    break;
+                                }
+                            }
+                        }else if (! (root instanceof JarPackageFragmentRoot)) {
+                            String packageToSearch = moduleNameString;
+                            if (root.getPackageFragment(packageToSearch).exists()) {
+                                roots.add(root);
+                            }
                         }
                     }
                 }
-            } else {
-                for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                    if(JDKUtils.isJDKModule(moduleNameString)){
-                        // find the first package that exists in this root
-                        for(String pkg : JDKUtils.getJDKPackagesByModule(moduleNameString)){
-                            if (root.getPackageFragment(pkg).exists()) {
-                                roots.add(root);
-                                break;
-                            }
-                        }
-                    }else if(JDKUtils.isOracleJDKModule(moduleNameString)){
-                        // find the first package that exists in this root
-                        for(String pkg : JDKUtils.getOracleJDKPackagesByModule(moduleNameString)){
-                            if (root.getPackageFragment(pkg).exists()) {
-                                roots.add(root);
-                                break;
-                            }
-                        }
-                    }else if (! (root instanceof JarPackageFragmentRoot)) {
-                        String packageToSearch = moduleNameString;
-                        if (root.getPackageFragment(packageToSearch).exists()) {
-                            roots.add(root);
-                        }
-                    }
-                }
+            } catch (JavaModelException e) {
+                e.printStackTrace();
             }
-        } catch (JavaModelException e) {
-            e.printStackTrace();
         }
         
         module = new JDTModule(this, roots);
@@ -368,11 +383,14 @@ public class JDTModuleManager extends LazyModuleManager {
             protected void parseFile(VirtualFile file, VirtualFile srcDir)
                     throws Exception {
                 if (file.getName().endsWith(".ceylon")) {
+                    //TODO: is this correct? does this file actually
+                    //      live in the project, or is it external?
+                    //       should VirtualFile have a getCharset()?
+                    String charSet = javaProject != null ?
+                            javaProject.getProject().getDefaultCharset()
+                            : ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset();
                     CeylonLexer lexer = new CeylonLexer(new ANTLRInputStream(file.getInputStream(),
-                    		//TODO: is this correct? does this file actually
-                    		//      live in the project, or is it external?
-                    		//       should VirtualFile have a getCharset()?
-                    		javaProject.getProject().getDefaultCharset()));
+                    		charSet));
                     CommonTokenStream tokenStream = new CommonTokenStream(lexer);
                     CeylonParser parser = new CeylonParser(tokenStream);
                     Tree.CompilationUnit cu = parser.compilationUnit();
@@ -408,7 +426,7 @@ public class JDTModuleManager extends LazyModuleManager {
 
             @Override
             public void parseUnit(VirtualFile srcDir) {
-                if (srcDir instanceof ZipFileVirtualFile) {
+                if (srcDir instanceof ZipFileVirtualFile && javaProject != null) {
                     ZipFileVirtualFile zipFileVirtualFile = (ZipFileVirtualFile) srcDir;
                     String archiveName = zipFileVirtualFile.getPath();
                     try {
@@ -440,5 +458,4 @@ public class JDTModuleManager extends LazyModuleManager {
     public boolean isLoadDependenciesFromModelLoaderFirst() {
         return loadDependenciesFromModelLoaderFirst;
     }
-
 }
