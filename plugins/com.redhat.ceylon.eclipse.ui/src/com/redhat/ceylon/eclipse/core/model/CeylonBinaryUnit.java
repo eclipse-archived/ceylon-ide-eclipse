@@ -113,4 +113,10 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
             createPhasedUnitRef(phasedUnit);
         }
     }
+
+    @Override
+    public IProject getProjectResource() {
+        return getJavaElement().getJavaProject().getProject();
+    }
+    
 }
