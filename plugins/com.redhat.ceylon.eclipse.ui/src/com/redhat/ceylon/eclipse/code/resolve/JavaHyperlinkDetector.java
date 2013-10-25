@@ -107,6 +107,16 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                     return null;
                 }
                 else {
+                    Unit declarationUnit = dec.getUnit();
+                    if (! (declarationUnit instanceof IJavaModelAware)) {
+                        return null;
+                    }
+                    if (declarationUnit instanceof CeylonBinaryUnit) {
+                        CeylonBinaryUnit ceylonBinaryUnit = (CeylonBinaryUnit) declarationUnit;
+                        if (! JavaCore.isJavaLikeFileName(ceylonBinaryUnit.getSourceRelativePath())) {
+                            return null; 
+                        }
+                    }
                     //IJavaProject jp = JavaCore.create(Util.getProject(editor));
                     IJavaProject jp = JavaCore.create(pc.getProject());
                     if (jp==null) {
