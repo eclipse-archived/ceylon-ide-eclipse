@@ -1864,7 +1864,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
 	// Keep it false on master until we fix the associated cross-reference and search issues 
     // by correctly managing source to binary links and indexes
-	public static boolean loadBinariesFirst = false;
+	public static boolean loadBinariesFirst = true;
 	public static boolean loadDependenciesFromModelLoaderFirst(IProject project) {
         return compileToJava(project) && loadBinariesFirst;
     }
