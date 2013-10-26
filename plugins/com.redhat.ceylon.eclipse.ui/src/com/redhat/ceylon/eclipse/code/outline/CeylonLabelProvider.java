@@ -635,7 +635,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static String name(Tree.Identifier id) {
-        if (id==null) {
+        if (id==null || id.getText().startsWith("<missing")) {
             return "<unknown>";
         }
         else {
