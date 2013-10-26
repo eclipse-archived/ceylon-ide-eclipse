@@ -628,7 +628,7 @@ function $init$Iterable(){
                             if (iterable$70===undefined){iterable$70=$init$iterable$65()({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});iterable$70.$$metamodel$$=getIterable$70.$$metamodel$$;}
                             return iterable$70;
                         }
-                        getIterable$70.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$65},d:['ceylon.language','Iterable','$m','skipping','$at','iterable']};};
+                        getIterable$70.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$65},d:['ceylon.language','Iterable','$m','skipping','$o','iterable']};};
                         $prop$getIterable$70={get:getIterable$70,$$metamodel$$:getIterable$70.$$metamodel$$};
                         return getIterable$70();
                     }());if(retvar$63!==undefined){return retvar$63;}
@@ -690,7 +690,7 @@ function $init$Iterable(){
                                     if (iterator$81===undefined){iterator$81=$init$iterator$77()({Element:$$iterable.$$targs$$.Element});iterator$81.$$metamodel$$=getIterator$81.$$metamodel$$;}
                                     return iterator$81;
                                 }
-                                getIterator$81.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$77},d:['ceylon.language','Iterable','$m','taking','$o','iterable','$m','iterator','$at','iterator']};};
+                                getIterator$81.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$77},d:['ceylon.language','Iterable','$m','taking','$o','iterable','$m','iterator','$o','iterator']};};
                                 $prop$getIterator$81={get:getIterator$81,$$metamodel$$:getIterator$81.$$metamodel$$};
                                 return getIterator$81();
                             };$$iterable$75.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$ps:[],$cont:iterable$75,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','taking','$o','iterable','$m','iterator']};};
@@ -704,7 +704,7 @@ function $init$Iterable(){
                             if (iterable$82===undefined){iterable$82=$init$iterable$75()({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});iterable$82.$$metamodel$$=getIterable$82.$$metamodel$$;}
                             return iterable$82;
                         }
-                        getIterable$82.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$75},d:['ceylon.language','Iterable','$m','taking','$at','iterable']};};
+                        getIterable$82.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$75},d:['ceylon.language','Iterable','$m','taking','$o','iterable']};};
                         $prop$getIterable$82={get:getIterable$82,$$metamodel$$:getIterable$82.$$metamodel$$};
                         return getIterable$82();
                     }());if(retvar$73!==undefined){return retvar$73;}
@@ -769,7 +769,7 @@ function $init$Iterable(){
                                         if (iterator$93===undefined){iterator$93=$init$iterator$90()({Element:$$iterable.$$targs$$.Element});iterator$93.$$metamodel$$=getIterator$93.$$metamodel$$;}
                                         return iterator$93;
                                     }
-                                    getIterator$93.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$90},d:['ceylon.language','Iterable','$m','skippingWhile','$o','iterable','$m','iterator','$at','iterator']};};
+                                    getIterator$93.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$90},d:['ceylon.language','Iterable','$m','skippingWhile','$o','iterable','$m','iterator','$o','iterator']};};
                                     $prop$getIterator$93={get:getIterator$93,$$metamodel$$:getIterator$93.$$metamodel$$};
                                     return getIterator$93();
                                 }());if(retvar$88!==undefined){return retvar$88;}
@@ -783,7 +783,7 @@ function $init$Iterable(){
                     if (iterable$94===undefined){iterable$94=$init$iterable$84()({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});iterable$94.$$metamodel$$=getIterable$94.$$metamodel$$;}
                     return iterable$94;
                 }
-                getIterable$94.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$84},d:['ceylon.language','Iterable','$m','skippingWhile','$at','iterable']};};
+                getIterable$94.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$84},d:['ceylon.language','Iterable','$m','skippingWhile','$o','iterable']};};
                 $prop$getIterable$94={get:getIterable$94,$$metamodel$$:getIterable$94.$$metamodel$$};
                 return getIterable$94();
             };$$iterable.skippingWhile.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$ps:[{$nm:'skip',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Iterable,$an:function(){return[shared(),$default()];},d:['ceylon.language','Iterable','$m','skippingWhile']};};
@@ -843,7 +843,7 @@ function $init$Iterable(){
                             if (iterator$102===undefined){iterator$102=$init$iterator$98()({Element:$$iterable.$$targs$$.Element});iterator$102.$$metamodel$$=getIterator$102.$$metamodel$$;}
                             return iterator$102;
                         }
-                        getIterator$102.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$98},d:['ceylon.language','Iterable','$m','takingWhile','$o','iterable','$m','iterator','$at','iterator']};};
+                        getIterator$102.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$98},d:['ceylon.language','Iterable','$m','takingWhile','$o','iterable','$m','iterator','$o','iterator']};};
                         $prop$getIterator$102={get:getIterator$102,$$metamodel$$:getIterator$102.$$metamodel$$};
                         return getIterator$102();
                     };$$iterable$96.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$ps:[],$cont:iterable$96,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','takingWhile','$o','iterable','$m','iterator']};};
@@ -853,7 +853,7 @@ function $init$Iterable(){
                     if (iterable$103===undefined){iterable$103=$init$iterable$96()({Absent:{t:Null},Element:$$iterable.$$targs$$.Element});iterable$103.$$metamodel$$=getIterable$103.$$metamodel$$;}
                     return iterable$103;
                 }
-                getIterable$103.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$96},d:['ceylon.language','Iterable','$m','takingWhile','$at','iterable']};};
+                getIterable$103.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$96},d:['ceylon.language','Iterable','$m','takingWhile','$o','iterable']};};
                 $prop$getIterable$103={get:getIterable$103,$$metamodel$$:getIterable$103.$$metamodel$$};
                 return getIterable$103();
             };$$iterable.takingWhile.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$ps:[{$nm:'take',$mt:'prm',$pt:'f',$t:{t:Boolean$},$an:function(){return[];}}],$cont:Iterable,$an:function(){return[shared(),$default()];},d:['ceylon.language','Iterable','$m','takingWhile']};};
@@ -912,7 +912,7 @@ function $init$Iterable(){
                                     if (iterator$114===undefined){iterator$114=$init$iterator$110()({Element:$$iterable.$$targs$$.Element});iterator$114.$$metamodel$$=getIterator$114.$$metamodel$$;}
                                     return iterator$114;
                                 }
-                                getIterator$114.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$110},d:['ceylon.language','Iterable','$m','by','$o','iterable','$m','iterator','$at','iterator']};};
+                                getIterator$114.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$110},d:['ceylon.language','Iterable','$m','by','$o','iterable','$m','iterator','$o','iterator']};};
                                 $prop$getIterator$114={get:getIterator$114,$$metamodel$$:getIterator$114.$$metamodel$$};
                                 return getIterator$114();
                             };$$iterable$108.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$ps:[],$cont:iterable$108,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','by','$o','iterable','$m','iterator']};};
@@ -922,7 +922,7 @@ function $init$Iterable(){
                             if (iterable$115===undefined){iterable$115=$init$iterable$108()({Absent:$$iterable.$$targs$$.Absent,Element:$$iterable.$$targs$$.Element});iterable$115.$$metamodel$$=getIterable$115.$$metamodel$$;}
                             return iterable$115;
                         }
-                        getIterable$115.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$108},d:['ceylon.language','Iterable','$m','by','$at','iterable']};};
+                        getIterable$115.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$108},d:['ceylon.language','Iterable','$m','by','$o','iterable']};};
                         $prop$getIterable$115={get:getIterable$115,$$metamodel$$:getIterable$115.$$metamodel$$};
                         return getIterable$115();
                     }());if(retvar$106!==undefined){return retvar$106;}
@@ -1044,7 +1044,7 @@ function $init$Iterable(){
                             if (iterator$140===undefined){iterator$140=$init$iterator$130()({Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});iterator$140.$$metamodel$$=getIterator$140.$$metamodel$$;}
                             return iterator$140;
                         }
-                        getIterator$140.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$130},d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator','$at','iterator']};};
+                        getIterator$140.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$130},d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator','$o','iterator']};};
                         $prop$getIterator$140={get:getIterator$140,$$metamodel$$:getIterator$140.$$metamodel$$};
                         return getIterator$140();
                     };$$indexes$128.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:['Element',{t:Object$}]}}}}},$ps:[],$cont:indexes$128,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$at','indexed','$o','indexes','$m','iterator']};};
@@ -1054,7 +1054,7 @@ function $init$Iterable(){
                     if (indexes$141===undefined){indexes$141=$init$indexes$128()({Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:[$$iterable.$$targs$$.Element,{t:Object$}]}}}});indexes$141.$$metamodel$$=getIndexes$141.$$metamodel$$;}
                     return indexes$141;
                 }
-                getIndexes$141.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:indexes$128},d:['ceylon.language','Iterable','$at','indexed','$at','indexes']};};
+                getIndexes$141.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:indexes$128},d:['ceylon.language','Iterable','$at','indexed','$o','indexes']};};
                 $prop$getIndexes$141={get:getIndexes$141,$$metamodel$$:getIndexes$141.$$metamodel$$};
                 return getIndexes$141();
             },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Null},Element:{t:Entry,a:{Key:{t:Integer},Item:{t:'i', l:['Element',{t:Object$}]}}}}},$cont:Iterable,$an:function(){return[doc(String$("All entries of form `index->element` where `index` \nis the position at which `element` occurs, for every\nnon-null element of this `Iterable`, ordered by\nincreasing `index`. For a null element at a given\nposition in the original `Iterable`, there is no \nentry with the corresponding index in the resulting \niterable object. The expression \n\n    { \"hello\", null, \"world\" }.indexed\n    \nresults in an iterable object with the entries\n`0->\"hello\"` and `2->\"world\"`.",461)),shared(),$default()];},d:['ceylon.language','Iterable','$at','indexed']};});$$iterable.following=function following(head$142,$$$mptypes){
@@ -1109,7 +1109,7 @@ function $init$Iterable(){
                             if (iterator$148===undefined){iterator$148=$init$iterator$145()({Element:{t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});iterator$148.$$metamodel$$=getIterator$148.$$metamodel$$;}
                             return iterator$148;
                         }
-                        getIterator$148.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$145},d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator','$at','iterator']};};
+                        getIterator$148.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$145},d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator','$o','iterator']};};
                         $prop$getIterator$148={get:getIterator$148,$$metamodel$$:getIterator$148.$$metamodel$$};
                         return getIterator$148();
                     };$$cons$143.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:{t:'u', l:['Element','Other']}}},$ps:[],$cont:cons$143,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','following','$o','cons','$m','iterator']};};
@@ -1119,7 +1119,7 @@ function $init$Iterable(){
                     if (cons$149===undefined){cons$149=$init$cons$143()({Absent:{t:Nothing},Element:{t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});cons$149.$$metamodel$$=getCons$149.$$metamodel$$;}
                     return cons$149;
                 }
-                getCons$149.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:cons$143},d:['ceylon.language','Iterable','$m','following','$at','cons']};};
+                getCons$149.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:cons$143},d:['ceylon.language','Iterable','$m','following','$o','cons']};};
                 $prop$getCons$149={get:getCons$149,$$metamodel$$:getCons$149.$$metamodel$$};
                 return getCons$149();
             };$$iterable.following.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:Nothing},Element:{t:'u', l:['Element','Other']}}},$ps:[{$nm:'head',$mt:'prm',$t:'Other',$an:function(){return[];}}],$cont:Iterable,$tp:{Other:{}},$an:function(){return[doc(String$("An `Iterable` with the given inital element followed \nby the elements of this iterable object.",94)),shared(),$default()];},d:['ceylon.language','Iterable','$m','following']};};
@@ -1150,7 +1150,7 @@ function $init$Iterable(){
                     if (chained$152===undefined){chained$152=$init$chained$151()({Absent:{t:'i', l:[$$iterable.$$targs$$.Absent,$$$mptypes.OtherAbsent]},Element:{t:'u', l:[$$iterable.$$targs$$.Element,$$$mptypes.Other]}});chained$152.$$metamodel$$=getChained$152.$$metamodel$$;}
                     return chained$152;
                 }
-                getChained$152.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:chained$151},d:['ceylon.language','Iterable','$m','chain','$at','chained']};};
+                getChained$152.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:chained$151},d:['ceylon.language','Iterable','$m','chain','$o','chained']};};
                 $prop$getChained$152={get:getChained$152,$$metamodel$$:getChained$152.$$metamodel$$};
                 return getChained$152();
             };$$iterable.chain.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:{t:'i', l:['Absent','OtherAbsent']},Element:{t:'u', l:['Element','Other']}}},$ps:[{$nm:'other',$mt:'prm',$t:{t:Iterable,a:{Absent:'OtherAbsent',Element:'Other'}},$an:function(){return[];}}],$cont:Iterable,$tp:{Other:{},OtherAbsent:{'satisfies':[{t:Null}]}},$an:function(){return[doc(String$("The elements of this iterable object, in their\noriginal order, followed by the elements of the \ngiven iterable object also in their original order.",147)),shared(),$default()];},d:['ceylon.language','Iterable','$m','chain']};};
@@ -1242,7 +1242,7 @@ function $init$Iterable(){
                             if (iterator$167===undefined){iterator$167=$init$iterator$163()({Element:$$iterable.$$targs$$.Element});iterator$167.$$metamodel$$=getIterator$167.$$metamodel$$;}
                             return iterator$167;
                         }
-                        getIterator$167.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$163},d:['ceylon.language','Iterable','$at','cycled','$o','iterable','$m','iterator','$at','iterator']};};
+                        getIterator$167.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$163},d:['ceylon.language','Iterable','$at','cycled','$o','iterable','$m','iterator','$o','iterator']};};
                         $prop$getIterator$167={get:getIterator$167,$$metamodel$$:getIterator$167.$$metamodel$$};
                         return getIterator$167();
                     };$$iterable$161.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$ps:[],$cont:iterable$161,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$at','cycled','$o','iterable','$m','iterator']};};
@@ -1252,7 +1252,7 @@ function $init$Iterable(){
                     if (iterable$168===undefined){iterable$168=$init$iterable$161()({Absent:$$iterable.$$targs$$.Absent,Element:$$iterable.$$targs$$.Element});iterable$168.$$metamodel$$=getIterable$168.$$metamodel$$;}
                     return iterable$168;
                 }
-                getIterable$168.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$161},d:['ceylon.language','Iterable','$at','cycled','$at','iterable']};};
+                getIterable$168.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$161},d:['ceylon.language','Iterable','$at','cycled','$o','iterable']};};
                 $prop$getIterable$168={get:getIterable$168,$$metamodel$$:getIterable$168.$$metamodel$$};
                 return getIterable$168();
             },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:'Absent',Element:'Element'}},$cont:Iterable,$an:function(){return[doc(String$("A non-finite iterable object that produces the elements \nof this iterable object, repeatedly.",93)),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.cycle)].reifyCeylonType({Absent:{t:Null},Element:{t:FunctionDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','Iterable','$at','cycled']};});$$iterable.cycle=function cycle(times$169){
@@ -1323,7 +1323,7 @@ function $init$Iterable(){
                             if (iterator$179===undefined){iterator$179=$init$iterator$172()({Element:$$iterable.$$targs$$.Element});iterator$179.$$metamodel$$=getIterator$179.$$metamodel$$;}
                             return iterator$179;
                         }
-                        getIterator$179.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$172},d:['ceylon.language','Iterable','$m','cycle','$o','iterable','$m','iterator','$at','iterator']};};
+                        getIterator$179.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$172},d:['ceylon.language','Iterable','$m','cycle','$o','iterable','$m','iterator','$o','iterator']};};
                         $prop$getIterator$179={get:getIterator$179,$$metamodel$$:getIterator$179.$$metamodel$$};
                         return getIterator$179();
                     };$$iterable$170.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$ps:[],$cont:iterable$170,$an:function(){return[shared(),actual()];},d:['ceylon.language','Iterable','$m','cycle','$o','iterable','$m','iterator']};};
@@ -1333,7 +1333,7 @@ function $init$Iterable(){
                     if (iterable$180===undefined){iterable$180=$init$iterable$170()({Absent:$$iterable.$$targs$$.Absent,Element:$$iterable.$$targs$$.Element});iterable$180.$$metamodel$$=getIterable$180.$$metamodel$$;}
                     return iterable$180;
                 }
-                getIterable$180.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$170},d:['ceylon.language','Iterable','$m','cycle','$at','iterable']};};
+                getIterable$180.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$170},d:['ceylon.language','Iterable','$m','cycle','$o','iterable']};};
                 $prop$getIterable$180={get:getIterable$180,$$metamodel$$:getIterable$180.$$metamodel$$};
                 return getIterable$180();
             };$$iterable.cycle.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterable,a:{Absent:'Absent',Element:'Element'}},$ps:[{$nm:'times',$mt:'prm',$t:{t:Integer},$an:function(){return[];}}],$cont:Iterable,$an:function(){return[doc(String$("A finite iterable object that produces the elements of \nthis iterable object, repeatedly, the given number of\ntimes.",116)),see([$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.$prop$getCycled),$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),Iterable.$$.prototype.repeat)].reifyCeylonType({Absent:{t:Null},Element:{t:'u', l:[{t:ValueDeclaration$meta$declaration},{t:FunctionDeclaration$meta$declaration}]}})),shared(),$default()];},d:['ceylon.language','Iterable','$m','cycle']};};
@@ -2221,7 +2221,7 @@ function $init$List(){
                     if (listIterator$289===undefined){listIterator$289=$init$listIterator$283()({Element:$$list.$$targs$$.Element});listIterator$289.$$metamodel$$=getListIterator$289.$$metamodel$$;}
                     return listIterator$289;
                 }
-                getListIterator$289.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:listIterator$283},d:['ceylon.language','List','$m','iterator','$at','listIterator']};};
+                getListIterator$289.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:listIterator$283},d:['ceylon.language','List','$m','iterator','$o','listIterator']};};
                 $prop$getListIterator$289={get:getListIterator$289,$$metamodel$$:getListIterator$289.$$metamodel$$};
                 return getListIterator$289();
             };$$list.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$ps:[],$cont:List,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','List','$m','iterator']};};
@@ -2838,7 +2838,7 @@ function $init$Tuple(){
                     if (iterator$448===undefined){iterator$448=$init$iterator$444()({Element:$$tuple.$$targs$$.Element});iterator$448.$$metamodel$$=getIterator$448.$$metamodel$$;}
                     return iterator$448;
                 }
-                getIterator$448.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$444},d:['ceylon.language','Tuple','$m','iterator','$at','iterator']};};
+                getIterator$448.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$444},d:['ceylon.language','Tuple','$m','iterator','$o','iterator']};};
                 $prop$getIterator$448={get:getIterator$448,$$metamodel$$:getIterator$448.$$metamodel$$};
                 return getIterator$448();
             };$$tuple.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$ps:[],$cont:Tuple,$an:function(){return[shared(),actual()];},d:['ceylon.language','Tuple','$m','iterator']};};
@@ -4729,7 +4729,7 @@ function $init$LazySet(){
                     if (iterator$776===undefined){iterator$776=$init$iterator$769()({Element:$$lazySet.$$targs$$.Element});iterator$776.$$metamodel$$=getIterator$776.$$metamodel$$;}
                     return iterator$776;
                 }
-                getIterator$776.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$769},d:['ceylon.language','LazySet','$m','iterator','$at','iterator']};};
+                getIterator$776.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$769},d:['ceylon.language','LazySet','$m','iterator','$o','iterator']};};
                 $prop$getIterator$776={get:getIterator$776,$$metamodel$$:getIterator$776.$$metamodel$$};
                 return getIterator$776();
             };$$lazySet.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Element'}},$ps:[],$cont:LazySet,$an:function(){return[shared(),actual()];},d:['ceylon.language','LazySet','$m','iterator']};};
@@ -5316,7 +5316,7 @@ function combine(combination$923,elements$924,otherElements$925,$$$mptypes){
                 if (iterator$934===undefined){iterator$934=$init$iterator$927()({Element:$$$mptypes.Result});iterator$934.$$metamodel$$=getIterator$934.$$metamodel$$;}
                 return iterator$934;
             }
-            getIterator$934.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$927},d:['ceylon.language','combine','$o','iterable','$m','iterator','$at','iterator']};};
+            getIterator$934.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterator$927},d:['ceylon.language','combine','$o','iterable','$m','iterator','$o','iterator']};};
             $prop$getIterator$934={get:getIterator$934,$$metamodel$$:getIterator$934.$$metamodel$$};
             return getIterator$934();
         };$$iterable$926.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element:'Result'}},$ps:[],$cont:iterable$926,$an:function(){return[shared(),actual()];},d:['ceylon.language','combine','$o','iterable','$m','iterator']};};
@@ -5326,7 +5326,7 @@ function combine(combination$923,elements$924,otherElements$925,$$$mptypes){
         if (iterable$935===undefined){iterable$935=$init$iterable$926()({Absent:$$$mptypes.Absent,Element:$$$mptypes.Result});iterable$935.$$metamodel$$=getIterable$935.$$metamodel$$;}
         return iterable$935;
     }
-    getIterable$935.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$926},d:['ceylon.language','combine','$at','iterable']};};
+    getIterable$935.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:iterable$926},d:['ceylon.language','combine','$o','iterable']};};
     $prop$getIterable$935={get:getIterable$935,$$metamodel$$:getIterable$935.$$metamodel$$};
     return getIterable$935();
 }
@@ -6818,11 +6818,7 @@ ClassOrInterface$meta$model.$$.prototype.getMethod=function(name,types,$$$mptype
       _t=mm.$t;
       if (!extendsType($$$mptypes.Type,_t))throw IncompatibleTypeException$meta$model("Incompatible Type argument");
     }
-    var ar=$$$mptypes.Arguments.t;
-    if ((mm.$ps && mm.$ps.length!=ar.size) || ar.size!=0) {
-      //TODO unify this with all the other similar checks
-      throw IncompatibleTypeException$meta$model("Wrong number of Arguments");
-    }
+    validate$params(mm.$ps,$$$mptypes.Arguments,"Wrong number of Arguments for getMethod");
   }
   return AppliedMethod(fun, types, {Container:{t:this.tipo},Type:_t,Arguments:$$$mptypes.Arguments});
 }
@@ -6889,10 +6885,10 @@ ClassOrInterface$meta$model.$$.prototype.getClassOrInterface=function getClassOr
     var rv;
     if (md.$mt==='ifc') {
       if (!extendsType({t:Interface$meta$model},{t:$$$mptypes.Kind.t}))throw IncompatibleTypeException$meta$model("Member " + name$2 + " is an interface");
-      rv=AppliedInterface(ic, {Type:{t:ic}});
+      rv=AppliedMemberInterface(ic, {Container:{t:this.tipo},Type:{t:ic}});
     } else if (md.$mt==='cls'){
       if (!extendsType({t:Class$meta$model},{t:$$$mptypes.Kind.t}))throw IncompatibleTypeException$meta$model("Member " + name$2 + " is a class");
-      rv=AppliedClass(ic, {Type:{t:ic}, Arguments:$$$mptypes.Arguments});
+      rv=AppliedMemberClass(ic, {Container:{t:this.tipo},Type:{t:ic}, Arguments:$$$mptypes.Arguments});
     } else {
       throw IncompatibleTypeException$meta$model("Member " + name$2 + " is not a class or interface");
     }
@@ -6903,17 +6899,17 @@ ClassOrInterface$meta$model.$$.prototype.getClassOrInterface=function getClassOr
 };ClassOrInterface$meta$model.$$.prototype.getClassOrInterface.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:Member$meta$model,a:{Type:'Container',Kind:'Kind'}}]},$ps:[{$nm:'name',$mt:'prm',$t:{t:String$},$an:function(){return[];}},{$nm:'types',$mt:'prm',seq:1,$t:{t:Sequential,a:{Element:{t:Type$meta$model,a:{Type:{t:Anything}}}}},$an:function(){return[];}}],$cont:ClassOrInterface$meta$model,$tp:{Container:{},Kind:{'satisfies':[{t:ClassOrInterface$meta$model,a:{Type:{t:Anything}}}]}},$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','ClassOrInterface','$m','getClassOrInterface']};};
 ClassOrInterface$meta$model.$$.prototype.getClass=function getClass(name,types,$mptypes) {
   var rv=this.getClassOrInterface(name,types,{Container:$mptypes.Container, Kind:Class$meta$model});
-  if (rv && !isOfType(rv, {t:AppliedClass})) {
+  if (rv && !isOfType(rv, {t:AppliedMemberClass})) {
     throw IncompatibleTypeException$meta$model("Member " + name + " is not a class");
   }
-  return null;
+  return rv;
 };ClassOrInterface$meta$model.$$.prototype.getClass.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:MemberClass$meta$model},$ps:[],$cont:ClassOrInterface$meta$model,$tp:{Container:{},Type:{},Arguments:{satisfies:[{t:Sequential,a:{Element:{t:Anything}}}]}}};};
 ClassOrInterface$meta$model.$$.prototype.getInterface=function(name,types,$mptypes) {
   var rv=this.getClassOrInterface(name,types,{Container:$mptypes.Container, Kind:Interface$meta$model});
-  if (rv && !isOfType(rv, {t:AppliedInterface})) {
+  if (rv && !isOfType(rv, {t:AppliedMemberInterface})) {
     throw IncompatibleTypeException$meta$model("Member " + name + " is not an interface");
   }
-  return null;
+  return rv;
 };ClassOrInterface$meta$model.$$.prototype.getInterface.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:MemberInterface$meta$model},$ps:[],$cont:ClassOrInterface$meta$model,$tp:{Container:{},Type:{},Arguments:{satisfies:[{t:Sequential,a:{Element:{t:Anything}}}]}}};};
 
 ClassOrInterface$meta$model.$$.prototype.isTypeOf=function isTypeOf(instance$8){
@@ -7034,23 +7030,6 @@ defineAttr(ClassOrInterface$meta$model.$$.prototype,'extendedType',function(){
 },undefined,function(){return{mod:$$METAMODEL$$,$t:{ t:'u', l:[{t:Null},{t:ClassModel$meta$model,a:{Arguments:{t:Nothing},Type:{t:Anything}}}]},$cont:AppliedClass,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','Class','$at','extendedType']};});
 
 
-function Class$meta$model($$targs$$,$$class){
-    ClassModel$meta$model($$class.$$targs$$===undefined?$$targs$$:{Arguments:$$class.$$targs$$.Arguments,Type:$$class.$$targs$$.Type},$$class);
-    Callable($$class.$$targs$$===undefined?$$targs$$:{Arguments:$$class.$$targs$$.Arguments,Return:$$class.$$targs$$.Type},$$class);
-    set_type_args($$class,$$targs$$);
-}
-Class$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Type:{'var':'out','def':{t:Anything}},Arguments:{'var':'in','satisfies':[{t:Sequential,a:{Element:{t:Anything}}}],'def':{t:Nothing}}},satisfies:[{t:ClassModel$meta$model,a:{Arguments:'Arguments',Type:'Type'}},{t:Callable,a:{Arguments:'Arguments',Return:'Type'}}],$an:function(){return[doc(String$("A class model represents the model of a Ceylon class that you can instantiate and inspect.\n\nA class is a toplevel type, declared on a package.\n\nThis is a [[ClassModel]] that you can also invoke to instantiate new instances of the class:\n\n    shared class Foo(String name){\n        shared String hello => \"Hello \"+name;\n    }\n    \n    void test(){\n        Class<Foo,[String]> c = `Foo`;\n        // This will print: Hello Stef\n        print(c(\"Stef\").hello);\n    }\n",463)),shared()];},d:['ceylon.language.meta.model','Class']};};
-exports.Class$meta$model=Class$meta$model;
-function $init$Class$meta$model(){
-    if (Class$meta$model.$$===undefined){
-        initTypeProtoI(Class$meta$model,'ceylon.language.meta.model::Class',$init$ClassModel$meta$model(),$init$Callable());
-        (function($$class){
-        })(Class$meta$model.$$.prototype);
-    }
-    return Class$meta$model;
-}
-exports.$init$Class$meta$model=$init$Class$meta$model;
-$init$Class$meta$model();
 function ClassModel$meta$model($$targs$$,$$classModel){
     ClassOrInterface$meta$model($$classModel.$$targs$$===undefined?$$targs$$:{Type:$$classModel.$$targs$$.Type},$$classModel);
     set_type_args($$classModel,$$targs$$);
@@ -7069,23 +7048,55 @@ function $init$ClassModel$meta$model(){
 }
 exports.$init$ClassModel$meta$model=$init$ClassModel$meta$model;
 $init$ClassModel$meta$model();
-function Function$meta$model($$targs$$,$$function){
-    FunctionModel$meta$model($$function.$$targs$$===undefined?$$targs$$:{Arguments:$$function.$$targs$$.Arguments,Type:$$function.$$targs$$.Type},$$function);
-    Callable($$function.$$targs$$===undefined?$$targs$$:{Arguments:$$function.$$targs$$.Arguments,Return:$$function.$$targs$$.Type},$$function);
-    set_type_args($$function,$$targs$$);
-}
-Function$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Type:{'var':'out','def':{t:Anything}},Arguments:{'var':'in','satisfies':[{t:Sequential,a:{Element:{t:Anything}}}],'def':{t:Nothing}}},satisfies:[{t:FunctionModel$meta$model,a:{Arguments:'Arguments',Type:'Type'}},{t:Callable,a:{Arguments:'Arguments',Return:'Type'}}],$an:function(){return[doc(String$("A function model represents the model of a Ceylon function that you can invoke and inspect.\n\nA function is a toplevel binding, declared on a package.\n\nThis is a [[FunctionModel]] that you can also invoke:\n\n    shared String foo(String name) => \"Hello \"+name;\n    \n    void test(){\n        Function<String,[String]> f = `foo`;\n        // This will print: Hello Stef\n        print(f(\"Stef\"));\n    }\n",397)),shared()];},d:['ceylon.language.meta.model','Function']};};
-exports.Function$meta$model=Function$meta$model;
-function $init$Function$meta$model(){
-    if (Function$meta$model.$$===undefined){
-        initTypeProtoI(Function$meta$model,'ceylon.language.meta.model::Function',$init$FunctionModel$meta$model(),$init$Callable());
-        (function($$function){
-        })(Function$meta$model.$$.prototype);
+//Addendum to ClassModel
+defineAttr(ClassModel$meta$model.$$.prototype,'parameterTypes',function(){
+  var ps=this.tipo.$$metamodel$$.$ps;
+  if (!ps || ps.length==0)return getEmpty();
+  var r=[];
+  for (var i=0; i < ps.length; i++) {
+    var pt=ps[i].$t;
+    if (typeof(pt)==='string'){
+      if (!this.$targs)throw TypeApplicationException$meta$model(String$("This class model needs type parameters"));
+      pt=this.$targs[pt];
+      if (!pt)throw TypeApplicationException$meta$model(String$("Class model is missing type argument for <" + ps[i].$t + ">"));
     }
-    return Function$meta$model;
+    r.push(typeLiteral$meta({Type:pt}));
+  }
+  return r.reifyCeylonType({Element:{t:Type$meta$model,a:{t:Anything}},Absent:{t:Null}});
+},undefined,function(){return{mod:$$METAMODEL$$,$cont:ClassModel$meta$model,d:['ceylon.language.meta.model','ClassModel','$at','parameterTypes'],$t:{t:Sequential,a:{Element:{t:Type$meta$model,a:{Type:{t:Anything}}},Absent:{t:Null}}}};});
+
+defineAttr(ClassModel$meta$model.$$.prototype,'declaration',function(){
+  var $$clase=this;
+  if ($$clase._decl)return $$clase._decl;
+  var mm = $$clase.tipo.$$metamodel$$;
+  if (typeof(mm)==='function'){
+    mm=mm();
+    $$clase.tipo.$$metamodel$$=mm;
+  }
+  $$clase._decl = OpenClass(getModules$meta().find(mm.mod['$mod-name'],mm.mod['$mod-version']).findPackage(mm.d[0]), $$clase.tipo);
+  return $$clase._decl;
+},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:ClassDeclaration$meta$declaration},$cont:ClassModel$meta$model,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','ClassModel','$at','declaration']};});
+ClassModel$meta$model.$$.prototype.equals=function(o){
+return isOfType(o,{t:AppliedClass}) && (o.tipo$2||o.tipo)==this.tipo && this.typeArguments.equals(o.typeArguments);
+};
+//TODO equals metamodel
+function Class$meta$model($$targs$$,$$class){
+    ClassModel$meta$model($$class.$$targs$$===undefined?$$targs$$:{Arguments:$$class.$$targs$$.Arguments,Type:$$class.$$targs$$.Type},$$class);
+    Callable($$class.$$targs$$===undefined?$$targs$$:{Arguments:$$class.$$targs$$.Arguments,Return:$$class.$$targs$$.Type},$$class);
+    set_type_args($$class,$$targs$$);
 }
-exports.$init$Function$meta$model=$init$Function$meta$model;
-$init$Function$meta$model();
+Class$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Type:{'var':'out','def':{t:Anything}},Arguments:{'var':'in','satisfies':[{t:Sequential,a:{Element:{t:Anything}}}],'def':{t:Nothing}}},satisfies:[{t:ClassModel$meta$model,a:{Arguments:'Arguments',Type:'Type'}},{t:Callable,a:{Arguments:'Arguments',Return:'Type'}}],$an:function(){return[doc(String$("A class model represents the model of a Ceylon class that you can instantiate and inspect.\n\nA class is a toplevel type, declared on a package.\n\nThis is a [[ClassModel]] that you can also invoke to instantiate new instances of the class:\n\n    shared class Foo(String name){\n        shared String hello => \"Hello \"+name;\n    }\n    \n    void test(){\n        Class<Foo,[String]> c = `Foo`;\n        // This will print: Hello Stef\n        print(c(\"Stef\").hello);\n    }\n",463)),shared()];},d:['ceylon.language.meta.model','Class']};};
+exports.Class$meta$model=Class$meta$model;
+function $init$Class$meta$model(){
+    if (Class$meta$model.$$===undefined){
+        initTypeProtoI(Class$meta$model,'ceylon.language.meta.model::Class',$init$ClassModel$meta$model(),$init$Callable());
+        (function($$class){
+        })(Class$meta$model.$$.prototype);
+    }
+    return Class$meta$model;
+}
+exports.$init$Class$meta$model=$init$Class$meta$model;
+$init$Class$meta$model();
 function FunctionModel$meta$model($$targs$$,$$functionModel){
     Model$meta$model($$functionModel);
     Generic$meta$model($$functionModel);
@@ -7106,20 +7117,57 @@ function $init$FunctionModel$meta$model(){
 }
 exports.$init$FunctionModel$meta$model=$init$FunctionModel$meta$model;
 $init$FunctionModel$meta$model();
-function Interface$meta$model($$targs$$,$$interface){
-    InterfaceModel$meta$model($$interface.$$targs$$===undefined?$$targs$$:{Type:$$interface.$$targs$$.Type},$$interface);
-    set_type_args($$interface,$$targs$$);
-}
-Interface$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Type:{'var':'out','def':{t:Anything}}},satisfies:[{t:InterfaceModel$meta$model,a:{Type:'Type'}}],$an:function(){return[doc(String$("An interface model that you can inspect.",40)),shared()];},d:['ceylon.language.meta.model','Interface']};};
-exports.Interface$meta$model=Interface$meta$model;
-function $init$Interface$meta$model(){
-    if (Interface$meta$model.$$===undefined){
-        initTypeProtoI(Interface$meta$model,'ceylon.language.meta.model::Interface',$init$InterfaceModel$meta$model());
+defineAttr(FunctionModel$meta$model.$$.prototype,'parameterTypes',function(){
+  var ps=this.tipo.$$metamodel$$.$ps;
+  if (!ps || ps.length==0)return getEmpty();
+  var r=[];
+  for (var i=0; i < ps.length; i++) {
+    var pt=ps[i].$t;
+    if (typeof(pt)==='string'){
+      if (!this.$targs)throw TypeApplicationException$meta$model(String$("This function model needs type parameters"));
+      pt=this.$targs[pt];
+      if (!pt)throw TypeApplicationException$meta$model(String$("Function model is missing type argument for <" + ps[i].$t + ">"));
     }
-    return Interface$meta$model;
+    r.push(typeLiteral$meta({Type:pt}));
+  }
+  return r.reifyCeylonType({Element:{t:Type$meta$model,a:{t:Anything}},Absent:{t:Null}});
+},undefined,function(){return{mod:$$METAMODEL$$,$cont:FunctionModel$meta$model,d:['ceylon.language.meta.model','FunctionModel','$at','parameterTypes'],$t:{t:Sequential,a:{Element:{t:Type$meta$model,a:{Type:{t:Anything}}},Absent:{t:Null}}}};});
+
+function Function$meta$model($$targs$$,$$function){
+    FunctionModel$meta$model($$function.$$targs$$===undefined?$$targs$$:{Arguments:$$function.$$targs$$.Arguments,Type:$$function.$$targs$$.Type},$$function);
+    Callable($$function.$$targs$$===undefined?$$targs$$:{Arguments:$$function.$$targs$$.Arguments,Return:$$function.$$targs$$.Type},$$function);
+    set_type_args($$function,$$targs$$);
 }
-exports.$init$Interface$meta$model=$init$Interface$meta$model;
-$init$Interface$meta$model();
+Function$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Type:{'var':'out','def':{t:Anything}},Arguments:{'var':'in','satisfies':[{t:Sequential,a:{Element:{t:Anything}}}],'def':{t:Nothing}}},satisfies:[{t:FunctionModel$meta$model,a:{Arguments:'Arguments',Type:'Type'}},{t:Callable,a:{Arguments:'Arguments',Return:'Type'}}],$an:function(){return[doc(String$("A function model represents the model of a Ceylon function that you can invoke and inspect.\n\nA function is a toplevel binding, declared on a package.\n\nThis is a [[FunctionModel]] that you can also invoke:\n\n    shared String foo(String name) => \"Hello \"+name;\n    \n    void test(){\n        Function<String,[String]> f = `foo`;\n        // This will print: Hello Stef\n        print(f(\"Stef\"));\n    }\n",397)),shared()];},d:['ceylon.language.meta.model','Function']};};
+exports.Function$meta$model=Function$meta$model;
+function $init$Function$meta$model(){
+    if (Function$meta$model.$$===undefined){
+        initTypeProtoI(Function$meta$model,'ceylon.language.meta.model::Function',$init$FunctionModel$meta$model(),$init$Callable());
+        (function($$function){
+        })(Function$meta$model.$$.prototype);
+    }
+    return Function$meta$model;
+}
+exports.$init$Function$meta$model=$init$Function$meta$model;
+$init$Function$meta$model();
+function Method$meta$model($$targs$$,$$method){
+    FunctionModel$meta$model($$method.$$targs$$===undefined?$$targs$$:{Arguments:$$method.$$targs$$.Arguments,Type:$$method.$$targs$$.Type},$$method);
+    Member$meta$model($$method.$$targs$$===undefined?$$targs$$:{Container:$$method.$$targs$$.Container,Kind:{t:Function$meta$model,a:{Arguments:$$method.$$targs$$.Arguments,Type:$$method.$$targs$$.Type}}},$$method);
+    add_type_arg($$method,'Kind',{t:Function$meta$model,a:{Arguments:$$method.$$targs$$.Arguments,Type:$$method.$$targs$$.Type}});
+    set_type_args($$method,$$targs$$);
+}
+Method$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Container:{'var':'in'},Type:{'var':'out','def':{t:Anything}},Arguments:{'var':'in','satisfies':[{t:Sequential,a:{Element:{t:Anything}}}],'def':{t:Nothing}}},satisfies:[{t:FunctionModel$meta$model,a:{Arguments:'Arguments',Type:'Type'}},{t:Member$meta$model,a:{Container:'Container',Kind:{t:Function$meta$model,a:{Arguments:'Arguments',Type:'Type'}}}}],$an:function(){return[doc(String$("A function model represents the model of a Ceylon function that you can invoke and inspect.\n\nA method is a member function: it is declared on classes or interfaces.\n\nThis is both a [[FunctionModel]] and a [[Member]]: you can invoke it with an instance value\nto bind it to that instance and obtain a [[Function]]:\n\n    class Outer(){\n        shared String foo(String name) => \"Hello \"+name;\n    }\n    \n    void test(){\n        Method<Outer,String,[String]> method = `Outer.foo`;\n        // Bind it to an instance value\n        Function<String,[String]> f = method(Outer());\n        // This will print: Hello Stef\n        print(f(\"Stef\"));\n    }\n",644)),shared()];},d:['ceylon.language.meta.model','Method']};};
+exports.Method$meta$model=Method$meta$model;
+function $init$Method$meta$model(){
+    if (Method$meta$model.$$===undefined){
+        initTypeProtoI(Method$meta$model,'ceylon.language.meta.model::Method',$init$FunctionModel$meta$model(),$init$Member$meta$model());
+        (function($$method){
+        })(Method$meta$model.$$.prototype);
+    }
+    return Method$meta$model;
+}
+exports.$init$Method$meta$model=$init$Method$meta$model;
+$init$Method$meta$model();
 function InterfaceModel$meta$model($$targs$$,$$interfaceModel){
     ClassOrInterface$meta$model($$interfaceModel.$$targs$$===undefined?$$targs$$:{Type:$$interfaceModel.$$targs$$.Type},$$interfaceModel);
     set_type_args($$interfaceModel,$$targs$$);
@@ -7137,6 +7185,35 @@ function $init$InterfaceModel$meta$model(){
 }
 exports.$init$InterfaceModel$meta$model=$init$InterfaceModel$meta$model;
 $init$InterfaceModel$meta$model();
+defineAttr(InterfaceModel$meta$model.$$.prototype,'declaration',function(){
+if (this._decl)return this._decl;
+var mm = this.tipo.$$metamodel$$;
+if (typeof(mm)==='function') {
+  mm = mm();
+  this.tipo.$$metamodel$$=mm;
+}
+this._decl = OpenInterface(getModules$meta().find(mm.mod['$mod-name'],mm.mod['$mod-version']).findPackage(mm.d[0]), this.tipo);
+return this._decl;
+},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:InterfaceDeclaration$meta$declaration},$cont:InterfaceModel$meta$model,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','InterfaceModel','$at','declaration']};});
+
+InterfaceModel$meta$model.$$.prototype.equals=function(o){
+return isOfType(o,{t:AppliedInterface}) && (o.tipo$2||o.tipo)==this.tipo && this.typeArguments.equals(o.typeArguments);
+};
+//TODO equals metamodel
+function Interface$meta$model($$targs$$,$$interface){
+    InterfaceModel$meta$model($$interface.$$targs$$===undefined?$$targs$$:{Type:$$interface.$$targs$$.Type},$$interface);
+    set_type_args($$interface,$$targs$$);
+}
+Interface$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Type:{'var':'out','def':{t:Anything}}},satisfies:[{t:InterfaceModel$meta$model,a:{Type:'Type'}}],$an:function(){return[doc(String$("An interface model that you can inspect.",40)),shared()];},d:['ceylon.language.meta.model','Interface']};};
+exports.Interface$meta$model=Interface$meta$model;
+function $init$Interface$meta$model(){
+    if (Interface$meta$model.$$===undefined){
+        initTypeProtoI(Interface$meta$model,'ceylon.language.meta.model::Interface',$init$InterfaceModel$meta$model());
+    }
+    return Interface$meta$model;
+}
+exports.$init$Interface$meta$model=$init$Interface$meta$model;
+$init$Interface$meta$model();
 function IntersectionType$meta$model($$targs$$,$$intersectionType){
     Type$meta$model($$intersectionType.$$targs$$===undefined?$$targs$$:{Type:$$intersectionType.$$targs$$.Intersection},$$intersectionType);
     set_type_args($$intersectionType,$$targs$$);
@@ -7222,24 +7299,6 @@ function $init$MemberInterface$meta$model(){
 }
 exports.$init$MemberInterface$meta$model=$init$MemberInterface$meta$model;
 $init$MemberInterface$meta$model();
-function Method$meta$model($$targs$$,$$method){
-    FunctionModel$meta$model($$method.$$targs$$===undefined?$$targs$$:{Arguments:$$method.$$targs$$.Arguments,Type:$$method.$$targs$$.Type},$$method);
-    Member$meta$model($$method.$$targs$$===undefined?$$targs$$:{Container:$$method.$$targs$$.Container,Kind:{t:Function$meta$model,a:{Arguments:$$method.$$targs$$.Arguments,Type:$$method.$$targs$$.Type}}},$$method);
-    add_type_arg($$method,'Kind',{t:Function$meta$model,a:{Arguments:$$method.$$targs$$.Arguments,Type:$$method.$$targs$$.Type}});
-    set_type_args($$method,$$targs$$);
-}
-Method$meta$model.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$tp:{Container:{'var':'in'},Type:{'var':'out','def':{t:Anything}},Arguments:{'var':'in','satisfies':[{t:Sequential,a:{Element:{t:Anything}}}],'def':{t:Nothing}}},satisfies:[{t:FunctionModel$meta$model,a:{Arguments:'Arguments',Type:'Type'}},{t:Member$meta$model,a:{Container:'Container',Kind:{t:Function$meta$model,a:{Arguments:'Arguments',Type:'Type'}}}}],$an:function(){return[doc(String$("A function model represents the model of a Ceylon function that you can invoke and inspect.\n\nA method is a member function: it is declared on classes or interfaces.\n\nThis is both a [[FunctionModel]] and a [[Member]]: you can invoke it with an instance value\nto bind it to that instance and obtain a [[Function]]:\n\n    class Outer(){\n        shared String foo(String name) => \"Hello \"+name;\n    }\n    \n    void test(){\n        Method<Outer,String,[String]> method = `Outer.foo`;\n        // Bind it to an instance value\n        Function<String,[String]> f = method(Outer());\n        // This will print: Hello Stef\n        print(f(\"Stef\"));\n    }\n",644)),shared()];},d:['ceylon.language.meta.model','Method']};};
-exports.Method$meta$model=Method$meta$model;
-function $init$Method$meta$model(){
-    if (Method$meta$model.$$===undefined){
-        initTypeProtoI(Method$meta$model,'ceylon.language.meta.model::Method',$init$FunctionModel$meta$model(),$init$Member$meta$model());
-        (function($$method){
-        })(Method$meta$model.$$.prototype);
-    }
-    return Method$meta$model;
-}
-exports.$init$Method$meta$model=$init$Method$meta$model;
-$init$Method$meta$model();
 function Attribute$meta$model($$targs$$,$$attribute){
     ValueModel$meta$model($$attribute.$$targs$$===undefined?$$targs$$:{Type:$$attribute.$$targs$$.Type},$$attribute);
     Member$meta$model($$attribute.$$targs$$===undefined?$$targs$$:{Container:$$attribute.$$targs$$.Container,Kind:{t:Value$meta$model,a:{Type:$$attribute.$$targs$$.Type}}},$$attribute);
@@ -7860,7 +7919,7 @@ ClassOrInterfaceDeclaration$meta$declaration.$$.prototype.memberApply=function(c
   }
   if (!extendsType(_t, $mptypes.Type))
     throw IncompatibleTypeException$meta$model(String$("Type argument for 'Type' must be a supertype of " + this));
-  var rv=this.meta.$mt==='ifc'?AppliedInterface(_t.t, $mptypes):AppliedClass(_t.t, $mptypes);
+  var rv=this.meta.$mt==='ifc'?AppliedMemberInterface(_t.t, $mptypes):AppliedMemberClass(_t.t, $mptypes);
   if (_t.a)rv._targs=_t.a;
   return rv;
 };ClassOrInterfaceDeclaration$meta$declaration.$$.prototype.memberApply.$$metamodel$$=function(){return{mod:$$METAMODEL$$,d:['ceylon.language.meta.declaration','ClassOrInterfaceDeclaration','$m','memberApply']};};
@@ -7908,7 +7967,7 @@ function $init$ValueDeclaration$meta$declaration(){
             $$valueDeclaration.$get.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Anything},$ps:[],$cont:ValueDeclaration$meta$declaration,$an:function(){return[doc(String$("Reads the current value of this toplevel value.",47)),shared(),$default()];},d:['ceylon.language.meta.declaration','ValueDeclaration','$m','get']};};
             $$valueDeclaration.memberGet=function (container$1016){
                 var $$valueDeclaration=this;
-                return $$valueDeclaration.memberApply(/*TODO: closed type literalcom.redhat.ceylon.compiler.typechecker.tree.Tree$TypeLiteral*/typeLiteral$meta({Type:{t:Nothing}}),{Type:{t:Anything},Container:{t:Nothing}}).$bind(container$1016).$get();
+                return $$valueDeclaration.memberApply(getNothingType$meta$model(),{Type:{t:Anything},Container:{t:Nothing}}).$bind(container$1016).$get();
             };
             $$valueDeclaration.memberGet.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Anything},$ps:[{$nm:'container',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],$cont:ValueDeclaration$meta$declaration,$an:function(){return[doc(String$("Reads the current value of this attribute on the given container instance.",74)),$throws($init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta.model'),IncompatibleTypeException$meta$model),String$("If the specified container is not compatible with this attribute.",65)),shared(),$default()];},d:['ceylon.language.meta.declaration','ValueDeclaration','$m','memberGet']};};
         })(ValueDeclaration$meta$declaration.$$.prototype);
@@ -7945,7 +8004,7 @@ function $init$ClassDeclaration$meta$declaration(){
                 var $$classDeclaration=this;
                 if(typeArguments$1020===undefined){typeArguments$1020=$$classDeclaration.memberInstantiate$defs$typeArguments(container$1019,typeArguments$1020,arguments$1021);}
                 if(arguments$1021===undefined){arguments$1021=getEmpty();}
-                return $$classDeclaration.memberClassApply(/*TODO: closed type literalcom.redhat.ceylon.compiler.typechecker.tree.Tree$TypeLiteral*/typeLiteral$meta({Type:{t:Nothing}}),typeArguments$1020,{Arguments:{t:Nothing},Type:{t:Anything},Container:{t:Nothing}}).$bind(container$1019).$apply(arguments$1021);
+                return $$classDeclaration.memberClassApply(getNothingType$meta$model(),typeArguments$1020,{Arguments:{t:Nothing},Type:{t:Anything},Container:{t:Nothing}}).$bind(container$1019).$apply(arguments$1021);
             };
             $$classDeclaration.memberInstantiate.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Anything},$ps:[{$nm:'container',$mt:'prm',$t:{t:Object$},$an:function(){return[];}},{$nm:'typeArguments',$mt:'prm',$def:1,$t:{t:Sequential,a:{Element:{t:Type$meta$model,a:{Type:{t:Anything}}}}},$an:function(){return[];}},{$nm:'arguments',$mt:'prm',seq:1,$t:{t:Sequential,a:{Element:{t:Anything}}},$an:function(){return[];}}],$cont:ClassDeclaration$meta$declaration,$an:function(){return[doc(String$("Creates a new instance of this member class, by applying the specified type arguments and value arguments.",106)),$throws($init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta.model'),IncompatibleTypeException$meta$model),String$("If the specified container, type or value arguments are not compatible with this method.",88)),shared(),$default()];},d:['ceylon.language.meta.declaration','ClassDeclaration','$m','memberInstantiate']};};
         })(ClassDeclaration$meta$declaration.$$.prototype);
@@ -7980,7 +8039,7 @@ function $init$FunctionDeclaration$meta$declaration(){
                 var $$functionDeclaration=this;
                 if(typeArguments$1025===undefined){typeArguments$1025=$$functionDeclaration.memberInvoke$defs$typeArguments(container$1024,typeArguments$1025,arguments$1026);}
                 if(arguments$1026===undefined){arguments$1026=getEmpty();}
-                return $$functionDeclaration.memberApply(/*TODO: closed type literalcom.redhat.ceylon.compiler.typechecker.tree.Tree$TypeLiteral*/typeLiteral$meta({Type:{t:Nothing}}),typeArguments$1025,{Arguments:{t:Nothing},Return:{t:Anything},Container:{t:Nothing}}).$bind(container$1024).$apply(arguments$1026);
+                return $$functionDeclaration.memberApply(getNothingType$meta$model(),typeArguments$1025,{Arguments:{t:Nothing},Return:{t:Anything},Container:{t:Nothing}}).$bind(container$1024).$apply(arguments$1026);
             };
             $$functionDeclaration.memberInvoke.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Anything},$ps:[{$nm:'container',$mt:'prm',$t:{t:Object$},$an:function(){return[];}},{$nm:'typeArguments',$mt:'prm',$def:1,$t:{t:Sequential,a:{Element:{t:Type$meta$model,a:{Type:{t:Anything}}}}},$an:function(){return[];}},{$nm:'arguments',$mt:'prm',seq:1,$t:{t:Sequential,a:{Element:{t:Anything}}},$an:function(){return[];}}],$cont:FunctionDeclaration$meta$declaration,$an:function(){return[doc(String$("Invokes the underlying method, by applying the specified type arguments and value arguments.",92)),$throws($init$OpenClass()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language.meta.model'),IncompatibleTypeException$meta$model),String$("If the specified container, type or value arguments are not compatible with this method.",88)),shared(),$default()];},d:['ceylon.language.meta.declaration','FunctionDeclaration','$m','memberInvoke']};};
         })(FunctionDeclaration$meta$declaration.$$.prototype);
@@ -9916,6 +9975,20 @@ function $retuple(t) { //receives {t:'T',l:[...]}
   }
   return r;
 }
+function validate$params(ps,t,msg) {
+  if (t.t===Nothing)return;
+  if (!ps || ps.length==0) {
+    if (t.t===Empty)return;
+  } else if (t.t==='T') {
+    if (ps.length==t.l.length) {
+      //TODO check each parameter
+      return;
+    }
+  } else { //it's already a tuple, navigate it
+    console.log("TODO!!!! validate$params with Tuple type");
+  }
+  throw IncompatibleTypeException$meta$model(msg);
+}
 /*Native Implementation of annotations() */
 function annotations$meta(anntype, progelem, $$$mptypes) {
   var mm = progelem.tipo?progelem.tipo.$$metamodel$$:progelem.$$metamodel$$;
@@ -10318,26 +10391,28 @@ function AppliedClass(tipo,$$targs$$,that){
       mm=mm(); tipo.$$metamodel$$=mm;
     }
     if (mm && mm.$cont) {
-      that=function(x){
-        that.tipo=function(){return tipo.apply(x,arguments);};
-        that.$bound=x;
-        return that;
+      that=function(x){/*Class*/
+        //TODO sometimes we need type arguments
+        return tipo.apply(x,arguments);
       }
-      that.tipo$2=tipo;
       var dummy = new AppliedClass.$$;
       that.$$=AppliedClass.$$;
       that.getT$all=function(){return dummy.getT$all();};
       that.getT$name=function(){return dummy.getT$name();};
       that.equals=function(o){
-        var eq=isOfType(o,{t:AppliedClass}) && (o.tipo$2||o.tipo)==tipo;
-        if (that.$bound)eq=eq && o.$bound && o.$bound.equals(that.$bound);else eq=eq && o.$bound===undefined;
+        var eq=isOfType(o,{t:AppliedClass}) && o.tipo===tipo;
         return eq;
       };
+      that.$apply=function(x){return AppliedClass.$$.prototype.$apply.call(that,x);};
+      that.$apply.$$metamodel$$=AppliedClass.$$.prototype.$apply.$$metamodel$$;
       defineAttr(that,'string',function(){
 var qn=mm.d[0];
 for (var i=1; i<mm.d.length; i++)if(mm.d[i][0]!=='$')qn+=(i==1?"::":".")+mm.d[i];
 return String$(qn);
 },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},d:['ceylon.language','Object','$at','string']};});
+      defineAttr(that,'declaration',function(){
+        return ClassModel$meta$model.$$.prototype.$prop$getDeclaration.get.call(that);
+      },undefined,ClassModel$meta$model.$$.prototype.$prop$getDeclaration.$$metamodel$$);
     } else {
       that=new AppliedClass.$$;
     }
@@ -10386,46 +10461,80 @@ function $init$AppliedClass(){
         return this.tipo.apply(undefined,a);
       };$$clase.$apply.$$metamodel$$=function(){return{mod:$$METAMODEL$$,d:['ceylon.language.meta.model','Class','$m','apply'],$t:'Type'};};
 
-defineAttr($$clase,'parameterTypes',function(){
-  var ps=this.tipo.$$metamodel$$.$ps;
-  if (!ps || ps.length==0)return getEmpty();
-  var r=[];
-  for (var i=0; i < ps.length; i++) {
-    var pt=ps[i].$t;
-    if (typeof(pt)==='string'){
-      if (!this.$targs)throw TypeApplicationException$meta$model(String$("This class model needs type parameters"));
-      pt=this.$targs[pt];
-      if (!pt)throw TypeApplicationException$meta$model(String$("Class model is missing type argument for <" + ps[i].$t + ">"));
-    }
-    r.push(typeLiteral$meta({Type:pt}));
+    })(AppliedClass.$$.prototype);
   }
-  return r.reifyCeylonType({Element:{t:Type$meta$model,a:{t:Anything}},Absent:{t:Null}});
-},undefined,function(){return{mod:$$METAMODEL$$,$cont:ClassModel$meta$model,d:['ceylon.language.meta.model','ClassModel','$at','parameterTypes'],$t:{t:Sequential,a:{Element:{t:Type$meta$model,a:{Type:{t:Anything}}},Absent:{t:Null}}}};});
-
-            defineAttr($$clase,'declaration',function(){
-              var $$clase=this;
-              if ($$clase._decl)return $$clase._decl;
-              var mm = $$clase.tipo.$$metamodel$$;
-              if (typeof(mm)==='function'){
-                mm=mm();
-                $$clase.tipo.$$metamodel$$=mm;
-              }
-              $$clase._decl = OpenClass(getModules$meta().find(mm.mod['$mod-name'],mm.mod['$mod-version']).findPackage(mm.d[0]), $$clase.tipo);
-              return $$clase._decl;
-            },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:ClassDeclaration$meta$declaration},$cont:AppliedClass,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','Class','$at','declaration']};});
-
-
-  $$clase.equals=function(o){
-return isOfType(o,{t:AppliedClass}) && (o.tipo$2||o.tipo)==this.tipo && this.typeArguments.equals(o.typeArguments);
-};
-//TODO equals metamodel
-
-        })(AppliedClass.$$.prototype);
-    }
-    return AppliedClass;
+  return AppliedClass;
 }
 exports.$init$AppliedClass$meta$model=$init$AppliedClass;
 $init$AppliedClass();
+
+function AppliedMemberClass(tipo,$$targs$$,that){
+  $init$AppliedMemberClass();
+  if (that===undefined) {
+    var mm = tipo.$$metamodel$$;
+    if (typeof(mm)==='function') {
+      mm=mm(); tipo.$$metamodel$$=mm;
+    }
+    if (mm && mm.$cont) {
+      that=function(x){
+        var rv=tipo.bind(x);
+        rv.$$metamodel$$=tipo.$$metamodel$$;
+        return AppliedClass(rv,{Type:{t:mm.$cont},Arguments:{t:Nothing}});//TODO Arguments
+      }
+      var dummy = new AppliedMemberClass.$$;
+      that.$$=AppliedMemberClass.$$;
+      that.getT$all=function(){return dummy.getT$all();};
+      that.getT$name=function(){return dummy.getT$name();};
+      that.equals=function(o){
+        var eq=isOfType(o,{t:AppliedMemberClass}) && o.tipo===tipo;
+        if (that.$bound)eq=eq && o.$bound && o.$bound.equals(that.$bound);else eq=eq && o.$bound===undefined;
+        return eq;
+      };
+      defineAttr(that,'parameterTypes',function(){
+        return ClassModel$meta$model.$$.prototype.$prop$getParameterTypes.get.call(that);
+      },undefined,ClassModel$meta$model.$$.prototype.$prop$getParameterTypes.$$metamodel$$);
+      defineAttr(that,'declaration',function(){
+        return ClassModel$meta$model.$$.prototype.$prop$getDeclaration.get.call(that);
+      },undefined,ClassModel$meta$model.$$.prototype.$prop$getDeclaration.$$metamodel$$);
+      that.$bind=function(){return AppliedMemberClass.$$.prototype.$bind.apply(that,arguments);}
+      defineAttr(that,'string',function(){
+var qn=mm.d[0];
+for (var i=1; i<mm.d.length; i++)if(mm.d[i][0]!=='$')qn+=(i==1?"::":".")+mm.d[i];
+return String$(qn);
+},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},d:['ceylon.language','Object','$at','string']};});
+    } else {
+      throw IncompatibleTypeException("Invalid metamodel data for MemberClass");
+    }
+  }
+  set_type_args(that,$$targs$$);
+  MemberClass$meta$model(that.$$targs$$===undefined?$$targs$$:{Arguments:that.$$targs$$.Arguments,Type:that.$$targs$$.Type,Container:that.$$targs$$.Container},that);
+  that.tipo=tipo;
+  return that;
+}
+AppliedMemberClass.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],$tp:{Container:{'var':'in'},Type:{'var':'out','def':{t:Anything}},Arguments:{'var':'in','satisfies':[{t:Sequential,a:{Element:{t:Anything}}}],'def':{t:Nothing}}},satisfies:[{t:MemberClass$meta$model,a:{Arguments:'Arguments',Type:'Type',Container:'Container'}}],$an:function(){return[shared(),abstract()];},d:['','AppliedMemberClass']};};
+exports.AppliedMemberClass=AppliedMemberClass;
+function $init$AppliedMemberClass(){
+  if (AppliedMemberClass.$$===undefined){
+    initTypeProto(AppliedMemberClass,'ceylon.language.meta.model::AppliedMemberClass',Basic,MemberClass$meta$model);
+    (function($$amc){
+      
+      //MethodDef bind at caca.ceylon (5:4-5:107)
+      $$amc.$bind=function $bind(cont){
+        var ot=cont.getT$name ? cont.getT$all()[cont.getT$name()]:throwexc(IncompatibleTypeException$meta$model("Container does not appear to be a Ceylon object"));
+        if (!ot)throw IncompatibleTypeException$meta$model("Incompatible Container (has no metamodel information");
+        var omm=ot.$$metamodel$$;
+        if (typeof(omm)==='function'){omm=omm();ot.$$metamodel$$=omm;}
+        var mm=this.tipo.$$metamodel$$;
+        if (typeof(mm)==='function'){mm=mm();this.tipo.$$metamodel$$=mm;}
+        if (!extendsType({t:ot},{t:mm.$cont}))throw IncompatibleTypeException$meta$model("Incompatible container type");
+        return this(cont);
+      };$$amc.$bind.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Class$meta$model,a:{Arguments:'Arguments',Type:'Type'}},$ps:[{$nm:'container',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],$cont:MemberClass$meta$model,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','MemberClass','$m','bind']};};
+    })(AppliedMemberClass.$$.prototype);
+  }
+  return AppliedMemberClass;
+}
+exports.$init$AppliedMemberClass$meta$model=$init$AppliedMemberClass;
+$init$AppliedMemberClass();
 
 function AppliedInterface(tipo,$$targs$$,that) {
   $init$AppliedInterface();
@@ -10455,6 +10564,9 @@ var qn=mm.d[0];
 for (var i=1; i<mm.d.length; i++)if(mm.d[i][0]!=='$')qn+=(i==1?"::":".")+mm.d[i];
 return String$(qn);
 },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},d:['ceylon.language','Object','$at','string']};});
+      defineAttr(that,'declaration',function(){
+        return InterfaceModel$meta$model.$$.prototype.$prop$getDeclaration.get.call(that);
+      },undefined,InterfaceModel$meta$model.$$.prototype.$prop$getDeclaration.$$metamodel$$);
     } else {
       that=new AppliedInterface.$$;
     }
@@ -10472,20 +10584,6 @@ function $init$AppliedInterface(){
     initTypeProto(AppliedInterface,'ceylon.language.meta.model::AppliedInterface',Basic,Interface$meta$model);
     (function($$appliedInterface){
 
-      defineAttr($$appliedInterface,'declaration',function(){
-      if (this._decl)return this._decl;
-      var mm = this.tipo.$$metamodel$$;
-      if (typeof(mm)==='function') {
-        mm = mm();
-        this.tipo.$$metamodel$$=mm;
-      }
-      this._decl = OpenInterface(getModules$meta().find(mm.mod['$mod-name'],mm.mod['$mod-version']).findPackage(mm.d[0]), this.tipo);
-      return this._decl;
-      },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:InterfaceDeclaration$meta$declaration},$cont:AppliedInterface,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','Interface','$at','declaration']};});
-
-  $$appliedInterface.equals=function(o){
-return isOfType(o,{t:AppliedInterface}) && (o.tipo$2||o.tipo)==this.tipo && this.typeArguments.equals(o.typeArguments);
-};
         })(AppliedInterface.$$.prototype);
     }
     return AppliedInterface;
@@ -10493,6 +10591,63 @@ return isOfType(o,{t:AppliedInterface}) && (o.tipo$2||o.tipo)==this.tipo && this
 exports.$init$AppliedInterface$meta$model=$init$AppliedInterface;
 $init$AppliedInterface();
 
+function AppliedMemberInterface(tipo,$$targs$$,that){
+  $init$AppliedMemberInterface();
+  if (that===undefined){
+    var mm = tipo.$$metamodel$$;
+    if (typeof(mm)==='function') {
+      mm=mm(); tipo.$$metamodel$$=mm;
+    }
+    if (mm && mm.$cont) {
+      that=function(x){
+        that.tipo=function(){return tipo.apply(x,arguments);};
+        that.$bound=x;
+        return that;
+      }
+      that.tipo$2=tipo;
+      var dummy = new AppliedMemberInterface.$$;
+      that.$$=AppliedMemberInterface.$$;
+      that.getT$all=function(){return dummy.getT$all();};
+      that.getT$name=function(){return dummy.getT$name();};
+      that.equals=function(o){
+        var eq=isOfType(o,{t:AppliedMemberInterface}) && (o.tipo$2||o.tipo)==tipo;
+        if (that.$bound)eq=eq && o.$bound && o.$bound.equals(that.$bound);else eq=eq && o.$bound===undefined;
+        return eq;
+      };
+      defineAttr(that,'string',function(){
+var qn=mm.d[0];
+for (var i=1; i<mm.d.length; i++)if(mm.d[i][0]!=='$')qn+=(i==1?"::":".")+mm.d[i];
+return String$(qn);
+},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},d:['ceylon.language','Object','$at','string']};});
+      defineAttr(that,'declaration',function(){
+        return InterfaceModel$meta$model.$$.prototype.$prop$getDeclaration.get.call(that);
+      },undefined,InterfaceModel$meta$model.$$.prototype.$prop$getDeclaration.$$metamodel$$);
+      that.$bind=function(x){return AppliedMemberInterface.$$.prototype.$bind.call(that,x);}
+    } else {
+      that=new AppliedMemberInterface.$$;
+    }
+  }
+  set_type_args(that,$$targs$$);
+  MemberInterface$meta$model(that.$$targs$$===undefined?$$targs$$:{Type:that.$$targs$$.Type,Container:that.$$targs$$.Container},that);
+  that.tipo=tipo;
+  return that;
+}
+AppliedMemberInterface.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$ps:[],$tp:{Container:{'var':'in'},Type:{'var':'out','def':{t:Anything}}},satisfies:[{t:MemberInterface$meta$model,a:{Type:'Type',Container:'Container'}}],$an:function(){return[shared(),abstract()];},d:['ceylon.language.meta.model','MemberInterface']};};
+exports.AppliedMemberInterface=AppliedMemberInterface;
+function $init$AppliedMemberInterface(){
+  if (AppliedMemberInterface.$$===undefined){
+    initTypeProto(AppliedMemberInterface,'ceylon.language.meta.model::AppliedMemberInterface',Basic,MemberInterface$meta$model);
+    (function($$appliedMemberInterface){
+      $$appliedMemberInterface.$bind=function $bind(container$2){
+        var $$appliedMemberInterface=this;
+        throw wrapexc(Exception(String$("IMPL MemberInterface.bind",25)),'5:59-5:103','caca.ceylon');
+      };$$appliedMemberInterface.$bind.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Interface$meta$model,a:{Type:'Type'}},$ps:[{$nm:'container',$mt:'prm',$t:{t:Object$},$an:function(){return[];}}],$cont:MemberInterface,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','MemberInterface','$m','bind']};};
+    })(AppliedMemberInterface.$$.prototype);
+  }
+  return AppliedMemberInterface;
+}
+exports.$init$AppliedMemberInterface$meta$model=$init$AppliedMemberInterface;
+$init$AppliedMemberInterface();
     
 
 function AppliedUnionType(tipo,types$2, $$targs$$, that) {
@@ -10697,53 +10852,43 @@ exports.$init$AppliedIntersectionType$meta$model=$init$AppliedIntersectionType;
 $init$AppliedIntersectionType();
 
 function AppliedFunction(m,$$targs$$,o,mptypes) {
-  var f = o===undefined?function(x){return AppliedFunction(m,$$targs$$,x,mptypes);}:function(){return m.apply(o,arguments);}
   var mm=m.$$metamodel$$;
   if (typeof(mm)==='function') {mm=mm();m.$$metamodel$$=mm;}
-  f.$$metamodel$$={mod:$$METAMODEL$$,d:['ceylon.language.model','Function'],$t:mm.$t,$ps:mm.$ps,$an:mm.$an};
-  var T$all={'ceylon.language.model::Function':Function$meta$model};
-  for (x in f.getT$all()) { T$all[x]=f.getT$all()[x]; }
-  f.getT$all=function() {return T$all; };
-  if ($$targs$$===undefined) {
-    //TODO add type arguments
-    var types = {t:Empty};
-    var t2s = [];
-    for (var i=mm.$ps.length-1; i>=0; i--) {
-      var e;
-      t2s.push(mm.$ps[i].$t);
-      if (t2s.length == 1) {
-        e = mm.$ps[i].$t;
-      } else {
-        var lt=[];
-        for (var j=0;j<t2s.legth;j++)lt.push(t2s[j]);
-        e = {t:'u', l:lt};
-      }
-      types = {t:Tuple,a:{Rest:types,First:mm.$ps[i].$t,Element:e}};
+  var ttargs;
+  if (mm.$tp) {
+    if (!mptypes)throw TypeApplicationException$meta$model("Missing type arguments for AppliedFunction");
+    var i=0;ttargs={};
+    for (var tp in mm.$tp) {
+      var _ta=mptypes[i];
+      if(_ta&&_ta.tipo)ttargs[tp]={t:_ta.tipo};
+      else if (_ta) console.log("TODO assign type arg " + _ta + " to " + tp);
+      else if (mptypes[tp])ttargs[tp]=mptypes[tp];
+      else console.log("TODO no more type arguments");
+      i++;
     }
-    f.$$targs$$={Type:mm.$t,Arguments:types};
+  }
+  var f = o===undefined?function(x){
+    return AppliedFunction(m,$$targs$$,x,mptypes);
+  }:function(){
+    if (mm.$tp) {
+      var _a=[];
+      for (var i=0;i<arguments.length;i++)_a.push(arguments[i]);
+      _a.push(ttargs);//AQUI
+      return m.apply(o,_a);
+    }
+    return m.apply(o,arguments);
+  }
+  f.$$metamodel$$={mod:$$METAMODEL$$,d:['ceylon.language.model','Function'],$t:mm.$t,$ps:mm.$ps,$an:mm.$an};
+  var dummy=new AppliedFunction.$$;
+  f.getT$all=function(){return dummy.getT$all();}
+  f.getT$name=function(){return dummy.getT$name();}
+  if ($$targs$$===undefined) {
+    throw TypeApplicationException$meta$model("Missing type arguments for AppliedFunction");
   } else {
     f.$$targs$$=$$targs$$;
   }
-  var dummy=new AppliedFunction.$$;
-  Function$meta$model(dummy,$$targs$$);
-  f.$$=dummy.$$;
-  f.getT$all=function(){return dummy.getT$all();};
-  f.getT$name=function(){return dummy.getT$name();};
-defineAttr(f,'parameterTypes',function(){
-  var ps=this.tipo.$$metamodel$$.$ps;
-  if (!ps || ps.length==0)return getEmpty();
-  var r=[];
-  for (var i=0; i < ps.length; i++) {
-    var pt=ps[i].$t;
-    if (typeof(pt)==='string'){
-      if (!this.$targs)throw TypeApplicationException$meta$model(String$("This function model needs type parameters"));
-      pt=this.$targs[pt];
-      if (!pt)throw TypeApplicationException$meta$model(String$("Function model is missing type argument for <" + ps[i].$t + ">"));
-    }
-    r.push(typeLiteral$meta({Type:pt}));
-  }
-  return r.reifyCeylonType({Element:{t:Type$meta$model,a:{t:Anything}},Absent:{t:Null}});
-},undefined,function(){return{mod:$$METAMODEL$$,$cont:FunctionModel$meta$model,d:['ceylon.language.meta.model','FunctionModel','$at','parameterTypes'],$t:{t:Sequential,a:{Element:{t:Type$meta$model,a:{Type:{t:Anything}}},Absent:{t:Null}}}};});
+  Function$meta$model(f,$$targs$$);
+  f.tipo=m;
 defineAttr(f,'string',function(){
   var qn=mm.d[0];
   for (var i=1; i<mm.d.length; i++)if(mm.d[i][0]!=='$')qn+=(i==1?"::":".")+mm.d[i];
@@ -10767,8 +10912,19 @@ defineAttr(f,'string',function(){
     }
     qn+=">";
   }
+  defineAttr(f,'parameterTypes',function(){
+    return FunctionModel$meta$model.$$.prototype.$prop$getParameterTypes.get.call(f);
+  },undefined,FunctionModel$meta$model.$$.prototype.$prop$getParameterTypes.$$metamodel$$);
   return String$(qn);
 },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},d:['ceylon.language','Object','$at','string']};});
+defineAttr(f,'declaration',function(){
+  if (f._decl)return f._decl;
+  f._decl = OpenClass(getModules$meta().find(mm.mod['$mod-name'],mm.mod['$mod-version']).findPackage(mm.d[0]), m);
+  return f._decl;
+},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:FunctionDeclaration$meta$declaration},d:['ceylon.language.meta.model','FunctionModel','$at','declaration']};});
+  f.$apply=function(){
+    return m.apply(o,arguments);
+  }
   return f;
 }
 AppliedFunction.$$metamodel$$=function(){return{mod:$$METAMODEL$$,d:['ceylon.language.meta.model','Function'],satisfies:{t:Function$meta$model,a:{Type:'Type',Arguments:'Arguments'}},$an:function(){return [shared(),actual()];}};};
@@ -10924,36 +11080,24 @@ $init$AppliedVariable$meta$model();
 //ClassDefinition AppliedMethod at X (10:0-21:0)
 function AppliedMethod(tipo,typeArgs,$$targs$$,$$appliedMethod){
   $init$AppliedMethod();
-  var _mptypes=undefined;
-  if (typeArgs && tipo && tipo.$$metamodel$$) {
-    var _tmm=tipo.$$metamodel$$;
-    if (typeof(_tmm)==='function'){_tmm=_tmm();tipo.$$metamodel$$=_tmm;}
-    _mptypes={};
-    var _count=0;
-    for (var type_arg in _tmm.$tp) {
-      _mptypes[type_arg]=typeArgs[_count++].$$targs$$.Type;
+  if ($$appliedMethod===undefined){
+    $$appliedMethod=function(x){
+      return AppliedFunction(tipo,$$targs$$,x,typeArgs);
     }
+    var dummy=new AppliedMethod.$$;
+    $$appliedMethod.getT$all=function(){return dummy.getT$all();};
+    $$appliedMethod.getT$name=function(){return dummy.getT$name();};
   }
-  if ($$appliedMethod===undefined)$$appliedMethod=function(x){return function(){
-    if (_mptypes) {
-      var nargs = [];
-      for (var i=0; i < arguments.length; i++)nargs.push(arguments[i]);
-      nargs.push(_mptypes);
-      return tipo.apply(x,nargs);
-    }
-    return tipo.apply(x,arguments);
-  }};
   set_type_args($$appliedMethod,$$targs$$);
   Method$meta$model($$appliedMethod.$$targs$$===undefined?$$targs$$:{Arguments:$$appliedMethod.$$targs$$.Arguments,Type:$$appliedMethod.$$targs$$.Type,Container:$$appliedMethod.$$targs$$.Container},$$appliedMethod);
   $$appliedMethod.tipo=tipo;
 
 //This was copied from prototype style
   defineAttr($$appliedMethod,'declaration',function(){
-    var $$appliedMethod=this;
-    var mm = $$appliedMethod.tipo.$$metamodel$$;
+    var mm = tipo.$$metamodel$$;
     if (typeof(mm)==='function') {
       mm = mm();
-      $$appliedMethod.tipo.$$metamodel$$=mm;
+      tipo.$$metamodel$$=mm;
     }
     var _pkg = getModules$meta().find(mm.mod['$mod-name'],mm.mod['$mod-version']).findPackage(mm.d[0]);
     return OpenFunction(_pkg, $$appliedMethod.tipo);
@@ -10967,7 +11111,16 @@ function AppliedMethod(tipo,typeArgs,$$targs$$,$$appliedMethod){
       var $$appliedMethod=this;
       throw wrapexc(Exception(String$("IMPL AppliedMethod.typeArguments")),'92:75-92:107','?');
   },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Map,a:{Key:{t:TypeParameter$meta$declaration},Item:{t:Type$meta$model,a:{Type:{t:Anything}}}}},$cont:AppliedMethod,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','Method','$at','typeArguments']};});
+  defineAttr($$appliedMethod,'parameterTypes',function(){
+    return FunctionModel$meta$model.$$.prototype.$prop$getParameterTypes.get.call($$appliedMethod);
+  },undefined,FunctionModel$meta$model.$$.prototype.$prop$getParameterTypes.$$metamodel$$);
 
+  $$appliedMethod.equals=function(o){
+    return isOfType(o,{t:AppliedMethod}) && o.tipo===tipo;
+  }
+  $$appliedMethod.$bind=function(o){
+    return $$appliedMethod(o);
+  }
   return $$appliedMethod;
 }
 AppliedMethod.$$metamodel$$=function(){return{mod:$$METAMODEL$$,'super':{t:Basic},$tp:{Container:{'var':'in'},Type:{'var':'out','def':{t:Anything}},Arguments:{'var':'in','satisfies':[{t:Sequential,a:{Element:{t:Anything}}}],'def':{t:Nothing}}},satisfies:[{t:Method$meta$model,a:{Arguments:'Arguments',Type:'Type',Container:'Container'}}],$an:function(){return[shared()];},d:['ceylon.language.meta.model','Method']};};
@@ -11009,14 +11162,13 @@ function AppliedAttribute(pname, atr,$$targs$$,$$appliedAttribute){
   },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Type$meta$model,a:{Type:'Type'}},$cont:AppliedAttribute,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','Attribute','$at','type']};});
   //AttributeGetterDefinition declaration at X (100:4-100:83)
   defineAttr($$appliedAttribute,'declaration',function(){
-    var $$atr=this;
-    var mm = $$atr.tipo.$$metamodel$$;
+    var mm = atr.$$metamodel$$;
     if (typeof(mm)==='function') {
       mm=mm();
-      $$atr.tipo.$$metamodel$$=mm;
+      atr.$$metamodel$$=mm;
     }
     var pkg = getModules$meta().find(mm.mod['$mod-name'],mm.mod['$mod-version']).findPackage(mm.d[0]);
-    return ($$atr.tipo.set ? OpenVariable:OpenValue)(pkg, $$atr.tipo);
+    return (atr.set ? OpenVariable:OpenValue)(pkg, atr);
   },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:ValueDeclaration$meta$declaration},$cont:AppliedAttribute,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','Attribute','$at','declaration']};});
   $$appliedAttribute.$bind=function(cont){
     return AppliedValue(cont,atr,{Type:$$targs$$.Type});
@@ -11236,22 +11388,16 @@ defineAttr($$openFunction,'container',function(){
             i++;
           }
         }
-        var ar=$mptypes.Arguments.t;
-        if ((mm.$ps && mm.$ps.length!=ar.size) || ar.size!=0) {
-          //TODO this is incomplete
-          throw IncompatibleTypeException$meta$model("Wrong number of arguments");
-        }
+        validate$params(mm.$ps,$mptypes.Arguments,"Wrong number of arguments when applying function");
         return ta?AppliedFunction(this.tipo,$mptypes,undefined,ta):AppliedFunction(this.tipo,$mptypes);
       };$$openFunction.$apply.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Function$meta$model,a:{Arguments:{t:Nothing},Type:{t:Anything}}},$ps:[{$nm:'types',$mt:'prm',seq:1,$t:{t:Sequential,a:{Element:{t:Type$meta$model}}}}],$cont:OpenFunction,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.declaration','FunctionDeclaration','$m','apply']};};
 
       $$openFunction.memberApply=function memberApply(cont,types,$mptypes){
         var mm=this.tipo.$$metamodel$$;
-        if (!(cont.tipo && extendsType({t:cont.tipo},{t:mm.$cont})))throw IncompatibleTypeException$meta$model("Incompatible Container type argument");
+        if (!(cont.tipo && extendsType({t:cont.tipo},{t:mm.$cont}))&&cont!==getNothingType$meta$model())
+          throw IncompatibleTypeException$meta$model("Incompatible Container type argument");
         if (!extendsType(mm.$t,$mptypes.Return))throw IncompatibleTypeException$meta$model("Incompatible Return type argument");
-        var ar=$mptypes.Arguments.t;
-        if ((mm.$ps && mm.$ps.length!=ar.size) || ar.size!=0){
-          throw IncompatibleTypeException$meta$model("Wrong number of arguments in Arguments type argument");
-        }
+        validate$params(mm.$ps,$mptypes.Arguments,"Wrong number of Arguments for memberApply");
         var tps=mm.$tp;
         var ta;
         if (tps) {
@@ -11381,7 +11527,8 @@ defineAttr($$openValue,'container',function(){
         if (typeof(mm)==='function'){
           mm=mm(); this.tipo.$$metamodel$$=mm;
         }
-        if (!(cont.tipo && extendsType({t:cont.tipo},{t:mm.$cont})))throw IncompatibleTypeException$meta$model("Incompatible Container type argument");
+        if (!(cont.tipo && extendsType({t:cont.tipo},{t:mm.$cont}))&&cont!==getNothingType$meta$model())
+          throw IncompatibleTypeException$meta$model("Incompatible Container type argument");
         if (!extendsType(mm.$t,$mptypes.Type))throw IncompatibleTypeException$meta$model("Incompatible Type type argument");
         return AppliedAttribute(this.meta.$nm,this.tipo,$mptypes);
       };$$openValue.memberApply.$$metamodel$$=function(){return{mod:$$METAMODEL$$,d:['ceylon.language.meta.declaration','ValueDeclaration','$m','memberApply']};};
@@ -11541,30 +11688,29 @@ $$openClass.classApply=function(targs,$mptypes) {
     if (!targs)throw TypeApplicationException$meta$model("This class requires type arguments");
     //TODO generate targs
   }
-  var ar=$mptypes.Arguments.t;
-  if ((mm.$ps && mm.$ps.length!=ar.size) || ar.size!=0) {
-    throw IncompatibleTypeException$meta$model("Wrong number of arguments");
-  }
+  validate$params(mm.$ps,$mptypes.Arguments,"Wrong number of Arguments for classApply");
   //TODO this is wrong
   return this.$apply(targs,$mptypes);
 }
 $$openClass.memberApply=function(cont,targs,$mptypes) {
+  var mm=this.tipo.$$metamodel$$;
+  if (!extendsType({t:mm.$cont},$mptypes.Container))throw IncompatibleTypeException$meta$model("Incompatible Container in memberApply");
+  if (!extendsType({t:this.tipo},$mptypes.Type))throw IncompatibleTypeException$meta$model("Incompatible Type in memberApply");
   //TODO add Arguments to mptypes
-  return this.memberClassApply(cont,targs,$mptypes);
+  return this.memberClassApply(cont,targs,{Type:$mptypes.Type,Arguments:{t:Nothing}});
 }
 
 $$openClass.memberClassApply=function(cont,targs,$mptypes){
   var mm=this.tipo.$$metamodel$$;
-  if (!extendsType({t:this.tipo},$mptypes.Container))throw IncompatibleTypeException$meta$model("Incompatible Container specified");
+  if (cont!==getNothingType$meta$model() && !extendsType({t:cont.tipo},{t:mm.$cont}))
+    throw IncompatibleTypeException$meta$model("Incompatible Container specified");
+  var _t={t:this.tipo};
   if (mm.$tp) {
     if (!targs)throw TypeApplicationException$meta$model("This class requires type arguments");
     //TODO generate targs
   }
-  if ((mm.$ps && mm.$ps.length!=ar.size) || ar.size!=0) {
-    throw IncompatibleTypeException$meta$model("Wrong number of arguments");
-  }
-  //TODO actually return something...
-  return null;
+  validate$params(mm.$ps,$mptypes.Arguments,"Wrong number of Arguments for classApply");
+  return AppliedMemberClass(this.tipo,{Container:{t:mm.$cont},Type:_t,Arguments:$mptypes.Arguments});
 }
 
       defineAttr($$openClass,'string',function(){
@@ -12148,7 +12294,7 @@ function get_model(mm) {
 }
 
 function type$meta(x,$$targs$$) {
-  if (x === null) {
+  if (x === null || $$targs$$.Type.t===Nothing) {
     return getNothingType$meta$model();
   }
   if (x.$$metamodel$$) {
@@ -12163,8 +12309,11 @@ function type$meta(x,$$targs$$) {
   if ($$targs$$.Type.t==='T') {
     var rt=$retuple($$targs$$.Type);
     c=AppliedClass(Tuple,{Type:$$targs$$.Type, Arguments:{t:'T',l:[$$targs$$.Type.l[0],rt.Rest]}});
+  } else {
+    var mm=$$targs$$.Type.t.$$metamodel$$;
+    if (typeof(mm)==='function'){mm=mm();$$targs$$.Type.t.$$metamodel$$=mm;}
+    c=(mm.$cont?AppliedMemberClass:AppliedClass)($$targs$$.Type.t, {Type:$$targs$$.Type, Arguments:{t:Sequential,a:{Element:{t:Anything}}}});
   }
-  c=AppliedClass($$targs$$.Type.t, {Type:$$targs$$.Type, Arguments:{t:Sequential,a:{Element:{t:Anything}}}});
   if ($$targs$$.Type.a)c.$targs=$$targs$$.Type.a;
   return c;
 }
@@ -12184,7 +12333,7 @@ function typeLiteral$meta($$targs$$) {
     } else if (t === 'T') {
       //TODO arguments
       var _tt=$retuple($$targs$$.Type);
-      return AppliedClass(Tuple,{Type:_tt,Arguments:{t:'T',l:[_tt.a.First,_tt.a.Rest]}});
+      return AppliedClass(Tuple,{Type:$$targs$$.Type,Arguments:{t:'T',l:[_tt.a.First,_tt.a.Rest]}});
     } else if (t.$$metamodel$$ === undefined) {
       throw Exception("JS Interop not supported / incomplete metamodel for " + /*require('util').inspect(*/t);
     } else {
@@ -12267,6 +12416,7 @@ function applyIntersectionType(it) { //return AppliedIntersectionType
 }
 exports.$mod$ans$=function(){return[doc(String$("The Ceylon language module containing the core types \nreferred to in the language specification.",96)),by([String$("Gavin King",10),String$("Tom Bentley",11),String$("Tako Schotanus",14),String$("Stephane Epardaud",17),String$("Enrique Zamudio",15)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),license(String$("http://www.apache.org/licenses/LICENSE-2.0.html",47))];};
 exports.$pkg$ans$ceylon$language=function(){return[doc(String$("The Ceylon language package.",28)),by([String$("Gavin King",10),String$("Tom Bentley",11),String$("Tako Schotanus",14),String$("Stephane Epardaud",17),String$("Enrique Zamudio",15)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];};
+exports.$pkg$ans$ceylon$language$meta=function(){return[doc(String$("The Ceylon metamodel base package.\n\nThe Ceylon metamodel allows you to: \n\n* dynamically inspect modules, packages, functions, values and types, \n* invoke functions and class initialisers, or read and write values, and\n* inspect the annotations on program elements.\n\n### A little bit of terminology\n\nThere are a few concepts and terms in the Ceylon metamodel API that you should be familiar with:\n\n- A _declaration_ is the definition of a Ceylon construct, such as a module, package, value, function\n  or class. Declarations are singletons: there is only a single instance of a given class declaration,\n  for example. You can inspect declarations to get information about how they were defined by their\n  author. You cannot directly invoke function or class declarations, but you can _apply_ them to get\n  a _model_ that you can invoke.\n- A _model_ is a Ceylon definition that represents a declaration where all the type variables have\n  been bound to _closed type_ values. You can query models for their member models and you can directly\n  invoke models.\n- A _closed type_ is a type which does not contain any unbound type variables.\n- An _open type_ is a type which may contain unbound type variables.\n\nFor example, given the following Ceylon program:\n\n    shared abstract class MyList<T>() satisfies List<T>{}\n\nThe declaration of `MyList` represents the class declaration and contains the information that it is\n`abstract` and that it satisfies the `List<T>` open type. That type is open because it contains an\nunbound type variable `T`, which is not bound when we inspect the `MyList` class declaration.\n\nGiven an particular instance of `MyList`, we can query its (closed) type with the [[type]] function,\nand we obtain a closed type representing (for example) `MyList<Integer>`. Object instances necessarily\nhave a closed type at runtime, since in order to instantiate an object, all type arguments must be\nprovided and known during instantiation, so the type of an object instance at runtime is necessarily\na closed type: they cannot contain unbound type variables.\n\nClosed types that represent class or interfaces are also models. For example, the closed type of our\n`MyList<Integer>` instance is both a closed type and a class model: you can query its satisfied types\nand find that it satisfies `List<Integer>` closed type and model (as opposed to the class declaration\nof `MyList` which satisfies the `List<T>` open type). You can also invoke that model to obtain a new\ninstance of `MyList<Integer>`.\n\n### Model and declaration literals\n\nCeylon supports getting declaration values using either the declaration API or using declaration\nliterals:\n\n- <code>\\`module ceylon.file\\`</code> returns the [[Module|ceylon.language.meta.declaration::Module]] \n  declaration which corresponds to the `ceylon.file` module you imported in your module descriptor.\n- <code>\\`package ceylon.language.meta\\`</code> returns the [[Package|ceylon.language.meta.declaration::Package]]\n  declaration from your current module imports.\n- <code>\\`interface List\\`</code> returns the [[InterfaceDeclaration|ceylon.language.meta.declaration::InterfaceDeclaration]] \n  for the [[List|ceylon.language::List]] type.\n- <code>\\`class Integer\\`</code> returns the [[ClassDeclaration|ceylon.language.meta.declaration::ClassDeclaration]] \n  for the [[Integer|ceylon.language::Integer]] type.\n- <code>\\`function type\\`</code> returns the [[FunctionDeclaration|ceylon.language.meta.declaration::FunctionDeclaration]] \n  for the [[type]] function. Similarly <code>\\`function List.shorterThan\\`</code> for methods.\n- <code>\\`value modules\\`</code> returns the [[ValueDeclaration|ceylon.language.meta.declaration::ValueDeclaration]] \n  for the [[modules]] value. Similarly <code>\\`function List.size\\`</code> for attributes.\n- <code>\\`alias AliasName\\`</code> returns the [[AliasDeclaration|ceylon.language.meta.declaration::AliasDeclaration]]\n  for the `AliasName` type alias. \n- <code>\\`given T\\`</code> returns the [[TypeParameter|ceylon.language.meta.declaration::TypeParameter]] \n  for the `T` type parameter.\n\nNote that declaration literals cannot have type arguments specified on types or methods, as declarations are not types.\n\nYou can also get access to closed types and model using either the model API or using literals: \n\n- <code>\\`List&lt;Integer>\\`</code> returns the [[Interface|ceylon.language.meta.model::Interface]] model and \n  closed type for the [[List|ceylon.language::List]] type applied with the [[Integer|ceylon.language::Integer]] type argument.\n- <code>\\`Integer\\`</code> returns the [[Class|ceylon.language.meta.model::Class]] model and closed type \n  for the [[Integer|ceylon.language::Integer]] type.\n- <code>\\`type&lt;Integer>\\`</code> returns the [[Function|ceylon.language.meta.model::Function]] model \n  for the [[type]] function applied with the [[Integer|ceylon.language::Integer]] type argument.\n  Similarly <code>\\`List&lt;Integer>.shorterThan\\`</code> for method models.\n- <code>\\`modules\\`</code> returns the [[Value|ceylon.language.meta.model::Value]] model \n  for the [[modules]] value. Similarly <code>\\`List&lt;Integer>.size\\`</code> for attribute models.\n- <code>\\`A & B\\`</code> returns a [[IntersectionType|ceylon.language.meta.model::IntersectionType]]\n  for the `A & B` intersection type.\n- <code>\\`A | B\\`</code> returns a [[UnionType|ceylon.language.meta.model::UnionType]]\n  for the `A | B` union type.\n- <code>\\`T\\`</code> returns a [[Type|ceylon.language.meta.model::Type]] representing the runtime type \n  argument value for the `T` type parameter.\n\nNotice that all model and close type literals must be applied with all required type arguments.\n\n### Accessing the metamodel using the API\n\nAside from declaration and model literals there are several ways you can start using the metamodel API:\n\n- The [[modules]] object contains a list of all currently loaded [[Module|ceylon.language.meta.declaration::Module]]\n  declarations. Note that these contain even modules you did not import as it contains all transitive\n  dependencies, and may contain multiple different versions of the same module.\n- The [[type]] function will return the closed type of the given instance, which can only be a\n  [[ClassModel|ceylon.language.meta.model::ClassModel]] since only classes can be instantiated.\n- The [[typeLiteral]] function is the functional equivalent to closed type literals: it turns a type argument\n  value into a metamodel closed type.\n- The [declaration](declaration/index.html) package contains all the declaration and open types.\n- The [model](model/index.html) package contains all the model and closed types.\n\n### Inspecting annotations\n\nConstrained annotations can be inspected using the [[annotations]] \nfunction, like this:\n\n    // Does the process declaration have the Shared annotation?\n    value isShared = annotations(`Shared`, `value process`) exists;\n\nor the related [[optionalAnnotation]] and [[sequencedAnnotations]] functions.\n\nNote that annotations are queried for via their \n[[ceylon.language::Annotation]] type, \nnot by the annotation constructor which was used to annotate \nthe program element.\n",7137)),by([String$("Gavin King",10),String$("Stephane Epardaud",17)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];};
 exports.$pkg$ans$ceylon$language$meta$model=function(){return[doc(String$("The Ceylon metamodel closed type and model package.\n\nAs described in the [ceylon.language.meta](../index.html) documentation, this package contains all\nthe types that represent Ceylon closed types and models.\n\n### Usage example\n\nThe following code will list all the value declarations in the `ceylon.language` package and print their\ncurrent value:\n\n    Package languagePackage = `package ceylon.language`;\n    ValueDeclaration[] valueDeclarations = languagePackage.members<ValueDeclaration>();\n    Value<Anything>[] valueModels = valueDeclarations*.apply<Anything>();\n    for(val in valueModels){\n        // skip the nothing value which cannot be read\n        if(val.type != `Nothing`){\n            print(val.get());\n        }\n    }\n\nThe following code will iterate all the class declarations in the `ceylon.language` package that\nare not abstract, anonymous or annotations, and that have no type parameters nor initialiser\nparameters. For each matching class, we will apply it to get a class model which we can then\nuse to instantiate the class and display its instance:\n\n    for(decl in `package ceylon.language`.members<ClassDeclaration>()){\n        if(!decl.abstract \n                && !decl.anonymous \n                && !decl.annotation\n                && decl.parameterDeclarations.empty\n                && decl.typeParameterDeclarations.empty){\n            Class<Object,[]> classModel = decl.classApply<Object,[]>();\n            Object instance = classModel();\n            print(\"Instance of ``decl.name`` is: ``instance``\");\n        }\n    }\n",1552)),by([String$("Gavin King",10),String$("Stephane Epardaud",17)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];};
 exports.$pkg$ans$ceylon$language$meta$declaration=function(){return[doc(String$("The Ceylon metamodel open type and declaration package.\n\nAs described in the [ceylon.language.meta](../index.html) documentation, this package contains all\nthe types that represent Ceylon declarations and open types.\n\n### Usage example\n\nThe following code will list all the classes in the `ceylon.language` package and print their\nextended type:\n\n    for(decl in `package ceylon.language`.members<ClassDeclaration>()){\n        if(exists extendedType = decl.extendedType){\n            print(\"Class ``decl.name`` extends: ``extendedType``\");\n        }else{\n            print(\"Class ``decl.name`` does not extend anything\");\n        }\n    }\n\nThe following code will iterate all the class declarations in the `ceylon.language` package that\nare not abstract, anonymous or annotations, and that have no type parameters nor initialiser\nparameters. For each matching class, we will apply it to get a class model which we can then\nuse to instantiate the class and display its instance:\n\n    for(decl in `package ceylon.language`.members<ClassDeclaration>()){\n        if(!decl.abstract \n                && !decl.anonymous \n                && !decl.annotation\n                && decl.parameterDeclarations.empty\n                && decl.typeParameterDeclarations.empty){\n            Class<Object,[]> classModel = decl.classApply<Object,[]>();\n            Object instance = classModel();\n            print(\"Instance of ``decl.name`` is: ``instance``\");\n        }\n    }\n",1456)),by([String$("Gavin King",10),String$("Stephane Epardaud",17)].reifyCeylonType({Absent:{t:Null},Element:{t:String$}})),shared()];};
 //Ends compiled from Ceylon sources
