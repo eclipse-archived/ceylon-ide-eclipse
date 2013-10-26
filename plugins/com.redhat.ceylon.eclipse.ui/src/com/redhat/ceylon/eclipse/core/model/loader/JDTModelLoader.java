@@ -322,8 +322,8 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     @Override
     public void loadStandardModules() {
-        // do not load the other jdk modules unless imported explicitely, but the base one is required
-        
+        // Now create JDK and Oracle modules (cf. https://github.com/ceylon/ceylon-ide-eclipse/issues/733 )
+        loadJDKModules();
         /*
          * We start by loading java.lang because we will need it no matter what.
          */
