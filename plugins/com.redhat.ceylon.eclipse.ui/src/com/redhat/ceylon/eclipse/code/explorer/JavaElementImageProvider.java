@@ -345,7 +345,8 @@ public class JavaElementImageProvider {
 			for (Object o: fragment.getNonJavaResources()) {
 				if (o instanceof IFile) {
 					IFile file = (IFile) o;
-					if (file.getFileExtension().equals("ceylon")) {
+					String ext = file.getFileExtension();
+                    if (ext!=null && ext.equals("ceylon")) {
 						containsJavaElements=true;
 						if (file.getName().equals("module.ceylon")) {
 							return CeylonPlugin.getInstance().getImageRegistry()

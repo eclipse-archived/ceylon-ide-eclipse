@@ -29,7 +29,8 @@ public class PackageExplorerProblemsLabelDecorator extends PackageExplorerProble
 					for (Object o: fragment.getNonJavaResources()) {
 						if (o instanceof IFile) {
 							IFile file = (IFile) o;
-							if (file.getFileExtension().equals("ceylon")) {
+							String ext = file.getFileExtension();
+                            if (ext!=null && ext.equals("ceylon")) {
 								if (file.getName().equals("module.ceylon")) {
 									int flags= getErrorTicksFromMarkers(element.getResource());
 								    //TODO: see ProblemsLabelDecorator
