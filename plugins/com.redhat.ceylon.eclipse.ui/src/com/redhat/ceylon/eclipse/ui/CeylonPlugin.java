@@ -60,7 +60,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-        "org.jboss.modules-main.jar",
+        "org.jboss.modules-1.1.3.GA.jar",
     };
     private static final String[] COMPILETIME_LIBRARIES = new String[]{
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
@@ -230,6 +230,9 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
             List<String> jars = new ArrayList<String>(libraries.length);
             for(String jar : libraries){
                 File libDir = new File(repoDir, getRepoFolder(jar));
+                if( !libDir.exists() ) {
+                    System.out.println("WARNING directory doesn't exist: " + libDir);
+                }
                 jars.add(new File(libDir, jar).getAbsolutePath());
             }
             return jars;
