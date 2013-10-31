@@ -38,6 +38,10 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
+/**
+ * @deprecated ModuleLaunchDelegate should be used instead of this old style, but can not be removed until CeylonTestLaunchDelegate will be rewritten 
+ */
+@Deprecated
 public class CeylonLaunchDelegate extends JavaLaunchDelegate {
 
     @Override

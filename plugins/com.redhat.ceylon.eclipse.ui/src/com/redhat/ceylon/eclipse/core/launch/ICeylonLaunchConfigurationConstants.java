@@ -11,7 +11,6 @@ public interface ICeylonLaunchConfigurationConstants extends
      * (value <code>"org.eclipse.jdt.launching.localJavaApplication"</code>).
      */
     public static final String ID_CEYLON_APPLICATION = PLUGIN_ID + ".launching.localCeylonApplication";
-    public static final String ID_JS_APPLICATION = PLUGIN_ID + ".launching.localCeylonJsApplication";
 
     public static final String ID_CEYLON_JAVA_MODULE = PLUGIN_ID + ".launching.ceylonJavaModule";
     public static final String ID_CEYLON_JAVASCRIPT_MODULE = PLUGIN_ID + ".launching.ceylonJavaScriptModule";

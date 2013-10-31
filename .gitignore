@@ -1,5 +1,6 @@
 *~
 *.idx
+*.index
 /.settings
 /.project
 plugins/com.redhat.ceylon.test.eclipse.plugin/bin/
