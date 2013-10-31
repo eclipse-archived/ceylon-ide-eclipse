@@ -194,9 +194,16 @@ public class RenameRefactoring extends AbstractRefactoring {
             @Override
             public void visit(Tree.DocLink that) {
                 String text = that.getText();
+                Integer offset = that.getStartIndex();
+                
+                int pipeIndex = text.indexOf("|");
+                if (pipeIndex > -1) {
+                    text = text.substring(pipeIndex + 1);
+                    offset += pipeIndex + 1;
+                }
+                
                 int scopeIndex = text.indexOf("::");
                 int start = scopeIndex<0 ? 0 : scopeIndex+2;
-                Integer offset = that.getStartIndex();
                 Declaration base = that.getBase();
                 if (base!=null) {
                     int index = text.indexOf('.', start);
