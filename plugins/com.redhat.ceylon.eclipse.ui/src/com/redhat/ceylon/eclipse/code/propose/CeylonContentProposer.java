@@ -294,37 +294,46 @@ public class CeylonContentProposer {
         return visitor.getOccurrenceLocation();
     }
 
-    private static class DocReference {
-    	String ref;
-    	int start;
+    private static class DocLink {
+        String linkName;
+    	String declName;
+    	int declStart;
     }
     
-    private static DocReference getDocReference(String text, int offsetInToken, final int offset) {     
+    private static DocLink getDocLink(String text, int offsetInToken, final int offset) {     
         
-        Matcher wikiRef = Pattern.compile("\\[\\[(.*?)\\]\\]").matcher(text);
-        if (text==null || offset==0 || !wikiRef.find()) {
+        Matcher docLinkMatcher = Pattern.compile("\\[\\[(.*?)\\]\\]").matcher(text);
+        if (text==null || offset==0 || !docLinkMatcher.find()) {
             return null;
         }
 
-        DocReference docRef = null;
-        wikiRef.reset();
-        while (wikiRef.find()) {
-            for (int i = 1; i <= wikiRef.groupCount(); i++) { // loop for safety
-                if (offsetInToken >= wikiRef.start(i) && 
-                        offsetInToken <= wikiRef.end(i)) {
-                	docRef = new DocReference();
-                    docRef.ref = wikiRef.group(i);
-                    docRef.start = wikiRef.start(i);
+        DocLink docLink = null;
+        docLinkMatcher.reset();
+        while (docLinkMatcher.find()) {
+            for (int i = 1; i <= docLinkMatcher.groupCount(); i++) { // loop for safety
+                if (offsetInToken >= docLinkMatcher.start(i) && 
+                        offsetInToken <= docLinkMatcher.end(i)) {
+                    docLink = new DocLink();
+                    String docLinkText = docLinkMatcher.group(i);
+                    int separatorIndex = docLinkText.indexOf("|");
+                    if( separatorIndex > -1 ) {
+                        docLink.linkName = docLinkText.substring(0, separatorIndex);
+                        docLink.declName = docLinkText.substring(separatorIndex+1);
+                        docLink.declStart = docLinkMatcher.start(i)+separatorIndex+1;
+                    } else {
+                        docLink.declName = docLinkText;
+                        docLink.declStart = docLinkMatcher.start(i);
+                    }
                     break;
                 }
             }
         }
         
-        if (docRef == null) { // it will be empty string if we are in a wiki ref
+        if (docLink == null) { // it will be empty string if we are in a wiki ref
             return null;
         }
         
-        return docRef;
+        return docLink;
     }
     
     private static PositionedPrefix compensateForMissingCharacter(final int offset,
@@ -356,7 +365,6 @@ public class CeylonContentProposer {
         int offsetInToken = offset-1-token.getStartIndex();
         boolean inToken = offsetInToken>=0 && 
                 offsetInToken<token.getText().length();
-        DocReference docRef = null;
         
         //int end = offset;
         if (inToken && 
@@ -369,22 +377,25 @@ public class CeylonContentProposer {
                      token.getStartIndex());
             }
             else if (token.getType() == ASTRING_LITERAL || token.getType() == AVERBATIM_STRING) {
-                if ((docRef = getDocReference(token.getText(),  offset-token.getStartIndex(), offsetInToken)) != null) {
-                    // if caret is after the '.' and the '.' is a member lookup
-                   	if ((offsetInToken > (docRef.start + docRef.ref.lastIndexOf('.') -1) ) 
-                            && docRef.ref.lastIndexOf('.') > docRef.ref.lastIndexOf("::")) {
-                        PositionedPrefix pp = new PositionedPrefix(token.getStartIndex()+docRef.start, true);
-                        if (docRef.start + docRef.ref.lastIndexOf('.') <= offsetInToken) {
-                            pp.prefix = docRef.ref.substring(docRef.ref.lastIndexOf('.') + 1, offsetInToken - docRef.start +1);
-                            pp.type = docRef.ref.substring(0, docRef.ref.lastIndexOf('.'));
+                DocLink docLink = getDocLink(token.getText(), offset - token.getStartIndex(), offsetInToken);
+                if (docLink != null) {
+                    // if caret is after '|'
+                    if( offsetInToken >= docLink.declStart-1 ) {
+                        // if caret is after the '.' and the '.' is a member lookup
+                        if ((offsetInToken > (docLink.declStart + docLink.declName.lastIndexOf('.') -1) ) 
+                                && docLink.declName.lastIndexOf('.') > docLink.declName.lastIndexOf("::")) {
+                            PositionedPrefix pp = new PositionedPrefix(token.getStartIndex()+docLink.declStart, true);
+                            if (docLink.declStart + docLink.declName.lastIndexOf('.') <= offsetInToken) {
+                                pp.prefix = docLink.declName.substring(docLink.declName.lastIndexOf('.') + 1, offsetInToken - docLink.declStart +1);
+                                pp.type = docLink.declName.substring(0, docLink.declName.lastIndexOf('.'));
+                            }
+                            return pp;
+                        } else { // type lookup, handle package later
+                            return new PositionedPrefix(docLink.declName, token.getStartIndex()+docLink.declStart);
                         }
-                        return pp;
-                   	} else { // type lookup, handle package later
-                        return new PositionedPrefix(docRef.ref, token.getStartIndex()+docRef.start);
-                   	}
-                } else {
-                    return null; // in literal but no docRef
+                    }
                 }
+                return null; // in literal but no docRef
             }
             else {
                 return new PositionedPrefix(offset, isMemberOperator(token));
