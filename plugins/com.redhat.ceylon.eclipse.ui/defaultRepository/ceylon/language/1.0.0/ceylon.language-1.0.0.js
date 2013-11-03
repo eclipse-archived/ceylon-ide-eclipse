@@ -7026,8 +7026,7 @@ defineAttr(ClassOrInterface$meta$model.$$.prototype,'string',function(){
       mm=mm();
       this.tipo.$$metamodel$$=mm;
     }
-    var qn=mm.d[0];
-    for (var i=1; i<mm.d.length; i++)if(mm.d[i][0]!=='$')qn+=(i==1?"::":".")+mm.d[i];
+    var qn=$qname(mm);
     if (mm.$tp) {
       qn+="<";
       var first=true;
@@ -7053,18 +7052,15 @@ defineAttr(ClassOrInterface$meta$model.$$.prototype,'string',function(){
       qn+=">";
     }
     return String$(qn);
-},undefined,function(){return{mod:$$METMODEL$$,$t:{t:String$},d:['ceylon.language','Object','$at','string']};});
+},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},d:['ceylon.language','Object','$at','string']};});
 defineAttr(ClassOrInterface$meta$model.$$.prototype,'hash',function(){
   var mm = this.tipo.$$metamodel$$;
   if (typeof(mm)==='function') {
     mm=mm();
     this.tipo.$$metamodel$$=mm;
   }
-  var qn=mm.d[0];
-  for (var i=1; i<mm.d.length; i++)if(mm.d[i][0]!=='$')qn+=(i==1?"::":".")+mm.d[i];
-  var h=String$(qn).hash;
+  var h=String$($qname(mm)).hash;
   if (mm.$tp) {
-    var first=true;
     for (var tp in mm.$tp) {
       var targ;
       if (this.$$targs$$ && this.$$targs$$.Type && this.$$targs$$.Type.a && this.$$targs$$.Type.a[tp]) {
@@ -7080,6 +7076,7 @@ defineAttr(ClassOrInterface$meta$model.$$.prototype,'hash',function(){
       h+=targ.hash;
     }
   }
+  if (this.$bound)h+=this.$bound.hash;
   return h;
 },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Integer},d:['ceylon.language','Object','$at','hash']};});
 defineAttr(ClassOrInterface$meta$model.$$.prototype,'extendedType',function(){
@@ -7143,9 +7140,11 @@ defineAttr(ClassModel$meta$model.$$.prototype,'declaration',function(){
   return $$clase._decl;
 },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:ClassDeclaration$meta$declaration},$cont:ClassModel$meta$model,$an:function(){return[shared(),actual()];},d:['ceylon.language.meta.model','ClassModel','$at','declaration']};});
 ClassModel$meta$model.$$.prototype.equals=function(o){
-return isOfType(o,{t:AppliedClass}) && (o.tipo$2||o.tipo)==this.tipo && this.typeArguments.equals(o.typeArguments);
+return isOfType(o,{t:AppliedClass}) && o.tipo===this.tipo && this.typeArguments.equals(o.typeArguments);
 };
-//TODO equals metamodel
+ClassModel$meta$model.$$.prototype.equals.$$metamodel$$=function(){return{
+  mod:$$METAMODEL$$,d:['ceylon.language','Object','$m','equals'],$t:{t:Boolean$},$ps:[{$nm:'other',$t:{t:Object$},$mt:'prm'}]
+}};
 function Class$meta$model($$targs$$,$$class){
     ClassModel$meta$model($$class.$$targs$$===undefined?$$targs$$:{Arguments:$$class.$$targs$$.Arguments,Type:$$class.$$targs$$.Type},$$class);
     Callable($$class.$$targs$$===undefined?$$targs$$:{Arguments:$$class.$$targs$$.Arguments,Return:$$class.$$targs$$.Type},$$class);
@@ -9554,6 +9553,7 @@ function className(obj) {
         }
     }
     if (obj === null) return String$('ceylon.language::Null');
+    if (obj === undefined) return String$("JavaScript UNDEFINED");
     var tn = obj.getT$name === undefined ? 'UNKNOWN' : obj.getT$name();
     if (tn === 'UNKNOWN') {
         if (typeof obj === 'function') {
@@ -9625,80 +9625,95 @@ function internalSort(comp, elems, $$$mptypes) {
     });
     return ArraySequence(arr, $$$mptypes);
 }
-internalSort.$$metamodel$$={$an:function(){return[shared()];},mod:$$METAMODEL$$,d:['ceylon.language','internalSort']};
+internalSort.$$metamodel$$=function(){return{
+  $an:function(){return[shared()];},mod:$$METAMODEL$$,d:['ceylon.language','internalSort'],
+  $ps:[{$nm:'comparing',$t:{t:Callable,a:{Return:{t:Comparison},Arguments:{t:'T',l:['Element','Element']}}},$mt:'prm'},{$nm:'elements',$t:{t:Iterable,a:{Absent:{t:Null},Element:'Element'}},$mt:'prm'}],
+  $tp:{Element:{}}, $t:{t:Sequential,a:{Absent:{t:Null},Element:'Element'}}
+}};
 
 function flatten(tf, $$$mptypes) {
-    var rf = function() {
-        var t = getEmpty();
-        var e = null;
-        var argc = arguments.length;
-        var last = argc>0 ? arguments[argc-1] : undefined;
-        if (typeof(last) === 'object' && typeof(last.Args) === 'object' && (last.Args.t==='T'||typeof(last.Args.t) === 'function')) {
-            argc--;
+  function rf() {
+    var t = getEmpty();
+    var e = null;
+    var argc = arguments.length;
+    var last = argc>0 ? arguments[argc-1] : undefined;
+    if (typeof(last) === 'object' && typeof(last.Args) === 'object' && (last.Args.t==='T'||typeof(last.Args.t) === 'function')) {
+      argc--;
+    }
+    for (var i=argc-1; i>=0; i--) {
+      var c = arguments[i]===null ? Null :
+        arguments[i] === undefined ? Empty :
+        arguments[i].getT$all ? arguments[i].getT$all() :
+        Anything;
+      if (e === null) {
+        e = c;
+      } else if (e.t === 'u' && e.l.length > 0) {
+        var l = [c];
+        for (var j=0; j < e.l.length; j++) {
+          l[j+1] = e.l[j];
         }
-        for (var i=0; i < argc; i++) {
-            var c = arguments[i]===null ? Null :
-                arguments[i] === undefined ? Empty :
-                arguments[i].getT$all ? arguments[i].getT$all() :
-                Anything;
-            if (e === null) {
-                e = c;
-            } else if (e.t === 'u' && e.l.length > 0) {
-                var l = [c];
-                for (var j=0; j < e.l.length; j++) {
-                    l[j+1] = e.l[j];
-                }
-            } else {
-                e = {t:'u', l:[e, c]};
-            }
-            var rest;
-            if (t === getEmpty()) {
-                rest={t:Empty};
-            } else {
-                rest={t:Tuple, a:t.$$$targs$$$};
-            }
-            t = Tuple(arguments[i], t, {First:c, Element:e, Rest:rest});
-        }
-        return tf(t, t.$$targs$$);
-    };
-    rf.$$targs$$=$$$mptypes;
-    return rf;
+      } else {
+        e = {t:'u', l:[e, c]};
+      }
+      var rest;
+      if (t === getEmpty()) {
+        rest={t:Empty};
+      } else {
+        rest={t:Tuple, a:t.$$targs$$};
+      }
+      t = Tuple(arguments[i], t, {First:c, Element:e, Rest:rest});
+    }
+    return tf(t, t.$$targs$$);
+  };
+  rf.$$targs$$=$$$mptypes;
+  return rf;
 }
-flatten.$$metamodel$$={$an:function(){return[shared()];},mod:$$METAMODEL$$,d:['ceylon.language','flatten']};
+flatten.$$metamodel$$=function(){return{
+  $an:function(){return[shared()];},mod:$$METAMODEL$$,d:['ceylon.language','flatten'],
+  $tp:{Return:{},Args:{'satisfies':[{t:Sequential,a:{Absent:{t:Null},Element:{t:Anything}}}]}},
+  $t:{t:Callable,a:{Return:'Return',Arguments:{t:Sequential,a:{Absent:{t:Null},Element:{t:Anything}}}}},
+  $p:[{$nm:'tupleFunction',$t:{t:Callable,a:{Return:'Return',Arguments:{t:'T',l:[{t:Sequential,a:{Absent:{t:Null},Element:{t:Anything}}}]}}},$mt:'prm'}]
+}};
 
 function unflatten(ff, $$$mptypes) {
-    if (ff.$$metamodel$$ && ff.$$metamodel$$['$ps']) {
-        var ru = function ru(seq) {
-            if (seq===undefined || seq.size === 0) { return ff(); }
-            var pmeta = ff.$$metamodel$$['$ps'];
-            var a = [];
-            for (var i = 0; i < pmeta.length; i++) {
-                if (pmeta[i]['seq'] == 1) {
-                    a[i] = seq.skipping(i).sequence;
-                } else if (seq.size > i) {
-                    a[i] = seq.$get(i);
-                } else {
-                    a[i] = undefined;
-                }
-            }
-            a[i]=ru.$$targs$$;
-            return ff.apply(ru, a);
+  if (typeof(ff.$$metamodel$$)==='function')ff.$$metamodel$$=ff.$$metamodel$$();
+  if (ff.$$metamodel$$ && ff.$$metamodel$$.$ps) {
+    var ru=function ru(seq,$mptypes) {
+      if (seq===undefined || seq.size === 0) { return ff(); }
+      var pmeta = ff.$$metamodel$$.$ps;
+      var _lim=Math.max(pmeta.length,seq.size);
+      var a = [];
+      for (var i = 0; i < _lim; i++) {
+        if (pmeta[i]&&pmeta[i]['seq']) {
+          a.push(seq.skipping(i).sequence);
+          break;//we're done
+        } else if (seq.size > i) {
+          a.push(seq.$get(i));
         }
-    } else {
-        var ru = function ru(seq) {
-            if (seq===undefined || seq.size === 0) { return ff(); }
-            var a = [];
-            for (var i = 0; i < seq.size; i++) {
-                a[i] = seq.$get(i);
-            }
-            a[i]=ru.$$targs$$;
-            return ff.apply(ru, a);
-        }
+      }
+      if ($mptypes && ff.$$metamodel$$.$tp)a.push($mptypes);
+      return ff.apply(ru, a);
     }
-    ru.$$targs$$=$$$mptypes;
-    return ru;
+  } else {
+    var ru=function ru(seq) {
+      if (seq===undefined || seq.size === 0) { return ff(); }
+      var a = [];
+      for (var i = 0; i < seq.size; i++) {
+        a[i] = seq.$get(i);
+      }
+      a[i]=ru.$$targs$$;
+      return ff.apply(ru, a);
+    }
+  }
+  ru.$$targs$$=$$$mptypes;
+  return ru;
 }
-unflatten.$$metamodel$$={$an:function(){return[shared()];},mod:$$METAMODEL$$,d:['ceylon.language','unflatten']};
+unflatten.$$metamodel$$=function(){return{
+  $an:function(){return[shared()];},mod:$$METAMODEL$$,d:['ceylon.language','unflatten'],
+  $tp:{Return:{},Args:{'satisfies':[{t:Sequential,a:{Absent:{t:Null},Element:{t:Anything}}}]}},
+  $ps:[{$nm:'flatFunction',$t:{t:Callable,a:{Return:'Return',Arguments:{t:Sequential,a:{Absent:{t:Null},Element:{t:Anything}}}}},$mt:'prm'}],
+  $t:{t:Callable,a:{Return:'Return',Arguments:{t:'T',l:[{t:Sequential,a:{Absent:{t:Null},Element:{t:Anything}}}]}}}
+}};
 exports.flatten=flatten;
 exports.unflatten=unflatten;
 
@@ -9728,7 +9743,12 @@ function integerRangeByIterable(range, step, $$$mptypes) {
         }
     }, {Element:range.$$targs$$.Element, Absent:range.$$targs$$.Absent});
 }
-integerRangeByIterable.$$metamodel$$={$an:function(){return[shared()];},mod:$$METAMODEL$$,d:['ceylon.language','integerRangeByIterable']};
+integerRangeByIterable.$$metamodel$$=function(){return{
+  $an:function(){return[shared()];},mod:$$METAMODEL$$,d:['ceylon.language','integerRangeByIterable'],
+  $tp:{Element:{'satisfies':[{t:Ordinal,a:{Other:'Element'}},{t:Comparable,a:{Other:'Element'}}]}},
+  $t:{t:Iterable,a:{Absent:{t:Nothing},Element:'Element'}},
+  $ps:[{$nm:'range',$t:{t:Range,a:{Element:'Element'}},$mt:'prm'},{$nm:'step',$t:{t:Integer},$mt:'prm'}]
+}};
 exports.integerRangeByIterable=integerRangeByIterable;
 // implementation of object "process" in ceylon.language
 function languageClass() {
@@ -10594,31 +10614,61 @@ function AppliedClass(tipo,$$targs$$,that){
         }
         return tipo.apply(x,arguments);
       }
-      var dummy = new AppliedClass.$$;
-      that.$$=AppliedClass.$$;
-      that.getT$all=function(){return dummy.getT$all();};
-      that.getT$name=function(){return dummy.getT$name();};
-      that.equals=function(o){
-        var eq=isOfType(o,{t:AppliedClass}) && o.tipo===tipo;
-        return eq;
-      };
-      that.$apply=function(x){return AppliedClass.$$.prototype.$apply.call(that,x);};
-      that.$apply.$$metamodel$$=AppliedClass.$$.prototype.$apply.$$metamodel$$;
-      defineAttr(that,'string',function(){
-        return String$($qname(mm));
-},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},d:['ceylon.language','Object','$at','string']};});
-      defineAttr(that,'extendedType',function(){
-        return ClassOrInterface$meta$model.$$.prototype.$prop$getExtendedType.get.call(that);
-      },undefined,ClassOrInterface$meta$model.$$.prototype.$prop$getExtendedType.$$metamodel$$);
-      defineAttr(that,'satisfiedTypes',function(){
-        return ClassOrInterface$meta$model.$$.prototype.$prop$getSatisfiedTypes.get.call(that);
-      },undefined,ClassOrInterface$meta$model.$$.prototype.$prop$getExtendedType.$$metamodel$$);
-      defineAttr(that,'declaration',function(){
-        return ClassModel$meta$model.$$.prototype.$prop$getDeclaration.get.call(that);
-      },undefined,ClassModel$meta$model.$$.prototype.$prop$getDeclaration.$$metamodel$$);
     } else {
-      that=new AppliedClass.$$;
+      that=function(){
+        return tipo.apply(undefined,arguments);
+      }
     }
+    that.$$metamodel$$=mm;
+    var dummy = new AppliedClass.$$;
+    that.$$=AppliedClass.$$;
+    that.getT$all=function(){return dummy.getT$all();};
+    that.getT$name=function(){return dummy.getT$name();};
+    that.equals=function(o){
+      var eq=isOfType(o,{t:AppliedClass}) && o.tipo===tipo;
+      return eq;
+    };
+    that.$apply=function(x){return AppliedClass.$$.prototype.$apply.call(that,x);};
+    that.$apply.$$metamodel$$=AppliedClass.$$.prototype.$apply.$$metamodel$$;
+    defineAttr(that,'satisfiedTypes',function(){
+      return ClassOrInterface$meta$model.$$.prototype.$prop$getSatisfiedTypes.get.call(that);
+    },undefined,ClassOrInterface$meta$model.$$.prototype.$prop$getExtendedType.$$metamodel$$);
+    defineAttr(that,'container',function(){
+      return ClassOrInterface$meta$model.$$.prototype.$prop$getContainer.get.call(that);
+    },undefined,ClassOrInterface$meta$model.$$.prototype.$prop$getContainer.$$metamodel$$);
+    defineAttr(that,'string',function(){
+      return ClassOrInterface$meta$model.$$.prototype.$prop$getString.get.call(that);
+    },undefined,ClassOrInterface$meta$model.$$.prototype.$prop$getString.$$metamodel$$);
+    defineAttr(that,'hash',function(){
+      return ClassOrInterface$meta$model.$$.prototype.$prop$getHash.get.call(that);
+    },undefined,ClassOrInterface$meta$model.$$.prototype.$prop$getHash.$$metamodel$$);
+    defineAttr(that,'typeArguments',function(){
+      return ClassOrInterface$meta$model.$$.prototype.$prop$getTypeArguments.get.call(that);
+    },undefined,ClassOrInterface$meta$model.$$.prototype.$prop$getTypeArguments.$$metamodel$$);
+    defineAttr(that,'extendedType',function(){
+      return ClassOrInterface$meta$model.$$.prototype.$prop$getExtendedType.get.call(that);
+    },undefined,ClassOrInterface$meta$model.$$.prototype.$prop$getExtendedType.$$metamodel$$);
+    defineAttr(that,'declaration',function(){
+      return ClassModel$meta$model.$$.prototype.$prop$getDeclaration.get.call(that);
+    },undefined,ClassModel$meta$model.$$.prototype.$prop$getDeclaration.$$metamodel$$);
+    defineAttr(that,'parameterTypes',function(){
+      return ClassModel$meta$model.$$.prototype.$prop$getParameterTypes.get.call(that);
+    },undefined,ClassModel$meta$model.$$.prototype.$prop$getParameterTypes.$$metamodel$$);
+    defineAttr(that,'declaration',function(){
+      return ClassModel$meta$model.$$.prototype.$prop$getDeclaration.get.call(that);
+    },undefined,ClassModel$meta$model.$$.prototype.$prop$getDeclaration.$$metamodel$$);
+    that.getMethod=ClassOrInterface$meta$model.$$.prototype.getMethod;
+    that.getAttribute=ClassOrInterface$meta$model.$$.prototype.getAttribute;
+    that.getVariableAttribute=ClassOrInterface$meta$model.$$.prototype.getVariableAttribute;
+    that.getClassOrInterface=ClassOrInterface$meta$model.$$.prototype.getClassOrInterface;
+    that.getDeclaredClassOrInterface=ClassOrInterface$meta$model.$$.prototype.getDeclaredClassOrInterface;
+    that.getClass=ClassOrInterface$meta$model.$$.prototype.getClass;
+    that.equals=ClassModel$meta$model.$$.prototype.equals;
+    that.getInterface=ClassOrInterface$meta$model.$$.prototype.getInterface;
+    that.isTypeOf=ClassOrInterface$meta$model.$$.prototype.isTypeOf;
+    that.isSuperTypeOf=ClassOrInterface$meta$model.$$.prototype.isSuperTypeOf;
+    that.isSubTypeOf=ClassOrInterface$meta$model.$$.prototype.isSubTypeOf;
+    that.isExactly=ClassOrInterface$meta$model.$$.prototype.isExactly;
   }
   set_type_args(that,$$targs$$);
   Class$meta$model(that.$$targs$$===undefined?$$targs$$:{Arguments:that.$$targs$$.Arguments,Type:that.$$targs$$.Type},that);
@@ -10668,6 +10718,7 @@ function AppliedMemberClass(tipo,$$targs$$,that){
         }
         rv=AppliedClass(rv,{Type:nt,Arguments:{t:Sequential,a:{Element:{t:Anything},Absent:{t:Null}}}});//TODO generate metamodel for Arguments
         if (nt.a)rv.$targs=nt.a;
+        rv.$bound=x;
         return rv;
       }
       var dummy = new AppliedMemberClass.$$;
@@ -10791,9 +10842,21 @@ function AppliedMemberInterface(tipo,$$targs$$,that){
     }
     if (mm && mm.$cont) {
       that=function(x){
-        that.tipo=function(){return tipo.apply(x,arguments);};
-        that.$bound=x;
-        return that;
+        var rv=tipo.bind(x);
+        rv.$$metamodel$$=tipo.$$metamodel$$;
+        var nt={t:tipo};
+        if (x.$$targs$$) {
+          nt.a={};
+          for (var nta in x.$$targs$$)nt.a[nta]=x.$$targs$$[nta];
+        }
+        if (that.$targs) {
+          if (!nt.a)nt.a={};
+          for (var nta in that.$targs)nt.a[nta]=that.$targs[nta];
+        }
+        rv=AppliedInterface(rv,{Type:nt});
+        if (nt.a)rv.$targs=nt.a;
+        rv.$bound=x;
+        return rv;
       }
       that.tipo$2=tipo;
       var dummy = new AppliedMemberInterface.$$;
