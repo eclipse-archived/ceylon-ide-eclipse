@@ -59,46 +59,7 @@ public class CeylonPatternMatchListenerDelegate implements
 				
 				@Override
 				public void linkActivated() {
-		            IPath path = new Path(file);
-		            IWorkspaceRoot root = getWorkspace().getRoot();
-		            IFile file = null;
-		            //TODO: 1. only look in Ceylon projects
-		            //      2. start bottom up looking for
-		            //         more-specific packages first
-		            for (IProject p: root.getProjects()) {
-		            	try {
-		            		if(!p.isAccessible())
-		            			continue;
-							for (IPackageFragmentRoot pfr: JavaCore.create(p)
-									.getAllPackageFragmentRoots()) {
-								//if (pfr.getKind()==IPackageFragmentRoot.K_SOURCE))
-								IFolder folder = root.getFolder(pfr.getPath());
-								for (String elem: elems) {
-									if (folder.exists(path)) {
-										file = folder.getFile(path);
-										break;
-									}
-									folder=folder.getFolder(elem);
-									if (!folder.exists()) break;
-								}
-							}
-						} 
-		            	catch (JavaModelException e) {
-							e.printStackTrace();
-						}
-		            }
-		            IEditorInput input = new FileEditorInput(file);
-		            IWorkbenchPage activePage = PlatformUI.getWorkbench()
-		                    .getActiveWorkbenchWindow().getActivePage();
-		            try {
-		            	CeylonEditor editor = (CeylonEditor) activePage.openEditor(input, EDITOR_ID, true);
-		            	IRegion li = editor.getCeylonSourceViewer().getDocument()
-		            			.getLineInformation(parseInt(line)-1);
-		                editor.selectAndReveal(li.getOffset(), li.getLength());
-		            } 
-		            catch (Exception e) {
-		            	e.printStackTrace();
-		            }
+		            gotoFileAndLine(file, line, elems);
 				}
 			}, event.getOffset()+4+j, event.getLength()-5-j);
 		} 
@@ -106,5 +67,50 @@ public class CeylonPatternMatchListenerDelegate implements
 			e.printStackTrace();
 		}
 	}
+	
+    public static void gotoFileAndLine(String fileName, String line, String[] elems) {
+        IPath path = new Path(fileName);
+        IWorkspaceRoot root = getWorkspace().getRoot();
+        IFile file = null;
+        //TODO: 1. only look in Ceylon projects
+        //      2. start bottom up looking for
+        //         more-specific packages first
+        for (IProject p: root.getProjects()) {
+            try {
+                if(!p.isAccessible())
+                    continue;
+                for (IPackageFragmentRoot pfr: JavaCore.create(p)
+                        .getAllPackageFragmentRoots()) {
+                    //if (pfr.getKind()==IPackageFragmentRoot.K_SOURCE))
+                    IFolder folder = root.getFolder(pfr.getPath());
+                    for (String elem: elems) {
+                        if (folder.exists(path)) {
+                            file = folder.getFile(path);
+                            break;
+                        }
+                        folder=folder.getFolder(elem);
+                        if (!folder.exists()) break;
+                    }
+                }
+            } 
+            catch (JavaModelException e) {
+                e.printStackTrace();
+            }
+        }
+        if( file != null ) {
+            IEditorInput input = new FileEditorInput(file);
+            IWorkbenchPage activePage = PlatformUI.getWorkbench()
+                    .getActiveWorkbenchWindow().getActivePage();
+            try {
+                CeylonEditor editor = (CeylonEditor) activePage.openEditor(input, EDITOR_ID, true);
+                IRegion li = editor.getCeylonSourceViewer().getDocument()
+                        .getLineInformation(parseInt(line)-1);
+                editor.selectAndReveal(li.getOffset(), li.getLength());
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }	
 
 }
