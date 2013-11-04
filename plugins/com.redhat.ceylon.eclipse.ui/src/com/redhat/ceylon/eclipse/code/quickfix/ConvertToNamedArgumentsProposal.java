@@ -19,6 +19,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -81,13 +82,7 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
         Tree.CompilationUnit cu = cpc.getRootNode();
         if (cu==null) return;
         Node node = getSelectedNode(editor);
-        Tree.PositionalArgumentList pal = null;
-        if (node instanceof Tree.PositionalArgumentList) {
-            pal = (Tree.PositionalArgumentList) node;
-        }
-        else if (node instanceof Tree.InvocationExpression) {
-            pal = ((Tree.InvocationExpression) node).getPositionalArgumentList();
-        }
+        Tree.PositionalArgumentList pal = getArgumentList(node);
         if (pal!=null) {
             IDocument document = editor.getDocumentProvider()
                     .getDocument(editor.getEditorInput());
@@ -98,13 +93,15 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
             StringBuilder result = new StringBuilder().append(" {");
             boolean sequencedArgs = false;
             for (Tree.PositionalArgument arg: pal.getPositionalArguments()) {
-                if (arg.getParameter().isSequenced() && (arg instanceof Tree.ListedArgument)) {
+                Parameter param = arg.getParameter();
+                if (param==null) return;
+                if (param.isSequenced() && (arg instanceof Tree.ListedArgument)) {
                     if (sequencedArgs) result.append(",");
                     sequencedArgs=true;
                     result.append(" " + AbstractRefactoring.toString(arg, cpc.getTokens()));
                 }
                 else {
-                    result.append(" " + arg.getParameter().getName() + "=" + 
+                    result.append(" " + param.getName() + "=" + 
                             AbstractRefactoring.toString(arg, cpc.getTokens()) + ";");
                 }
             }
@@ -120,16 +117,36 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
             }
         }
     }
-    
+
     public static boolean canConvert(CeylonEditor editor) {
         Node node = getSelectedNode(editor);
-        return node instanceof Tree.PositionalArgumentList ||
-                node instanceof Tree.InvocationExpression &&
-                ((Tree.InvocationExpression) node).getPositionalArgumentList()!=null;
-        //TODO: if it is an indirect invocations, or an 
-        //      invocation of an overloaded Java method
-        //      or constructor, we can't call it using
-        //      named arguments!
+        Tree.PositionalArgumentList pal = getArgumentList(node);
+        if (pal==null) {
+            return false;
+        }
+        else {
+            //if it is an indirect invocations, or an 
+            //invocation of an overloaded Java method
+            //or constructor, we can't call it using
+            //named arguments!
+            for (Tree.PositionalArgument arg: pal.getPositionalArguments()) {
+                Parameter param = arg.getParameter();
+                if (param==null) return false;
+            }
+            return true;
+        }
     }
 
+    private static Tree.PositionalArgumentList getArgumentList(Node node) {
+        if (node instanceof Tree.PositionalArgumentList) {
+            return (Tree.PositionalArgumentList) node;
+        }
+        else if (node instanceof Tree.InvocationExpression) {
+            return ((Tree.InvocationExpression) node).getPositionalArgumentList();
+        }
+        else {
+            return null;
+        }
+    }
+    
 }
