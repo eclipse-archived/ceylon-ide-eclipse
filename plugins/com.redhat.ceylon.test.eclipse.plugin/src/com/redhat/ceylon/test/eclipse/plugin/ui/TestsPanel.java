@@ -241,6 +241,7 @@ public class TestsPanel extends Composite {
     private void updateViewer() {
         if( viewer.getInput() != currentTestRun ) {
             viewer.setInput(currentTestRun);
+            viewer.setSelection(null);
         }
         viewer.refresh();
     }

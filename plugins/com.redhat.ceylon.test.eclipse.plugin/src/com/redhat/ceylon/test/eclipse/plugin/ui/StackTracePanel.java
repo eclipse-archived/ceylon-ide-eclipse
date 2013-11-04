@@ -1,5 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.ui;
 
+import static com.redhat.ceylon.eclipse.core.launch.CeylonPatternMatchListenerDelegate.gotoFileAndLine;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.COMPARE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE_FILTER;
@@ -17,10 +18,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.internal.debug.ui.console.JavaStackTraceHyperlink;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -31,17 +37,19 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.IConsoleDocumentPartitioner;
+import org.eclipse.ui.console.TextConsole;
 
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 
+@SuppressWarnings("restriction")
 public class StackTracePanel extends Composite {
 
     private static final String[] STACK_TRACE_FILTER_PATTERNS = new String[] {
@@ -57,7 +65,7 @@ public class StackTracePanel extends Composite {
     private Label panelLabel;
     private ToolBar toolBar;
     private ToolBarManager toolBarManager;
-    private Table stackTraceTable;
+    private TableViewer stackTraceTable;
     private StackTraceFilterAction stackTraceFilterAction;
     private StackTraceCopyAction stackTraceCopyAction;
     private CompareValuesAction compareValuesAction;
@@ -104,10 +112,49 @@ public class StackTracePanel extends Composite {
     }
 
     private void createStackTraceTable() {
-        stackTraceTable = new Table(this, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
-        stackTraceTable.setLayoutData(GridDataFactory.swtDefaults().span(3, 1).align(SWT.FILL, SWT.FILL).grab(true, true).create());
+        stackTraceTable = new TableViewer(this, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
+        stackTraceTable.getTable().setLayoutData(GridDataFactory.swtDefaults().span(3, 1).align(SWT.FILL, SWT.FILL).grab(true, true).create());
+        stackTraceTable.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                handleDoubleClick(event);                
+            }
+        });
     }
 
+    private void handleDoubleClick(DoubleClickEvent event) {
+        TableItem[] selectedLines = stackTraceTable.getTable().getSelection();
+        if (selectedLines != null && 
+                selectedLines.length == 1 && 
+                selectedLines[0] != null && 
+                selectedLines[0].getText() != null) {
+
+            if( stackTraceTable.getTable().getSelectionIndex() == 0 && isCompareResultAvailable() ) {
+                compareValuesAction.run();
+            } else {
+                String text = selectedLines[0].getText();
+
+                int i = text.indexOf("(");
+                int j = text.indexOf(":");
+                int k = text.indexOf("at ");
+
+                if (i == -1 || j == -1 || k == -1) {
+                    return;
+                }
+
+                String file = text.substring(i + 1, j);
+                String line = text.substring(j + 1, text.length() - 1);
+                String[] elems = text.substring(k + 3, i).split("\\.");
+
+                if (file.endsWith(".ceylon")) {
+                    gotoFileAndLine(file, line, elems);
+                } else if (file.endsWith(".java")) {
+                    new InternalJavaStackTraceHyperlink(text.substring(k + 3)).linkActivated();
+                }
+            }
+        }
+    }
+    
     private void createStackTraceLines(String stackTrace) {
         StringReader stringReader = new StringReader(stackTrace);
         BufferedReader bufferedReader = new BufferedReader(stringReader);
@@ -141,7 +188,7 @@ public class StackTracePanel extends Composite {
             image = getImage(STACK_TRACE_LINE);
         }
 
-        TableItem tableItem = new TableItem(stackTraceTable, SWT.NONE);
+        TableItem tableItem = new TableItem(stackTraceTable.getTable(), SWT.NONE);
         tableItem.setText(text);
         tableItem.setImage(image);
     }
@@ -152,12 +199,12 @@ public class StackTracePanel extends Composite {
     }
 
     private void updateStackTraceTable() {
-        stackTraceTable.setRedraw(false);
-        stackTraceTable.removeAll();
+        stackTraceTable.getTable().setRedraw(false);
+        stackTraceTable.getTable().removeAll();
         if (isStackTraceAvailable()) {
             createStackTraceLines(selectedTestElement.getException());
         }
-        stackTraceTable.setRedraw(true);
+        stackTraceTable.getTable().setRedraw(true);
     }
 
     private void updateActionState() {
@@ -284,6 +331,37 @@ public class StackTracePanel extends Composite {
                 dlg.setTestElement(selectedTestElement);
                 dlg.getShell().setActive();
             }
+        }
+
+    }
+    
+    private static class InternalJavaStackTraceHyperlink extends JavaStackTraceHyperlink {
+
+        private final String linkText;
+
+        public InternalJavaStackTraceHyperlink(String linkText) {
+            super(InternalTextConsole.INSTANCE);
+            this.linkText = linkText;
+        }
+
+        @Override
+        protected String getLinkText() throws CoreException {
+            return linkText;
+        }
+
+    }
+
+    private static class InternalTextConsole extends TextConsole {
+
+        private static final InternalTextConsole INSTANCE = new InternalTextConsole();
+
+        public InternalTextConsole() {
+            super("", "", null, false);
+        }
+
+        @Override
+        protected IConsoleDocumentPartitioner getPartitioner() {
+            return null;
         }
 
     }
