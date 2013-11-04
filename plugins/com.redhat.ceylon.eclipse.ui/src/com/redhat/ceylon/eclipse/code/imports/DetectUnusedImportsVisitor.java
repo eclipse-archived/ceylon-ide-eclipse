@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,11 +34,7 @@ class DetectUnusedImportsVisitor extends Visitor {
         }
     }
     
-    
-    @Override
-    public void visit(Tree.BaseMemberOrTypeExpression that) {
-        super.visit(that);
-        Declaration d = that.getDeclaration();
+    private void remove(Declaration d) {
         if (d!=null) {
             for (Iterator<Declaration> it = result.iterator();
                     it.hasNext();) {
@@ -46,29 +44,33 @@ class DetectUnusedImportsVisitor extends Visitor {
             }
         }
     }
-    
+        
+    @Override
+    public void visit(Tree.BaseMemberOrTypeExpression that) {
+        super.visit(that);
+        remove(getAbstraction(that.getDeclaration()));
+    }
+
     @Override
     public void visit(Tree.BaseType that) {
         super.visit(that);
-        for (Iterator<Declaration> it = result.iterator();
-                it.hasNext();) {
-            if ( it.next().equals(that.getDeclarationModel()) ) {
-                it.remove();
-            }
-        }
+        remove(getAbstraction(that.getDeclarationModel()));
     } 
     
     @Override
     public void visit(Tree.MemberLiteral that) {
         super.visit(that);
-        Declaration d = that.getDeclaration();
-        if (d!=null && that.getType()==null) {
-            for (Iterator<Declaration> it = result.iterator();
-                    it.hasNext();) {
-                if ( it.next().equals(d) ) {
-                    it.remove();
-                }
-            }
+        if (that.getType()==null) {
+            remove(getAbstraction(that.getDeclaration()));
+        }
+    }
+    
+    private Declaration getAbstraction(Declaration d) {
+        if (isOverloadedVersion(d)) {
+            return d.getContainer().getDirectMember(d.getName(), null, false);
+        }
+        else {
+            return d;
         }
     }
 
