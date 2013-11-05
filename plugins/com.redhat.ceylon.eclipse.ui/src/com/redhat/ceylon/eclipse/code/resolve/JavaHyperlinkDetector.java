@@ -10,6 +10,7 @@ import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEdito
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -181,7 +182,8 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                         dec instanceof Class && 
                         ((Class) dec).getParameterList()!=null) {
                     for (IMethod method: type.getMethods()) {
-                        if (method.isConstructor()) {
+                        if (method.isConstructor() && !Flags.isPrivate(method.getFlags())) {
+                            //TODO: correctly resolve overloaded constructors
                             if (((Class) dec).getParameterList().getParameters().size()==
                                                 method.getNumberOfParameters()) {
                                 return method;
@@ -207,9 +209,8 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                         }
                     }
                     else if (dec instanceof Method) {
-                        if (!method.isConstructor()) {
-                            //TODO: some kind of half-assed attempt to match up
-                            //      the parameter types for overloaded methods?
+                        if (!method.isConstructor() && !Flags.isPrivate(method.getFlags())) {
+                            //TODO: correctly resolve overloaded methods
                             List<ParameterList> pls = ((Method) dec).getParameterLists();
                             if (dec.getName().equalsIgnoreCase(methodName) &&
                                     !pls.isEmpty() && pls.get(0).getParameters().size()==
