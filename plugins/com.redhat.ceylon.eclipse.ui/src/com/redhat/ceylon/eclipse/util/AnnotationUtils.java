@@ -253,7 +253,7 @@ public class AnnotationUtils {
     }
 
     public static void addMessageImageAndLabel(Annotation message,
-            StringBuffer buffer) {
+            StringBuilder buffer) {
         URL icon = null;
         String text = null;
         if (message instanceof CeylonAnnotation) {
@@ -316,7 +316,7 @@ public class AnnotationUtils {
      * Formats a message as HTML text.
      */
     public static String formatSingleMessage(Annotation message) {
-        StringBuffer buffer= new StringBuffer();
+        StringBuilder buffer= new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
         addMessageImageAndLabel(message, buffer);
         HTMLPrinter.addPageEpilog(buffer);
@@ -327,7 +327,7 @@ public class AnnotationUtils {
      * Formats several messages as HTML text.
      */
     public static String formatMultipleMessages(List<Annotation> messages) {
-        StringBuffer buffer= new StringBuffer();
+        StringBuilder buffer= new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
         DocumentationHover.addImageAndLabel(buffer, null, DocumentationHover.fileUrl("errorwarning_tab.gif").toExternalForm(),
                 16, 16, "Multiple messages at this line:", 20, 2);

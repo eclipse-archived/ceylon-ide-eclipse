@@ -31,6 +31,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.PACKAGES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.STRINGS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.TYPES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getCurrentThemeColor;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.appendParameters;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
@@ -249,7 +250,7 @@ public class DocumentationHover
         							@Override
         							public void run(IProgressMonitor monitor) 
         									throws InvocationTargetException, InterruptedException {
-        								StringBuffer sb = new StringBuffer();
+        								StringBuilder sb = new StringBuilder();
         								HTMLPrinter.insertPageProlog(sb, 0, getStyleSheet());
         								appendJavadoc(elem, javadoc, sb);
         								HTMLPrinter.addPageEpilog(sb);
@@ -596,7 +597,7 @@ public class DocumentationHover
 	private static CeylonBrowserInput getInferredTypeHoverInfo(Node node, IProject project) {
 		ProducedType t = ((Tree.LocalModifier) node).getTypeModel();
 		if (t==null) return null;
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		HTMLPrinter.insertPageProlog(buffer, 0, DocumentationHover.getStyleSheet());
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
 				16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + "</tt></b>", 
@@ -624,7 +625,7 @@ public class DocumentationHover
 //		catch (BadLocationException e) {
 //			e.printStackTrace();
 //		}
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 		String desc = node instanceof Tree.Literal ? "literal" : "expression";
 		addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
@@ -689,7 +690,7 @@ public class DocumentationHover
 		return new CeylonBrowserInput(null, null, buffer.toString());
 	}
 
-    private static void appendCharacterHoverInfo(StringBuffer buffer, String character) {
+    private static void appendCharacterHoverInfo(StringBuilder buffer, String character) {
         buffer.append("<code style='color:")
             .append(toHex(getCurrentThemeColor(CHARS)))
             .append("'>")
@@ -862,7 +863,7 @@ public class DocumentationHover
 		}
 	}
 
-	private static void appendJavadoc(IJavaElement elem, StringBuffer sb) {
+	private static void appendJavadoc(IJavaElement elem, StringBuilder sb) {
 		if (elem instanceof IMember) {
 			try {
             	//TODO: Javadoc @ icon?
@@ -915,7 +916,7 @@ public class DocumentationHover
 	}
 
 	public static String getDocumentationFor(CeylonParseController cpc, Package pack) {
-		StringBuffer buffer= new StringBuffer();
+	    StringBuilder buffer= new StringBuilder();
 		
 		addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
 				16, 16, "<b><tt>" + highlightLine(description(pack)) +"</tt></b>", 20, 4);
@@ -985,7 +986,7 @@ public class DocumentationHover
     }
 	
 	public static String getDocumentationForModule(String name, String version, String doc) {
-		StringBuffer buffer= new StringBuffer();
+		StringBuilder buffer= new StringBuilder();
 		
 		addImageAndLabel(buffer, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
 				16, 16, "<b><tt>" + highlightLine(description(name, version)) + "</tt></b>", 20, 4);
@@ -1006,7 +1007,7 @@ public class DocumentationHover
     }
 
 	public static String getDocumentationFor(CeylonParseController cpc, Module mod) {
-		StringBuffer buffer= new StringBuffer();
+		StringBuilder buffer= new StringBuilder();
 		
 		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
 				16, 16, "<b><tt>" + highlightLine(description(mod)) + "</tt></b>", 20, 4);
@@ -1074,7 +1075,7 @@ public class DocumentationHover
 	
 	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec, Node node) {
 		if (dec==null) return null;
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		insertPageProlog(buffer, 0, getStyleSheet());
 		
 		Package pack = dec.getUnit().getPackage();
@@ -1175,7 +1176,7 @@ public class DocumentationHover
 				else {
 					list = Arrays.asList(ret);
 				}
-				StringBuffer buf = new StringBuffer("returns&nbsp;&nbsp;<tt>");
+				StringBuilder buf = new StringBuilder("returns&nbsp;&nbsp;<tt>");
 				for (ProducedType pt: list) {
 					if (pt.getDeclaration() instanceof ClassOrInterface || 
 							pt.getDeclaration() instanceof TypeParameter) {
@@ -1199,20 +1200,20 @@ public class DocumentationHover
 				if (!pl.getParameters().isEmpty()) {
 					buffer.append("<p>");
 					for (Parameter p: pl.getParameters()) {
-						StringBuffer doc = new StringBuffer();
+					    StringBuilder params = new StringBuilder();
+						appendParameters(p.getModel(), params);
+						StringBuilder doc = new StringBuilder();
 						Tree.Declaration refNode = (Tree.Declaration) getReferencedNode(p.getModel(), cpc);
 						if (refNode!=null) {
 							appendDocAnnotationContent(refNode.getAnnotationList(), doc, resolveScope(dec));
-						}
-						if (doc.length()!=0) {
-							doc.insert(0, ":");
 						}
 						ProducedType type = p.getType();
 						if (type==null) type = new UnknownType(dec.getUnit()).getType();
                         addImageAndLabel(buffer, p.getModel(), fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
 								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(type.getDeclaration()) + ">" + 
 								convertToHTMLContent(type.getProducedTypeName()) + 
-								"</a>&nbsp;<a " + link(p.getModel()) + ">"+ p.getName() +"</a></tt>" + doc, 20, 2);
+								"</a>&nbsp;<a " + link(p.getModel()) + ">"+ p.getName() +
+								convertToHTMLContent(params.toString()) + "</a></tt>" + doc, 20, 2);
 					}
 					buffer.append("</p>");
 				}
@@ -1265,7 +1266,7 @@ public class DocumentationHover
 		return buffer.toString();
 	}
 
-    public static void appendExtraActions(Declaration dec, StringBuffer buffer) {
+    public static void appendExtraActions(Declaration dec, StringBuilder buffer) {
         buffer.append("<hr/>");
         addImageAndLabel(buffer, null, fileUrl("unit.gif").toExternalForm(), 
                 16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
@@ -1292,7 +1293,7 @@ public class DocumentationHover
         }
     }
 
-	private static void documentInheritance(TypeDeclaration dec, StringBuffer buffer) {
+	private static void documentInheritance(TypeDeclaration dec, StringBuilder buffer) {
 		if (dec instanceof Class) {
 			ProducedType sup = ((Class) dec).getExtendedType();
 			if (sup!=null) {
@@ -1413,7 +1414,7 @@ public class DocumentationHover
 	}
 
     private static void appendJavadoc(Declaration model, IProject project,
-            StringBuffer buffer, Node node) {
+            StringBuilder buffer, Node node) {
         IJavaProject jp = JavaCore.create(project);
         if (jp!=null) {
             try {
@@ -1426,7 +1427,7 @@ public class DocumentationHover
     }
 
     private static void appendDocAnnotationContent(Tree.AnnotationList annotationList,
-            StringBuffer documentation, Scope linkScope) {
+            StringBuilder documentation, Scope linkScope) {
         if (annotationList!=null) {
             AnonymousAnnotation aa = annotationList.getAnonymousAnnotation();
             if (aa!=null) {
@@ -1460,7 +1461,7 @@ public class DocumentationHover
     }
     
     private static void appendDeprecatedAnnotationContent(Tree.AnnotationList annotationList,
-            StringBuffer documentation, Scope linkScope) {
+            StringBuilder documentation, Scope linkScope) {
         if (annotationList!=null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
@@ -1489,7 +1490,7 @@ public class DocumentationHover
     }
     
     private static void appendSeeAnnotationContent(Tree.AnnotationList annotationList,
-            StringBuffer documentation) {
+            StringBuilder documentation) {
         if (annotationList!=null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
@@ -1523,7 +1524,7 @@ public class DocumentationHover
     }
     
     private static void appendThrowAnnotationContent(Tree.AnnotationList annotationList,
-            StringBuffer documentation, Scope linkScope) {
+            StringBuilder documentation, Scope linkScope) {
         if (annotationList!=null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
@@ -1608,7 +1609,7 @@ public class DocumentationHover
 			BufferedReader reader= null;
 			try {
 				reader= new BufferedReader(new InputStreamReader(styleSheetURL.openStream()));
-				StringBuffer buffer= new StringBuffer(1500);
+				StringBuilder buffer= new StringBuilder(1500);
 				String line= reader.readLine();
 				while (line != null) {
 					buffer.append(line);
@@ -1630,7 +1631,7 @@ public class DocumentationHover
 		return null;
 	}
 
-	public static void addImageAndLabel(StringBuffer buf, Referenceable model, String imageSrcPath, 
+	public static void addImageAndLabel(StringBuilder buf, Referenceable model, String imageSrcPath, 
 			int imageWidth, int imageHeight, String label, int labelLeft, int labelTop) {
 		buf.append("<div style='word-wrap: break-word; position: relative; "); 
 		
@@ -1656,9 +1657,9 @@ public class DocumentationHover
 		buf.append("</div>"); 
 	}
 
-	public static void addImage(StringBuffer buf, String imageSrcPath, 
+	public static void addImage(StringBuilder buf, String imageSrcPath, 
 			int imageWidth, int imageHeight, int labelLeft) {
-		StringBuffer imageStyle= new StringBuffer("border:none; position: absolute; "); 
+		StringBuilder imageStyle= new StringBuilder("border:none; position: absolute; "); 
 		imageStyle.append("width: ").append(imageWidth).append("px; ");  
 		imageStyle.append("height: ").append(imageHeight).append("px; ");  
 		imageStyle.append("left: ").append(- labelLeft - 1).append("px; ");  

@@ -715,7 +715,7 @@ public class ModuleSearchViewPart extends ViewPart {
     }
 
     public static String getModuleDoc(ModuleVersionNode versionNode) {
-        StringBuffer docBuilder = new StringBuffer();
+        StringBuilder docBuilder = new StringBuilder();
         HTMLPrinter.insertPageProlog(docBuilder, 0, docForegroundColor, docBackgroundColor, docStyleSheet);
         
         if (versionNode != null) {
