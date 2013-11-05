@@ -58,6 +58,16 @@ public class FindReferencedNodeVisitor extends Visitor {
         super.visit(that);
     }
     
+    @Override
+    public void visit(Tree.SpecifierStatement that) {
+        if (that.getRefinement()) {
+            if (isDeclaration(that.getDeclaration())) {
+                declarationNode = that;
+            }
+        }
+        super.visit(that);
+    }
+    
 	public void visitAny(Node node) {
 		if (declarationNode==null) {
 			super.visitAny(node);
