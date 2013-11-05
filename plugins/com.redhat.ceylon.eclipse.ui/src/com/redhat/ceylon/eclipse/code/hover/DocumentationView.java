@@ -206,7 +206,7 @@ public class DocumentationView extends ViewPart {
     }
 
     private void clear() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
         addImageAndLabel(buffer, null, 
                 fileUrl("information.gif").toExternalForm(), 

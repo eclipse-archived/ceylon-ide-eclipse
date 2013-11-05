@@ -2541,6 +2541,10 @@ public class CeylonContentProposer {
         return indent.contains("\n") ?  indent + getDefaultIndent() : indent;
     }
     
+    public static void appendParameters(Declaration d, StringBuilder result) {
+        appendParameters(d, null, d.getUnit(), result);
+    }
+    
     private static void appendParameters(Declaration d, Unit unit, StringBuilder result) {
         appendParameters(d, null, unit, result);
     }
@@ -2583,7 +2587,7 @@ public class CeylonContentProposer {
                                 result.setLength(result.length()-2);
                                 result.append(")");
                             }*/
-                            if (p.isDefaulted()) result.append("=");
+                            if (p.isDefaulted()) result.append("=...");
                             result.append(", ");
                         }
                         result.setLength(result.length()-2);

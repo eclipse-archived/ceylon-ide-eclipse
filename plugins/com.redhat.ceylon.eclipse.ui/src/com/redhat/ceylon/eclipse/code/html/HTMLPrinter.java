@@ -76,7 +76,7 @@ public class HTMLPrinter {
 		if (current == -1)
 			return text;
 
-		StringBuffer buffer= new StringBuffer();
+		StringBuilder buffer= new StringBuilder();
 		while (current > -1) {
 			buffer.append(text.substring(previous, current));
 			buffer.append(s);
@@ -97,7 +97,7 @@ public class HTMLPrinter {
 	 * @return the string with escaped characters
 	 * 
 	 * @see #convertToHTMLContentWithWhitespace(String) for use in browsers
-	 * @see #addPreFormatted(StringBuffer, String) for rendering with an {@link HTML2TextReader}
+	 * @see #addPreFormatted(StringBuilder, String) for rendering with an {@link HTML2TextReader}
 	 */
 	public static String convertToHTMLContent(String content) {
 		content= replace(content, '&', "&amp;"); //$NON-NLS-1$
@@ -116,7 +116,7 @@ public class HTMLPrinter {
 	 * @param content the input string
 	 * @return the processed string
 	 * 
-	 * @see #addPreFormatted(StringBuffer, String)
+	 * @see #addPreFormatted(StringBuilder, String)
 	 * @see #convertToHTMLContent(String)
 	 * @since 3.7
 	 */
@@ -130,7 +130,7 @@ public class HTMLPrinter {
 	
 	public static String read(Reader rd) {
 
-		StringBuffer buffer= new StringBuffer();
+		StringBuilder buffer= new StringBuilder();
 		char[] readBuffer= new char[2048];
 
 		try {
@@ -146,13 +146,13 @@ public class HTMLPrinter {
 		return null;
 	}
 
-	public static void insertPageProlog(StringBuffer buffer, int position, RGB fgRGB, RGB bgRGB, String styleSheet) {
+	public static void insertPageProlog(StringBuilder buffer, int position, RGB fgRGB, RGB bgRGB, String styleSheet) {
 		if (fgRGB == null)
 			fgRGB= FG_COLOR_RGB;
 		if (bgRGB == null)
 			bgRGB= BG_COLOR_RGB;
 
-		StringBuffer pageProlog= new StringBuffer(300);
+		StringBuilder pageProlog= new StringBuilder(300);
 
 		pageProlog.append("<html>"); //$NON-NLS-1$
 
@@ -163,7 +163,7 @@ public class HTMLPrinter {
 		buffer.insert(position,  pageProlog.toString());
 	}
 
-	private static void appendColors(StringBuffer pageProlog, RGB fgRGB, RGB bgRGB) {
+	private static void appendColors(StringBuilder pageProlog, RGB fgRGB, RGB bgRGB) {
 		pageProlog.append("<body text=\""); //$NON-NLS-1$
 		appendColor(pageProlog, fgRGB);
 		pageProlog.append("\" bgcolor=\""); //$NON-NLS-1$
@@ -172,30 +172,30 @@ public class HTMLPrinter {
 	}
 	
 	public static String toHex(Color color) {
-	    StringBuffer buffer = new StringBuffer();
+	    StringBuilder buffer = new StringBuilder();
 	    appendColor(buffer, color.getRGB());
 	    return buffer.toString();
 	}
 	
-	private static void appendColor(StringBuffer buffer, RGB rgb) {
+	private static void appendColor(StringBuilder buffer, RGB rgb) {
 		buffer.append('#');
 		appendAsHexString(buffer, rgb.red);
 		appendAsHexString(buffer, rgb.green);
 		appendAsHexString(buffer, rgb.blue);
 	}
 
-	private static void appendAsHexString(StringBuffer buffer, int intValue) {
+	private static void appendAsHexString(StringBuilder buffer, int intValue) {
 		String hexValue= Integer.toHexString(intValue);
 		if (hexValue.length() == 1)
 			buffer.append('0');
 		buffer.append(hexValue);
 	}
 
-	public static void insertStyles(StringBuffer buffer, String[] styles) {
+	public static void insertStyles(StringBuilder buffer, String[] styles) {
 		if (styles == null || styles.length == 0)
 			return;
 
-		StringBuffer styleBuf= new StringBuffer(10 * styles.length);
+		StringBuilder styleBuf= new StringBuilder(10 * styles.length);
 		for (int i= 0; i < styles.length; i++) {
 			styleBuf.append(" style=\""); //$NON-NLS-1$
 			styleBuf.append(styles[i]);
@@ -219,15 +219,15 @@ public class HTMLPrinter {
 		}
 	}
 
-	private static void appendStyleSheet(StringBuffer buffer, String styleSheet) {
+	private static void appendStyleSheet(StringBuilder buffer, String styleSheet) {
 		if (styleSheet == null)
 			return;
 		
 		// workaround for https://bugs.eclipse.org/318243
-		StringBuffer fg= new StringBuffer();
+		StringBuilder fg= new StringBuilder();
 		appendColor(fg, FG_COLOR_RGB);
 		styleSheet= styleSheet.replaceAll("InfoText", fg.toString()); //$NON-NLS-1$
-		StringBuffer bg= new StringBuffer();
+		StringBuilder bg= new StringBuilder();
 		appendColor(bg, BG_COLOR_RGB);
 		styleSheet= styleSheet.replaceAll("InfoBackground", bg.toString()); //$NON-NLS-1$
 
@@ -236,7 +236,7 @@ public class HTMLPrinter {
 		buffer.append("</style></head>"); //$NON-NLS-1$
 	}
 
-	private static void appendStyleSheetURL(StringBuffer buffer, URL styleSheetURL) {
+	private static void appendStyleSheetURL(StringBuilder buffer, URL styleSheetURL) {
 		if (styleSheetURL == null)
 			return;
 
@@ -249,42 +249,42 @@ public class HTMLPrinter {
 		buffer.append("</head>"); //$NON-NLS-1$
 	}
 
-	public static void insertPageProlog(StringBuffer buffer, int position) {
-		StringBuffer pageProlog= new StringBuffer(60);
+	public static void insertPageProlog(StringBuilder buffer, int position) {
+		StringBuilder pageProlog= new StringBuilder(60);
 		pageProlog.append("<html>"); //$NON-NLS-1$
 		appendColors(pageProlog, FG_COLOR_RGB, BG_COLOR_RGB);
 		buffer.insert(position,  pageProlog.toString());
 	}
 
-	public static void insertPageProlog(StringBuffer buffer, int position, URL styleSheetURL) {
-		StringBuffer pageProlog= new StringBuffer(300);
+	public static void insertPageProlog(StringBuilder buffer, int position, URL styleSheetURL) {
+		StringBuilder pageProlog= new StringBuilder(300);
 		pageProlog.append("<html>"); //$NON-NLS-1$
 		appendStyleSheetURL(pageProlog, styleSheetURL);
 		appendColors(pageProlog, FG_COLOR_RGB, BG_COLOR_RGB);
 		buffer.insert(position,  pageProlog.toString());
 	}
 
-	public static void insertPageProlog(StringBuffer buffer, int position, String styleSheet) {
+	public static void insertPageProlog(StringBuilder buffer, int position, String styleSheet) {
 		insertPageProlog(buffer, position, null, null, styleSheet);
 	}
 
-	public static void addPageProlog(StringBuffer buffer) {
+	public static void addPageProlog(StringBuilder buffer) {
 		insertPageProlog(buffer, buffer.length());
 	}
 
-	public static void addPageEpilog(StringBuffer buffer) {
+	public static void addPageEpilog(StringBuilder buffer) {
 		buffer.append("</body></html>"); //$NON-NLS-1$
 	}
 
-	public static void startBulletList(StringBuffer buffer) {
+	public static void startBulletList(StringBuilder buffer) {
 		buffer.append("<ul>"); //$NON-NLS-1$
 	}
 
-	public static void endBulletList(StringBuffer buffer) {
+	public static void endBulletList(StringBuilder buffer) {
 		buffer.append("</ul>"); //$NON-NLS-1$
 	}
 
-	public static void addBullet(StringBuffer buffer, String bullet) {
+	public static void addBullet(StringBuilder buffer, String bullet) {
 		if (bullet != null) {
 			buffer.append("<li>"); //$NON-NLS-1$
 			buffer.append(bullet);
@@ -292,7 +292,7 @@ public class HTMLPrinter {
 		}
 	}
 
-	public static void addSmallHeader(StringBuffer buffer, String header) {
+	public static void addSmallHeader(StringBuilder buffer, String header) {
 		if (header != null) {
 			buffer.append("<h5>"); //$NON-NLS-1$
 			buffer.append(header);
@@ -300,7 +300,7 @@ public class HTMLPrinter {
 		}
 	}
 
-	public static void addParagraph(StringBuffer buffer, String paragraph) {
+	public static void addParagraph(StringBuilder buffer, String paragraph) {
 		if (paragraph != null) {
 			buffer.append("<p>"); //$NON-NLS-1$
 			buffer.append(paragraph);
@@ -321,7 +321,7 @@ public class HTMLPrinter {
 	 * @see #convertToHTMLContentWithWhitespace(String)
 	 * @since 3.7
 	 */
-	public static void addPreFormatted(StringBuffer buffer, String preFormatted) {
+	public static void addPreFormatted(StringBuilder buffer, String preFormatted) {
 		if (preFormatted != null) {
 			buffer.append("<pre>"); //$NON-NLS-1$
 			buffer.append(preFormatted);
@@ -329,7 +329,7 @@ public class HTMLPrinter {
 		}
 	}
 
-	public static void addParagraph(StringBuffer buffer, Reader paragraphReader) {
+	public static void addParagraph(StringBuilder buffer, Reader paragraphReader) {
 		if (paragraphReader != null)
 			addParagraph(buffer, read(paragraphReader));
 	}
