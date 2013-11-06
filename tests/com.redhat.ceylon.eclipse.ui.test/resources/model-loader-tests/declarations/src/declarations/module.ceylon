@@ -1,1 +1,1 @@
-module declarations '1.0.0' {}
+module declarations "1.0.0" {}
