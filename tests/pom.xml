@@ -112,5 +112,17 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 			<platformSystemProperties> -XstartOnFirstThread </platformSystemProperties>
 	    </properties>
 	  </profile>
+      <profile>
+        <id>linux</id>
+        <activation>
+            <os>
+                <name>Linux</name>
+            </os>
+        </activation>
+        <properties>
+            <!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
+            <platformSystemProperties> -Dorg.eclipse.swt.browser.DefaultType=mozilla </platformSystemProperties>
+        </properties>
+      </profile>
 	</profiles>    	
 </project>
