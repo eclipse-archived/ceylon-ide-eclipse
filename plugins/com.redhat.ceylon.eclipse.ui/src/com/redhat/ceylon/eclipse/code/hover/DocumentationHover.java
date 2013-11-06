@@ -147,6 +147,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.quickfix.ExtractFunctionProposal;
 import com.redhat.ceylon.eclipse.code.quickfix.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal;
+import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
@@ -1201,7 +1202,8 @@ public class DocumentationHover
 					buffer.append("<p>");
 					for (Parameter p: pl.getParameters()) {
 					    StringBuilder params = new StringBuilder();
-						appendParameters(p.getModel(), params);
+						appendParameters(p.getModel(), params, cpc);
+						String def = getDefaultValue(p, cpc);
 						StringBuilder doc = new StringBuilder();
 						Tree.Declaration refNode = (Tree.Declaration) getReferencedNode(p.getModel(), cpc);
 						if (refNode!=null) {
@@ -1213,7 +1215,7 @@ public class DocumentationHover
 								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(type.getDeclaration()) + ">" + 
 								convertToHTMLContent(type.getProducedTypeName()) + 
 								"</a>&nbsp;<a " + link(p.getModel()) + ">"+ p.getName() +
-								convertToHTMLContent(params.toString()) + "</a></tt>" + doc, 20, 2);
+								convertToHTMLContent(params.toString()) + "</a>" + convertToHTMLContent(def) + "</tt>" + doc, 20, 2);
 					}
 					buffer.append("</p>");
 				}
@@ -1265,6 +1267,20 @@ public class DocumentationHover
 		addPageEpilog(buffer);
 		return buffer.toString();
 	}
+
+    public static String getDefaultValue(Parameter p, CeylonParseController cpc) {
+        if (p.isDefaulted()) {
+            if (p.getModel() instanceof Functional) {
+                return " => ...";
+            }
+            else {
+                return getInitalValue(p.getModel(), cpc);
+            }
+        }
+        else {
+            return "";
+        }
+    }
 
     public static void appendExtraActions(Declaration dec, StringBuilder buffer) {
         buffer.append("<hr/>");
@@ -1333,7 +1349,7 @@ public class DocumentationHover
 	}
 
 	private static String description(Declaration dec, CeylonParseController cpc) {
-		String result = getDescriptionFor(dec);
+		String result = getDescriptionFor(dec, cpc);
 		if (dec instanceof TypeDeclaration) {
 			TypeDeclaration td = (TypeDeclaration) dec;
 			if (td.isAlias() && td.getExtendedType()!=null) {
@@ -1343,19 +1359,7 @@ public class DocumentationHover
 		}
 		else if (dec instanceof Value) {
 			if (!((Value) dec).isVariable()) {
-				Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
-				if (refnode instanceof Tree.AttributeDeclaration) {
-					Tree.SpecifierOrInitializerExpression sie = ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
-					if (sie!=null) {
-						if (sie.getExpression()!=null) {
-							Tree.Term term = sie.getExpression().getTerm();
-							if (term instanceof Tree.Literal) {
-								result += " = ";
-								result += term.getToken().getText();
-							}
-						}
-					}
-				}
+				result += getInitalValue(dec, cpc);
 			}
 		}
 		/*else if (dec instanceof ValueParameter) {
@@ -1379,6 +1383,32 @@ public class DocumentationHover
 		}*/
 		return result;
 	}
+	
+    public static String getInitalValue(Declaration dec, CeylonParseController cpc) {
+        Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
+        if (refnode instanceof Tree.AttributeDeclaration) {
+        	Tree.SpecifierOrInitializerExpression sie = ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
+        	if (sie!=null) {
+        		if (sie.getExpression()!=null) {
+        			Tree.Term term = sie.getExpression().getTerm();
+        			if (term instanceof Tree.Literal) {
+        				return " = " + term.getToken().getText();
+        			}
+        			else if (term instanceof Tree.BaseMemberOrTypeExpression) {
+        			    Tree.BaseMemberOrTypeExpression bme = (Tree.BaseMemberOrTypeExpression) term;
+        			    if (bme.getIdentifier()!=null) {
+        			        return " = " + bme.getIdentifier().getText();
+        			    }
+        			}
+        			else if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
+        			    return " = " + AbstractRefactoring.toString(term, cpc.getTokens());
+        			}
+        			return " = ...";
+        		}
+        	}
+        }
+        return "";
+    }
 	
 	static String getAddress(Referenceable model) {
 	    if (model==null) return null;
