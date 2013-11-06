@@ -14,7 +14,6 @@ import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isCeylonFile;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isCeylonProject;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestable;
-import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import java.util.ArrayList;
@@ -57,7 +56,6 @@ import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestRunner;
 
 public class CeylonTestLaunchShortcut implements ILaunchShortcut {
 
@@ -218,7 +216,6 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
     private ILaunchConfiguration createLaunchConfig(String name, List<CeylonTestLaunchConfigEntry> entries, ILaunchConfigurationType configType) throws CoreException {
         ILaunchConfigurationWorkingCopy configWorkingCopy = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(name));
         configWorkingCopy.setAttribute(ATTR_PROJECT_NAME, entries.get(0).getProjectName());
-        configWorkingCopy.setAttribute(ATTR_MAIN_TYPE_NAME, RemoteTestRunner.class.getName());        
         configWorkingCopy.setAttribute(LAUNCH_CONFIG_ENTRIES_KEY, CeylonTestLaunchConfigEntry.buildLaunchConfigAttributes(entries));
         return configWorkingCopy.doSave();
     }

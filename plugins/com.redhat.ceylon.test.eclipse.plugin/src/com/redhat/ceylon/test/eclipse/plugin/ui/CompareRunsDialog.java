@@ -78,9 +78,9 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 
+import com.redhat.ceylon.test.eclipse.TestElement;
+import com.redhat.ceylon.test.eclipse.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElementComparatorByName;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 

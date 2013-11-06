@@ -99,6 +99,8 @@ public class CeylonTestLaunchConfigEntry {
         } else {
             entry.type = Type.PROJECT;
         }
+        
+        entry.validate();
 
         return entry;
     }
@@ -127,6 +129,7 @@ public class CeylonTestLaunchConfigEntry {
 
     private Type type;
     private String projectName;
+    private String moduleName;
     private String modPkgDeclName;
     private String errorMessage;
 
@@ -136,6 +139,10 @@ public class CeylonTestLaunchConfigEntry {
 
     public String getProjectName() {
         return projectName;
+    }
+    
+    public String getModuleName() {
+        return moduleName;
     }
 
     public String getModPkgDeclName() {
@@ -164,6 +171,10 @@ public class CeylonTestLaunchConfigEntry {
         Package pkg = validatePackage(project);
         if( !isValid() || type == Type.PACKAGE )
             return;
+        
+        if (pkg != null) {
+            moduleName = pkg.getModule().getNameAsString();
+        }
         
         Class clazz = validateClass(pkg);
         if( !isValid() || type == Type.CLASS || type == Type.CLASS_LOCAL )

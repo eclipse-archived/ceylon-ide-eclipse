@@ -34,13 +34,6 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
     }
     
     @Override
-    public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-        
-        super.launch(configuration, mode, launch, monitor);
-    }
-
-    
-    @Override
     public IVMRunner getVMRunner(ILaunchConfiguration configuration, String mode) throws CoreException {
         final IVMRunner runner = super.getVMRunner(configuration, mode);
         
@@ -61,7 +54,6 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
 
             @Override
             public void run(VMRunnerConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-
                 try {
                     List<String> newArgs = new ArrayList<String>();
                     
@@ -69,49 +61,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                     		.getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE)
                     			.equals(launch.getLaunchConfiguration().getType());
                     
-                    if (runAsJs) {
-                    	newArgs.add("run-js");
-                    } else {
-                    	newArgs.add("run");
-                    }
-
-                    for (IPath repo : workingRepos) {
-                        newArgs.add("--rep");
-                        newArgs.add(repo.toOSString());
-                    }
-                    
-                    for (String repo: CeylonProjectConfig.get(project).getProjectLocalRepos()) {
-                        newArgs.add("--rep");
-                        newArgs.add(repo);                    	
-                    }
-                    
-                    if (CeylonProjectConfig.get(project).isOffline()) {
-                        newArgs.add("--offline");
-                    }
-                    if (launch.getLaunchMode().equals("debug")) {
-                        if (runAsJs) {
-                        	newArgs.add("--debug");
-                        	newArgs.add("debug"); //
-                        } else {
-                            newArgs.add("--verbose");
-                        }
-                    }
-
-                    String topLevel = launch.getLaunchConfiguration()
-                        .getAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, "");
-                    int def = topLevel.indexOf(DEFAULT_RUN_MARKER);
-                    if (def != -1) {
-                        topLevel = topLevel.substring(0, def);
-                    }
-                    if (!"".equals(topLevel) && def == -1) { // default run not found
-                        newArgs.add("--run");
-                        newArgs.add(topLevel);
-                    }
-                    
-                    newArgs.add("--");
-                    
-                    newArgs.add(launch.getLaunchConfiguration()
-                        .getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, ""));
+                    prepareArguments(newArgs, workingRepos, project, launch, runAsJs);
 
                     List<String> args = Arrays.asList(config.getProgramArguments());
                     newArgs.addAll(args);
@@ -137,6 +87,60 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         };
     }
     
+    protected void prepareArguments(List<String> args, List<IPath> workingRepos, IProject project, ILaunch launch, boolean runAsJs) throws CoreException {
+        if (runAsJs) {
+            args.add("run-js");
+        } else {
+            args.add("run");
+        }
+        
+        prepareRepositoryArguments(args, project, workingRepos);
+        prepareOfflineArgument(args, project);
+        prepareDebugArgument(args, launch, runAsJs);
+        
+        String topLevel = launch.getLaunchConfiguration().getAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, "");
+        int def = topLevel.indexOf(DEFAULT_RUN_MARKER);
+        if (def != -1) {
+            topLevel = topLevel.substring(0, def);
+        }
+        if (!"".equals(topLevel) && def == -1) { // default run not found
+            args.add("--run");
+            args.add(topLevel);
+        }
+        
+        args.add("--");
+        args.add(launch.getLaunchConfiguration().getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, ""));
+    }
+
+    protected void prepareRepositoryArguments(List<String> args, IProject project, List<IPath> workingRepos) {
+        for (IPath repo : workingRepos) {
+            args.add("--rep");
+            args.add(repo.toOSString());
+        }
+        
+        for (String repo: CeylonProjectConfig.get(project).getProjectLocalRepos()) {
+            args.add("--rep");
+            args.add(repo);                      
+        }
+    }
+
+    protected void prepareOfflineArgument(List<String> args, IProject project) {
+        if (CeylonProjectConfig.get(project).isOffline()) {
+            args.add("--offline");
+        }
+    }
+
+    protected void prepareDebugArgument(List<String> args, ILaunch launch, boolean runAsJs) {
+        if (launch.getLaunchMode().equals("debug")) {
+            if (runAsJs) {
+                args.add("--debug");
+                args.add("debug"); //
+            } else {
+                args.add("--verbose");
+            }
+        }
+    }
+
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
 
