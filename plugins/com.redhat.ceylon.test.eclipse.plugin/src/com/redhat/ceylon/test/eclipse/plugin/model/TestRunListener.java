@@ -1,5 +1,7 @@
 package com.redhat.ceylon.test.eclipse.plugin.model;
 
+import com.redhat.ceylon.test.eclipse.TestElement;
+
 public interface TestRunListener {
 
     void testRunAdded(TestRun testRun);

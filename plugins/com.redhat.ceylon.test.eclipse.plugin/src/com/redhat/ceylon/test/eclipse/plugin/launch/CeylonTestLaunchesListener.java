@@ -11,9 +11,9 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.ILaunchesListener2;
 
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestEventListener;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
-import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEventListener;
 
 public class CeylonTestLaunchesListener implements ILaunchesListener2 {
     
@@ -80,7 +80,7 @@ public class CeylonTestLaunchesListener implements ILaunchesListener2 {
         }
         
         int port = Integer.parseInt(portAttribute);
-        RemoteTestEventListener.startListenerThread(launch, port);
+        TestEventListener.startListenerThread(launch, port);
         
         trackedLaunches.remove(launch);
     }

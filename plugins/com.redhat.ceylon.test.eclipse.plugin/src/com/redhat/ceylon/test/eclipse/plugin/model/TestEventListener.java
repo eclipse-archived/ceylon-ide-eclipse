@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.runner;
+package com.redhat.ceylon.test.eclipse.plugin.model;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -8,26 +8,25 @@ import java.net.Socket;
 
 import org.eclipse.debug.core.ILaunch;
 
+import com.redhat.ceylon.test.eclipse.TestEvent;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
 
-public class RemoteTestEventListener {
+public class TestEventListener {
 
     public static void startListenerThread(ILaunch launch, int port) {
-        RemoteTestEventListenerThread thread = new RemoteTestEventListenerThread(launch, port);
+        TestEventListenerThread thread = new TestEventListenerThread(launch, port);
         thread.start();
     }
 
-    private static class RemoteTestEventListenerThread extends Thread {
+    private static class TestEventListenerThread extends Thread {
 
         private ILaunch launch;
         private int port;
         private ServerSocket serverSocket;
         private Socket socket;
         
-        public RemoteTestEventListenerThread(ILaunch launch, int port) {
-            super("RemoteTestEventListenerThread");
+        public TestEventListenerThread(ILaunch launch, int port) {
+            super("TestEventListenerThread");
             this.launch = launch;
             this.port = port;
         }
@@ -40,10 +39,10 @@ public class RemoteTestEventListener {
                 ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
                 while (true) {
                     Object event = ois.readObject();
-                    if (event instanceof RemoteTestEvent) {
+                    if (event instanceof TestEvent) {
                         TestRunContainer testRunContainer = CeylonTestPlugin.getDefault().getModel();
                         TestRun testRun = testRunContainer.getOrCreateTestRun(launch);
-                        testRun.processRemoteTestEvent((RemoteTestEvent) event);
+                        testRun.processRemoteTestEvent((TestEvent) event);
                     }
                 }
             } catch (EOFException e) {

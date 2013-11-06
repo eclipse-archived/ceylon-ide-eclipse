@@ -1,7 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
-import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import java.util.ArrayList;
@@ -38,7 +37,6 @@ import org.eclipse.ui.PlatformUI;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestRunner;
 
 public class CeylonTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
 
@@ -297,7 +295,6 @@ public class CeylonTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
     public void performApply(ILaunchConfigurationWorkingCopy config) {
         if( !entries.isEmpty() ) {
             config.setAttribute(ATTR_PROJECT_NAME, entries.get(0).getProjectName());
-            config.setAttribute(ATTR_MAIN_TYPE_NAME, RemoteTestRunner.class.getName());        
             config.setAttribute(LAUNCH_CONFIG_ENTRIES_KEY, CeylonTestLaunchConfigEntry.buildLaunchConfigAttributes(entries));
         }
     }

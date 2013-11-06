@@ -4,5 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="lib/ceylon.test-1.0.0-ide.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/com.redhat.ceylon.test-1.0.0-ide.jar"/>	
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -9,10 +9,11 @@ import java.util.Map;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
+import com.redhat.ceylon.test.eclipse.TestElement;
+import com.redhat.ceylon.test.eclipse.TestElement.State;
+import com.redhat.ceylon.test.eclipse.TestEvent;
+import com.redhat.ceylon.test.eclipse.TestEvent.Type;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
-import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent;
-import com.redhat.ceylon.test.eclipse.plugin.runner.RemoteTestEvent.Type;
 
 public class TestRun {
 
@@ -186,7 +187,7 @@ public class TestRun {
         return startDate;
     }
 
-    public synchronized void processRemoteTestEvent(RemoteTestEvent event) {
+    public synchronized void processRemoteTestEvent(TestEvent event) {
         switch (event.getType()) {
         case TEST_RUN_STARTED:
             updateRootElement(event.getTestElement());
@@ -273,7 +274,7 @@ public class TestRun {
         }.visitElements(root);
     }
 
-    private void updateCounters(RemoteTestEvent event) {
+    private void updateCounters(TestEvent event) {
         if (event.getType() == Type.TEST_STARTED) {
             startedCount++;
         }
