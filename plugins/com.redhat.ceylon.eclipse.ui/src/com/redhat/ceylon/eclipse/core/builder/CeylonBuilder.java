@@ -76,6 +76,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
+import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.compiler.Options;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
@@ -2530,7 +2531,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 		return new String[]{
 				"${ceylon.repo}",
 				"${user.home}/.ceylon/repo",
-				"http://modules.ceylon-lang.org/test"
+				Constants.REPO_URL_CEYLON
 		};
 	}
 	
