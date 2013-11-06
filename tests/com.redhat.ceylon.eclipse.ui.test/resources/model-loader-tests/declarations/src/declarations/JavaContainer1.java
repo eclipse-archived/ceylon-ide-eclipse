@@ -17,6 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-shared annotation final class FooAnnotation() satisfies OptionalAnnotation<FooAnnotation, Annotated> {}
 
-shared annotation FooAnnotation fooAnnotation() => FooAnnotation();
+package declarations;
+
+public class JavaContainer1 {
+    public JavaContainer1(float f) {}
+    public class Inner {
+        public Inner() {}
+        public Inner(int i) {}
+        public int zero = 0;
+    }
+}
