@@ -24,6 +24,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDefaultValue;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
@@ -2191,15 +2192,19 @@ public class CeylonContentProposer {
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
     }
-        
+    
     public static String getDescriptionFor(Declaration d) {
+        return getDescriptionFor(d, null);
+    }
+    
+    public static String getDescriptionFor(Declaration d, CeylonParseController cpc) {
         StringBuilder result = new StringBuilder();
         if (d!=null) {
             if (d.isFormal()) result.append("formal ");
             if (d.isDefault()) result.append("default ");
             appendDeclarationText(d, d.getUnit(), result);
             appendTypeParameters(d, result);
-            appendParameters(d, d.getUnit(), result);
+            appendParameters(d, result, cpc);
             /*result.append(" - refine declaration in ") 
                 .append(((Declaration) d.getContainer()).getName());*/
         }
@@ -2541,16 +2546,22 @@ public class CeylonContentProposer {
         return indent.contains("\n") ?  indent + getDefaultIndent() : indent;
     }
     
-    public static void appendParameters(Declaration d, StringBuilder result) {
-        appendParameters(d, null, d.getUnit(), result);
+    public static void appendParameters(Declaration d, StringBuilder result, 
+            CeylonParseController cpc) {
+        appendParameters(d, null, d.getUnit(), result, cpc);
     }
     
     private static void appendParameters(Declaration d, Unit unit, StringBuilder result) {
-        appendParameters(d, null, unit, result);
+        appendParameters(d, null, unit, result, null);
     }
     
     public static void appendParameters(Declaration d, ProducedReference pr, 
             Unit unit, StringBuilder result) {
+        appendParameters(d, pr, unit, result, null);
+    }
+    
+    private static void appendParameters(Declaration d, ProducedReference pr, 
+            Unit unit, StringBuilder result, CeylonParseController cpc) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
             if (plists!=null) {
@@ -2587,7 +2598,9 @@ public class CeylonContentProposer {
                                 result.setLength(result.length()-2);
                                 result.append(")");
                             }*/
-                            if (p.isDefaulted()) result.append("=...");
+                            if (cpc!=null) {
+                                result.append(getDefaultValue(p, cpc));
+                            }
                             result.append(", ");
                         }
                         result.setLength(result.length()-2);
