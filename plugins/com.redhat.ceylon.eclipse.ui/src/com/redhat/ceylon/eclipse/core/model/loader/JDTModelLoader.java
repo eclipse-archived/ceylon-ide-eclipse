@@ -221,20 +221,23 @@ public class JDTModelLoader extends AbstractModelLoader {
                                         if (new String(signature).equals(new String(methodInfoSignature))) {
                                             IBinaryAnnotation[] binaryAnnotation = methodInfo.getParameterAnnotations(0);
                                             if (binaryAnnotation == null) {
-                                                AnnotationBinding[][] wrongParameterAnnotations = method.getParameterAnnotations();
-                                                for (int i=0; i<method.parameters.length; i++) {
-                                                    IBinaryAnnotation[] goodAnnotations = null;
-                                                    try {
-                                                         goodAnnotations = methodInfo.getParameterAnnotations(i + 1);
+                                                if (methodInfo.getAnnotatedParametersCount() == method.parameters.length + 1) {
+                                                    AnnotationBinding[][] newParameterAnnotations = new AnnotationBinding[method.parameters.length][];
+                                                    for (int i=0; i<method.parameters.length; i++) {
+                                                        IBinaryAnnotation[] goodAnnotations = null;
+                                                        try {
+                                                             goodAnnotations = methodInfo.getParameterAnnotations(i + 1);
+                                                        }
+                                                        catch(IndexOutOfBoundsException e) {
+                                                            break;
+                                                        }
+                                                        if (goodAnnotations != null) {
+                                                            AnnotationBinding[] parameterAnnotations = BinaryTypeBinding.createAnnotations(goodAnnotations, lookupEnvironment, new char[][][] {});
+                                                            newParameterAnnotations[i] = parameterAnnotations;
+                                                        }
                                                     }
-                                                    catch(IndexOutOfBoundsException e) {
-                                                        break;
-                                                    }
-                                                    if (goodAnnotations != null) {
-                                                        wrongParameterAnnotations[i] = BinaryTypeBinding.createAnnotations(goodAnnotations, lookupEnvironment, new char[][][] {});
-                                                    }
+                                                    method.setParameterAnnotations(newParameterAnnotations);
                                                 }
-                                                
                                             }
                                         }
                                     }
