@@ -1125,8 +1125,9 @@ public class DocumentationHover
 		}
 		
 		boolean hasDoc = false;
-		Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
-		if (refnode!=null) {
+		Node rn = getReferencedNode(dec, cpc);
+		if (rn instanceof Tree.Declaration) {
+		    Tree.Declaration refnode = (Tree.Declaration) rn;
 			appendDeprecatedAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
 			int len = buffer.length();
 			appendDocAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
