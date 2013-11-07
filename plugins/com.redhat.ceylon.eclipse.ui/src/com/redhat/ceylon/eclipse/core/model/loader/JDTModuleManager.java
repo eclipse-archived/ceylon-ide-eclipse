@@ -47,12 +47,16 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.cmr.api.ArtifactResultType;
 import com.redhat.ceylon.cmr.api.JDKUtils;
+import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleHelper;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -85,6 +89,7 @@ public class JDTModuleManager extends LazyModuleManager {
     private Set<File> classpath;
     private TypeChecker typeChecker;
     private boolean loadDependenciesFromModelLoaderFirst;
+    
 
     public Set<File> getClasspath() {
         return classpath;
@@ -291,6 +296,27 @@ public class JDTModuleManager extends LazyModuleManager {
     @Override
     public void resolveModule(ArtifactResult artifact, Module module, ModuleImport moduleImport, 
         LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies, boolean forCompiledModule) {
+        File artifactFile = artifact.artifact();
+        if (isModuleLoadedFromSource(module.getNameAsString()) && artifactFile.getName().endsWith(ArtifactContext.CAR)) {
+            // We should force to take the .src even if the car is available
+            // We do this also for the referenced projects, since cross-references have to be reworked in order to be 
+            // compatible with the loadBinariesFirst mechanism
+            ArtifactContext artifactContext = new ArtifactContext(module.getNameAsString(), module.getVersion(), ArtifactContext.SRC);
+            RepositoryManager repositoryManager = getContext().getRepositoryManager();
+            Exception exceptionOnGetArtifact = null;
+            ArtifactResult sourceArtifact = null;
+            try {
+                sourceArtifact = repositoryManager.getArtifactResult(artifactContext);
+            } catch (Exception e) {
+                exceptionOnGetArtifact = e;
+            }
+            if ( sourceArtifact == null ) {
+                ModuleHelper.buildErrorOnMissingArtifact(artifactContext, module, moduleImport, dependencyTree, exceptionOnGetArtifact, this);
+            } else {
+                artifact = sourceArtifact;
+            }
+            
+        }
         if (module instanceof JDTModule) {
             ((JDTModule) module).setArtifact(artifact.artifact());
         }
