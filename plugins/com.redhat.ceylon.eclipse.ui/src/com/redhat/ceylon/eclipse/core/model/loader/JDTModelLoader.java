@@ -789,4 +789,11 @@ public class JDTModelLoader extends AbstractModelLoader {
         for(String jdkOracleModule : JDKUtils.getOracleJDKModuleNames())
             findOrCreateModule(jdkOracleModule, JDK_MODULE_VERSION);
     }
+
+    @Override
+    public synchronized LazyPackage findOrCreateModulelessPackage(String pkgName) {
+        return (LazyPackage) findPackage(pkgName);
+    }
+    
+    
 }
