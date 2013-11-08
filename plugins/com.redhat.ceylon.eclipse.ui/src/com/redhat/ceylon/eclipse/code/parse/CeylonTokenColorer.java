@@ -45,7 +45,7 @@ public class CeylonTokenColorer  {
             "assembly", "module", "package", "of", "extends", "satisfies", "abstracts", "in", "out", 
             "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", 
             "try", "catch", "finally", "this", "outer", "super", "is", "exists", "nonempty", "then",
-            "dynamic"));
+            "dynamic", "new", "let"));
     
     private static TextAttribute identifierAttribute, typeAttribute, typeLiteralAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
