@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyNode.getTypeChecker;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 
 import java.lang.reflect.InvocationTargetException;
@@ -19,10 +20,9 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IWorkbenchPartSite;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -163,9 +163,7 @@ public final class CeylonHierarchyContentProvider
 
         private void add(Declaration td, Declaration etd) {
             getSubtypeHierarchyNode(etd).addChild(getSubtypeHierarchyNode(td));
-            if (!(td instanceof Interface)||!(etd instanceof Class)||td==declaration) {
-                getSupertypeHierarchyNode(td).addChild(getSupertypeHierarchyNode(etd));
-            }
+            getSupertypeHierarchyNode(td).addChild(getSupertypeHierarchyNode(etd));
         }
 
         private CeylonHierarchyNode getSubtypePathNode(Declaration d) {
@@ -206,25 +204,27 @@ public final class CeylonHierarchyContentProvider
             
             monitor.beginTask("Building hierarchy", 100000);
             
-            TypeChecker tc = CeylonHierarchyNode.getTypeChecker(project, 
-                    declaration.getUnit().getPackage().getModule().getNameAsString());
+            Module currentModule = declaration.getUnit().getPackage().getModule();
+            TypeChecker tc = getTypeChecker(project, currentModule.getNameAsString());
             //TODO: if this is a popup hierarchy, use the current  
             //      editor typechecker here instead!
-            Set<Module> allModules = tc.getPhasedUnits().getModuleManager().getCompiledModules();
+            ModuleManager moduleManager = tc.getPhasedUnits().getModuleManager();
+            Set<Module> allModules = new HashSet<Module>(moduleManager.getCompiledModules());
+            allModules.add(currentModule);
             
-            boolean isFromUnversionedModule = declaration.getUnit().getPackage()
-                    .getModule().getVersion()==null;
+//            boolean isFromUnversionedModule = declaration.getUnit().getPackage()
+//                    .getModule().getVersion()==null;
             
             monitor.worked(10000);
             
             Set<Package> packages = new HashSet<Package>();
             int ams = allModules.size();
             for (Module m: allModules) {
-                if (m.getVersion()!=null || isFromUnversionedModule) {
+//                if (m.getVersion()!=null || isFromUnversionedModule) {
                     packages.addAll(m.getAllPackages());
                     monitor.worked(10000/ams);
                     if (monitor.isCanceled()) return;
-                }
+//                }
             }
     
             subtypesOfAllTypes.put(declaration, getSubtypePathNode(declaration));
