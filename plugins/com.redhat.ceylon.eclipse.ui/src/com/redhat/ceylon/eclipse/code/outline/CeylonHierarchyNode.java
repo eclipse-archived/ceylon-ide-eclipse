@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,6 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
     
@@ -82,19 +82,17 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
 	}
 
     public static TypeChecker getTypeChecker(IProject project, String moduleName) {
-        TypeChecker tc=null;
-	    if (project!=null) {
-	        tc = getProjectTypeChecker(project);
-	    }
-	    else {
-	        for (TypeChecker t: CeylonBuilder.getTypeCheckers()) {
-	            if (getModelLoader(t).getLoadedModule(moduleName)!=null) {
-	                tc=t;
-	                break;
+	    if (project==null) {
+	        for (TypeChecker tc: getTypeCheckers()) {
+	            if (getModelLoader(tc).getLoadedModule(moduleName)!=null) {
+	                return tc;
 	            }
 	        }
+	        return null;
 	    }
-        return tc;
+	    else {
+	        return getProjectTypeChecker(project);
+	    }
     }
 	
 	boolean isNonUnique() {
