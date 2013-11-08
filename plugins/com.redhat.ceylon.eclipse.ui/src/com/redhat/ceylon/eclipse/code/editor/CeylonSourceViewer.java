@@ -255,7 +255,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     @SuppressWarnings({"unchecked", "rawtypes"})
                     Map<Declaration,String> imports = (Map) clipboard.getContents(ImportsTransfer.INSTANCE);
                     IRegion selection = editor.getSelection();
-                    int endOffset = selection.getOffset()+selection.getLength();
+                    int offset = selection.getOffset();
+                    int length = selection.getLength();
+                    int endOffset = offset+length;
                     
                     IDocument doc = this.getDocument();
                     DocumentRewriteSession rewriteSession= null;
@@ -264,12 +266,20 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     }
                     
                     try {
+                        boolean startOfLine = false;
+                        try {
+                            int lineStart = doc.getLineInformationOfOffset(offset).getOffset();
+                            startOfLine = doc.get(lineStart, offset-lineStart).trim().isEmpty();
+                        }
+                        catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
                         try {
                             MultiTextEdit edit = new MultiTextEdit();
                             if (imports!=null) {
                                 pasteImports(imports, edit, text);
                             }
-                            edit.addChild(new ReplaceEdit(selection.getOffset(), selection.getLength(), text));
+                            edit.addChild(new ReplaceEdit(offset, length, text));
                             edit.apply(doc);
                             endOffset = edit.getRegion().getOffset()+edit.getRegion().getLength();
                         } 
@@ -278,7 +288,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                             return false;
                         }
                         try {
-                            if (EditorsUI.getPreferenceStore().getBoolean(PASTE_CORRECT_INDENTATION)) {
+                            if (startOfLine && EditorsUI.getPreferenceStore().getBoolean(PASTE_CORRECT_INDENTATION)) {
                                 endOffset = correctSourceIndentation(new Point(endOffset-text.length(), text.length()), doc)+1;
                             }
                             return true;
