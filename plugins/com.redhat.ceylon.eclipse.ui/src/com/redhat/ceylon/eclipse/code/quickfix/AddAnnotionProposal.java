@@ -89,8 +89,9 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
         if (decNode instanceof Tree.TypedDeclaration &&
                 !(decNode instanceof Tree.ObjectDefinition)) {
             Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
-            if (type instanceof Tree.FunctionModifier 
-                    || type instanceof Tree.ValueModifier) {
+            if (type.getToken()!=null &&
+                    (type instanceof Tree.FunctionModifier || 
+                     type instanceof Tree.ValueModifier)) {
                 ProducedType it = type.getTypeModel();
                 if (it!=null && !(it.getDeclaration() instanceof UnknownType)) {
                     String explicitType = it.getProducedTypeName();
