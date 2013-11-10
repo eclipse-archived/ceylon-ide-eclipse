@@ -582,7 +582,7 @@ final class TerminateStatementAction extends Action {
 				    }
 				}
                 protected boolean missingBlock(Block block) {
-                    return block==null ||
+                    return block==null || block.getMainToken()==null || 
                             block.getMainToken()
                                 .getText().startsWith("<missing");
                 }
