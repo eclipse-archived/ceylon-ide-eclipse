@@ -67,7 +67,7 @@ public class CeylonTestPropertyTester extends PropertyTester {
         try {
             IJavaProject javaProject = JavaCore.create(file.getProject());
             IPackageFragment packageFragment = javaProject.findPackageFragment(file.getParent().getFullPath());
-            return isPackageFromTestableModule(packageFragment);
+            return packageFragment!=null && isPackageFromTestableModule(packageFragment);
         } catch (JavaModelException e) {
             CeylonTestPlugin.logError("", e);
         }
