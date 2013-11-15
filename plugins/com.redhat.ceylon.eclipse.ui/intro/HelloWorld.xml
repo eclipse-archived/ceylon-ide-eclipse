@@ -75,8 +75,8 @@
 	<item title="Run the program">
 		<description>
 			Now let's run the program. Select the project or compilation
-			unit in the Package Explorer and select
-			<b>Run > Run As > Ceylon Application</b>.
+			unit in the Ceylon Explorer and select
+			<b>Run > Run As > Ceylon Java Application</b>.
 			You should see the message in the console.
 		</description>
 	</item>

@@ -58,10 +58,17 @@
             the module descriptor, just before the closing brace:
             <br/>
             <br/>
-            <b>import ceylon.math '0.3.3';</b>
+            <b>import ceylon.math "0.3.3";</b>
             <br/>
             <br/>
             Remember to save the file.
+            <br/>
+            <br/>
+            Alternatively, you can add this dependency by selecting your
+            module in the Ceylon Explorer and then selecting
+            <b>File > Properties</b>, clicking <b>Add imports...</b>,
+            and choosing the module "ceylon.math" in the popup
+            dialog. 
         </description>
     </item>
 
@@ -77,7 +84,7 @@
             Now add the following code to the body of the "run" method:
             <br/>
             <br/>
-            <b>print("You rolled " (random()*6).integer+1 " " (random()*6).integer+1 "");</b>
+            <b>print("You rolled ``(random()*6).integer+1`` ``(random()*6).integer+1``");</b>
             <br/>
             <br/>
             Remember to save the file.
@@ -86,7 +93,7 @@
 
     <item title="Export the module" dialog="true">
         <description>
-            Finally, select the project in the Package Explorer and select 
+            Finally, select the project in the Ceylon Explorer and select 
             <b>File > Export... > Ceylon > Ceylon Module to Module Repository</b>
             or click below.
             <br/>
