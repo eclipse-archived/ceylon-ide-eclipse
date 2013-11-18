@@ -25,9 +25,12 @@ import org.antlr.runtime.RecognitionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -191,7 +194,7 @@ public class CeylonParseController {
             }
             
             if (path.isAbsolute()) {
-                for (IProject p : CeylonBuilder.getProjects()) {
+                for (final IProject p : CeylonBuilder.getProjects()) {
                     if (project != null && project != p) continue;
                     
                     JDTModuleManager moduleManager = (JDTModuleManager) CeylonBuilder.getProjectTypeChecker(p).getPhasedUnits().getModuleManager();
@@ -208,10 +211,17 @@ public class CeylonParseController {
                                 stager.afterStage(LEXICAL_ANALYSIS, monitor);
                                 stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
                             }
-                            phasedUnit.analyseTypes();
-                            if (showWarnings(project)) {
-                                phasedUnit.analyseUsage();
-                            }
+                            
+                            useTypechecker(phasedUnit, new Runnable() {
+                                @Override
+                                public void run() {
+                                    phasedUnit.analyseTypes();
+                                    if (showWarnings(p)) {
+                                        phasedUnit.analyseUsage();
+                                    }
+                                }
+                            });
+                            
                             if (stager!=null) {
                                 stager.afterStage(TYPE_ANALYSIS, monitor);
                                 stager.afterStage(DONE, monitor);
@@ -375,57 +385,88 @@ public class CeylonParseController {
 
 	private PhasedUnit typecheck(IPath path, VirtualFile file,
 			Tree.CompilationUnit cu, VirtualFile srcDir, 
-			boolean showWarnings, PhasedUnit builtPhasedUnit) {
-		PhasedUnit phasedUnit;
+			final boolean showWarnings, final PhasedUnit builtPhasedUnit) {
         if (isExternalPath(path) && builtPhasedUnit!=null) {
             // reuse the existing AST
             phasedUnit = builtPhasedUnit;
-            phasedUnit.analyseTypes();
-			if (showWarnings) {
-                phasedUnit.analyseUsage();
-            }
+            useTypechecker(builtPhasedUnit, new Runnable() {
+                @Override
+                public void run() {
+                    builtPhasedUnit.analyseTypes();
+                    if (showWarnings) {
+                        builtPhasedUnit.analyseUsage();
+                    }
+                }
+            });
+            return builtPhasedUnit;
+        }
+        PhasedUnit phasedUnit;
+        Package pkg;
+        if (srcDir==null) {
+            srcDir = new TemporaryFile();
+            //put it in the default module
+            pkg = typeChecker.getContext().getModules()
+            		.getDefaultModule().getPackages().get(0);
         }
         else {
-            Package pkg;
-            if (srcDir==null) {
-                srcDir = new TemporaryFile();
-                //put it in the default module
-                pkg = typeChecker.getContext().getModules()
-                		.getDefaultModule().getPackages().get(0);
-            }
-            else {
-            	pkg = getPackage(file, srcDir, builtPhasedUnit);
-            }
-            
-            if (builtPhasedUnit instanceof ProjectPhasedUnit) {
-                phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
-                        typeChecker.getPhasedUnits().getModuleManager(), 
-                        typeChecker, tokens, (ProjectPhasedUnit) builtPhasedUnit);  
-            }
-            else {
-                JDTModuleManager moduleManager = (JDTModuleManager) typeChecker.getPhasedUnits().getModuleManager();
-                phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
-                        moduleManager, 
-                        typeChecker, tokens, null);
-                moduleManager.getModelLoader().setupSourceFileObjects(Arrays.asList(phasedUnit));
-            }
-            
-            phasedUnit.validateTree();
-            phasedUnit.visitSrcModulePhase();
-            phasedUnit.visitRemainingModulePhase();
-            phasedUnit.scanDeclarations();
-            phasedUnit.scanTypeDeclarations();
-            phasedUnit.validateRefinement();
-            phasedUnit.analyseTypes();
-            if (showWarnings) {
-            	phasedUnit.analyseUsage();
-            }
-            phasedUnit.analyseFlow();
-            UnknownTypeCollector utc = new UnknownTypeCollector();
-            phasedUnit.getCompilationUnit().visit(utc);
+        	pkg = getPackage(file, srcDir, builtPhasedUnit);
         }
+        
+        if (builtPhasedUnit instanceof ProjectPhasedUnit) {
+            phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
+                    typeChecker.getPhasedUnits().getModuleManager(), 
+                    typeChecker, tokens, (ProjectPhasedUnit) builtPhasedUnit);  
+        }
+        else {
+            JDTModuleManager moduleManager = (JDTModuleManager) typeChecker.getPhasedUnits().getModuleManager();
+            phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
+                    moduleManager, 
+                    typeChecker, tokens, null);
+            moduleManager.getModelLoader().setupSourceFileObjects(Arrays.asList(phasedUnit));
+        }
+        
+        final PhasedUnit phasedUnitToTypeCheck = phasedUnit;
+        
+        useTypechecker(phasedUnitToTypeCheck, new Runnable() {
+            @Override
+            public void run() {
+                phasedUnitToTypeCheck.validateTree();
+                phasedUnitToTypeCheck.visitSrcModulePhase();
+                phasedUnitToTypeCheck.visitRemainingModulePhase();
+                phasedUnitToTypeCheck.scanDeclarations();
+                phasedUnitToTypeCheck.scanTypeDeclarations();
+                phasedUnitToTypeCheck.validateRefinement();
+                phasedUnitToTypeCheck.analyseTypes();
+                if (showWarnings) {
+                    phasedUnitToTypeCheck.analyseUsage();
+                }
+                phasedUnitToTypeCheck.analyseFlow();
+                UnknownTypeCollector utc = new UnknownTypeCollector();
+                phasedUnitToTypeCheck.getCompilationUnit().visit(utc);
+            }
+        });
+        
         return phasedUnit;
 	}
+
+    private void useTypechecker(final PhasedUnit phasedUnitToTypeCheck,
+            final Runnable typecheckSteps) {
+        Job typecheckJob = new WorkspaceJob("Typechecking the working copy of " + phasedUnitToTypeCheck.getPathRelativeToSrcDir()) {
+            @Override
+            public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                typecheckSteps.run();
+                return Status.OK_STATUS;
+            }
+        };
+        typecheckJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
+        typecheckJob.setPriority(Job.getJobManager().currentJob().getPriority());
+        typecheckJob.schedule();
+        try {
+            typecheckJob.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
 	private static TypeChecker createTypeChecker(IProject project, 
 			boolean showWarnings) 
