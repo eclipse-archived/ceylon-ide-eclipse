@@ -106,6 +106,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.CrossProjectBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 
@@ -631,29 +632,40 @@ public class JDTModelLoader extends AbstractModelLoader {
                 e.printStackTrace();
             }
         }
-        
-        if (!jdtClass.isBinary()) {
-            unit = new JavaCompilationUnit((org.eclipse.jdt.core.ICompilationUnit)typeRoot);
-        }
-        else {
-            if (jdtClass.isCeylon()) {
-                unit = new CeylonBinaryUnit((IClassFile)typeRoot);
-            }
-            else {
-                unit = new JavaClassFile((IClassFile)typeRoot);
-            }
-        }
 
-        unit.setFilename(jdtClass.getFileName());
         StringBuilder sb = new StringBuilder();
         List<String> parts = pkg.getName();
         for (int i = 0; i < parts.size(); i++) {
             sb.append(parts.get(i));
             sb.append('/');
         }
-        unit.setRelativePath(sb.toString() + unit.getFilename());
-        unit.setFullPath(jdtClass.getFullPath());
-        unit.setPackage(pkg);
+        sb.append(jdtClass.getFileName());
+        String relativePath = sb.toString();
+        String fileName = jdtClass.getFileName();
+        String fullPath = jdtClass.getFullPath();
+        
+        if (!jdtClass.isBinary()) {
+            unit = new JavaCompilationUnit((org.eclipse.jdt.core.ICompilationUnit)typeRoot, fileName, relativePath, fullPath, pkg);
+        }
+        else {
+            if (jdtClass.isCeylon()) {
+                if (pkg.getModule() instanceof JDTModule) {
+                    JDTModule module = (JDTModule) pkg.getModule();
+                    IProject originalProject = module.getOriginalProject();
+                    if (originalProject != null) {
+                        unit = new CrossProjectBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                    } else {
+                        unit = new CeylonBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                    }
+                } else {
+                    unit = new CeylonBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                }
+            }
+            else {
+                unit = new JavaClassFile((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+            }
+        }
+
         return unit;
     }
 
