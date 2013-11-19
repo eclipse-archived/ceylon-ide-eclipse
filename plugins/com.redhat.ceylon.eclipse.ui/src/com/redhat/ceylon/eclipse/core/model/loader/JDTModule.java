@@ -315,6 +315,10 @@ public class JDTModule extends LazyModule {
         return isBinaryArchive() || isSourceArchive();
     }
     
+    public boolean isProjectModule() {
+        return ! isArchive();
+    }
+    
     public boolean isBinaryArchive() {
         return artifact != null && artifact.getName().endsWith(ArtifactContext.CAR);
     }
@@ -404,6 +408,14 @@ public class JDTModule extends LazyModule {
         return null;
     }
     
+    private Package getPackageFromRelativePath(
+            String relativePathOfClassToRemove) {
+        List<String> pathElements = Arrays.asList(relativePathOfClassToRemove.split("/"));
+        String packageName = Util.formatPath(pathElements.subList(0, pathElements.size()-1));
+        Package p = findPackageNoLazyLoading(packageName);
+        return p;
+    }
+
     private ExternalPhasedUnit buildPhasedUnitForBinaryUnit(String sourceUnitFullPath) {
         if (sourceArchivePath == null || sourceUnitFullPath == null) {
             return null;
@@ -415,31 +427,16 @@ public class JDTModule extends LazyModule {
         
         ExternalPhasedUnit phasedUnit = null;
         String sourceUnitRelativePath = sourceUnitFullPath.replace(sourceArchivePath + "!/", "");
-        List<String> pathParts = Arrays.asList(sourceUnitRelativePath.split("/"));
-        String packageName = Util.formatPath(pathParts.subList(0, pathParts.size()-1));
-        Package pkg = getPackage(packageName);
+        Package pkg = getPackageFromRelativePath(sourceUnitRelativePath);
         if (pkg != null) {
             try {
                 JDTModuleManager moduleManager = getModuleManager();
                 ClosableVirtualFile sourceArchive = null;
-                VirtualFile archiveEntry = null; 
                 try {
                     sourceArchive = moduleManager.getContext().getVfs().getFromZipFile(new File(sourceArchivePath));
-                    archiveEntry = sourceArchive; 
-                    for (String part : sourceUnitRelativePath.split("/")) {
-                        boolean found = false;
-                        for (VirtualFile vf : archiveEntry.getChildren()) {
-                            if (part.equals(vf.getName().replace("/", ""))) {
-                                archiveEntry = vf;
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            archiveEntry = null;
-                            break;
-                        }
-                    }
+                    VirtualFile archiveEntry = null;
+                    archiveEntry = searchInSourceArchive(
+                            sourceUnitRelativePath, sourceArchive);
                     
                     if (archiveEntry != null) {
                         IProject project = moduleManager.getJavaProject().getProject();
@@ -475,7 +472,33 @@ public class JDTModule extends LazyModule {
         return phasedUnit;
     }
 
+    private VirtualFile searchInSourceArchive(String sourceUnitRelativePath,
+            ClosableVirtualFile sourceArchive) {
+        VirtualFile archiveEntry;
+        archiveEntry = sourceArchive; 
+        for (String part : sourceUnitRelativePath.split("/")) {
+            boolean found = false;
+            for (VirtualFile vf : archiveEntry.getChildren()) {
+                if (part.equals(vf.getName().replace("/", ""))) {
+                    archiveEntry = vf;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                archiveEntry = null;
+                break;
+            }
+        }
+        return archiveEntry;
+    }
+
     public String getSourceArchivePath() {
         return sourceArchivePath;
+    }
+    
+    public boolean containsClass(String className) {
+        return className != null && 
+                (classesToSources != null ?  classesToSources.containsKey(className) : false);
     }
 }
