@@ -112,9 +112,11 @@ import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
+import com.redhat.ceylon.eclipse.core.model.JavaUnit;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.loader.SourceClass;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
@@ -655,7 +657,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                 monitor.subTask("Updating referencing projects of project " + project.getName());
 //                getConsoleStream().println(timedMessage("Updating model in referencing projects"));
-                updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
+//                updateExternalPhasedUnitsInReferencingProjects(project, builtPhasedUnits);
                 monitor.worked(1);
 
                 sourcesForBinaryGeneration = sourceToCompile;
@@ -774,7 +776,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 // Remove the ceylon phasedUnit (which will also remove the unit from the package)
                 PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(createResourceVirtualFile(fileToRemove));
                 if (phasedUnitToDelete != null) {
-		            phasedUnits.removePhasedUnitForRelativePath(phasedUnitToDelete.getPathRelativeToSrcDir());
+                    assert(phasedUnitToDelete instanceof ProjectPhasedUnit);
+                    ((ProjectPhasedUnit) phasedUnitToDelete).remove();
                 }
             }
             else if (isJava(fileToRemove)) {
@@ -783,6 +786,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (pkg != null) {
                     for (Unit unitToTest: pkg.getUnits()) {
                         if (unitToTest.getFilename().equals(fileToRemove.getName())) {
+                            assert(unitToTest instanceof JavaUnit);
                             pkg.removeUnit(unitToTest);
                             break;
                         }
@@ -1093,6 +1097,46 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         PhasedUnits pus = typeChecker.getPhasedUnits();
         JDTModuleManager moduleManager = (JDTModuleManager) pus.getModuleManager(); 
         JDTModelLoader modelLoader = getModelLoader(typeChecker);
+        
+        // First refresh the modules that are cross-project references to sources modules
+        // in referenced projects. This will :
+        // - clean the binary declarations and reload the class-to-source mapping file for binary-based modules,
+        // - remove old PhasedUnits and parse new or updated PhasedUnits from the source archive for source-based modules
+        
+        for (Module m : typeChecker.getContext().getModules().getListOfModules()) {
+            if (m instanceof JDTModule) {
+                JDTModule module = (JDTModule) m;
+                if (module.isArchive()) {
+                    module.refresh();
+                }
+            }
+        }
+        
+        // Secondly typecheck again the changed PhasedUnits in changed external source modules
+        // (those which come from referenced projects)
+        List<PhasedUnits> phasedUnitsOfDependencies = typeChecker.getPhasedUnitsOfDependencies();
+        List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
+        for (PhasedUnits phasedUnits: phasedUnitsOfDependencies) {
+            for (PhasedUnit phasedUnit: phasedUnits.getPhasedUnits()) {
+                dependencies.add(phasedUnit);
+            }
+        }
+        for (PhasedUnit pu: dependencies) {
+            monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
+            pu.scanDeclarations();
+            monitor.worked(1);
+        }
+        for (PhasedUnit pu: dependencies) {
+            monitor.subTask("- scanning type declarations " + pu.getUnit().getFilename());
+            pu.scanTypeDeclarations();
+            monitor.worked(2);
+        }
+        for (PhasedUnit pu: dependencies) {
+            pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+        }
+        
+        // Then typecheck the changed source of this project
+        
         Set<String> cleanedPackages = new HashSet<String>();
         
         List<PhasedUnit> phasedUnitsToUpdate = new ArrayList<PhasedUnit>();
@@ -1106,7 +1150,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (isJava(fileToUpdate)) {
                     Unit toRemove = getJavaUnit(project, fileToUpdate);
                     if(toRemove != null) { // If the unit is not null, the package should never be null
-                        toRemove.getPackage().removeUnit(toRemove);
+                        Package p = toRemove.getPackage();
+                        p.removeUnit(toRemove);
+                        p.addMember(null); // To reset the members of the Base Package after the Lazy Unit has been removed
                     }
                     else {
                         String packageName = getPackageName(fileToUpdate);
@@ -1124,7 +1170,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             IPath srcFolderPath = retrieveSourceFolder(fileToUpdate, project);
             ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
 
-            PhasedUnit alreadyBuiltPhasedUnit = pus.getPhasedUnit(file);
+            ProjectPhasedUnit alreadyBuiltPhasedUnit = (ProjectPhasedUnit) pus.getPhasedUnit(file);
 
             Package pkg = null;
             if (alreadyBuiltPhasedUnit!=null) {
@@ -1153,10 +1199,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         clearMarkersOn(sourceToCompile, true);
         
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
-            if (pus.getPhasedUnitFromRelativePath(phasedUnit.getPathRelativeToSrcDir()) != null) {
-                pus.removePhasedUnitForRelativePath(phasedUnit.getPathRelativeToSrcDir());
-            }
-            pus.addPhasedUnit(phasedUnit.getUnitFile(), phasedUnit);
+            assert(phasedUnit instanceof ProjectPhasedUnit);
+            ((ProjectPhasedUnit)phasedUnit).install();
         }
         
         modelLoader.setupSourceFileObjects(phasedUnitsToUpdate);
