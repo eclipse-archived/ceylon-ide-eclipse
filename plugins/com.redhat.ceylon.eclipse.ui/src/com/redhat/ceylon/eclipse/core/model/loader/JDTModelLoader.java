@@ -455,6 +455,16 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
+    protected boolean searchAgain(Module module, String name) {
+        String className = name.replace('.', '/');
+        if (module instanceof JDTModule) {
+            JDTModule jdtModule = (JDTModule) module;
+            return jdtModule.containsClass(className + ".class") || jdtModule.containsClass(className + "_.class");
+        }
+        return false;
+    }
+    
+    @Override
     public synchronized ClassMirror lookupNewClassMirror(Module module, String name) {
         if (sourceDeclarations.containsKey(name)) {
             return new SourceClass(sourceDeclarations.get(name));
