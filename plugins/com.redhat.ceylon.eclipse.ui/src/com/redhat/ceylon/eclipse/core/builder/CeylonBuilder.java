@@ -36,10 +36,8 @@ import javax.tools.JavaFileObject;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
-import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
 import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IBuildContext;
 import org.eclipse.core.resources.ICommand;
@@ -105,12 +103,9 @@ import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.compiler.typechecker.parser.LexError;
-import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
@@ -129,6 +124,7 @@ import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.CarUtils;
+import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
@@ -1063,45 +1059,27 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    static PhasedUnit parseFileToPhasedUnit(ModuleManager moduleManager, TypeChecker typeChecker,
-            ResourceVirtualFile file, ResourceVirtualFile srcDir,
-            Package pkg) {
-        ANTLRInputStream input;
-        try {
-            input = new ANTLRInputStream(file.getInputStream(), 
-                    file.getResource().getProject().getDefaultCharset());
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        CeylonLexer lexer = new CeylonLexer(input);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-
-        CeylonParser parser = new CeylonParser(tokenStream);
-        Tree.CompilationUnit cu;
-        try {
-            cu = parser.compilationUnit();
-        }
-        catch (RecognitionException e) {
-            throw new RuntimeException(e);
-        }
-        
-        List<LexError> lexerErrors = lexer.getErrors();
-        for (LexError le : lexerErrors) {
-            cu.addLexError(le);
-        }
-        lexerErrors.clear();
-        
-        List<ParseError> parserErrors = parser.getErrors();
-        for (ParseError pe : parserErrors) {
-            cu.addParseError(pe);
-        }
-        parserErrors.clear();
-        
-        PhasedUnit newPhasedUnit = new ProjectPhasedUnit(file, srcDir, cu, pkg, 
-                moduleManager, typeChecker, tokenStream.getTokens());
-        
-        return newPhasedUnit;
+    static ProjectPhasedUnit parseFileToPhasedUnit(final ModuleManager moduleManager, final TypeChecker typeChecker,
+            final ResourceVirtualFile file, final ResourceVirtualFile srcDir,
+            final Package pkg) {
+        return new CeylonSourceParser<ProjectPhasedUnit>() {
+            
+            @Override
+            protected String getCharset() {
+                try {
+                    return file.getResource().getProject().getDefaultCharset();
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            
+            @Override
+            protected ProjectPhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
+                return new ProjectPhasedUnit(file, srcDir, cu, pkg, 
+                        moduleManager, typeChecker, tokenStream.getTokens());
+            }
+        }.parseFileToPhasedUnit(moduleManager, typeChecker, file, srcDir, pkg);
     }
 
     private List<PhasedUnit> incrementalBuild(IProject project, Collection<IFile> sourceToCompile,
