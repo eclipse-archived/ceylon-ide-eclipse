@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.typechecker;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -19,7 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 public class ProjectPhasedUnit extends IdePhasedUnit {
     private IFolder sourceFolderResource;
-    private WeakHashMap<EditedPhasedUnit, Object> workingCopies = new WeakHashMap<EditedPhasedUnit, Object>();
+    private WeakHashMap<EditedPhasedUnit, String> workingCopies = new WeakHashMap<EditedPhasedUnit, String>();
     
     public ProjectPhasedUnit(ResourceVirtualFile unitFile, ResourceVirtualFile srcDir,
             CompilationUnit cu, Package p, ModuleManager moduleManager,
@@ -53,8 +54,16 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
     }
     
     public void addWorkingCopy(EditedPhasedUnit workingCopy) {
-        if (! workingCopies.containsKey(workingCopy)) {
-            workingCopies.put(workingCopy, null);
+        synchronized (workingCopies) {
+            String fullPath = workingCopy.getUnit() != null ? workingCopy.getUnit().getFullPath() : null;
+            Iterator<String> itr = workingCopies.values().iterator();
+            while (itr.hasNext()) {
+                String workingCopyPath = itr.next();
+                if (workingCopyPath.equals(fullPath)) {
+                    itr.remove();
+                }
+            }
+            workingCopies.put(workingCopy, fullPath);
         }
     }
     
