@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -47,6 +48,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IParent;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
+import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jdt.core.IClasspathEntry;
 
@@ -59,9 +61,11 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
 import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -88,6 +92,8 @@ public class JDTModule extends LazyModule {
     private String sourceArchivePath = null;
     private IProject originalProject = null;
     private JDTModule originalModule = null;
+    private Set<String> originalPhasedUnitsToRemove = new LinkedHashSet<>();
+    private Set<String> originalPhasedUnitsToAdd = new LinkedHashSet<>();
     
     public JDTModule(JDTModuleManager jdtModuleManager, List<IPackageFragmentRoot> packageFragmentRoots) {
         this.moduleManager = jdtModuleManager;
@@ -427,6 +433,97 @@ public class JDTModule extends LazyModule {
         return null;
     }
     
+    public void removedOriginalPhasedUnit(String relativePathToSource) {
+        if (isProjectModule()) {
+            return;
+        }
+        originalPhasedUnitsToRemove.add(relativePathToSource);
+    }
+    
+    public void addedOriginalPhasedUnit(String relativePathToSource) {
+        if (isProjectModule()) {
+            return;
+        }
+        originalPhasedUnitsToAdd.add(relativePathToSource);
+    }
+    
+    public void refresh() {
+        if (originalPhasedUnitsToAdd.size() + originalPhasedUnitsToRemove.size() == 0) {
+            // Nothing to refresh
+            return;
+        }
+        
+        try {
+            PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
+            if (isBinaryArchive()) {
+                JavaModelManager.getJavaModelManager().getJavaModel().refreshExternalArchives(getPackageFragmentRoots().toArray(new IPackageFragmentRoot[0]), null);
+                phasedUnitMap = binaryModulePhasedUnits;
+            }
+            if (isSourceArchive()) {
+                phasedUnitMap = sourceModulePhasedUnits.get();
+            }
+            if (phasedUnitMap != null) {
+                synchronized (phasedUnitMap) {
+                    for (String relativePathToRemove : originalPhasedUnitsToRemove) {
+                        if (isBinaryArchive()) {
+                            for (String relativePathOfClassToRemove : toBinaryUnitRelativePaths(relativePathToRemove)) {
+                                Package p = getPackageFromRelativePath(relativePathOfClassToRemove);
+                                Set<Unit> units = new HashSet<>();
+                                for(Declaration d : p.getMembers()) {
+                                    Unit u = d.getUnit();
+                                    if (u.getRelativePath().equals(relativePathOfClassToRemove)) {
+                                        units.add(u);
+                                    }
+                                }
+                                for (Unit u : units) {
+                                    p.removeUnit(u);
+                                    // In the future, when we are sure that we cannot add several unit objects with the 
+                                    // same relative path, we can add a break.
+                                }
+                            }
+                        }
+                        phasedUnitMap.removePhasedUnitForRelativePath(relativePathToRemove);
+                    }
+                    
+                    if (isSourceArchive()) {
+                        ClosableVirtualFile sourceArchive = null;
+                        try {
+                            sourceArchive = moduleManager.getContext().getVfs().getFromZipFile(new File(sourceArchivePath));
+                            for (String relativePathToAdd : originalPhasedUnitsToAdd) {
+                                VirtualFile archiveEntry = null;
+                                archiveEntry = searchInSourceArchive(
+                                        relativePathToAdd, sourceArchive);
+                                
+                                if (archiveEntry != null) {
+                                    Package pkg = getPackageFromRelativePath(relativePathToAdd);
+                                    ((ExternalModulePhasedUnits)phasedUnitMap).parseFile(archiveEntry, sourceArchive, pkg);
+                            }
+                            
+                            }
+                        } catch (Exception e) {
+                            StringBuilder error = new StringBuilder("Unable to read source artifact from ");
+                            error.append(sourceArchive);
+                            error.append( "\ndue to connection error: ").append(e.getMessage());
+                            throw e;
+                        } finally {
+                            if (sourceArchive != null) {
+                                sourceArchive.close();
+                            }
+                        }
+                    }
+                    if (isBinaryArchive()) {
+                        classesToSources = CarUtils.retrieveMappingFile(artifact);
+                    }
+                    
+                    originalPhasedUnitsToRemove.clear();
+                    originalPhasedUnitsToAdd.clear();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private Package getPackageFromRelativePath(
             String relativePathOfClassToRemove) {
         List<String> pathElements = Arrays.asList(relativePathOfClassToRemove.split("/"));
