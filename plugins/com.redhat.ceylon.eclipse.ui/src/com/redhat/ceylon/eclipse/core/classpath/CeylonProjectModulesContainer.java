@@ -391,7 +391,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 
 		if (isExplodeModulesEnabled(project)) {
 		    IClasspathEntry newEntry = newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
-                    project.getFullPath(), null, true);
+                    project.getFullPath(), null, false);
 			paths.put(newEntry.toString(), newEntry);
 		}
 		
