@@ -514,12 +514,21 @@ public class JDTModelLoader extends AbstractModelLoader {
                     }
 
                     IFile classFileRsrc = (IFile) classFile.getCorrespondingResource();
-                    IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
                     if (classFileRsrc!=null && !classFileRsrc.exists()) {
                         //the .class file has been deleted
                         return null;
                     }
-                    BinaryTypeBinding binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
+                    
+                    BinaryTypeBinding binaryTypeBinding = null;
+                    try {
+                        IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
+                        binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
+                    } catch(JavaModelException e) {
+                        if (! e.isDoesNotExist()) {
+                            throw e;
+                        }
+                    }
+                    
                     if (binaryTypeBinding == null) {
                         ReferenceBinding existingType = theLookupEnvironment.getCachedType(compoundName);
                         if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
