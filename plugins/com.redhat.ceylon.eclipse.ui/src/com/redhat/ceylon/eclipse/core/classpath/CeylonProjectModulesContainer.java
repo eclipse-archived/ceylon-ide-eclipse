@@ -139,6 +139,26 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         return classpathEntries;
     }
 
+    public IClasspathEntry[] addClasspathEntriesIfNecessary(IPath modulePath) {
+        boolean alreadyThere = false;
+        for (IClasspathEntry cpEntry : classpathEntries) {
+            if (cpEntry.getPath().equals(modulePath)) {
+                alreadyThere = true;
+                break;
+            }
+        }
+        if (!alreadyThere) {
+            IClasspathEntry newEntry = newLibraryEntry(modulePath, null, null);
+            IClasspathEntry[] newClasspathEntries = new IClasspathEntry[classpathEntries.length + 1];
+            if (classpathEntries.length > 0) {
+                System.arraycopy(classpathEntries, 0, newClasspathEntries, 0, classpathEntries.length);
+            }
+            newClasspathEntries[classpathEntries.length] = newEntry;
+            classpathEntries = newClasspathEntries;
+        }
+        return classpathEntries;
+    }
+    
     /*private static final ISchedulingRule RESOLVE_EVENT_RULE = new ISchedulingRule() {
         public boolean contains(ISchedulingRule rule) {
             return rule == this;
@@ -271,7 +291,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 			TypeChecker typeChecker = null;
 			if (!reparse) {
 			    typeChecker = getProjectTypeChecker(project);
-			} 
+			}
+			IClasspathEntry[] oldEntries = classpathEntries;
 			if (typeChecker==null) {
 				typeChecker = parseCeylonModel(project, 
 						new SubProgressMonitor(monitor, 5, PREPEND_MAIN_LABEL_TO_SUBTASK));
@@ -279,8 +300,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 			
 			final Collection<IClasspathEntry> paths = findModuleArchivePaths(
 					javaProject, project, typeChecker);
-			if (this.classpathEntries == null || 
-			        !paths.equals(asList(this.classpathEntries))) {
+			if (oldEntries == null || 
+			        !paths.equals(asList(oldEntries))) {
 				this.classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
 				return true;
 			}
