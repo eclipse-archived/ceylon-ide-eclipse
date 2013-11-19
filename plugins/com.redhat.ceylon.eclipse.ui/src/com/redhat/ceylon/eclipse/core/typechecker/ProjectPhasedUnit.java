@@ -122,7 +122,7 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         
         phasedUnits.addPhasedUnit(getUnitFile(), this);
         for (JDTModule referencingModule : getReferencingModules()) {
-            referencingModule.addedOriginalPhasedUnit(getPathRelativeToSrcDir());
+            referencingModule.addedOriginalUnit(getPathRelativeToSrcDir());
         }
         
         // Pour tous les projets dépendants, on appelle addPhasedUnit () sur le module correspondant, qui doit être un module source externe
@@ -137,7 +137,7 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         PhasedUnits phasedUnits = typechecker.getPhasedUnits();
         phasedUnits.removePhasedUnitForRelativePath(getPathRelativeToSrcDir()); // remove also the ProjectSourceFile (unit) from the Package
         for (JDTModule referencingModule : getReferencingModules()) {
-            referencingModule.removedOriginalPhasedUnit(getPathRelativeToSrcDir());
+            referencingModule.removedOriginalUnit(getPathRelativeToSrcDir());
         }
     }
 }

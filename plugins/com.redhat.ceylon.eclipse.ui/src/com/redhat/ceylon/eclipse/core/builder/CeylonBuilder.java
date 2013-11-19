@@ -786,8 +786,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (pkg != null) {
                     for (Unit unitToTest: pkg.getUnits()) {
                         if (unitToTest.getFilename().equals(fileToRemove.getName())) {
-                            assert(unitToTest instanceof JavaUnit);
                             pkg.removeUnit(unitToTest);
+                            assert (pkg.getModule() instanceof JDTModule);
+                            JDTModule module = (JDTModule) pkg.getModule();
+                            module.removedOriginalUnit(unitToTest.getRelativePath());
                             break;
                         }
                     }
@@ -1152,7 +1154,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     if(toRemove != null) { // If the unit is not null, the package should never be null
                         Package p = toRemove.getPackage();
                         p.removeUnit(toRemove);
-                        p.addMember(null); // To reset the members of the Base Package after the Lazy Unit has been removed
+                        assert (p.getModule() instanceof JDTModule);
+                        JDTModule module = (JDTModule) p.getModule();
+                        module.removedOriginalUnit(toRemove.getRelativePath());
                     }
                     else {
                         String packageName = getPackageName(fileToUpdate);

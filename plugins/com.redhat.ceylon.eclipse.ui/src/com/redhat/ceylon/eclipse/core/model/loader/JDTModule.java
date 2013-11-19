@@ -46,6 +46,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IParent;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.JavaModelManager;
@@ -88,28 +89,37 @@ public class JDTModule extends LazyModule {
                                                                     // But in the future we might remove the strong reference in the typeChecker and use strong references here, which would be 
                                                                     // much more modular (think of several versions of a module imported in a non-shared way in the same projet).
     private PhasedUnitMap<ExternalPhasedUnit, SoftReference<ExternalPhasedUnit>> binaryModulePhasedUnits;
-    private Properties classesToSources = null;
+    private Properties classesToSources = new Properties();
     private String sourceArchivePath = null;
     private IProject originalProject = null;
     private JDTModule originalModule = null;
-    private Set<String> originalPhasedUnitsToRemove = new LinkedHashSet<>();
-    private Set<String> originalPhasedUnitsToAdd = new LinkedHashSet<>();
+    private Set<String> originalUnitsToRemove = new LinkedHashSet<>();
+    private Set<String> originalUnitsToAdd = new LinkedHashSet<>();
     
     public JDTModule(JDTModuleManager jdtModuleManager, List<IPackageFragmentRoot> packageFragmentRoots) {
         this.moduleManager = jdtModuleManager;
         this.packageFragmentRoots = packageFragmentRoots;
     }
 
+    private File returnCarFile() {
+        if (isBinaryArchive()) {
+            return artifact;
+        }
+        if (isSourceArchive()) {
+            return new File(sourceArchivePath.substring(0, sourceArchivePath.length()-ArtifactContext.SRC.length()) + ArtifactContext.CAR);
+        }
+        return null;
+    }
+    
     synchronized void setArtifact(File artifact) {
         this.artifact = artifact;
         if (isBinaryArchive()){
             String carPath = artifact.getPath();
             sourceArchivePath = carPath.substring(0, carPath.length()-ArtifactContext.CAR.length()) + ArtifactContext.SRC;
             try {
-                classesToSources = CarUtils.retrieveMappingFile(artifact);
+                classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
             } catch (Exception e) {
                 e.printStackTrace();
-                classesToSources = new Properties();
             }
             class BinaryPhasedUnits extends PhasedUnitMap<ExternalPhasedUnit, SoftReference<ExternalPhasedUnit>> {
                 Set<String> sourceCannotBeResolved = new HashSet<String>();
@@ -170,6 +180,11 @@ public class JDTModule extends LazyModule {
         
         if (isSourceArchive()) {
             sourceArchivePath = artifact.getPath();
+            try {
+                classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             sourceModulePhasedUnits = new WeakReference<ExternalModulePhasedUnits>(null);
         }
         
@@ -433,22 +448,22 @@ public class JDTModule extends LazyModule {
         return null;
     }
     
-    public void removedOriginalPhasedUnit(String relativePathToSource) {
+    public void removedOriginalUnit(String relativePathToSource) {
         if (isProjectModule()) {
             return;
         }
-        originalPhasedUnitsToRemove.add(relativePathToSource);
+        originalUnitsToRemove.add(relativePathToSource);
     }
     
-    public void addedOriginalPhasedUnit(String relativePathToSource) {
+    public void addedOriginalUnit(String relativePathToSource) {
         if (isProjectModule()) {
             return;
         }
-        originalPhasedUnitsToAdd.add(relativePathToSource);
+        originalUnitsToAdd.add(relativePathToSource);
     }
     
     public void refresh() {
-        if (originalPhasedUnitsToAdd.size() + originalPhasedUnitsToRemove.size() == 0) {
+        if (originalUnitsToAdd.size() + originalUnitsToRemove.size() == 0) {
             // Nothing to refresh
             return;
         }
@@ -464,8 +479,8 @@ public class JDTModule extends LazyModule {
             }
             if (phasedUnitMap != null) {
                 synchronized (phasedUnitMap) {
-                    for (String relativePathToRemove : originalPhasedUnitsToRemove) {
-                        if (isBinaryArchive()) {
+                    for (String relativePathToRemove : originalUnitsToRemove) {
+                        if (isBinaryArchive() || JavaCore.isJavaLikeFileName(relativePathToRemove)) {
                             for (String relativePathOfClassToRemove : toBinaryUnitRelativePaths(relativePathToRemove)) {
                                 Package p = getPackageFromRelativePath(relativePathOfClassToRemove);
                                 Set<Unit> units = new HashSet<>();
@@ -489,7 +504,7 @@ public class JDTModule extends LazyModule {
                         ClosableVirtualFile sourceArchive = null;
                         try {
                             sourceArchive = moduleManager.getContext().getVfs().getFromZipFile(new File(sourceArchivePath));
-                            for (String relativePathToAdd : originalPhasedUnitsToAdd) {
+                            for (String relativePathToAdd : originalUnitsToAdd) {
                                 VirtualFile archiveEntry = null;
                                 archiveEntry = searchInSourceArchive(
                                         relativePathToAdd, sourceArchive);
@@ -511,12 +526,11 @@ public class JDTModule extends LazyModule {
                             }
                         }
                     }
-                    if (isBinaryArchive()) {
-                        classesToSources = CarUtils.retrieveMappingFile(artifact);
-                    }
                     
-                    originalPhasedUnitsToRemove.clear();
-                    originalPhasedUnitsToAdd.clear();
+                    classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
+                    
+                    originalUnitsToRemove.clear();
+                    originalUnitsToAdd.clear();
                 }
             }
         } catch (Exception e) {
