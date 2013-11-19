@@ -459,7 +459,10 @@ public class CeylonParseController {
             }
         };
         typecheckJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
-        typecheckJob.setPriority(Job.getJobManager().currentJob().getPriority());
+        CeylonParserScheduler scheduler = getScheduler();
+        if (scheduler != null) {
+            typecheckJob.setPriority(scheduler.getPriority());
+        }
         typecheckJob.schedule();
         try {
             typecheckJob.join();
