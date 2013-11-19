@@ -760,6 +760,12 @@ public class JDTModelLoader extends AbstractModelLoader {
             classMirrorCache.remove(keyToRemove);
         }
         loadedPackages.remove(packageName);
+        mustResetLookupEnvironment = true;
+    }
+
+    public synchronized void clearClassMirrorCacheForClass(JDTModule module, String classNameToRemove) {
+        classMirrorCache.remove(cacheKeyByModule(module, classNameToRemove));        
+        mustResetLookupEnvironment = true;
     }
 
     @Override
