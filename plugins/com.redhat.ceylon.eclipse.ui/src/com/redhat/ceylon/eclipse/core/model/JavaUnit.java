@@ -7,7 +7,17 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+
 public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IResourceAware {
+    
+    public JavaUnit(String fileName, String relativePath, String fullPath, Package pkg) {
+        setFilename(fileName);
+        setRelativePath(relativePath);
+        setFullPath(fullPath);
+        setPackage(pkg);
+    }
+    
     @Override
     public IFile getFileResource() {
         if (getJavaElement() != null) {
@@ -26,6 +36,11 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
             return (IProject) getJavaElement().getJavaProject().getProject();
         }
         return null;
+    }
+
+    @Override
+    public IProject getProject() {
+        return getProjectResource();
     }
 
     @Override

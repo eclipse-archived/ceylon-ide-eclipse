@@ -7,7 +7,7 @@ import org.eclipse.core.resources.IProject;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
-public class CrossProjectSourceFile extends ExternalSourceFile implements IResourceAware {
+public class CrossProjectSourceFile extends ExternalSourceFile implements ICrossProjectReference, IResourceAware {
     public CrossProjectSourceFile(CrossProjectPhasedUnit phasedUnit) {
         super(phasedUnit);
     }
@@ -36,7 +36,12 @@ public class CrossProjectSourceFile extends ExternalSourceFile implements IResou
     }
     
     public ProjectSourceFile getOriginalSourceFile() {
-        ProjectPhasedUnit ppu = getPhasedUnit().getOriginalProjectPhasedUnit();
+        ProjectPhasedUnit ppu = getOriginalPhasedUnit();
         return ppu != null ? (ProjectSourceFile) ppu.getUnit() : null;
+    }
+
+    @Override
+    public ProjectPhasedUnit getOriginalPhasedUnit() {
+        return getPhasedUnit().getOriginalProjectPhasedUnit();
     }
 }

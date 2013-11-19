@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.model;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IClassFile;
 
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 
@@ -13,9 +14,13 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
     
     IClassFile classFileElement;
     
-    public CeylonBinaryUnit(IClassFile typeRoot) {
+    public CeylonBinaryUnit(IClassFile typeRoot, String fileName, String relativePath, String fullPath, Package pkg) {
         super();
         this.classFileElement = typeRoot;
+        setFilename(fileName);
+        setRelativePath(relativePath);
+        setFullPath(fullPath);
+        setPackage(pkg);
     }
 
     
@@ -35,6 +40,13 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
         return classFileElement;
     }
 
+    public IProject getProject() {
+        if (getJavaElement() != null) {
+            return (IProject) getJavaElement().getJavaProject().getProject();
+        }
+        return null;
+    }
+    
     @Override
     protected ExternalPhasedUnit setPhasedUnitIfNecessary() {
         ExternalPhasedUnit phasedUnit = null;
@@ -44,11 +56,13 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
         
         if (phasedUnit == null) {
             try {
-                JDTModule module = (JDTModule) getPackage().getModule();
+                JDTModule module = getModule();
                 
                 String binaryUnitRelativePath = getFullPath().replace(module.getArtifact().getPath() + "!/", "");
                 String sourceUnitRelativePath = module.toSourceUnitRelativePath(binaryUnitRelativePath);
-                phasedUnit = (ExternalPhasedUnit) module.getPhasedUnitFromRelativePath(sourceUnitRelativePath);
+                if (sourceUnitRelativePath != null) {
+                    phasedUnit = (ExternalPhasedUnit) module.getPhasedUnitFromRelativePath(sourceUnitRelativePath);
+                }
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -56,18 +70,13 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
         return phasedUnit != null ? createPhasedUnitRef(phasedUnit) : null;
     }
 
-    @Override
-    public IProject getProjectResource() {
-        return getJavaElement().getJavaProject().getProject();
-    }
-    
     public String getSourceRelativePath() {
-        return ((JDTModule) getPackage().getModule()).toSourceUnitRelativePath(getRelativePath());
+        return getModule().toSourceUnitRelativePath(getRelativePath());
     }
 
     @Override
     public String getSourceFullPath() {
-        String sourceArchivePath = ((JDTModule) getPackage().getModule()).getSourceArchivePath();
+        String sourceArchivePath = getModule().getSourceArchivePath();
         if (sourceArchivePath == null) {
             return null;
         }
