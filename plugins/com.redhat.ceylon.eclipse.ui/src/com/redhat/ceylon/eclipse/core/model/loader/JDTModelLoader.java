@@ -435,6 +435,12 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     synchronized private LookupEnvironment getLookupEnvironment() {
         if (mustResetLookupEnvironment) {
+            try {
+                lookupEnvironment.nameEnvironment = ((JavaProject)javaProject).newSearchableNameEnvironment((WorkingCopyOwner)null);
+            } catch (JavaModelException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }            
             lookupEnvironment.reset();
             mustResetLookupEnvironment = false;
         }
