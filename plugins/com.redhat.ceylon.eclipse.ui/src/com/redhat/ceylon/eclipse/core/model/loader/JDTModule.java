@@ -144,7 +144,17 @@ public class JDTModule extends LazyModule {
                 @Override
                 protected SoftReference<ExternalPhasedUnit> toStoredType(ExternalPhasedUnit phasedUnit) {
                     return new SoftReference<ExternalPhasedUnit>(phasedUnit);
-                } 
+                }
+
+                @Override
+                public void removePhasedUnitForRelativePath(String relativePath) {
+                    // Don't clean the Package since we are in the binary case 
+                    String path = relativePathToPath.get(relativePath);
+                    relativePathToPath.remove(relativePath);
+                    phasedUnitPerPath.remove(path);
+                }
+                
+                
             };
             binaryModulePhasedUnits = new BinaryPhasedUnits(); 
         }
