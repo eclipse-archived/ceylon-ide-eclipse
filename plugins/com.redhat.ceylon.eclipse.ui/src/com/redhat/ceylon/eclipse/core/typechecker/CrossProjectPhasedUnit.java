@@ -49,7 +49,7 @@ public class CrossProjectPhasedUnit extends ExternalPhasedUnit {
     }
     
     @Override
-    protected Unit createUnit() {
+    protected Unit newUnit() {
         return new CrossProjectSourceFile(this);
     }
 

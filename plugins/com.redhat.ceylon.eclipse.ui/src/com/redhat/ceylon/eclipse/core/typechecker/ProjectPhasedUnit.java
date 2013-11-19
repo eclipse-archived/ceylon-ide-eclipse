@@ -48,7 +48,7 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
     }
 
     @Override
-    protected Unit createUnit() {
+    protected Unit newUnit() {
         return new ProjectSourceFile(this);
     }
     

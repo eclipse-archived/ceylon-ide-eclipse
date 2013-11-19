@@ -35,5 +35,19 @@ public abstract class IdePhasedUnit extends PhasedUnit {
         return typeCheckerRef.get();
     }
     
-    protected abstract Unit createUnit();
+    protected Unit createUnit() {
+        Unit oldUnit = getUnit();
+        Unit newUnit = newUnit();
+        if (oldUnit != null) {
+            newUnit.setFilename(oldUnit.getFilename());
+            newUnit.setFullPath(oldUnit.getFullPath());
+            newUnit.setRelativePath(oldUnit.getRelativePath());
+            newUnit.setPackage(oldUnit.getPackage());
+            newUnit.getDependentsOf().addAll(oldUnit.getDependentsOf());
+        }
+        return newUnit;
+    }
+    
+
+    protected abstract Unit newUnit();
 }
