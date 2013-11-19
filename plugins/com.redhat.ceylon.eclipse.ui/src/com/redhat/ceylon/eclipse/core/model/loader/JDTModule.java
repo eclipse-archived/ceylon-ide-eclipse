@@ -59,6 +59,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
 import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
@@ -69,6 +70,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager.ExternalModulePhasedUnits;
+import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
@@ -84,6 +86,8 @@ public class JDTModule extends LazyModule {
     private PhasedUnitMap<ExternalPhasedUnit, SoftReference<ExternalPhasedUnit>> binaryModulePhasedUnits;
     private Properties classesToSources = null;
     private String sourceArchivePath = null;
+    private IProject originalProject = null;
+    private JDTModule originalModule = null;
     
     public JDTModule(JDTModuleManager jdtModuleManager, List<IPackageFragmentRoot> packageFragmentRoots) {
         this.moduleManager = jdtModuleManager;
@@ -162,6 +166,21 @@ public class JDTModule extends LazyModule {
             sourceArchivePath = artifact.getPath();
             sourceModulePhasedUnits = new WeakReference<ExternalModulePhasedUnits>(null);
         }
+        
+        try {
+            IJavaProject javaProject = moduleManager.getJavaProject();
+            if (javaProject != null) {
+                for (IProject refProject : javaProject.getProject().getReferencedProjects()) {
+                    if (artifact.getAbsolutePath().contains(CeylonBuilder.getCeylonModulesOutputDirectory(refProject).getAbsolutePath())) {
+                        originalProject = refProject;
+                    }
+                }
+            }
+        } catch (CoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
     }
     
     synchronized void setSourcePhasedUnits(final ExternalModulePhasedUnits modulePhasedUnits) {
@@ -446,8 +465,13 @@ public class JDTModule extends LazyModule {
                         Tree.CompilationUnit cu = parser.compilationUnit();
                         List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
                         tokens.addAll(tokenStream.getTokens());
-                        phasedUnit = new ExternalPhasedUnit(archiveEntry, sourceArchive, cu, 
-                                new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, CeylonBuilder.getProjectTypeChecker(project), tokens);
+                        if(originalProject == null) {
+                            phasedUnit = new ExternalPhasedUnit(archiveEntry, sourceArchive, cu, 
+                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, CeylonBuilder.getProjectTypeChecker(project), tokens);
+                        } else {
+                            phasedUnit = new CrossProjectPhasedUnit(archiveEntry, sourceArchive, cu, 
+                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject);
+                        }
                     }
                 } catch (Exception e) {
                     StringBuilder error = new StringBuilder("Unable to read source artifact from ");
@@ -495,6 +519,30 @@ public class JDTModule extends LazyModule {
 
     public String getSourceArchivePath() {
         return sourceArchivePath;
+    }
+    
+
+    public IProject getOriginalProject() {
+        return originalProject;
+    }
+    
+    public JDTModule getOriginalModule() {
+        if (originalProject != null) {
+            if (originalModule == null) {
+                for (Module m : CeylonBuilder.getProjectModules(originalProject).getListOfModules()) {
+                    // TODO : in the future : manage version ?? in case we reference 2 identical projects with different version in the workspace
+                    if (m.getNameAsString().equals(getNameAsString())) {  
+                        assert(m instanceof JDTModule);
+                        if (((JDTModule) m).isProjectModule()) {
+                            originalModule = (JDTModule) m;
+                            break;
+                        }
+                    }
+                }
+            }
+            return originalModule;
+        }
+        return null;
     }
     
     public boolean containsClass(String className) {
