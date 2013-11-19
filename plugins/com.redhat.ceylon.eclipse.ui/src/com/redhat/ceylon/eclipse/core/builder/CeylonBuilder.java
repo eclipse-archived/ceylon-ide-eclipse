@@ -1322,7 +1322,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 + project.getName());
 
         JDTModelLoader loader = getModelLoader(typeChecker);
-        loader.reset();
+//        loader.reset();
                 
         for (PhasedUnit pu: dependencies) {
             monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
