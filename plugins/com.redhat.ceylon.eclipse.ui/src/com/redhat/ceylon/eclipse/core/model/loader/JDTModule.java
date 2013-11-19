@@ -54,7 +54,6 @@ import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
@@ -249,7 +248,7 @@ public class JDTModule extends LazyModule {
     }
 
     @Override
-    protected AbstractModelLoader getModelLoader() {
+    protected JDTModelLoader getModelLoader() {
         return moduleManager.getModelLoader();
     }
 
