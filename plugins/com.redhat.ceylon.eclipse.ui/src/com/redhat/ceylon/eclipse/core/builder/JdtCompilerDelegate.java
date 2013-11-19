@@ -30,6 +30,8 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
@@ -77,15 +79,24 @@ final class JdtCompilerDelegate implements CompilerDelegate {
         //   alreadyDone by the IncrementalBuilder before calling the Compiler for binary generation
     }
     
+    private void buildListOfCompiledModules(Module module, Set<ProjectSourceFile> listOfModules) {
+        Unit moduleUnit = module.getUnit();
+        if (moduleUnit instanceof ProjectSourceFile && !listOfModules.contains(moduleUnit)) {
+            listOfModules.add((ProjectSourceFile) moduleUnit);
+            for (ModuleImport imp : module.getImports()) {
+                Module importedModule =imp.getModule();
+                buildListOfCompiledModules(importedModule, listOfModules);
+            }
+        }
+    }
+    
     @Override
     public void visitModules(PhasedUnits phasedUnits) {
         Set<ProjectSourceFile> compiledModules = new HashSet<>();  
         for (PhasedUnit pu : phasedUnits.getPhasedUnits()) {
-            Unit unit = pu.getPackage().getModule().getUnit();
-            if (unit instanceof ProjectSourceFile) {
-                compiledModules.add((ProjectSourceFile) unit);
-            }
+            buildListOfCompiledModules(pu.getPackage().getModule(), compiledModules);
         }
+        
         for (ProjectSourceFile compiledModule : compiledModules) {
             PhasedUnit pu = compiledModule.getPhasedUnit();
             boolean hasErrors = false;
