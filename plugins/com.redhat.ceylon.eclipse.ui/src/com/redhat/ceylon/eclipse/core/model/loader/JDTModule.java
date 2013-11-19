@@ -122,7 +122,7 @@ public class JDTModule extends LazyModule {
                     ExternalPhasedUnit result = storedValue.get();
                     if (result == null) {
                         if (!sourceCannotBeResolved.contains(path)) {
-                            result = buildPhasedUnit(path);
+                            result = buildPhasedUnitForBinaryUnit(path);
                             if (result != null) {
                                 phasedUnitPerPath.put(path, toStoredType(result));
                             } else {
@@ -395,7 +395,7 @@ public class JDTModule extends LazyModule {
         return null;
     }
     
-    private ExternalPhasedUnit buildPhasedUnit(String sourceUnitFullPath) {
+    private ExternalPhasedUnit buildPhasedUnitForBinaryUnit(String sourceUnitFullPath) {
         if (sourceArchivePath == null || sourceUnitFullPath == null) {
             return null;
         }
