@@ -11,15 +11,17 @@ import net.lingala.zip4j.model.FileHeader;
 
 public class CarUtils {
     public static Properties retrieveMappingFile(File carFile) throws ZipException, IOException {
-        ZipFile zipFile = new ZipFile(carFile);
         Properties mapping = new Properties();
-        FileHeader fileHeader = zipFile.getFileHeader("META-INF/mapping.txt");
-        if (fileHeader != null) {
-            ZipInputStream zis = zipFile.getInputStream(fileHeader);
-            try {
-                mapping.load(zis);
-            } finally {
-                zis.close();
+        if (carFile != null) {
+            ZipFile zipFile = new ZipFile(carFile);
+            FileHeader fileHeader = zipFile.getFileHeader("META-INF/mapping.txt");
+            if (fileHeader != null) {
+                ZipInputStream zis = zipFile.getInputStream(fileHeader);
+                try {
+                    mapping.load(zis);
+                } finally {
+                    zis.close();
+                }
             }
         }
         return mapping;
@@ -27,13 +29,15 @@ public class CarUtils {
     
     public static Properties retrieveMappingFile(ZipFile carFile) throws ZipException, IOException {
         Properties mapping = new Properties();
-        FileHeader fileHeader = carFile.getFileHeader("META-INF/mapping.txt");
-        if (fileHeader != null) {
-            ZipInputStream zis = carFile.getInputStream(fileHeader);
-            try {
-                mapping.load(zis);
-            } finally {
-                zis.close();
+        if (carFile != null) {
+            FileHeader fileHeader = carFile.getFileHeader("META-INF/mapping.txt");
+            if (fileHeader != null) {
+                ZipInputStream zis = carFile.getInputStream(fileHeader);
+                try {
+                    mapping.load(zis);
+                } finally {
+                    zis.close();
+                }
             }
         }
         return mapping;
