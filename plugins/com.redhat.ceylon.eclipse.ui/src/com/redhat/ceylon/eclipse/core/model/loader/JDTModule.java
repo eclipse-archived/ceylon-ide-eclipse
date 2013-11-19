@@ -58,7 +58,6 @@ import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
@@ -70,6 +69,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager.ExternalModulePhasedUnits;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
@@ -79,7 +79,7 @@ public class JDTModule extends LazyModule {
     private List<IPackageFragmentRoot> packageFragmentRoots;
     private File jarPath;
     private File artifact;
-    private PhasedUnitMap<ExternalPhasedUnit, WeakReference<ExternalPhasedUnit>> sourceModulePhasedUnits; // Here we have a weak ref on the PhasedUnits because there are already stored as strong references in the TypeChecker phasedUnitsOfDependencies list. 
+    private WeakReference<ExternalModulePhasedUnits> sourceModulePhasedUnits; // Here we have a weak ref on the PhasedUnits because there are already stored as strong references in the TypeChecker phasedUnitsOfDependencies list. 
                                                                     // But in the future we might remove the strong reference in the typeChecker and use strong references here, which would be 
                                                                     // much more modular (think of several versions of a module imported in a non-shared way in the same projet).
     private PhasedUnitMap<ExternalPhasedUnit, SoftReference<ExternalPhasedUnit>> binaryModulePhasedUnits;
@@ -151,39 +151,12 @@ public class JDTModule extends LazyModule {
         
         if (isSourceArchive()) {
             sourceArchivePath = artifact.getPath();
-            sourceModulePhasedUnits = new PhasedUnitMap<ExternalPhasedUnit, WeakReference<ExternalPhasedUnit>>() {
-                
-                @Override
-                protected ExternalPhasedUnit fromStoredType(WeakReference<ExternalPhasedUnit> storedValue, String path) {
-                    return storedValue.get();
-                }
-                
-                @Override
-                protected void addInReturnedList(List<ExternalPhasedUnit> list,
-                        ExternalPhasedUnit phasedUnit) {
-                    if (phasedUnit != null) {
-                        list.add(phasedUnit);
-                    }
-                }
-
-                @Override
-                protected WeakReference<ExternalPhasedUnit> toStoredType(ExternalPhasedUnit phasedUnit) {
-                    return new WeakReference<ExternalPhasedUnit>(phasedUnit);
-                } 
-            };
+            sourceModulePhasedUnits = new WeakReference<ExternalModulePhasedUnits>(null);
         }
     }
     
-    synchronized void setSourcePhasedUnits(final PhasedUnits modulePhasedUnits) {
-        if (isSourceArchive()) {
-            synchronized (sourceModulePhasedUnits) {
-                for (PhasedUnit pu : modulePhasedUnits.getPhasedUnits()) {
-                    if (pu instanceof ExternalPhasedUnit) {
-                        sourceModulePhasedUnits.addPhasedUnit(pu.getUnitFile(), (ExternalPhasedUnit) pu);
-                    }
-                }
-            }
-        }
+    synchronized void setSourcePhasedUnits(final ExternalModulePhasedUnits modulePhasedUnits) {
+            sourceModulePhasedUnits = new WeakReference<ExternalModulePhasedUnits>(modulePhasedUnits);
     }
     
     public File getArtifact() {
@@ -341,13 +314,13 @@ public class JDTModule extends LazyModule {
         return artifact != null && artifact.getName().endsWith(ArtifactContext.SRC);
     }
     
-    public synchronized List<ExternalPhasedUnit> getPhasedUnits() {
-        PhasedUnitMap<ExternalPhasedUnit, ?> phasedUnitMap = null;
+    public synchronized List<? extends PhasedUnit> getPhasedUnits() {
+        PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
         if (isBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
-            phasedUnitMap = sourceModulePhasedUnits;
+            phasedUnitMap = sourceModulePhasedUnits.get();
         }
         if (phasedUnitMap != null) {
             synchronized (phasedUnitMap) {
@@ -358,65 +331,65 @@ public class JDTModule extends LazyModule {
     }
 
     public ExternalPhasedUnit getPhasedUnit(IPath path) {
-        PhasedUnitMap<ExternalPhasedUnit, ?> phasedUnitMap = null;
+        PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
         if (isBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
-            phasedUnitMap = sourceModulePhasedUnits;
+            phasedUnitMap = sourceModulePhasedUnits.get();
         }
         if (phasedUnitMap != null) {
             IPath sourceArchiveIPath = new Path(sourceArchivePath+"!");
             synchronized (phasedUnitMap) {
-                return phasedUnitMap.getPhasedUnitFromRelativePath(path.makeRelativeTo(sourceArchiveIPath).toString());
+                return (ExternalPhasedUnit) phasedUnitMap.getPhasedUnitFromRelativePath(path.makeRelativeTo(sourceArchiveIPath).toString());
             }
         }
         return null;
     }
 
     public ExternalPhasedUnit getPhasedUnit(String path) {
-        PhasedUnitMap<ExternalPhasedUnit, ?> phasedUnitMap = null;
+        PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
         if (isBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
-            phasedUnitMap = sourceModulePhasedUnits;
+            phasedUnitMap = sourceModulePhasedUnits.get();
         }
         if (phasedUnitMap != null) {
             synchronized (phasedUnitMap) {
-                return phasedUnitMap.getPhasedUnit(path);
+                return (ExternalPhasedUnit) phasedUnitMap.getPhasedUnit(path);
             }
         }
         return null;
     }
 
     public ExternalPhasedUnit getPhasedUnit(VirtualFile file) {
-        PhasedUnitMap<ExternalPhasedUnit, ?> phasedUnitMap = null;
+        PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
         if (isBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
-            phasedUnitMap = sourceModulePhasedUnits;
+            phasedUnitMap = sourceModulePhasedUnits.get();
         }
         if (phasedUnitMap != null) {
             synchronized (phasedUnitMap) {
-                return phasedUnitMap.getPhasedUnit(file);
+                return (ExternalPhasedUnit) phasedUnitMap.getPhasedUnit(file);
             }
         }
         return null;
     }
     
     public ExternalPhasedUnit getPhasedUnitFromRelativePath(String relativePathToSource) {
-        PhasedUnitMap<ExternalPhasedUnit, ?> phasedUnitMap = null;
+        PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
         if (isBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
-            phasedUnitMap = sourceModulePhasedUnits;
+            phasedUnitMap = sourceModulePhasedUnits.get();
         }
         if (phasedUnitMap != null) {
             synchronized (phasedUnitMap) {
-                return phasedUnitMap.getPhasedUnitFromRelativePath(relativePathToSource);
+                return (ExternalPhasedUnit) phasedUnitMap.getPhasedUnitFromRelativePath(relativePathToSource);
             }
         }
         return null;
