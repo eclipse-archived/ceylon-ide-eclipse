@@ -19,6 +19,7 @@ import org.eclipse.jdt.internal.core.util.Util;
 
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
 import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
+import com.redhat.ceylon.compiler.java.loader.CeylonEnter;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeylonPhasedUnit;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.CompilerDelegate;
@@ -92,6 +93,9 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     
     @Override
     public void visitModules(PhasedUnits phasedUnits) {
+        Context context = contextRef.get();
+        CeylonEnter ceylonEnter = CeylonEnter.instance(context);
+        assert(context != null);
         Set<ProjectSourceFile> compiledModules = new HashSet<>();  
         for (PhasedUnit pu : phasedUnits.getPhasedUnits()) {
             buildListOfCompiledModules(pu.getPackage().getModule(), compiledModules);
@@ -109,8 +113,6 @@ final class JdtCompilerDelegate implements CompilerDelegate {
             if (! hasErrors) {
                 IFile moduleResource = compiledModule.getFileResource();
                 File moduleFile = moduleResource.getRawLocation().toFile();
-                Context context = contextRef.get();
-                assert(context != null);
                 JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);
                 Iterator<? extends JavaFileObject> files = fileManager.getJavaFileObjects(moduleFile).iterator();
                 if (files.hasNext()) {
@@ -127,6 +129,7 @@ final class JdtCompilerDelegate implements CompilerDelegate {
                     phasedUnits.addPhasedUnit(pu.getUnitFile(), cpu);
                 }
             }
+            ceylonEnter.addOutputModuleToClassPath(pu.getPackage().getModule());
         }
     }
 
