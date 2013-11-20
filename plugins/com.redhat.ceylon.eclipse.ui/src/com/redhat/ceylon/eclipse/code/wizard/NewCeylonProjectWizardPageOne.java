@@ -11,6 +11,9 @@
 
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard.DEFAULT_SOURCE_FOLDER;
+import static org.eclipse.jdt.core.JavaCore.newContainerEntry;
+import static org.eclipse.jdt.core.JavaCore.newSourceEntry;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 
@@ -1276,7 +1279,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 	public IClasspathEntry[] getDefaultClasspathEntries() {
 		IPath newPath= fJREGroup.getJREContainerPath();
 		if (newPath != null) {
-			return new IClasspathEntry[] { JavaCore.newContainerEntry(newPath) };
+			return new IClasspathEntry[] { newContainerEntry(newPath) };
 		}
 		return PreferenceConstants.getDefaultJRELibrary();
 	}
@@ -1290,7 +1293,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 	 */
 	public IClasspathEntry[] getSourceClasspathEntries() {
 		IPath folderPath= new Path(getProjectName()).makeAbsolute();
-		return new IClasspathEntry[] { JavaCore.newSourceEntry(folderPath.append("source")) };
+		return new IClasspathEntry[] { newSourceEntry(folderPath.append(DEFAULT_SOURCE_FOLDER)) };
 	}
 
 	/**

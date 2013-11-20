@@ -12,6 +12,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
 
+import static com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 
 import java.net.URI;
@@ -480,7 +481,7 @@ public class BuildPathsBlock {
 		List<CPListElement> list= new ArrayList<CPListElement>();
 		IResource srcFolder;
 		IPreferenceStore store= PreferenceConstants.getPreferenceStore();
-		String sourceFolderName= store.getString(PreferenceConstants.SRCBIN_SRCNAME);
+		String sourceFolderName= DEFAULT_SOURCE_FOLDER;//store.getString(PreferenceConstants.SRCBIN_SRCNAME);
 		if (store.getBoolean(PreferenceConstants.SRCBIN_FOLDERS_IN_NEWPROJ) && sourceFolderName.length() > 0) {
 			srcFolder= jproj.getProject().getFolder(sourceFolderName);
 		} else {
