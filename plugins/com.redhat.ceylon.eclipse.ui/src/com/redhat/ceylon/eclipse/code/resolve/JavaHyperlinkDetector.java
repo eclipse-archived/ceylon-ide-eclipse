@@ -26,6 +26,8 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.compiler.loader.model.LazyMethod;
+import com.redhat.ceylon.compiler.loader.model.LazyValue;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
@@ -186,12 +188,19 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
     
     public static IJavaElement getJavaElement(Declaration dec, IJavaProject jp, Node node)
             throws JavaModelException {
-        if (dec instanceof TypeDeclaration) {
+        if (dec instanceof TypeDeclaration || 
+                (dec.isToplevel() && (dec instanceof LazyValue || 
+                 dec instanceof LazyMethod))) {
             IType type = findType(jp, dec.getQualifiedNameString());
             if (type==null) {
-                return null;
+                if (! (dec instanceof TypeDeclaration)) {
+                    type = findType(jp, dec.getQualifiedNameString() + "_");
+                }
             }
-            else {
+            
+            if (type==null) {
+                return null;
+            } else {
                 if (node instanceof Tree.MemberOrTypeExpression &&
                         dec instanceof Class && 
                         ((Class) dec).getParameterList()!=null) {
