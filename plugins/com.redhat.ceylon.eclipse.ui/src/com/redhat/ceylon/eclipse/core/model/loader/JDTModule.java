@@ -128,6 +128,9 @@ public class JDTModule extends LazyModule {
                     String fullPathPrefix = sourceArchivePath + "!/"; 
                     for (Object value : classesToSources.values()) {
                         String sourceRelativePath = (String) value;
+                        if (sourceRelativePath.endsWith(".java")) {
+                            sourceRelativePath = sourceRelativePath.replaceAll("\\.java$", "\\.ceylon");
+                        }
                         if (sourceRelativePath.endsWith(".ceylon")) {
                             String path = fullPathPrefix + sourceRelativePath;
                             phasedUnitPerPath.put(path, new SoftReference<ExternalPhasedUnit>(null));

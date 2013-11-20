@@ -61,6 +61,9 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
                 String binaryUnitRelativePath = getFullPath().replace(module.getArtifact().getPath() + "!/", "");
                 String sourceUnitRelativePath = module.toSourceUnitRelativePath(binaryUnitRelativePath);
                 if (sourceUnitRelativePath != null) {
+                    if (sourceUnitRelativePath.endsWith(".java")) {
+                        sourceUnitRelativePath = sourceUnitRelativePath.replaceAll("\\.java$", "\\.ceylon");
+                    }
                     phasedUnit = (ExternalPhasedUnit) module.getPhasedUnitFromRelativePath(sourceUnitRelativePath);
                 }
             } catch(Exception e) {
