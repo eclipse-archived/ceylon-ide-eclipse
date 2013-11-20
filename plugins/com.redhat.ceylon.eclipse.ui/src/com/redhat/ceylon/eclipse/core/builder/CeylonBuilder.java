@@ -1291,7 +1291,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (projectModelLoader != null) {
                 Package pkg = projectModelLoader.findPackage(packageFragment.getElementName());
                 if (pkg != null) {
-                    for (Unit unit : pkg.getUnits()) {
+                    for (Declaration decl : pkg.getMembers()) {
+                        Unit unit = decl.getUnit();
                         if (unit.getFilename().equals(fileToUpdate.getName())) {
                             return unit;
                         }
