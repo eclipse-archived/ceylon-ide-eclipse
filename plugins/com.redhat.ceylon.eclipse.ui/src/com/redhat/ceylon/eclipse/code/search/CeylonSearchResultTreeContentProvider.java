@@ -244,7 +244,7 @@ class CeylonSearchResultTreeContentProvider implements
                 for (Module m : tc.getContext().getModules().getListOfModules()) {
                     if (m instanceof JDTModule) {
                         JDTModule module = (JDTModule) m;
-                        if (module.isArchive()) {
+                        if (module.isCeylonArchive()) {
                             phasedUnit = module.getPhasedUnit(virtualFile);
                             if (phasedUnit!=null) {
                                 return phasedUnit.getUnit();

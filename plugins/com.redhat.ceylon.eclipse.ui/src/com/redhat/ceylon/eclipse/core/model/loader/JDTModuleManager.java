@@ -496,7 +496,7 @@ public class JDTModuleManager extends LazyModuleManager {
         for (Module m : typeChecker.getContext().getModules().getListOfModules()) {
             if (m instanceof JDTModule) {
                 JDTModule module = (JDTModule) m;
-                if (module.isArchive()) {
+                if (module.isCeylonArchive()) {
                     if (sourceUnitPath.startsWith(module.getSourceArchivePath() + "!")) {
                         return module;
                     }
