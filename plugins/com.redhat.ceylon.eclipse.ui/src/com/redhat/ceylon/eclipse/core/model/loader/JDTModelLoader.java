@@ -23,6 +23,7 @@ package com.redhat.ceylon.eclipse.core.model.loader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +75,7 @@ import org.eclipse.jdt.internal.compiler.problem.AbortCompilationUnit;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 import org.eclipse.jdt.internal.core.ClassFile;
+import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
@@ -440,14 +442,18 @@ public class JDTModelLoader extends AbstractModelLoader {
         return false;
     }
 
+    synchronized public void refreshNameEnvironment() {
+        try {
+            lookupEnvironment.nameEnvironment = ((JavaProject)javaProject).newSearchableNameEnvironment((WorkingCopyOwner)null);
+        } catch (JavaModelException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }            
+    }
+    
     synchronized private LookupEnvironment getLookupEnvironment() {
         if (mustResetLookupEnvironment) {
-            try {
-                lookupEnvironment.nameEnvironment = ((JavaProject)javaProject).newSearchableNameEnvironment((WorkingCopyOwner)null);
-            } catch (JavaModelException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }            
+            refreshNameEnvironment();
             lookupEnvironment.reset();
             mustResetLookupEnvironment = false;
         }
@@ -590,25 +596,26 @@ public class JDTModelLoader extends AbstractModelLoader {
         if(artifact != null && module instanceof LazyModule)
             ((LazyModule)module).loadPackageList(artifact);
                     
-        if (! module.equals(getLanguageModule())) {
-            CeylonProjectModulesContainer container = CeylonClasspathUtil.getCeylonProjectModulesClasspathContainer(javaProject);
+        if (module instanceof JDTModule) {
+            JDTModule jdtModule = (JDTModule) module;
+            if (! jdtModule.equals(getLanguageModule()) && jdtModule.isCeylonBinaryArchive()) {
+                CeylonProjectModulesContainer container = CeylonClasspathUtil.getCeylonProjectModulesClasspathContainer(javaProject);
 
-            if (container != null) {
-                IPath modulePath = new Path(artifact.artifact().getPath());
-                container.addClasspathEntriesIfNecessary(modulePath);
-                try {
-                    JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[] { javaProject }, new IClasspathContainer[] {container}, null);
-                } catch (JavaModelException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                if (container != null) {
+                    IPath modulePath = new Path(artifact.artifact().getPath());
+                    IClasspathEntry newEntry = null;
+                    if ((newEntry = container.addNewClasspathEntryIfNecessary(modulePath))!=null) {
+                        try {
+                            JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[] { javaProject }, 
+                                    new IClasspathContainer[] {new CeylonProjectModulesContainer(container)}, null);
+                        } catch (JavaModelException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        refreshNameEnvironment();
+                    }
                 }
-            }
-            try {
-                lookupEnvironment.nameEnvironment = ((JavaProject)javaProject).newSearchableNameEnvironment((WorkingCopyOwner)null);
-            } catch (JavaModelException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }            
+            } // We don't need to add simple Java Jars progressively on the classpath
         }
     }
     

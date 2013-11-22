@@ -102,7 +102,7 @@ public class JDTModule extends LazyModule {
     }
 
     private File returnCarFile() {
-        if (isBinaryArchive()) {
+        if (isCeylonBinaryArchive()) {
             return artifact;
         }
         if (isSourceArchive()) {
@@ -113,7 +113,7 @@ public class JDTModule extends LazyModule {
     
     synchronized void setArtifact(File artifact) {
         this.artifact = artifact;
-        if (isBinaryArchive()){
+        if (isCeylonBinaryArchive()){
             String carPath = artifact.getPath();
             sourceArchivePath = carPath.substring(0, carPath.length()-ArtifactContext.CAR.length()) + ArtifactContext.SRC;
             try {
@@ -354,15 +354,19 @@ public class JDTModule extends LazyModule {
         jarPath = artifact.artifact();
     }
 
-    public boolean isArchive() {
-        return isBinaryArchive() || isSourceArchive();
+    public boolean isCeylonArchive() {
+        return isCeylonBinaryArchive() || isSourceArchive();
     }
     
     public boolean isProjectModule() {
-        return ! isArchive();
+        return ! (isCeylonArchive() || isJavaBinaryArchive());
     }
     
-    public boolean isBinaryArchive() {
+    public boolean isJavaBinaryArchive() {
+        return artifact != null && artifact.getName().endsWith(ArtifactContext.JAR);
+    }
+    
+    public boolean isCeylonBinaryArchive() {
         return artifact != null && artifact.getName().endsWith(ArtifactContext.CAR);
     }
     
@@ -372,7 +376,7 @@ public class JDTModule extends LazyModule {
     
     public synchronized List<? extends PhasedUnit> getPhasedUnits() {
         PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
-        if (isBinaryArchive()) {
+        if (isCeylonBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
@@ -388,7 +392,7 @@ public class JDTModule extends LazyModule {
 
     public ExternalPhasedUnit getPhasedUnit(IPath path) {
         PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
-        if (isBinaryArchive()) {
+        if (isCeylonBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
@@ -405,7 +409,7 @@ public class JDTModule extends LazyModule {
 
     public ExternalPhasedUnit getPhasedUnit(String path) {
         PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
-        if (isBinaryArchive()) {
+        if (isCeylonBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
@@ -421,7 +425,7 @@ public class JDTModule extends LazyModule {
 
     public ExternalPhasedUnit getPhasedUnit(VirtualFile file) {
         PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
-        if (isBinaryArchive()) {
+        if (isCeylonBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
@@ -437,7 +441,7 @@ public class JDTModule extends LazyModule {
     
     public ExternalPhasedUnit getPhasedUnitFromRelativePath(String relativePathToSource) {
         PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
-        if (isBinaryArchive()) {
+        if (isCeylonBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
         }
         if (isSourceArchive()) {
@@ -473,7 +477,7 @@ public class JDTModule extends LazyModule {
         
         try {
             PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
-            if (isBinaryArchive()) {
+            if (isCeylonBinaryArchive()) {
                 JavaModelManager.getJavaModelManager().getJavaModel().refreshExternalArchives(getPackageFragmentRoots().toArray(new IPackageFragmentRoot[0]), null);
                 phasedUnitMap = binaryModulePhasedUnits;
             }
@@ -483,7 +487,7 @@ public class JDTModule extends LazyModule {
             if (phasedUnitMap != null) {
                 synchronized (phasedUnitMap) {
                     for (String relativePathToRemove : originalUnitsToRemove) {
-                        if (isBinaryArchive() || JavaCore.isJavaLikeFileName(relativePathToRemove)) {
+                        if (isCeylonBinaryArchive() || JavaCore.isJavaLikeFileName(relativePathToRemove)) {
                             for (String relativePathOfClassToRemove : toBinaryUnitRelativePaths(relativePathToRemove)) {
                                 Package p = getPackageFromRelativePath(relativePathOfClassToRemove);
                                 Set<Unit> units = new HashSet<>();
