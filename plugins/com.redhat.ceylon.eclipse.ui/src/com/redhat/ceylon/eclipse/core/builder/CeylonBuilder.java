@@ -1891,7 +1891,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return getBuilderArgs(project).get("compileJs")!=null;
     }
     public static boolean compileToJava(IProject project) {
-        return getBuilderArgs(project).get("compileJava")==null;
+        return CeylonNature.isEnabled(project) && getBuilderArgs(project).get("compileJava")==null;
     }
     
     public static String fileName(ClassMirror c) {
