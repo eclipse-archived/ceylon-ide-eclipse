@@ -69,13 +69,15 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
 
     public void update(CeylonParseController parseController, 
     		IProgressMonitor monitor) {
-        Tree.CompilationUnit rn = parseController.getRootNode();
-        if (rn!=null) { // can be null if file is outside workspace
-            try {
-                updateFoldingStructure(rn, parseController.getTokens());
-            } 
-            catch (Exception e) {
-                e.printStackTrace();
+        if (parseController.getStage().ordinal() >= getStage().ordinal()) {
+            Tree.CompilationUnit rn = parseController.getRootNode();
+            if (rn!=null) { // can be null if file is outside workspace
+                try {
+                    updateFoldingStructure(rn, parseController.getTokens());
+                } 
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

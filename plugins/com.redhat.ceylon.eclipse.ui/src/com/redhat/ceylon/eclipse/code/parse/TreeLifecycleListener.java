@@ -11,14 +11,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public interface TreeLifecycleListener  {
 
-    public enum Stage { LEXICAL_ANALYSIS, SYNTACTIC_ANALYSIS, TYPE_ANALYSIS, DONE }
+    public enum Stage { NONE, LEXICAL_ANALYSIS, SYNTACTIC_ANALYSIS, FOR_OUTLINE, TYPE_ANALYSIS }
 
     /**
      * @return The stage at which the listener should be
      *         notified
      */
     public Stage getStage();
-
+    
     /**
      * Notify the listener that the document has been updated 
      * and a new AST has been computed

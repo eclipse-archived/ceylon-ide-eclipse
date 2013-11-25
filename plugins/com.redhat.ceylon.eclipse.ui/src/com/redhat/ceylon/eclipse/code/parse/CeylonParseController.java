@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
-import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.DONE;
+import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.FOR_OUTLINE;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
@@ -59,7 +59,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModule;
@@ -130,6 +132,8 @@ public class CeylonParseController {
      */
     private TypeChecker typeChecker;
     
+    private Stage stage;
+     
     /**
      * @param filePath		the project-relative path of file
      * @param project		the project that contains the file
@@ -147,6 +151,10 @@ public class CeylonParseController {
 		return handler;
 	}
         
+    public Stage getStage() {
+        return stage;
+    }
+    
     private boolean isCanceling(IProgressMonitor monitor) {
         boolean isCanceling = false;
         if (monitor!=null) {
@@ -178,6 +186,8 @@ public class CeylonParseController {
         IPath resolvedPath = path;
         IdePhasedUnit builtPhasedUnit = null;
         
+        stage = Stage.NONE;
+        
         if (path!=null) {
         	String ext = path.getFileExtension();
 			if (ext==null || !ext.equals("ceylon")) {
@@ -207,6 +217,7 @@ public class CeylonParseController {
                             typeChecker = builtPhasedUnit.getTypeChecker();
                             rootNode = builtPhasedUnit.getCompilationUnit();
                             tokens = builtPhasedUnit.getTokens();
+                            stage = SYNTACTIC_ANALYSIS;
                             if (stager!=null) {
                                 stager.afterStage(LEXICAL_ANALYSIS, monitor);
                                 stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
@@ -222,9 +233,10 @@ public class CeylonParseController {
                                 }
                             });
                             
+                            stage = TYPE_ANALYSIS;
                             if (stager!=null) {
+                                stager.afterStage(FOR_OUTLINE, monitor);
                                 stager.afterStage(TYPE_ANALYSIS, monitor);
-                                stager.afterStage(DONE, monitor);
                                 return;
                             }
                         }
@@ -242,6 +254,7 @@ public class CeylonParseController {
         tokenStream.fill();
         tokens = tokenStream.getTokens();
 
+        stage = LEXICAL_ANALYSIS;
         if (stager!=null) {
         	stager.afterStage(LEXICAL_ANALYSIS, monitor);
         }
@@ -266,6 +279,7 @@ public class CeylonParseController {
         
         collectLexAndParseErrors(lexer, parser, cu);
         
+        stage = SYNTACTIC_ANALYSIS;
         if (stager!=null) {
         	stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
         }
@@ -285,19 +299,21 @@ public class CeylonParseController {
         
         if (! CeylonBuilder.allClasspathContainersInitialized()) {
             // Ceylon projects have not been setup, so don't try to typecheck 
+            stage = FOR_OUTLINE;
             if (stager!=null) {
-                stager.afterStage(DONE, monitor);
+                stager.afterStage(FOR_OUTLINE, monitor);
             }
             return; 
         }
         
         if (project!=null) {
-            if (!isModelTypeChecked(project)) {
+            if ( CeylonNature.isEnabled(project) && !isModelTypeChecked(project)) {
                 // TypeChecking has not been performed
                 // on the main model, so don't do it 
                 // on the editor's tree
+                stage = FOR_OUTLINE;
                 if (stager!=null) {
-                    stager.afterStage(DONE, monitor);
+                    stager.afterStage(FOR_OUTLINE, monitor);
                 }
                 return; 
             }
@@ -329,9 +345,10 @@ public class CeylonParseController {
         rootNode = phasedUnit.getCompilationUnit();
         collectErrors(rootNode);
         
+        stage = TYPE_ANALYSIS;
         if (stager!=null) {
+            stager.afterStage(FOR_OUTLINE, monitor);
         	stager.afterStage(TYPE_ANALYSIS, monitor);
-        	stager.afterStage(DONE, monitor);
         }
         
         return;
@@ -451,9 +468,9 @@ public class CeylonParseController {
 
     private void useTypechecker(final PhasedUnit phasedUnitToTypeCheck,
             final Runnable typecheckSteps) {
-        Job typecheckJob = new WorkspaceJob("Typechecking the working copy of " + phasedUnitToTypeCheck.getPathRelativeToSrcDir()) {
+        Job typecheckJob = new Job("Typechecking the working copy of " + phasedUnitToTypeCheck.getPathRelativeToSrcDir()) {
             @Override
-            public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+            protected IStatus run(IProgressMonitor monitor) {
                 typecheckSteps.run();
                 return Status.OK_STATUS;
             }
@@ -463,6 +480,7 @@ public class CeylonParseController {
         if (scheduler != null) {
             typecheckJob.setPriority(scheduler.getPriority());
         }
+        typecheckJob.setSystem(true);
         typecheckJob.schedule();
         try {
             typecheckJob.join();
