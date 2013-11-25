@@ -50,6 +50,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -59,6 +60,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonOutlinePage extends ContentOutlinePage 
@@ -85,7 +88,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
     
     @Override
     public Stage getStage() {
-        return Stage.DONE;
+        return Stage.FOR_OUTLINE;
     }
     
     @Override
@@ -103,18 +106,20 @@ public class CeylonOutlinePage extends ContentOutlinePage
                             !viewer.getTree().isDisposed()) {
                         boolean noInput = viewer.getInput()==null;
                         Object[] expanded = viewer.getExpandedElements();
-                        CeylonOutlineNode rootNode = new CeylonOutlineBuilder()
-                                .buildTree(parseController);
-                        viewer.setInput(rootNode);
-                        if (noInput) {
-                            expand(viewer, rootNode);
-                        }
-                        else {
-                            for (Object obj: expanded) {
-                                viewer.expandToLevel(obj, 1);
+                        if (parseController.getStage().ordinal() >= getStage().ordinal()) {
+                            CeylonOutlineNode rootNode = new CeylonOutlineBuilder()
+                                    .buildTree(parseController);
+                            viewer.setInput(rootNode);
+                            if (noInput) {
+                                expand(viewer, rootNode);
                             }
-                            viewer.refresh();
-                            expandCaretedNode(sourceViewer.getSelectedRange().x);
+                            else {
+                                for (Object obj: expanded) {
+                                    viewer.expandToLevel(obj, 1);
+                                }
+                                viewer.refresh();
+                                expandCaretedNode(sourceViewer.getSelectedRange().x);
+                            }
                         }
                     }
                 }
@@ -379,6 +384,12 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (offset==0) return; //right at the start of file, don't expand the import list
         CompilationUnit rootNode = parseController.getRootNode();
         if (rootNode==null || rootNode.getUnit()==null) return;
+	    if (rootNode.getUnit() instanceof CeylonUnit) {
+	    	PhasedUnit phasedUnit = ((CeylonUnit) rootNode.getUnit()).getPhasedUnit();
+	    	if (phasedUnit == null || ! phasedUnit.isFullyTyped()) {
+                return;
+            }
+        } 
         if (getTreeViewer().getInput()==null) return;
         suspend = true;
         try {

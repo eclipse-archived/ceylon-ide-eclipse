@@ -405,31 +405,32 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 	}
 	
     private List<Node> getOccurrencesOf(CeylonParseController parseController, Node node) {
-        
-        // Check whether we even have an AST in which to find occurrences
-        Tree.CompilationUnit root = parseController.getRootNode();
-        if (root == null) {
-            return Collections.emptyList();
-        }
-
-        Declaration declaration = getReferencedExplicitDeclaration(node, root);
-        if (declaration==null) {
-            return Collections.emptyList();
-        }
-        else {
-            List<Node> occurrences = new ArrayList<Node>();
-            FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
-            root.visit(frv);
-            occurrences.addAll(frv.getNodes());
-            FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(frv.getDeclaration());
-            root.visit(fdv);
-            Tree.Declaration decNode = fdv.getDeclarationNode();
-            if (decNode!=null) {
-                occurrences.add(decNode);
+        if (parseController.getStage().ordinal() >= getStage().ordinal()) {
+            // Check whether we even have an AST in which to find occurrences
+            Tree.CompilationUnit root = parseController.getRootNode();
+            if (root == null) {
+                return Collections.emptyList();
             }
-            return occurrences;
+
+            Declaration declaration = getReferencedExplicitDeclaration(node, root);
+            if (declaration==null) {
+                return Collections.emptyList();
+            }
+            else {
+                List<Node> occurrences = new ArrayList<Node>();
+                FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
+                root.visit(frv);
+                occurrences.addAll(frv.getNodes());
+                FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(frv.getDeclaration());
+                root.visit(fdv);
+                Tree.Declaration decNode = fdv.getDeclarationNode();
+                if (decNode!=null) {
+                    occurrences.add(decNode);
+                }
+                return occurrences;
+            }
         }
-        
+        return Collections.emptyList();
     }
     
     private List<Node> getAssignmentsOf(CeylonParseController parseController, Node node) {
