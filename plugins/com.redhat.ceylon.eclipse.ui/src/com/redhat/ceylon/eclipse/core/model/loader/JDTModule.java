@@ -55,8 +55,12 @@ import org.eclipse.jdt.core.IClasspathEntry;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.cmr.api.ArtifactResultType;
+import com.redhat.ceylon.cmr.api.ImportType;
 import com.redhat.ceylon.cmr.api.JDKUtils;
+import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.cmr.api.VisibilityType;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
@@ -95,6 +99,7 @@ public class JDTModule extends LazyModule {
     private JDTModule originalModule = null;
     private Set<String> originalUnitsToRemove = new LinkedHashSet<>();
     private Set<String> originalUnitsToAdd = new LinkedHashSet<>();
+    private boolean packagesLoaded = false;
     
     public JDTModule(JDTModuleManager jdtModuleManager, List<IPackageFragmentRoot> packageFragmentRoots) {
         this.moduleManager = jdtModuleManager;
@@ -299,6 +304,7 @@ public class JDTModule extends LazyModule {
         return moduleManager;
     }
 
+    
     @Override
     public List<Package> getAllPackages() {
         synchronized (getModelLoader()) {
@@ -316,13 +322,20 @@ public class JDTModule extends LazyModule {
     }
 
     private void loadAllPackages() {
+        Set<String> packageList = listPackages();
+        for (String packageName : packageList) {
+            getPackage(packageName);
+        }
+    }
+
+    private Set<String> listPackages() {
         Set<String> packageList = new TreeSet<String>();
         String name = getNameAsString();
         if(JDKUtils.isJDKModule(name)){
             packageList.addAll(JDKUtils.getJDKPackagesByModule(name));
         }else if(JDKUtils.isOracleJDKModule(name)){
             packageList.addAll(JDKUtils.getOracleJDKPackagesByModule(name));
-        } else if(isJava()){
+        } else if(isJava() || true){
             for(IPackageFragmentRoot fragmentRoot : getPackageFragmentRoots()){
                 if(!fragmentRoot.exists())
                     continue;
@@ -330,9 +343,7 @@ public class JDTModule extends LazyModule {
                 listPackages(packageList, parent);
             }
         }
-        for (String packageName : packageList) {
-            getPackage(packageName);
-        }
+        return packageList;
     }
 
     private void listPackages(Set<String> packageList, IParent parent) {
@@ -540,6 +551,41 @@ public class JDTModule extends LazyModule {
                     originalUnitsToAdd.clear();
                 }
             }
+            if (isCeylonBinaryArchive() || isJavaBinaryArchive()) {
+                jarPackages.clear();
+                loadPackageList(new ArtifactResult() {
+                    @Override
+                    public VisibilityType visibilityType() {
+                        return null;
+                    }
+                    @Override
+                    public String version() {
+                        return null;
+                    }
+                    @Override
+                    public ArtifactResultType type() {
+                        return null;
+                    }
+                    @Override
+                    public String name() {
+                        return null;
+                    }
+                    @Override
+                    public ImportType importType() {
+                        return null;
+                    }
+                    @Override
+                    public List<ArtifactResult> dependencies() throws RepositoryException {
+                        return null;
+                    }
+                    @Override
+                    public File artifact() throws RepositoryException {
+                        return artifact;
+                    }
+                });
+                super.getPackages().clear();
+                loadPackages();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -666,5 +712,20 @@ public class JDTModule extends LazyModule {
     public boolean containsClass(String className) {
         return className != null && 
                 (classesToSources != null ?  classesToSources.containsKey(className) : false);
+    }
+
+    @Override
+    public List<Package> getPackages() {
+        if (! packagesLoaded) {
+            loadPackages();
+            packagesLoaded = true;
+        }
+        return super.getPackages();
+    }
+
+    private void loadPackages() {
+        for (String packageName : listPackages()) {
+            getModelLoader().findExistingPackage(this, packageName);
+        }
     }
 }
