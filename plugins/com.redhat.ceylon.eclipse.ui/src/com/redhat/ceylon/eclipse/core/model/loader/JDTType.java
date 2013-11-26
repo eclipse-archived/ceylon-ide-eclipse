@@ -56,6 +56,8 @@ public class JDTType implements TypeMirror {
     private boolean declaredClassSet;
     private LookupEnvironment lookupEnvironment;
     private JDTClass declaredClass;
+    private boolean typeParameterSet;
+    private JDTTypeParameter typeParameter;
     
 
     public JDTType(TypeBinding type, LookupEnvironment lookupEnvironment) {
@@ -193,7 +195,12 @@ public class JDTType implements TypeMirror {
 
 	@Override
 	public TypeParameterMirror getTypeParameter() {
-		// TODO Auto-generated method stub
-		return null;
+        if(!typeParameterSet){
+            if(type instanceof TypeVariableBinding){
+                typeParameter = new JDTTypeParameter((TypeVariableBinding) type, lookupEnvironment);
+            }
+            typeParameterSet = true;
+        }
+        return typeParameter;
 	}
 }
