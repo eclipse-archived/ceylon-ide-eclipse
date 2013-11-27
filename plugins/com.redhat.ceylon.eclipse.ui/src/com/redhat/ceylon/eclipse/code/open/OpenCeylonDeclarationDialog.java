@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -316,23 +317,31 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         for (IProject project: CeylonBuilder.getProjects()) {
             TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
-            for (Module m: tc.getContext().getModules().getListOfModules()) {
-                if (!m.isJava() || includeJava() ) {
-                    List<Package> packages = new ArrayList<Package>(m.getPackages());
-                    for (Package p: packages) {
-                        for (Declaration dec: p.getMembers()) {
-                            if (isPresentable(dec)) {
-                                boolean isUnversionedModule = m.getVersion()==null;
-								DeclarationWithProject dwp = new DeclarationWithProject(dec, 
-                                		isUnversionedModule ? null : project, 
-                                				null); //TODO: figure out the full path
-                                //TODO: eliminate duplicates based on the
-                                //      location of the module archive
-                                if (!set.contains(dwp)) {
-                                    contentProvider.add(dwp, itemsFilter);
-                                    nameOccurs(dec);
-                                }
-                            }
+            Set<Module> modules = tc.getPhasedUnits().getModuleManager()
+                    .getCompiledModules();
+            
+            List<Package> packages = new LinkedList<Package>();
+            
+            for (Module compiledModule : modules) {
+                for (Package p: compiledModule.getAllPackages()) {
+                    Module m = p.getModule();
+                    if (!m.isJava() || includeJava() ) {
+                        packages.add(p);
+                    }
+                }
+            }
+            for (Package p: packages) {
+                for (Declaration dec: p.getMembers()) {
+                    if (isPresentable(dec)) {
+                        boolean isUnversionedModule = p.getModule().getVersion()==null;
+						DeclarationWithProject dwp = new DeclarationWithProject(dec, 
+                        		isUnversionedModule ? null : project, 
+                        				null); //TODO: figure out the full path
+                        //TODO: eliminate duplicates based on the
+                        //      location of the module archive
+                        if (!set.contains(dwp)) {
+                            contentProvider.add(dwp, itemsFilter);
+                            nameOccurs(dec);
                         }
                     }
                 }
