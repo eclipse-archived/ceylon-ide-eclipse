@@ -311,9 +311,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public synchronized LazyPackage findOrCreatePackage(Module module, String pkgName) {
         LazyPackage pkg = super.findOrCreatePackage(module, pkgName);
-        if ("".equals(pkgName)) {
-            pkg.setName(Collections.<String>emptyList());
-        }
+
         if (pkg.getModule() != null 
                 && pkg.getModule().isJava()){
             pkg.setShared(true);
@@ -653,8 +651,11 @@ public class JDTModelLoader extends AbstractModelLoader {
         StringBuilder sb = new StringBuilder();
         List<String> parts = pkg.getName();
         for (int i = 0; i < parts.size(); i++) {
-            sb.append(parts.get(i));
-            sb.append('/');
+            String part = parts.get(i);
+            if (! part.isEmpty()) {
+                sb.append(part);
+                sb.append('/');
+            }
         }
         sb.append(jdtClass.getFileName());
         String relativePath = sb.toString();
