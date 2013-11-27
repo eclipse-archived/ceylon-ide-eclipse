@@ -266,7 +266,7 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
 	    builder.append("     ")
 	            .append("</dependencies>")
 	            .append(newline)
-	            .append("</modules>");
+	            .append("</module>");
 	    return builder.toString();
     }
 	
