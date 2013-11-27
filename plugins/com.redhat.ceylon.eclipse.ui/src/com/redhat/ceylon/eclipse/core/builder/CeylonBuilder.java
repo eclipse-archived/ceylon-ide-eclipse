@@ -110,9 +110,11 @@ import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JavaUnit;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
@@ -1665,7 +1667,29 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 .generateSourceArchive(false)
                 .encoding(project.getDefaultCharset())
                 .offline(CeylonProjectConfig.get(project).isOffline());
-        JsCompiler jsc = new JsCompiler(typeChecker, jsopts).stopOnErrors(false);
+        JsCompiler jsc = new JsCompiler(typeChecker, jsopts) {
+
+            @Override
+            protected boolean nonCeylonUnit(Unit u) {
+                if (! super.nonCeylonUnit(u)) {
+                    return false;
+                }
+                if (u instanceof CeylonBinaryUnit) {
+                    CeylonBinaryUnit ceylonBinaryUnit = (CeylonBinaryUnit) u;
+                    if (ceylonBinaryUnit.getSourceRelativePath().endsWith(".ceylon")) {
+                        return false;
+                    }
+                    if (ceylonBinaryUnit.getPhasedUnit() != null) {
+                        // This is the case when the native implementation is in Java but there is a corresponding Ceylon file (for declarations)
+                        // So there should be also an implementation in JavaScript
+                        // We'll need to rework this we we correctly implement native declarations and backend-specific modules or module areas.
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+        }.stopOnErrors(false);
         try {
             if (!jsc.generate()) {
                 CompileErrorReporter errorReporter = null;
