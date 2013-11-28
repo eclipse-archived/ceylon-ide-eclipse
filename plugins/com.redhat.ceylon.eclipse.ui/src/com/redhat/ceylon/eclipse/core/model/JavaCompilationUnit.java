@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.core.model;
 
-import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Package;
