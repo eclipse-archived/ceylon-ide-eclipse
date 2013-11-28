@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.util;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRInputStream;
-import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 

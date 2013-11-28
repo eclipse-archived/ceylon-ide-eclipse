@@ -18,7 +18,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ICrossProjectReference;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
