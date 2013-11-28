@@ -115,7 +115,8 @@ class AutoEdit {
 		
 		try {
 			// TODO: improve this, check the surrounding token type!
-			if (document.getChar(command.offset - 1) == '\\') {
+			if (command.offset>0 &&
+				document.getChar(command.offset - 1) == '\\') {
 				return;
 			}
 		} 
@@ -764,23 +765,6 @@ class AutoEdit {
         }
     }
 
-    private int getStartOfPreviousLine()
-            throws BadLocationException {
-        return getStartOfPreviousLine(command.offset);
-    }
-
-    private int getStartOfPreviousLine(int offset) 
-            throws BadLocationException {
-        int os;
-        int line = document.getLineOfOffset(offset);
-        if (line==0) return -1;
-        do {
-            os = document.getLineOffset(--line);
-        }
-        while (isQuoted(os));
-        return os;
-    }
-    
     /*private int getStartOfNextLine(IDocument d, int offset) 
             throws BadLocationException {
         return d.getLineOffset(d.getLineOfOffset(offset)+1);
@@ -844,12 +828,12 @@ class AutoEdit {
             int prevEnd = end;
             int prevStart = start;
             char prevEndingChar;
-            do {
+//            do {
                 prevEnd = getEndOfPreviousLine(prevStart);
                 prevStart = getStartOfPreviousLine(prevStart);
                 prevEndingChar = getPreviousNonHiddenCharacterInLine(prevEnd);
-            }
-            while (prevEndingChar=='\n' && prevStart>0); //skip blank lines when searching for previous line
+//            }
+//            while (prevEndingChar=='\n' && prevStart>0); //skip blank lines when searching for previous line
             if (prevEndingChar==';' || 
                 prevEndingChar==',' && nestingLevel>=0 || 
                 prevEndingChar=='{' || 
@@ -990,6 +974,23 @@ class AutoEdit {
         return lineInfo.getOffset() + lineInfo.getLength();
     }
     
+    private int getStartOfPreviousLine()
+            throws BadLocationException {
+        return getStartOfPreviousLine(command.offset);
+    }
+
+    private int getStartOfPreviousLine(int offset) 
+            throws BadLocationException {
+        int line = document.getLineOfOffset(offset);
+        IRegion lineInfo;
+        do {
+            if (line==0) return 0;
+        	lineInfo = document.getLineInformation(--line);
+        }
+        while (lineInfo.getLength()==0 || isQuoted(lineInfo.getOffset()));
+        return lineInfo.getOffset();
+    }
+    
     private int getEndOfPreviousLine() 
             throws BadLocationException {
         return getEndOfPreviousLine(command.offset);
@@ -997,9 +998,16 @@ class AutoEdit {
 
     private int getEndOfPreviousLine(int offset) 
             throws BadLocationException {
-    	if (document.getLineOfOffset(offset)==0) return -1;
-        int p = offset == document.getLength() ? offset-1 : offset;
-        IRegion lineInfo = document.getLineInformation(document.getLineOfOffset(p)-1);
+        if (offset == document.getLength() && offset>0) {
+        	offset--;
+        }
+        int line = document.getLineOfOffset(offset);
+		IRegion lineInfo;
+		do {
+			if (line==0) return 0;
+			lineInfo = document.getLineInformation(--line);
+		}
+		while (lineInfo.getLength()==0);
         return lineInfo.getOffset() + lineInfo.getLength();
     }
     
