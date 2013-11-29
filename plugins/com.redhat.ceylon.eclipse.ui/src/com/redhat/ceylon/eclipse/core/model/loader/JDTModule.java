@@ -26,9 +26,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -94,6 +96,7 @@ public class JDTModule extends LazyModule {
                                                                     // much more modular (think of several versions of a module imported in a non-shared way in the same projet).
     private PhasedUnitMap<ExternalPhasedUnit, SoftReference<ExternalPhasedUnit>> binaryModulePhasedUnits;
     private Properties classesToSources = new Properties();
+    private Map<String, String> javaImplFilesToCeylonDeclFiles = new HashMap<String, String>();
     private String sourceArchivePath = null;
     private IProject originalProject = null;
     private JDTModule originalModule = null;
@@ -123,6 +126,7 @@ public class JDTModule extends LazyModule {
             sourceArchivePath = carPath.substring(0, carPath.length()-ArtifactContext.CAR.length()) + ArtifactContext.SRC;
             try {
                 classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
+                javaImplFilesToCeylonDeclFiles = CarUtils.searchCeylonFilesForJavaImplementations(classesToSources, new File(sourceArchivePath));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -133,15 +137,43 @@ public class JDTModule extends LazyModule {
                     String fullPathPrefix = sourceArchivePath + "!/"; 
                     for (Object value : classesToSources.values()) {
                         String sourceRelativePath = (String) value;
-                        if (sourceRelativePath.endsWith(".java")) {
-                            sourceRelativePath = sourceRelativePath.replaceAll("\\.java$", "\\.ceylon");
-                        }
-                        if (sourceRelativePath.endsWith(".ceylon")) {
-                            String path = fullPathPrefix + sourceRelativePath;
-                            phasedUnitPerPath.put(path, new SoftReference<ExternalPhasedUnit>(null));
-                            relativePathToPath.put(sourceRelativePath, path);
-                        }
+                        String path = fullPathPrefix + sourceRelativePath;
+                        phasedUnitPerPath.put(path, new SoftReference<ExternalPhasedUnit>(null));
+                        relativePathToPath.put(sourceRelativePath, path);
                     }
+                }
+                
+                @Override
+                public ExternalPhasedUnit getPhasedUnit(String path) {
+                    if (! phasedUnitPerPath.containsKey(path)) {
+                        if (path.endsWith(".ceylon")) {
+                            // Case of a Ceylon file with a Java implementation, the classesToSources key is the Java source file.
+                            String javaFileRelativePath = getJavaImplementationFile(path.replace(sourceArchivePath + "!/", ""));                        
+                            if (javaFileRelativePath != null) {
+                                return super.getPhasedUnit(sourceArchivePath + "!/" + javaFileRelativePath);
+                            }
+                        }
+                        return null;
+                    }
+                    return super.getPhasedUnit(path);
+                }
+
+                @Override
+                public ExternalPhasedUnit getPhasedUnitFromRelativePath(String relativePath) {
+                    if (relativePath.startsWith("/")) {
+                        relativePath = relativePath.substring(1);
+                    }
+                    if (! relativePathToPath.containsKey(relativePath)) {
+                        if (relativePath.endsWith(".ceylon")) {
+                            // Case of a Ceylon file with a Java implementation, the classesToSources key is the Java source file.
+                            String javaFileRelativePath = getJavaImplementationFile(relativePath);                        
+                            if (javaFileRelativePath != null) {
+                                return super.getPhasedUnitFromRelativePath(javaFileRelativePath);
+                            }
+                        }
+                        return null;
+                    }
+                    return super.getPhasedUnitFromRelativePath(relativePath);
                 }
                 
                 @Override
@@ -190,6 +222,7 @@ public class JDTModule extends LazyModule {
             sourceArchivePath = artifact.getPath();
             try {
                 classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
+                javaImplFilesToCeylonDeclFiles = CarUtils.searchCeylonFilesForJavaImplementations(classesToSources, artifact);                
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -224,6 +257,23 @@ public class JDTModule extends LazyModule {
         return classesToSources.getProperty(binaryUnitRelativePath);
     }
     
+    public String getJavaImplementationFile(String ceylonFileRelativePath) {
+        String javaFileRelativePath = null;
+        for (Entry<String, String> entry : javaImplFilesToCeylonDeclFiles.entrySet()) {
+            if (entry.getValue().equals(ceylonFileRelativePath)) {
+                javaFileRelativePath = entry.getKey();
+            }
+        }
+        return javaFileRelativePath;
+    }
+    
+    public String getCeylonDeclarationFile(String sourceUnitRelativePath) {
+        if (sourceUnitRelativePath.endsWith(".ceylon")) {
+            return sourceUnitRelativePath;
+        }
+        return javaImplFilesToCeylonDeclFiles.get(sourceUnitRelativePath);
+    }
+
     public List<String> toBinaryUnitRelativePaths(String sourceUnitRelativePath) {
         if (sourceUnitRelativePath == null) {
             return Collections.emptyList();
@@ -546,6 +596,7 @@ public class JDTModule extends LazyModule {
                     }
                     
                     classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
+                    javaImplFilesToCeylonDeclFiles = CarUtils.searchCeylonFilesForJavaImplementations(classesToSources, new File(sourceArchivePath));                
                     
                     originalUnitsToRemove.clear();
                     originalUnitsToAdd.clear();
@@ -617,9 +668,17 @@ public class JDTModule extends LazyModule {
                 ClosableVirtualFile sourceArchive = null;
                 try {
                     sourceArchive = moduleManager.getContext().getVfs().getFromZipFile(new File(sourceArchivePath));
+                    
+                    String ceylonSourceUnitRelativePath = sourceUnitRelativePath; 
+                    if (sourceUnitRelativePath.endsWith(".java")) {
+                        ceylonSourceUnitRelativePath = javaImplFilesToCeylonDeclFiles.get(sourceUnitRelativePath);
+                    }
+
                     VirtualFile archiveEntry = null;
-                    archiveEntry = searchInSourceArchive(
-                            sourceUnitRelativePath, sourceArchive);
+                    if (ceylonSourceUnitRelativePath != null) {
+                        archiveEntry = searchInSourceArchive(
+                                ceylonSourceUnitRelativePath, sourceArchive);
+                    }
                     
                     if (archiveEntry != null) {
                         IProject project = moduleManager.getJavaProject().getProject();
