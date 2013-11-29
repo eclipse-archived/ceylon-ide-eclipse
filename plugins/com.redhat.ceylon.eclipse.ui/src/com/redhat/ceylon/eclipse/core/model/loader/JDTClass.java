@@ -45,7 +45,7 @@ import com.redhat.ceylon.compiler.loader.mirror.PackageMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 
-public class JDTClass implements ClassMirror {
+public class JDTClass implements ClassMirror, IBindingProvider {
 
     private ReferenceBinding klass;
     private LookupEnvironment lookupEnvironment;
@@ -327,4 +327,8 @@ public class JDTClass implements ClassMirror {
                 || klass.isLocalType();
     }
     
+    @Override
+    public char[] getBindingKey() {
+        return klass.computeUniqueKey();
+    }
 }
