@@ -1676,13 +1676,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
                 if (u instanceof CeylonBinaryUnit) {
                     CeylonBinaryUnit ceylonBinaryUnit = (CeylonBinaryUnit) u;
-                    if (ceylonBinaryUnit.getSourceRelativePath().endsWith(".ceylon")) {
-                        return false;
-                    }
-                    if (ceylonBinaryUnit.getPhasedUnit() != null) {
-                        // This is the case when the native implementation is in Java but there is a corresponding Ceylon file (for declarations)
-                        // So there should be also an implementation in JavaScript
-                        // We'll need to rework this we we correctly implement native declarations and backend-specific modules or module areas.
+                    if (ceylonBinaryUnit.getCeylonSourceRelativePath() != null) {
                         return false;
                     }
                 }
@@ -2482,8 +2476,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         }
                     }
                 } catch (ZipException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
