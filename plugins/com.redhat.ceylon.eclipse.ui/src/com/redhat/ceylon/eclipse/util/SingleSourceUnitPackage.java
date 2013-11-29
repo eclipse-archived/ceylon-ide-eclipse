@@ -167,4 +167,8 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.compiler.typechec
     public boolean isShared() {
         return modelPackage.isShared();
     }
+    
+    public com.redhat.ceylon.compiler.typechecker.model.Package getModelPackage() {
+        return modelPackage;
+    }
 }

@@ -41,7 +41,7 @@ import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.compiler.loader.mirror.VariableMirror;
 
-public class JDTMethod implements MethodMirror {
+public class JDTMethod implements MethodMirror, IBindingProvider {
 
     private MethodBinding method;
     private MethodVerifier methodVerifier;
@@ -226,4 +226,8 @@ public class JDTMethod implements MethodMirror {
         return method.getDefaultValue()!=null;
     }
     
+    @Override
+    public char[] getBindingKey() {
+        return method.computeUniqueKey();
+    }
 }
