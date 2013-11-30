@@ -61,6 +61,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -710,6 +711,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             CeylonParseController pc = editor.getParseController();
             if (pc==null || pc.getRootNode()==null) return;
             Tree.CompilationUnit cu = pc.getRootNode();
+            Unit unit = cu.getUnit();
             //copy them, so as to not affect the clipboard
             Map<Declaration,String> imports = new LinkedHashMap<Declaration,String>(); 
             imports.putAll(map);
@@ -721,7 +723,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 Pattern pattern = Pattern.compile("\\bimport\\s+" + 
                         declarationPackage.getNameAsString().replace(".", "\\.") + 
                         "\\b[^.]");
-                if (cu.getUnit().getPackage().equals(declarationPackage)) {
+				if (unit.getPackage().equals(declarationPackage)) {
                     //the declaration belongs to this package
                     i.remove();
                 }
@@ -730,8 +732,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     i.remove();
                 }
                 else {
-                    for (Import ip: cu.getUnit().getImports()) {
-                        if (ip.getDeclaration().equals(declaration)) {
+                    for (Import ip: unit.getImports()) {
+                    	//compare qualified names, treating
+                    	//overloaded versions as identical
+                        if (ip.getDeclaration().getQualifiedNameString()
+                        		.equals(declaration.getQualifiedNameString())) {
                             i.remove();
                             break;
                         }
