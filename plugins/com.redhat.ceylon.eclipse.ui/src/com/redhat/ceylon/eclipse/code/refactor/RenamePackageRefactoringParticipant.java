@@ -14,13 +14,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.internal.corext.refactoring.rename.RenamePackageProcessor;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
+import org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor;
 import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
-import org.eclipse.ltk.core.refactoring.participants.RenameProcessor;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -40,9 +41,20 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 	protected boolean initialize(Object element) {
 		javaPackageFragment= (IPackageFragment) element;
 		final String newName = getArguments().getNewName();
+		RefactoringProcessor processor = getProcessor();
+		if (processor instanceof RenamePackageProcessor) {
+			RenamePackageProcessor renamePackageProcessor = (RenamePackageProcessor) processor;
+			if (renamePackageProcessor.getUpdateQualifiedNames() &&
+					(renamePackageProcessor.getFilePatterns().equals("*") ||
+					renamePackageProcessor.getFilePatterns().contains("*.ceylon"))) {
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
 		allPackagesMoving.put(javaPackageFragment, newName);
-		return getProcessor() instanceof RenameProcessor &&
-		        getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
+		return getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
 	}
 
     @Override
