@@ -2,7 +2,9 @@ package com.redhat.ceylon.eclipse.core.model;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.IJavaElement;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
@@ -36,13 +38,13 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
         return (ExternalPhasedUnit) super.getPhasedUnit();
     }
     
-    public IClassFile getJavaElement() {
+    public IClassFile getTypeRoot() {
         return classFileElement;
     }
 
     public IProject getProject() {
-        if (getJavaElement() != null) {
-            return (IProject) getJavaElement().getJavaProject().getProject();
+        if (getTypeRoot() != null) {
+            return (IProject) getTypeRoot().getJavaProject().getProject();
         }
         return null;
     }
@@ -85,5 +87,11 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
             return null;
         }
         return sourceArchivePath + "!/" + getSourceRelativePath();
+    }
+
+
+    @Override
+    public IJavaElement toJavaElement(Declaration ceylonDeclaration) {
+        return new CeylonToJavaMatcher(this).searchInClass(ceylonDeclaration);
     }
 }
