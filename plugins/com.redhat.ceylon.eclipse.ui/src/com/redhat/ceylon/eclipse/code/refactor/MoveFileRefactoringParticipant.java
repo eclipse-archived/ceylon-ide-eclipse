@@ -53,7 +53,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     @Override
     protected boolean initialize(Object element) {
         file = (IFile) element;
-        return getProcessor() instanceof MoveProcessor  &&
+        return getProcessor() instanceof MoveProcessor &&
                 getProjectTypeChecker(file.getProject())!=null &&
                 (file.getFileExtension().equals("ceylon") ||
                 file.getFileExtension().equals("java"));
@@ -156,6 +156,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             final String newName, final String oldName,
             final List<Change> changes, PhasedUnit movedPhasedUnit, 
             final List<Declaration> declarations) {
+    	if (!getArguments().getUpdateReferences()) return;
         for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
                 .getPhasedUnits().getPhasedUnits()) {
             if (phasedUnit==movedPhasedUnit) {
@@ -201,6 +202,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     protected void updateRefsToMovedJavaFile(final IProject project,
             final String newName, final String oldName,
             final List<Change> changes) throws JavaModelException {
+    	if (!getArguments().getUpdateReferences()) return;
         ICompilationUnit jcu = (ICompilationUnit) JavaCore.create(file);
         final IType[] types = jcu.getTypes();
         TypeChecker tc = getProjectTypeChecker(project);
