@@ -1,7 +1,9 @@
 package com.redhat.ceylon.eclipse.core.model;
 
 import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.IJavaElement;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 
 public class JavaClassFile extends JavaUnit {
@@ -14,7 +16,12 @@ public class JavaClassFile extends JavaUnit {
     }
 
     @Override
-    public IClassFile getJavaElement() {
+    public IClassFile getTypeRoot() {
         return classFileElement;
+    }
+
+    @Override
+    public IJavaElement toJavaElement(Declaration ceylonDeclaration) {
+        return new CeylonToJavaMatcher(this).searchInClass(ceylonDeclaration);
     }
 }
