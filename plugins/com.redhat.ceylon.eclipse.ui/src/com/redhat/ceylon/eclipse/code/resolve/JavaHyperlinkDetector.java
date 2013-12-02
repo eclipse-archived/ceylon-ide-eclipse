@@ -12,6 +12,7 @@ import java.util.Stack;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -250,6 +251,10 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
             throws JavaModelException {
         if (dec.getUnit() instanceof IJavaModelAware) {
             ITypeRoot typeRoot = ((IJavaModelAware) dec.getUnit()).getJavaElement();
+            if (typeRoot instanceof IClassFile && ((IClassFile) typeRoot).getSource() == null) {
+                return typeRoot;
+            }
+            
             ASTParser parser = ASTParser.newParser(AST.JLS4);
             parser.setBindingsRecovery(true);
             parser.setResolveBindings(true);
