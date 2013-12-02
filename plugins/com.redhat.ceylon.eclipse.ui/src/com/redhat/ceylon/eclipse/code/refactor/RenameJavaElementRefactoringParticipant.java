@@ -42,7 +42,8 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 
 	protected boolean initialize(Object element) {
 		javaDeclaration= (IMember) element;
-		return getProjectTypeChecker(javaDeclaration.getJavaProject().getProject())!=null;
+		return getArguments().getUpdateReferences() && 
+				getProjectTypeChecker(javaDeclaration.getJavaProject().getProject())!=null;
 	}
 
 	public String getName() {
