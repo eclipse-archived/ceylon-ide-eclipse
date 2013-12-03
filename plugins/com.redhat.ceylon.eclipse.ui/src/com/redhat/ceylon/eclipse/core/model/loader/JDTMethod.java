@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -149,6 +150,13 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
             isOverriding = Boolean.FALSE;
 
             ReferenceBinding declaringClass = method.declaringClass;
+            if (CharOperation.equals(declaringClass.qualifiedSourceName(), "ceylon.language.Identifiable".toCharArray())) {
+                if (CharOperation.equals(method.selector, "equals".toCharArray()) 
+                        || CharOperation.equals(method.selector, "hashCode".toCharArray())) {
+                    return true;
+                }
+            }
+                
             // try the superclass first
             if (isDefinedInSuperClasses(declaringClass)) {
                 isOverriding = Boolean.TRUE;
