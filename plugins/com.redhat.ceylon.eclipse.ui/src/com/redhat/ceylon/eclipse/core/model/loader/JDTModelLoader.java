@@ -404,8 +404,8 @@ public class JDTModelLoader extends AbstractModelLoader {
                                         continue;
                                     IType type = classFile.getType();
                                     if (type.exists() 
-                                         // only top-levels ar added in source declarations
-                                            && ! type.isMember() 
+                                         // only top-levels are added in source declarations
+                                            && ! (type.isMember() || type.isAnonymous() || type.isLocal()) 
                                             && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))
                                             && ! isTypeHidden(module, type.getFullyQualifiedName())) {  
                                         convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
@@ -417,7 +417,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                                         continue;
                                     for (IType type : compilationUnit.getTypes()) {
                                         if (type.exists() 
-                                                && ! type.isMember() 
+                                                && ! (type.isMember() || type.isAnonymous() || type.isLocal()) 
                                                 && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))
                                                 && ! isTypeHidden(module, type.getFullyQualifiedName())) {
                                             convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
@@ -868,6 +868,12 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public synchronized LazyPackage findOrCreateModulelessPackage(String pkgName) {
         return (LazyPackage) findPackage(pkgName);
+    }
+
+    @Override
+    public boolean isModuleInClassPath(Module module) {
+        // TODO Check that returning true in any case is the right way to do.
+        return super.isModuleInClassPath(module);
     }
     
     

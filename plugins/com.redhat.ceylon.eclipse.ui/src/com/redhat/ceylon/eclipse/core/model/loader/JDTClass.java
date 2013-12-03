@@ -135,7 +135,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
             directMethods = klass.methods();
             methods = new ArrayList<MethodMirror>(directMethods.length);
             for(MethodBinding method : directMethods) {
-                if(!method.isBridge() && !method.isSynthetic())
+                if(!method.isBridge() && !method.isSynthetic() && !method.isPrivate())
                     methods.add(new JDTMethod(method, lookupEnvironment));
             }
         }
@@ -188,17 +188,17 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     
     @Override
     public boolean isCeylonToplevelAttribute() {
-        return isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Attribute.class);
+        return !isInnerClass() && isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Attribute.class);
     }
 
     @Override
     public boolean isCeylonToplevelObject() {
-        return isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Object.class);
+        return !isInnerClass() && isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Object.class);
     }
 
     @Override
     public boolean isCeylonToplevelMethod() {
-        return isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Method.class);
+        return !isInnerClass() && isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Method.class);
     }
 
     public boolean isCeylon() {
@@ -211,7 +211,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
             FieldBinding[] directFields = klass.fields();
             fields = new ArrayList<FieldMirror>(directFields.length);
             for(FieldBinding field : directFields){
-                if(!field.isSynthetic()){
+                if(!field.isSynthetic() && !field.isPrivate()){
                     fields.add(new JDTField(field, lookupEnvironment));
                 }
             }
@@ -237,7 +237,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
             ReferenceBinding[] memberTypeBindings = klass.memberTypes();
             innerClasses = new ArrayList<ClassMirror>(memberTypeBindings.length);
             for(ReferenceBinding memberTypeBinding : memberTypeBindings) {
-                ReferenceBinding classBinding = (ReferenceBinding) memberTypeBinding;
+                ReferenceBinding classBinding = memberTypeBinding;
                 innerClasses.add(new JDTClass(classBinding, lookupEnvironment));
             }
         }

@@ -122,6 +122,7 @@ public class JDTType implements TypeMirror {
             case TypeIds.T_float : return TypeKind.FLOAT;
             case TypeIds.T_double : return TypeKind.DOUBLE;
             case TypeIds.T_void : return TypeKind.VOID;
+            case TypeIds.T_null : return TypeKind.NULL;
             }
         }
         if(type instanceof ReferenceBinding)
@@ -140,7 +141,9 @@ public class JDTType implements TypeMirror {
 
     @Override
     public boolean isPrimitive() {
-        return type.isBaseType();
+        return type.isBaseType() && 
+                type.id != TypeIds.T_void && 
+                        type.id != TypeIds.T_null;
     }
 
     @Override
@@ -153,6 +156,12 @@ public class JDTType implements TypeMirror {
                     if (upperBoundBinding != null) {
                         upperBound = new JDTType(upperBoundBinding, lookupEnvironment);
                     }
+                }
+            } else if (type.isTypeVariable()){
+                TypeVariableBinding typeVariableBinding = (TypeVariableBinding) type;
+                TypeBinding boundBinding = typeVariableBinding.firstBound; // TODO : we should confirm this
+                if (boundBinding != null) {
+                    upperBound = new JDTType(boundBinding, lookupEnvironment);
                 }
             }
             upperBoundSet = true;
