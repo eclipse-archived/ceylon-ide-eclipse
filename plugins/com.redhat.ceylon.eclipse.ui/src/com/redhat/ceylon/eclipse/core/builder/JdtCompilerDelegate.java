@@ -38,8 +38,10 @@ import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.ModelState;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
@@ -76,8 +78,41 @@ final class JdtCompilerDelegate implements CompilerDelegate {
 	
     @Override
     public void typeCheck(java.util.List<PhasedUnit> listOfUnits) {
-        // Do nothing : 
-        //   alreadyDone by the IncrementalBuilder before calling the Compiler for binary generation
+        Context context = contextRef.get();
+        assert(context != null);
+        if (CeylonBuilder.getModelState(project).ordinal() < ModelState.Compiled.ordinal()) {
+            for (PhasedUnit phasedUnit : CeylonBuilder.getUnits(project)) {
+                assert(phasedUnit  instanceof ProjectPhasedUnit);
+                ProjectPhasedUnit projectPhasedUnit = (ProjectPhasedUnit) phasedUnit;
+                IFile resource = projectPhasedUnit.getSourceFileResource();
+                File file = resource.getRawLocation().toFile();
+                JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);
+                Iterator<? extends JavaFileObject> files = fileManager.getJavaFileObjects(file).iterator();
+                if (files.hasNext()) {
+                    JavaFileObject fileObject = files.next();                    
+                    char[] chars = new char[0];
+                    try {
+                        chars = Util.getResourceContentsAsCharArray(resource);
+                    } catch (JavaModelException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                    LineMap map = Position.makeLineMap(chars, chars.length, false);
+                    CeylonPhasedUnit unitToAdd = new CeylonPhasedUnit(projectPhasedUnit, fileObject, map);
+                    boolean alreadyInList = false;
+                    for (PhasedUnit unitInList : listOfUnits) {
+                        if (unitInList.getUnitFile().getPath().equals(unitToAdd.getUnitFile().getPath())) {
+                            alreadyInList = true;
+                            break;
+                        }
+                    }
+                    if (! alreadyInList) {
+                        listOfUnits.add(unitToAdd);
+                    }
+                }
+            }
+            CeylonBuilder.modelStates.put(project, ModelState.Compiled);
+        }
     }
     
     private void buildListOfCompiledModules(Module module, Set<ProjectSourceFile> listOfModules) {
