@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.model;
 
 import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
@@ -16,6 +17,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
+import com.redhat.ceylon.compiler.loader.model.FieldValue;
 import com.redhat.ceylon.compiler.loader.model.JavaBeanValue;
 import com.redhat.ceylon.compiler.loader.model.JavaMethod;
 import com.redhat.ceylon.compiler.loader.model.LazyClass;
@@ -25,6 +27,7 @@ import com.redhat.ceylon.compiler.loader.model.LazyValue;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.eclipse.core.model.loader.IBindingProvider;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTMethod;
 
 public class CeylonToJavaMatcher {
     private Declaration ceylonDeclaration = null;
@@ -66,10 +69,12 @@ public class CeylonToJavaMatcher {
             if (! lazyClass.isAbstraction() && lazyClass.isOverloaded()) {
                 IBindingProvider constructor = (IBindingProvider) lazyClass.getConstructor();
                 if (constructor != null) {
-                    return visit((IParent)javaType); //this will be managed in the IType element  
+                    mirror = constructor;
                 }
             }
-            mirror = (IBindingProvider) lazyClass.classMirror;
+            if (mirror == null) {
+                mirror = (IBindingProvider) lazyClass.classMirror;
+            }
         }
         if (ceylonDeclaration instanceof LazyInterface) {
             mirror = (IBindingProvider) ((LazyInterface) ceylonDeclaration).classMirror; 
@@ -86,10 +91,10 @@ public class CeylonToJavaMatcher {
             if (container instanceof LazyInterface) {
                 mirror = (IBindingProvider) ((LazyInterface) container).classMirror;
             }
-            if (ceylonDeclaration instanceof LazyValue) {
+            if (container instanceof LazyValue) {
                 mirror = (IBindingProvider) ((LazyValue) container).classMirror; 
             }
-            if (declarationMatched(javaType, mirror)) {
+            if (declarationMatched(javaType, mirror) != null) {
                 try {
                     for (IMethod javaMethod : javaType.getMethods()) {
                         if (javaMethod.getElementName().equals(javaBeanValue.getGetterName())) {
@@ -103,8 +108,36 @@ public class CeylonToJavaMatcher {
             }
             return visit((IParent)javaType);
         }
-        if (declarationMatched(javaType, mirror)) {
-            return javaType;
+        if (ceylonDeclaration instanceof FieldValue) {
+            FieldValue fieldValue = ((FieldValue) ceylonDeclaration);
+            Scope container = fieldValue.getContainer();
+            if (container instanceof LazyClass) {
+                mirror = (IBindingProvider) ((LazyClass) container).classMirror;
+            }
+            if (container instanceof LazyInterface) {
+                mirror = (IBindingProvider) ((LazyInterface) container).classMirror;
+            }
+            if (container instanceof LazyValue) {
+                mirror = (IBindingProvider) ((LazyValue) container).classMirror; 
+            }
+            if (declarationMatched(javaType, mirror) != null) {
+                try {
+                    for (IField javaField : javaType.getFields()) {
+                        if (javaField.getElementName().equals(fieldValue.getRealName())) {
+                            return javaField;
+                        }
+                    }
+                } catch (JavaModelException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            return visit((IParent)javaType);
+        }
+        
+        IJavaElement result = null;
+        if ((result = declarationMatched(javaType, mirror)) != null) {
+            return result;
         }
         return visit((IParent)javaType);
     }
@@ -112,28 +145,15 @@ public class CeylonToJavaMatcher {
     private IJavaElement visit(IMethod javaMethod) {
         IBindingProvider mirror = null;
         
-        try {
-            if (javaMethod.isConstructor() && ceylonDeclaration instanceof LazyClass) {
-                LazyClass lazyClass = (LazyClass) ceylonDeclaration;
-                if (! lazyClass.isAbstraction() && lazyClass.isOverloaded()) {
-                    IBindingProvider constructor = (IBindingProvider) lazyClass.getConstructor();
-                    if (constructor != null) {
-                        mirror = constructor;
-                    }
-                }
-            }
-        } catch (JavaModelException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
         if (ceylonDeclaration instanceof LazyMethod) {
             mirror = (IBindingProvider) ((LazyMethod) ceylonDeclaration).getMethodMirror();
         }
         if (ceylonDeclaration instanceof JavaMethod) {
             mirror = (IBindingProvider) ((JavaMethod) ceylonDeclaration).mirror;
         }
-        if (declarationMatched(javaMethod, mirror)) {
-            return javaMethod;
+        IJavaElement result = null;
+        if ((result = declarationMatched(javaMethod, mirror)) != null) {
+            return result;
         }
 
         return visit((IParent)javaMethod);
@@ -154,28 +174,28 @@ public class CeylonToJavaMatcher {
         return null;
     }
     
-    private boolean declarationMatched(IJavaElement javaElement,
+    private IJavaElement declarationMatched(IJavaElement javaElement,
             IBindingProvider mirror) {
         if (mirror != null) { 
             parser.setProject(typeRoot.getJavaProject());
             IBinding[] bindings = parser.createBindings(new IJavaElement[] { javaElement }, null);
             if (bindings.length > 0 && bindings[0] != null) {
-                if (javaElement instanceof IMethod && bindings[0] instanceof ITypeBinding) {
-                    // Case of a default constructor : let's go to the constructor and not to the type.
+                if (mirror instanceof JDTMethod && bindings[0] instanceof ITypeBinding) {
+                    // Case of a constructor : let's go to the constructor and not to the type.
                     ITypeBinding typeBinding = (ITypeBinding) bindings[0];
                     for (IMethodBinding methodBinding : typeBinding.getDeclaredMethods()) {
                         if (methodBinding.isConstructor()) {
                             if (CharOperation.equals(methodBinding.getKey().toCharArray(), mirror.getBindingKey())) {
-                                return true;
+                                return methodBinding.getJavaElement();
                             }
                         }
                     }
                 }
                 if (CharOperation.equals(bindings[0].getKey().toCharArray(), mirror.getBindingKey())) {
-                    return true;
+                    return javaElement;
                 }
             }
         }
-        return false;
+        return null;
     }
 }
