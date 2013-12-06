@@ -3,19 +3,14 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 
-import java.util.List;
+import java.util.Stack;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jdt.core.Flags;
-import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.IRegion;
@@ -26,16 +21,18 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
-import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModule;
+import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 
 public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
@@ -74,7 +71,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public String getHyperlinkText() {
-            return null;
+            return "Java Declaration";
         }
 
         @Override
@@ -103,8 +100,30 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                     return null;
                 }
                 else {
-                    //IJavaProject jp = JavaCore.create(Util.getProject(editor));
+                    Unit declarationUnit = dec.getUnit();
                     IJavaProject jp = JavaCore.create(pc.getProject());
+                    
+                    if (! (declarationUnit instanceof IJavaModelAware)) {
+                        if (declarationUnit instanceof ExternalSourceFile) {
+                            Declaration binaryDeclaration = ((ExternalSourceFile)declarationUnit).retrieveBinaryDeclaration(dec);
+                            if (binaryDeclaration != null) {
+                                dec = binaryDeclaration;
+                                declarationUnit = binaryDeclaration.getUnit();
+                            } else {
+                                return null;
+                            }
+                        } else {
+                            return null;
+                        }
+                    }
+                    if (declarationUnit instanceof CeylonBinaryUnit) {
+                        CeylonBinaryUnit ceylonBinaryUnit = (CeylonBinaryUnit) declarationUnit;
+                        if (! JavaCore.isJavaLikeFileName(ceylonBinaryUnit.getSourceRelativePath())) {
+                            return null; 
+                        }
+                        jp = ceylonBinaryUnit.getTypeRoot().getJavaProject();
+                    }
+                    //IJavaProject jp = JavaCore.create(Util.getProject(editor));
                     if (jp==null) {
                         return null;
                     }
@@ -154,80 +173,11 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
 		}
 	}
 
-	private static IType findType(IJavaProject jp, String fullyQualifiedName) 
-    		throws JavaModelException {
-	    if (fullyQualifiedName==null) {
-	        return null;
-	    }
-        JDTModelLoader modelLoader = getProjectModelLoader(jp.getProject());
-        if (modelLoader==null) {
-            return null;
-        }
-        String javaQualifiedName = fullyQualifiedName.replace("::", ".");
-        if (modelLoader.getSourceDeclarations().contains(javaQualifiedName)) {
-            return null;
-        }
-        return jp.findType(javaQualifiedName);
-    }
-    
-    public static IJavaElement getJavaElement(Declaration dec, IJavaProject jp, Node node)
+    public static IJavaElement getJavaElement(final Declaration dec, IJavaProject jp, Node node)
             throws JavaModelException {
-        if (dec instanceof TypeDeclaration) {
-            IType type = findType(jp, dec.getQualifiedNameString());
-            if (type==null) {
-                return null;
-            }
-            else {
-                if (node instanceof Tree.MemberOrTypeExpression &&
-                        dec instanceof Class && 
-                        ((Class) dec).getParameterList()!=null) {
-                    for (IMethod method: type.getMethods()) {
-                        if (method.isConstructor() && !Flags.isPrivate(method.getFlags())) {
-                            //TODO: correctly resolve overloaded constructors
-                            if (((Class) dec).getParameterList().getParameters().size()==
-                                                method.getNumberOfParameters()) {
-                                return method;
-                            }
-                        }
-                    }
-                }
-                return type;
-            }
+        if (dec.getUnit() instanceof IJavaModelAware) {
+            return ((IJavaModelAware) dec.getUnit()).toJavaElement(dec);
         }
-        else {
-            IType type = findType(jp, dec.getContainer().getQualifiedNameString());
-            if (type==null) {
-                return null;
-            }
-            else {
-                for (IMethod method: type.getMethods()) {
-                    String methodName = method.getElementName();
-                    if (dec instanceof Value && method.getParameters().length==0) {
-                        if (("get" + dec.getName()).equalsIgnoreCase(methodName)||
-                            ("is" + dec.getName()).equalsIgnoreCase(methodName)) {
-                            return method;
-                        }
-                    }
-                    else if (dec instanceof Method) {
-                        if (!method.isConstructor() && !Flags.isPrivate(method.getFlags())) {
-                            //TODO: correctly resolve overloaded methods
-                            List<ParameterList> pls = ((Method) dec).getParameterLists();
-                            if (dec.getName().equalsIgnoreCase(methodName) &&
-                                    !pls.isEmpty() && pls.get(0).getParameters().size()==
-                                                method.getNumberOfParameters()) {
-                                return method;
-                            }
-                        }
-                    }
-                }
-                for (IField field: type.getFields()) {
-                    if ((dec.getName()).equalsIgnoreCase(field.getElementName())) {
-                        return field;
-                    }
-                }
-                return type;
-            }
-        }
+        return null;
     }
-
 }

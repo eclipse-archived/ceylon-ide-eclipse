@@ -56,52 +56,59 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     
     @Override
     public void update(CeylonParseController parseController, IProgressMonitor monitor) {
-        final CeylonParseController cpc = (CeylonParseController) parseController;
-        if (cpc.getRootNode()==null) return;
-        final IAnnotationModel model = editor.getDocumentProvider()
-                .getAnnotationModel(editor.getEditorInput());
-        for (@SuppressWarnings("unchecked")
-        Iterator<Annotation> iter = model.getAnnotationIterator(); 
-                iter.hasNext();) {
-            Annotation a = iter.next();
-            if (a instanceof RefinementAnnotation ||
-            		a.getType().equals(TODO_ANNOTATION_TYPE)) {
-                model.removeAnnotation(a);
+        final CeylonParseController cpc = parseController;
+        if (cpc.getStage().ordinal() >= getStage().ordinal()) {
+            final Tree.CompilationUnit rootNode = cpc.getRootNode();
+            List<CommonToken> tokens = cpc.getTokens();
+            if (rootNode == null) {
+                return;
             }
-        }
-        //model.addAnnotation(new DefaultRangeIndicator(), new Position(50, 100));
-        new Visitor() {
-            @Override
-            public void visit(Tree.Declaration that) {
-                super.visit(that);
-                Declaration dec = that.getDeclarationModel();
-                if (dec!=null) {
-                    if (dec.isActual()) {
-                        addRefinementAnnotation(model, that, 
-                                that.getIdentifier(), dec);
-                    }
+            
+            final IAnnotationModel model = editor.getDocumentProvider()
+                    .getAnnotationModel(editor.getEditorInput());
+            for (@SuppressWarnings("unchecked")
+            Iterator<Annotation> iter = model.getAnnotationIterator(); 
+                    iter.hasNext();) {
+                Annotation a = iter.next();
+                if (a instanceof RefinementAnnotation ||
+                        a.getType().equals(TODO_ANNOTATION_TYPE)) {
+                    model.removeAnnotation(a);
                 }
             }
-            @Override
-            public void visit(Tree.SpecifierStatement that) {
-                super.visit(that);
-                if (that.getRefinement()) {
-                    Declaration dec = that.getDeclaration();
+            //model.addAnnotation(new DefaultRangeIndicator(), new Position(50, 100));
+            new Visitor() {
+                @Override
+                public void visit(Tree.Declaration that) {
+                    super.visit(that);
+                    Declaration dec = that.getDeclarationModel();
                     if (dec!=null) {
                         if (dec.isActual()) {
                             addRefinementAnnotation(model, that, 
-                                    that.getBaseMemberExpression(), dec);
+                                    that.getIdentifier(), dec);
                         }
                     }
                 }
-            }
-        }.visit(cpc.getRootNode());
-        
-        for (CommonToken token : (List<CommonToken>) cpc.getTokens()) {
-            int type = token.getType();
-			if (type == CeylonLexer.LINE_COMMENT || 
-            	type == CeylonLexer.MULTI_COMMENT) {
-                addTaskAnnotation(token, model);
+                @Override
+                public void visit(Tree.SpecifierStatement that) {
+                    super.visit(that);
+                    if (that.getRefinement()) {
+                        Declaration dec = that.getDeclaration();
+                        if (dec!=null) {
+                            if (dec.isActual()) {
+                                addRefinementAnnotation(model, that, 
+                                        that.getBaseMemberExpression(), dec);
+                            }
+                        }
+                    }
+                }
+            }.visit(rootNode);
+            
+            for (CommonToken token : tokens) {
+                int type = token.getType();
+                if (type == CeylonLexer.LINE_COMMENT || 
+                    type == CeylonLexer.MULTI_COMMENT) {
+                    addTaskAnnotation(token, model);
+                }
             }
         }
     }

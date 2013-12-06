@@ -47,7 +47,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public String getHyperlinkText() {
-            return null;
+            return "Ceylon Declaration";
         }
 
         @Override

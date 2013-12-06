@@ -25,7 +25,7 @@ public class ExternalPhasedUnit extends IdePhasedUnit {
     }
 
     @Override
-    protected Unit createUnit() {
+    protected Unit newUnit() {
         return new ExternalSourceFile(this);
     }
     

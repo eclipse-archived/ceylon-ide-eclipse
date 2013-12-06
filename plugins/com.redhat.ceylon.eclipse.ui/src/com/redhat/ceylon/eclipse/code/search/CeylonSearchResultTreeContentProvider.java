@@ -21,12 +21,12 @@ import org.eclipse.search.ui.text.AbstractTextSearchResult;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModule;
 
 class CeylonSearchResultTreeContentProvider implements
     CeylonStructuredContentProvider, ITreeContentProvider {
@@ -239,10 +239,16 @@ class CeylonSearchResultTreeContentProvider implements
                 if (phasedUnit!=null) {
                     return phasedUnit.getUnit();
                 }
-                for (PhasedUnits units: tc.getPhasedUnitsOfDependencies()) {
-                    phasedUnit = units.getPhasedUnit(virtualFile);
-                    if (phasedUnit!=null) {
-                        return phasedUnit.getUnit();
+                
+                for (Module m : tc.getContext().getModules().getListOfModules()) {
+                    if (m instanceof JDTModule) {
+                        JDTModule module = (JDTModule) m;
+                        if (module.isCeylonArchive()) {
+                            phasedUnit = module.getPhasedUnit(virtualFile);
+                            if (phasedUnit!=null) {
+                                return phasedUnit.getUnit();
+                            }
+                        }
                     }
                 }
             }

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -41,7 +42,7 @@ import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.compiler.loader.mirror.VariableMirror;
 
-public class JDTMethod implements MethodMirror {
+public class JDTMethod implements MethodMirror, IBindingProvider {
 
     private MethodBinding method;
     private MethodVerifier methodVerifier;
@@ -149,6 +150,13 @@ public class JDTMethod implements MethodMirror {
             isOverriding = Boolean.FALSE;
 
             ReferenceBinding declaringClass = method.declaringClass;
+            if (CharOperation.equals(declaringClass.qualifiedSourceName(), "ceylon.language.Identifiable".toCharArray())) {
+                if (CharOperation.equals(method.selector, "equals".toCharArray()) 
+                        || CharOperation.equals(method.selector, "hashCode".toCharArray())) {
+                    return true;
+                }
+            }
+                
             // try the superclass first
             if (isDefinedInSuperClasses(declaringClass)) {
                 isOverriding = Boolean.TRUE;
@@ -226,4 +234,8 @@ public class JDTMethod implements MethodMirror {
         return method.getDefaultValue()!=null;
     }
     
+    @Override
+    public char[] getBindingKey() {
+        return method.computeUniqueKey();
+    }
 }

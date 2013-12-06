@@ -33,11 +33,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.antlr.runtime.ANTLRInputStream;
-import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -45,12 +45,14 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.JDKUtils;
+import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.java.util.Util;
-import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleHelper;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -61,15 +63,12 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.compiler.typechecker.parser.LexError;
-import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 
 /**
  * @author david
@@ -83,6 +82,7 @@ public class JDTModuleManager extends LazyModuleManager {
     private Set<File> classpath;
     private TypeChecker typeChecker;
     private boolean loadDependenciesFromModelLoaderFirst;
+    
 
     public Set<File> getClasspath() {
         return classpath;
@@ -99,7 +99,11 @@ public class JDTModuleManager extends LazyModuleManager {
     public JDTModuleManager(Context context, IJavaProject javaProject) {
         super(context);
         this.javaProject = javaProject;
-        loadDependenciesFromModelLoaderFirst = CeylonBuilder.loadDependenciesFromModelLoaderFirst(javaProject.getProject());
+        if (javaProject == null) {
+            loadDependenciesFromModelLoaderFirst = false;
+        } else {
+            loadDependenciesFromModelLoaderFirst = CeylonBuilder.loadDependenciesFromModelLoaderFirst(javaProject.getProject());
+        }
         sourceModules = new HashSet<String>();
         if (! loadDependenciesFromModelLoaderFirst) {
             sourceModules.add(Module.LANGUAGE_MODULE_NAME);
@@ -179,44 +183,53 @@ public class JDTModuleManager extends LazyModuleManager {
     }
 
     public boolean isModuleLoadedFromCompiledSource(String moduleName) {
+        if (javaProject == null) {
+            return false;
+        }
+        
         if (moduleFileInProject(moduleName, javaProject)) {
             return true;
         }
 
-        try {
-            IProject project = javaProject.getProject();
-            for (IProject p: project.getReferencedProjects()) {
-                if (p.isAccessible() && 
-                		moduleFileInProject(moduleName, JavaCore.create(p))) {
-                    return true;
+        if (!loadDependenciesFromModelLoaderFirst) {
+            try {
+                IProject project = javaProject.getProject();
+                for (IProject p: project.getReferencedProjects()) {
+                    if (p.isAccessible() && 
+                        moduleFileInProject(moduleName, JavaCore.create(p))) {
+                        return true;
+                    }
                 }
+            } 
+            catch (CoreException e) {
+                e.printStackTrace();
             }
-        } 
-        catch (CoreException e) {
-            e.printStackTrace();
         }
         return false;
     }
 
     private static boolean moduleFileInProject(String moduleName, IJavaProject p) {
+        if (p == null) {
+            return false;
+        }
         try {
-			for (IPackageFragmentRoot sourceFolder: p.getPackageFragmentRoots()) {
-				if (!sourceFolder.isArchive() &&
-	                sourceFolder.exists() &&
-				    sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
-					sourceFolder.getPackageFragment(moduleName).exists()) {
-					return true;
-				}
-			    /*IPath moduleFile = sourceFolder.append(moduleName.replace('.', '/') + 
-			    		"/module.ceylon").makeRelativeTo(p.getFullPath());
-			    if (p.getFile(moduleFile).exists()) {
-			        return true;
-			    }*/
-			}
-		} 
+            for (IPackageFragmentRoot sourceFolder: p.getPackageFragmentRoots()) {
+                if (!sourceFolder.isArchive() &&
+                    sourceFolder.exists() &&
+                    sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
+                    sourceFolder.getPackageFragment(moduleName).exists()) {
+                    return true;
+                }
+                /*IPath moduleFile = sourceFolder.append(moduleName.replace('.', '/') + 
+                        "/module.ceylon").makeRelativeTo(p.getFullPath());
+                if (p.getFile(moduleFile).exists()) {
+                    return true;
+                }*/
+            }
+        } 
         catch (JavaModelException e) {
-			e.printStackTrace();
-		}
+            e.printStackTrace();
+        }
         return false;
     }
     
@@ -225,45 +238,47 @@ public class JDTModuleManager extends LazyModuleManager {
         JDTModule module = null;
         String moduleNameString = Util.getName(moduleName);
         List<IPackageFragmentRoot> roots = new ArrayList<IPackageFragmentRoot>();
-        try {
-            if(moduleNameString.equals(Module.DEFAULT_MODULE_NAME)){
-                // Add the list of source package fragment roots
-                for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                    if (root.exists()) {
-                        IClasspathEntry entry = root.getResolvedClasspathEntry();
-                        if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE && !root.isExternal()) {
-                            roots.add(root);
+        if (javaProject != null) {
+            try {
+                if(moduleNameString.equals(Module.DEFAULT_MODULE_NAME)){
+                    // Add the list of source package fragment roots
+                    for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                        if (root.exists()) {
+                            IClasspathEntry entry = root.getResolvedClasspathEntry();
+                            if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE && !root.isExternal()) {
+                                roots.add(root);
+                            }
+                        }
+                    }
+                } else {
+                    for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                        if(JDKUtils.isJDKModule(moduleNameString)){
+                            // find the first package that exists in this root
+                            for(String pkg : JDKUtils.getJDKPackagesByModule(moduleNameString)){
+                                if (root.getPackageFragment(pkg).exists()) {
+                                    roots.add(root);
+                                    break;
+                                }
+                            }
+                        }else if(JDKUtils.isOracleJDKModule(moduleNameString)){
+                            // find the first package that exists in this root
+                            for(String pkg : JDKUtils.getOracleJDKPackagesByModule(moduleNameString)){
+                                if (root.getPackageFragment(pkg).exists()) {
+                                    roots.add(root);
+                                    break;
+                                }
+                            }
+                        }else if (! (root instanceof JarPackageFragmentRoot)) {
+                            String packageToSearch = moduleNameString;
+                            if (root.getPackageFragment(packageToSearch).exists()) {
+                                roots.add(root);
+                            }
                         }
                     }
                 }
-            } else {
-                for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                    if(JDKUtils.isJDKModule(moduleNameString)){
-                        // find the first package that exists in this root
-                        for(String pkg : JDKUtils.getJDKPackagesByModule(moduleNameString)){
-                            if (root.getPackageFragment(pkg).exists()) {
-                                roots.add(root);
-                                break;
-                            }
-                        }
-                    }else if(JDKUtils.isOracleJDKModule(moduleNameString)){
-                        // find the first package that exists in this root
-                        for(String pkg : JDKUtils.getOracleJDKPackagesByModule(moduleNameString)){
-                            if (root.getPackageFragment(pkg).exists()) {
-                                roots.add(root);
-                                break;
-                            }
-                        }
-                    }else if (! (root instanceof JarPackageFragmentRoot)) {
-                        String packageToSearch = moduleNameString;
-                        if (root.getPackageFragment(packageToSearch).exists()) {
-                            roots.add(root);
-                        }
-                    }
-                }
+            } catch (JavaModelException e) {
+                e.printStackTrace();
             }
-        } catch (JavaModelException e) {
-            e.printStackTrace();
         }
         
         module = new JDTModule(this, roots);
@@ -275,7 +290,31 @@ public class JDTModuleManager extends LazyModuleManager {
 
     @Override
     public void resolveModule(ArtifactResult artifact, Module module, ModuleImport moduleImport, 
-		LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies, boolean forCompiledModule) {
+        LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies, boolean forCompiledModule) {
+        File artifactFile = artifact.artifact();
+        if (isModuleLoadedFromSource(module.getNameAsString()) && artifactFile.getName().endsWith(ArtifactContext.CAR)) {
+            // We should force to take the .src even if the car is available
+            // We do this also for the referenced projects, since cross-references have to be reworked in order to be 
+            // compatible with the loadBinariesFirst mechanism
+            ArtifactContext artifactContext = new ArtifactContext(module.getNameAsString(), module.getVersion(), ArtifactContext.SRC);
+            RepositoryManager repositoryManager = getContext().getRepositoryManager();
+            Exception exceptionOnGetArtifact = null;
+            ArtifactResult sourceArtifact = null;
+            try {
+                sourceArtifact = repositoryManager.getArtifactResult(artifactContext);
+            } catch (Exception e) {
+                exceptionOnGetArtifact = e;
+            }
+            if ( sourceArtifact == null ) {
+                ModuleHelper.buildErrorOnMissingArtifact(artifactContext, module, moduleImport, dependencyTree, exceptionOnGetArtifact, this);
+            } else {
+                artifact = sourceArtifact;
+            }
+            
+        }
+        if (module instanceof JDTModule) {
+            ((JDTModule) module).setArtifact(artifact.artifact());
+        }
         if (! isModuleLoadedFromCompiledSource(module.getNameAsString())) {
             File file = artifact.artifact();
             if (artifact.artifact().getName().endsWith(".src")) {
@@ -316,7 +355,7 @@ public class JDTModuleManager extends LazyModuleManager {
         if (addErrorToModuleMethod == null) {
             try {
                 addErrorToModuleMethod = ModuleManager.class.getDeclaredMethod("addErrorToModule", 
-                		new Class[] {List.class, String.class});
+                        new Class[] {List.class, String.class});
                 addErrorToModuleMethod.setAccessible(true);
                 addErrorToModuleMethod.invoke(this, new Object[] {moduleName, error});
             } catch (SecurityException e) {
@@ -338,10 +377,10 @@ public class JDTModuleManager extends LazyModuleManager {
     // Todo : to push into the base ModelManager class
     public void addTopLevelModuleError() {
         addErrorToModule(new ArrayList<String>(), 
-        		"A module cannot be defined at the top level of the hierarchy");
+                "A module cannot be defined at the top level of the hierarchy");
     }
     public void addTwoModulesInHierarchyError(List<String> existingModuleName, 
-    		List<String> newModulePackageName) {
+            List<String> newModulePackageName) {
         StringBuilder error = new StringBuilder("Found two modules within the same hierarchy: '");
         error.append( formatPath( existingModuleName ) )
             .append( "' and '" )
@@ -351,6 +390,83 @@ public class JDTModuleManager extends LazyModuleManager {
         addErrorToModule(newModulePackageName, error.toString());
     }
     
+    public class ExternalModulePhasedUnits extends PhasedUnits {
+        private IProject referencedProject = null;
+        private VirtualFile sourceDirectory = null;
+
+        public ExternalModulePhasedUnits(Context context,
+                ModuleManagerFactory moduleManagerFactory) {
+            super(context, moduleManagerFactory);
+        }
+
+        @Override
+        protected void parseFile(final VirtualFile file, final VirtualFile srcDir)
+                throws Exception {
+            if (file.getName().endsWith(".ceylon")) {
+                parseFile(file, srcDir, getModuleManager().getCurrentPackage());
+            }
+        }
+        
+        /*
+         *  This additional method is when we have to parse a new file, into a specific package of an existing archive  
+         */
+        public void parseFile(final VirtualFile file, final VirtualFile srcDir, final Package pkg) {
+            PhasedUnit phasedUnit = new CeylonSourceParser<PhasedUnit>() {
+                @Override
+                protected String getCharset() {
+                    try {
+                        //TODO: is this correct? does this file actually
+                        //      live in the project, or is it external?
+                        //       should VirtualFile have a getCharset()?
+                        return javaProject != null ?
+                                javaProject.getProject().getDefaultCharset()
+                                : ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset();
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                
+                @Override
+                protected PhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
+                    if (referencedProject == null) {
+                        return new ExternalPhasedUnit(file, srcDir, cu, 
+                                pkg, getModuleManager(),
+                                getTypeChecker(), tokenStream.getTokens());
+                    }
+                    else {
+                        return new CrossProjectPhasedUnit(file, srcDir, cu, 
+                                pkg, getModuleManager(),
+                                getTypeChecker(), tokenStream.getTokens(), referencedProject);
+                    }
+                }
+            }.parseFileToPhasedUnit(getModuleManager(), getTypeChecker(), file, srcDir, pkg);
+
+            addPhasedUnit(file, phasedUnit);
+        }
+
+        @Override
+        public void parseUnit(VirtualFile srcDir) {
+            sourceDirectory = srcDir;
+            if (srcDir instanceof ZipFileVirtualFile && javaProject != null) {
+                ZipFileVirtualFile zipFileVirtualFile = (ZipFileVirtualFile) srcDir;
+                String archiveName = zipFileVirtualFile.getPath();
+                try {
+                    for (IProject refProject : javaProject.getProject().getReferencedProjects()) {
+                        if (archiveName.contains(CeylonBuilder.getCeylonModulesOutputDirectory(refProject).getAbsolutePath())) {
+                            referencedProject = refProject;
+                            break;
+                        }
+                    }
+                } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            super.parseUnit(srcDir);
+        }
+    }
+
     @Override
     protected PhasedUnits createPhasedUnits() {
         ModuleManagerFactory moduleManagerFactory = new ModuleManagerFactory() {
@@ -360,73 +476,8 @@ public class JDTModuleManager extends LazyModuleManager {
             }
         };
         
-        return new PhasedUnits(getContext(), moduleManagerFactory) {
 
-            private IProject referencedProject = null;
-            
-            @Override
-            protected void parseFile(VirtualFile file, VirtualFile srcDir)
-                    throws Exception {
-                if (file.getName().endsWith(".ceylon")) {
-                    CeylonLexer lexer = new CeylonLexer(new ANTLRInputStream(file.getInputStream(),
-                    		//TODO: is this correct? does this file actually
-                    		//      live in the project, or is it external?
-                    		//       should VirtualFile have a getCharset()?
-                    		javaProject.getProject().getDefaultCharset()));
-                    CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-                    CeylonParser parser = new CeylonParser(tokenStream);
-                    Tree.CompilationUnit cu = parser.compilationUnit();
-                    List<CommonToken> tokens = tokenStream.getTokens();
-                    PhasedUnit phasedUnit = null;
-                    if (referencedProject == null) {
-                        phasedUnit = new ExternalPhasedUnit(file, srcDir, cu, 
-                                getModuleManager().getCurrentPackage(), getModuleManager(),
-                                getTypeChecker(), tokens);
-                    }
-                    else {
-                        phasedUnit = new CrossProjectPhasedUnit(file, srcDir, cu, 
-                                getModuleManager().getCurrentPackage(), getModuleManager(),
-                                getTypeChecker(), tokens, referencedProject);
-                    }
-
-                    addPhasedUnit(file, phasedUnit);
-
-                    List<LexError> lexerErrors = lexer.getErrors();
-                    for (LexError le : lexerErrors) {
-                        cu.addLexError(le);
-                    }
-                    lexerErrors.clear();
-
-                    List<ParseError> parserErrors = parser.getErrors();
-                    for (ParseError pe : parserErrors) {
-                        cu.addParseError(pe);
-                    }
-                    parserErrors.clear();
-
-                }
-            }
-
-            @Override
-            public void parseUnit(VirtualFile srcDir) {
-                if (srcDir instanceof ZipFileVirtualFile) {
-                    ZipFileVirtualFile zipFileVirtualFile = (ZipFileVirtualFile) srcDir;
-                    String archiveName = zipFileVirtualFile.getPath();
-                    try {
-                        for (IProject refProject : javaProject.getProject().getReferencedProjects()) {
-                            if (archiveName.contains(CeylonBuilder.getCeylonModulesOutputDirectory(refProject).getAbsolutePath())) {
-                                referencedProject = refProject;
-                                break;
-                            }
-                        }
-                    } catch (CoreException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-                super.parseUnit(srcDir);
-            }
-            
-        };
+        return new ExternalModulePhasedUnits(getContext(), moduleManagerFactory);
     }
 
     public TypeChecker getTypeChecker() {
@@ -441,4 +492,32 @@ public class JDTModuleManager extends LazyModuleManager {
         return loadDependenciesFromModelLoaderFirst;
     }
 
+    public JDTModule getArchiveModuleFromSourcePath(String sourceUnitPath) {
+        for (Module m : typeChecker.getContext().getModules().getListOfModules()) {
+            if (m instanceof JDTModule) {
+                JDTModule module = (JDTModule) m;
+                if (module.isCeylonArchive()) {
+                    if (sourceUnitPath.startsWith(module.getSourceArchivePath() + "!")) {
+                        return module;
+                    }
+                }
+            }
+        }
+        return null; 
+    }
+    
+    public JDTModule getArchiveModuleFromSourcePath(IPath sourceUnitPath) {
+        return getArchiveModuleFromSourcePath(sourceUnitPath.toOSString());
+    }
+
+    @Override
+    protected void addToPhasedUnitsOfDependencies(
+            PhasedUnits modulePhasedUnits,
+            List<PhasedUnits> phasedUnitsOfDependencies, Module module) {
+        super.addToPhasedUnitsOfDependencies(modulePhasedUnits,
+                phasedUnitsOfDependencies, module);
+        if (module instanceof JDTModule) {
+            ((JDTModule) module).setSourcePhasedUnits((ExternalModulePhasedUnits) modulePhasedUnits);
+        }
+    }
 }

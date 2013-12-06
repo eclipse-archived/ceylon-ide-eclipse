@@ -18,8 +18,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ICrossProjectReference;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
@@ -82,8 +82,8 @@ public class UnitDependencyVisitor extends Visitor {
         			    if (declarationUnit instanceof ProjectSourceFile) {
                             declarationUnit.getDependentsOf().add(currentUnitPath);
         			    }
-        			    else if (declarationUnit instanceof CrossProjectSourceFile) {
-        			        ProjectSourceFile originalProjectSourceFile = ((CrossProjectSourceFile) declarationUnit).getOriginalSourceFile();
+        			    else if (declarationUnit instanceof ICrossProjectReference) {
+        			        ProjectSourceFile originalProjectSourceFile = ((ICrossProjectReference) declarationUnit).getOriginalSourceFile();
         			        if (originalProjectSourceFile != null) {
         			            originalProjectSourceFile.getDependentsOf().add(currentUnitPath);
         			        }
@@ -94,9 +94,6 @@ public class UnitDependencyVisitor extends Visitor {
         			        // Might change in the future 
         			    }
         			    else if (declarationUnit instanceof CeylonBinaryUnit) {
-                            //TODO: When we can typecheck from binary modules, we'll have to manage the case when a binary module 
-        			        // corresponding PhasedUnit is in fact a CrossProjectPhasedUnit. 
-        			        // And then take the corresponding ProjectSourceFile in the referenced project 
                             declarationUnit.getDependentsOf().add(currentUnitPath);
                         } 
                         else if (declarationUnit instanceof JavaCompilationUnit) {

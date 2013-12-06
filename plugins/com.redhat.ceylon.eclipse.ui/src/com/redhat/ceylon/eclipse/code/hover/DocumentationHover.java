@@ -152,6 +152,7 @@ import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -1285,9 +1286,20 @@ public class DocumentationHover
 
     public static void appendExtraActions(Declaration dec, StringBuilder buffer) {
         buffer.append("<hr/>");
+        String unitName = null;
+        if (dec.getUnit() instanceof CeylonUnit) {
+            // Manage the case of CeylonBinaryUnit : getFileName() would return the class file name.
+            // but getCeylonFileName() will return the ceylon source file name if any.
+            unitName = ((CeylonUnit)dec.getUnit()).getCeylonFileName();
+        }
+        if (unitName == null) {
+            unitName = dec.getUnit().getFilename();
+        }
+                
         addImageAndLabel(buffer, null, fileUrl("unit.gif").toExternalForm(), 
                 16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
-                        dec.getUnit().getFilename() + "</tt>", 20, 2);
+                        unitName + 
+                        "</tt>", 20, 2);
         //}
         buffer.append("<hr/>");
         addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 

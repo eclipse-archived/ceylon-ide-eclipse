@@ -13,16 +13,19 @@ public abstract class CeylonUnit extends IdeUnit {
     
     protected WeakReference<IdePhasedUnit> phasedUnitRef;
     
-    final protected void createPhasedUnitRef(IdePhasedUnit phasedUnit) {
+    final protected <PhasedUnitType extends IdePhasedUnit> PhasedUnitType createPhasedUnitRef(PhasedUnitType phasedUnit) {
         phasedUnitRef = new WeakReference<IdePhasedUnit>(phasedUnit);
+        return phasedUnit;
     }
     
-    protected abstract void setPhasedUnitIfNecessary();
+    protected abstract IdePhasedUnit setPhasedUnitIfNecessary();
     
     public IdePhasedUnit getPhasedUnit() {
-        setPhasedUnitIfNecessary();
-        return phasedUnitRef.get();
+        return setPhasedUnitIfNecessary();
     }
+    
+    abstract public String getSourceFullPath();
+    abstract public String getCeylonFileName();
     
     public Tree.CompilationUnit getCompilationUnit() {
         IdePhasedUnit pu = getPhasedUnit();

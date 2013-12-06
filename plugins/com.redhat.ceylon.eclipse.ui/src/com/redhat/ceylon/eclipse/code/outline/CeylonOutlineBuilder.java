@@ -11,12 +11,14 @@ import java.util.Stack;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SyntheticVariable;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 
 public class CeylonOutlineBuilder extends Visitor {
 	
@@ -85,6 +87,12 @@ public class CeylonOutlineBuilder extends Visitor {
 	        rootNode.getStartIndex()==null) {
 	        return null;
 	    }
+	    if (rootNode.getUnit() instanceof CeylonUnit) {
+	    	PhasedUnit phasedUnit = ((CeylonUnit) rootNode.getUnit()).getPhasedUnit();
+	    	if (phasedUnit == null || ! phasedUnit.isFullyTyped()) {
+	    	    return null;
+	    	}
+        } 
 	    CeylonOutlineNode modelRoot = createTopItem(rootNode, file);
 	    itemStack.push(modelRoot);
 		try {

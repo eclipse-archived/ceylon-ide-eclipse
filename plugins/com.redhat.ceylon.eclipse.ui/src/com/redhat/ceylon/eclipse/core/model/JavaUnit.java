@@ -7,12 +7,22 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+
 public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IResourceAware {
+    
+    public JavaUnit(String fileName, String relativePath, String fullPath, Package pkg) {
+        setFilename(fileName);
+        setRelativePath(relativePath);
+        setFullPath(fullPath);
+        setPackage(pkg);
+    }
+    
     @Override
     public IFile getFileResource() {
-        if (getJavaElement() != null) {
+        if (getTypeRoot() != null) {
             try {
-                return (IFile) getJavaElement().getCorrespondingResource();
+                return (IFile) getTypeRoot().getCorrespondingResource();
             } catch (JavaModelException e) {
                 e.printStackTrace();
             }
@@ -23,16 +33,21 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
     @Override
     public IProject getProjectResource() {
         if (getFileResource() != null) {
-            return (IProject) getJavaElement().getJavaProject().getProject();
+            return (IProject) getTypeRoot().getJavaProject().getProject();
         }
         return null;
+    }
+
+    @Override
+    public IProject getProject() {
+        return getProjectResource();
     }
 
     @Override
     public IFolder getRootFolderResource() {
         if (getFileResource() != null) {
             try {
-                IPackageFragmentRoot root = (IPackageFragmentRoot) getJavaElement().getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                IPackageFragmentRoot root = (IPackageFragmentRoot) getTypeRoot().getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
                 if (root != null) {
                     return (IFolder) root.getCorrespondingResource();
                 }

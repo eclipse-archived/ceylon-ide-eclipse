@@ -36,49 +36,49 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
      * according to the most recent tree / typecheck
      */
     public void update(CeylonParseController parseController, IProgressMonitor monitor) {
-                
-        IAnnotationModel model = editor.getDocumentProvider()
-                .getAnnotationModel(editor.getEditorInput());
-        for (@SuppressWarnings("unchecked")
-        Iterator<Annotation> iter = model.getAnnotationIterator(); 
-                iter.hasNext();) {
-            Annotation ann = iter.next();
-            if (ann instanceof MarkerAnnotation) {
-                IMarker marker = ((MarkerAnnotation) ann).getMarker();
-                try {
-                    Integer markerStart = null;
-                    Integer markerEnd = null;
-                    boolean isProblemMarker = marker.getType().equals(PROBLEM_MARKER_ID);
-                    boolean isTaskMarker = marker.getType().equals(TASK_MARKER_ID);
-                    markerStart = (Integer) marker.getAttribute(IMarker.CHAR_START);
-                    markerEnd = (Integer) marker.getAttribute(IMarker.CHAR_END);
-                    if (markerStart==null||markerEnd==null) continue;
-                    if (isProblemMarker||isTaskMarker) {
-                        boolean found = false;
-                        for (@SuppressWarnings("unchecked")
-                        Iterator<Annotation> iter2 = model.getAnnotationIterator(); 
-                                iter2.hasNext();) {
-                            Annotation ann2 = iter2.next();
-                            if (isProblemMarker && isParseAnnotation(ann2) ||
-                                isTaskMarker && ann2.getType().equals(TODO_ANNOTATION_TYPE)) {
-                                Position position = model.getPosition(ann2);
-                                if (markerStart.intValue()==position.offset &&
-                                    markerEnd.intValue()==position.offset+position.length) {
-                                    found=true;
-                                    break;
+        if (parseController.getStage().ordinal() >= getStage().ordinal()) {
+            IAnnotationModel model = editor.getDocumentProvider()
+                    .getAnnotationModel(editor.getEditorInput());
+            for (@SuppressWarnings("unchecked")
+            Iterator<Annotation> iter = model.getAnnotationIterator(); 
+                    iter.hasNext();) {
+                Annotation ann = iter.next();
+                if (ann instanceof MarkerAnnotation) {
+                    IMarker marker = ((MarkerAnnotation) ann).getMarker();
+                    try {
+                        Integer markerStart = null;
+                        Integer markerEnd = null;
+                        boolean isProblemMarker = marker.getType().equals(PROBLEM_MARKER_ID);
+                        boolean isTaskMarker = marker.getType().equals(TASK_MARKER_ID);
+                        markerStart = (Integer) marker.getAttribute(IMarker.CHAR_START);
+                        markerEnd = (Integer) marker.getAttribute(IMarker.CHAR_END);
+                        if (markerStart==null||markerEnd==null) continue;
+                        if (isProblemMarker||isTaskMarker) {
+                            boolean found = false;
+                            for (@SuppressWarnings("unchecked")
+                            Iterator<Annotation> iter2 = model.getAnnotationIterator(); 
+                                    iter2.hasNext();) {
+                                Annotation ann2 = iter2.next();
+                                if (isProblemMarker && isParseAnnotation(ann2) ||
+                                    isTaskMarker && ann2.getType().equals(TODO_ANNOTATION_TYPE)) {
+                                    Position position = model.getPosition(ann2);
+                                    if (markerStart.intValue()==position.offset &&
+                                        markerEnd.intValue()==position.offset+position.length) {
+                                        found=true;
+                                        break;
+                                    }
                                 }
                             }
-                        }
-                        if (!found) {
-                            model.removeAnnotation(ann);
+                            if (!found) {
+                                model.removeAnnotation(ann);
+                            }
                         }
                     }
-                }
-                catch (CoreException e) {
-                    model.removeAnnotation(ann);
+                    catch (CoreException e) {
+                        model.removeAnnotation(ann);
+                    }
                 }
             }
         }
     }
-    
 }
