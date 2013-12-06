@@ -80,6 +80,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager.ExternalModulePhasedUnits;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
@@ -786,5 +788,15 @@ public class JDTModule extends LazyModule {
         for (String packageName : listPackages()) {
             getModelLoader().findExistingPackage(this, packageName);
         }
+    }
+
+    @Override
+    public void setUnit(Unit newUnit) {
+        Unit oldUnit = getUnit();
+        if (oldUnit instanceof ProjectSourceFile && newUnit instanceof EditedSourceFile) {
+            // Don't set the unit : we're just typechecking in the editor : DON'T Change the global ceylon model !
+            return;
+        }
+        super.setUnit(newUnit);
     }
 }
