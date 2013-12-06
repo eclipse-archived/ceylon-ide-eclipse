@@ -239,7 +239,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
                 jarName + "!/" + "java/util/logging/Logger.class", 
                 "java/util/logging/Logger.class", 
                 "Logger.class");
-        Assert.assertEquals("Wrong Java Element : ", javaElement, javaClass.getJavaElement());
+        Assert.assertEquals("Wrong Java Element : ", javaElement, javaClass.getTypeRoot());
         Assert.assertNull("Project Resource should be null :", javaClass.getProjectResource());
         Assert.assertNull("Root Folder Resource should be null :", javaClass.getRootFolderResource());
         Assert.assertNull("File Resource should be null :", javaClass.getFileResource());
@@ -274,7 +274,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
                 rootPath + "/" + "mainModule/JavaCeylonTopLevelClass_Main_Ceylon_Project.java", 
                 "mainModule/JavaCeylonTopLevelClass_Main_Ceylon_Project.java", 
                 "JavaCeylonTopLevelClass_Main_Ceylon_Project.java");
-        Assert.assertEquals("Wrong Java Element for Class : ", javaClassElement, javaClassCompilationUnit.getJavaElement());
+        Assert.assertEquals("Wrong Java Element for Class : ", javaClassElement, javaClassCompilationUnit.getTypeRoot());
         Assert.assertNotNull("Project Resource  for Class should not be null :", javaClassCompilationUnit.getProjectResource());
         Assert.assertNotNull("Root Folder Resource  for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Class not be null :", javaClassCompilationUnit.getFileResource());
@@ -284,7 +284,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
                 rootPath + "/" + "mainModule/javaCeylonTopLevelObject_Main_Ceylon_Project_.java", 
                 "mainModule/javaCeylonTopLevelObject_Main_Ceylon_Project_.java", 
                 "javaCeylonTopLevelObject_Main_Ceylon_Project_.java");
-        Assert.assertEquals("Wrong Java Element for Object : ", javaObjectElement, javaObjectCompilationUnit.getJavaElement());
+        Assert.assertEquals("Wrong Java Element for Object : ", javaObjectElement, javaObjectCompilationUnit.getTypeRoot());
         Assert.assertNotNull("Project Resource  for Object should not be null :", javaObjectCompilationUnit.getProjectResource());
         Assert.assertNotNull("Root Folder Resource  for Object should not be null :", javaObjectCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Object not be null :", javaObjectCompilationUnit.getFileResource());
@@ -294,7 +294,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
                 rootPath + "/" + "mainModule/javaCeylonTopLevelMethod_Main_Ceylon_Project_.java", 
                 "mainModule/javaCeylonTopLevelMethod_Main_Ceylon_Project_.java", 
                 "javaCeylonTopLevelMethod_Main_Ceylon_Project_.java");
-        Assert.assertEquals("Wrong Java Element for Method : ", javaMethodElement, javaMethodCompilationUnit.getJavaElement());
+        Assert.assertEquals("Wrong Java Element for Method : ", javaMethodElement, javaMethodCompilationUnit.getTypeRoot());
         Assert.assertNotNull("Project Resource  for Method should not be null :", javaMethodCompilationUnit.getProjectResource());
         Assert.assertNotNull("Root Folder Resource  for Method should not be null :", javaMethodCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Method not be null :", javaMethodCompilationUnit.getFileResource());
@@ -326,7 +326,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
                 rootPath + "/" + "mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java", 
                 "mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java", 
                 "JavaClassInCeylonModule_Main_Ceylon_Project.java");
-        Assert.assertEquals("Wrong Java Element for Pure Java Class : ", javaElement, javaClassCompilationUnit.getJavaElement());
+        Assert.assertEquals("Wrong Java Element for Pure Java Class : ", javaElement, javaClassCompilationUnit.getTypeRoot());
         Assert.assertNotNull("Project Resource  for Pure Java Class should not be null :", javaClassCompilationUnit.getProjectResource());
         Assert.assertNotNull("Root Folder Resource  Pure Java for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  Pure Java for Class not be null :", javaClassCompilationUnit.getFileResource());
@@ -361,7 +361,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
                 rootPath + "/" + "referencedCeylonProject/JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java", 
                 "referencedCeylonProject/JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java", 
                 "JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java");
-        Assert.assertEquals("Wrong Java Element for Class : ", javaClassElement, javaClassCompilationUnit.getJavaElement());
+        Assert.assertEquals("Wrong Java Element for Class : ", javaClassElement, javaClassCompilationUnit.getTypeRoot());
         Assert.assertNotNull("Project Resource  for Class should not be null :", javaClassCompilationUnit.getProjectResource());
         Assert.assertNotNull("Root Folder Resource  for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Class not be null :", javaClassCompilationUnit.getFileResource());
@@ -371,7 +371,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
                 rootPath + "/" + "referencedCeylonProject/javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java", 
                 "referencedCeylonProject/javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java", 
                 "javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java");
-        Assert.assertEquals("Wrong Java Element for Object : ", javaObjectElement, javaObjectCompilationUnit.getJavaElement());
+        Assert.assertEquals("Wrong Java Element for Object : ", javaObjectElement, javaObjectCompilationUnit.getTypeRoot());
         Assert.assertNotNull("Project Resource  for Object should not be null :", javaObjectCompilationUnit.getProjectResource());
         Assert.assertNotNull("Root Folder Resource  for Object should not be null :", javaObjectCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Object not be null :", javaObjectCompilationUnit.getFileResource());
@@ -381,7 +381,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
                 rootPath + "/" + "referencedCeylonProject/javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java", 
                 "referencedCeylonProject/javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java", 
                 "javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java");
-        Assert.assertEquals("Wrong Java Element for Method : ", javaMethodElement, javaMethodCompilationUnit.getJavaElement());
+        Assert.assertEquals("Wrong Java Element for Method : ", javaMethodElement, javaMethodCompilationUnit.getTypeRoot());
         Assert.assertNotNull("Project Resource  for Method should not be null :", javaMethodCompilationUnit.getProjectResource());
         Assert.assertNotNull("Root Folder Resource  for Method should not be null :", javaMethodCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  for Method not be null :", javaMethodCompilationUnit.getFileResource());
@@ -413,7 +413,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
                 rootPath + "/" + "referencedCeylonProject/JavaClassInCeylonModule_Referenced_Ceylon_Project.java", 
                 "referencedCeylonProject/JavaClassInCeylonModule_Referenced_Ceylon_Project.java", 
                 "JavaClassInCeylonModule_Referenced_Ceylon_Project.java");
-        Assert.assertEquals("Wrong Java Element for Pure Java Class : ", javaElement, javaClassCompilationUnit.getJavaElement());
+        Assert.assertEquals("Wrong Java Element for Pure Java Class : ", javaElement, javaClassCompilationUnit.getTypeRoot());
         Assert.assertNotNull("Project Resource  for Pure Java Class should not be null :", javaClassCompilationUnit.getProjectResource());
         Assert.assertNotNull("Root Folder Resource  Pure Java for Class should not be null :", javaClassCompilationUnit.getRootFolderResource());
         Assert.assertNotNull("File Resource should  Pure Java for Class not be null :", javaClassCompilationUnit.getFileResource());
