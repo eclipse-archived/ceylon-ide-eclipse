@@ -105,38 +105,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                     
                     if (! (declarationUnit instanceof IJavaModelAware)) {
                         if (declarationUnit instanceof ExternalSourceFile) {
-                            Declaration binaryDeclaration = null;
-                            JDTModule module = ((ExternalSourceFile) declarationUnit).getModule();
-                            if (module.isCeylonBinaryArchive()) {
-                                if (declarationUnit.getPackage() instanceof SingleSourceUnitPackage) {
-                                    SingleSourceUnitPackage sourceUnitPackage = (SingleSourceUnitPackage) declarationUnit.getPackage();
-                                    Package binaryPackage = sourceUnitPackage.getModelPackage();
-                                    Stack<Declaration> ancestors = new Stack<>();
-                                    Scope container = dec.getContainer();
-                                    while (container instanceof Declaration) {
-                                        Declaration ancestor = (Declaration) container;
-                                        ancestors.push(ancestor);
-                                        container = ancestor.getContainer();
-                                    }
-                                    if (container.equals(sourceUnitPackage)) {
-                                        Scope curentBinaryScope = binaryPackage;
-                                        while (! ancestors.isEmpty()) {
-                                            Declaration binaryAncestor = curentBinaryScope.getDirectMember(ancestors.pop().getName(), null, false);
-                                            if (binaryAncestor instanceof Value) {
-                                                binaryAncestor = ((Value) binaryAncestor).getTypeDeclaration();
-                                            }
-                                            if (binaryAncestor instanceof Scope) {
-                                                curentBinaryScope = (Scope) binaryAncestor;
-                                            } else {
-                                                break;
-                                            }
-                                        }
-                                        if (curentBinaryScope != null) {
-                                            binaryDeclaration = curentBinaryScope.getDirectMember(dec.getName(), null, false);
-                                        }
-                                    }
-                                }
-                            }
+                            Declaration binaryDeclaration = ((ExternalSourceFile)declarationUnit).retrieveBinaryDeclaration(dec);
                             if (binaryDeclaration != null) {
                                 dec = binaryDeclaration;
                                 declarationUnit = binaryDeclaration.getUnit();
