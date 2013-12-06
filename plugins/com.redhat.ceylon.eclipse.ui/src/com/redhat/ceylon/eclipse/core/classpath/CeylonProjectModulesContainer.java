@@ -21,13 +21,11 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClas
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.util.Arrays.asList;
 import static java.util.Collections.synchronizedSet;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
-import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
 import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
 
@@ -73,6 +71,8 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -121,6 +121,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         javaProject = cp.javaProject;        
         classpathEntries = cp.classpathEntries;
         attributes = cp.attributes;
+        modulesWithSourcesAlreadySearched = cp.modulesWithSourcesAlreadySearched;
     }
 
     public String getDescription() {
@@ -139,6 +140,24 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         return classpathEntries;
     }
 
+    public IClasspathEntry addNewClasspathEntryIfNecessary(IPath modulePath) {
+        synchronized (classpathEntries) {
+            for (IClasspathEntry cpEntry : classpathEntries) {
+                if (cpEntry.getPath().equals(modulePath)) {
+                    return null;
+                }
+            }
+            IClasspathEntry newEntry = newLibraryEntry(modulePath, null, null);
+            IClasspathEntry[] newClasspathEntries = new IClasspathEntry[classpathEntries.length + 1];
+            if (classpathEntries.length > 0) {
+                System.arraycopy(classpathEntries, 0, newClasspathEntries, 0, classpathEntries.length);
+            }
+            newClasspathEntries[classpathEntries.length] = newEntry;
+            classpathEntries = newClasspathEntries;
+            return newEntry;
+        }
+    }
+    
     /*private static final ISchedulingRule RESOLVE_EVENT_RULE = new ISchedulingRule() {
         public boolean contains(ISchedulingRule rule) {
             return rule == this;
@@ -271,7 +290,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 			TypeChecker typeChecker = null;
 			if (!reparse) {
 			    typeChecker = getProjectTypeChecker(project);
-			} 
+			}
+			IClasspathEntry[] oldEntries = classpathEntries;
 			if (typeChecker==null) {
 				typeChecker = parseCeylonModel(project, 
 						new SubProgressMonitor(monitor, 5, PREPEND_MAIN_LABEL_TO_SUBTASK));
@@ -279,8 +299,9 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 			
 			final Collection<IClasspathEntry> paths = findModuleArchivePaths(
 					javaProject, project, typeChecker);
-			if (this.classpathEntries == null || 
-			        !paths.equals(asList(this.classpathEntries))) {
+			if (oldEntries == null || 
+			        oldEntries != classpathEntries || // entries have been added progressively during the module validation
+			        !paths.equals(asList(oldEntries))) {
 				this.classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
 				return true;
 			}
@@ -293,8 +314,13 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 	}
 
 	public void refreshClasspathContainer(IProgressMonitor monitor) throws JavaModelException {
-		setClasspathContainer(path, new IJavaProject[] { getJavaProject() },
-				new IClasspathContainer[] {this}, new SubProgressMonitor(monitor, 1));
+	    IJavaProject javaProject = getJavaProject();
+		setClasspathContainer(path, new IJavaProject[] { javaProject },
+				new IClasspathContainer[] {new CeylonProjectModulesContainer(this)}, new SubProgressMonitor(monitor, 1));
+		JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(javaProject.getProject());
+		if (modelLoader != null) {
+		    modelLoader.refreshNameEnvironment();
+		}
 		//update the package manager UI
 		new Job("update package manager") {
 			@Override
@@ -370,7 +396,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 
 		if (isExplodeModulesEnabled(project)) {
 		    IClasspathEntry newEntry = newLibraryEntry(getCeylonClassesOutputFolder(project).getFullPath(), 
-                    project.getFullPath(), null, true);
+                    project.getFullPath(), null, false);
 			paths.put(newEntry.toString(), newEntry);
 		}
 		

@@ -35,7 +35,7 @@ public class EditedPhasedUnit extends IdePhasedUnit {
     }
 
     @Override
-    public Unit createUnit() {
+    public Unit newUnit() {
         return new EditedSourceFile(this);
     }
     

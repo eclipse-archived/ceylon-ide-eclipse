@@ -17,12 +17,14 @@ import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 
 public class CrossProjectPhasedUnit extends ExternalPhasedUnit {
 
-    private WeakReference<IProject> originalProjectRef = null;
-    private WeakReference<ProjectPhasedUnit> originalProjectPhasedUnitRef = null;
+    private WeakReference<IProject> originalProjectRef = new WeakReference<IProject>(null);
+    private WeakReference<ProjectPhasedUnit> originalProjectPhasedUnitRef = new WeakReference<ProjectPhasedUnit>(null);
     
     public CrossProjectPhasedUnit(CrossProjectPhasedUnit other) {
         super(other);
+        originalProjectRef = new WeakReference<IProject>(other.originalProjectRef.get());
         originalProjectPhasedUnitRef = new WeakReference<ProjectPhasedUnit>(other.getOriginalProjectPhasedUnit());
+        
     }
 
     public CrossProjectPhasedUnit(VirtualFile unitFile, VirtualFile srcDir,
@@ -33,23 +35,22 @@ public class CrossProjectPhasedUnit extends ExternalPhasedUnit {
     }
     
     public ProjectPhasedUnit getOriginalProjectPhasedUnit() {
-        if (originalProjectPhasedUnitRef == null) {
-            IProject project = originalProjectRef.get();
-            if (project != null) {
-                TypeChecker originalTypeChecker = CeylonBuilder.getProjectTypeChecker(project);
+        ProjectPhasedUnit originalPhasedUnit = originalProjectPhasedUnitRef.get(); 
+        if (originalPhasedUnit == null) {
+            IProject originalProject = originalProjectRef.get();
+            if (originalProject != null) {
+                TypeChecker originalTypeChecker = CeylonBuilder.getProjectTypeChecker(originalProject);
                 if (originalTypeChecker != null) {
-                    ProjectPhasedUnit originalProjectPhasedUnit = (ProjectPhasedUnit) originalTypeChecker.getPhasedUnitFromRelativePath(getPathRelativeToSrcDir());
-                    if (originalProjectPhasedUnit != null) {
-                        originalProjectPhasedUnitRef = new WeakReference<ProjectPhasedUnit>(originalProjectPhasedUnit);
-                    }
+                    originalPhasedUnit = (ProjectPhasedUnit) originalTypeChecker.getPhasedUnitFromRelativePath(getPathRelativeToSrcDir());
+                    originalProjectPhasedUnitRef = new WeakReference<ProjectPhasedUnit>(originalPhasedUnit);
                 }
             }
         }
-        return originalProjectPhasedUnitRef != null ? originalProjectPhasedUnitRef.get() : null;
+        return originalPhasedUnit;
     }
     
     @Override
-    protected Unit createUnit() {
+    protected Unit newUnit() {
         return new CrossProjectSourceFile(this);
     }
 

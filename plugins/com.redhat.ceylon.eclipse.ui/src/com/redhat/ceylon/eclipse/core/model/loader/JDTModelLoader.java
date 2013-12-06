@@ -23,7 +23,6 @@ package com.redhat.ceylon.eclipse.core.model.loader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,14 +32,18 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
@@ -99,7 +102,10 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.CrossProjectBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 
@@ -123,13 +129,15 @@ public class JDTModelLoader extends AbstractModelLoader {
         this.moduleManager = moduleManager;
         this.modules = modules;
         javaProject = moduleManager.getJavaProject();
-        compilerOptions = new CompilerOptions(javaProject.getOptions(true));
-        compilerOptions.ignoreMethodBodies = true;
-        compilerOptions.storeAnnotations = true;
-        problemReporter = new ProblemReporter(
-                DefaultErrorHandlingPolicies.proceedWithAllProblems(),
-                compilerOptions,
-                new DefaultProblemFactory());
+        if (javaProject != null) {
+            compilerOptions = new CompilerOptions(javaProject.getOptions(true));
+            compilerOptions.ignoreMethodBodies = true;
+            compilerOptions.storeAnnotations = true;
+            problemReporter = new ProblemReporter(
+                    DefaultErrorHandlingPolicies.proceedWithAllProblems(),
+                    compilerOptions,
+                    new DefaultProblemFactory());
+        }
         this.timer = new Timer(false);
         internalCreate();
     }
@@ -173,6 +181,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     public void createLookupEnvironment() {
+        if (javaProject == null) {
+            return;
+        }
         try {
             lookupEnvironment = new LookupEnvironment(new ITypeRequestor() {
                 
@@ -297,9 +308,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public synchronized LazyPackage findOrCreatePackage(Module module, String pkgName) {
         LazyPackage pkg = super.findOrCreatePackage(module, pkgName);
-        if ("".equals(pkgName)) {
-            pkg.setName(Collections.<String>emptyList());
-        }
+
         if (pkg.getModule() != null 
                 && pkg.getModule().isJava()){
             pkg.setShared(true);
@@ -343,7 +352,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public synchronized boolean loadPackage(Module module, String packageName, boolean loadDeclarations) {
         packageName = Util.quoteJavaKeywords(packageName);
-        if(loadDeclarations && !loadedPackages.add(packageName)){
+        if(loadDeclarations && !loadedPackages.add(cacheKeyByModule(module, packageName))){
             return true;
         }
         
@@ -395,8 +404,8 @@ public class JDTModelLoader extends AbstractModelLoader {
                                         continue;
                                     IType type = classFile.getType();
                                     if (type.exists() 
-                                         // only top-levels ar added in source declarations
-                                            && ! type.isMember() 
+                                         // only top-levels are added in source declarations
+                                            && ! (type.isMember() || type.isAnonymous() || type.isLocal()) 
                                             && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))
                                             && ! isTypeHidden(module, type.getFullyQualifiedName())) {  
                                         convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
@@ -408,7 +417,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                                         continue;
                                     for (IType type : compilationUnit.getTypes()) {
                                         if (type.exists() 
-                                                && ! type.isMember() 
+                                                && ! (type.isMember() || type.isAnonymous() || type.isLocal()) 
                                                 && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))
                                                 && ! isTypeHidden(module, type.getFullyQualifiedName())) {
                                             convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
@@ -428,12 +437,32 @@ public class JDTModelLoader extends AbstractModelLoader {
         return false;
     }
 
+    synchronized public void refreshNameEnvironment() {
+        try {
+            lookupEnvironment.nameEnvironment = ((JavaProject)javaProject).newSearchableNameEnvironment((WorkingCopyOwner)null);
+        } catch (JavaModelException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }            
+    }
+    
     synchronized private LookupEnvironment getLookupEnvironment() {
         if (mustResetLookupEnvironment) {
+            refreshNameEnvironment();
             lookupEnvironment.reset();
             mustResetLookupEnvironment = false;
         }
         return lookupEnvironment;
+    }
+    
+    @Override
+    protected boolean searchAgain(Module module, String name) {
+        String className = name.replace('.', '/');
+        if (module instanceof JDTModule) {
+            JDTModule jdtModule = (JDTModule) module;
+            return jdtModule.containsClass(className + ".class") || jdtModule.containsClass(className + "_.class");
+        }
+        return false;
     }
     
     @Override
@@ -453,6 +482,10 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     private ClassMirror buildClassMirror(String name) {
+        if (javaProject == null) {
+            return null;
+        }
+        
         try {
             NameEnvironmentAnswer answer = null;
             LookupEnvironment theLookupEnvironment = getLookupEnvironment();
@@ -493,12 +526,21 @@ public class JDTModelLoader extends AbstractModelLoader {
                     }
 
                     IFile classFileRsrc = (IFile) classFile.getCorrespondingResource();
-					IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
-					if (classFileRsrc!=null && !classFileRsrc.exists()) {
-						//the .class file has been deleted
-						return null;
-					}
-                    BinaryTypeBinding binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
+                    if (classFileRsrc!=null && !classFileRsrc.exists()) {
+                        //the .class file has been deleted
+                        return null;
+                    }
+                    
+                    BinaryTypeBinding binaryTypeBinding = null;
+                    try {
+                        IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
+                        binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
+                    } catch(JavaModelException e) {
+                        if (! e.isDoesNotExist()) {
+                            throw e;
+                        }
+                    }
+                    
                     if (binaryTypeBinding == null) {
                         ReferenceBinding existingType = theLookupEnvironment.getCachedType(compoundName);
                         if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
@@ -548,6 +590,28 @@ public class JDTModelLoader extends AbstractModelLoader {
     public void addModuleToClassPath(Module module, ArtifactResult artifact) {
         if(artifact != null && module instanceof LazyModule)
             ((LazyModule)module).loadPackageList(artifact);
+                    
+        if (module instanceof JDTModule) {
+            JDTModule jdtModule = (JDTModule) module;
+            if (! jdtModule.equals(getLanguageModule()) && jdtModule.isCeylonBinaryArchive()) {
+                CeylonProjectModulesContainer container = CeylonClasspathUtil.getCeylonProjectModulesClasspathContainer(javaProject);
+
+                if (container != null) {
+                    IPath modulePath = new Path(artifact.artifact().getPath());
+                    IClasspathEntry newEntry = null;
+                    if ((newEntry = container.addNewClasspathEntryIfNecessary(modulePath))!=null) {
+                        try {
+                            JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[] { javaProject }, 
+                                    new IClasspathContainer[] {new CeylonProjectModulesContainer(container)}, null);
+                        } catch (JavaModelException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        refreshNameEnvironment();
+                    }
+                }
+            } // We don't need to add simple Java Jars progressively on the classpath
+        }
     }
     
     @Override
@@ -572,35 +636,51 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
 
         ITypeRoot typeRoot = null;
-        try {
-            typeRoot = (ITypeRoot) javaProject.findElement(new Path(jdtClass.getJavaModelPath()));
-            
-        } catch (JavaModelException e) {
-            e.printStackTrace();
-        }
-        
-        if (!jdtClass.isBinary()) {
-            unit = new JavaCompilationUnit((org.eclipse.jdt.core.ICompilationUnit)typeRoot);
-        }
-        else {
-            if (jdtClass.isCeylon()) {
-                unit = new CeylonBinaryUnit((IClassFile)typeRoot);
-            }
-            else {
-                unit = new JavaClassFile((IClassFile)typeRoot);
+        if (javaProject != null) {
+            try {
+                typeRoot = (ITypeRoot) javaProject.findElement(new Path(jdtClass.getJavaModelPath()));
+                
+            } catch (JavaModelException e) {
+                e.printStackTrace();
             }
         }
 
-        unit.setFilename(jdtClass.getFileName());
         StringBuilder sb = new StringBuilder();
         List<String> parts = pkg.getName();
         for (int i = 0; i < parts.size(); i++) {
-            sb.append(parts.get(i));
-            sb.append('/');
+            String part = parts.get(i);
+            if (! part.isEmpty()) {
+                sb.append(part);
+                sb.append('/');
+            }
         }
-        unit.setRelativePath(sb.toString() + unit.getFilename());
-        unit.setFullPath(jdtClass.getFullPath());
-        unit.setPackage(pkg);
+        sb.append(jdtClass.getFileName());
+        String relativePath = sb.toString();
+        String fileName = jdtClass.getFileName();
+        String fullPath = jdtClass.getFullPath();
+        
+        if (!jdtClass.isBinary()) {
+            unit = new JavaCompilationUnit((org.eclipse.jdt.core.ICompilationUnit)typeRoot, fileName, relativePath, fullPath, pkg);
+        }
+        else {
+            if (jdtClass.isCeylon()) {
+                if (pkg.getModule() instanceof JDTModule) {
+                    JDTModule module = (JDTModule) pkg.getModule();
+                    IProject originalProject = module.getOriginalProject();
+                    if (originalProject != null) {
+                        unit = new CrossProjectBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                    } else {
+                        unit = new CeylonBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                    }
+                } else {
+                    unit = new CeylonBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                }
+            }
+            else {
+                unit = new JavaClassFile((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+            }
+        }
+
         return unit;
     }
 
@@ -707,6 +787,12 @@ public class JDTModelLoader extends AbstractModelLoader {
             classMirrorCache.remove(keyToRemove);
         }
         loadedPackages.remove(packageName);
+        mustResetLookupEnvironment = true;
+    }
+
+    public synchronized void clearClassMirrorCacheForClass(JDTModule module, String classNameToRemove) {
+        classMirrorCache.remove(cacheKeyByModule(module, classNameToRemove));        
+        mustResetLookupEnvironment = true;
     }
 
     @Override
@@ -778,4 +864,17 @@ public class JDTModelLoader extends AbstractModelLoader {
         for(String jdkOracleModule : JDKUtils.getOracleJDKModuleNames())
             findOrCreateModule(jdkOracleModule, JDK_MODULE_VERSION);
     }
+
+    @Override
+    public synchronized LazyPackage findOrCreateModulelessPackage(String pkgName) {
+        return (LazyPackage) findPackage(pkgName);
+    }
+
+    @Override
+    public boolean isModuleInClassPath(Module module) {
+        // TODO Check that returning true in any case is the right way to do.
+        return super.isModuleInClassPath(module);
+    }
+    
+    
 }

@@ -2476,12 +2476,15 @@ public class CeylonContentProposer {
                 }
             }
         }
-        result.append(" ");
-        if (d instanceof TypeDeclaration) {
-            result.append(d.getName(), TYPE_STYLER);
-        }
-        else {
-            result.append(d.getName(), ID_STYLER);
+        String name = d.getName();
+        if (name != null) {
+            result.append(" ");
+            if (d instanceof TypeDeclaration) {
+                result.append(name, TYPE_STYLER);
+            }
+            else {
+                result.append(name, ID_STYLER);
+            }
         }
     }
     

@@ -14,11 +14,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ICrossProjectReference;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
@@ -194,17 +193,15 @@ public class CeylonReferenceResolver {
                     // Here pu should never be null !
                 }
                 
-                if (unit instanceof CrossProjectSourceFile) {
-                    CrossProjectPhasedUnit crossProjectPhasedUnit = ((CrossProjectSourceFile) unit).getPhasedUnit();
-                    if (crossProjectPhasedUnit != null) {
-                        ProjectPhasedUnit requiredProjectPhasedUnit = crossProjectPhasedUnit.getOriginalProjectPhasedUnit();
-                        if (requiredProjectPhasedUnit != null 
-                                && requiredProjectPhasedUnit.isFullyTyped()) {
-                            pu = requiredProjectPhasedUnit;
-                        }
-                        else {
-                            pu = crossProjectPhasedUnit;
-                        }
+                if (unit instanceof ICrossProjectReference) {
+                    ProjectPhasedUnit requiredProjectPhasedUnit = ((ICrossProjectReference) unit).getOriginalPhasedUnit();
+                    if (requiredProjectPhasedUnit != null 
+                            && requiredProjectPhasedUnit.isFullyTyped()) {
+                        pu = requiredProjectPhasedUnit;
+                    }
+                    else {
+                        System.err.println("ABNORMAL : cross reference with a null original PhasedUnit !");
+                        pu = ((ICrossProjectReference) unit).getPhasedUnit();
                     }
                 }
                 

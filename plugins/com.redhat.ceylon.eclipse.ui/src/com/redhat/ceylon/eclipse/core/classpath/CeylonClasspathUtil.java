@@ -151,6 +151,29 @@ public final class CeylonClasspathUtil {
         return containers;
     }
 
+    public static CeylonProjectModulesContainer getCeylonProjectModulesClasspathContainer(
+            IJavaProject javaProject) {
+        try {
+            IClasspathEntry[] entries = javaProject.getRawClasspath();
+            for (int i = 0; i < entries.length; i++) {
+                IClasspathEntry entry = entries[i];
+                if (entry != null && entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER) {
+                    IPath path = entry.getPath();
+                    if (isProjectModulesClasspathContainer(path)) {
+                        IClasspathContainer cp = JavaCore.getClasspathContainer(path, javaProject);
+                        if (cp instanceof CeylonProjectModulesContainer) {
+                            return (CeylonProjectModulesContainer) cp;
+                        }
+                    }
+                }
+            }
+        } 
+        catch (JavaModelException e) {
+            // unless there are issues with the JDT, this should never happen
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static List<String> split(String str) {
         String[] terms = str.split(",");
