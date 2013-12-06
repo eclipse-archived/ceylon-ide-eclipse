@@ -94,4 +94,15 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
     public IJavaElement toJavaElement(Declaration ceylonDeclaration) {
         return new CeylonToJavaMatcher(this).searchInClass(ceylonDeclaration);
     }
+
+
+    @Override
+    public String getCeylonFileName() {
+        String ceylonSourceRelativePath = getCeylonSourceRelativePath();
+        if (ceylonSourceRelativePath == null || ceylonSourceRelativePath.isEmpty()) {
+            return null;
+        }
+        String[] splitedPath = ceylonSourceRelativePath.split("/");
+        return splitedPath[splitedPath.length-1];
+    }
 }
