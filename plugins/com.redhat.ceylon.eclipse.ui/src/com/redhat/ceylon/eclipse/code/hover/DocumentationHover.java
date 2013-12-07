@@ -1398,7 +1398,7 @@ public class DocumentationHover
 	}
 	
     public static String getInitalValue(Declaration dec, CeylonParseController cpc) {
-        Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
+        Node refnode = getReferencedNode(dec, cpc);
         if (refnode instanceof Tree.AttributeDeclaration) {
         	Tree.SpecifierOrInitializerExpression sie = ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
         	if (sie!=null) {
