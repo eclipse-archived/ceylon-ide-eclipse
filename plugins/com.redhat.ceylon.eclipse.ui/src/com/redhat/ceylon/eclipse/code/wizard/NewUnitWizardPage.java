@@ -718,7 +718,7 @@ public class NewUnitWizardPage extends WizardPage {
     }
     
     private String getSelectSourceFolderMessage() {
-        return "Please select a source folder";
+        return "Please select a source folder.";
     }
     
     private static final String KEYWORDS;
@@ -747,7 +747,7 @@ public class NewUnitWizardPage extends WizardPage {
     }
     
     String getIllegalPackageNameMessage() {
-        return "Please enter a legal package name.";
+        return "Please enter a legal package name (a period-separated list of all-lowercase identifiers).";
     }
     
     void setUnitName(String unitName) {
