@@ -79,14 +79,9 @@ public class JDTModuleManager extends LazyModuleManager {
     private JDTModelLoader modelLoader;
     private IJavaProject javaProject;
     private Set<String> sourceModules;
-    private Set<File> classpath;
     private TypeChecker typeChecker;
     private boolean loadDependenciesFromModelLoaderFirst;
     
-
-    public Set<File> getClasspath() {
-        return classpath;
-    }
 
     public Set<String> getSourceModules() {
         return sourceModules;
@@ -108,7 +103,6 @@ public class JDTModuleManager extends LazyModuleManager {
         if (! loadDependenciesFromModelLoaderFirst) {
             sourceModules.add(Module.LANGUAGE_MODULE_NAME);
         }
-        classpath = new HashSet<File>();
     }
     /*
      * TODO : Remove when the package creation (and module binding) in ModuleManager will be done with a method 
@@ -321,7 +315,6 @@ public class JDTModuleManager extends LazyModuleManager {
                 sourceModules.add(module.getNameAsString());
                 file = new File(file.getAbsolutePath().replaceAll("\\.src$", ".car"));
             }
-            classpath.add(file);
         }
         super.resolveModule(artifact, module, moduleImport, dependencyTree, phasedUnitsOfDependencies, forCompiledModule);
     }
