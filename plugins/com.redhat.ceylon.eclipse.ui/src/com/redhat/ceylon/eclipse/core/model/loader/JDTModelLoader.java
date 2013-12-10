@@ -333,10 +333,15 @@ public class JDTModelLoader extends AbstractModelLoader {
          * We start by loading java.lang because we will need it no matter what.
          */
         Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME, JDK_MODULE_VERSION);
+        Module languageModule = getLanguageModule();
+        
         loadPackage(jdkModule, "java.lang", false);
+        loadPackage(languageModule, "com.redhat.ceylon.compiler.java.metadata", false);
         
         if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
-            loadPackage(getLanguageModule(), CEYLON_LANGUAGE, true);
+            loadPackage(languageModule, CEYLON_LANGUAGE, true);
+            loadPackage(languageModule, CEYLON_LANGUAGE_MODEL, true);
+            loadPackage(languageModule, CEYLON_LANGUAGE_MODEL_DECLARATION, true);
         }        
     }
     
