@@ -361,22 +361,26 @@ public class JDTModule extends LazyModule {
     public List<Package> getAllPackages() {
         synchronized (getModelLoader()) {
             // force-load every package from the module if we can
-            loadAllPackages();
-            // now force-load other modules
-            for (ModuleImport mi: getImports()) {
-                if(mi.getModule() instanceof JDTModule){
-                    ((JDTModule)mi.getModule()).loadAllPackages();
-                }
-            }
+            loadAllPackages(new HashSet<String>());
+
             // now delegate
             return super.getAllPackages();
         }
     }
 
-    private void loadAllPackages() {
+    private void loadAllPackages(Set<String> alreadyScannedModules) {
         Set<String> packageList = listPackages();
         for (String packageName : packageList) {
             getPackage(packageName);
+        }
+        
+        // now force-load other modules
+        for (ModuleImport mi: getImports()) {
+            Module importedModule = mi.getModule();
+            if(importedModule instanceof JDTModule &&
+                    alreadyScannedModules.add(importedModule.getNameAsString())){
+                ((JDTModule)importedModule).loadAllPackages(alreadyScannedModules);
+            }
         }
     }
 
