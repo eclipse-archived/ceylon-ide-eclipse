@@ -26,7 +26,7 @@ public class CeylonOutlineBuilder extends Visitor {
     public void visit(Tree.Parameter that) {
         //don't make a node
     }
-
+    
     @Override
     public void visit(Tree.Declaration that) {
         if (!(that instanceof Tree.TypeParameterDeclaration) &&
@@ -38,35 +38,49 @@ public class CeylonOutlineBuilder extends Visitor {
             popSubItem();
         }
     }
-
+    
+    @Override
+    public void visit(Tree.SpecifierStatement that) {
+        Tree.Term bme = that.getBaseMemberExpression();
+		if (that.getRefinement() &&
+        		(bme instanceof Tree.BaseMemberExpression ||
+        		bme instanceof Tree.ParameterizedExpression &&
+        		    ((Tree.ParameterizedExpression) bme).getPrimary() 
+        		            instanceof Tree.BaseMemberExpression)) {
+            pushSubItem(that);
+            super.visitAny(that);
+            popSubItem();
+        }
+    }
+    
     @Override
     public void visit(Tree.PackageDescriptor that) {
         pushSubItem(that);
         super.visitAny(that);
         popSubItem();
     }
-
+    
     @Override
     public void visit(Tree.ModuleDescriptor that) {
         pushSubItem(that);
         super.visitAny(that);
         popSubItem();
     }
-
+    
     @Override
     public void visit(Tree.Import that) {
         pushSubItem(that);
         super.visitAny(that);
         popSubItem();
     }
-
+    
     @Override
     public void visit(Tree.ImportModule that) {
         pushSubItem(that);
         super.visitAny(that);
         popSubItem();
     }
-
+    
     @Override
     public void visit(Tree.ImportList that) {
         if (!((Tree.ImportList) that).getImports().isEmpty()) {
@@ -75,9 +89,9 @@ public class CeylonOutlineBuilder extends Visitor {
             popSubItem();
         }
     }
-
+    
 	private Stack<CeylonOutlineNode> itemStack = new Stack<CeylonOutlineNode>();
-
+	
 	public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
 	    IFile file = cpc.getProject()==null || cpc.getPath()==null ? null :
 	            cpc.getProject().getFile(cpc.getPath());
@@ -115,34 +129,34 @@ public class CeylonOutlineBuilder extends Visitor {
 		return modelRoot;
 	}
 	
-	protected CeylonOutlineNode createTopItem(Node node, IFile file) {
+	private CeylonOutlineNode createTopItem(Node node, IFile file) {
         return new CeylonOutlineNode(node, ROOT_CATEGORY, file);
 	}
 
-	protected CeylonOutlineNode createSubItem(Node n) {
+	/*private CeylonOutlineNode createSubItem(Node n) {
 		return createSubItem(n, DEFAULT_CATEGORY);
-	}
+	}*/
 
-	protected CeylonOutlineNode createSubItem(Node n, int category) {
+	private CeylonOutlineNode createSubItem(Node n, int category) {
 		return createSubItem(n, category, null);
 	}
 
-    protected CeylonOutlineNode createSubItem(Node n, int category, IResource file) {
+	private CeylonOutlineNode createSubItem(Node n, int category, IResource file) {
         final CeylonOutlineNode parent= itemStack.peek();
         CeylonOutlineNode treeNode = new CeylonOutlineNode(n, parent, category, file);
         parent.addChild(treeNode);
         return treeNode;
     }
 
-	protected CeylonOutlineNode pushSubItem(Node n) {
+	private CeylonOutlineNode pushSubItem(Node n) {
 		return pushSubItem(n, DEFAULT_CATEGORY);
 	}
 
-	protected CeylonOutlineNode pushSubItem(Node n, int category) {
+	private CeylonOutlineNode pushSubItem(Node n, int category) {
 		return itemStack.push(createSubItem(n, category));
 	}
 
-	protected void popSubItem() {
+	private void popSubItem() {
 		itemStack.pop();
 	}
 }

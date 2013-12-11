@@ -15,6 +15,7 @@ import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
@@ -297,6 +298,18 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (n instanceof Tree.Declaration) {
             return getImageKeyForDeclarationNode((Tree.Declaration) n);
+        }
+        else if (n instanceof Tree.SpecifierStatement) {
+        	Tree.Term bme = ((Tree.SpecifierStatement) n).getBaseMemberExpression();
+			if (bme instanceof Tree.BaseMemberExpression) { 
+				return CEYLON_LOCAL_ATTRIBUTE;
+			}
+			else if (bme instanceof Tree.ParameterizedExpression) {
+				return CEYLON_LOCAL_METHOD;
+			}
+			else {
+				throw new RuntimeException("unexpected node type");
+			}
         }
         else {
             return null;
@@ -593,6 +606,36 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                 return new StyledString(pn.getPackageName(), QUALIFIER_STYLER);
             }
+        }
+        else if (n instanceof Tree.SpecifierStatement) {
+        	Tree.Term bme = ((Tree.SpecifierStatement) n).getBaseMemberExpression();
+			Tree.Identifier id;
+			String kw;
+			List<Tree.ParameterList> pls;
+			if (bme instanceof Tree.BaseMemberExpression) {
+				id = ((Tree.BaseMemberExpression) bme).getIdentifier();
+				pls = null;
+				kw = "value";
+			}
+			else if (bme instanceof Tree.ParameterizedExpression) {
+				Tree.Primary primary = ((Tree.ParameterizedExpression) bme).getPrimary();
+				id = ((Tree.BaseMemberExpression) primary).getIdentifier();
+				kw = "function";
+				pls = ((Tree.ParameterizedExpression) bme).getParameterLists();
+			}
+			else {
+				 throw new RuntimeException("unexpected node type");
+			}
+            StyledString label = new StyledString();
+            label.append(kw, KW_STYLER)
+                .append(" ")
+                .append(name(id), ID_STYLER);
+            if (pls!=null) {
+                for (Tree.ParameterList pl: pls) { 
+                    parameters(pl, label);
+                }
+            }
+            return label;
         }
         
         return new StyledString("<something>");

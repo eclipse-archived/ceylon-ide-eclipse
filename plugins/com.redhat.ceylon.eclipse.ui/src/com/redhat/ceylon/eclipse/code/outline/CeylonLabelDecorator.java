@@ -164,6 +164,24 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
                 result |= getDecorationAttributes(dec.getDeclarationModel());
             }
         }
+        else if (node instanceof Tree.SpecifierStatement) {
+        	Tree.Term bme = ((Tree.SpecifierStatement) node).getBaseMemberExpression();
+        	Declaration d;
+        	if (bme instanceof Tree.BaseMemberExpression) {
+        		d = ((Tree.BaseMemberExpression) bme).getDeclaration();
+        	}
+        	else if (bme instanceof Tree.ParameterizedExpression) {
+				Tree.Primary primary = ((Tree.ParameterizedExpression) bme).getPrimary();
+				d = ((Tree.BaseMemberExpression) primary).getDeclaration();
+        	}
+        	else {
+        		 throw new RuntimeException("unexpected node type");
+        	}
+        	Declaration r = getRefinedDeclaration(d);
+        	if (r!=null) {
+        		result |= r.isFormal() ? IMPLEMENTS : REFINES;
+        	}
+        }
         return result;
     }
 

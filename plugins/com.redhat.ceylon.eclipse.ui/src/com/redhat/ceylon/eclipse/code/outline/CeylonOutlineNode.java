@@ -102,6 +102,21 @@ public class CeylonOutlineNode implements IAdaptable {
             Tree.Identifier identifier = ((Tree.Declaration) treeNode).getIdentifier();
             name = identifier==null ? null : identifier.getText();
         }
+        else if (treeNode instanceof Tree.SpecifierStatement) {
+        	Tree.Term bme = ((Tree.SpecifierStatement) treeNode).getBaseMemberExpression();
+			Tree.Identifier id;
+			if (bme instanceof Tree.BaseMemberExpression) { 
+				id = ((Tree.BaseMemberExpression) bme).getIdentifier();
+			}
+			else if (bme instanceof Tree.ParameterizedExpression) {
+				id = ((Tree.BaseMemberExpression) ((Tree.ParameterizedExpression) bme).getPrimary()).getIdentifier();
+			}
+			else {
+				 throw new RuntimeException("unexpected node type");
+			}
+            name = id==null ? null : id.getText();
+            shared = false;
+        }
         else {
             shared = true;
         }
@@ -271,6 +286,28 @@ public class CeylonOutlineNode implements IAdaptable {
                 else if (treeNode instanceof Tree.PackageDescriptor) {
                     return "@packagedescriptor:" + 
                             pathToName(((Tree.PackageDescriptor) treeNode).getImportPath(), treeNode);
+                }
+                else if (treeNode instanceof Tree.SpecifierStatement) {
+                    Tree.Term bme = ((Tree.SpecifierStatement) treeNode).getBaseMemberExpression();
+					Tree.Identifier id;
+					if (bme instanceof Tree.BaseMemberExpression) { 
+						id = ((Tree.BaseMemberExpression) bme).getIdentifier();
+					}
+					else if (bme instanceof Tree.ParameterizedExpression) {
+						id = ((Tree.BaseMemberExpression) ((Tree.ParameterizedExpression) bme).getPrimary()).getIdentifier();
+					}
+					else {
+						 throw new RuntimeException("unexpected node type");
+					}
+                    String name = id==null ? 
+                            String.valueOf(identityHashCode(treeNode)) : 
+                            id.getText();
+                    if (parent!=null && parent.isDeclaration()) {
+                        return getParent().getIdentifier() + ":" + name;
+                    }
+                    else {
+                        return "@declaration:" + name;
+                    }
                 }
                 else {
                     throw new RuntimeException("unexpected node type");
