@@ -205,8 +205,8 @@ public class CeylonReferenceResolver {
                     }
                 }
                 
-                if (unit instanceof ExternalSourceFile || 
-                        unit instanceof CeylonBinaryUnit) {
+                if (pu == null && (unit instanceof ExternalSourceFile || 
+                        unit instanceof CeylonBinaryUnit)) {
                     pu = ((CeylonUnit)unit).getPhasedUnit();
                 }
                 
