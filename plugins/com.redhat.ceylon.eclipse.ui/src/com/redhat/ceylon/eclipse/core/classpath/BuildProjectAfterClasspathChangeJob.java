@@ -45,7 +45,7 @@ public class BuildProjectAfterClasspathChangeJob extends Job {
                     }
                 }
                 if (buildReferencedProjects) {
-                    for (IProject p: project.getReferencingProjects()) {
+                    for (IProject p: project.getReferencedProjects()) {
                         if (p.isOpen()) {
                             projectsToTouch.add(project);
                         }
