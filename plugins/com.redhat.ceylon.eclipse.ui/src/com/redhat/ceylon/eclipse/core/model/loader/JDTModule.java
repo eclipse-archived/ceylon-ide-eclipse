@@ -91,7 +91,6 @@ import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 public class JDTModule extends LazyModule {
     private JDTModuleManager moduleManager;
     private List<IPackageFragmentRoot> packageFragmentRoots;
-    private File jarPath;
     private File artifact;
     private WeakReference<ExternalModulePhasedUnits> sourceModulePhasedUnits; // Here we have a weak ref on the PhasedUnits because there are already stored as strong references in the TypeChecker phasedUnitsOfDependencies list. 
                                                                     // But in the future we might remove the strong reference in the typeChecker and use strong references here, which would be 
@@ -104,7 +103,6 @@ public class JDTModule extends LazyModule {
     private JDTModule originalModule = null;
     private Set<String> originalUnitsToRemove = new LinkedHashSet<>();
     private Set<String> originalUnitsToAdd = new LinkedHashSet<>();
-    private boolean packagesLoaded = false;
     
     public JDTModule(JDTModuleManager jdtModuleManager, List<IPackageFragmentRoot> packageFragmentRoots) {
         this.moduleManager = jdtModuleManager;
@@ -321,7 +319,7 @@ public class JDTModule extends LazyModule {
                 }
                 else {
                     try {
-                        File jarToSearch = jarPath;
+                        File jarToSearch = returnCarFile();
                         if (jarToSearch == null) {
                             RepositoryManager repoMgr = CeylonBuilder.getProjectRepositoryManager(javaProject.getProject());
                             if (repoMgr != null) {
@@ -418,7 +416,19 @@ public class JDTModule extends LazyModule {
     @Override
     public void loadPackageList(ArtifactResult artifact) {
         super.loadPackageList(artifact);
-        jarPath = artifact.artifact();
+        JDTModelLoader modelLoader = getModelLoader();
+        if (modelLoader != null) {
+            synchronized(modelLoader){
+                String name = getNameAsString();
+                for(String pkg : jarPackages){
+                    if(name.equals("ceylon.language") && ! pkg.startsWith("ceylon.language")) {
+                        // special case for the language module to hide stuff
+                        break;
+                    }
+                    modelLoader.findOrCreatePackage(this, pkg);
+                }
+            }
+        }
     }
 
     public boolean isCeylonArchive() {
@@ -557,17 +567,21 @@ public class JDTModule extends LazyModule {
                         if (isCeylonBinaryArchive() || JavaCore.isJavaLikeFileName(relativePathToRemove)) {
                             for (String relativePathOfClassToRemove : toBinaryUnitRelativePaths(relativePathToRemove)) {
                                 Package p = getPackageFromRelativePath(relativePathOfClassToRemove);
-                                Set<Unit> units = new HashSet<>();
-                                for(Declaration d : p.getMembers()) {
-                                    Unit u = d.getUnit();
-                                    if (u.getRelativePath().equals(relativePathOfClassToRemove)) {
-                                        units.add(u);
+                                if (p != null) {
+                                    Set<Unit> units = new HashSet<>();
+                                    for(Declaration d : p.getMembers()) {
+                                        Unit u = d.getUnit();
+                                        if (u.getRelativePath().equals(relativePathOfClassToRemove)) {
+                                            units.add(u);
+                                        }
                                     }
-                                }
-                                for (Unit u : units) {
-                                    p.removeUnit(u);
-                                    // In the future, when we are sure that we cannot add several unit objects with the 
-                                    // same relative path, we can add a break.
+                                    for (Unit u : units) {
+                                        p.removeUnit(u);
+                                        // In the future, when we are sure that we cannot add several unit objects with the 
+                                        // same relative path, we can add a break.
+                                    }
+                                } else {
+                                    System.out.println("WARNING : The package of the following binary unit (" + relativePathOfClassToRemove + ") cannot be found in module " + getNameAsString() + " (artifact=" + artifact.getAbsolutePath() + ")");
                                 }
                             }
                         }
@@ -609,6 +623,7 @@ public class JDTModule extends LazyModule {
                 }
             }
             if (isCeylonBinaryArchive() || isJavaBinaryArchive()) {
+                super.getPackages().clear();
                 jarPackages.clear();
                 loadPackageList(new ArtifactResult() {
                     @Override
@@ -640,8 +655,6 @@ public class JDTModule extends LazyModule {
                         return artifact;
                     }
                 });
-                super.getPackages().clear();
-                loadPackages();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -781,17 +794,7 @@ public class JDTModule extends LazyModule {
 
     @Override
     public List<Package> getPackages() {
-        if (! packagesLoaded) {
-            loadPackages();
-            packagesLoaded = true;
-        }
         return super.getPackages();
-    }
-
-    private void loadPackages() {
-        for (String packageName : listPackages()) {
-            getModelLoader().findExistingPackage(this, packageName);
-        }
     }
 
     @Override
