@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.core.model.loader;
 
 import java.util.List;
 
+import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.FieldMirror;
@@ -12,6 +13,7 @@ import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -20,6 +22,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 public class SourceClass implements ClassMirror {
 
     private SourceDeclarationHolder sourceDeclarationHolder;
+    private String cacheKey;
+
 
     public SourceClass(SourceDeclarationHolder sourceDeclarationHolder) {
         this.sourceDeclarationHolder = sourceDeclarationHolder;
@@ -219,6 +223,15 @@ public class SourceClass implements ClassMirror {
         //TODO: is this correct!?
         return !getModelDeclaration().isClassOrInterfaceMember() &&
                 !getModelDeclaration().isToplevel();
+    }
+
+    @Override
+    public String getCacheKey(Module module) {
+        if(cacheKey == null) {
+            String className = getQualifiedName();
+            cacheKey = AbstractModelLoader.getCacheKeyByModule(module, className);
+        }
+        return cacheKey;
     }
     
 }

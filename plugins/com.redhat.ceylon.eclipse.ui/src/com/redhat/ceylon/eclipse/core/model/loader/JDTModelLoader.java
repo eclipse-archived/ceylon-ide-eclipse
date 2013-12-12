@@ -93,6 +93,7 @@ import com.redhat.ceylon.compiler.loader.model.LazyMethod;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.loader.model.LazyValue;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -147,35 +148,8 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     private void internalCreate() {
-        this.languageModuledeclarations = new HashMap<String, Declaration>();
-        this.typeFactory = new TypeFactory(moduleManager.getContext()) {
-            @Override
-            public Package getPackage() {
-                synchronized (JDTModelLoader.this) {
-                    if(super.getPackage() == null){
-                        super.setPackage(modules.getLanguageModule()
-                                .getDirectPackage(Module.LANGUAGE_MODULE_NAME));
-                    }
-                    return super.getPackage();
-                }
-            }
-            /**
-             * Search for a declaration in the language module. 
-             */
-            public Declaration getLanguageModuleDeclaration(String name) {
-                synchronized (JDTModelLoader.this) {
-                    if (languageModuledeclarations.containsKey(name)) {
-                        return languageModuledeclarations.get(name);
-                    }
-
-                    languageModuledeclarations.put(name, null);
-                    Declaration decl = super.getLanguageModuleDeclaration(name);
-                    languageModuledeclarations.put(name, decl);
-                    return decl;
-                }
-            }
-        };
-        this.typeParser = new TypeParser(this, typeFactory);
+        this.typeFactory = new GlobalTypeFactory();
+        this.typeParser = new TypeParser(this);
         this.timer = new Timer(false);
         createLookupEnvironment();
     }
@@ -337,11 +311,12 @@ public class JDTModelLoader extends AbstractModelLoader {
         
         loadPackage(jdkModule, "java.lang", false);
         loadPackage(languageModule, "com.redhat.ceylon.compiler.java.metadata", false);
+        loadPackage(languageModule, "com.redhat.ceylon.compiler.java.language", false);
         
         if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
-            loadPackage(languageModule, CEYLON_LANGUAGE, true);
-            loadPackage(languageModule, CEYLON_LANGUAGE_MODEL, true);
-            loadPackage(languageModule, CEYLON_LANGUAGE_MODEL_DECLARATION, true);
+//            loadPackage(languageModule, CEYLON_LANGUAGE, true);
+//            loadPackage(languageModule, CEYLON_LANGUAGE_MODEL, true);
+//            loadPackage(languageModule, CEYLON_LANGUAGE_MODEL_DECLARATION, true);
         }        
     }
     
@@ -626,6 +601,15 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     @Override
     protected Unit getCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
+        if (classMirror == null) {
+            Unit unit = unitsByPackage.get(pkg);
+            if(unit == null){
+                unit = new PackageTypeFactory(pkg);
+                unit.setPackage(pkg);
+                unitsByPackage.put(pkg, unit);
+            }
+            return unit;
+        }
         Unit unit = null;
         JDTClass jdtClass = (JDTClass) classMirror;
         String unitName = jdtClass.getFileName();
@@ -743,6 +727,32 @@ public class JDTModelLoader extends AbstractModelLoader {
         return sourceDeclarations.get(declarationName);
     }
 
+    public class PackageTypeFactory extends TypeFactory {
+        public PackageTypeFactory(Package pkg) {
+            super(moduleManager.getContext());
+            assert (pkg != null);
+            setPackage(pkg);
+        }
+    }
+
+    
+    public class GlobalTypeFactory extends TypeFactory {
+        public GlobalTypeFactory() {
+            super(moduleManager.getContext());
+        }
+
+        @Override
+        public Package getPackage() {
+            synchronized (JDTModelLoader.this) {
+                if(super.getPackage() == null){
+                    super.setPackage(modules.getLanguageModule()
+                            .getDirectPackage(Module.LANGUAGE_MODULE_NAME));
+                }
+                return super.getPackage();
+            }
+        }
+    }
+
     public static interface SourceFileObjectManager {
         void setupSourceFileObjects(List<?> treeHolders);
     }
@@ -836,15 +846,6 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     public TypeFactory getTypeFactory() {
         return (TypeFactory) typeFactory;
-    }
-    
-    public synchronized void reset() {
-        internalCreate();
-        declarationsByName.clear();
-        unitsByPackage.clear();
-        loadedPackages.clear();
-        packageDescriptorsNeedLoading = false;
-        classMirrorCache.clear();
     }
     
     public synchronized Package findPackage(String quotedPkgName) {

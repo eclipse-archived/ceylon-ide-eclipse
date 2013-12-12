@@ -44,6 +44,7 @@ import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.mirror.PackageMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 
 public class JDTClass implements ClassMirror, IBindingProvider {
 
@@ -61,6 +62,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     private String simpleName;
     private boolean superClassSet = false;
     private List<ClassMirror> innerClasses;
+    private String cacheKey;
+
+
     
 
     public JDTClass(ReferenceBinding klass, LookupEnvironment lookupEnvironment) {
@@ -330,5 +334,14 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public char[] getBindingKey() {
         return klass.computeUniqueKey();
+    }
+
+    @Override
+    public String getCacheKey(Module module) {
+        if(cacheKey == null){
+            String className = getQualifiedName();
+            cacheKey = AbstractModelLoader.getCacheKeyByModule(module, className);
+        }
+        return cacheKey;
     }
 }

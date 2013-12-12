@@ -77,6 +77,14 @@ public class JavaQueryParticipant implements IQueryParticipant {
                 public DeclarationKind getDeclarationKind() {
                     return null;
                 }
+                @Override
+                protected boolean equalsForCache(Object arg0) {
+                    return false;
+                }
+                @Override
+                protected int hashCodeForCache() {
+                    return qualifiedName.hashCode();
+                }
             };
             for (IProject project: CeylonBuilder.getProjects()) {
                 IJavaProject jp = JavaCore.create(project);
