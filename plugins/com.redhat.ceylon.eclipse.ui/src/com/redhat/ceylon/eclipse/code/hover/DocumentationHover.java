@@ -634,16 +634,15 @@ public class DocumentationHover
 				16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + 
 				"</tt> "+desc+"</b>", 
 				20, 4);
-		buffer.append( "<hr/>");
 		if (node instanceof Tree.StringLiteral) {
-			buffer.append("<code style='color:")
+			buffer.append( "<hr/>")
+			    .append("<code style='color:")
 			    .append(toHex(getCurrentThemeColor(STRINGS)))
 			    .append("'><pre>")
 			    .append('\"')
 			    .append(convertToHTMLContent(node.getText()))
 			    .append('\"')
-			    .append("</pre></code>")
-			    .append("<hr/>");
+			    .append("</pre></code>");
 			// If a single char selection, then append info on that character too
 			if (selectedText != null
 			        && codePointCount(selectedText, 0, selectedText.length()) == 1) {
@@ -658,7 +657,8 @@ public class DocumentationHover
 		    }
 		}
 		else if (node instanceof Tree.NaturalLiteral) {
-		    buffer.append("<code style='color:")
+		    buffer.append( "<hr/>")
+		        .append("<code style='color:")
                 .append(toHex(getCurrentThemeColor(NUMBERS)))
                 .append("'>");
 			String text = node.getText().replace("_", "");
@@ -672,28 +672,33 @@ public class DocumentationHover
 			default:
 				buffer.append(parseInt(text));
 		    }
-			buffer.append("</code>").append("<hr/>");
+			buffer.append("</code>");
 		}
 		else if (node instanceof Tree.FloatLiteral) {
-            buffer.append("<code style='color:")
-            .append(toHex(getCurrentThemeColor(NUMBERS)))
-            .append("'>");
-			buffer.append(parseFloat(node.getText().replace("_", "")));
-            buffer.append("</code>").append("<hr/>");
+            buffer.append( "<hr/>")
+                .append("<code style='color:")
+                .append(toHex(getCurrentThemeColor(NUMBERS)))
+                .append("'>")
+			    .append(parseFloat(node.getText().replace("_", "")))
+                .append("</code>");
 		}
-		buffer.append("Two quick assists available:<br/>");
-		addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
-				16, 16, "<a href=\"exv:\">Extract value</a>", 
-				20, 4);
-		addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
-				16, 16, "<a href=\"exf:\">Extract function</a>", 
-				20, 4);
+		if (selectedText!=null) {
+			buffer.append("<hr/>").append("Two quick assists available:<br/>");
+			addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
+					16, 16, "<a href=\"exv:\">Extract value</a>", 
+					20, 4);
+			addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
+					16, 16, "<a href=\"exf:\">Extract function</a>", 
+					20, 4);
+			buffer.append("<br/>");
+		}
 		HTMLPrinter.addPageEpilog(buffer);
 		return new CeylonBrowserInput(null, null, buffer.toString());
 	}
 
     private static void appendCharacterHoverInfo(StringBuilder buffer, String character) {
-        buffer.append("<code style='color:")
+        buffer.append( "<hr/>")
+            .append("<code style='color:")
             .append(toHex(getCurrentThemeColor(CHARS)))
             .append("'>")
             .append('\'')
@@ -712,7 +717,7 @@ public class DocumentationHover
         Character.UnicodeScript script = Character.UnicodeScript.of(codepoint);
         buffer.append("<br/>Script: <code>").append(script.name()).append("</code>");
         Character.UnicodeBlock block = Character.UnicodeBlock.of(codepoint);
-        buffer.append("<br/>Block: <code>").append(block).append("<hr/>").append("</code>");
+        buffer.append("<br/>Block: <code>").append(block).append("</code><br/>");
     }
 
     private static String getCodepointGeneralCategoryName(int codepoint) {
