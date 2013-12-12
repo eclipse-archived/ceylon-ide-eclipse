@@ -26,8 +26,8 @@ import com.redhat.ceylon.compiler.loader.model.LazyMethod;
 import com.redhat.ceylon.compiler.loader.model.LazyValue;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
-import com.redhat.ceylon.eclipse.core.model.loader.IBindingProvider;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTMethod;
+import com.redhat.ceylon.eclipse.core.model.mirror.IBindingProvider;
+import com.redhat.ceylon.eclipse.core.model.mirror.JDTMethod;
 
 public class CeylonToJavaMatcher {
     private Declaration ceylonDeclaration = null;

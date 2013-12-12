@@ -18,7 +18,7 @@
  * MA  02110-1301, USA.
  */
 
-package com.redhat.ceylon.eclipse.core.model.loader;
+package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import java.util.ArrayList;
 import java.util.HashMap;

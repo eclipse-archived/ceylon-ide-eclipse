@@ -18,7 +18,7 @@
  * MA  02110-1301, USA.
  */
 
-package com.redhat.ceylon.eclipse.core.model.loader;
+package com.redhat.ceylon.eclipse.core.model;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
@@ -105,10 +105,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.CrossProjectBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
-import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
+import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
+import com.redhat.ceylon.eclipse.core.model.mirror.JDTMethod;
+import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
+import com.redhat.ceylon.eclipse.core.model.mirror.SourceDeclarationHolder;
 
 /**
  * A model loader which uses the JDT model.
