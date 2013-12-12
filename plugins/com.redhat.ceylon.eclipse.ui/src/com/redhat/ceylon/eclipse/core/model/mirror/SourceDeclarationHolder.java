@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model.loader;
+package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;

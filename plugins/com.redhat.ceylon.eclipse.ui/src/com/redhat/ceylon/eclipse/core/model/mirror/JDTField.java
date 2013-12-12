@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package com.redhat.ceylon.eclipse.core.model.loader;
+package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import java.util.Map;
 

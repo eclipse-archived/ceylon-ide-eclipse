@@ -26,7 +26,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 abstract class FindSearchQuery implements ISearchQuery {
 	

@@ -16,7 +16,7 @@ import org.junit.BeforeClass;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.test.Utils.CeylonBuildSummary;
 
 public abstract class AbstractMultiProjectTest {

@@ -19,7 +19,7 @@ import com.redhat.ceylon.compiler.loader.model.LazyValue;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
-import com.redhat.ceylon.eclipse.core.model.loader.IBindingProvider;
+import com.redhat.ceylon.eclipse.core.model.mirror.IBindingProvider;
 
 public class JavaCompilationUnit extends JavaUnit {
     ICompilationUnit typeRoot;

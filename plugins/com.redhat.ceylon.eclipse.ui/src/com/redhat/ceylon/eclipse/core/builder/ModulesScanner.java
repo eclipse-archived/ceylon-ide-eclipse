@@ -15,8 +15,8 @@ import org.eclipse.core.runtime.IPath;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.loader.JDTModuleManager;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
 final class ModulesScanner implements IResourceVisitor {
