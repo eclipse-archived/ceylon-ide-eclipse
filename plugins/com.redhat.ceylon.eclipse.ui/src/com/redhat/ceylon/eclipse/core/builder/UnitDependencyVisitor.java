@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.redhat.ceylon.cmr.api.JDKUtils;
+import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
@@ -64,7 +65,7 @@ public class UnitDependencyVisitor extends Visitor {
                 storeDependency(rd); //this one is needed for default arguments, I think
             }
             Unit declarationUnit = d.getUnit();
-            if (declarationUnit != null) {
+            if (declarationUnit != null && ! (declarationUnit instanceof TypeFactory)) {
             	String moduleName = declarationUnit.getPackage().getModule().getNameAsString();
             	if (!moduleName.equals(Module.LANGUAGE_MODULE_NAME) && 
             			!JDKUtils.isJDKModule(moduleName)
