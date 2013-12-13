@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
@@ -12,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -568,11 +572,31 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         content += " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " {";
+        Statement last = statements.isEmpty() ?
+        		null : statements.get(statements.size()-1);
         for (Statement s: statements) {
             content += extraIndent + toString(s);
+            int i = s.getEndToken().getTokenIndex();
+            CommonToken tok;
+            while ((tok=tokens.get(++i)).getChannel()==HIDDEN_CHANNEL) {
+            	String text = tok.getText();
+				if (tok.getType()==LINE_COMMENT) {
+            		content += " " + text.substring(0, text.length()-1);
+            		if (s==last) {
+            			length += text.length();
+            		}
+            	}
+            	if (tok.getType()==MULTI_COMMENT) {
+            		content += " " + text;
+            		if (s==last) {
+            			length += text.length()+1;
+            		}
+            	}
+            }
         }
         if (result!=null) {
-            content += extraIndent + "return " + result.getDeclarationModel().getName() + ";";
+            content += extraIndent + "return " + 
+            		result.getDeclarationModel().getName() + ";";
         }
         content += indent + "}" + indent + indent;
         
