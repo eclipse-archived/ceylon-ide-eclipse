@@ -442,6 +442,27 @@ public class CeylonOutlinePage extends ContentOutlinePage
             }
         }
         @Override
+        public void visit(Tree.SpecifierStatement that) {
+            Tree.Term bme = that.getBaseMemberExpression();
+    		if (that.getRefinement() &&
+            		(bme instanceof Tree.BaseMemberExpression ||
+            		bme instanceof Tree.ParameterizedExpression &&
+            		    ((Tree.ParameterizedExpression) bme).getPrimary() 
+            		            instanceof Tree.BaseMemberExpression)) {
+                if (inBounds(that)) {
+                	if (!hideNonshared) {
+                		result.add(new CeylonOutlineNode(that, getParent()));
+                	}
+                	else {
+                        super.visit(that);
+                    }
+                }
+                else {
+                	super.visitAny(that);
+                }
+            }
+        }        
+        @Override
         public void visit(Tree.Parameter that) {}
         @Override
         public void visit(Tree.CompilationUnit that) {
