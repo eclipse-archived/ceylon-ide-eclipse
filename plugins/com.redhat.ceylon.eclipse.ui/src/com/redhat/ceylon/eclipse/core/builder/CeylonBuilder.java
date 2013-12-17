@@ -1415,9 +1415,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         
         projectModuleDependencies.get(project).addModulesWithDependencies(typeChecker.getContext().getModules().getListOfModules());
-        System.out.println("\n\nDependencies for project " + project.getName() + " :\n" + projectModuleDependencies.get(project).dependenciesToDot());
-        
-        System.out.println(projectModuleDependencies.get(project).getReferencingModules(loader.getLoadedModule("ceylon.interop.java")));
 
         monitor.done();
         
