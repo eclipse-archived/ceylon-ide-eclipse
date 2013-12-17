@@ -117,6 +117,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JavaUnit;
+import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
@@ -212,6 +213,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private final static Map<IProject, List<IFile>> projectSources = new HashMap<IProject, List<IFile>>();
     private static Set<IProject> containersInitialized = new HashSet<IProject>();
     private final static Map<IProject, RepositoryManager> projectRepositoryManagers = new HashMap<IProject, RepositoryManager>();
+    private final static Map<IProject, ModuleDependencies> projectModuleDependencies = new HashMap<IProject, ModuleDependencies>();
 
     public static final String CEYLON_CONSOLE= "Ceylon Build";
     //private long startTime;
@@ -1412,18 +1414,37 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             throw new OperationCanceledException();
         }
         
+        projectModuleDependencies.get(project).addModulesWithDependencies(typeChecker.getContext().getModules().getListOfModules());
+        System.out.println("\n\nDependencies for project " + project.getName() + " :\n" + projectModuleDependencies.get(project).dependenciesToDot());
+        
+        System.out.println(projectModuleDependencies.get(project).getReferencingModules(loader.getLoadedModule("ceylon.interop.java")));
+
         monitor.done();
         
         return typeChecker.getPhasedUnits().getPhasedUnits();
     }
 
-    public static TypeChecker parseCeylonModel(IProject project,
+    public static TypeChecker parseCeylonModel(final IProject project,
             IProgressMonitor mon) throws CoreException {
 
         modelStates.put(project, ModelState.Parsing);
         typeCheckers.remove(project);
         projectRepositoryManagers.remove(project);
         projectSources.remove(project);
+        if (projectModuleDependencies.containsKey(project)) {
+            projectModuleDependencies.get(project).reset();
+        } else {
+            projectModuleDependencies.put(project, new ModuleDependencies(new ModuleDependencies.ErrorListener() {
+                @Override
+                public void moduleNotAvailable(Module module) {
+                    System.out.println("WARNING : module " + 
+                            module.getSignature() + 
+                            " in project " +
+                            project.getName() +
+                            " is not available after the Module Validation step !");
+                }
+            }));
+        }
         
         SubMonitor monitor = SubMonitor.convert(mon,
                 "Setting up typechecker for project " + project.getName(), 5);
@@ -1496,6 +1517,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         moduleValidator.verifyModuleDependencyTree();
         typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
+        
         
         for (PhasedUnits dependencyPhasedUnits: typeChecker.getPhasedUnitsOfDependencies()) {
             modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
@@ -2245,6 +2267,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         projectRepositoryManagers.remove(project);
         CeylonProjectConfig.remove(project);
         JavaProjectStateMirror.cleanup(project);
+        projectModuleDependencies.remove(project);
     }
     
     public static List<IPath> getSourceFolders(IProject project) {
@@ -2598,5 +2621,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
         }
         return true;
+    }
+
+    public static ModuleDependencies getModuleDependenciesForProject(
+            IProject project) {
+        return projectModuleDependencies.get(project);
     }
 }
