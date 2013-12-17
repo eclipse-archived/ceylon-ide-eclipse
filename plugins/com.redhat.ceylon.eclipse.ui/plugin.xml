@@ -1928,6 +1928,24 @@
           </and>
         </visibility>
      </objectContribution>
+     <objectContribution
+           objectClass="org.eclipse.jdt.core.IJavaProject"
+           adaptable="true"
+           nameFilter="*"
+           id="com.redhat.ceylon.eclipse.ui.projectViewAs">
+         <action
+               class="com.redhat.ceylon.eclipse.code.moduledependencies.DependencyGraph"
+               id="com.redhat.ceylon.eclipse.ui.actions.showDependencyGraph"
+               label="Visualize Module Dependencies"
+               menubarPath="additions"
+               tooltip="Visualize module dependencies for this project"/>
+        <visibility>
+          <and>
+            <objectState name="open" value="true"/>
+            <objectState name="nature" value="com.redhat.ceylon.eclipse.ui.ceylonNature"/>
+          </and>
+        </visibility>
+     </objectContribution>
    </extension>
    
    <extension
