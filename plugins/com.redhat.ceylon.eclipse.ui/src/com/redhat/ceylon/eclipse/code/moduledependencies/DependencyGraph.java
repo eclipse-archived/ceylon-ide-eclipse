@@ -28,9 +28,11 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -57,6 +59,13 @@ public class DependencyGraph implements IWorkbenchWindowActionDelegate {
         final ModuleDependencies dependencies = CeylonBuilder
                 .getModuleDependenciesForProject(fProject);
         if (dependencies == null) {
+            return;
+        }
+        if (dependencies.getAllDependencies().isEmpty()) {
+            MessageBox messageBox = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+            messageBox.setText("Ceylon Module Dependencies");
+            messageBox.setMessage("There is no declared module dependency within the project : '"  + fProject.getName() + "'.");
+            messageBox.open();
             return;
         }
 
@@ -138,7 +147,7 @@ public class DependencyGraph implements IWorkbenchWindowActionDelegate {
             }
         }
 
-        shell.setText("Ceylon Module dependencies for project " + fProject.getName());
+        shell.setText("Ceylon module dependencies for project '" + fProject.getName() + "'");
         shell.setLayout(new FillLayout());
         shell.setSize(1200, 900);
 
