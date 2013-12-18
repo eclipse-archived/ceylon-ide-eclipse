@@ -72,6 +72,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -81,6 +82,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager.ExternalModulePhasedUnits;
+import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.TraversalAction;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.util.CarUtils;
@@ -621,7 +623,6 @@ public class JDTModule extends LazyModule {
                 }
             }
             if (isCeylonBinaryArchive() || isJavaBinaryArchive()) {
-                super.getPackages().clear();
                 jarPackages.clear();
                 loadPackageList(new ArtifactResult() {
                     @Override
@@ -803,5 +804,43 @@ public class JDTModule extends LazyModule {
             return;
         }
         super.setUnit(newUnit);
+    }
+    
+    @Override
+    public void clearCache(final TypeDeclaration declaration) {
+        clearCacheLocally(declaration);
+        if (getProjectModuleDependencies() != null) {
+            getProjectModuleDependencies().doWithReferencingModules(this, new TraversalAction<Module>() {
+                @Override
+                public void applyOn(Module module) {
+                    assert(module instanceof JDTModule);
+                    if (module instanceof JDTModule) {
+                        ((JDTModule) module).clearCacheLocally(declaration); 
+                    }
+                }
+            }); 
+        }
+    }
+
+    private void clearCacheLocally(final TypeDeclaration declaration) {
+        super.clearCache(declaration);
+    }
+    
+    private ModuleDependencies projectModuleDependencies = null;
+    private ModuleDependencies getProjectModuleDependencies() {
+        if (projectModuleDependencies == null) {
+            IJavaProject javaProject = moduleManager.getJavaProject();
+            if (javaProject != null) {
+             projectModuleDependencies = CeylonBuilder.getModuleDependenciesForProject(javaProject.getProject());
+            }
+        }
+        return projectModuleDependencies;
+    }
+    
+    public Iterable<Module> getReferencingModules() {
+        if (getProjectModuleDependencies() != null) {
+            return getProjectModuleDependencies().getReferencingModules(this); 
+        }
+        return Collections.emptyList();
     }
 }
