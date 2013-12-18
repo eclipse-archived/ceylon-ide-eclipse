@@ -4,15 +4,22 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.alg.CycleDetector;
+import org.jgrapht.event.GraphEdgeChangeEvent;
+import org.jgrapht.event.GraphListener;
+import org.jgrapht.event.GraphVertexChangeEvent;
 import org.jgrapht.ext.ComponentAttributeProvider;
 import org.jgrapht.ext.DOTExporter;
 import org.jgrapht.ext.IntegerNameProvider;
@@ -41,16 +48,25 @@ class CleaningRunnable implements Runnable {
             if (toClean == null) {
                 break;
             }
-            Reference<? extends Module> moduleReference = toClean.removedModules.poll();
-            if (moduleReference != null) {
-                assert(moduleReference instanceof ModuleDependencies.ModuleWeakReference);
-                synchronized (toClean) {
-                    toClean.dependencies.removeVertex((ModuleDependencies.ModuleReference) moduleReference);
-                }
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException ignored) {
-                }
+            synchronized (toClean) {
+                Reference<? extends Module> moduleReference = null;
+                do {
+                    moduleReference = toClean.removedModules.poll();
+                    if (moduleReference != null) {
+                        assert(moduleReference instanceof ModuleDependencies.ModuleWeakReference);
+                        if (moduleReference instanceof ModuleDependencies.ModuleWeakReference) {
+                            if (toClean.getExistingVertex((ModuleDependencies.ModuleWeakReference) moduleReference) == moduleReference) {
+                                toClean.dependencies.removeVertex((ModuleDependencies.ModuleReference) moduleReference);
+                            } else {
+                                // A new ModuleReference has been added to the same module signature in the meantime. 
+                            }
+                        }
+                    }
+                } while (moduleReference != null);
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ignored) {
             }
         }
     }
@@ -147,22 +163,73 @@ public class ModuleDependencies {
     
     private ErrorListener errorListener = new ErrorListener();
     
-    DirectedGraph<ModuleReference, Dependency> dependencies = new ListenableDirectedGraph<ModuleReference, Dependency>(new DefaultDirectedGraph<ModuleReference, Dependency>(Dependency.class));
-    private EdgeReversedGraph<ModuleReference, Dependency> reversedDependencies = new EdgeReversedGraph<>(dependencies);
+    final ListenableDirectedGraph<ModuleReference, Dependency> dependencies = new ListenableDirectedGraph<ModuleReference, Dependency>(new DefaultDirectedGraph<ModuleReference, Dependency>(Dependency.class));
+    final private EdgeReversedGraph<ModuleReference, Dependency> reversedDependencies = new EdgeReversedGraph<>(dependencies);
+    final private Map<ModuleReference, Iterable<ModuleReference>> referencingModulesMap = Collections.synchronizedMap(new WeakHashMap<ModuleReference, Iterable<ModuleReference>>());
+    final private Map<ModuleReference, Iterable<ModuleReference>> moduleDependenciesMap = Collections.synchronizedMap(new WeakHashMap<ModuleReference, Iterable<ModuleReference>>());
+    final private List<GraphListener<ModuleReference, Dependency>> listeners = new ArrayList<>();
+    
+    public ModuleDependencies(GraphListener<ModuleReference, Dependency>[] graphListeners, ErrorListener errorListener) {
+        Thread cleaningThread = new Thread(new CleaningRunnable(this));
+        cleaningThread.setDaemon(true);
+        cleaningThread.start();
+        listeners.add(new GraphListener<ModuleReference, Dependency>() {
+            private void cleanInternalCaches() {
+                moduleDependenciesMap.clear();
+                referencingModulesMap.clear();
+            }
+            @Override
+            public void vertexRemoved(GraphVertexChangeEvent<ModuleReference> e) {
+                cleanInternalCaches();
+            }
+            @Override
+            public void vertexAdded(GraphVertexChangeEvent<ModuleReference> e) {
+                cleanInternalCaches();
+            }
+            @Override
+            public void edgeRemoved(GraphEdgeChangeEvent<ModuleReference, Dependency> e) {
+                cleanInternalCaches();
+            }
+            @Override
+            public void edgeAdded(GraphEdgeChangeEvent<ModuleReference, Dependency> e) {
+                cleanInternalCaches();
+            }
+        });
+        if (errorListener != null) {
+            this.errorListener = errorListener;
+        }
+        if (graphListeners != null) {
+            for (GraphListener<ModuleReference, Dependency> graphListener : graphListeners) {
+                listeners.add(graphListener);
+            }
+        }
+        enableGraphListeners();
+    }
     
     public ModuleDependencies() {
-        Thread cleaningThread = new Thread(new CleaningRunnable(this));
-        cleaningThread.setDaemon(true);
-        cleaningThread.start();
-    }
-    
-    public ModuleDependencies(ErrorListener listener) {
-        errorListener = listener;
-        Thread cleaningThread = new Thread(new CleaningRunnable(this));
-        cleaningThread.setDaemon(true);
-        cleaningThread.start();
+        this(null, null);
     }
 
+    public ModuleDependencies(ErrorListener listener) {
+        this(null, listener);
+    }
+
+    public ModuleDependencies(GraphListener<ModuleReference, Dependency>[] graphListeners) {
+        this(graphListeners, null);
+    }
+
+    private void enableGraphListeners() {
+        for (GraphListener<ModuleReference, Dependency> listener : listeners) {
+            dependencies.addGraphListener(listener);
+        }
+    }
+
+    private void disableGraphListeners() {
+        for (GraphListener<ModuleReference, Dependency> listener : listeners) {
+            dependencies.removeGraphListener(listener);
+        }
+    }
+    
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
@@ -193,7 +260,7 @@ public class ModuleDependencies {
         return true;
     }
     
-    private ModuleWeakReference getExistingVertex(ModuleReference moduleString) {
+    synchronized ModuleWeakReference getExistingVertex(ModuleReference moduleString) {
         for (ModuleReference ref : dependencies.vertexSet()) {
             if (ref.equals(moduleString) && ref instanceof ModuleWeakReference) {
                 return (ModuleWeakReference) ref;
@@ -257,33 +324,56 @@ public class ModuleDependencies {
         dependencies.removeVertex(moduleString);
     }
 
-    public static interface TraversalAction {
-        void applyOn(Module module);
+    public static interface TraversalAction<T> {
+        void applyOn(T module);
     }
     
-    public synchronized void doWithTransitiveDependencies(Module rootModule, TraversalAction action) {
+    public void doWithTransitiveDependencies(Module rootModule, TraversalAction<Module> action) {
         ModuleStringReference rootModuleString = new ModuleStringReference(rootModule);
         doWithTransitiveDependencies(rootModuleString, action);
     }
 
-    public synchronized void doWithTransitiveDependencies(ModuleReference rootModuleReference, TraversalAction action) {
-        ModuleWeakReference rootModuleRef = getExistingVertex(rootModuleReference);
-        if (rootModuleRef != null) {
-            BreadthFirstIterator<ModuleReference, Dependency> iterator = new BreadthFirstIterator<>(dependencies, rootModuleRef);
-            while(iterator.hasNext()) {
-                ModuleReference moduleReference = iterator.next();
+    public void doWithTransitiveDependencies(ModuleReference rootModuleReference, final TraversalAction<Module> action) {
+        doWithTransitiveDependenciesInternal(rootModuleReference, new TraversalAction<ModuleReference>() {
+            @Override
+            public void applyOn(ModuleReference moduleReference) {
                 assert (moduleReference instanceof ModuleWeakReference);
                 Module module = ((ModuleWeakReference) moduleReference).get();
                 if (module != null) {
                     action.applyOn(module);
                 }
             }
+        });
+    }
+
+    private synchronized void doWithTransitiveDependenciesInternal(ModuleReference rootModuleReference, TraversalAction<ModuleReference> action) {
+        Iterable<ModuleReference> moduleDependencies = moduleDependenciesMap.get(rootModuleReference);
+        if (moduleDependencies == null) {
+            ModuleWeakReference rootModuleRef = getExistingVertex(rootModuleReference);
+            if (rootModuleRef != null) {
+                DepthFirstIterator<ModuleReference, Dependency> iterator = new DepthFirstIterator<>(dependencies, rootModuleRef);
+                iterator.setCrossComponentTraversal(false);
+                List<ModuleReference> deps = new ArrayList<ModuleReference>();
+                while(iterator.hasNext()) {
+                    ModuleReference ref = iterator.next();
+                    if (ref != null && ! rootModuleReference.equals(ref)) {
+                        deps.add(ref);
+                    }
+                }
+                moduleDependencies = deps;
+                moduleDependenciesMap.put(rootModuleReference, moduleDependencies);
+            }
+        }
+        if (moduleDependencies != null) {
+            for (ModuleReference dependency : moduleDependencies) {
+                action.applyOn(dependency);
+            }
         }
     }
     
     public Iterable<Module> getTransitiveDependencies(Module rootModule) {
         final LinkedList<Module> result = new LinkedList<>();
-        doWithTransitiveDependencies(rootModule, new TraversalAction() {
+        doWithTransitiveDependencies(rootModule, new TraversalAction<Module>() {
             public void applyOn(Module module) {
                 result.add(module);
             }
@@ -293,7 +383,7 @@ public class ModuleDependencies {
 
     public Iterable<Module> getTransitiveDependencies(ModuleReference rootModuleReference) {
         final LinkedList<Module> result = new LinkedList<>();
-        doWithTransitiveDependencies(rootModuleReference, new TraversalAction() {
+        doWithTransitiveDependencies(rootModuleReference, new TraversalAction<Module>() {
             public void applyOn(Module module) {
                 result.add(module);
             }
@@ -301,133 +391,156 @@ public class ModuleDependencies {
         return result;
     }
 
-    public synchronized void doWithReferencingModules(Module rootModule, TraversalAction action) {
+    public void doWithReferencingModules(Module rootModule, TraversalAction<Module> action) {
         ModuleStringReference rootModuleString = new ModuleStringReference(rootModule);
         doWithReferencingModules(rootModuleString, action);
     }
 
-    private void doWithReferencingModules(ModuleReference rootModuleReference, TraversalAction action) {
-        final ModuleWeakReference rootModuleRef = getExistingVertex(rootModuleReference);
-        if (rootModuleRef != null) {
-            class DependencyAnalyzer {
-                class ModuleAnalysis {
-                    Set<Dependency> dependenciesTowardsRoot = new HashSet<>();
-                    Boolean isRootExportedBy = null;
-                    Boolean isRootVisibleFrom = null;
+    public void doWithReferencingModules(ModuleReference rootModuleReference, final TraversalAction<Module> action) {
+        doWithReferencingModulesInternal(rootModuleReference, new TraversalAction<ModuleReference>() {
+            @Override
+            public void applyOn(ModuleReference moduleReference) {
+                assert (moduleReference instanceof ModuleWeakReference);
+                Module module = ((ModuleWeakReference) moduleReference).get();
+                if (module != null) {
+                    action.applyOn(module);
                 }
-                private Map<ModuleReference, ModuleAnalysis> modulesToAnalyze = new HashMap<>();
+            }
+        });
+    }
 
-                public void addDependency(ModuleReference vertex,
-                        Dependency edge) {
-                    if (! vertex.equals(rootModuleRef)) {
-                        ModuleAnalysis moduleAnalysis = modulesToAnalyze.get(vertex);
-                        if (moduleAnalysis == null) {
-                            moduleAnalysis = new ModuleAnalysis();
-                            modulesToAnalyze.put(vertex, moduleAnalysis);
+    private void doWithReferencingModulesInternal(ModuleReference rootModuleReference, TraversalAction<ModuleReference> action) {
+        Iterable<ModuleReference> referencingModules = referencingModulesMap.get(rootModuleReference);
+        if (referencingModules == null) {
+            final ModuleWeakReference rootModuleRef = getExistingVertex(rootModuleReference);
+            if (rootModuleRef != null) {
+                class DependencyAnalyzer {
+                    class ModuleAnalysis {
+                        Set<Dependency> dependenciesTowardsRoot = new HashSet<>();
+                        Boolean isRootExportedBy = null;
+                        Boolean isRootVisibleFrom = null;
+                    }
+                    private Map<ModuleReference, ModuleAnalysis> modulesToAnalyze = new HashMap<>();
+
+                    public void addDependency(ModuleReference vertex,
+                            Dependency edge) {
+                        if (! vertex.equals(rootModuleRef)) {
+                            ModuleAnalysis moduleAnalysis = modulesToAnalyze.get(vertex);
+                            if (moduleAnalysis == null) {
+                                moduleAnalysis = new ModuleAnalysis();
+                                modulesToAnalyze.put(vertex, moduleAnalysis);
+                            }
+                            moduleAnalysis.dependenciesTowardsRoot.add(edge);
                         }
-                        moduleAnalysis.dependenciesTowardsRoot.add(edge);
-                    }
-                }
-                
-                public boolean isRootVisibleFrom(ModuleReference moduleReference) {
-                    if (moduleReference.equals(rootModuleRef)) {
-                        return true;
-                    }
-                    ModuleAnalysis moduleAnalysis = modulesToAnalyze.get(moduleReference);
-                    if (moduleAnalysis == null) {
-                        return false;
-                    }
-                    if (moduleAnalysis.isRootVisibleFrom != null) {
-                        return moduleAnalysis.isRootVisibleFrom.booleanValue();
                     }
                     
-                    boolean rootIsVisible = false;
-                    Set<Dependency> dependencies = moduleAnalysis.dependenciesTowardsRoot;
-                    for (Dependency dep : dependencies) {
-                        if (dep.getTarget().equals(rootModuleRef)) {
-                            rootIsVisible = true;
-                            break;
+                    public boolean isRootVisibleFrom(ModuleReference moduleReference) {
+                        if (moduleReference.equals(rootModuleRef)) {
+                            return true;
                         }
-                    }
-                    if (! rootIsVisible) {
+                        ModuleAnalysis moduleAnalysis = modulesToAnalyze.get(moduleReference);
+                        if (moduleAnalysis == null) {
+                            return false;
+                        }
+                        if (moduleAnalysis.isRootVisibleFrom != null) {
+                            return moduleAnalysis.isRootVisibleFrom.booleanValue();
+                        }
+                        
+                        boolean rootIsVisible = false;
+                        Set<Dependency> dependencies = moduleAnalysis.dependenciesTowardsRoot;
                         for (Dependency dep : dependencies) {
-                            if (isRootExportedBy((ModuleReference)dep.getTarget())) {
+                            if (dep.getTarget().equals(rootModuleRef)) {
                                 rootIsVisible = true;
                                 break;
                             }
                         }
-                    }
-                    
-                    moduleAnalysis.isRootVisibleFrom = new Boolean(rootIsVisible);
-                    return rootIsVisible; 
-                }
-
-                public boolean isRootExportedBy(ModuleReference moduleReference) {
-                    ModuleAnalysis moduleAnalysis = modulesToAnalyze.get(moduleReference);
-                    if (moduleAnalysis == null) {
-                        return false;
-                    }
-                    if (moduleAnalysis.isRootExportedBy != null) {
-                        return moduleAnalysis.isRootExportedBy.booleanValue();
-                    }
-                    
-                    boolean rootIsExported = false;
-                    Set<Dependency> dependencies = moduleAnalysis.dependenciesTowardsRoot;
-                    for (Dependency dep : dependencies) {
-                        if (dep.getTarget().equals(rootModuleRef) && dep.exported) {
-                            rootIsExported = true;
-                            break;
-                        }
-                    }
-                    if (! rootIsExported) {
-                        for (Dependency dep : dependencies) {
-                            if (isRootVisibleFrom((ModuleReference)dep.getTarget()) && dep.exported) {
-                                rootIsExported = true;
+                        if (! rootIsVisible) {
+                            for (Dependency dep : dependencies) {
+                                if (isRootExportedBy((ModuleReference)dep.getTarget())) {
+                                    rootIsVisible = true;
+                                    break;
+                                }
                             }
                         }
+                        
+                        moduleAnalysis.isRootVisibleFrom = new Boolean(rootIsVisible);
+                        return rootIsVisible; 
                     }
-                    moduleAnalysis.isRootExportedBy = new Boolean(rootIsExported);
-                    return rootIsExported;
-                }                
-            }
 
-            final DependencyAnalyzer dependencyAnalyzer = new DependencyAnalyzer();
-            
-            DepthFirstIterator<ModuleReference, Dependency> iterator = new DepthFirstIterator<ModuleReference, Dependency>(reversedDependencies, rootModuleRef) {
-                @Override
-                protected void encounterVertex(ModuleReference vertex,
-                        Dependency edge) {
-                    dependencyAnalyzer.addDependency(vertex, edge);
-                    super.encounterVertex(vertex, edge);
+                    public boolean isRootExportedBy(ModuleReference moduleReference) {
+                        ModuleAnalysis moduleAnalysis = modulesToAnalyze.get(moduleReference);
+                        if (moduleAnalysis == null) {
+                            return false;
+                        }
+                        if (moduleAnalysis.isRootExportedBy != null) {
+                            return moduleAnalysis.isRootExportedBy.booleanValue();
+                        }
+                        
+                        boolean rootIsExported = false;
+                        Set<Dependency> dependencies = moduleAnalysis.dependenciesTowardsRoot;
+                        for (Dependency dep : dependencies) {
+                            if (dep.getTarget().equals(rootModuleRef) && dep.exported) {
+                                rootIsExported = true;
+                                break;
+                            }
+                        }
+                        if (! rootIsExported) {
+                            for (Dependency dep : dependencies) {
+                                if (isRootVisibleFrom((ModuleReference)dep.getTarget()) && dep.exported) {
+                                    rootIsExported = true;
+                                }
+                            }
+                        }
+                        moduleAnalysis.isRootExportedBy = new Boolean(rootIsExported);
+                        return rootIsExported;
+                    }                
                 }
 
-                @Override
-                protected void encounterVertexAgain(ModuleReference vertex,
-                        Dependency edge) {
-                    dependencyAnalyzer.addDependency(vertex, edge);
-                    super.encounterVertexAgain(vertex, edge);
+                final DependencyAnalyzer dependencyAnalyzer = new DependencyAnalyzer();
+                
+                DepthFirstIterator<ModuleReference, Dependency> iterator = new DepthFirstIterator<ModuleReference, Dependency>(reversedDependencies, rootModuleRef) {
+                    @Override
+                    protected void encounterVertex(ModuleReference vertex,
+                            Dependency edge) {
+                        dependencyAnalyzer.addDependency(vertex, edge);
+                        super.encounterVertex(vertex, edge);
+                    }
+
+                    @Override
+                    protected void encounterVertexAgain(ModuleReference vertex,
+                            Dependency edge) {
+                        dependencyAnalyzer.addDependency(vertex, edge);
+                        super.encounterVertexAgain(vertex, edge);
+                    }
+                };
+                iterator.setCrossComponentTraversal(false);
+                while(iterator.hasNext()) {
+                    iterator.next();
                 }
-            };
-            iterator.setCrossComponentTraversal(false);
-            while(iterator.hasNext()) {
-                iterator.next();
-            }
-            
-            for (ModuleReference moduleReference : dependencyAnalyzer.modulesToAnalyze.keySet()) {
-                if (dependencyAnalyzer.isRootVisibleFrom(moduleReference)) {
-                    assert (moduleReference instanceof ModuleWeakReference);
-                    Module module = ((ModuleWeakReference) moduleReference).get();
-                    if (module != null) {
-                        action.applyOn(module);
+                
+                for (ModuleReference moduleReference : dependencyAnalyzer.modulesToAnalyze.keySet()) {
+                    if (dependencyAnalyzer.isRootVisibleFrom(moduleReference)) {
+                        action.applyOn(moduleReference);
                     }
                 }
+                List<ModuleReference> modulesToAdd = new ArrayList<ModuleReference>();
+                while(iterator.hasNext()) {
+                    modulesToAdd.add(iterator.next());
+                }
+                referencingModules = modulesToAdd;
+                referencingModulesMap.put(rootModuleReference, referencingModules);
+            }
+        }
+        if (referencingModules != null) {
+            for (ModuleReference dependency : referencingModules) {
+                action.applyOn(dependency);
             }
         }
     }
 
     public Iterable<Module> getReferencingModules(Module rootModule) {
         final LinkedList<Module> result = new LinkedList<>();
-        doWithReferencingModules(rootModule, new TraversalAction() {
+        doWithReferencingModules(rootModule, new TraversalAction<Module>() {
             public void applyOn(Module module) {
                 result.add(module);
             }
@@ -437,7 +550,7 @@ public class ModuleDependencies {
     
     public Iterable<Module> getReferencingModules(ModuleReference rootModuleReference) {
         final LinkedList<Module> result = new LinkedList<>();
-        doWithReferencingModules(rootModuleReference, new TraversalAction() {
+        doWithReferencingModules(rootModuleReference, new TraversalAction<Module>() {
             public void applyOn(Module module) {
                 result.add(module);
             }
@@ -446,8 +559,12 @@ public class ModuleDependencies {
     }
     
     public synchronized void reset() {
-        LinkedList<ModuleReference> verticesToRemove = new LinkedList<>(dependencies.vertexSet()); 
+        disableGraphListeners();
+        LinkedList<ModuleReference> verticesToRemove = new LinkedList<>(dependencies.vertexSet());
+        referencingModulesMap.clear();
+        moduleDependenciesMap.clear();
         dependencies.removeAllVertices(verticesToRemove);
+        enableGraphListeners();
     }
     
     public synchronized String dependenciesToDot() {
