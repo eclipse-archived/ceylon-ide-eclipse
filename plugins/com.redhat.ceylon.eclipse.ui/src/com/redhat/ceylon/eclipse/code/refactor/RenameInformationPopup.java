@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.internal.corext.util.Messages;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jface.action.Action;
@@ -677,7 +676,7 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
         StyledText hint= new StyledText(fPopup, SWT.READ_ONLY | SWT.SINGLE);
         String enterKeyName= getEnterBinding();
         String hintTemplate= fRenameLinkedMode.getHintTemplate();
-        hint.setText(Messages.format(hintTemplate, enterKeyName));
+        hint.setText(hintTemplate.replace("{0}", enterKeyName));
         hint.setForeground(foreground);
         hint.setStyleRange(new StyleRange(hintTemplate.indexOf("{0}"), enterKeyName.length(), null, null, SWT.BOLD)); //$NON-NLS-1$
         hint.setEnabled(false); // text must not be selectable
