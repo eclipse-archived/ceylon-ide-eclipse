@@ -117,7 +117,7 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.compiler.typechec
     @Override
     public Map<String, DeclarationWithProximity> getMatchingDeclarations(
             Unit unit, String startingWith, int proximity) {
-        return modelPackage.getMatchingDeclarations(unit, startingWith, proximity);
+        return super.getMatchingDeclarations(unit, startingWith, proximity);
     }
 
     @Override
