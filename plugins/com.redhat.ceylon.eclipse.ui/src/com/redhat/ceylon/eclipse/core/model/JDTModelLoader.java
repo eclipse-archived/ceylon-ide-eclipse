@@ -446,6 +446,12 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
+    public boolean searchAgain(LazyPackage lazyPackage, String name) {
+        return searchAgain(lazyPackage.getModule(), lazyPackage.getQualifiedName(lazyPackage.getQualifiedNameString(), name));
+    }
+
+    
+    @Override
     public synchronized ClassMirror lookupNewClassMirror(Module module, String name) {
         if (sourceDeclarations.containsKey(name)) {
             return new SourceClass(sourceDeclarations.get(name));
