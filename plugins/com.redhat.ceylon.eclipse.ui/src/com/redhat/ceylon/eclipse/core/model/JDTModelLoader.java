@@ -436,7 +436,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    protected boolean searchAgain(Module module, String name) {
+    public boolean searchAgain(Module module, String name) {
         String className = name.replace('.', '/');
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
