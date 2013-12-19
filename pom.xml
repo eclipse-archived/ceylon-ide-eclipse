@@ -37,6 +37,12 @@
      <url>http://download.eclipse.org/technology/swtbot/releases/latest/</url>
    </repository>
 
+   <repository>
+     <id>gef4</id>
+     <layout>p2</layout>
+     <url>http://download.eclipse.org/tools/gef/gef4/updates/integration/</url>
+   </repository>
+
   </repositories>
 
   <modules>
