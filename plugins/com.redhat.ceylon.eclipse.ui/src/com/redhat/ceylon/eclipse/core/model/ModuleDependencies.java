@@ -35,6 +35,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 
 class CleaningRunnable implements Runnable {
+    final ReferenceQueue<Module> removedModules = new ReferenceQueue<>();
     WeakReference<ModuleDependencies> dependenciesRef;
     
     CleaningRunnable(ModuleDependencies dependencies) {
@@ -44,29 +45,31 @@ class CleaningRunnable implements Runnable {
     @Override
     public void run() {
         while (true) {
-            ModuleDependencies toClean = dependenciesRef.get();
-            if (toClean == null) {
+            if (dependenciesRef.get() == null) {
                 break;
             }
-            synchronized (toClean) {
-                Reference<? extends Module> moduleReference = null;
-                do {
-                    moduleReference = toClean.removedModules.poll();
-                    if (moduleReference != null) {
-                        assert(moduleReference instanceof ModuleDependencies.ModuleWeakReference);
-                        if (moduleReference instanceof ModuleDependencies.ModuleWeakReference) {
-                            if (toClean.getExistingVertex((ModuleDependencies.ModuleWeakReference) moduleReference) == moduleReference) {
-                                toClean.dependencies.removeVertex((ModuleDependencies.ModuleReference) moduleReference);
-                            } else {
-                                // A new ModuleReference has been added to the same module signature in the meantime. 
+            
+            try {
+                Reference<? extends Module> moduleReference = removedModules.remove(10000);
+                if (moduleReference != null) {
+                    ModuleDependencies toClean = dependenciesRef.get();
+                    if (toClean != null) {
+                        synchronized (toClean) {
+                            assert(moduleReference instanceof ModuleDependencies.ModuleWeakReference);
+                            if (moduleReference instanceof ModuleDependencies.ModuleWeakReference) {
+                                if (toClean.getExistingVertex((ModuleDependencies.ModuleWeakReference) moduleReference) == moduleReference) {
+                                    toClean.dependencies.removeVertex((ModuleDependencies.ModuleReference) moduleReference);
+                                } else {
+                                    // A new ModuleReference has been added to the same module signature in the meantime. 
+                                }
                             }
                         }
                     }
-                } while (moduleReference != null);
-            }
-            try {
-                Thread.sleep(3000);
+                }
             } catch (InterruptedException ignored) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException ignored2) {}
             }
         }
     }
@@ -112,7 +115,7 @@ public class ModuleDependencies {
         private String moduleIdentifier;
         
         ModuleWeakReference(Module module) {
-            super(module, removedModules);
+            super(module, ModuleDependencies.this.cleaningRunnable.removedModules);
             assert(module != null);
             moduleIdentifier = module.getSignature();
         }
@@ -139,7 +142,6 @@ public class ModuleDependencies {
             return getIdentifier();
         }
     }
-    ReferenceQueue<Module> removedModules = new ReferenceQueue<>();
 
     public static class Dependency extends DefaultEdge {
         private static final long serialVersionUID = 5791860543581708398L;
@@ -168,9 +170,10 @@ public class ModuleDependencies {
     final private Map<ModuleReference, Iterable<ModuleReference>> referencingModulesMap = Collections.synchronizedMap(new WeakHashMap<ModuleReference, Iterable<ModuleReference>>());
     final private Map<ModuleReference, Iterable<ModuleReference>> moduleDependenciesMap = Collections.synchronizedMap(new WeakHashMap<ModuleReference, Iterable<ModuleReference>>());
     final private List<GraphListener<ModuleReference, Dependency>> listeners = new ArrayList<>();
+    final private CleaningRunnable cleaningRunnable = new CleaningRunnable(this);
     
     public ModuleDependencies(GraphListener<ModuleReference, Dependency>[] graphListeners, ErrorListener errorListener) {
-        Thread cleaningThread = new Thread(new CleaningRunnable(this));
+        Thread cleaningThread = new Thread(cleaningRunnable);
         cleaningThread.setDaemon(true);
         cleaningThread.start();
         listeners.add(new GraphListener<ModuleReference, Dependency>() {
