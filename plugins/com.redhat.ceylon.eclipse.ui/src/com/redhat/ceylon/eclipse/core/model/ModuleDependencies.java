@@ -167,8 +167,9 @@ public class ModuleDependencies {
     
     final ListenableDirectedGraph<ModuleReference, Dependency> dependencies = new ListenableDirectedGraph<ModuleReference, Dependency>(new DefaultDirectedGraph<ModuleReference, Dependency>(Dependency.class));
     final private EdgeReversedGraph<ModuleReference, Dependency> reversedDependencies = new EdgeReversedGraph<>(dependencies);
-    final private Map<ModuleReference, Iterable<ModuleReference>> referencingModulesMap = Collections.synchronizedMap(new WeakHashMap<ModuleReference, Iterable<ModuleReference>>());
-    final private Map<ModuleReference, Iterable<ModuleReference>> moduleDependenciesMap = Collections.synchronizedMap(new WeakHashMap<ModuleReference, Iterable<ModuleReference>>());
+    final private Map<ModuleReference, Iterable<ModuleReference>> referencingModulesMap = new WeakHashMap<ModuleReference, Iterable<ModuleReference>>();
+    final private Map<ModuleReference, Iterable<ModuleReference>> moduleDependenciesMap = new WeakHashMap<ModuleReference, Iterable<ModuleReference>>();
+    private boolean mustCleanCaches = false;
     final private List<GraphListener<ModuleReference, Dependency>> listeners = new ArrayList<>();
     final private CleaningRunnable cleaningRunnable = new CleaningRunnable(this);
     
@@ -178,8 +179,7 @@ public class ModuleDependencies {
         cleaningThread.start();
         listeners.add(new GraphListener<ModuleReference, Dependency>() {
             private void cleanInternalCaches() {
-                moduleDependenciesMap.clear();
-                referencingModulesMap.clear();
+                mustCleanCaches = true;
             }
             @Override
             public void vertexRemoved(GraphVertexChangeEvent<ModuleReference> e) {
@@ -270,6 +270,16 @@ public class ModuleDependencies {
             }
         }
         return null;
+    }
+
+    public synchronized void clearCaches() {
+        if (! moduleDependenciesMap.isEmpty()) {
+            moduleDependenciesMap.clear();
+        }
+        if (! referencingModulesMap.isEmpty()) {
+            referencingModulesMap.clear();
+        }
+        mustCleanCaches = false;        
     }
     
     public synchronized void addModuleWithDependencies(Module module) {
@@ -413,6 +423,9 @@ public class ModuleDependencies {
     }
 
     private void doWithReferencingModulesInternal(ModuleReference rootModuleReference, TraversalAction<ModuleReference> action) {
+        if (mustCleanCaches) {
+            clearCaches();
+        }
         Iterable<ModuleReference> referencingModules = referencingModulesMap.get(rootModuleReference);
         if (referencingModules == null) {
             final ModuleWeakReference rootModuleRef = getExistingVertex(rootModuleReference);
@@ -426,7 +439,9 @@ public class ModuleDependencies {
                     private Map<ModuleReference, ModuleAnalysis> modulesToAnalyze = new HashMap<>();
 
                     public void addDependency(ModuleReference vertex,
-                            Dependency edge) {
+                            Dependency edge) {        referencingModulesMap.clear();
+                            moduleDependenciesMap.clear();
+
                         if (! vertex.equals(rootModuleRef)) {
                             ModuleAnalysis moduleAnalysis = modulesToAnalyze.get(vertex);
                             if (moduleAnalysis == null) {
@@ -563,9 +578,8 @@ public class ModuleDependencies {
     
     public synchronized void reset() {
         disableGraphListeners();
+        clearCaches();
         LinkedList<ModuleReference> verticesToRemove = new LinkedList<>(dependencies.vertexSet());
-        referencingModulesMap.clear();
-        moduleDependenciesMap.clear();
         dependencies.removeAllVertices(verticesToRemove);
         enableGraphListeners();
     }
