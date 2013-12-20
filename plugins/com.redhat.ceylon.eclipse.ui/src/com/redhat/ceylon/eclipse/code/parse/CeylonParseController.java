@@ -54,7 +54,11 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
+import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
@@ -306,17 +310,19 @@ public class CeylonParseController {
         }
         
         if (project!=null) {
-            if ( CeylonNature.isEnabled(project) && !isModelTypeChecked(project)) {
-                // TypeChecking has not been performed
-                // on the main model, so don't do it 
-                // on the editor's tree
-                stage = FOR_OUTLINE;
-                if (stager!=null) {
-                    stager.afterStage(FOR_OUTLINE, monitor);
+            if ( CeylonNature.isEnabled(project)) {
+                if (!isModelTypeChecked(project)) {
+                    // TypeChecking has not been performed
+                    // on the main model, so don't do it 
+                    // on the editor's tree
+                    stage = FOR_OUTLINE;
+                    if (stager!=null) {
+                        stager.afterStage(FOR_OUTLINE, monitor);
+                    }
+                    return;
                 }
-                return; 
+                typeChecker = getProjectTypeChecker(project);
             }
-            typeChecker = getProjectTypeChecker(project);
         }
 
         boolean showWarnings = showWarnings(project);
@@ -342,6 +348,25 @@ public class CeylonParseController {
         builtPhasedUnit = (IdePhasedUnit) typeChecker.getPhasedUnit(file); // TODO : refactor !
         phasedUnit = typecheck(path, file, cu, srcDir, showWarnings, builtPhasedUnit);
         rootNode = phasedUnit.getCompilationUnit();
+        if (project != null && !CeylonNature.isEnabled(project)) {
+            rootNode.visit(new Visitor() {
+                @Override
+                public void visitAny(Node node) {
+                    super.visitAny(node);
+                    List<Message> errorsToRemove = new ArrayList<>();
+                    List<Message> nodeErrors = node.getErrors();
+                    for (Message error: nodeErrors) {
+                        
+                        if (! (error instanceof RecognitionError)) {
+                            errorsToRemove.add(error);
+                        }
+                    }
+                    for (Message error: errorsToRemove) {
+                        nodeErrors.remove(error);
+                    }
+                }
+            });
+        }
         collectErrors(rootNode);
         
         stage = TYPE_ANALYSIS;
