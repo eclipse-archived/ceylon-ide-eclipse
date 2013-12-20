@@ -1469,6 +1469,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             throw new OperationCanceledException();
         }
         
+        phasedUnits.getModuleManager().prepareForTypeChecking();
+        
         List<IFile> scannedSources = scanSources(project, javaProject, 
                 typeChecker, phasedUnits, moduleManager, modelLoader, 
                 defaultModule, monitor);
@@ -1491,7 +1493,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         monitor.subTask("- determining module dependencies for " 
                 + project.getName());
 
-        phasedUnits.getModuleManager().prepareForTypeChecking();
         phasedUnits.visitModules();
 
         //By now the language module version should be known (as local)
@@ -1570,7 +1571,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             // First Scan all non-default source modules and attach the contained packages 
             srcDirResource.accept(new ModulesScanner(defaultModule, modelLoader, moduleManager,
-                    srcDir, srcFolderPath));
+                    srcDir, srcFolderPath, typeChecker, scannedSources,
+                    phasedUnits));
+        }
+        for (final IPath srcAbsoluteFolderPath : sourceFolders) {
+            final IPath srcFolderPath = srcAbsoluteFolderPath.makeRelativeTo(project.getFullPath());
+            final ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
+
+            IResource srcDirResource = srcDir.getResource();
+            if (! srcDirResource.exists()) {
+                continue;
+            }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+            // Then scan all source files
             srcDirResource.accept(new SourceScanner(defaultModule, modelLoader, moduleManager,
                     srcDir, srcFolderPath, typeChecker, scannedSources,
                     phasedUnits));
