@@ -51,10 +51,6 @@ final class SourceScanner implements IResourceVisitor {
 	public boolean visit(IResource resource) throws CoreException {
 	    Package pkg;
 	    if (resource.equals(srcDir.getResource())) {
-	        IFile moduleFile = ((IFolder) resource).getFile(ModuleManager.MODULE_FILE);
-	        if (moduleFile.exists()) {
-	            moduleManager.addTopLevelModuleError();
-	        }
 	        return true;
 	    }
 
@@ -81,10 +77,10 @@ final class SourceScanner implements IResourceVisitor {
 	        IFile moduleFile = ((IFolder) resource).getFile(ModuleManager.MODULE_FILE);
 	        if (moduleFile.exists()) {
 	            if ( module != defaultModule ) {
-	                moduleManager.addTwoModulesInHierarchyError(module.getName(), pkgName);
+	                // This is an error : no nested modules
 	            } else {
 	                final List<String> moduleName = pkgName;
-	                //we don't know the version at this stage, will be filled later
+	                //we don't know the version here, but it is already added with the right version in ModulesScanner
 	                module = moduleManager.getOrCreateModule(moduleName, null);
 	                assert(module != null);
 	            }
