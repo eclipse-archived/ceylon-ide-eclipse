@@ -57,6 +57,9 @@ public class CarUtils {
                 
                 if (sourceUnitRelativePath.endsWith("_.java")) { // top-level methods or objects implemented in Java
                     ceylonSourceUnitRelativePath = sourceUnitRelativePath.replaceAll("\\_.java$", "\\.ceylon");
+                    if (sourceUnitRelativePath.equals("ceylon/language/true_.java") || sourceUnitRelativePath.equals("ceylon/language/false_.java")) {
+                        ceylonSourceUnitRelativePath = "ceylon/language/Boolean.ceylon";
+                    }
                 } else { // top-level classes or interfaces implemented in Java
                     ceylonSourceUnitRelativePath = sourceUnitRelativePath.replaceAll("\\.java$", "\\.ceylon");
                 }
