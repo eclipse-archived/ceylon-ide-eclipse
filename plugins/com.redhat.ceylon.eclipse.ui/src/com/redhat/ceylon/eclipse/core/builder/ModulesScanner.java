@@ -97,6 +97,12 @@ final class ModulesScanner implements IResourceVisitor {
                         tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
                                 typeChecker, virtualFile, srcDir, pkg);
                         module = tempPhasedUnit.visitSrcModulePhase();
+                        // The following is necessary since the annotations will be set 
+                        // during the real module parsing in PhasedUnit.visitModules()
+                        // And the annotations are stored in a list instead of a set...
+                        // The other module informations will be correctly overwritten 
+                        // in PhasedUnit.visitModule() 
+                        module.getAnnotations().clear(); 
                         moduleVisited = true;
                     } 
                     catch (Exception e) {
