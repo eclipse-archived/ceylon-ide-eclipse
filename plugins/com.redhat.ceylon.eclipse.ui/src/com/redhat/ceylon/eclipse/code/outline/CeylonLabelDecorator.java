@@ -177,9 +177,11 @@ public class CeylonLabelDecorator implements ILightweightLabelDecorator {
         	else {
         		 throw new RuntimeException("unexpected node type");
         	}
-        	Declaration r = getRefinedDeclaration(d);
-        	if (r!=null) {
-        		result |= r.isFormal() ? IMPLEMENTS : REFINES;
+        	if (d!=null) {
+        		Declaration r = getRefinedDeclaration(d);
+        		if (r!=null) {
+        			result |= r.isFormal() ? IMPLEMENTS : REFINES;
+        		}
         	}
         }
         return result;
