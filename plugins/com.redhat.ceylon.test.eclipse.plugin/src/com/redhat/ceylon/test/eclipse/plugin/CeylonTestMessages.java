@@ -69,6 +69,9 @@ public class CeylonTestMessages extends NLS {
     public static String historyColumnFailures;
     public static String historyColumnErrors;
     public static String historyColumnIgnored;
+    public static String historyPinLabel;
+    public static String historyPinTooltip;
+    public static String historyUnpinLabel;
     public static String historyDlgCanNotCompareRunningTest;
     public static String historyDlgCanNotRemoveRunningTest;
     

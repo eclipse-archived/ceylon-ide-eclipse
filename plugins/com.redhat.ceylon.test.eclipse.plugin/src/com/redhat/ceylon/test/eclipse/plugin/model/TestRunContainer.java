@@ -53,9 +53,9 @@ public class TestRunContainer {
             if (testRuns.size() > MAX_RUNS_COUNT) {
                 List<TestRun> obsoleteRuns = testRuns.subList(MAX_RUNS_COUNT, testRuns.size());
                 for (TestRun obsoleteRun : obsoleteRuns) {
-                    if (!obsoleteRun.isRunning()) {
-                        removeTestRun(obsoleteRun);
-                    }
+					if (!obsoleteRun.isRunning() && !obsoleteRun.isPinned()) {
+						removeTestRun(obsoleteRun);
+					}
                 }
             }
         }
@@ -64,7 +64,7 @@ public class TestRunContainer {
     }
 
     public void removeTestRun(TestRun testRun) {
-        if( testRun.isRunning() ) {
+        if( testRun.isRunning() || testRun.isPinned() ) {
             throw new IllegalStateException();
         }
         testRuns.remove(testRun);

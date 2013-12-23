@@ -1,5 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.ui;
 
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.PIN;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_INTERRUPTED;
@@ -17,6 +18,9 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDl
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgCanNotRemoveRunningTest;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgMessage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgTitle;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyPinLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyPinTooltip;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyUnpinLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.information;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.remove;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.removeAll;
@@ -64,6 +68,7 @@ public class HistoryDialog extends TitleAreaDialog {
     private Button buttonCompare;
     private Button buttonRemove;
     private Button buttonRemoveAll;
+    private Button buttonPin;
 
     private DateFormat startDateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
     private Color successColor = new Color(getDisplay(), 95, 191, 95);
@@ -118,15 +123,18 @@ public class HistoryDialog extends TitleAreaDialog {
 
         createViewer();
         createButtonCompare();
+        createButtonPin();
         createButtonRemove();
         createButtonRemoveAll();
+        updateButtons();
 
         return parent;
     }
 
-    private void createViewer() {
+	private void createViewer() {
         tableViewer = new TableViewer(panel, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 
+        createColumnPin();
         createColumnName();
         createColumnStartDate();
         createColumnCounts();
@@ -135,19 +143,41 @@ public class HistoryDialog extends TitleAreaDialog {
         tableViewer.setInput(testRunContainer.getTestRuns());
         tableViewer.getTable().setHeaderVisible(true);
         tableViewer.getTable().setLinesVisible(true);
-        tableViewer.getTable().setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).span(1, 4).create());
+        tableViewer.getTable().setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).span(1, 5).create());
+        tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+            	updateButtons();            	
+            }
+        });
     }
 
-    private void createColumnName() {
+	private void createColumnPin() {
+		TableViewerColumn colPin = new TableViewerColumn(tableViewer, SWT.NONE);
+		colPin.getColumn().setWidth(20);
+		colPin.getColumn().setToolTipText(historyPinTooltip);
+		colPin.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+			    return "";
+			}
+			@Override
+			public Image getImage(Object element) {
+				TestRun testRun = (TestRun) element;
+				return testRun.isPinned() ? CeylonTestImageRegistry.getImage(PIN) : null;
+			}
+		});
+	}
+
+	private void createColumnName() {
         TableViewerColumn colName = new TableViewerColumn(tableViewer, SWT.NONE);
-        colName.getColumn().setWidth(270);
+        colName.getColumn().setWidth(250);
         colName.getColumn().setText(historyColumnName);
         colName.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return ((TestRun) element).getRunName();
             }
-
             @Override
             public Image getImage(Object element) {
                 TestRun testRun = (TestRun) element;
@@ -282,20 +312,29 @@ public class HistoryDialog extends TitleAreaDialog {
                 }
             }
         });
-        tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                if (selection.size() == 2) {
-                    buttonCompare.setEnabled(true);
-                } else {
-                    buttonCompare.setEnabled(false);
-                }
-            }
-        });
     }
-
-    private void createButtonRemove() {
+    
+	private void createButtonPin() {
+		buttonPin = new Button(panel, SWT.PUSH);
+		buttonPin.setToolTipText(historyPinTooltip);
+		buttonPin.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 10).create());
+		buttonPin.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+				if (!selection.isEmpty()) {
+					for (Object selectedElement : selection.toArray()) {
+						TestRun testRun = (TestRun) selectedElement;
+						testRun.setPinned(!testRun.isPinned());
+					}
+					tableViewer.refresh();
+					updateButtons();
+				}
+			}
+		});
+    }
+    
+	private void createButtonRemove() {
         buttonRemove = new Button(panel, SWT.PUSH);
         buttonRemove.setText(remove);
         buttonRemove.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 10).create());
@@ -308,16 +347,16 @@ public class HistoryDialog extends TitleAreaDialog {
                         TestRun testRun = (TestRun) selectedElement;
                         if (testRun.isRunning()) {
                             MessageDialog.openInformation(getShell(), information, historyDlgCanNotRemoveRunningTest);
-                        } else {
-                            testRunContainer.removeTestRun(testRun);
-                        }
+						} else if (!testRun.isPinned()) {
+							testRunContainer.removeTestRun(testRun);
+						}
                     }
                 }
             }
         });
     }
 
-    private void createButtonRemoveAll() {
+	private void createButtonRemoveAll() {
         buttonRemoveAll = new Button(panel, SWT.PUSH);
         buttonRemoveAll.setText(removeAll);
         buttonRemoveAll.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).create());
@@ -325,7 +364,7 @@ public class HistoryDialog extends TitleAreaDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 for (TestRun testRun : testRunContainer.getTestRuns()) {
-                    if (!testRun.isRunning()) {
+                    if (!testRun.isRunning() && !testRun.isPinned()) {
                         testRunContainer.removeTestRun(testRun);
                     }
                 }
@@ -382,8 +421,50 @@ public class HistoryDialog extends TitleAreaDialog {
             }
         };
     }
+    
+    private void updateButtons() {
+    	updateButtonCompare();
+    	updateButtonPin();
+    	updateButtonRemove();
+    }
 
-    private void updateViewAsync() {
+    private void updateButtonCompare() {
+		IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+		if (selection.size() == 2) {
+			buttonCompare.setEnabled(true);
+		} else {
+			buttonCompare.setEnabled(false);
+		}
+	}
+
+	private void updateButtonPin() {
+		if (testRunContainer.getTestRuns().isEmpty()) {
+			buttonPin.setEnabled(false);
+			buttonPin.setText(historyPinLabel);
+		} else {
+			IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+			if (selection.size() == 1) {
+				buttonPin.setEnabled(true);
+				TestRun testRun = (TestRun) selection.getFirstElement();
+				buttonPin.setText(testRun.isPinned() ? historyUnpinLabel : historyPinLabel);
+			} else {
+				buttonPin.setEnabled(false);
+				buttonPin.setText(historyPinLabel);
+			}
+		}
+	}
+
+	private void updateButtonRemove() {
+		IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+		if (selection.size() == 1) {
+			TestRun testRun = (TestRun) selection.getFirstElement();
+			buttonRemove.setEnabled(!testRun.isPinned());
+		} else {
+			buttonRemove.setEnabled(false);
+		}
+	}
+
+	private void updateViewAsync() {
         getDisplay().asyncExec(new Runnable() {
             public void run() {
                 if (tableViewer != null && !tableViewer.getTable().isDisposed()) {

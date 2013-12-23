@@ -54,6 +54,7 @@ public class CeylonTestImageRegistry {
     public static final String EXPAND_ALL = "expand_all.gif";
     public static final String COMPARE = "compare.gif";
     public static final String HISTORY = "history.gif";
+    public static final String PIN = "pin.gif";
 
     private static final IPath ICONS_PATH = new Path("icons/");
 
@@ -108,6 +109,7 @@ public class CeylonTestImageRegistry {
         imageRegistry.put(EXPAND_ALL, image(EXPAND_ALL));
         imageRegistry.put(COMPARE, image(COMPARE));
         imageRegistry.put(HISTORY, image(HISTORY));
+        imageRegistry.put(PIN, image(PIN));
     }
 
     private static ImageDescriptor image(String file) {
