@@ -31,6 +31,7 @@ public class TestRun {
     private boolean isRunning;
     private boolean isFinished;
     private boolean isInterrupted;
+    private boolean isPinned;
     private int startedCount = 0;
     private int successCount = 0;
     private int failureCount = 0;
@@ -70,6 +71,14 @@ public class TestRun {
         return isInterrupted;
     }
 
+    public boolean isPinned() {
+    	return isPinned;
+    }
+    
+	public void setPinned(boolean isPinned) {
+		this.isPinned = isPinned;
+	}
+    
     public boolean isSuccess() {
         return failureCount == 0 && errorCount == 0;
     }
