@@ -32,6 +32,7 @@ public class CeylonTestMessages extends NLS {
     public static String errorCanNotFindPackage;
     public static String errorCanNotFindClass;
     public static String errorCanNotFindMethod;
+    public static String errorCanNotFindSelectedTest;
     public static String errorNoSocket;
     public static String errorMissingCeylonTestImport;
     
@@ -58,6 +59,8 @@ public class CeylonTestMessages extends NLS {
     public static String collapseAllLabel;
     public static String expandAllLabel;
     public static String gotoLabel;
+    public static String runLabel;
+    public static String debugLabel;
     
     public static String historyLabel;
     public static String historyDlgTitle;
