@@ -30,7 +30,7 @@ public class CeylonTestLaunchConfigEntry {
     private static final String PACKAGE_SEPARATOR = "::";
     private static final String MEMBER_SEPARATOR = ".";
 
-    enum Type {
+    public enum Type {
         PROJECT,
         MODULE,
         PACKAGE,
@@ -168,13 +168,13 @@ public class CeylonTestLaunchConfigEntry {
         if( !isValid() || type == Type.MODULE )
             return;
 
-        Package pkg = validatePackage(project);
-        if( !isValid() || type == Type.PACKAGE )
-            return;
-        
-        if (pkg != null) {
-            moduleName = pkg.getModule().getNameAsString();
-        }
+		Package pkg = validatePackage(project);
+		if(pkg != null) {
+			moduleName = pkg.getModule().getNameAsString();
+		}
+		if(!isValid() || type == Type.PACKAGE) {
+			return;
+		}
         
         Class clazz = validateClass(pkg);
         if( !isValid() || type == Type.CLASS || type == Type.CLASS_LOCAL )

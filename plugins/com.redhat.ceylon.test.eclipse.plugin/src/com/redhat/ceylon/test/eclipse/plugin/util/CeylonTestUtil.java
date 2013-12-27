@@ -15,6 +15,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_NAME;
+import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -24,6 +25,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -37,6 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.test.eclipse.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
@@ -108,6 +113,12 @@ public class CeylonTestUtil {
         }
         return null;
     }
+    
+    public static IProject getProject(ILaunch launch) throws CoreException {
+    	ILaunchConfiguration launchConfiguration = launch.getLaunchConfiguration();
+    	String projectName = launchConfiguration.getAttribute(ATTR_PROJECT_NAME, (String) null);
+    	return getProject(projectName);
+    }
 
     public static Module getModule(IProject project, String moduleName) {
         List<Module> modules = getModulesInProject(project);
@@ -128,6 +139,40 @@ public class CeylonTestUtil {
             }
         }
         return null;
+    }
+    
+    public static Referenceable getPackageOrDeclaration(IProject project, String qualifiedName) {
+    	Referenceable result = null;
+    	
+		String pkgName = null;
+		int pkgSepIndex = qualifiedName.indexOf("::");
+		if (pkgSepIndex == -1) {
+			pkgName = qualifiedName;
+		} else {
+			pkgName = qualifiedName.substring(0, pkgSepIndex);
+		}
+		
+		Package pkg = getPackage(project, pkgName);
+		if (pkg != null && pkgSepIndex != -1) {
+			Declaration d;
+			int memberSepIndex = qualifiedName.indexOf(".", pkgSepIndex);
+			if (memberSepIndex != -1) {
+				String className = qualifiedName.substring(pkgSepIndex + 2, memberSepIndex);
+				String methodName = qualifiedName.substring(memberSepIndex + 1);
+				d = pkg.getMember(className, null, false);
+				if (d != null) {
+					d = d.getMember(methodName, null, false);
+				}
+			} else {
+				String fceName = qualifiedName.substring(pkgSepIndex + 2);
+				d = pkg.getMember(fceName, null, false);
+			}
+			result = d;
+		} else {
+			result = pkg;
+		}
+    	
+    	return result;
     }
     
     public static boolean isCeylonProject(IProject project) {

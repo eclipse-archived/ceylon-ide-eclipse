@@ -14,8 +14,12 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.collapseAllLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.debugLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorCanNotFindSelectedTest;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorDialogTitle;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.expandAllLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.gotoLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.runLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.scrollLockLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showFailuresOnlyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showNextFailureLabel;
@@ -26,9 +30,12 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SCROLL
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_FAILURES_ONLY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_ELAPSED_TIME;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_IN_HIERARCHY;
+import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.CLASS;
+import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.CLASS_LOCAL;
+import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.METHOD;
+import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.METHOD_LOCAL;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getTestStateImage;
-import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -37,13 +44,13 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -65,15 +72,19 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.test.eclipse.TestElement;
 import com.redhat.ceylon.test.eclipse.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry;
+import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type;
+import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun.TestVisitor;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
@@ -95,6 +106,8 @@ public class TestsPanel extends Composite {
     private ExpandAllAction expandAllAction = new ExpandAllAction();
     private CollapseAllAction collapseAllAction = new CollapseAllAction();
     private GotoAction gotoAction = new GotoAction();
+    private RunAction runAction = new RunAction();
+    private DebugAction debugAction = new DebugAction();
     private TestRunListenerAdapter testRunListener;
     private TestElement lastStartedTestElement;
     private Set<String> lastFinishedPackages = new LinkedHashSet<String>();
@@ -171,6 +184,9 @@ public class TestsPanel extends Composite {
     private void createPopupMenu() {
         MenuManager popupMenu = new MenuManager();
         popupMenu.add(gotoAction);
+        popupMenu.add(new Separator());
+        popupMenu.add(runAction);
+        popupMenu.add(debugAction);
         popupMenu.add(new Separator());
         popupMenu.add(expandAllAction);
         popupMenu.add(collapseAllAction);
@@ -292,13 +308,21 @@ public class TestsPanel extends Composite {
         }
     }
 
-    private void handleSelectionChange(Object selectedItem) {
-        if (selectedItem instanceof TestElement) {
-            gotoAction.setEnabled(true);
-        } else {
-            gotoAction.setEnabled(false);
-        }
-    }
+	private void handleSelectionChange(Object selectedItem) {
+		if (selectedItem == null) {
+			gotoAction.setEnabled(false);
+			runAction.setEnabled(false);
+			debugAction.setEnabled(false);
+		} else {
+			if (selectedItem instanceof TestElement) {
+				gotoAction.setEnabled(true);
+			} else {
+				gotoAction.setEnabled(false);
+			}
+			runAction.setEnabled(true);
+			debugAction.setEnabled(true);
+		}
+	}
 
     private void handleDoubleClick(Object selectedItem) {
         if (selectedItem instanceof TestElement && gotoAction.isEnabled()) {
@@ -320,48 +344,56 @@ public class TestsPanel extends Composite {
         }
     }
     
-    private void gotoTest(TestElement testElement) throws CoreException {
-        ILaunch launch = currentTestRun.getLaunch();
-        ILaunchConfiguration launchConfiguration = launch.getLaunchConfiguration();
-        String projectName = launchConfiguration.getAttribute(ATTR_PROJECT_NAME, (String) null);
+	private void gotoTest(TestElement testElement) throws CoreException {
+		IProject project = CeylonTestUtil.getProject(currentTestRun.getLaunch());
+		if (project != null) {
+			Referenceable pkgOrDecl = CeylonTestUtil.getPackageOrDeclaration(project, testElement.getQualifiedName());
+			if (pkgOrDecl instanceof Declaration) {
+				CeylonSourcePositionLocator.gotoDeclaration((Declaration) pkgOrDecl, project);
+			}
+		}
+	}
 
-        IProject project = CeylonTestUtil.getProject(projectName);
-        if (project != null) {
-            List<Module> modules = CeylonBuilder.getModulesInProject(project);
-            for (Module module : modules) {
-                if( testElement.getPackageName() != null ) {
-                    Package pkg = module.getDirectPackage(testElement.getPackageName());
-                    if (pkg != null) {
-                        Declaration d = null;
-                        
-                        String qn = testElement.getQualifiedName();
-                        int pkgSepIndex = qn.indexOf("::");
-                        if( pkgSepIndex != -1 ) {
-                            int memberSepIndex = qn.indexOf(".", pkgSepIndex);
-                            if( memberSepIndex != -1 ) {
-                                String className = qn.substring(pkgSepIndex+2, memberSepIndex);
-                                String methodName = qn.substring(memberSepIndex+1);
-                                d = pkg.getMember(className, null, false);
-                                if( d != null ) {
-                                    d = d.getMember(methodName, null, false);
-                                }
-                            } else {
-                                String fceName = qn.substring(pkgSepIndex+2);
-                                d = pkg.getMember(fceName, null, false);
-                            }
-                        }
+    private void runTest(String launchMode) throws CoreException {
+    	String launchName = null;
+    	List<CeylonTestLaunchConfigEntry> entries = new ArrayList<CeylonTestLaunchConfigEntry>();
+		
+    	IProject project = CeylonTestUtil.getProject(currentTestRun.getLaunch());
+    	if( project != null ) {
+		
+    		String qualifiedName = null;
+    		Object selectedElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+    		if (selectedElement instanceof TestElement) {
+    			qualifiedName = ((TestElement) selectedElement).getQualifiedName();
+    		} else {
+    			qualifiedName = (String) selectedElement;
+    		}
 
-                        if (d != null) {
-                            CeylonSourcePositionLocator.gotoDeclaration(d, project);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    		Referenceable pkgOrDecl = CeylonTestUtil.getPackageOrDeclaration(project, qualifiedName);
+    		if( pkgOrDecl instanceof Package ) {
+    			Package pkg = (Package) pkgOrDecl;
+    			launchName = pkg.getNameAsString();
+    			entries.add(CeylonTestLaunchConfigEntry.build(project, Type.PACKAGE, pkg.getNameAsString()));
+    		} else if (pkgOrDecl instanceof Class) {
+    			Class clazz = (Class) pkgOrDecl;
+    			launchName = clazz.getName();
+    			entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL, clazz.getQualifiedNameString()));
+    		}
+    		else if (pkgOrDecl instanceof Method) {
+    			Method method = (Method) pkgOrDecl;
+    			launchName = (method.isMember() ? ((Declaration) method.getContainer()).getName() + "." : "") + method.getName();
+    			entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL, method.getQualifiedNameString()));
+    		}
+    	}
+		
+		if (entries.isEmpty()) {
+			MessageDialog.openInformation(getShell(), errorDialogTitle, errorCanNotFindSelectedTest);
+		} else {
+			CeylonTestLaunchShortcut.launch(launchName, entries, launchMode);
+		}		
+	}
 
-    public TreeViewer getViewer() {
+	public TreeViewer getViewer() {
         return viewer;
     }
 
@@ -703,6 +735,44 @@ public class TestsPanel extends Composite {
         }
 
     }
+    
+	private class RunAction extends Action {
+
+		public RunAction() {
+			super(runLabel);
+			setDescription(runLabel);
+			setEnabled(false);
+		}
+
+		@Override
+		public void run() {
+			try {
+				runTest(ILaunchManager.RUN_MODE);
+			} catch (CoreException e) {
+				CeylonTestPlugin.logError("", e);
+			}
+		}
+
+	}
+
+	private class DebugAction extends Action {
+
+		public DebugAction() {
+			super(debugLabel);
+			setDescription(debugLabel);
+			setEnabled(false);
+		}
+
+		@Override
+		public void run() {
+			try {
+				runTest(ILaunchManager.DEBUG_MODE);
+			} catch (CoreException e) {
+				CeylonTestPlugin.logError("", e);
+			}
+		}
+
+	}
     
     private static class NextFailureVisitor extends TestVisitor {
 

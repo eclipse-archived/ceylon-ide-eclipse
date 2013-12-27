@@ -104,7 +104,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         launch(name.toString(), entries, mode);
     }
 
-    private void launch(String name, List<CeylonTestLaunchConfigEntry> entries, String mode) {
+    public static void launch(String name, List<CeylonTestLaunchConfigEntry> entries, String mode) {
         if( entries.isEmpty() ) {
             MessageDialog.openInformation(getShell(), CeylonTestMessages.launchDialogInfoTitle, CeylonTestMessages.launchNoTestsFound);
             return;
@@ -200,6 +200,9 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         if (node instanceof Tree.AnyMethod) {
             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
             if (isTestable(method)) {
+            	if( method.isMember() ) {
+            		name.append(((Declaration)method.getContainer()).getName()).append(".");
+            	}
                 name.append(method.getName());
                 entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL, method.getQualifiedNameString()));
             }
@@ -213,7 +216,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         }
     }
 
-    private ILaunchConfiguration createLaunchConfig(String name, List<CeylonTestLaunchConfigEntry> entries, ILaunchConfigurationType configType) throws CoreException {
+    private static ILaunchConfiguration createLaunchConfig(String name, List<CeylonTestLaunchConfigEntry> entries, ILaunchConfigurationType configType) throws CoreException {
         ILaunchConfigurationWorkingCopy configWorkingCopy = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(name));
         configWorkingCopy.setAttribute(ATTR_PROJECT_NAME, entries.get(0).getProjectName());
         configWorkingCopy.setAttribute(LAUNCH_CONFIG_ENTRIES_KEY, CeylonTestLaunchConfigEntry.buildLaunchConfigAttributes(entries));
@@ -221,7 +224,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
     }
 
     @SuppressWarnings("unchecked")
-    private ILaunchConfiguration findExistingLaunchConfig(ILaunchConfigurationType configType, List<CeylonTestLaunchConfigEntry> entries) throws CoreException {
+    private static ILaunchConfiguration findExistingLaunchConfig(ILaunchConfigurationType configType, List<CeylonTestLaunchConfigEntry> entries) throws CoreException {
         List<String> attributes = CeylonTestLaunchConfigEntry.buildLaunchConfigAttributes(entries);
 
         List<ILaunchConfiguration> candidateConfigs = new ArrayList<ILaunchConfiguration>();
@@ -241,7 +244,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         }
     }
 
-    private ILaunchConfiguration chooseExistingLaunchConfig(List<ILaunchConfiguration> configList) {
+    private static ILaunchConfiguration chooseExistingLaunchConfig(List<ILaunchConfiguration> configList) {
         ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), DebugUITools.newDebugModelPresentation());
         dialog.setTitle(CeylonTestMessages.launchSelectLaunchConfigTitle);
         dialog.setMessage(CeylonTestMessages.launchSelectLaunchConfigMessage);
@@ -254,7 +257,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         }
     }
 
-    private ILaunchManager getLaunchManager() {
+    private static ILaunchManager getLaunchManager() {
         return DebugPlugin.getDefault().getLaunchManager();
     }
 
