@@ -53,8 +53,13 @@ public class ParameterContextInformation implements IContextInformation {
 		}
 		StringBuilder sb = new StringBuilder();
 		for (Parameter p: parameterList.getParameters()) {
-		    ProducedTypedReference pr = producedReference.getTypedParameter(p);
-		    appendDeclarationText(p.getModel(), pr, unit, sb);
+			if (producedReference==null) {
+				sb.append(p.getName());
+			}
+			else {
+				ProducedTypedReference pr = producedReference.getTypedParameter(p);
+				appendDeclarationText(p.getModel(), pr, unit, sb);
+			}
 			sb.append(", ");
 		}
 		sb.setLength(sb.length()-2);
