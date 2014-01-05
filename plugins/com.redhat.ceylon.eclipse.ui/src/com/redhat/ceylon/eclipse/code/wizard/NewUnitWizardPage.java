@@ -710,7 +710,7 @@ public class NewUnitWizardPage extends WizardPage {
     }
 
     boolean unitIsNameLegal(String unitName) {
-        return unitName.matches("\\w+");
+        return unitName.matches("(\\w|-)+");
     }
     
     private String getIllegalUnitNameMessage() {
