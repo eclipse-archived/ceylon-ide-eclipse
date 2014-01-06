@@ -76,6 +76,7 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.compiler.Options;
+import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
@@ -183,7 +184,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throws IOException {
             JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
             if (explodeModules && 
-                    javaFileObject instanceof JarEntryFileObject) {
+                    javaFileObject instanceof JarEntryFileObject && 
+                    sibling instanceof CeylonFileObject) {
                 final File ceylonOutputDirectory = getCeylonClassesOutputDirectory(project);
                 final File classFile = fileName.getFile(ceylonOutputDirectory);
                 classFile.getParentFile().mkdirs();
