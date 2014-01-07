@@ -7,14 +7,14 @@ import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
-import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.gef4.geometry.planar.Dimension;
 import org.eclipse.gef4.zest.core.viewers.GraphViewer;
 import org.eclipse.gef4.zest.core.viewers.IGraphContentProvider;
 import org.eclipse.gef4.zest.core.viewers.ISelfStyleProvider;
 import org.eclipse.gef4.zest.core.widgets.GraphConnection;
 import org.eclipse.gef4.zest.core.widgets.GraphNode;
 import org.eclipse.gef4.zest.core.widgets.ZestStyles;
-import org.eclipse.gef4.zest.layouts.algorithms.TreeLayoutAlgorithm;
+import org.eclipse.gef4.layout.algorithms.TreeLayoutAlgorithm;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -164,7 +164,7 @@ public class DependencyGraph implements IWorkbenchWindowActionDelegate {
         Dimension maxDimension = new Dimension();
         for (GraphNode node : (List<GraphNode>) viewer.getGraphControl()
                 .getNodes()) {
-            Dimension nodeDim = node.getSize();
+            Dimension nodeDim = new Dimension(node.getSize().preciseWidth(), node.getSize().preciseWidth());
             maxDimension = maxDimension.getUnioned(nodeDim);
         }
         tla.setNodeSpace(maxDimension.expand(5, 15));
