@@ -16,7 +16,7 @@
     
     <http://www.eclipse.org/downloads/>
     
-1.  Add the following update site to you eclipse installation : 
+1.  Add the following update site to your eclipse installation : 
     
     <http://download.eclipse.org/tools/gef/gef4/updates/integration>
     
