@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
-<plugin>com.redhat.ceylon.eclipse.ui
+<plugin>
+   <extension-point id="ceylonBuildHook" name="Ceylon Build Hook" schema="schema/ceylonBuildHook.exsd"/>
 
    <extension
          point="org.eclipse.core.contenttype.contentTypes">

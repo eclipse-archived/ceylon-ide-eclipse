@@ -4,6 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins">
 		<accessrules>
 			<accessrule kind="accessible" pattern="org/eclipse/jdt/internal/**"/>
+			<accessrule kind="accessible" pattern="org/eclipse/core/internal/events/NotificationManager"/>
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
