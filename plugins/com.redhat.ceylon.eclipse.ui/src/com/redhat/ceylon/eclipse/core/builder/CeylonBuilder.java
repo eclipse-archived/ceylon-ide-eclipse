@@ -16,6 +16,7 @@ import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,6 +40,7 @@ import net.lingala.zip4j.exception.ZipException;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.eclipse.core.internal.events.NotificationManager;
 import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IBuildContext;
 import org.eclipse.core.resources.ICommand;
@@ -52,11 +55,13 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
@@ -70,7 +75,6 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-
 import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
@@ -117,9 +121,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
-import com.redhat.ceylon.eclipse.core.model.JavaUnit;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
@@ -339,17 +341,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return getModelLoader(typeChecker);
     }
 
-    final static class BooleanHolder {
+    public final static class BooleanHolder {
         public boolean value;
     }
 
     public static class CeylonBuildHook {
         protected void startBuild(int kind, @SuppressWarnings("rawtypes") Map args, 
-                IProject javaProject, IBuildConfiguration config, IBuildContext context) {}
+                IProject javaProject, IBuildConfiguration config, IBuildContext context, IProgressMonitor monitor) throws CoreException {}
+        protected void deltasAnalyzed(List<IResourceDelta> currentDeltas,
+                BooleanHolder sourceModified, BooleanHolder mustDoFullBuild,
+                BooleanHolder mustResolveClasspathContainer, boolean mustContinueBuild) {}
         protected void resolvingClasspathContainer(
                 List<IClasspathContainer> cpContainers) {}
         protected void setAndRefreshClasspathContainer() {}
-        protected void dofullBuild() {}
+        protected void doFullBuild() {}
         protected void parseCeylonModel() {}
         protected void doIncrementalBuild() {}
         protected void fullTypeCheckDuringIncrementalBuild() {}
@@ -358,17 +363,165 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 List<IFile> filesToRemove, Collection<IFile> sourcesToCompile) {}
         protected void incrementalBuildResult(List<PhasedUnit> builtPhasedUnits) {}
         protected void beforeGeneratingBinaries() {}
+        protected void afterGeneratingBinaries() {}
         protected void scheduleReentrantBuild() {}
         protected void endBuild() {}
     };
     
-    public static final CeylonBuildHook noOpHook = new CeylonBuildHook();
-    private static CeylonBuildHook buildHook = noOpHook;
+    public static final CeylonBuildHook noOpHook = new CeylonBuildHook(); 
+    private static CeylonBuildHook buildHook = new CeylonBuildHook() {
+        List<CeylonBuildHook> contributedHooks = new LinkedList<>();
+
+        private synchronized void resetContributedHooks() {
+            contributedHooks.clear();
+            for (IConfigurationElement confElement : Platform.getExtensionRegistry().getConfigurationElementsFor(CeylonPlugin.PLUGIN_ID + ".ceylonBuildHook")) {
+                try {
+                    Object extension = confElement.createExecutableExtension("class");
+                    if (extension instanceof ICeylonBuildHookProvider) {
+                        CeylonBuildHook hook = ((ICeylonBuildHookProvider) extension).getHook();
+                        if (hook != null) {
+                            contributedHooks.add(hook);
+                        }
+                    }
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        protected void startBuild(int kind, @SuppressWarnings("rawtypes") Map args, 
+                IProject javaProject, IBuildConfiguration config, IBuildContext context, IProgressMonitor monitor) throws CoreException {
+            resetContributedHooks();
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.startBuild(kind, args, javaProject, config, context, monitor);
+            }
+        }
+        protected void deltasAnalyzed(List<IResourceDelta> currentDeltas,
+                BooleanHolder sourceModified, BooleanHolder mustDoFullBuild,
+                BooleanHolder mustResolveClasspathContainer, boolean mustContinueBuild) {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.deltasAnalyzed(currentDeltas, sourceModified, mustDoFullBuild, mustResolveClasspathContainer, mustContinueBuild);
+            }
+        }
+        protected void resolvingClasspathContainer(
+                List<IClasspathContainer> cpContainers) {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.resolvingClasspathContainer(cpContainers);
+            }
+        }
+        protected void setAndRefreshClasspathContainer() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.setAndRefreshClasspathContainer();
+            }
+        }
+        protected void doFullBuild() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.doFullBuild();
+            }
+        }
+        protected void parseCeylonModel() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.parseCeylonModel();
+            }
+        }
+        protected void doIncrementalBuild() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.doIncrementalBuild();
+            }
+        }
+        protected void fullTypeCheckDuringIncrementalBuild() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.fullTypeCheckDuringIncrementalBuild();
+            }
+        }
+        protected void incrementalBuildChangedSources(Set<IFile> changedSources) {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.incrementalBuildChangedSources(changedSources);
+            }
+        }
+        protected void incrementalBuildSources(Set<IFile> changedSources,
+                List<IFile> filesToRemove, Collection<IFile> sourcesToCompile) {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.incrementalBuildSources(changedSources, filesToRemove, sourcesToCompile);
+            }
+        }
+        protected void incrementalBuildResult(List<PhasedUnit> builtPhasedUnits) {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.incrementalBuildResult(builtPhasedUnits);
+            }
+        }
+        protected void beforeGeneratingBinaries() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.beforeGeneratingBinaries();
+            }
+        }
+        protected void afterGeneratingBinaries() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.afterGeneratingBinaries();
+            }
+        }
+        protected void scheduleReentrantBuild() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.beforeGeneratingBinaries();
+            }
+        }
+        protected void endBuild() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.endBuild();
+            }
+        }
+    };
     
-    public static CeylonBuildHook installHook(CeylonBuildHook hook){
+    public static CeylonBuildHook replaceHook(CeylonBuildHook hook){
         CeylonBuildHook previousHook = buildHook;
         buildHook = hook;
         return previousHook;
+    }
+
+    private static WeakReference<Job> notificationJobReference = null;
+    private static synchronized Job getNotificationJob() {
+        Job job = null;
+        if (notificationJobReference != null) {
+            job = notificationJobReference.get();
+        }
+        
+        if (job == null) {
+            for (Job j : Job.getJobManager().find(null)) {
+                if (NotificationManager.class.equals(j.getClass().getEnclosingClass())) {
+                    job = j;
+                    notificationJobReference = new WeakReference<Job>(job);
+                    break;
+                }
+            }
+        }
+        return job;
+    }
+    
+    public static void waitForUpToDateJavaModel(long timeout, IProject project, IProgressMonitor monitor) {
+        Job job = getNotificationJob();
+        if (job == null) {
+            return;
+        }
+        
+        monitor.subTask("Taking in account the resource changes of the previous builds" + project != null ? project.getName() : "");
+        long timeLimit = System.currentTimeMillis() + timeout;
+        while (job.getState() != Job.NONE) {
+            boolean stopWaiting = false;
+            if (job.isBlocking()) {
+                stopWaiting = true;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                stopWaiting = true;
+            }
+            if (System.currentTimeMillis() > timeLimit) {
+                stopWaiting = true;
+            }
+            if (stopWaiting) {
+                break;
+            }
+        }
     }
     
     @Override
@@ -376,8 +529,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             throws CoreException {
         final IProject project = getProject();
         IJavaProject javaProject = JavaCore.create(project);
-        buildHook.startBuild(kind, args, project, getBuildConfig(), getContext());
         SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(), 100);
+        try {
+            buildHook.startBuild(kind, args, project, getBuildConfig(), getContext(), monitor);
+        } catch (CoreException e) {
+            if (e.getStatus().getSeverity() == IStatus.CANCEL) {
+                return project.getReferencedProjects();
+            }
+        }
         
         IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
         for (IMarker m: buildMarkers) {
@@ -392,7 +551,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         
         List<IClasspathContainer> cpContainers = getCeylonClasspathContainers(javaProject);
-        
         
         boolean languageModuleContainerFound = false;
         boolean applicationModulesContainerFound = false;
@@ -461,7 +619,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         boolean somethingToDo = chooseBuildTypeFromDeltas(kind, project,
                 projectDeltas, mustDoFullBuild, mustResolveClasspathContainer);
-
+        
         if (!somethingToDo && (args==null || !args.containsKey(BUILDER_ID + ".reentrant"))) {
             return project.getReferencedProjects();
         }
@@ -509,7 +667,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             Collection<IFile> sourcesForBinaryGeneration = Collections.emptyList();
 
             if (mustDoFullBuild.value) {
-                buildHook.dofullBuild();
+                buildHook.doFullBuild();
                 monitor.subTask("Full Ceylon build of project " + project.getName());
 //                getConsoleStream().println(timedMessage("Full build of model"));
                 
@@ -699,11 +857,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                   monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
 //          getConsoleStream().println(successMessage(binariesGenerationOK));
             monitor.worked(1);
+            buildHook.afterGeneratingBinaries();
           
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-
 
             if (isExplodeModulesEnabled(project)) {
                 monitor.subTask("Rebuilding using exploded modules directory of " + project.getName());
@@ -723,7 +881,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             buildHook.endBuild();
         }
     }
-
+    
     private void warmupCompletionProcessor(final IProject project,
             final TypeChecker typeChecker) {
         Job job = new WarmupJob(project.getName(), typeChecker);
@@ -995,10 +1153,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
             }
         }
-        return mustDoFullBuild.value || 
-                mustResolveClasspathContainer.value ||
-                sourceModified.value ||
-                ! isModelTypeChecked(project);
+
+        class DecisionMaker {
+            public boolean mustContinueBuild() {
+                return mustDoFullBuild.value || 
+                        mustResolveClasspathContainer.value ||
+                        sourceModified.value ||
+                        ! isModelTypeChecked(project);
+            }
+        }; DecisionMaker decisionMaker = new DecisionMaker(); 
+        
+        buildHook.deltasAnalyzed(currentDeltas, sourceModified, mustDoFullBuild, mustResolveClasspathContainer, decisionMaker.mustContinueBuild());
+
+        return decisionMaker.mustContinueBuild();
     }
 
 //    private static String successMessage(boolean binariesGenerationOK) {

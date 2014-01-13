@@ -201,7 +201,7 @@ public class Utils {
         }
 
         public void install() {
-            CeylonBuildHook previousHook = CeylonBuilder.installHook(this);
+            CeylonBuildHook previousHook = CeylonBuilder.replaceHook(this);
             installed = true;
             if (ceylonBuildHookToRestore == null) {
                 ceylonBuildHookToRestore = previousHook;
@@ -210,7 +210,7 @@ public class Utils {
         
         @Override
         protected void startBuild(int kind, Map args, IProject project, 
-                IBuildConfiguration config, IBuildContext context) {
+                IBuildConfiguration config, IBuildContext context, IProgressMonitor monitor) {
             if (! this.project.equals(project)) {
                 summaryToFill = new CeylonBuildSummary(project);
                 previousBuilds.add(summaryToFill);
@@ -232,7 +232,7 @@ public class Utils {
         protected void setAndRefreshClasspathContainer() {
             summaryToFill.cpContainersSetAndRefreshed = true;
         }
-        protected void dofullBuild() {
+        protected void doFullBuild() {
             summaryToFill.fullBuild = true;
         }
         protected void parseCeylonModel() {
@@ -275,7 +275,7 @@ public class Utils {
                     reentrantBuildSummary.install();
                 }
                 firstBuildLatch.countDown();
-                CeylonBuilder.installHook(ceylonBuildHookToRestore);
+                CeylonBuilder.replaceHook(ceylonBuildHookToRestore);
             }
         }
         
