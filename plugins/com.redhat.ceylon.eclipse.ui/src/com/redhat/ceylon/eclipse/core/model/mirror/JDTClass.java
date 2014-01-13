@@ -292,15 +292,15 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     }
     
     public String getJavaModelPath() {
-//        ReferenceBinding sourceOrClass = klass;
-//        if (! klass.isBinaryBinding()) {
-//            sourceOrClass = klass.outermostEnclosingType();
-//        }
+        ReferenceBinding sourceOrClass = klass;
+        if (! klass.isBinaryBinding()) {
+            sourceOrClass = klass.outermostEnclosingType();
+        }
         char[] classFullName = new char[0];
-        for (char[] part : klass.compoundName) {
+        for (char[] part : sourceOrClass.compoundName) {
             classFullName = CharOperation.concat(classFullName, part, '/');
         }
-        char[][] temp = CharOperation.splitOn('.', klass.getFileName());
+        char[][] temp = CharOperation.splitOn('.', sourceOrClass.getFileName());
         String extension = temp.length > 1 ? "." + new String(temp[temp.length-1]) : "";
         String result = new String(classFullName) + extension;
         return result;
