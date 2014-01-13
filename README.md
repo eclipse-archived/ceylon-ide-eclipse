@@ -2,25 +2,23 @@
 
 ## Installing from http://ceylon-lang.org/eclipse/updatesite/
 
-1.  Start with a clean install of Eclipse Indigo (or Juno, especially if you're on a Mac).
+1.  Follow the instructions found there :
     
-    <http://www.eclipse.org/downloads/>
+    <http://ceylon-lang.org/documentation/1.0/ide/install>
     
-2.  Use `Help > Install New Software ... > Available Software Sites > Import`
-    Select `updatesites.xml`
-    
-3.  Close the dialog and now choose ceylon-lang.org updatesite and install the 
-    plugin.
-    
-4.  Restart Eclipse.
+2.  Restart Eclipse.
     
 5.  Go to `Help > Welcome to Ceylon` to get started.
 
 ## Installing/Building with (pure) Eclipse
 
-1.  Start with a clean install of Eclipse Indigo (or Juno, especially if you're on a Mac).
+1.  Start with a clean install of Eclipse Juno or Kepler.
     
     <http://www.eclipse.org/downloads/>
+    
+1.  Add the following update site to you eclipse installation : 
+    
+    <http://download.eclipse.org/tools/gef/gef4/updates/integration>
     
 2.  Use `File > Import... > Existing Projects into Workspace` 
     to import the project from this root directory: 
@@ -33,6 +31,7 @@
       Install all the features available at the following update site :
         
         http://download.eclipse.org/technology/swtbot/releases/latest/
+        
     - Use `File > Import... > Existing Projects into Workspace` 
       to import the project from this root directory: 
     
