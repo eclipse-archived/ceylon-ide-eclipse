@@ -8,5 +8,7 @@
 	<feature url="features/com.redhat.ceylon.eclipse.feature_0.0.0.jar" id="com.redhat.ceylon.eclipse.feature" version="0.0.0">
 		<category name="Ceylon"/>
 	</feature>
-
+    <feature url="features/com.redhat.ceylon.eclipse.android.feature_0.0.0.jar" id="com.redhat.ceylon.eclipse.android.feature" version="0.0.0">
+        <category name="Ceylon"/>
+    </feature>
 </site>
