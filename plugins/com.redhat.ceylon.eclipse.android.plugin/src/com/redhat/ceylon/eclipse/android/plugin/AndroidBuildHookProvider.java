@@ -40,11 +40,13 @@ import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.jarpackager.JarPackageData;
 import org.eclipse.jdt.ui.jarpackager.JarWriter3;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -53,12 +55,14 @@ import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
-    private static CeylonBuildHook buildHook = new CeylonBuildHook() {
-        public static final String CEYLON_GENERATED_ARCHIVES_PREFIX = "ceylonGenerated-"; 
-        public static final String CEYLON_GENERATED_CLASSES_ARCHIVE = CEYLON_GENERATED_ARCHIVES_PREFIX + "CeylonClasses.jar"; 
-        public static final String ANDROID_LIBS_DIRECTORY = "libs"; 
-        public static final String ANDROID_MODULE_ARCHIVE_NAME_REGEXP = "android\\-[^\\-]+\\.jar$"; 
-
+    private static final class AndroidCeylonBuildHook extends CeylonBuildHook {
+        public static final String CEYLON_GENERATED_ARCHIVES_PREFIX = "ceylonGenerated-";
+        public static final String CEYLON_GENERATED_CLASSES_ARCHIVE = CEYLON_GENERATED_ARCHIVES_PREFIX + "CeylonClasses.jar";
+        public static final String ANDROID_LIBS_DIRECTORY = "libs";
+        public static final  String[] ANDROID_PROVIDED_PACKAGES = new String[] {"android.app"};
+        public static final  String[] UNNECESSARY_CEYLON_RUNTIME_LIBRARIES = new String[] {"org.jboss.modules",
+                                                                                                "com.redhat.ceylon.module-resolver",
+                                                                                                "com.redhat.ceylon.common"};
         boolean areModulesChanged = false;
         boolean hasAndroidNature = false;
         boolean isReentrantBuild = false;
@@ -114,10 +118,10 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
                                     //if the ClassPathContainer is missing, add an error
                                     IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
                                     marker.setAttribute(IMarker.SOURCE_ID, CeylonAndroidPlugin.PLUGIN_ID);
-                                    marker.setAttribute(IMarker.MESSAGE, "Invalid Java Build Path for project " + project.getName() + " :\n" +
-                                            "The Ceylon libraries should be set before the Android libraries in the Java Build Path.\n" +
-                                            "In the 'Order and Export' tab of the 'Java Build Path' properties page,\n" + 
-                                            "you should move down the 'Android Private Libraries' and 'Android Dependencies' after the Ceylon Libraries");
+                                    marker.setAttribute(IMarker.MESSAGE, "Invalid Java Build Path for project " + project.getName() + " : " +
+                                            "The Ceylon libraries should be set before the Android libraries in the Java Build Path. " + 
+                                            "Move down the 'Android Private Libraries' and 'Android Dependencies' after the Ceylon Libraries " +
+                                            "in the 'Order and Export' tab of the 'Java Build Path' properties page.");
                                     marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                                     marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                                     marker.setAttribute(IMarker.LOCATION, "Java Build Path Order");
@@ -152,7 +156,7 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
         protected void doFullBuild() {
             isFullBuild = true;
         }
-        
+
         @Override
         protected void afterGeneratingBinaries() {
             IProject project = getProject();
@@ -221,16 +225,29 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
                     }
                     
                     if (isFullBuild || areModulesChanged) {
-                        List<Path> jarsToCopyToLib = new LinkedList<>();                    
-                        List<IClasspathContainer> cpContainers = CeylonClasspathUtil.getCeylonClasspathContainers(JavaCore.create(project));
+                        List<Path> jarsToCopyToLib = new LinkedList<>();
+                        IJavaProject javaProject = JavaCore.create(project);
+                        List<IClasspathContainer> cpContainers = CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
                         if (cpContainers != null) {
                             for (IClasspathContainer cpc : cpContainers) {
                                 for (IClasspathEntry cpe : cpc.getClasspathEntries()) {
                                     if (cpe.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-                                        if (! cpe.getPath().lastSegment().matches(ANDROID_MODULE_ARCHIVE_NAME_REGEXP)) {
-                                            Path path = FileSystems.getDefault().getPath(cpe.getPath().toOSString());
-                                            if (! Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS) &&
-                                                    Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+                                        Path path = FileSystems.getDefault().getPath(cpe.getPath().toOSString());
+                                        if (! Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS) &&
+                                                Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+                                            boolean isAndroidProvidedJar = false;
+                                            providerPackageFound:
+                                            for (IPackageFragmentRoot root : javaProject.getAllPackageFragmentRoots()) {
+                                                if (cpe.equals(root.getResolvedClasspathEntry())) {
+                                                    for (String providedPackage : ANDROID_PROVIDED_PACKAGES) {
+                                                        if (root.getPackageFragment(providedPackage).exists()) {
+                                                            isAndroidProvidedJar = true;
+                                                            break providerPackageFound;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if (! isAndroidProvidedJar) {
                                                 jarsToCopyToLib.add(path);
                                             }
                                         }
@@ -239,7 +256,16 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
                             }
                         }
                         for (String runtimeJar : CeylonPlugin.getRuntimeRequiredJars()) {
-                            jarsToCopyToLib.add(FileSystems.getDefault().getPath(runtimeJar));
+                            boolean isNecessary = true;
+                            for (String unnecessaryRuntime : UNNECESSARY_CEYLON_RUNTIME_LIBRARIES) {
+                                if (runtimeJar.contains(unnecessaryRuntime + "-")) {
+                                    isNecessary = false;
+                                    break;
+                                }
+                            }
+                            if (isNecessary) {
+                                jarsToCopyToLib.add(FileSystems.getDefault().getPath(runtimeJar));
+                            }
                         }
                         for (Path archive : jarsToCopyToLib) {
                             String newName = CEYLON_GENERATED_ARCHIVES_PREFIX + archive.getFileName();
@@ -270,7 +296,9 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
             monitorRef = null;
             projectRef = null;
         }
-    };
+    }
+
+    private static CeylonBuildHook buildHook = new AndroidCeylonBuildHook();
 
     @Override
     public CeylonBuildHook getHook() {
