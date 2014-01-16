@@ -819,6 +819,16 @@ public class JDTModule extends LazyModule {
                     }
                 }
             }); 
+            getProjectModuleDependencies().doWithTransitiveDependencies(this, new TraversalAction<Module>() {
+                @Override
+                public void applyOn(Module module) {
+                    assert(module instanceof JDTModule);
+                    if (module instanceof JDTModule) {
+                        ((JDTModule) module).clearCacheLocally(declaration); 
+                    }
+                }
+            });
+            ((JDTModule)getLanguageModule()).clearCacheLocally(declaration);
         }
     }
 
