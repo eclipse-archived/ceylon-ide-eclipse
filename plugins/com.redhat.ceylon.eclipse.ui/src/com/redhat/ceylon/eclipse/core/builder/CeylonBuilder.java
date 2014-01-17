@@ -76,6 +76,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+
 import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
@@ -104,6 +105,7 @@ import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.context.ProducedTypeCache;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -1912,7 +1914,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         //Compile JS first
         if (!sourceFiles.isEmpty() && compileToJs(project)) {
             success = compileJs(project, typeChecker, js_srcdir, js_repos,
-                    js_verbose, js_outRepo, printWriter);
+                    js_verbose, js_outRepo, printWriter, ! compileToJava(project));
         }
         if ((!sourceFiles.isEmpty() || !javaSourceFiles.isEmpty()) && 
                 compileToJava(project)) {
@@ -1931,7 +1933,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private boolean compileJs(IProject project, TypeChecker typeChecker,
             List<String> js_srcdir, List<String> js_repos, boolean js_verbose,
-            String js_outRepo, PrintWriter printWriter) throws CoreException {
+            String js_outRepo, PrintWriter printWriter, boolean generateSourceArchive) throws CoreException {
         Options jsopts = new Options()
                 .repos(js_repos)
                 .sources(js_srcdir)
@@ -1939,7 +1941,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 .outDir(js_outRepo)
                 .optimize(true)
                 .verbose(js_verbose ? "all" : null)
-                .generateSourceArchive(false)
+                .generateSourceArchive(generateSourceArchive)
                 .encoding(project.getDefaultCharset())
                 .offline(CeylonProjectConfig.get(project).isOffline());
         JsCompiler jsc = new JsCompiler(typeChecker, jsopts) {
@@ -1958,6 +1960,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return true;
             }
             
+            public String getFullPath(PhasedUnit pu) {
+                VirtualFile virtualFile = pu.getUnitFile();
+                if (virtualFile instanceof ResourceVirtualFile) {
+                    return ((IFileVirtualFile) virtualFile).getFile().getLocation().toOSString();
+                } else {
+                    return virtualFile.getPath();
+                }
+            };
         }.stopOnErrors(false);
         try {
             if (!jsc.generate()) {
