@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
@@ -102,6 +103,7 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.compiler.typechecker.context.ProducedTypeCache;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -167,8 +169,54 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      */
     public static final String TASK_MARKER_ID = PLUGIN_ID + ".ceylonTask";
     
-    public static final String SOURCE = "Ceylon"; 
+    public static final String SOURCE = "Ceylon";
+    
+    private static final class CeylonModelCacheEnabler implements ProducedTypeCache.CacheEnabler {
+        // Caches are disabled by default. And only enabled during build and warmup jobs
+        private final ThreadLocal<Object> cachingIsEnabled = new ThreadLocal<>();
+        
+        public CeylonModelCacheEnabler() {
+            ProducedTypeCache.setCacheEnabler(this);
+        }
 
+        public void enableCaching() {
+            cachingIsEnabled.set(new Object());
+        }
+
+        public void disableCaching() {
+            cachingIsEnabled.set(null);
+        }
+        
+        public boolean isCacheEnabled() {
+            return cachingIsEnabled.get() != null;
+        }
+    }
+    
+    private static CeylonModelCacheEnabler modelCacheEnabler = new CeylonModelCacheEnabler();
+    
+    public static void doWithCeylonModelCaching(final Runnable action) {
+        modelCacheEnabler.enableCaching();
+        try {
+            action.run();
+        } finally {
+            modelCacheEnabler.disableCaching();
+        }
+    }
+
+    public static <T> T doWithCeylonModelCaching(final Callable<T> action) throws CoreException {
+        modelCacheEnabler.enableCaching();
+        try {
+            return action.call();
+        } catch(CoreException ce) {
+            throw ce;
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            modelCacheEnabler.disableCaching();
+        }
+    }
+    
+    
     private final class BuildFileManager extends CeyloncFileManager {
         private final IProject project;
         final boolean explodeModules;
@@ -528,8 +576,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(final int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor mon) 
             throws CoreException {
         final IProject project = getProject();
-        IJavaProject javaProject = JavaCore.create(project);
-        SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(), 100);
+        final IJavaProject javaProject = JavaCore.create(project);
+        final SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(), 100);
         try {
             buildHook.startBuild(kind, args, project, getBuildConfig(), getContext(), monitor);
         } catch (CoreException e) {
@@ -707,8 +755,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                 monitor.subTask("Typechecking all source  files of project " + project.getName());
                 modelStates.put(project, ModelState.TypeChecking);
-                builtPhasedUnits = fullTypeCheck(project, typeChecker, 
-                        monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK ));
+                builtPhasedUnits = doWithCeylonModelCaching(new Callable<List<PhasedUnit>>() {
+                    @Override
+                    public List<PhasedUnit> call() throws Exception {
+                        return fullTypeCheck(project, typeChecker, 
+                                monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK ));
+                    }
+                });
                 modelStates.put(project, ModelState.TypeChecked);
                 monitor.worked(1);
                 
@@ -756,8 +809,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                     monitor.subTask("Initial typechecking all source files of project " + project.getName());
                     modelStates.put(project, ModelState.TypeChecking);
-                    builtPhasedUnits = fullTypeCheck(project, typeChecker, 
-                            monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK ));
+                    builtPhasedUnits = doWithCeylonModelCaching(new Callable<List<PhasedUnit>>() {
+                        @Override
+                        public List<PhasedUnit> call() throws Exception {
+                            return fullTypeCheck(project, typeChecker, 
+                                    monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK ));
+                        }
+                    });
                     modelStates.put(project, ModelState.TypeChecked);
                     monitor.worked(1);
 
@@ -799,8 +857,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }*/
                 monitor.subTask("Compiling " + sourceToCompile.size() + " source files in project " + 
                         project.getName());
-                builtPhasedUnits = incrementalBuild(project, sourceToCompile, 
-                        monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK));
+                builtPhasedUnits = doWithCeylonModelCaching(new Callable<List<PhasedUnit>>() {
+                    @Override
+                    public List<PhasedUnit> call() throws Exception {
+                        return incrementalBuild(project, sourceToCompile, 
+                                monitor.newChild(35, PREPEND_MAIN_LABEL_TO_SUBTASK));
+                    }
+                });
                 
                 if (builtPhasedUnits.isEmpty() && sourceToCompile.isEmpty()) {
                     
@@ -851,10 +914,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //          getConsoleStream().println(timedMessage("Incremental generation of class files..."));
 //          getConsoleStream().println("             ...compiling " + 
 //                  sourceToCompile.size() + " source files...");
-            /*binariesGenerationOK =*/ 
-            generateBinaries(project, javaProject,
-                  sourcesForBinaryGeneration, typeChecker, 
-                  monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
+            /*binariesGenerationOK =*/
+            final Collection<IFile> sourcesToProcess = sourcesForBinaryGeneration;
+            doWithCeylonModelCaching(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws CoreException {
+                    return generateBinaries(project, javaProject,
+                            sourcesToProcess, typeChecker, 
+                            monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
+                }
+            });
 //          getConsoleStream().println(successMessage(binariesGenerationOK));
             monitor.worked(1);
             buildHook.afterGeneratingBinaries();
@@ -1591,115 +1660,118 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static TypeChecker parseCeylonModel(final IProject project,
-            IProgressMonitor mon) throws CoreException {
-
-        modelStates.put(project, ModelState.Parsing);
-        typeCheckers.remove(project);
-        projectRepositoryManagers.remove(project);
-        projectSources.remove(project);
-        if (projectModuleDependencies.containsKey(project)) {
-            projectModuleDependencies.get(project).reset();
-        } else {
-            projectModuleDependencies.put(project, new ModuleDependencies(new ModuleDependencies.ErrorListener() {
-                @Override
-                public void moduleNotAvailable(Module module) {
-                    System.out.println("WARNING : module " + 
-                            module.getSignature() + 
-                            " in project " +
-                            project.getName() +
-                            " is not available after the Module Validation step !");
-                }
-            }));
-        }
-        
-        SubMonitor monitor = SubMonitor.convert(mon,
-                "Setting up typechecker for project " + project.getName(), 5);
-
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        
-        final IJavaProject javaProject = JavaCore.create(project);
-        TypeChecker typeChecker = buildTypeChecker(project, javaProject);
-        PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
-
-        JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
-        moduleManager.setTypeChecker(typeChecker);
-        Context context = typeChecker.getContext();
-        JDTModelLoader modelLoader = (JDTModelLoader) moduleManager.getModelLoader();
-        Module defaultModule = context.getModules().getDefaultModule();
-
-        monitor.worked(1);
-        
-        monitor.subTask("- parsing source files for project " 
-                    + project.getName());
-
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        
-        phasedUnits.getModuleManager().prepareForTypeChecking();
-        
-        List<IFile> scannedSources = scanSources(project, javaProject, 
-                typeChecker, phasedUnits, moduleManager, modelLoader, 
-                defaultModule, monitor);
-
-        monitor.worked(1);
-        
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-        modelLoader.setupSourceFileObjects(typeChecker.getPhasedUnits().getPhasedUnits());
-
-        monitor.worked(1);
-        
-        // Parsing of ALL units in the source folder should have been done
-
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-
-        monitor.subTask("- determining module dependencies for " 
-                + project.getName());
-
-        phasedUnits.visitModules();
-
-        //By now the language module version should be known (as local)
-        //or we should use the default one.
-        Module languageModule = context.getModules().getLanguageModule();
-        if (languageModule.getVersion() == null) {
-            languageModule.setVersion(TypeChecker.LANGUAGE_MODULE_VERSION);
-        }
-
-        monitor.worked(1);
-        
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
-
-        final ModuleValidator moduleValidator = new ModuleValidator(context, phasedUnits) {
+            final IProgressMonitor mon) throws CoreException {
+        return doWithCeylonModelCaching(new Callable<TypeChecker>() {
             @Override
-            protected void executeExternalModulePhases() {}
-        };
-        
-        moduleValidator.verifyModuleDependencyTree();
-        typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
-        
-        
-        for (PhasedUnits dependencyPhasedUnits: typeChecker.getPhasedUnitsOfDependencies()) {
-            modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
-        }
+            public TypeChecker call() throws CoreException {
+                modelStates.put(project, ModelState.Parsing);
+                typeCheckers.remove(project);
+                projectRepositoryManagers.remove(project);
+                projectSources.remove(project);
+                if (projectModuleDependencies.containsKey(project)) {
+                    projectModuleDependencies.get(project).reset();
+                } else {
+                    projectModuleDependencies.put(project, new ModuleDependencies(new ModuleDependencies.ErrorListener() {
+                        @Override
+                        public void moduleNotAvailable(Module module) {
+                            System.out.println("WARNING : module " + 
+                                    module.getSignature() + 
+                                    " in project " +
+                                    project.getName() +
+                                    " is not available after the Module Validation step !");
+                        }
+                    }));
+                }
+                
+                SubMonitor monitor = SubMonitor.convert(mon,
+                        "Setting up typechecker for project " + project.getName(), 5);
 
-        monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                
+                final IJavaProject javaProject = JavaCore.create(project);
+                TypeChecker typeChecker = buildTypeChecker(project, javaProject);
+                PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
-        typeCheckers.put(project, typeChecker);
-        projectSources.put(project, scannedSources);
-        modelStates.put(project, ModelState.Parsed);
-        
-        monitor.done();
-        
-        return typeChecker;
+                JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
+                moduleManager.setTypeChecker(typeChecker);
+                Context context = typeChecker.getContext();
+                JDTModelLoader modelLoader = (JDTModelLoader) moduleManager.getModelLoader();
+                Module defaultModule = context.getModules().getDefaultModule();
 
+                monitor.worked(1);
+                
+                monitor.subTask("- parsing source files for project " 
+                            + project.getName());
+
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                
+                phasedUnits.getModuleManager().prepareForTypeChecking();
+                
+                List<IFile> scannedSources = scanSources(project, javaProject, 
+                        typeChecker, phasedUnits, moduleManager, modelLoader, 
+                        defaultModule, monitor);
+
+                monitor.worked(1);
+                
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                modelLoader.setupSourceFileObjects(typeChecker.getPhasedUnits().getPhasedUnits());
+
+                monitor.worked(1);
+                
+                // Parsing of ALL units in the source folder should have been done
+
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                monitor.subTask("- determining module dependencies for " 
+                        + project.getName());
+
+                phasedUnits.visitModules();
+
+                //By now the language module version should be known (as local)
+                //or we should use the default one.
+                Module languageModule = context.getModules().getLanguageModule();
+                if (languageModule.getVersion() == null) {
+                    languageModule.setVersion(TypeChecker.LANGUAGE_MODULE_VERSION);
+                }
+
+                monitor.worked(1);
+                
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+
+                final ModuleValidator moduleValidator = new ModuleValidator(context, phasedUnits) {
+                    @Override
+                    protected void executeExternalModulePhases() {}
+                };
+                
+                moduleValidator.verifyModuleDependencyTree();
+                typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
+                
+                
+                for (PhasedUnits dependencyPhasedUnits: typeChecker.getPhasedUnitsOfDependencies()) {
+                    modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
+                }
+
+                monitor.worked(1);
+
+                typeCheckers.put(project, typeChecker);
+                projectSources.put(project, scannedSources);
+                modelStates.put(project, ModelState.Parsed);
+                
+                monitor.done();
+                
+                return typeChecker;
+            }
+        });
     }
 
     private static TypeChecker buildTypeChecker(IProject project,
