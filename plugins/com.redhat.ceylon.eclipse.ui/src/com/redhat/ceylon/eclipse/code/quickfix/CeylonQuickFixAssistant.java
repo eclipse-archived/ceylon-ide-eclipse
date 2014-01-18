@@ -41,6 +41,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguou
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addReverseIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RenameAliasProposal.addRenameAliasProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.RenameVersionProposal.addRenameVersionProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.addSpecifyTypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SplitDeclarationProposal.addSplitDeclarationProposal;
@@ -408,12 +409,18 @@ public class CeylonQuickFixAssistant {
             Declaration dec = imt.getDeclarationModel();
             if (dec!=null) {
                 if (imt.getAlias()==null) {
-                    addUseAliasProposal(imt, proposals, dec, file, editor);
+                    addUseAliasProposal(imt, proposals, dec, editor);
                 }
                 else {
-                    addRenameAliasProposal(imt, proposals, dec, file, editor);
+                    addRenameAliasProposal(imt, proposals, dec, editor);
                     addRemoveAliasProposal(imt, proposals, dec, file, editor);
                 }
+            }
+        }
+        
+        for (Tree.ModuleDescriptor md: cu.getModuleDescriptors()) {
+            if (md.getVersion()==node || md==node || md.getImportPath()==node) {
+            	addRenameVersionProposal(md, proposals, editor);
             }
         }
     }

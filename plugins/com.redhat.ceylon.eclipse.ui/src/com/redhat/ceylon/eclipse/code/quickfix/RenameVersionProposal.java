@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD_CORR;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.RENAME;
 
 import java.util.Collection;
 
@@ -12,33 +12,30 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtension6 {
+class RenameVersionProposal implements ICompletionProposal, 
+        ICompletionProposalExtension6 {
     
-    Tree.ImportMemberOrType node;
-    Declaration dec;
+    Tree.ModuleDescriptor node;
     CeylonEditor editor;
     
-    UseAliasProposal(Tree.ImportMemberOrType node, 
-            Declaration dec, CeylonEditor editor) {
+    RenameVersionProposal(Tree.ModuleDescriptor node, 
+            CeylonEditor editor) {
         this.node = node;
-        this.dec = dec;
         this.editor = editor;
     }
     
     @Override
     public void apply(IDocument document) {
-        new EnterAliasLinkedMode(node, dec, editor).start();
-        
+        new EnterVersionLinkedMode(node.getVersion(), node.getImportPath(), editor).start();
     }
     
-    static void addUseAliasProposal(Tree.ImportMemberOrType node,  
+    static void addRenameVersionProposal(Tree.ModuleDescriptor node,  
             Collection<ICompletionProposal> proposals, 
-            Declaration dec, CeylonEditor editor) {
-        proposals.add(new UseAliasProposal(node, dec, editor));
+            CeylonEditor editor) {
+        proposals.add(new RenameVersionProposal(node, editor));
     }
 
     @Override
@@ -58,12 +55,13 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
 
     @Override
     public String getDisplayString() {
-        return "Enter alias for '" + dec.getName() + "'";
+        return "Change version " + node.getVersion().getText() + 
+                " of module"; //TOOD: name of module
     }
 
     @Override
     public Image getImage() {
-        return ADD_CORR;
+        return RENAME;
     }
 
     @Override
