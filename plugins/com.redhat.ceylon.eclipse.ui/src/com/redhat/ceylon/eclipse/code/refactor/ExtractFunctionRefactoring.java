@@ -390,21 +390,17 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         
         String type;
-        String ending;
         ProducedType tt = term.getTypeModel();
         if (tt==null || tt.isUnknown()) {
             type = "dynamic";
-            ending = "return ";
         }
         else {
             boolean isVoid = (tt.getDeclaration() instanceof Class) && 
                     tt.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
             if (isVoid) {
                 type = "void";
-                ending = "";
             }
             else {
-                ending = "return ";
                 if (explicitType || dec.isToplevel()) {
                     ProducedType returnType = node.getUnit().denotableType(tt);
                     type = returnType.getProducedTypeName();
@@ -421,7 +417,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
                 type + " " + newName + typeParams + "(" + params + ")" + 
                         constraints + 
-                        " {" + extraIndent + ending + exp + ";" + indent + "}" 
+                        " => " + exp + ";" 
                         + indent + indent));
         tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
     }
