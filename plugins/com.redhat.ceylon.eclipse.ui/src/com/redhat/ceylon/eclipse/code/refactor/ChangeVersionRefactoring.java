@@ -24,20 +24,18 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class RenameVersionRefactoring extends AbstractRefactoring {
+public class ChangeVersionRefactoring extends AbstractRefactoring {
     
-    private static class FindReferencesVisitor extends Visitor {
-    	
+    private static class FindVersionReferenceVisitor extends Visitor {
     	private Module module;
     	private final Set<Node> nodes = new HashSet<Node>();
-    	
     	public Set<Node> getNodes() {
 	        return nodes;
         }
-    	
-        private FindReferencesVisitor(Module module) {
+        private FindVersionReferenceVisitor(Module module) {
             this.module = module;
         }
         @Override
@@ -48,20 +46,28 @@ public class RenameVersionRefactoring extends AbstractRefactoring {
             	nodes.add(that.getVersion());
             }
         }
+        @Override
+        public void visit(ModuleDescriptor that) {
+            super.visit(that);
+            if (that.getImportPath().getModel().getNameAsString()
+            		.equals(module.getNameAsString())) {
+            	nodes.add(that.getVersion());
+            }
+        }
     }
 
-	private String newName;
+	private String newVersion;
 	private final Module module;
 	
 	public Node getNode() {
 		return node;
 	}
 
-	public RenameVersionRefactoring(ITextEditor editor) {
+	public ChangeVersionRefactoring(ITextEditor editor) {
 	    super(editor);
 	    if (rootNode!=null) {
 	    	module = rootNode.getUnit().getPackage().getModule();
-	    	newName = module.getVersion();
+	    	newVersion = module.getVersion();
 	    }
 	    else {
     		module = null;
@@ -80,13 +86,13 @@ public class RenameVersionRefactoring extends AbstractRefactoring {
 	
 	@Override
 	int countReferences(Tree.CompilationUnit cu) {
-        FindReferencesVisitor frv = new FindReferencesVisitor(module);
+        FindVersionReferenceVisitor frv = new FindVersionReferenceVisitor(module);
         cu.visit(frv);
         return frv.getNodes().size();
 	}
 
 	public String getName() {
-		return "Rename Version";
+		return "Change Module Version";
 	}
 
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
@@ -136,7 +142,7 @@ public class RenameVersionRefactoring extends AbstractRefactoring {
     
     public List<Node> getNodesToRename(Tree.CompilationUnit root) {
     	ArrayList<Node> list = new ArrayList<Node>();
-    	FindReferencesVisitor frv = new FindReferencesVisitor(module);
+    	FindVersionReferenceVisitor frv = new FindVersionReferenceVisitor(module);
     	root.visit(frv);
     	list.addAll(frv.getNodes());
     	return list;
@@ -144,15 +150,19 @@ public class RenameVersionRefactoring extends AbstractRefactoring {
     
 	protected void renameNode(TextChange tfc, Node node, Tree.CompilationUnit root) {
 	    Node identifyingNode = getIdentifyingNode(node);
-		tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex(), 
-		        identifyingNode.getText().length(), newName));
+		tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex()+1, 
+		        identifyingNode.getText().length()-2, newVersion));
 	}
 
-	public void setNewName(String text) {
-		newName = text;
+	public void setNewVersion(String text) {
+		newVersion = text;
 	}
 
-    public String getNewName() {
-        return newName;
+    public String getNewVersion() {
+        return newVersion;
+    }
+
+	public Module getModule() {
+	    return module;
     }
 }

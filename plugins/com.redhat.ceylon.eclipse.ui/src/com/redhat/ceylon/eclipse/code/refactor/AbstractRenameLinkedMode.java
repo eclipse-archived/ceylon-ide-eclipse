@@ -152,7 +152,7 @@ public abstract class AbstractRenameLinkedMode {
         }
     }
 
-    DeleteBlockingExitPolicy createExitPolicy(final IDocument document) {
+    public DeleteBlockingExitPolicy createExitPolicy(final IDocument document) {
         return new DeleteBlockingExitPolicy(document);
     }
 
@@ -260,6 +260,6 @@ public abstract class AbstractRenameLinkedMode {
         return binding == null ? "" : binding;
     }
 
-    void addMenuItems(IMenuManager manager) {}
+    public void addMenuItems(IMenuManager manager) {}
     
 }
