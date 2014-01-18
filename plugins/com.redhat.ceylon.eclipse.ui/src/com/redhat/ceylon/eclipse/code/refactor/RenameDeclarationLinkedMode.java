@@ -42,7 +42,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 public final class RenameDeclarationLinkedMode extends
 			AbstractRenameLinkedMode {
     	
-	private IUndoableOperation fStartingUndoOperation;
+	private IUndoableOperation startingUndoOperation;
 	private final RenameRefactoring refactoring;
 	private boolean showPreview = false;
 	
@@ -102,7 +102,7 @@ public final class RenameDeclarationLinkedMode extends
             IUndoManagerExtension undoManagerExtension= (IUndoManagerExtension)undoManager;
             IUndoContext undoContext = undoManagerExtension.getUndoContext();
             IOperationHistory operationHistory = OperationHistoryFactory.getOperationHistory();
-            fStartingUndoOperation = operationHistory.getUndoOperation(undoContext);
+            startingUndoOperation = operationHistory.getUndoOperation(undoContext);
         }
     }
 
@@ -133,8 +133,8 @@ public final class RenameDeclarationLinkedMode extends
                         IUndoContext undoContext = ((IUndoManagerExtension) undoManager).getUndoContext();
                         IOperationHistory operationHistory = OperationHistoryFactory.getOperationHistory();
                         while (undoManager.undoable()) {
-                            if (fStartingUndoOperation != null && 
-                                    fStartingUndoOperation.equals(operationHistory.getUndoOperation(undoContext))) {
+                            if (startingUndoOperation != null && 
+                                    startingUndoOperation.equals(operationHistory.getUndoOperation(undoContext))) {
                                 return;
                             }
                             undoManager.undo();
@@ -224,7 +224,7 @@ public final class RenameDeclarationLinkedMode extends
     }
     
 	@Override
-    void addMenuItems(IMenuManager manager) {
+    public void addMenuItems(IMenuManager manager) {
 	    
 	    IAction previewAction = new Action("Preview") {
 	        @Override
@@ -291,7 +291,7 @@ public final class RenameDeclarationLinkedMode extends
 	}
 	
 	@Override
-    DeleteBlockingExitPolicy createExitPolicy(final IDocument document) {
+    public DeleteBlockingExitPolicy createExitPolicy(final IDocument document) {
         return new DeleteBlockingExitPolicy(document) {
             @Override
             public ExitFlags doExit(LinkedModeModel model, VerifyEvent event, int offset, int length) {
