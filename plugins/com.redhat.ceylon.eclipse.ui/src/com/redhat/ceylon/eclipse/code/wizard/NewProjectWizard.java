@@ -91,17 +91,15 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     }
     
     @Override
-    public boolean canFinish() {
-        return super.canFinish() && checkJre();
-    }
-    
-    @Override
     public IWizardPage getNextPage(IWizardPage page) {
         if (page==firstPage && !checkJre()) {
         	displayJREError();
         	return page;
         }
-        return super.getNextPage(page);
+        else {
+        	clearErrors();
+            return super.getNextPage(page);
+        }
     }
 
     public boolean performFinish() {
@@ -186,6 +184,14 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 	    for (IWizardPage page: getPages()) {
 	    	if (page instanceof WizardPage) {
 	    		((WizardPage)page).setErrorMessage("Please select a Java 1.7 JRE");
+	    	}
+	    }
+    }
+    
+	private void clearErrors() {
+	    for (IWizardPage page: getPages()) {
+	    	if (page instanceof WizardPage) {
+	    		((WizardPage)page).setErrorMessage(null);
 	    	}
 	    }
     }
