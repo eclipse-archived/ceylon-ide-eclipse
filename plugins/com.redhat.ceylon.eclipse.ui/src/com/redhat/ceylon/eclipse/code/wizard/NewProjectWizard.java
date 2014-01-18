@@ -89,27 +89,25 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
         secondPage.performFinish(monitor); // use the full progress monitor
     }
+    
+    @Override
+    public boolean canFinish() {
+        return super.canFinish() && checkJre();
+    }
+    
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        if (page==firstPage && !checkJre()) {
+        	displayJREError();
+        	return page;
+        }
+        return super.getNextPage(page);
+    }
 
     public boolean performFinish() {
-        for (IClasspathEntry cpe: firstPage.getDefaultClasspathEntries()) {
-            if (cpe.getEntryKind()==IClasspathEntry.CPE_CONTAINER) {                
-                IPath path = cpe.getPath();
-                if (path.segment(0).equals(JRE_CONTAINER)) {
-                    IVMInstall vm = JavaRuntime.getVMInstall(cpe.getPath());
-                    if (vm==null || !((IVMInstall2)vm).getJavaVersion().startsWith("1.7")) {
-                    	displayJREError();
-                        return false;
-                    }
-                    if (path.segmentCount()==3) {
-                        String s = path.segment(2);
-                        if ((s.startsWith("JavaSE-")||s.startsWith("J2SE-")) &&
-                                !s.contains("1.7")) {
-                        	displayJREError();
-                            return false;
-                        }
-                    }
-                }
-            }
+        if (!checkJre()) {
+        	displayJREError();
+        	return false;
         }
         
         boolean res= super.performFinish();
@@ -160,6 +158,28 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         }
         
         return res;
+    }
+
+	private Boolean checkJre() {
+	    for (IClasspathEntry cpe: firstPage.getDefaultClasspathEntries()) {
+            if (cpe.getEntryKind()==IClasspathEntry.CPE_CONTAINER) {                
+                IPath path = cpe.getPath();
+                if (path.segment(0).equals(JRE_CONTAINER)) {
+                    IVMInstall vm = JavaRuntime.getVMInstall(cpe.getPath());
+                    if (vm==null || !((IVMInstall2)vm).getJavaVersion().startsWith("1.7")) {
+                        return false;
+                    }
+                    if (path.segmentCount()==3) {
+                        String s = path.segment(2);
+                        if ((s.startsWith("JavaSE-")||s.startsWith("J2SE-")) &&
+                                !s.contains("1.7")) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+	    return true;
     }
 
 	private void displayJREError() {
