@@ -131,7 +131,7 @@ class EnterVersionLinkedMode extends AbstractRenameLinkedMode {
 
 	@Override
 	public String getHintTemplate() {
-		return "Enter new version for " + linkedPositionGroup.getPositions().length + 
+		return "Enter new version for " + refactoring.getCount() + 
 		        " occurrences of \"" + getName() + "\" {0}";
 	}
 	
