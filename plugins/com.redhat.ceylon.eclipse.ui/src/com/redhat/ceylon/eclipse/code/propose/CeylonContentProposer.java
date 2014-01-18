@@ -892,20 +892,6 @@ public class CeylonContentProposer {
             addPackageDescriptorCompletion(cpc, offset, prefix, result);
             addKeywordProposals(cpc, offset, prefix, result, node);
         }
-        else if ((node instanceof Tree.SimpleType || 
-            node instanceof Tree.BaseTypeExpression ||
-            node instanceof Tree.QualifiedTypeExpression) 
-               && prefix.isEmpty() && 
-               isMemberNameProposable(offset, node, prefix, memberOp)) {
-            addMemberNameProposal(offset, prefix, node, result);
-        }
-        else if (node instanceof Tree.TypedDeclaration && 
-                !(node instanceof Tree.Variable && 
-                        ((Tree.Variable) node).getType() instanceof Tree.SyntheticVariable) &&
-                !(node instanceof Tree.InitializerParameter) &&
-                isMemberNameProposable(offset, node, prefix, memberOp)) {
-            addMemberNameProposal(offset, prefix, node, result);
-        }
         else if (node instanceof Tree.TypeArgumentList && 
         		token.getType()==CeylonLexer.LARGER_OP) {
         	if (offset==token.getStopIndex()+1) {
@@ -1094,6 +1080,7 @@ public class CeylonContentProposer {
             CommonToken token, boolean memberOp, IDocument doc, boolean filter, boolean inDoc) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+        OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
         
         if (node instanceof Tree.TypeConstraint) {
             for (DeclarationWithProximity dwp: set) {
@@ -1103,9 +1090,82 @@ public class CeylonContentProposer {
                 }
             }
         }
+        else if ((node instanceof Tree.SimpleType || 
+        		node instanceof Tree.BaseTypeExpression ||
+        		node instanceof Tree.QualifiedTypeExpression) 
+        		&& prefix.isEmpty() && 
+        		isMemberNameProposable(offset, node, prefix, memberOp)) {
+            //member names we can refine
+            ProducedType t=null;
+            if (node instanceof Tree.Type) {
+            	t = ((Tree.Type) node).getTypeModel();
+            }
+            else if (node instanceof Tree.BaseTypeExpression) {
+            	t = ((Tree.BaseTypeExpression) node).getTarget().getType();
+            }
+            else if (node instanceof Tree.QualifiedTypeExpression) {
+            	t = ((Tree.BaseTypeExpression) node).getTarget().getType();
+            }
+            if (t!=null) {
+                for (DeclarationWithProximity dwp: set) {
+                    Declaration dec = dwp.getDeclaration();
+                    if (isRefinementProposable(dec, ol, scope) && !filter && 
+                    		dec instanceof MethodOrValue) {
+                    	MethodOrValue m = (MethodOrValue) dec;
+                        for (Declaration d: overloads(dec)) {
+                            if ((d.isDefault() || d.isFormal()) &&
+                            		t.isSubtypeOf(m.getType())) {
+                                try {
+                                	//sucks: we can't replace the annotations to add "shared actual" :-(
+	                                String pfx = doc.get(node.getStartIndex(), offset-node.getStartIndex());
+	                            	addRefinementProposal(offset, pfx, cpc, scope, node, result, d, doc, false);
+                                }
+                                catch (BadLocationException e) {
+	                                e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            //otherwise guess something from the type
+        	addMemberNameProposal(offset, prefix, node, result);
+        }
+        else if (node instanceof Tree.TypedDeclaration && 
+        		!(node instanceof Tree.Variable && 
+        				((Tree.Variable) node).getType() instanceof Tree.SyntheticVariable) &&
+        		!(node instanceof Tree.InitializerParameter) &&
+        		isMemberNameProposable(offset, node, prefix, memberOp)) {
+            //member names we can refine
+            Tree.Type dnt = ((Tree.TypedDeclaration) node).getType();
+            if (dnt!=null && dnt.getTypeModel()!=null) {
+            	ProducedType t = dnt.getTypeModel();
+                for (DeclarationWithProximity dwp: set) {
+                    Declaration dec = dwp.getDeclaration();
+                    if (isRefinementProposable(dec, ol, scope) && !filter && 
+                    		dec instanceof MethodOrValue) {
+                    	MethodOrValue m = (MethodOrValue) dec;
+                        for (Declaration d: overloads(dec)) {
+                            if ((d.isDefault() || d.isFormal()) &&
+                            		t.isSubtypeOf(m.getType())) {
+                                try {
+	                                String pfx = doc.get(node.getStartIndex(), offset-node.getStartIndex());
+	                            	addRefinementProposal(offset, pfx, cpc, scope, node, result, d, doc, true);
+                                }
+                                catch (BadLocationException e) {
+	                                e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            //otherwise guess something from the type
+            addMemberNameProposal(offset, prefix, node, result);
+        }
         else {
         	boolean isMember = node instanceof Tree.QualifiedMemberOrTypeExpression;
-            OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
+        	
             if (!filter && !inDoc && !isMember) {
                 addKeywordProposals(cpc, offset, prefix, result, node);
                 //addTemplateProposal(offset, prefix, result);
@@ -1155,14 +1215,23 @@ public class CeylonContentProposer {
                     addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
                 }
                 
-                if (isRefinementProposable(dec, ol) && !memberOp && !isMember && !filter) {
+                if (isRefinementProposable(dec, ol, scope) && !memberOp && !isMember && !filter) {
                     for (Declaration d: overloads(dec)) {
-                        addRefinementProposal(offset, prefix, cpc, scope, node, result, d, doc);
+                        if (d.isDefault() || d.isFormal()) {
+                        	addRefinementProposal(offset, prefix, cpc, scope, node, result, d, doc, true);
+                        }
                     }
                 }
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+	private static void addRefinedMemberNameProposal(final int offset,
+            final String prefix, final List<ICompletionProposal> result,
+            Method m) {
+	    result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
+	    		m.getName(), escape(m.getName()), false));
     }
     
     private static boolean isQualifiedType(Node node) {
@@ -1297,8 +1366,10 @@ public class CeylonContentProposer {
         return ol==null || ol==EXPRESSION;
     }*/
     
-    private static boolean isRefinementProposable(Declaration dec, OccurrenceLocation ol) {
-        return ol==null && (dec instanceof MethodOrValue || dec instanceof Class);
+    private static boolean isRefinementProposable(Declaration dec, OccurrenceLocation ol, Scope scope) {
+        return ol==null && (dec instanceof MethodOrValue || dec instanceof Class) && 
+        		scope instanceof ClassOrInterface &&
+                ((ClassOrInterface) scope).isInheritedFromSupertype(dec);
     }
     
     private static boolean isInvocationProposable(DeclarationWithProximity dwp, OccurrenceLocation ol) {
@@ -1377,18 +1448,15 @@ public class CeylonContentProposer {
     }
 
     private static void addRefinementProposal(int offset, String prefix, final CeylonParseController cpc,
-            Scope scope, Node node, List<ICompletionProposal> result, final Declaration d, IDocument doc) {
-        if ((d.isDefault() || d.isFormal()) &&
-                scope instanceof ClassOrInterface &&
-                ((ClassOrInterface) scope).isInheritedFromSupertype(d)) {
-            boolean isInterface = scope instanceof Interface;
-            ProducedReference pr = getRefinedProducedReference(scope, d);
-            //TODO: if it is equals() or hash, fill in the implementation
-            result.add(new RefinementCompletionProposal(offset, prefix,  
-                    getRefinementDescriptionFor(d, pr, node.getUnit()), 
-                    getRefinementTextFor(d, pr, node.getUnit(), isInterface, "\n" + getIndent(node, doc)), 
-                    cpc, d));
-        }
+            Scope scope, Node node, List<ICompletionProposal> result, final Declaration d, IDocument doc,
+            boolean preamble) {
+        boolean isInterface = scope instanceof Interface;
+        ProducedReference pr = getRefinedProducedReference(scope, d);
+        //TODO: if it is equals() or hash, fill in the implementation
+        result.add(new RefinementCompletionProposal(offset, prefix,  
+                getRefinementDescriptionFor(d, pr, node.getUnit()), 
+                getRefinementTextFor(d, pr, node.getUnit(), isInterface, "\n" + getIndent(node, doc), preamble), 
+                cpc, d));
     }
     
     public static ProducedReference getQualifiedProducedReference(Node node, Declaration d) {
@@ -2101,10 +2169,18 @@ public class CeylonContentProposer {
     
     public static String getRefinementTextFor(Declaration d, ProducedReference pr, 
             Unit unit, boolean isInterface, String indent) {
-        StringBuilder result = new StringBuilder("shared actual ");
-        if (isVariable(d) && !isInterface) {
-            result.append("variable ");
-        }
+    	return getRefinementTextFor(d, pr, unit, isInterface, indent, true);
+    }
+    
+    public static String getRefinementTextFor(Declaration d, ProducedReference pr, 
+            Unit unit, boolean isInterface, String indent, boolean preamble) {
+    	StringBuilder result = new StringBuilder();
+    	if (preamble) {
+    		result.append("shared actual ");
+    		if (isVariable(d) && !isInterface) {
+    			result.append("variable ");
+    		}
+    	}
         appendDeclarationText(d, pr, unit, result);
         appendTypeParameters(d, result);
         appendParameters(d, pr, unit, result);
