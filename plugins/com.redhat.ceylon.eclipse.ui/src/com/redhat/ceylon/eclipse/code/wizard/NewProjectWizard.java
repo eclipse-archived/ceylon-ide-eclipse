@@ -22,6 +22,8 @@ import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMInstall2;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ui.IPackagesViewPart;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -95,14 +97,14 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 if (path.segment(0).equals(JRE_CONTAINER)) {
                     IVMInstall vm = JavaRuntime.getVMInstall(cpe.getPath());
                     if (vm==null || !((IVMInstall2)vm).getJavaVersion().startsWith("1.7")) {
-                        firstPage.setErrorMessage("Please select a Java 1.7 JRE");
+                    	displayJREError();
                         return false;
                     }
                     if (path.segmentCount()==3) {
                         String s = path.segment(2);
                         if ((s.startsWith("JavaSE-")||s.startsWith("J2SE-")) &&
                                 !s.contains("1.7")) {
-                            firstPage.setErrorMessage("Please select a Java 1.7 JRE");
+                        	displayJREError();
                             return false;
                         }
                     }
@@ -158,6 +160,14 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         }
         
         return res;
+    }
+
+	private void displayJREError() {
+	    for (IWizardPage page: getPages()) {
+	    	if (page instanceof WizardPage) {
+	    		((WizardPage)page).setErrorMessage("Please select a Java 1.7 JRE");
+	    	}
+	    }
     }
     
     private IWorkbenchPart getActivePart() {
