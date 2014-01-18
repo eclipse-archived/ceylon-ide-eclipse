@@ -830,8 +830,12 @@ public class CeylonQuickFixAssistant {
         }
         if (term instanceof Tree.MemberOrTypeExpression) {
             Declaration dec = ((Tree.MemberOrTypeExpression) term).getDeclaration();
-            addAddAnnotationProposal(node, "variable", "Make Variable", 
-                    dec, proposals, project);
+            if (dec instanceof Value) {
+            	if (((Value) dec).getOriginalDeclaration()==null) {
+            		addAddAnnotationProposal(node, "variable", "Make Variable", 
+            				dec, proposals, project);
+            	}
+            }
         }
     }
     
