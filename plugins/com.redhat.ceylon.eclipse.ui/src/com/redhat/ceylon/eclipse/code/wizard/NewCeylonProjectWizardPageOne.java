@@ -481,7 +481,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
 			fGroup= new Group(composite, SWT.NONE);
 			fGroup.setFont(composite.getFont());
 			fGroup.setLayout(initGridLayout(new GridLayout(2, false), false));
-			fGroup.setText(NewWizardMessages.NewJavaProjectWizardPageOne_JREGroup_title);
+			fGroup.setText(NewWizardMessages.NewJavaProjectWizardPageOne_JREGroup_title + " (Must be a 1.7 JRE)");
 
 			fUseEEJRE.doFillIntoGrid(fGroup, 1);
 			Combo eeComboControl= fEECombo.getComboControl(fGroup);
