@@ -1104,8 +1104,9 @@ public class CeylonContentProposer {
             }
         }
         else {
+        	boolean isMember = node instanceof Tree.QualifiedMemberOrTypeExpression;
             OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
-            if (!filter && !inDoc && !(node instanceof Tree.QualifiedMemberOrTypeExpression)) {
+            if (!filter && !inDoc && !isMember) {
                 addKeywordProposals(cpc, offset, prefix, result, node);
                 //addTemplateProposal(offset, prefix, result);
             }
@@ -1131,7 +1132,7 @@ public class CeylonContentProposer {
                         !isQualifiedType(node) && 
                         !inDoc && noParamsFollow) {
                     for (Declaration d: overloads(dec)) {
-                        ProducedReference pr = node instanceof Tree.QualifiedMemberOrTypeExpression ? 
+                        ProducedReference pr = isMember? 
                                 getQualifiedProducedReference(node, d) :
                                 getRefinedProducedReference(scope, d);
                         addInvocationProposals(offset, prefix, cpc, result, 
@@ -1154,7 +1155,7 @@ public class CeylonContentProposer {
                     addSwitchProposal(offset, prefix, cpc, result, dwp, dec, ol, node, doc);
                 }
                 
-                if (isRefinementProposable(dec, ol) && !memberOp && !filter) {
+                if (isRefinementProposable(dec, ol) && !memberOp && !isMember && !filter) {
                     for (Declaration d: overloads(dec)) {
                         addRefinementProposal(offset, prefix, cpc, scope, node, result, d, doc);
                     }
