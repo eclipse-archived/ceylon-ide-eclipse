@@ -427,10 +427,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }
 
     private Scope getContainingScope(Tree.Declaration decNode) {
-        return decNode instanceof Tree.AttributeDeclaration ||
-               decNode instanceof Tree.MethodDeclaration ?
-                          decNode.getScope() : //the above don't have their own scope!
-                          decNode.getScope().getContainer();
+    	return decNode.getDeclarationModel().getContainer().getScope();
     }
 
     private void extractStatementsInFile(TextChange tfc) throws CoreException {
