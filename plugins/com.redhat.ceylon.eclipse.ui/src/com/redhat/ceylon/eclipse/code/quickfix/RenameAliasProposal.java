@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.RENAME;
 
 import java.util.Collection;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -23,13 +22,11 @@ class RenameAliasProposal implements ICompletionProposal,
     Tree.ImportMemberOrType node;
     Declaration dec;
     CeylonEditor editor;
-    IFile file;
     
-    RenameAliasProposal(IFile file, Tree.ImportMemberOrType node, 
+    RenameAliasProposal(Tree.ImportMemberOrType node, 
             Declaration dec, CeylonEditor editor) {
         this.node = node;
         this.dec = dec;
-        this.file = file;
         this.editor = editor;
     }
     
@@ -40,8 +37,8 @@ class RenameAliasProposal implements ICompletionProposal,
     
     static void addRenameAliasProposal(Tree.ImportMemberOrType node,  
             Collection<ICompletionProposal> proposals, 
-            Declaration dec, IFile file, CeylonEditor editor) {
-        proposals.add(new RenameAliasProposal(file, node, dec, editor));
+            Declaration dec, CeylonEditor editor) {
+        proposals.add(new RenameAliasProposal(node, dec, editor));
     }
 
     @Override
