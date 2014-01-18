@@ -2609,7 +2609,7 @@ public class CeylonContentProposer {
             }
             else {
                 if (d.isFormal()) {
-                    result.append(" = nothing;");
+                    result.append(" => nothing;");
                 }
                 else {
                     result.append(" => super.").append(d.getName()).append(";");
