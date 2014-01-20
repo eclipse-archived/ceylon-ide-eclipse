@@ -46,6 +46,7 @@ import org.eclipse.swt.SWTError;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.RTFTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Color;
@@ -222,13 +223,15 @@ public class CeylonSourceViewer extends ProjectionViewer {
             Clipboard clipboard= new Clipboard(getTextWidget().getDisplay());
             try {
                 Object text = clipboard.getContents(TextTransfer.getInstance());
+                Object rtf = clipboard.getContents(RTFTransfer.getInstance());
                 try {
                     if (imports==null) return;
-                    Object[] data = new Object[] { text, imports, selection };
+                    Object[] data = new Object[] { text, imports, selection, rtf };
                     Transfer[] dataTypes = new Transfer[] { 
                             TextTransfer.getInstance(), 
                             ImportsTransfer.INSTANCE, 
-                            SourceTransfer.INSTANCE };
+                            SourceTransfer.INSTANCE,
+                            RTFTransfer.getInstance() };
                     clipboard.setContents(data, dataTypes);
                 } 
                 catch (SWTError e) {
