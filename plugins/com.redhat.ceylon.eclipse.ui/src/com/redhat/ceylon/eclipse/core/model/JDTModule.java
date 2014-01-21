@@ -268,7 +268,7 @@ public class JDTModule extends LazyModule {
     }
     
     public String getCeylonDeclarationFile(String sourceUnitRelativePath) {
-        if (sourceUnitRelativePath.endsWith(".ceylon")) {
+        if (sourceUnitRelativePath==null||sourceUnitRelativePath.endsWith(".ceylon")) {
             return sourceUnitRelativePath;
         }
         return javaImplFilesToCeylonDeclFiles.get(sourceUnitRelativePath);
