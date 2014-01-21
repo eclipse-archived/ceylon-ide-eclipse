@@ -77,6 +77,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.Logger;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
@@ -113,8 +114,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
@@ -1762,6 +1763,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 for (PhasedUnits dependencyPhasedUnits: typeChecker.getPhasedUnitsOfDependencies()) {
                     modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
                 }
+                
+                if (compileToJs(project)) {
+                    for (Module module : typeChecker.getContext().getModules().getListOfModules()) {
+                        if (module instanceof JDTModule) {
+                            JDTModule jdtModule = (JDTModule) module;
+                            if (jdtModule.isCeylonArchive()) {
+                                getProjectRepositoryManager(project).getArtifact(
+                                        new ArtifactContext(
+                                                jdtModule.getNameAsString(), 
+                                                jdtModule.getVersion(), 
+                                                ArtifactContext.JS));
+                            }
+                        }
+                    }
+                }
+                
 
                 monitor.worked(1);
 
@@ -1934,6 +1951,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private boolean compileJs(IProject project, TypeChecker typeChecker,
             List<String> js_srcdir, List<String> js_repos, boolean js_verbose,
             String js_outRepo, PrintWriter printWriter, boolean generateSourceArchive) throws CoreException {
+        
         Options jsopts = new Options()
                 .repos(js_repos)
                 .sources(js_srcdir)
