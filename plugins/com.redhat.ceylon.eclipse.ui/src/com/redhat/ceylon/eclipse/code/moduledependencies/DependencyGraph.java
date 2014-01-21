@@ -7,14 +7,17 @@ import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
-import org.eclipse.gef4.geometry.planar.Dimension;
-import org.eclipse.gef4.zest.core.viewers.GraphViewer;
-import org.eclipse.gef4.zest.core.viewers.IGraphContentProvider;
-import org.eclipse.gef4.zest.core.viewers.ISelfStyleProvider;
-import org.eclipse.gef4.zest.core.widgets.GraphConnection;
-import org.eclipse.gef4.zest.core.widgets.GraphNode;
-import org.eclipse.gef4.zest.core.widgets.ZestStyles;
-import org.eclipse.gef4.layout.algorithms.TreeLayoutAlgorithm;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.zest.core.viewers.GraphViewer;
+import org.eclipse.zest.core.viewers.IGraphContentProvider;
+import org.eclipse.zest.core.viewers.ISelfStyleProvider;
+import org.eclipse.zest.core.widgets.GraphConnection;
+import org.eclipse.zest.core.widgets.GraphNode;
+import org.eclipse.zest.core.widgets.ZestStyles;
+import org.eclipse.zest.layouts.LayoutAlgorithm;
+import org.eclipse.zest.layouts.LayoutStyles;
+import org.eclipse.zest.layouts.algorithms.HorizontalTreeLayoutAlgorithm;
+import org.eclipse.zest.layouts.algorithms.TreeLayoutAlgorithm;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -123,7 +126,7 @@ public class DependencyGraph implements IWorkbenchWindowActionDelegate {
                         connection.setTooltip(new Label("Exported"));
                     }
                 }
-                connection.setDirected(true);
+                connection.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
                 Connection figure = connection.getConnectionFigure();
                 PolygonDecoration decoration = new PolygonDecoration();
                 decoration.setFill(true);
@@ -148,28 +151,17 @@ public class DependencyGraph implements IWorkbenchWindowActionDelegate {
         }
 
         shell.setText("Ceylon module dependencies for project '" + fProject.getName() + "'");
-        shell.setLayout(new FillLayout());
+        shell.setLayout(new FillLayout(SWT.VERTICAL));
         shell.setSize(1200, 900);
 
-        final GraphViewer viewer = new GraphViewer(shell, ZestStyles.NONE);
+        final GraphViewer viewer = new GraphViewer(shell, SWT.NONE);
         viewer.getGraphControl()
                 .setNodeStyle(ZestStyles.NODES_NO_LAYOUT_RESIZE);
         viewer.setContentProvider(new GraphContentProvider());
         viewer.setLabelProvider(new GraphLabelProvider());
-        viewer.setInput(dependencies);
-
-        TreeLayoutAlgorithm tla = new TreeLayoutAlgorithm();
-        tla.setDirection(TreeLayoutAlgorithm.LEFT_RIGHT);
-
-        Dimension maxDimension = new Dimension();
-        for (GraphNode node : (List<GraphNode>) viewer.getGraphControl()
-                .getNodes()) {
-            Dimension nodeDim = new Dimension(node.getSize().preciseWidth(), node.getSize().preciseWidth());
-            maxDimension = maxDimension.getUnioned(nodeDim);
-        }
-        tla.setNodeSpace(maxDimension.expand(5, 15));
+        TreeLayoutAlgorithm tla = new HorizontalTreeLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING);
         viewer.setLayoutAlgorithm(tla);
-        viewer.applyLayout();
+        viewer.setInput(dependencies);
 
         final MenuManager mgr = new MenuManager();
         viewer.getControl().setMenu(mgr.createContextMenu(viewer.getControl()));
