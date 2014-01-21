@@ -439,8 +439,9 @@ public class ModuleDependencies {
                     private Map<ModuleReference, ModuleAnalysis> modulesToAnalyze = new HashMap<>();
 
                     public void addDependency(ModuleReference vertex,
-                            Dependency edge) {        referencingModulesMap.clear();
-                            moduleDependenciesMap.clear();
+                            Dependency edge) {
+                        referencingModulesMap.clear();
+                        moduleDependenciesMap.clear();
 
                         if (! vertex.equals(rootModuleRef)) {
                             ModuleAnalysis moduleAnalysis = modulesToAnalyze.get(vertex);
@@ -504,7 +505,7 @@ public class ModuleDependencies {
                         }
                         if (! rootIsExported) {
                             for (Dependency dep : dependencies) {
-                                if (isRootVisibleFrom((ModuleReference)dep.getTarget()) && dep.exported) {
+                                if (isRootExportedBy((ModuleReference)dep.getTarget()) && dep.exported) {
                                     rootIsExported = true;
                                 }
                             }
@@ -536,14 +537,11 @@ public class ModuleDependencies {
                     iterator.next();
                 }
                 
+                List<ModuleReference> modulesToAdd = new ArrayList<ModuleReference>();
                 for (ModuleReference moduleReference : dependencyAnalyzer.modulesToAnalyze.keySet()) {
                     if (dependencyAnalyzer.isRootVisibleFrom(moduleReference)) {
-                        action.applyOn(moduleReference);
+                        modulesToAdd.add(moduleReference);
                     }
-                }
-                List<ModuleReference> modulesToAdd = new ArrayList<ModuleReference>();
-                while(iterator.hasNext()) {
-                    modulesToAdd.add(iterator.next());
                 }
                 referencingModules = modulesToAdd;
                 referencingModulesMap.put(rootModuleReference, referencingModules);
