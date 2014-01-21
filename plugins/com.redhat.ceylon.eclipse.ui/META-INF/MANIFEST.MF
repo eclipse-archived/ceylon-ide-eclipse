@@ -31,10 +31,10 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.debug.ui,
  org.eclipse.ui.cheatsheets,
  org.eclipse.core.expressions,
- org.eclipse.gef4.zest.core;bundle-version="[0.1.0.201401040305,0.1.0.201401040305]",
+ org.eclipse.gef4.zest.core,
  org.eclipse.draw2d,
- org.eclipse.gef4.zest.jface;bundle-version="[0.1.0.201401040305,0.1.0.201401040305]",
- org.eclipse.gef4.layout;bundle-version="[0.1.0.201401040305,0.1.0.201401040305]"
+ org.eclipse.gef4.zest.jface,
+ org.eclipse.gef4.layout
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,
