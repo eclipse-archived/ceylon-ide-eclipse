@@ -16,10 +16,6 @@
     
     <http://www.eclipse.org/downloads/>
     
-1.  Add the following update site to your eclipse installation : 
-    
-    <http://download.eclipse.org/tools/gef/gef4/updates/integration>
-    
 2.  Use `File > Import... > Existing Projects into Workspace` 
     to import the project from this root directory: 
     
