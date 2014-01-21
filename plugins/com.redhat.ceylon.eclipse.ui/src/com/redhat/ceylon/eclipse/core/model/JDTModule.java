@@ -581,7 +581,9 @@ public class JDTModule extends LazyModule {
                                         // same relative path, we can add a break.
                                     }
                                 } else {
-                                    System.out.println("WARNING : The package of the following binary unit (" + relativePathOfClassToRemove + ") cannot be found in module " + getNameAsString() + " (artifact=" + artifact.getAbsolutePath() + ")");
+                                    System.out.println("WARNING : The package of the following binary unit (" + relativePathOfClassToRemove + ") "
+                                            + "cannot be found in module " + getNameAsString() + 
+                                            artifact != null ? " (artifact=" + artifact.getAbsolutePath() + ")" : "");
                                 }
                             }
                         }

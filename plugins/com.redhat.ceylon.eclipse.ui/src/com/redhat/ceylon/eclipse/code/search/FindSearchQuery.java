@@ -56,7 +56,7 @@ abstract class FindSearchQuery implements ISearchQuery {
 			    if (m instanceof JDTModule) {
 			        JDTModule module = (JDTModule) m;
 			        String archivePath = null;
-			        if (module.isCeylonArchive() && 
+			        if (module.isCeylonArchive() && module.getArtifact() != null && 
 			                !searchedArchives.contains(archivePath = module.getArtifact().getAbsolutePath())) {
 	                    findInUnits(module.getPhasedUnits());
 	                    searchedArchives.add(archivePath);
