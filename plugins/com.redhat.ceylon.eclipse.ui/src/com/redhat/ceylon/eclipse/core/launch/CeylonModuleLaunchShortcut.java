@@ -223,7 +223,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
                         node = fsv.getStatement();
                         if (node instanceof Tree.AnyMethod) {
                             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
-                            if (method.isToplevel() && 
+                            if (method!=null && method.isToplevel() && 
                                     !method.getParameterLists().isEmpty() &&
                                     method.getParameterLists().get(0).getParameters().isEmpty()) {
                                 launch(method, file, mode);
@@ -232,7 +232,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
                         }
                         if (node instanceof Tree.AnyClass) {
                             Class clazz = ((Tree.AnyClass) node).getDeclarationModel();
-                            if (clazz.isToplevel() && !clazz.isAbstract() &&
+                            if (clazz!=null && clazz.isToplevel() && !clazz.isAbstract() &&
                                     clazz.getParameterList()!=null &&
                                     clazz.getParameterList().getParameters().isEmpty()) {
                                 launch(clazz, file, mode);
