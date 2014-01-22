@@ -1674,16 +1674,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (projectModuleDependencies.containsKey(project)) {
                     projectModuleDependencies.get(project).reset();
                 } else {
-                    projectModuleDependencies.put(project, new ModuleDependencies(new ModuleDependencies.ErrorListener() {
-                        @Override
-                        public void moduleNotAvailable(Module module) {
-                            System.out.println("WARNING : module " + 
-                                    module.getSignature() + 
-                                    " in project " +
-                                    project.getName() +
-                                    " is not available after the Module Validation step !");
-                        }
-                    }));
+                    projectModuleDependencies.put(project, new ModuleDependencies());
                 }
                 
                 SubMonitor monitor = SubMonitor.convert(mon,
