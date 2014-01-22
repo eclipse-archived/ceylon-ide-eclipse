@@ -39,6 +39,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.Dependency;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.ModuleReference;
@@ -139,12 +140,41 @@ public class DependencyGraph implements IWorkbenchWindowActionDelegate {
                     Module module = ((ModuleWeakReference) element).get();
                     if (module == null) {
                         node.setVisible(false);
-                    }
-                    if (module != null && !module.isAvailable()) {
-                        node.setBackgroundColor(node.getDisplay()
-                                .getSystemColor(SWT.COLOR_RED));
-                        node.setTooltip(new Label(
-                                "The module is not available due to some error."));
+                    } else {
+                        node.setForegroundColor(node.getDisplay()
+                                .getSystemColor(SWT.COLOR_BLACK));
+                        if (!module.isAvailable()) {
+                            node.setBackgroundColor(node.getDisplay()
+                                    .getSystemColor(SWT.COLOR_GRAY));
+                            node.setHighlightColor(node.getDisplay()
+                                    .getSystemColor(SWT.COLOR_DARK_GRAY));
+                            node.setTooltip(new Label(
+                                    "Unavailable module\n(not visible from any project module)"));
+                        } else if (module.isJava()) {
+                            node.setBackgroundColor(node.getDisplay()
+                                    .getSystemColor(SWT.COLOR_CYAN));
+                            node.setHighlightColor(node.getDisplay()
+                                    .getSystemColor(SWT.COLOR_DARK_CYAN));
+                            node.setTooltip(new Label(
+                                    "Java archive module"));
+                        } else if (module instanceof JDTModule) {
+                            JDTModule jdtModule = (JDTModule) module;
+                            if (jdtModule.isCeylonArchive()) {
+                                node.setBackgroundColor(node.getDisplay()
+                                        .getSystemColor(SWT.COLOR_GREEN));
+                                node.setHighlightColor(node.getDisplay()
+                                        .getSystemColor(SWT.COLOR_DARK_GREEN));
+                                node.setTooltip(new Label(
+                                        "Ceylon archive module"));
+                            } else if (jdtModule.isProjectModule()) {
+                                node.setBackgroundColor(node.getDisplay()
+                                        .getSystemColor(SWT.COLOR_YELLOW));
+                                node.setHighlightColor(node.getDisplay()
+                                        .getSystemColor(SWT.COLOR_DARK_YELLOW));
+                                node.setTooltip(new Label(
+                                        "Project source module"));
+                            }
+                        }
                     }
                 }
             }
