@@ -142,7 +142,7 @@ public class CeylonOutlineBuilder extends Visitor {
 	}
 
 	private CeylonOutlineNode createSubItem(Node n, int category, IResource file) {
-        final CeylonOutlineNode parent= itemStack.peek();
+        CeylonOutlineNode parent = itemStack.peek();
         CeylonOutlineNode treeNode = new CeylonOutlineNode(n, parent, category, file);
         parent.addChild(treeNode);
         return treeNode;
