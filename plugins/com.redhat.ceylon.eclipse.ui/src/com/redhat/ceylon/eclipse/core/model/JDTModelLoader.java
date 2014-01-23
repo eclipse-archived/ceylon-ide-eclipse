@@ -23,7 +23,6 @@ package com.redhat.ceylon.eclipse.core.model;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +92,6 @@ import com.redhat.ceylon.compiler.loader.model.LazyMethod;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.loader.model.LazyValue;
-import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -123,8 +121,6 @@ public class JDTModelLoader extends AbstractModelLoader {
     private ProblemReporter problemReporter;
     private LookupEnvironment lookupEnvironment;
     private boolean mustResetLookupEnvironment = false;
-    
-    private Map<String, Declaration> languageModuledeclarations;
     
     public JDTModelLoader(final JDTModuleManager moduleManager, final Modules modules){
         this.moduleManager = moduleManager;
@@ -584,8 +580,8 @@ public class JDTModelLoader extends AbstractModelLoader {
 
                 if (container != null) {
                     IPath modulePath = new Path(artifact.artifact().getPath());
-                    IClasspathEntry newEntry = null;
-                    if ((newEntry = container.addNewClasspathEntryIfNecessary(modulePath))!=null) {
+                    IClasspathEntry newEntry = container.addNewClasspathEntryIfNecessary(modulePath);
+                    if (newEntry!=null) {
                         try {
                             JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[] { javaProject }, 
                                     new IClasspathContainer[] {new CeylonProjectModulesContainer(container)}, null);

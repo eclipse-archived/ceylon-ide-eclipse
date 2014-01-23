@@ -130,7 +130,6 @@ import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
-import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
@@ -1266,49 +1265,49 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return Collections.emptySet();
     }
 
-    private void updateExternalPhasedUnitsInReferencingProjects(IProject project, 
-            List<PhasedUnit> builtPhasedUnits) {
-        for (IProject referencingProject : project.getReferencingProjects()) {
-            TypeChecker referencingTypeChecker = getProjectTypeChecker(referencingProject);
-            if (referencingTypeChecker != null) {
-                List<PhasedUnit> referencingPhasedUnits = new ArrayList<PhasedUnit>();
-                for (PhasedUnit builtPhasedUnit : builtPhasedUnits) {
-                    List<PhasedUnits> phasedUnitsOfDependencies = referencingTypeChecker.getPhasedUnitsOfDependencies();
-                    for (PhasedUnits phasedUnitsOfDependency : phasedUnitsOfDependencies) {
-                        String relativePath = builtPhasedUnit.getPathRelativeToSrcDir();
-                        PhasedUnit referencingPhasedUnit = phasedUnitsOfDependency.getPhasedUnitFromRelativePath(relativePath);
-                        if (referencingPhasedUnit != null) {
-                            phasedUnitsOfDependency.removePhasedUnitForRelativePath(relativePath);
-                            PhasedUnit newReferencingPhasedUnit = new CrossProjectPhasedUnit(referencingPhasedUnit.getUnitFile(), 
-                                    referencingPhasedUnit.getSrcDir(), 
-                                    builtPhasedUnit.getCompilationUnit(), 
-                                    referencingPhasedUnit.getPackage(), 
-                                    phasedUnitsOfDependency.getModuleManager(), 
-                                    referencingTypeChecker, 
-                                    builtPhasedUnit.getTokens(),
-                                    project);
-                            phasedUnitsOfDependency.addPhasedUnit(newReferencingPhasedUnit.getUnitFile(), 
-                                    newReferencingPhasedUnit);
-                            // replace referencingPhasedUnit
-                            referencingPhasedUnits.add(newReferencingPhasedUnit);
-                        }
-                    }
-                }
-                
-                if (isModelTypeChecked(referencingProject)) {
-                    for (PhasedUnit pu : referencingPhasedUnits) {
-                        pu.scanDeclarations();
-                    }
-                    for (PhasedUnit pu : referencingPhasedUnits) {
-                        pu.scanTypeDeclarations();
-                    }
-                    for (PhasedUnit pu : referencingPhasedUnits) {
-                        pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
-                    }
-                }
-            }
-        }
-    }
+//    private void updateExternalPhasedUnitsInReferencingProjects(IProject project, 
+//            List<PhasedUnit> builtPhasedUnits) {
+//        for (IProject referencingProject : project.getReferencingProjects()) {
+//            TypeChecker referencingTypeChecker = getProjectTypeChecker(referencingProject);
+//            if (referencingTypeChecker != null) {
+//                List<PhasedUnit> referencingPhasedUnits = new ArrayList<PhasedUnit>();
+//                for (PhasedUnit builtPhasedUnit : builtPhasedUnits) {
+//                    List<PhasedUnits> phasedUnitsOfDependencies = referencingTypeChecker.getPhasedUnitsOfDependencies();
+//                    for (PhasedUnits phasedUnitsOfDependency : phasedUnitsOfDependencies) {
+//                        String relativePath = builtPhasedUnit.getPathRelativeToSrcDir();
+//                        PhasedUnit referencingPhasedUnit = phasedUnitsOfDependency.getPhasedUnitFromRelativePath(relativePath);
+//                        if (referencingPhasedUnit != null) {
+//                            phasedUnitsOfDependency.removePhasedUnitForRelativePath(relativePath);
+//                            PhasedUnit newReferencingPhasedUnit = new CrossProjectPhasedUnit(referencingPhasedUnit.getUnitFile(), 
+//                                    referencingPhasedUnit.getSrcDir(), 
+//                                    builtPhasedUnit.getCompilationUnit(), 
+//                                    referencingPhasedUnit.getPackage(), 
+//                                    phasedUnitsOfDependency.getModuleManager(), 
+//                                    referencingTypeChecker, 
+//                                    builtPhasedUnit.getTokens(),
+//                                    project);
+//                            phasedUnitsOfDependency.addPhasedUnit(newReferencingPhasedUnit.getUnitFile(), 
+//                                    newReferencingPhasedUnit);
+//                            // replace referencingPhasedUnit
+//                            referencingPhasedUnits.add(newReferencingPhasedUnit);
+//                        }
+//                    }
+//                }
+//                
+//                if (isModelTypeChecked(referencingProject)) {
+//                    for (PhasedUnit pu : referencingPhasedUnits) {
+//                        pu.scanDeclarations();
+//                    }
+//                    for (PhasedUnit pu : referencingPhasedUnits) {
+//                        pu.scanTypeDeclarations();
+//                    }
+//                    for (PhasedUnit pu : referencingPhasedUnits) {
+//                        pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     static ProjectPhasedUnit parseFileToPhasedUnit(final ModuleManager moduleManager, final TypeChecker typeChecker,
             final ResourceVirtualFile file, final ResourceVirtualFile srcDir,
@@ -1822,8 +1821,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             // First Scan all non-default source modules and attach the contained packages 
             srcDirResource.accept(new ModulesScanner(defaultModule, modelLoader, moduleManager,
-                    srcDir, srcFolderPath, typeChecker, scannedSources,
-                    phasedUnits));
+                    srcDir, srcFolderPath, typeChecker/*, scannedSources, phasedUnits*/));
         }
         for (final IPath srcAbsoluteFolderPath : sourceFolders) {
             final IPath srcFolderPath = srcAbsoluteFolderPath.makeRelativeTo(project.getFullPath());
