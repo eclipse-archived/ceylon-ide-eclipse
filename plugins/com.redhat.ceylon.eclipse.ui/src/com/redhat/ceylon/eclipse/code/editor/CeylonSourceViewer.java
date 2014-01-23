@@ -224,14 +224,16 @@ public class CeylonSourceViewer extends ProjectionViewer {
             try {
                 Object text = clipboard.getContents(TextTransfer.getInstance());
                 Object rtf = clipboard.getContents(RTFTransfer.getInstance());
+                
                 try {
                     if (imports==null) return;
-                    Object[] data = new Object[] { text, imports, selection, rtf };
-                    Transfer[] dataTypes = new Transfer[] { 
-                            TextTransfer.getInstance(), 
+                    Object[] data = new Object[] { text, rtf, imports, selection };
+                    Transfer[] dataTypes = new Transfer[] {
+                            TextTransfer.getInstance(),
+                            RTFTransfer.getInstance(),
                             ImportsTransfer.INSTANCE, 
-                            SourceTransfer.INSTANCE,
-                            RTFTransfer.getInstance() };
+                            SourceTransfer.INSTANCE
+                        };
                     clipboard.setContents(data, dataTypes);
                 } 
                 catch (SWTError e) {
