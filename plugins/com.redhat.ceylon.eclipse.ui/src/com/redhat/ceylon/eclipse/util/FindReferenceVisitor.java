@@ -6,6 +6,7 @@ import java.util.Set;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -26,6 +27,15 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
 	            od = ((TypedDeclaration) od).getOriginalDeclaration();
 	        }
 	    }
+	    if (declaration.getContainer() instanceof Setter) {
+	    	Setter setter = (Setter) declaration.getContainer();
+	    	if (setter.getDirectMember(setter.getName(), null, false).equals(declaration)) {
+	    		declaration = setter;
+	    	}
+	    }
+	    if (declaration instanceof Setter) {
+	    	declaration = ((Setter) declaration).getGetter();
+	    }
 		this.declaration = declaration;
 	}
 	
@@ -42,9 +52,22 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
 	}
 	
 	protected boolean isReference(Declaration ref) {
-	    return ref!=null && declaration!=null && declaration.refines(ref);
+	    return ref!=null && declaration!=null && 
+	    		(declaration.refines(ref) || 
+	    				isSetterParameterReference(ref));
 	}
-	
+
+	private boolean isSetterParameterReference(Declaration ref) {
+		if (ref.getContainer() instanceof Setter) {
+			Setter setter = (Setter) ref.getContainer();
+			return setter.getDirectMember(setter.getName(), null, false).equals(ref) &&
+					isReference(setter.getGetter());
+		}
+		else {
+			return false;
+		}
+	}
+
     protected boolean isReference(Declaration ref, String id) {
         return isReference(ref);
     }
