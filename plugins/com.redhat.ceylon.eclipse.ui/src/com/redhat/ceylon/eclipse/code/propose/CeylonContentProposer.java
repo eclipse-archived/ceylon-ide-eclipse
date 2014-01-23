@@ -296,7 +296,7 @@ public class CeylonContentProposer {
     }
 
     private static class DocLink {
-        String linkName;
+//        String linkName;
     	String declName;
     	int declStart;
     }
@@ -318,7 +318,7 @@ public class CeylonContentProposer {
                     String docLinkText = docLinkMatcher.group(i);
                     int separatorIndex = docLinkText.indexOf("|");
                     if( separatorIndex > -1 ) {
-                        docLink.linkName = docLinkText.substring(0, separatorIndex);
+//                        docLink.linkName = docLinkText.substring(0, separatorIndex);
                         docLink.declName = docLinkText.substring(separatorIndex+1);
                         docLink.declStart = docLinkMatcher.start(i)+separatorIndex+1;
                     } else {
@@ -1227,13 +1227,6 @@ public class CeylonContentProposer {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 
-	private static void addRefinedMemberNameProposal(final int offset,
-            final String prefix, final List<ICompletionProposal> result,
-            Method m) {
-	    result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
-	    		m.getName(), escape(m.getName()), false));
-    }
-    
     private static boolean isQualifiedType(Node node) {
         return (node instanceof Tree.QualifiedType) ||
                (node instanceof Tree.QualifiedMemberOrTypeExpression &&
