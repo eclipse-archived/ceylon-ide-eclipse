@@ -20,8 +20,6 @@
 
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
-import static org.eclipse.jdt.internal.compiler.lookup.TypeBinding.VOID;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

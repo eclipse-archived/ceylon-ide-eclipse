@@ -385,7 +385,7 @@ public class JDTModuleManager extends LazyModuleManager {
     
     public class ExternalModulePhasedUnits extends PhasedUnits {
         private IProject referencedProject = null;
-        private VirtualFile sourceDirectory = null;
+//        private VirtualFile sourceDirectory = null;
 
         public ExternalModulePhasedUnits(Context context,
                 ModuleManagerFactory moduleManagerFactory) {
@@ -440,7 +440,7 @@ public class JDTModuleManager extends LazyModuleManager {
 
         @Override
         public void parseUnit(VirtualFile srcDir) {
-            sourceDirectory = srcDir;
+//            sourceDirectory = srcDir;
             if (srcDir instanceof ZipFileVirtualFile && javaProject != null) {
                 ZipFileVirtualFile zipFileVirtualFile = (ZipFileVirtualFile) srcDir;
                 String archiveName = zipFileVirtualFile.getPath();

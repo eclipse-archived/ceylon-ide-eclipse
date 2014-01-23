@@ -16,7 +16,6 @@ import org.eclipse.core.runtime.IPath;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
@@ -30,22 +29,22 @@ final class ModulesScanner implements IResourceVisitor {
 	private final ResourceVirtualFile srcDir;
 	private final IPath srcFolderPath;
     private final TypeChecker typeChecker;
-    private final List<IFile> scannedSources;
-    private final PhasedUnits phasedUnits;
+//    private final List<IFile> scannedSources;
+//    private final PhasedUnits phasedUnits;
 	private Module module;
 
 	ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
 			JDTModuleManager moduleManager, ResourceVirtualFile srcDir,
-			IPath srcFolderPath, TypeChecker typeChecker,
-            List<IFile> scannedSources, PhasedUnits phasedUnits) {
+			IPath srcFolderPath, TypeChecker typeChecker/*,
+            List<IFile> scannedSources, PhasedUnits phasedUnits*/) {
 		this.defaultModule = defaultModule;
 		this.modelLoader = modelLoader;
 		this.moduleManager = moduleManager;
 		this.srcDir = srcDir;
 		this.srcFolderPath = srcFolderPath;
         this.typeChecker = typeChecker;
-        this.scannedSources = scannedSources;
-        this.phasedUnits = phasedUnits;
+//        this.scannedSources = scannedSources;
+//        this.phasedUnits = phasedUnits;
 	}
 
 	public boolean visit(IResource resource) throws CoreException {

@@ -2624,10 +2624,6 @@ public class CeylonContentProposer {
         appendParameters(d, null, d.getUnit(), result, cpc);
     }
     
-    private static void appendParameters(Declaration d, Unit unit, StringBuilder result) {
-        appendParameters(d, null, unit, result, null);
-    }
-    
     public static void appendParameters(Declaration d, ProducedReference pr, 
             Unit unit, StringBuilder result) {
         appendParameters(d, pr, unit, result, null);
