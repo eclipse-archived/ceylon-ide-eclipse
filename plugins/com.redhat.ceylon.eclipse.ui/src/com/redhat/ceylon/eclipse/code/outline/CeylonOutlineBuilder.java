@@ -12,10 +12,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SyntheticVariable;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
@@ -31,8 +32,15 @@ public class CeylonOutlineBuilder extends Visitor {
     public void visit(Tree.Declaration that) {
         if (!(that instanceof Tree.TypeParameterDeclaration) &&
                 !(that instanceof Tree.TypeConstraint) &&
-                !(that instanceof Tree.Variable && 
-                        ((Tree.Variable) that).getType() instanceof SyntheticVariable)) {
+                !(that instanceof Tree.Variable/* && 
+                        ((Tree.Variable) that).getType() instanceof SyntheticVariable*/)) {
+        	if (that instanceof Tree.AnyAttribute) {
+        		TypedDeclaration att = ((Tree.AnyAttribute)that).getDeclarationModel();
+				if (att==null || !att.isShared() && !att.isToplevel() &&
+						!(att.getContainer() instanceof ClassOrInterface)) {
+        			return;
+        		}
+        	}
             pushSubItem(that);
             super.visitAny(that);
             popSubItem();
