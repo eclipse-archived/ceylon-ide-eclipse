@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.resolve;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -44,6 +45,15 @@ public class FindReferencedNodeVisitor extends Visitor {
 	@Override
 	public void visit(Tree.Declaration that) {
 		if (isDeclaration(that.getDeclarationModel())) {
+			declarationNode = that;
+		}
+		super.visit(that);
+	}
+	
+	@Override
+	public void visit(Tree.AttributeSetterDefinition that) {
+		Setter setter = that.getDeclarationModel();
+		if (isDeclaration(setter.getDirectMember(setter.getName(), null, false))) {
 			declarationNode = that;
 		}
 		super.visit(that);

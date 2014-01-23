@@ -31,7 +31,8 @@ import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class RenameRefactoring extends AbstractRefactoring {
     
-    private static class FindReferencesVisitor extends FindReferenceVisitor {
+    private static class FindReferencesVisitor 
+            extends FindReferenceVisitor {
         private FindReferencesVisitor(Declaration declaration) {
             super(declaration);
         }
@@ -127,7 +128,8 @@ public class RenameRefactoring extends AbstractRefactoring {
 	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
 	    Declaration existing = declaration.getContainer()
-                        .getMemberOrParameter(declaration.getUnit(), newName, null, false);
+                        .getMemberOrParameter(declaration.getUnit(), 
+                        		newName, null, false);
         if (null!=existing && !existing.equals(declaration)) {
 	        return createWarningStatus("An existing declaration named '" +
 	            newName + "' already exists in the same scope");
@@ -135,8 +137,8 @@ public class RenameRefactoring extends AbstractRefactoring {
 		return new RefactoringStatus();
 	}
 
-	public CompositeChange createChange(IProgressMonitor pm) throws CoreException,
-			OperationCanceledException {
+	public CompositeChange createChange(IProgressMonitor pm) 
+			throws CoreException, OperationCanceledException {
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
         CompositeChange cc = new CompositeChange(getName());
@@ -157,7 +159,8 @@ public class RenameRefactoring extends AbstractRefactoring {
         return cc;
 	}
 
-    private void renameInFile(TextChange tfc, CompositeChange cc, Tree.CompilationUnit root) {
+    private void renameInFile(TextChange tfc, CompositeChange cc, 
+    		Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
         if (declaration!=null) {
         	for (Node node: getNodesToRename(root)) {
@@ -230,12 +233,14 @@ public class RenameRefactoring extends AbstractRefactoring {
         return result;
     }
 
-    protected void renameRegion(TextChange tfc, Region region, Tree.CompilationUnit root) {
+    protected void renameRegion(TextChange tfc, Region region, 
+    		Tree.CompilationUnit root) {
         tfc.addEdit(new ReplaceEdit(region.getOffset(), 
                 region.getLength(), newName));
     }
 
-	protected void renameNode(TextChange tfc, Node node, Tree.CompilationUnit root) {
+	protected void renameNode(TextChange tfc, Node node, 
+			Tree.CompilationUnit root) {
 	    Node identifyingNode = getIdentifyingNode(node);
 		tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex(), 
 		        identifyingNode.getText().length(), newName));
