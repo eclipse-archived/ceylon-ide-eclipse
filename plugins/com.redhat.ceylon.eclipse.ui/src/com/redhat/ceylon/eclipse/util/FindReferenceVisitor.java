@@ -27,7 +27,7 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
 	            od = ((TypedDeclaration) od).getOriginalDeclaration();
 	        }
 	    }
-	    if (declaration.getContainer() instanceof Setter) {
+	    if (declaration!=null && declaration.getContainer() instanceof Setter) {
 	    	Setter setter = (Setter) declaration.getContainer();
 	    	if (setter.getDirectMember(setter.getName(), null, false).equals(declaration)) {
 	    		declaration = setter;
