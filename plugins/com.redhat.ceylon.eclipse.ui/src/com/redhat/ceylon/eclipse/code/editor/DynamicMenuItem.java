@@ -39,7 +39,7 @@ public class DynamicMenuItem extends CommandContributionItem {
     
     public static boolean collapseMenuItems(IContributionManager parent) {
         return isContextMenu(parent) && 
-                Display.getCurrent().getBounds().height < 1024;
+                Display.getCurrent().getBounds().height < 2048;
     }
     
     static boolean isContextMenu(IContributionManager parent) {
