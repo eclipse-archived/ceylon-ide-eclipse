@@ -26,6 +26,7 @@ import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ImportableScope;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
@@ -105,12 +106,14 @@ public class CleanImportsHandler extends AbstractHandler {
         if (til!=null) {
             for (Tree.Import i: til.getImports()) {
                 String pn = packageName(i);
-                List<Tree.Import> is = packages.get(pn);
-                if (is==null) {
-                    is = new ArrayList<Tree.Import>();
-                    packages.put(pn, is);
+                if (pn!=null) {
+                	List<Tree.Import> is = packages.get(pn);
+                	if (is==null) {
+                		is = new ArrayList<Tree.Import>();
+                		packages.put(pn, is);
+                	}
+                	is.add(i);
                 }
-                is.add(i);
             }
         }
         for (Declaration d: proposed) {
@@ -322,8 +325,9 @@ public class CleanImportsHandler extends AbstractHandler {
     }
 
     private static String packageName(Tree.Import i) {
-        return i.getImportMemberOrTypeList()
-                .getImportList().getImportedScope()
+        ImportableScope importedScope = i.getImportMemberOrTypeList()
+                .getImportList().getImportedScope();
+		return importedScope==null ? null : importedScope
                 .getQualifiedNameString();
     }
     
