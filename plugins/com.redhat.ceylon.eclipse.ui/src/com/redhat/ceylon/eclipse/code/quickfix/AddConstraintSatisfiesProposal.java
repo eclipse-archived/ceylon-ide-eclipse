@@ -219,7 +219,8 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
         return missingSatisfiedTypes;
     }
 
-    private static List<TypeParameter> determineSatisfiedTypesTypeParams(Tree.CompilationUnit cu, Node typeParamNode, TypeParameter typeParam) {
+    private static List<TypeParameter> determineSatisfiedTypesTypeParams(Tree.CompilationUnit cu, 
+    		Node typeParamNode, TypeParameter typeParam) {
         List<TypeParameter> stTypeParams = new ArrayList<TypeParameter>();
 
         FindContainerVisitor fcv = new FindContainerVisitor(typeParamNode);
@@ -244,16 +245,17 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
         return stTypeParams;
     }
 
-    private static void determineSatisfiedTypesTypeParams(TypeParameter typeParam, Tree.SimpleType st, List<TypeParameter> stTypeParams) {
+    private static void determineSatisfiedTypesTypeParams(TypeParameter typeParam, 
+    		Tree.SimpleType st, List<TypeParameter> stTypeParams) {
         if( st.getTypeArgumentList() != null ) {
             List<Tree.Type> stTypeArguments = st.getTypeArgumentList().getTypes();
             for (int i = 0; i < stTypeArguments.size(); i++) {
-                Tree.SimpleType stTypeArgument = (Tree.SimpleType)stTypeArguments.get(i);
-                if (typeParam.getName().equals(
-                        stTypeArgument.getDeclarationModel().getName())) {
+            	ProducedType stTypeArgument = stTypeArguments.get(i).getTypeModel();
+                if (stTypeArgument!=null && typeParam.equals(stTypeArgument.getDeclaration())) {
                     TypeDeclaration stDecl = st.getDeclarationModel();
                     if( stDecl != null ) {
-                        if( stDecl.getTypeParameters() != null && stDecl.getTypeParameters().size() > i ) {
+                        if( stDecl.getTypeParameters() != null && 
+                        		stDecl.getTypeParameters().size() > i ) {
                             stTypeParams.add(stDecl.getTypeParameters().get(i));
                         }
                     }                            
@@ -262,7 +264,8 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
         }
     }
 
-    private static String createMissingSatisfiedTypesText(TypeParameter typeParam, List<ProducedType> missingSatisfiedTypes) {
+    private static String createMissingSatisfiedTypesText(TypeParameter typeParam, 
+    		List<ProducedType> missingSatisfiedTypes) {
         StringBuffer missingSatisfiedTypesText = new StringBuffer();
         for( ProducedType missingSatisfiedType : missingSatisfiedTypes ) {
             if( missingSatisfiedTypesText.length() != 0 ) {
@@ -277,8 +280,10 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
     private TypeParameter typeParam;
     private String missingSatisfiedTypeText;
 
-    private AddConstraintSatisfiesProposal(TypeParameter typeParam, String missingSatisfiedTypeText, TextFileChange change) {
-        super("Add generic type constraints '" + typeParam.getName() + " satisfies " + missingSatisfiedTypeText + "'", change);
+    private AddConstraintSatisfiesProposal(TypeParameter typeParam, 
+    		String missingSatisfiedTypeText, TextFileChange change) {
+        super("Add generic type constraints '" + typeParam.getName() + 
+        		" satisfies " + missingSatisfiedTypeText + "'", change);
         this.change = change;
         this.typeParam = typeParam;
         this.missingSatisfiedTypeText = missingSatisfiedTypeText;
@@ -294,7 +299,8 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
     public boolean equals(Object obj) {
         if (obj instanceof AddConstraintSatisfiesProposal) {
             AddConstraintSatisfiesProposal that = (AddConstraintSatisfiesProposal) obj;
-            return that.typeParam.equals(typeParam) && that.missingSatisfiedTypeText.equals(missingSatisfiedTypeText);
+            return that.typeParam.equals(typeParam) && 
+            		that.missingSatisfiedTypeText.equals(missingSatisfiedTypeText);
         }
         return false;
     }
