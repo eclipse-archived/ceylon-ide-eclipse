@@ -605,7 +605,7 @@ public class CeylonQuickFixAssistant {
             addChangeIdentifierCaseProposal(node, proposals, file);
             break;
         case 6000:
-            addFixMultilineStringIndentation(proposals, file, cu, (Tree.StringLiteral)node);            
+            addFixMultilineStringIndentation(proposals, file, cu, (Tree.StringLiteral)node);
             break;
         case 7000:
             addModuleImportProposals(cu, proposals, project, tc, node);
