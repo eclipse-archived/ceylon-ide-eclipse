@@ -1,3 +1,3 @@
-module declarations "1.0.0" {
-    shared import java.base "7";
+module com.redhat.ceylon.compiler.java.test.model "1"{
+    import java.base "7";
 }
