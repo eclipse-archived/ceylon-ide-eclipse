@@ -12,6 +12,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.SubMonitor;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
@@ -32,22 +33,23 @@ final class ModulesScanner implements IResourceVisitor {
 //    private final List<IFile> scannedSources;
 //    private final PhasedUnits phasedUnits;
 	private Module module;
+    private SubMonitor monitor;
 
 	ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
 			JDTModuleManager moduleManager, ResourceVirtualFile srcDir,
-			IPath srcFolderPath, TypeChecker typeChecker/*,
-            List<IFile> scannedSources, PhasedUnits phasedUnits*/) {
+			IPath srcFolderPath, TypeChecker typeChecker, SubMonitor monitor) {
 		this.defaultModule = defaultModule;
 		this.modelLoader = modelLoader;
 		this.moduleManager = moduleManager;
 		this.srcDir = srcDir;
 		this.srcFolderPath = srcFolderPath;
         this.typeChecker = typeChecker;
-//        this.scannedSources = scannedSources;
-//        this.phasedUnits = phasedUnits;
+        this.monitor = monitor;
 	}
 
 	public boolean visit(IResource resource) throws CoreException {
+	    monitor.setWorkRemaining(10000);
+	    monitor.worked(1);
 	    if (resource.equals(srcDir.getResource())) {
 	        IFile moduleFile = ((IFolder) resource).getFile(ModuleManager.MODULE_FILE);
 	        if (moduleFile.exists()) {
