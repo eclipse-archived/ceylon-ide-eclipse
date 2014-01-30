@@ -38,6 +38,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -68,6 +70,7 @@ import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 
 /**
@@ -287,9 +290,6 @@ public class JDTModuleManager extends LazyModuleManager {
         LinkedList<Module> dependencyTree, List<PhasedUnits> phasedUnitsOfDependencies, boolean forCompiledModule) {
         File artifactFile = artifact.artifact();
         if (isModuleLoadedFromSource(module.getNameAsString()) && artifactFile.getName().endsWith(ArtifactContext.CAR)) {
-            // We should force to take the .src even if the car is available
-            // We do this also for the referenced projects, since cross-references have to be reworked in order to be 
-            // compatible with the loadBinariesFirst mechanism
             ArtifactContext artifactContext = new ArtifactContext(module.getNameAsString(), module.getVersion(), ArtifactContext.SRC);
             RepositoryManager repositoryManager = getContext().getRepositoryManager();
             Exception exceptionOnGetArtifact = null;
@@ -307,7 +307,7 @@ public class JDTModuleManager extends LazyModuleManager {
             
         }
         if (module instanceof JDTModule) {
-            ((JDTModule) module).setArtifact(artifact.artifact());
+            ((JDTModule) module).setArtifact(artifact);
         }
         if (! isModuleLoadedFromCompiledSource(module.getNameAsString())) {
             File file = artifact.artifact();
@@ -316,7 +316,14 @@ public class JDTModuleManager extends LazyModuleManager {
                 file = new File(file.getAbsolutePath().replaceAll("\\.src$", ".car"));
             }
         }
-        super.resolveModule(artifact, module, moduleImport, dependencyTree, phasedUnitsOfDependencies, forCompiledModule);
+        try {
+            super.resolveModule(artifact, module, moduleImport, dependencyTree, phasedUnitsOfDependencies, forCompiledModule);
+        } catch(Exception e) {
+            if (module instanceof JDTModule) {
+                CeylonPlugin.getInstance().getLog().log(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Failed resolving module " + module.getSignature(), e));
+                ((JDTModule) module).setResolutionException(e);
+            }
+        }
     }
 
     @Override
@@ -327,10 +334,10 @@ public class JDTModuleManager extends LazyModuleManager {
     @Override
     public Iterable<String> getSearchedArtifactExtensions() {
         if (loadDependenciesFromModelLoaderFirst) {
-            return Arrays.asList("car", "src", "jar");
+            return Arrays.asList("car", "jar", "src");
         }
         else {
-            return Arrays.asList("src", "car", "jar");
+            return Arrays.asList("jar", "src", "car");
         }
     }
     

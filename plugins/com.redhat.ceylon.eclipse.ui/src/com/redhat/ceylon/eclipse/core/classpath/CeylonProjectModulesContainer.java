@@ -66,6 +66,7 @@ import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
+import com.redhat.ceylon.cmr.api.ArtifactResultType;
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -73,6 +74,7 @@ import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -293,8 +295,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 			}
 			IClasspathEntry[] oldEntries = classpathEntries;
 			if (typeChecker==null) {
-				typeChecker = parseCeylonModel(project, 
-						new SubProgressMonitor(monitor, 5, PREPEND_MAIN_LABEL_TO_SUBTASK));
+				typeChecker = parseCeylonModel(project, monitor);
 			}
 			
 			final Collection<IClasspathEntry> paths = findModuleArchivePaths(
@@ -341,6 +342,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 		Set<Module> modulesToAdd = context.getModules().getListOfModules();
 		//modulesToAdd.add(projectModules.getLanguageModule());        
 		for (Module module: modulesToAdd) {
+		    JDTModule jdtModule = (JDTModule) module;
 		    String name = module.getNameAsString(); 
 			if (name.equals(Module.DEFAULT_MODULE_NAME) ||
 					JDKUtils.isJDKModule(name) ||
@@ -349,7 +351,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 					isProjectModule(javaProject, module)) {
 				continue;
 			}
-			IPath modulePath = getModuleArchive(provider, module);
+			IPath modulePath = getModuleArchive(provider, jdtModule);
 			if (modulePath!=null) {
 				IPath srcPath = null;
                 
@@ -374,7 +376,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 
 				if (srcPath==null && !modulesWithSourcesAlreadySearched.contains(module.toString())) {
 					//otherwise, use the src archive
-					srcPath = getSourceArchive(provider, module);
+					srcPath = getSourceArchive(provider, jdtModule);
 				}
                 modulesWithSourcesAlreadySearched.add(module.toString());
                 IClasspathEntry newEntry = newLibraryEntry(modulePath, srcPath, null);
@@ -404,32 +406,35 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 	}
 
 	public static File getSourceArtifact(RepositoryManager provider,
-			Module module) {
+			JDTModule module) {
+	    String sourceArchivePath = module.getSourceArchivePath(); 
+	    if (sourceArchivePath == null) {
+	        return null;
+	    }
+	    
+	    File sourceArchive = new File(sourceArchivePath);
+	    if (sourceArchive.exists()) {
+	        return sourceArchive; 
+	    }
+	    
 	    // BEWARE : here the request to the provider is done in 2 steps, because if
 	    // we do this in a single step, the Aether repo might return the .jar
 	    // archive as a default result when not finding it with the .src extension.
-	    // In this case it will not try the second extension (-sources.jar). 
-        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
-        		module.getVersion(), ArtifactContext.SRC);
+	    // In this case it will not try the second extension (-sources.jar).
+        String suffix = module.getArtifactType().equals(ArtifactResultType.MAVEN) ? ArtifactContext.MAVEN_SRC : ArtifactContext.SRC; 
+	    ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
+        		module.getVersion(), suffix);
 		File srcArtifact = provider.getArtifact(ctx);
 		if (srcArtifact!=null) {
-		    if (srcArtifact.getPath().endsWith(ArtifactContext.SRC)) {
+		    if (srcArtifact.getPath().endsWith(suffix)) {
 	            return srcArtifact;
 		    }
 		}
-        ctx = new ArtifactContext(module.getNameAsString(), 
-                module.getVersion(), ArtifactContext.MAVEN_SRC);
-        srcArtifact = provider.getArtifact(ctx);
-        if (srcArtifact!=null) {
-            if (srcArtifact.getPath().endsWith(ArtifactContext.MAVEN_SRC)) {
-                return srcArtifact;
-            }
-        }
 		return null;
 	}
 
     public static IPath getSourceArchive(RepositoryManager provider,
-            Module module) {
+            JDTModule module) {
         File srcArtifact = getSourceArtifact(provider, module);
         if (srcArtifact!=null) {
             return new Path(srcArtifact.getPath());
@@ -438,7 +443,17 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     }
 
 	public static File getModuleArtifact(RepositoryManager provider,
-			Module module) {
+			JDTModule module) {
+	    File moduleFile = module.getArtifact();
+	    if (moduleFile == null) {
+	        return null;
+	    }
+	    if (moduleFile.exists()) {
+	        return moduleFile;
+	    }
+	    // Shouldn't need to execute this anymore ! 
+	    // We already retrieved this information during in the ModuleVisitor.
+	    // This should be a performance gain.
         ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
                 module.getVersion(), ArtifactContext.CAR);
         // try first with .car
@@ -453,7 +468,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 	}
 
 	public static IPath getModuleArchive(RepositoryManager provider,
-            Module module) {
+            JDTModule module) {
         File moduleArtifact = getModuleArtifact(provider, module);
         if (moduleArtifact!=null) {
             return new Path(moduleArtifact.getPath());

@@ -42,7 +42,9 @@ import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -85,6 +87,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModuleManager.ExternalModulePhase
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.TraversalAction;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 
@@ -103,6 +106,8 @@ public class JDTModule extends LazyModule {
     private JDTModule originalModule = null;
     private Set<String> originalUnitsToRemove = new LinkedHashSet<>();
     private Set<String> originalUnitsToAdd = new LinkedHashSet<>();
+    private ArtifactResultType artifactType = ArtifactResultType.OTHER;
+    private Exception resolutionException = null;
     
     public JDTModule(JDTModuleManager jdtModuleManager, List<IPackageFragmentRoot> packageFragmentRoots) {
         this.moduleManager = jdtModuleManager;
@@ -119,8 +124,9 @@ public class JDTModule extends LazyModule {
         return null;
     }
     
-    synchronized void setArtifact(File artifact) {
-        this.artifact = artifact;
+    synchronized void setArtifact(ArtifactResult artifactResult) {
+        this.artifact = artifactResult.artifact();
+        artifactType = artifactResult.type();
         if (isCeylonBinaryArchive()){
             String carPath = artifact.getPath();
             sourceArchivePath = carPath.substring(0, carPath.length()-ArtifactContext.CAR.length()) + ArtifactContext.SRC;
@@ -128,7 +134,7 @@ public class JDTModule extends LazyModule {
                 classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
                 javaImplFilesToCeylonDeclFiles = CarUtils.searchCeylonFilesForJavaImplementations(classesToSources, new File(sourceArchivePath));
             } catch (Exception e) {
-                e.printStackTrace();
+                CeylonPlugin.getInstance().getLog().log(new Status(IStatus.WARNING, CeylonPlugin.PLUGIN_ID, "Cannot find the source archive for the Ceylon binary module " + getSignature(), e));
             }
             class BinaryPhasedUnits extends PhasedUnitMap<ExternalPhasedUnit, SoftReference<ExternalPhasedUnit>> {
                 Set<String> sourceCannotBeResolved = new HashSet<String>();
@@ -243,6 +249,11 @@ public class JDTModule extends LazyModule {
             e.printStackTrace();
         }
         
+        if (isJavaBinaryArchive()){
+            String carPath = artifact.getPath();
+            sourceArchivePath = carPath.substring(0, carPath.length()-ArtifactContext.JAR.length())
+                    + (artifactResult.type().equals(ArtifactResultType.MAVEN) ? ArtifactContext.MAVEN_SRC : ArtifactContext.SRC);
+        }
     }
     
     synchronized void setSourcePhasedUnits(final ExternalModulePhasedUnits modulePhasedUnits) {
@@ -251,6 +262,10 @@ public class JDTModule extends LazyModule {
     
     public File getArtifact() {
         return artifact;
+    }
+
+    public ArtifactResultType getArtifactType() {
+        return artifactType;
     }
     
     public String toSourceUnitRelativePath(String binaryUnitRelativePath) {
@@ -415,7 +430,11 @@ public class JDTModule extends LazyModule {
 
     @Override
     public void loadPackageList(ArtifactResult artifact) {
-        super.loadPackageList(artifact);
+        try {
+            super.loadPackageList(artifact);
+        } catch(Exception e) {
+            CeylonPlugin.getInstance().getLog().log(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Failed loading the package list of module " + getSignature(), e));
+        }
         JDTModelLoader modelLoader = getModelLoader();
         if (modelLoader != null) {
             synchronized(modelLoader){
@@ -436,7 +455,11 @@ public class JDTModule extends LazyModule {
     }
     
     public boolean isProjectModule() {
-        return ! (isCeylonArchive() || isJavaBinaryArchive());
+        return ! (isCeylonArchive() || isJavaBinaryArchive()) && isAvailable();
+    }
+    
+    public boolean isUnresolved() {
+        return artifact == null && ! isAvailable();
     }
     
     public boolean isJavaBinaryArchive() {
@@ -854,5 +877,14 @@ public class JDTModule extends LazyModule {
             return getProjectModuleDependencies().getReferencingModules(this); 
         }
         return Collections.emptyList();
+    }
+
+    public boolean resolutionFailed() {
+        return resolutionException != null;
+    }
+
+    public void setResolutionException(Exception resolutionException) {
+        if (resolutionException instanceof RuntimeException)
+        this.resolutionException = resolutionException;
     }
 }
