@@ -166,11 +166,11 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         
         doc = new Document("\t/*\n\tcomment\n\t*/\n");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "\t/*\n\tcomment\n\t*/\n");
+        assertResult(doc, "/*\n comment\n */\n");
         
         doc = new Document("\t\t/*\n\tcomment\n\t*/\n");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "\t\t/*\n\tcomment\n\t*/\n");
+        assertResult(doc, "/*\n comment\n */\n");
         
         doc = new Document("x=1;");
         instance.doNewline(doc);
@@ -274,11 +274,11 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         
         doc = new Document("/*hello");
         instance.doNewline(doc);
-        assertResult(doc, "/*hello\n\n*/");
+        assertResult(doc, "/*hello\n \n */");
         
         doc = new Document("\t/*hello");
         instance.doNewline(doc);
-        assertResult(doc, "\t/*hello\n\t\n\t*/");
+        assertResult(doc, "\t/*hello\n\t \n\t */");
         
         doc = new Document("\t/*\n\thello");
         instance.doNewline(doc);
