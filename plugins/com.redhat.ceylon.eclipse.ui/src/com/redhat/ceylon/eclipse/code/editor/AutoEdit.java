@@ -84,7 +84,7 @@ class AutoEdit {
                 }
                 smartIndentOnKeypress();
             }
-            else if (command.text.length()==1 && isLineEnding(command.text)) {
+            else if ((command.text.length()==1 || command.text.length()==2) && isLineEnding(command.text)) {
             	//a typed newline
                 smartIndentAfterNewline();
             }
