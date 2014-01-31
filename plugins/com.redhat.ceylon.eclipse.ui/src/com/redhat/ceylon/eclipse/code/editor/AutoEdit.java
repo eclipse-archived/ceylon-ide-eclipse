@@ -37,7 +37,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.TextUtilities;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 
@@ -84,8 +83,9 @@ class AutoEdit {
                 }
                 smartIndentOnKeypress();
             }
-            else if ((command.text.length()==1 || command.text.length()==2) && isLineEnding(command.text)) {
-            	//a typed newline
+            else if (isLineEnding(command.text)) {
+            	//a typed newline (might have length 1 or 2, 
+            	//depending on the platform)
                 smartIndentAfterNewline();
             }
             else if (command.text.length()==1 || 
@@ -207,8 +207,10 @@ class AutoEdit {
 		}
 	}
 
-    private boolean skipClosingFence(String closing) throws BadLocationException {
-        return String.valueOf(document.getChar(command.offset)).equals(closing);
+    private boolean skipClosingFence(String closing) 
+    		throws BadLocationException {
+        return String.valueOf(document.getChar(command.offset))
+        		.equals(closing);
     }
 
 	private boolean closeOpeningFence(String opening, String closing) {
@@ -228,7 +230,8 @@ class AutoEdit {
 			int currOfset = command.offset - 1;
 			char currChar;
 			try {
-				while (Character.isAlphabetic(currChar = document.getChar(currOfset))) {
+				while (Character.isAlphabetic(currChar = 
+						document.getChar(currOfset))) {
 					currOfset--;
 				}
 				currChar = document.getChar(currOfset + 1);
@@ -244,7 +247,9 @@ class AutoEdit {
 	private String getPrefix() {
 		try {
 			int lineOffset = getStartOfCurrentLine();
-			return document.get(lineOffset, command.offset-lineOffset) + command.text;
+			return document.get(lineOffset, 
+					command.offset-lineOffset) + 
+					command.text;
 		} 
 		catch (BadLocationException e) {
 			return command.text;
@@ -331,7 +336,8 @@ class AutoEdit {
                 type==MULTI_COMMENT;
     }
     
-    private boolean isGraveAccentCharacterInStringLiteral(int offset, String fence) {
+    private boolean isGraveAccentCharacterInStringLiteral(int offset, 
+    		String fence) {
         if ("`".equals(fence)) {
             int type = getTokenTypeStrictlyContainingOffset(offset);
             return type == STRING_LITERAL ||
@@ -344,7 +350,8 @@ class AutoEdit {
         }
     }
 
-    private boolean isOpeningBracketInAnnotationStringLiteral(int offset, String fence) {
+    private boolean isOpeningBracketInAnnotationStringLiteral(int offset, 
+    		String fence) {
         if ("[".equals(fence)) {
             int type = getTokenTypeStrictlyContainingOffset(offset);
             //damn, AutoEdit can now no longer 
@@ -357,7 +364,8 @@ class AutoEdit {
         }
     }
     
-    private boolean isInUnterminatedMultilineComment(int offset, IDocument d) {
+    private boolean isInUnterminatedMultilineComment(int offset, 
+    		IDocument d) {
     	CommonToken token = getTokenStrictlyContainingOffset(offset);
     	if (token==null) return false;
         try {
@@ -394,7 +402,9 @@ class AutoEdit {
     			    //Note: ANTLR sometimes sends me 2 EOFs, 
     			    //      so do this:
     			    CommonToken token = null;
-    			    for (int i=1; token==null || token.getType()==EOF; i++) {
+    			    for (int i=1; 
+    			    		token==null || token.getType()==EOF; 
+    			    		i++) {
     			        token = tokens.get(tokens.size()-i);
     			    }
     				int type = token==null ? -1 : token.getType();
@@ -457,7 +467,8 @@ class AutoEdit {
             throws BadLocationException {
         char ch = command.text.charAt(0);
         if (isQuotedOrCommented(command.offset)) {
-            if (ch=='\t' || getIndentWithSpaces() && isIndent(getPrefix())) {
+            if (ch=='\t' || 
+            		getIndentWithSpaces() && isIndent(getPrefix())) {
                 fixIndentOfStringOrCommentContinuation();
             }
         }
@@ -919,44 +930,66 @@ class AutoEdit {
         return null;
     }
     
+    /**
+     * Is the given offset in the document a line ending?
+     */
+    private boolean isLineEnding(int offset) {
+    	int len = document.getLength();
+        String[] delimiters = document.getLegalLineDelimiters();
+        for (String delim: delimiters) {
+        	if (offset+delim.length()<=len) {
+        		try {
+	                if (document.get(offset,
+	                		delim.length()).equals(delim)) {
+	                	return true;
+	                }
+                }
+        		catch (BadLocationException e) {
+	                e.printStackTrace();
+                }
+        	}
+        }
+        return false;
+    }
+    
     private char getPreviousNonHiddenCharacterInLine(int offset)
             throws BadLocationException {
         offset--;
         for (;offset>=0; offset--) {
-            String ch = document.get(offset,1);
-            if (!isWhitespace(ch.charAt(0)) && 
+        	char ch = document.getChar(offset);
+            if (!isWhitespace(ch) && 
             	!isCommentToken(getTokenTypeOfCharacterAtOffset(offset)) ||
-                    isLineEnding(ch)) {
-                return ch.charAt(0);
+                    isLineEnding(offset)) {
+                return ch;
             }
         }
-        return '\n';
+        return '\n'; //lame null
     }
 
     private char getNextNonHiddenCharacterInLine(int offset)
             throws BadLocationException {
         for (;offset<document.getLength(); offset++) {
-            String ch = document.get(offset,1);
-            if (!isWhitespace(ch.charAt(0)) && 
+            char ch = document.getChar(offset);
+            if (!isWhitespace(ch) && 
                 !isCommentToken(getTokenTypeOfCharacterAtOffset(offset)) ||
-                    isLineEnding(ch)) {
-                return ch.charAt(0);
+                    isLineEnding(offset)) {
+                return ch;
             }
         }
-        return '\n';
+        return '\n'; //lame null
     }
     
     private char getNextNonHiddenCharacterInNewline(int offset)
             throws BadLocationException {
         for (;offset<document.getLength(); offset++) {
-            String ch = document.get(offset,1);
-            if (!isWhitespace(ch.charAt(0)) && 
+        	char ch = document.getChar(offset);
+            if (!isWhitespace(ch) && 
                 getTokenTypeOfCharacterAtOffset(offset)!=MULTI_COMMENT ||
-                    isLineEnding(ch)) {
-                return ch.charAt(0);
+                    isLineEnding(offset)) {
+                return ch;
             }
         }
-        return '\n';
+        return '\n'; //lame null
     }
     
     private int getStartOfCurrentLine() 
@@ -1022,15 +1055,18 @@ class AutoEdit {
     }
  
     /**
-     * Returns the first offset greater than <code>offset</code> and smaller than
-     * <code>end</code> whose character is not a space or tab character. If no such
-     * offset is found, <code>end</code> is returned.
+     * Returns the first offset greater than <code>offset</code> 
+     * and smaller than <code>end</code> whose character is 
+     * not a space or tab character. If no such offset is 
+     * found, <code>end</code> is returned.
      *
      * @param d the document to search in
      * @param offset the offset at which searching start
      * @param end the offset at which searching stops
-     * @return the offset in the specified range whose character is not a space or tab
-     * @exception BadLocationException if position is an invalid range in the given document
+     * @return the offset in the specified range whose 
+     *         character is not a space or tab
+     * @exception BadLocationException if position is an 
+     *            invalid range in the given document
      */
     private int firstEndOfWhitespace(int offset, int end)
             throws BadLocationException {
@@ -1044,10 +1080,16 @@ class AutoEdit {
         return end;
     }
     
+    /**
+     * Is the given character sequence a line-ending character
+     * sequence for this document/platform?
+     */
     private boolean isLineEnding(String text) {
         String[] delimiters = document.getLegalLineDelimiters();
-        if (delimiters != null) {
-            return TextUtilities.endsWith(delimiters, text)!=-1;
+        for (String delim: delimiters) {
+        	if (delim.equals(text)) {
+        		return true;
+        	}
         }
         return false;
     }
