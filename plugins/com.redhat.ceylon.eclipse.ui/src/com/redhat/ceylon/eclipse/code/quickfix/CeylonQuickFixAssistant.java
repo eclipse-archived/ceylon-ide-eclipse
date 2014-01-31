@@ -958,16 +958,20 @@ public class CeylonQuickFixAssistant {
     
     private void addMakeSharedDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        addAddAnnotationProposal(node, "shared", "Make Shared",  
-                decNode.getDeclarationModel(), proposals, project);
+    	if (node instanceof Tree.Declaration) {
+    		addAddAnnotationProposal(node, "shared", "Make Shared",  
+    				((Tree.Declaration) node).getDeclarationModel(), 
+    				proposals, project);
+    	}
     }
     
     private void addRemoveAnnotationDecProposal(Collection<ICompletionProposal> proposals, 
             String annotation, IProject project, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        addRemoveAnnotationProposal(node, annotation, "Make Non" + annotation,  
-                decNode.getDeclarationModel(), proposals, project);
+    	if (node instanceof Tree.Declaration) {
+    		addRemoveAnnotationProposal(node, annotation, "Make Non" + annotation,  
+    				((Tree.Declaration) node).getDeclarationModel(), 
+    				proposals, project);
+    	}
     }
     
     /*public void addRefactoringProposals(IQuickFixInvocationContext context,
