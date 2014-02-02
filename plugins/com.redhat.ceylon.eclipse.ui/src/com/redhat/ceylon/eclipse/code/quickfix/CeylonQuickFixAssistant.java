@@ -135,6 +135,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
@@ -738,7 +739,7 @@ public class CeylonQuickFixAssistant {
     private void addRenameDescriptorProposal(Tree.CompilationUnit cu,
             IQuickAssistInvocationContext context, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file) {
-        String pn = cu.getUnit().getPackage().getNameAsString();
+        String pn = escapedPackageName(cu.getUnit().getPackage());
         //TODO: DocumentChange doesn't work for Problems View
         TextFileChange change = new TextFileChange("Rename", file);
 //        DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());
@@ -2007,7 +2008,7 @@ public class CeylonQuickFixAssistant {
 			else {
 				int insertPosition = getBestImportInsertPosition(cu);
 				text.delete(0, 2);
-				text.insert(0, "import " + p.getNameAsString() + " { ").append(" }"); 
+				text.insert(0, "import " + escapedPackageName(p) + " { ").append(" }"); 
 				if (insertPosition==0) {
 					text.append("\n");
 				}
@@ -2020,6 +2021,22 @@ public class CeylonQuickFixAssistant {
 		return result;
 	}
     
+    public static String escapedPackageName(Package p) {
+    	List<String> path = p.getName();
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<path.size(); i++) {
+            String pathPart = path.get(i);
+            if (!pathPart.isEmpty()) {
+                if (CeylonTokenColorer.keywords.contains(pathPart)) {
+                	pathPart = "\\i" + pathPart;
+                }
+                sb.append(pathPart);
+                if (i<path.size()-1) sb.append('.');
+            }
+        }
+        return sb.toString();
+    }
+	
     public static List<TextEdit> importEditForMove(Tree.CompilationUnit cu,
             Iterable<Declaration> declarations, Iterable<String> aliases,
             String newPackageName, String oldPackageName) {
