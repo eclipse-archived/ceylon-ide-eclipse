@@ -36,6 +36,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToGetterProposal.ad
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.FindIndentationVisitor.fixIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addReverseIfElseProposal;
@@ -62,6 +63,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
@@ -120,6 +122,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
@@ -246,9 +249,60 @@ public class CeylonQuickFixAssistant {
             
             RefineFormalMembersProposal.add(proposals, editor);
             
+            addConvertToVerbatimProposal(proposals, file, cu, node);
+//            addConvertFromVerbatimProposal(proposals, file, cu, node);
         }
         
     }
+    
+    private void addConvertToVerbatimProposal(Collection<ICompletionProposal> proposals,
+    		IFile file, Tree.CompilationUnit cu, Node node) {
+    	if (node instanceof Tree.StringLiteral) {
+    		Token token = node.getToken();
+    		if (token.getType()==CeylonLexer.ASTRING_LITERAL ||
+    			token.getType()==CeylonLexer.STRING_LITERAL) {
+    			String text = "\"\"" + 
+    					token.getText()
+    						.replace("\\\\", "\\")
+    						.replace("\\\"", "\"")
+    						.replace("\\'", "'") +
+    					"\"\"";
+    	        int offset = node.getStartIndex();
+    	        int length = node.getStopIndex() - node.getStartIndex() + 1; 
+    	        String reindented = fixIndent(cu, (Tree.StringLiteral) node, text, 
+    	        		offset, length, "  ");
+        		TextFileChange change = new TextFileChange("Change to Verbatim String", file);
+    			change.setEdit(new ReplaceEdit(offset, length, reindented==null ? text : reindented));
+        		proposals.add(new ChangeCorrectionProposal("Change to verbatim string", 
+        				change, CHANGE));
+    		}
+    	}
+    }
+
+    /*private void addConvertFromVerbatimProposal(Collection<ICompletionProposal> proposals,
+    		IFile file, Tree.CompilationUnit cu, Node node) {
+    	if (node instanceof Tree.StringLiteral) {
+    		Token token = node.getToken();
+    		if (token.getType()==CeylonLexer.AVERBATIM_STRING ||
+    			token.getType()==CeylonLexer.VERBATIM_STRING) {
+    			String text = "\"" +
+    					token.getText()
+    					    .substring(3, token.getText().length()-3)
+    						.replace("\\", "\\\\")
+    						.replace("\"", "\\\"")
+    						.replace("'", "\\'") +
+    					"\"";
+    	        int offset = node.getStartIndex();
+    	        int length = node.getStopIndex() - node.getStartIndex() + 1; 
+    	        String reindented = fixIndent(cu, (Tree.StringLiteral) node, text, offset, length, 
+    	        		WAT?);
+        		TextFileChange change = new TextFileChange("Change to Ordinary String", file);
+    			change.setEdit(new ReplaceEdit(offset, length, reindented==null ? text : reindented));
+        		proposals.add(new ChangeCorrectionProposal("Change to ordinary string", 
+        				change, CHANGE));
+    		}
+    	}
+    }*/
 
     private void addAnnotationProposals(Collection<ICompletionProposal> proposals, 
             IProject project, Tree.Declaration decNode) {

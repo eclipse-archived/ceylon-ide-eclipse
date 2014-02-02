@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -15,9 +13,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 
-public class ChangeInitialCaseOfIdentifierInDeclaration extends ChangeCorrectionProposal {
+public class ChangeInitialCaseOfIdentifierInDeclaration 
+        extends ChangeCorrectionProposal {
 
-    public static void addChangeIdentifierCaseProposal(Node node, Collection<ICompletionProposal> proposals, IFile file) {
+    public static void addChangeIdentifierCaseProposal(Node node, 
+    		Collection<ICompletionProposal> proposals, IFile file) {
         Tree.Identifier identifier = null;
         
         if (node instanceof Tree.TypeDeclaration) {
@@ -46,7 +46,8 @@ public class ChangeInitialCaseOfIdentifierInDeclaration extends ChangeCorrection
         }
     }
     
-    private static void addProposal(Identifier identifier, Collection<ICompletionProposal> proposals, IFile file) {
+    private static void addProposal(Identifier identifier, 
+    		Collection<ICompletionProposal> proposals, IFile file) {
         String newIdentifier;
         String newFirstLetter;
         
@@ -62,14 +63,15 @@ public class ChangeInitialCaseOfIdentifierInDeclaration extends ChangeCorrection
         TextFileChange change = new TextFileChange("Change initial case of identifier", file);
         change.setEdit(new ReplaceEdit(identifier.getStartIndex(), 1, newFirstLetter));
 
-        ChangeInitialCaseOfIdentifierInDeclaration proposal = new ChangeInitialCaseOfIdentifierInDeclaration(newIdentifier, change);
+        ChangeInitialCaseOfIdentifierInDeclaration proposal = 
+        		new ChangeInitialCaseOfIdentifierInDeclaration(newIdentifier, change);
         if (!proposals.contains(proposal)) {
             proposals.add(proposal);
         }
     }
 
     public ChangeInitialCaseOfIdentifierInDeclaration(String newIdentifier, Change change) {
-        super("Change initial case of identifier to '" + newIdentifier + "'", change, CHANGE);
+        super("Change initial case of identifier to '" + newIdentifier + "'", change);
     }
 
 }
