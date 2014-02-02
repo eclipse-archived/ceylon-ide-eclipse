@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.escapedPackageName;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ImportableScope;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -133,7 +135,10 @@ public class CleanImportsHandler extends AbstractHandler {
             if (hasWildcard || !list.isEmpty() || 
                     imports.isEmpty()) { //in this last case there is no existing import, but imports are proposed
                 lastToplevel = appendBreakIfNecessary(lastToplevel, packageName, builder);
-                builder.append("import ").append(packageName).append(" {");
+                Referenceable packageModel = imports.get(0).getImportPath().getModel();
+                String escapedPackageName = packageModel instanceof Package ?
+                	escapedPackageName((Package) packageModel) : packageName;
+                builder.append("import ").append(escapedPackageName).append(" {");
                 appendImportElements(packageName, list, unused, proposed, hasWildcard, builder);
                 builder.append("\n}\n");
             }

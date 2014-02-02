@@ -49,6 +49,7 @@ import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ALI
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARGUMENT_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.UPPER_BOUND;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.escapedPackageName;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getModuleQueryType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
@@ -646,7 +647,7 @@ public class CeylonContentProposer {
                 //if (!packages.contains(p)) {
                     //packages.add(p);
                 //if ( p.getModule().equals(module) || p.isShared() ) {
-                    final String pkg = p.getQualifiedNameString();
+                    final String pkg = escapedPackageName(p);
                     if (!pkg.isEmpty() && pkg.startsWith(pfp)) {
                         boolean already = false;
                         if (!pfp.equals(pkg)) {
