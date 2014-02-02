@@ -26,7 +26,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.AddThrowsAnnotationProposa
 import static com.redhat.ceylon.eclipse.code.quickfix.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
-import static com.redhat.ceylon.eclipse.code.quickfix.ChangeMultilineStringIndentationProposal.addFixMultilineStringIndentation;
+import static com.redhat.ceylon.eclipse.code.quickfix.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertGetterToMethodProposal.addConvertGetterToMethodProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertIfElseToThenElse.addConvertToThenElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertMethodToGetterProposal.addConvertMethodToGetterProposal;
@@ -36,7 +36,6 @@ import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToGetterProposal.ad
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
-import static com.redhat.ceylon.eclipse.code.quickfix.FindIndentationVisitor.fixIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addReverseIfElseProposal;
@@ -252,7 +251,7 @@ public class CeylonQuickFixAssistant {
             RefineFormalMembersProposal.add(proposals, editor);
             
             addConvertToVerbatimProposal(proposals, file, cu, node);
-//            addConvertFromVerbatimProposal(proposals, file, cu, node);
+            addConvertFromVerbatimProposal(proposals, file, cu, node);
         }
         
     }
@@ -260,52 +259,65 @@ public class CeylonQuickFixAssistant {
     private void addConvertToVerbatimProposal(Collection<ICompletionProposal> proposals,
     		IFile file, Tree.CompilationUnit cu, Node node) {
     	if (node instanceof Tree.StringLiteral) {
+	        Tree.StringLiteral literal = (Tree.StringLiteral) node;
     		Token token = node.getToken();
     		if (token.getType()==CeylonLexer.ASTRING_LITERAL ||
     			token.getType()==CeylonLexer.STRING_LITERAL) {
-    			String text = "\"\"" + 
-    					token.getText()
-    						.replace("\\\\", "\\")
-    						.replace("\\\"", "\"")
-    						.replace("\\'", "'") +
-    					"\"\"";
+    			String text = "\"\"\"" + literal.getText() + "\"\"\"";
     	        int offset = node.getStartIndex();
     	        int length = node.getStopIndex() - node.getStartIndex() + 1; 
-    	        String reindented = fixIndent(cu, (Tree.StringLiteral) node, text, 
-    	        		offset, length, "  ");
-        		TextFileChange change = new TextFileChange("Change to Verbatim String", file);
-    			change.setEdit(new ReplaceEdit(offset, length, reindented==null ? text : reindented));
-        		proposals.add(new ChangeCorrectionProposal("Change to verbatim string", 
+    	        String reindented = getConvertedText(text, token.getCharPositionInLine()+3);
+        		TextFileChange change = new TextFileChange("Convert to Verbatim String", file);
+    			change.setEdit(new ReplaceEdit(offset, length, reindented));
+        		proposals.add(new ChangeCorrectionProposal("Convert to verbatim string", 
         				change, CHANGE));
     		}
     	}
     }
 
-    /*private void addConvertFromVerbatimProposal(Collection<ICompletionProposal> proposals,
+    private void addConvertFromVerbatimProposal(Collection<ICompletionProposal> proposals,
     		IFile file, Tree.CompilationUnit cu, Node node) {
     	if (node instanceof Tree.StringLiteral) {
+    		Tree.StringLiteral literal = (Tree.StringLiteral) node;
     		Token token = node.getToken();
     		if (token.getType()==CeylonLexer.AVERBATIM_STRING ||
     			token.getType()==CeylonLexer.VERBATIM_STRING) {
     			String text = "\"" +
-    					token.getText()
-    					    .substring(3, token.getText().length()-3)
+    					literal.getText()
     						.replace("\\", "\\\\")
     						.replace("\"", "\\\"")
-    						.replace("'", "\\'") +
+    						.replace("`", "\\`") +
     					"\"";
     	        int offset = node.getStartIndex();
     	        int length = node.getStopIndex() - node.getStartIndex() + 1; 
-    	        String reindented = fixIndent(cu, (Tree.StringLiteral) node, text, offset, length, 
-    	        		WAT?);
-        		TextFileChange change = new TextFileChange("Change to Ordinary String", file);
-    			change.setEdit(new ReplaceEdit(offset, length, reindented==null ? text : reindented));
-        		proposals.add(new ChangeCorrectionProposal("Change to ordinary string", 
+    	        String reindented = getConvertedText(text, token.getCharPositionInLine()+1);
+        		TextFileChange change = new TextFileChange("Convert to Ordinary String", file);
+    			change.setEdit(new ReplaceEdit(offset, length, reindented));
+        		proposals.add(new ChangeCorrectionProposal("Convert to ordinary string", 
         				change, CHANGE));
     		}
     	}
-    }*/
+    }
 
+    static String getConvertedText(String text, int indentation) {
+        StringBuilder result = new StringBuilder();
+        for (String line: text.split("\n|\r\n?")) {
+            if (result.length() == 0) {
+            	//the first line of the string
+                result.append(line);
+            }
+            else {
+                for (int i = 0; i<indentation; i++) {
+                    result.append(" ");
+                }
+                result.append(line);
+            }
+            result.append("\n");
+        }
+        result.setLength(result.length()-1);
+        return result.toString();
+    }
+    
     private void addAnnotationProposals(Collection<ICompletionProposal> proposals, 
             IProject project, Tree.Declaration decNode) {
         if (decNode!=null) {
@@ -665,14 +677,14 @@ public class CeylonQuickFixAssistant {
             addChangeIdentifierCaseProposal(node, proposals, file);
             break;
         case 6000:
-            addFixMultilineStringIndentation(proposals, file, cu, (Tree.StringLiteral)node);
+            addFixMultilineStringIndentation(proposals, file, cu, node);
             break;
         case 7000:
             addModuleImportProposals(cu, proposals, project, tc, node);
             break;
         case 8000:
             addRenameDescriptorProposal(cu, context, problem, proposals, file);
-          //TODO: figure out some other way to get a Shell!
+            //TODO: figure out some other way to get a Shell!
             if (context.getSourceViewer()!=null) {
                 addMoveDirProposal(file, cu, project, proposals, 
                         context.getSourceViewer().getTextWidget().getShell());
@@ -697,10 +709,10 @@ public class CeylonQuickFixAssistant {
         final String pn = formatPath(importPath.getIdentifiers());
         final String cpn = cu.getUnit().getPackage().getNameAsString();
         final IPath sourceDir = file.getProjectRelativePath()
-              .removeLastSegments(file.getProjectRelativePath().segmentCount()-1);
-//        final IPath relPath = sourceDir.append(pn.replace('.', '/'));
-//        final IPath newPath = project.getFullPath().append(relPath);
-//        if (!project.exists(newPath)) {
+        		.removeLastSegments(file.getProjectRelativePath().segmentCount()-1);
+//          final IPath relPath = sourceDir.append(pn.replace('.', '/'));
+//          final IPath newPath = project.getFullPath().append(relPath);
+//          if (!project.exists(newPath)) {
             proposals.add(new ICompletionProposal() {
                 @Override
                 public Point getSelection(IDocument document) {
