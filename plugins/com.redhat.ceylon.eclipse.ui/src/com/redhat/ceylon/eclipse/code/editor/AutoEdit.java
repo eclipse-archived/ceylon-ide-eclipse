@@ -377,6 +377,23 @@ class AutoEdit {
 			return false;
 		}
     }
+    
+    private String getRelativeIndent(int offset) {
+    	int indent = getStringOrCommentIndent(offset);
+        try {
+        	IRegion li = document.getLineInformationOfOffset(offset);
+	        StringBuilder result = new StringBuilder();
+        	for (int i = li.getOffset()+indent;
+	        	document.getChar(i++)==' ';) {
+	        	result.append(' ');
+	        }
+	        return result.toString();
+        }
+        catch (BadLocationException e) {
+	        e.printStackTrace();
+	        return "";
+        }
+    }
 
     private int getTokenTypeStrictlyContainingOffset(int offset) {
     	CommonToken token = getTokenStrictlyContainingOffset(offset);
@@ -533,6 +550,7 @@ class AutoEdit {
             break;
         }
         indent.append(extraIndent);
+        indent.append(getRelativeIndent(command.offset));
         if (indent.length()>0) {
             command.length = endOfWs-command.offset;
             command.text = indent.toString();
@@ -1020,7 +1038,8 @@ class AutoEdit {
             if (line==0) return 0;
         	lineInfo = document.getLineInformation(--line);
         }
-        while (lineInfo.getLength()==0 || isQuoted(lineInfo.getOffset()));
+        while (lineInfo.getLength()==0 || 
+        		isQuoted(lineInfo.getOffset()));
         return lineInfo.getOffset();
     }
     
