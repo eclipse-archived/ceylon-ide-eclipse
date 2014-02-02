@@ -44,6 +44,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.RemoveAliasProposal.addRem
 import static com.redhat.ceylon.eclipse.code.quickfix.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RenameVersionProposal.addRenameVersionProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowSwitchReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.addSpecifyTypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SplitDeclarationProposal.addSplitDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.UseAliasProposal.addUseAliasProposal;
@@ -653,6 +654,10 @@ public class CeylonQuickFixAssistant {
         	break;
         case 3100:
             addShadowReferenceProposal(file, cu, proposals, node);
+        	break;
+        case 3101:
+        case 3102:
+        	addShadowSwitchReferenceProposal(file, cu, proposals, node);
         	break;
         case 5001:
         case 5002:

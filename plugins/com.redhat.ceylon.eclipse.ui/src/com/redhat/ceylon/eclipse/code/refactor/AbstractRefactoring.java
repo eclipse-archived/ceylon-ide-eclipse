@@ -34,6 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -110,37 +111,42 @@ public abstract class AbstractRefactoring extends Refactoring {
                     .getPrimary();
         }
         
-        //don't do this for unqualified member refs, because the guessed
-        //name will just hide the original name, resulting in errors
-        if (identifyingNode instanceof Tree.QualifiedMemberOrTypeExpression ||
-                identifyingNode instanceof Tree.BaseTypeExpression) {
-            String id = ((Tree.StaticMemberOrTypeExpression) identifyingNode)
-                    .getIdentifier().getText();
-            if (!id.isEmpty()) {
-                String name = Character.toLowerCase(id.charAt(0)) + 
-                        id.substring(1);
-                if (!CeylonTokenColorer.keywords.contains(name)) return name;
+        if (node instanceof Tree.MemberOrTypeExpression) {
+        	Declaration d = ((Tree.MemberOrTypeExpression) node).getDeclaration();
+        	if (d!=null) {
+        		return guessName(identifyingNode, d);
+        	}
+        }
+        else if (node instanceof Tree.Term) {
+        	ProducedType type = ((Tree.Term) node).getTypeModel();
+        	if (type!=null) {
+        		TypeDeclaration d = type.getDeclaration();
+				if (d instanceof ClassOrInterface || 
+					d instanceof TypeParameter) {
+					return guessName(identifyingNode, d);
+				}
             }
         }
         
-        if (node instanceof Tree.Term) {
-            ProducedType type = ((Tree.Term) node).getTypeModel();
-            if (type!=null && (type.getDeclaration() instanceof ClassOrInterface || 
-                    type.getDeclaration() instanceof TypeParameter)) {
-                String tn = type.getDeclaration().getName();
-                String name = Character.toLowerCase(tn.charAt(0)) + 
-                        tn.substring(1);
-                if (identifyingNode instanceof Tree.BaseMemberExpression) {
-                	String id = ((Tree.BaseMemberExpression) identifyingNode).getIdentifier().getText();
-                	if (!name.equals(id) && !CeylonTokenColorer.keywords.contains(name)) return name;
-                }
-                else {
-                	if (!CeylonTokenColorer.keywords.contains(name)) return name;
-                }
-            }
-        }
-        
-        return "temp";
+        return "it";
+    }
+
+	private static String guessName(Node identifyingNode, Declaration d) {
+	    String tn = d.getName();
+	    String name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
+	    if (identifyingNode instanceof Tree.BaseMemberExpression) {
+	    	Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) identifyingNode;
+			String id = bme.getIdentifier().getText();
+	    	if (name.equals(id)) {
+	    		return name + "2";
+	    	}
+	    }
+    	if (!CeylonTokenColorer.keywords.contains(name)) {
+    		return name;
+    	}
+    	else {
+    		return "it";
+    	}
     }
 
     String toString(Node term) {
