@@ -569,7 +569,9 @@ class AutoEdit {
                         '\t' : ' ';
                 sb.append(ws);
             }
-            command.text = command.text + sb.toString();
+            command.text = command.text + 
+            		sb.toString() + 
+            		getRelativeIndent(command.offset);
         }
         else {
             char endOfLastLineChar = getPreviousNonHiddenCharacterInLine(command.offset);
