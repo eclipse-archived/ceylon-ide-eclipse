@@ -1,8 +1,11 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -12,10 +15,12 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class RemoveAnnotionProposal extends ChangeCorrectionProposal {
     
@@ -59,7 +64,26 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
         return dec.hashCode();
     }
 
-    static void addRemoveAnnotationProposal(String annotation,
+    static void addRemoveAnnotationProposal(Node node, String annotation, String desc,
+            Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
+        if (dec!=null && dec.getName()!=null) {
+            for (PhasedUnit unit: getUnits(project)) {
+                if (dec.getUnit().equals(unit.getUnit())) {
+                    //TODO: "object" declarations?
+                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
+                    CeylonQuickFixAssistant.getRootNode(unit).visit(fdv);
+                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    if (decNode!=null) {
+                        RemoveAnnotionProposal.addRemoveAnnotationProposal(annotation, desc, dec,
+                                proposals, unit, decNode);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void addRemoveAnnotationProposal(String annotation,
             String desc, Declaration dec,
             Collection<ICompletionProposal> proposals, 
             PhasedUnit unit, Tree.Declaration decNode) {
