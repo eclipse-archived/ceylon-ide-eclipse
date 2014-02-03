@@ -5,25 +5,25 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class FindDeclarationVisitor 
+public class FindArgumentVisitor 
         extends Visitor 
         implements NaturalVisitor {
 
     private final Node term;
-    private Tree.Declaration declaration;
-    private Tree.Declaration current;
+    private Tree.TypedArgument declaration;
+    private Tree.TypedArgument current;
 
-    public FindDeclarationVisitor(Node term) {
+    public FindArgumentVisitor(Node term) {
         this.term = term;
     }
 
-    public Tree.Declaration getDeclarationNode() {
+    public Tree.TypedArgument getArgumentNode() {
         return declaration;
     }
 
     @Override
-    public void visit(Tree.Declaration that) {
-        Tree.Declaration outer = current;
+    public void visit(Tree.TypedArgument that) {
+        Tree.TypedArgument outer = current;
         current = that;
         super.visit(that);
         current = outer;

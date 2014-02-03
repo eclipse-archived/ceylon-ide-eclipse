@@ -38,8 +38,7 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
 
     static void addConvertToBlockProposal(IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
-            Tree.LazySpecifierExpression spec,
-            Node decNode) {
+            Tree.LazySpecifierExpression spec, Node decNode) {
         TextChange change = new TextFileChange("Convert To Block", file);
         change.setEdit(new MultiTextEdit());
         Integer offset = spec.getStartIndex();
@@ -54,6 +53,7 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
             return;
         }
         boolean isVoid;
+        String addedKeyword = null;
         if (decNode instanceof Tree.Declaration) {
             Declaration dm = ((Tree.Declaration) decNode).getDeclarationModel();
             if (dm.isParameter()) return;
@@ -61,16 +61,27 @@ class ConvertToBlockProposal extends ChangeCorrectionProposal {
                     dm instanceof Method && ((Method) dm).isDeclaredVoid();
         }
         else if (decNode instanceof Tree.MethodArgument) {
-            isVoid = ((Tree.MethodArgument) decNode).getDeclarationModel().isDeclaredVoid();            
+            Tree.MethodArgument ma = (Tree.MethodArgument) decNode;
+			isVoid = ma.getDeclarationModel().isDeclaredVoid();
+			if (ma.getType().getToken()==null) {
+				addedKeyword = "function ";
+			}
         }
         else if (decNode instanceof Tree.AttributeArgument) {
+            Tree.AttributeArgument aa = (Tree.AttributeArgument) decNode;
             isVoid = false;            
+			if (aa.getType().getToken()==null) {
+				addedKeyword = "value ";
+			}
         }
         else if (decNode instanceof Tree.FunctionArgument) {
             isVoid = ((Tree.FunctionArgument) decNode).getDeclarationModel().isDeclaredVoid();
         }
         else {
             return;
+        }
+        if (addedKeyword!=null) {
+        	change.addEdit(new InsertEdit(decNode.getStartIndex(), addedKeyword));
         }
         change.addEdit(new ReplaceEdit(offset, 2, space + (isVoid?"{":"{ return") + spaceAfter));
         change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
