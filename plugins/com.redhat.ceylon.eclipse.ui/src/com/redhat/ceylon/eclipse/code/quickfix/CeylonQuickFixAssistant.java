@@ -137,6 +137,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
+import com.redhat.ceylon.eclipse.util.FindArgumentVisitor;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
@@ -223,17 +224,19 @@ public class CeylonQuickFixAssistant {
             addAssignToLocalProposal(file, cu, proposals, node, 
                     currentOffset);
             
-            Tree.Declaration decNode = findDeclaration(cu, node);
-            addAnnotationProposals(proposals, project, decNode);
-            addTypingProposals(proposals, file, cu, node, decNode);
+            Tree.Statement statement = findStatement(cu, node);
+            Tree.Declaration declaration = findDeclaration(cu, node);
+            Tree.TypedArgument argument = findArgument(cu, node);
+            
+            addAnnotationProposals(proposals, project, declaration);
+            addTypingProposals(proposals, file, cu, node, declaration);
             
             addDeclarationProposals(editor, proposals, doc, file, cu, 
-                    node, decNode, currentOffset);
+            		declaration, currentOffset);
             
-            addArgumentProposals(proposals, doc, file, node);
+            addArgumentProposals(proposals, doc, file, argument);
             addImportProposals(editor, cu, proposals, file, node);
             
-            Tree.Statement statement = findStatement(cu, node);
             addConvertToIfElseProposal(doc, proposals, file, statement);
             addConvertToThenElseProposal(cu, doc, proposals, file, statement);
             addReverseIfElseProposal(doc, proposals, file, statement);
@@ -355,10 +358,11 @@ public class CeylonQuickFixAssistant {
 
     private void addDeclarationProposals(CeylonEditor editor,
             Collection<ICompletionProposal> proposals, IDocument doc,
-            IFile file, Tree.CompilationUnit cu, Node node,
+            IFile file, Tree.CompilationUnit cu,
             Tree.Declaration decNode, int currentOffset) {
         
         if (decNode==null) return;
+        
         if (decNode.getAnnotationList()!=null) {
             Integer stopIndex = decNode.getAnnotationList().getStopIndex();
             if (stopIndex!=null && currentOffset<=stopIndex+1) {
@@ -377,7 +381,8 @@ public class CeylonQuickFixAssistant {
             
         if (decNode instanceof Tree.AttributeDeclaration) {
             AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
-            Tree.SpecifierOrInitializerExpression se = attDecNode.getSpecifierOrInitializerExpression(); 
+            Tree.SpecifierOrInitializerExpression se = 
+            		attDecNode.getSpecifierOrInitializerExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
                 addConvertToBlockProposal(doc, proposals, file, 
                         (Tree.LazySpecifierExpression) se, decNode);
@@ -387,14 +392,16 @@ public class CeylonQuickFixAssistant {
             }
         }
         if (decNode instanceof Tree.MethodDeclaration) {
-            Tree.SpecifierOrInitializerExpression se = ((Tree.MethodDeclaration) decNode).getSpecifierExpression(); 
+            Tree.SpecifierOrInitializerExpression se = 
+            		((Tree.MethodDeclaration) decNode).getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
                 addConvertToBlockProposal(doc, proposals, file, 
                         (Tree.LazySpecifierExpression) se, decNode);
             }
         }
         if (decNode instanceof Tree.AttributeSetterDefinition) {
-            Tree.SpecifierOrInitializerExpression se = ((Tree.AttributeSetterDefinition) decNode).getSpecifierExpression();
+            Tree.SpecifierOrInitializerExpression se = 
+            		((Tree.AttributeSetterDefinition) decNode).getSpecifierExpression();
             if (se instanceof Tree.LazySpecifierExpression) {
                 addConvertToBlockProposal(doc, proposals, file, 
                         (Tree.LazySpecifierExpression) se, decNode);
@@ -418,7 +425,8 @@ public class CeylonQuickFixAssistant {
         }
         if (decNode instanceof Tree.AttributeDeclaration) {
             Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
-            Tree.SpecifierOrInitializerExpression sie = attDecNode.getSpecifierOrInitializerExpression();
+            Tree.SpecifierOrInitializerExpression sie = 
+            		attDecNode.getSpecifierOrInitializerExpression();
             if (sie!=null) {
                 addSplitDeclarationProposal(doc, cu, proposals, file, attDecNode);
             }
@@ -456,7 +464,8 @@ public class CeylonQuickFixAssistant {
             }
         }
         if (node instanceof Tree.MemberOrTypeExpression) {
-            Declaration declaration = ((Tree.MemberOrTypeExpression) node).getDeclaration();
+            Declaration declaration = 
+            		((Tree.MemberOrTypeExpression) node).getDeclaration();
             if (declaration!=null) {
                 FindImportVisitor visitor = new FindImportVisitor(declaration);
                 visitor.visit(cu);
@@ -464,7 +473,8 @@ public class CeylonQuickFixAssistant {
             }
         }
         else if (node instanceof Tree.SimpleType) {
-            Declaration declaration = ((Tree.SimpleType) node).getDeclarationModel();
+            Declaration declaration = 
+            		((Tree.SimpleType) node).getDeclarationModel();
             if (declaration!=null) {
                 FindImportVisitor visitor = new FindImportVisitor(declaration);
                 visitor.visit(cu);
@@ -493,27 +503,30 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-    private void addArgumentProposals(
-            Collection<ICompletionProposal> proposals, IDocument doc,
-            IFile file, Node node) {
+    private void addArgumentProposals(Collection<ICompletionProposal> proposals, 
+    		IDocument doc, IFile file, Tree.StatementOrArgument node) {
         if (node instanceof Tree.MethodArgument) {
-            Tree.SpecifierOrInitializerExpression se = ((Tree.MethodArgument) node).getSpecifierExpression(); 
+            Tree.MethodArgument ma = (Tree.MethodArgument) node;
+			Tree.SpecifierOrInitializerExpression se = 
+            		ma.getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
                 addConvertToBlockProposal(doc, proposals, file, 
                         (Tree.LazySpecifierExpression) se, node);
             }
-            Tree.Block b = ((Tree.MethodArgument) node).getBlock(); 
+            Tree.Block b = ma.getBlock(); 
             if (b!=null) {
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
         }
         if (node instanceof Tree.AttributeArgument) {
-            Tree.SpecifierOrInitializerExpression se = ((Tree.AttributeArgument) node).getSpecifierExpression(); 
+            Tree.AttributeArgument aa = (Tree.AttributeArgument) node;
+			Tree.SpecifierOrInitializerExpression se = 
+            		aa.getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
                 addConvertToBlockProposal(doc, proposals, file, 
                         (Tree.LazySpecifierExpression) se, node);
             }
-            Tree.Block b = ((Tree.AttributeArgument) node).getBlock(); 
+            Tree.Block b = aa.getBlock(); 
             if (b!=null) {
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
@@ -524,6 +537,12 @@ public class CeylonQuickFixAssistant {
 		FindDeclarationVisitor fcv = new FindDeclarationVisitor(node);
 		fcv.visit(cu);
 		return fcv.getDeclarationNode();
+	}
+    
+	public static Tree.TypedArgument findArgument(Tree.CompilationUnit cu, Node node) {
+		FindArgumentVisitor fcv = new FindArgumentVisitor(node);
+		fcv.visit(cu);
+		return fcv.getArgumentNode();
 	}
     
     public void addProposals(IQuickAssistInvocationContext context, ProblemLocation problem,
