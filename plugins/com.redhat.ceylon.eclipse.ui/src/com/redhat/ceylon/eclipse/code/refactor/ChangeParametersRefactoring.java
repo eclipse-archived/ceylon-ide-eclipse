@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -82,6 +83,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     private List<Integer> order = new ArrayList<Integer>();
     
 	private final Declaration declaration;
+	private final List<Parameter> parameters;
 	
 	public Node getNode() {
 		return node;
@@ -100,21 +102,24 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 	    		List<ParameterList> pls = ((Functional) refDec).getParameterLists();
 	    		if (pls.isEmpty()) {
 	    		    declaration = null;
+	    		    parameters = null;
 	    		}
 	    		else {
 	    		    declaration = refDec;
-	    		    int len = pls.get(0).getParameters().size();
-	    		    for (int i=0; i<len; i++) {
+	    		    parameters = pls.get(0).getParameters();
+	    		    for (int i=0; i<parameters.size(); i++) {
 	    		        order.add(i);
 	    		    }
 	    		}
 	    	}
 	    	else {
 	    		declaration = null;
+	    		parameters = null;
 	    	}
 	    }
 	    else {
     		declaration = null;
+    		parameters = null;
 	    }
 	}
 	
@@ -126,7 +131,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 	}
 
 	public int getCount() {
-	    return declaration==null ? 0 : countDeclarationOccurrences();
+	    return declaration==null ? 
+	    		0 : countDeclarationOccurrences();
 	}
 	
 	@Override
@@ -154,6 +160,18 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 
 	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
+		boolean foundDefaulted = false;
+		for (int index: order) {
+			Parameter parameter = parameters.get(index);
+			if (parameter.isDefaulted()) {
+				foundDefaulted = true;
+			}
+			else {
+				if (foundDefaulted) {
+					return createWarningStatus("defaulted parameters occur before required parameters");
+				}
+			}
+		}
 		return new RefactoringStatus();
 	}
 
