@@ -33,6 +33,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.ConvertMethodToGetterPropo
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertThenElseToIfElse.addConvertToIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToBlockProposal.addConvertToBlockProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToGetterProposal.addConvertToGetterProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
@@ -219,10 +220,12 @@ public class CeylonQuickFixAssistant {
             ExtractValueProposal.add(proposals, editor, node);
             ExtractFunctionProposal.add(proposals, editor, node);
             ConvertToClassProposal.add(proposals, editor);
-            ConvertToNamedArgumentsProposal.add(proposals, editor);
-        
+                    
             addAssignToLocalProposal(file, cu, proposals, node, 
                     currentOffset);
+            
+            addConvertToNamedArgumentsProposal(proposals, file, cu, 
+            		editor, currentOffset);
             
             Tree.Statement statement = findStatement(cu, node);
             Tree.Declaration declaration = findDeclaration(cu, node);

@@ -48,15 +48,18 @@ import com.redhat.ceylon.eclipse.code.propose.CompletionProposal;
 
 
 /**
- * Implementation of a Java completion proposal to be used for quick fix and quick assist proposals
- * that are based on a {@link Change}. The proposal offers additional proposal information (based on
- * the {@link Change}).
+ * Implementation of a Java completion proposal to be used for quick fix 
+ * and quick assist proposals that are based on a {@link Change}. The 
+ * proposal offers additional proposal information (based on the 
+ * {@link Change}).
  * 
  * @since 3.8
  */
-public class ChangeCorrectionProposal implements ICompletionProposal, ICompletionProposalExtension5, ICompletionProposalExtension6 {
+public class ChangeCorrectionProposal 
+        implements ICompletionProposal, ICompletionProposalExtension5, ICompletionProposalExtension6 {
 
-    private static final NullChange COMPUTING_CHANGE= new NullChange("ChangeCorrectionProposal computing..."); //$NON-NLS-1$
+    private static final NullChange COMPUTING_CHANGE = 
+    		new NullChange("ChangeCorrectionProposal computing...");
     
     private Change fChange;
     private String fName;
@@ -89,7 +92,7 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
      */
     public ChangeCorrectionProposal(String name, Change change, Image image) {
         if (name == null) {
-            throw new IllegalArgumentException("Name must not be null"); //$NON-NLS-1$
+            throw new IllegalArgumentException("Name must not be null");
         }
         fName= name;
         fChange= change;
@@ -213,20 +216,14 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
         }
     }
 
-    /*
-     * @see ICompletionProposal#getAdditionalProposalInfo()
-     */
     public String getAdditionalProposalInfo() {
         Object info= getAdditionalProposalInfo(new NullProgressMonitor());
         return info == null ? null : info.toString();
     }
 
-    /*
-     * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension5#getAdditionalProposalInfo(org.eclipse.core.runtime.IProgressMonitor)
-     */
     public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
         StringBuffer buf= new StringBuffer();
-        buf.append("<p>"); //$NON-NLS-1$
+        buf.append("<p>");
         try {
             Change change= getChange();
             if (change != null) {
@@ -239,31 +236,22 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
                 return null;
             }
         } catch (CoreException e) {
-            buf.append("Unexpected error when accessing this proposal:<p><pre>"); //$NON-NLS-1$
+            buf.append("Unexpected error when accessing this proposal:<p><pre>");
             buf.append(e.getLocalizedMessage());
-            buf.append("</pre>"); //$NON-NLS-1$
+            buf.append("</pre>");
         }
-        buf.append("</p>"); //$NON-NLS-1$
+        buf.append("</p>");
         return buf.toString();
     }
 
-    /*
-     * @see ICompletionProposal#getContextInformation()
-     */
     public IContextInformation getContextInformation() {
         return null;
     }
 
-    /*
-     * @see ICompletionProposal#getDisplayString()
-     */
     public String getDisplayString() {
         return getName();
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension6#getStyledDisplayString()
-     */
     public StyledString getStyledDisplayString() {
         StyledString str= new StyledString(getName());
         return str;
@@ -327,7 +315,8 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
                     try {
                         Display display= Display.getCurrent();
                         if (display != null) {
-                            while (! display.isDisposed() && display.readAndDispatch()) {
+                            while (!display.isDisposed() && 
+                            		display.readAndDispatch()) {
                                 // empty the display loop
                             }
                             display.sleep();
@@ -392,11 +381,9 @@ public class ChangeCorrectionProposal implements ICompletionProposal, ICompletio
      */
     public void setDisplayName(String name) {
         if (name == null) {
-            throw new IllegalArgumentException("Name must not be null"); //$NON-NLS-1$
+            throw new IllegalArgumentException("Name must not be null");
         }
         fName= name;
     }
 
 }
-
-

@@ -1,126 +1,83 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
-import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 
 import java.util.Collection;
+import java.util.List;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.antlr.runtime.CommonToken;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
-import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
+import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
-class ConvertToNamedArgumentsProposal implements ICompletionProposal {
-
-    private CeylonEditor editor;
+class ConvertToNamedArgumentsProposal extends ChangeCorrectionProposal {
+	
+    final int offset; 
+    final IFile file;
     
-    public ConvertToNamedArgumentsProposal(CeylonEditor editor) {
-       this.editor = editor;
-    }
-    
-    @Override
-    public Point getSelection(IDocument doc) {
-    	return null;
+    public ConvertToNamedArgumentsProposal(int offset, IFile file, Change change) {
+	    super("Convert to named arguments", change, CORRECTION);
+        this.offset=offset;
+        this.file=file;
     }
 
-    @Override
-    public Image getImage() {
-    	return CeylonLabelProvider.CORRECTION;
-    }
-
-    @Override
-    public String getDisplayString() {
-    	return "Convert to named argument list";
-    }
-
-    @Override
-    public IContextInformation getContextInformation() {
-    	return null;
-    }
-
-    @Override
-    public String getAdditionalProposalInfo() {
-    	return null;
-    }
-
-    @Override
-    public void apply(IDocument doc) {
-        try {
-            convertToNamedArguments(editor);
-        } 
-        catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+	@Override
+    public void apply(IDocument document) {
+		 super.apply(document);
+		 Util.gotoLocation(file, offset);
     }
     
-    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
-        if (canConvert(editor)) {
-            proposals.add(new ConvertToNamedArgumentsProposal(editor));
-        }
-    }
-
-    public static void convertToNamedArguments(CeylonEditor editor)
-            throws ExecutionException {
-        CeylonParseController cpc = editor.getParseController();
-        Tree.CompilationUnit cu = cpc.getRootNode();
-        if (cu==null) return;
-        Node node = getSelectedNode(editor);
-        Tree.PositionalArgumentList pal = getArgumentList(node);
-        if (pal!=null) {
-            IDocument document = editor.getDocumentProvider()
-                    .getDocument(editor.getEditorInput());
-            final TextChange tc = new DocumentChange("Convert To Named Arguments", document);
-            tc.setEdit(new MultiTextEdit());
+    public static void addConvertToNamedArgumentsProposal(Collection<ICompletionProposal> proposals, 
+    		IFile file, Tree.CompilationUnit cu, CeylonEditor editor, int currentOffset) {
+        Tree.PositionalArgumentList pal = findPositionalArgumentList(currentOffset, cu);
+        if (canConvert(pal)) {
+            final TextChange tc = new TextFileChange("Convert To Named Arguments", file);
             Integer start = pal.getStartIndex();
             int length = pal.getStopIndex()-start+1;
             StringBuilder result = new StringBuilder().append(" {");
             boolean sequencedArgs = false;
+            List<CommonToken> tokens = editor.getParseController().getTokens();
             for (Tree.PositionalArgument arg: pal.getPositionalArguments()) {
                 Parameter param = arg.getParameter();
                 if (param==null) return;
-                if (param.isSequenced() && (arg instanceof Tree.ListedArgument)) {
-                    if (sequencedArgs) result.append(",");
-                    sequencedArgs=true;
-                    result.append(" " + AbstractRefactoring.toString(arg, cpc.getTokens()));
+				if (param.isSequenced() && (arg instanceof Tree.ListedArgument)) {
+                    if (sequencedArgs) {
+                    	result.append(",");
+                    }
+                    else {
+                    	result.append(" " + param.getName() + " = [");
+                    	sequencedArgs=true;
+                    }
+                    result.append(" " + AbstractRefactoring.toString(arg, tokens));
                 }
                 else {
-                    result.append(" " + param.getName() + "=" + 
-                            AbstractRefactoring.toString(arg, cpc.getTokens()) + ";");
+                    result.append(" " + param.getName() + " = " + 
+                            AbstractRefactoring.toString(arg, tokens) + ";");
                 }
             }
+            if (sequencedArgs) {
+            	result.append("];");
+            }
             result.append(" }");
-            tc.addEdit(new ReplaceEdit(start, length, result.toString()));
-            tc.initializeValidationData(null);
-            try {
-                getWorkspace().run(new PerformChangeOperation(tc), 
-                        new NullProgressMonitor());
-            }
-            catch (CoreException ce) {
-                throw new ExecutionException("Error cleaning imports", ce);
-            }
+            tc.setEdit(new ReplaceEdit(start, length, result.toString()));
+            int offset = start+result.toString().length();
+			proposals.add(new ConvertToNamedArgumentsProposal(offset, file, tc));
         }
     }
 
-    public static boolean canConvert(CeylonEditor editor) {
-        Node node = getSelectedNode(editor);
-        Tree.PositionalArgumentList pal = getArgumentList(node);
+    public static boolean canConvert(Tree.PositionalArgumentList pal) {
         if (pal==null) {
             return false;
         }
@@ -136,17 +93,38 @@ class ConvertToNamedArgumentsProposal implements ICompletionProposal {
             return true;
         }
     }
+    
+	private static Tree.PositionalArgumentList findPositionalArgumentList(
+            int currentOffset, Tree.CompilationUnit cu) {
+	    FindPositionalArgumentsVisitor fpav = 
+	    		new FindPositionalArgumentsVisitor(currentOffset);
+        fpav.visit(cu);
+        return fpav.getArgumentList();
+    }
 
-    private static Tree.PositionalArgumentList getArgumentList(Node node) {
-        if (node instanceof Tree.PositionalArgumentList) {
-            return (Tree.PositionalArgumentList) node;
+    private static class FindPositionalArgumentsVisitor 
+        extends Visitor 
+        implements NaturalVisitor {
+    	
+    	Tree.PositionalArgumentList argumentList;
+    	int offset;
+    	
+    	private Tree.PositionalArgumentList getArgumentList() {
+	        return argumentList;
         }
-        else if (node instanceof Tree.InvocationExpression) {
-            return ((Tree.InvocationExpression) node).getPositionalArgumentList();
+
+		private FindPositionalArgumentsVisitor(int offset) {
+	        this.offset = offset;
         }
-        else {
-            return null;
-        }
+		
+		@Override
+		public void visit(Tree.PositionalArgumentList that) {
+			if (offset>=that.getStartIndex() && 
+					offset<=that.getStopIndex()+1) {
+				argumentList = that;
+			}
+		    super.visit(that); 
+		}
     }
     
 }

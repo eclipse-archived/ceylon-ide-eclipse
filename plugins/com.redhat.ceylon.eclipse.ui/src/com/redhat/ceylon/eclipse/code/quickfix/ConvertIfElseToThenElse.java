@@ -188,7 +188,9 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
 
         TextChange change = new TextFileChange("Convert To then-else", file);
 //      TextChange change = new DocumentChange("Convert To then-else", doc);
-		change.setEdit(new ReplaceEdit(replaceFrom, statement.getStopIndex() - replaceFrom + 1, replace.toString()));
+		change.setEdit(new ReplaceEdit(replaceFrom, 
+				statement.getStopIndex() - replaceFrom + 1, 
+				replace.toString()));
 		return change;
 	}
     
@@ -208,7 +210,9 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
 		} else {
 			node = operand;
 		}
-		return node instanceof Tree.DefaultOp || node instanceof ThenOp || node instanceof AssignOp;
+		return node instanceof Tree.DefaultOp || 
+				node instanceof ThenOp || 
+				node instanceof AssignOp;
 	}
 
 	private static String removeSemiColon(String term) {
@@ -218,7 +222,8 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
     	return term;
 	}
 
-	private static Statement findPreviousStatement(CompilationUnit cu, IDocument doc, Statement statement) {
+	private static Statement findPreviousStatement(CompilationUnit cu, IDocument doc, 
+			Statement statement) {
 		try {
 			int previousLineNo = doc.getLineOfOffset(statement.getStartIndex());
 			while (previousLineNo > 1) {
@@ -228,7 +233,8 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
 				Matcher m = Pattern.compile("(\\s*)\\w+").matcher(prevLine);
 				if (m.find()) {
 					int whitespaceLen = m.group(1).length();
-					Node node = findNode(cu, lineInfo.getOffset() + whitespaceLen, lineInfo.getOffset() + whitespaceLen + 1);
+					Node node = findNode(cu, lineInfo.getOffset() + whitespaceLen, 
+							lineInfo.getOffset() + whitespaceLen + 1);
 					return findStatement(cu, node);
 				}
 			}
@@ -247,7 +253,8 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
     
     private static String getTerm(IDocument doc, Node node) {
     	try {
-			return doc.get(node.getStartIndex(), node.getStopIndex() - node.getStartIndex() + 1);
+			return doc.get(node.getStartIndex(), 
+					node.getStopIndex() - node.getStartIndex() + 1);
 		} catch (BadLocationException e) {
 			throw new RuntimeException(e);
 		}
