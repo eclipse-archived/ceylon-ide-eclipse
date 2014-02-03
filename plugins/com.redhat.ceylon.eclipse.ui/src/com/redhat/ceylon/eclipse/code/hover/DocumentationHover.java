@@ -519,6 +519,18 @@ public class DocumentationHover
 	            return null;
 	        }
 	        target = scope.getDirectMember(bits[i], null, false);
+	        //TODO: nasty workaround for bug in model loader 
+	        //      where unshared parameters are not getting 
+	        //      persisted as members. Delete:
+	        if (target==null && (scope instanceof Functional)) {
+	        	for (ParameterList pl: ((Functional)scope).getParameterLists()) {
+	        		for (Parameter p: pl.getParameters()) {
+	        			if (p!=null && p.getName().equals(bits[i])) {
+	        				target = p.getModel();
+	        			}
+	        		}
+	        	}
+	        }
 	    }
 	    return target;
 	}
