@@ -24,12 +24,10 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -46,7 +44,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             this.declaration=declaration;
         }
         @Override
-        public void visit(InvocationExpression that) {
+        public void visit(Tree.InvocationExpression that) {
             super.visit(that);
             Tree.Primary primary = that.getPrimary();
             if (primary instanceof Tree.MemberOrTypeExpression) {
@@ -57,6 +55,26 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                         results.add(pal);
                     }
                 }
+            }
+        }
+    }
+    
+    private static class FindArgumentsVisitor extends Visitor {
+        private Declaration declaration;
+        private final Set<Tree.MethodArgument> results = 
+                new HashSet<Tree.MethodArgument>();
+        Set<Tree.MethodArgument> getResults() {
+            return results;
+        }
+        private FindArgumentsVisitor(Declaration declaration) {
+            this.declaration=declaration;
+        }
+        @Override
+        public void visit(Tree.MethodArgument that) {
+            super.visit(that);
+            Parameter p = that.getParameter();
+			if (p!=null && p.getModel().equals(declaration)) {
+            	results.add(that);
             }
         }
     }
@@ -115,9 +133,13 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 	int countReferences(Tree.CompilationUnit cu) {
 	    FindInvocationsVisitor frv = new FindInvocationsVisitor(declaration);
         FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
+        FindArgumentsVisitor fav = new FindArgumentsVisitor(declaration);
         cu.visit(frv);
         cu.visit(fdv);
-        return frv.getResults().size() + fdv.getDeclarationNodes().size();
+        cu.visit(fav);
+        return frv.getResults().size() + 
+        		fdv.getDeclarationNodes().size() + 
+        		fav.getResults().size();
 	}
 
 	public String getName() {
@@ -163,7 +185,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             FindInvocationsVisitor fiv = new FindInvocationsVisitor(declaration);
             root.visit(fiv);
             for (Tree.PositionalArgumentList pal: fiv.getResults()) {
-                List<PositionalArgument> pas = pal.getPositionalArguments();
+                List<Tree.PositionalArgument> pas = pal.getPositionalArguments();
                 int size = pas.size();
                 Tree.PositionalArgument[] args = new Tree.PositionalArgument[size];
                 for (int i=0; i<size; i++) {
@@ -184,7 +206,19 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 else {
                     continue;
                 }
-                List<Parameter> ps = pl.getParameters();
+                List<Tree.Parameter> ps = pl.getParameters();
+                int size = ps.size();
+                Tree.Parameter[] params = new Tree.Parameter[size];
+                for (int i=0; i<size; i++) {
+                    params[order.get(i)] = ps.get(i);
+                }
+                tfc.addEdit(reorderEdit(pl, params));
+            }
+            FindArgumentsVisitor fav = new FindArgumentsVisitor(declaration);
+            root.visit(fav);
+            for (Tree.MethodArgument decNode: fav.getResults()) {
+                Tree.ParameterList pl = decNode.getParameterLists().get(0);
+                List<Tree.Parameter> ps = pl.getParameters();
                 int size = ps.size();
                 Tree.Parameter[] params = new Tree.Parameter[size];
                 for (int i=0; i<size; i++) {
