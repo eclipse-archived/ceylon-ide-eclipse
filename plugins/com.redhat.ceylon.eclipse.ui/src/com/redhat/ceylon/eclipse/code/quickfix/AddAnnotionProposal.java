@@ -1,11 +1,14 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -35,6 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class AddAnnotionProposal extends ChangeCorrectionProposal {
     
@@ -78,13 +82,32 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
         return dec.hashCode();
     }
 
-    static void addAddAnnotationProposal(String annotation, String desc, 
+    static void addAddAnnotationProposal(Node node, String annotation, String desc,
+            Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
+        if (dec!=null && dec.getName()!=null && !(node instanceof Tree.MissingDeclaration)) {
+            for (PhasedUnit unit: getUnits(project)) {
+                if (dec.getUnit().equals(unit.getUnit())) {
+                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
+                    CeylonQuickFixAssistant.getRootNode(unit).visit(fdv);
+                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    if (decNode!=null) {
+                        addAddAnnotationProposal(annotation, desc, dec,
+                                proposals, unit, decNode);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void addAddAnnotationProposal(String annotation, String desc, 
             Declaration dec, Collection<ICompletionProposal> proposals, 
             PhasedUnit unit, Tree.Declaration decNode) {
         IFile file = CeylonBuilder.getFile(unit);
         TextFileChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
-        InsertEdit insertEdit = createInsertAnnotationEdit(annotation, decNode, getDocument(change));
+        InsertEdit insertEdit = createInsertAnnotationEdit(annotation, 
+        		decNode, getDocument(change));
         change.addEdit(insertEdit);
         if (decNode instanceof Tree.TypedDeclaration &&
                 !(decNode instanceof Tree.ObjectDefinition)) {
@@ -95,18 +118,20 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
                 ProducedType it = type.getTypeModel();
                 if (it!=null && !(it.getDeclaration() instanceof UnknownType)) {
                     String explicitType = it.getProducedTypeName();
-                    change.addEdit(new ReplaceEdit(type.getStartIndex(), type.getText().length(), 
-                            explicitType));
+                    change.addEdit(new ReplaceEdit(type.getStartIndex(), 
+                    		type.getText().length(), explicitType));
                 }
             }
         }
-        AddAnnotionProposal p = new AddAnnotionProposal(dec, annotation, insertEdit.getOffset(), file, change);
+        AddAnnotionProposal p = new AddAnnotionProposal(dec, annotation, 
+        		insertEdit.getOffset(), file, change);
         if (!proposals.contains(p)) {
             proposals.add(p);
         }
     }
 
-    public static InsertEdit createInsertAnnotationEdit(String newAnnotation, Node node, IDocument doc) {
+    public static InsertEdit createInsertAnnotationEdit(String newAnnotation, 
+    		Node node, IDocument doc) {
         String newAnnotationName = getAnnotationWithoutParam(newAnnotation);
 
         Annotation prevAnnotation = null;
@@ -114,7 +139,8 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
         AnnotationList annotationList = getAnnotationList(node);
         if (annotationList != null) {
             for (Annotation annotation : annotationList.getAnnotations()) {
-                if (isAnnotationAfter(newAnnotationName, getAnnotationIdentifier(annotation))) {
+                if (isAnnotationAfter(newAnnotationName, 
+                		getAnnotationIdentifier(annotation))) {
                     prevAnnotation = annotation;
                 } else if (nextAnnotation == null) {
                     nextAnnotation = annotation;
@@ -220,7 +246,10 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
         }
     }
 
-    private static final List<String> ANNOTATIONS_ORDER = Arrays.asList("doc", "throws", "see", "tagged", "shared", "abstract", "actual", "formal", "default", "variable");
-    private static final List<String> ANNOTATIONS_ON_SEPARATE_LINE = Arrays.asList("doc", "throws", "see", "tagged");
+    private static final List<String> ANNOTATIONS_ORDER = 
+    		Arrays.asList("doc", "throws", "see", "tagged", "shared", 
+    				"abstract", "actual", "formal", "default", "variable");
+    private static final List<String> ANNOTATIONS_ON_SEPARATE_LINE = 
+    		Arrays.asList("doc", "throws", "see", "tagged");
     
 }

@@ -19,6 +19,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.addAddAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddParameterProposal.addParameterProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddParenthesesProposal.addAddParenthesesProposal;
@@ -42,6 +43,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.FixMultilineStringIndentat
 import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addReverseIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RemoveAliasProposal.addRemoveAliasProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.RemoveAnnotionProposal.addRemoveAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RenameVersionProposal.addRenameVersionProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
@@ -231,7 +233,8 @@ public class CeylonQuickFixAssistant {
             Tree.Declaration declaration = findDeclaration(cu, node);
             Tree.TypedArgument argument = findArgument(cu, node);
             
-            addAnnotationProposals(proposals, project, declaration);
+            addAnnotationProposals(proposals, project, declaration,
+            		doc, currentOffset);
             addTypingProposals(proposals, file, cu, node, declaration);
             
             addDeclarationProposals(editor, proposals, doc, file, cu, 
@@ -325,8 +328,19 @@ public class CeylonQuickFixAssistant {
     }
     
     private void addAnnotationProposals(Collection<ICompletionProposal> proposals, 
-            IProject project, Tree.Declaration decNode) {
+            IProject project, Tree.Declaration decNode, IDocument doc, int offset) {
         if (decNode!=null) {
+        	try {
+	            Node in = getIdentifyingNode(decNode);
+				if (in==null ||
+						doc.getLineOfOffset(in.getStartIndex())!=
+	            		        doc.getLineOfOffset(offset)) {
+	            	return;
+	            }
+            }
+        	catch (BadLocationException e) {
+	            e.printStackTrace();
+            }
             Declaration d = decNode.getDeclarationModel();
             if (d!=null) {
             	if ((d.isClassOrInterfaceMember()||d.isToplevel()) && 
@@ -1783,7 +1797,7 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-    private Tree.CompilationUnit getRootNode(PhasedUnit unit) {
+    static Tree.CompilationUnit getRootNode(PhasedUnit unit) {
         IEditorPart ce = Util.getCurrentEditor();
         if (ce instanceof CeylonEditor) {
             CeylonParseController cpc = ((CeylonEditor) ce).getParseController();
@@ -2180,43 +2194,6 @@ public class CeylonQuickFixAssistant {
             }
             else {
                 return imts.get(imts.size()-1).getStopIndex()+1;
-            }
-        }
-    }
-
-    private void addAddAnnotationProposal(Node node, String annotation, String desc,
-            Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
-        if (dec!=null && dec.getName()!=null && !(node instanceof Tree.MissingDeclaration)) {
-            for (PhasedUnit unit: getUnits(project)) {
-                if (dec.getUnit().equals(unit.getUnit())) {
-                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
-                    getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = fdv.getDeclarationNode();
-                    if (decNode!=null) {
-                        AddAnnotionProposal.addAddAnnotationProposal(annotation, desc, dec,
-                                proposals, unit, decNode);
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    private void addRemoveAnnotationProposal(Node node, String annotation, String desc,
-            Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
-        if (dec!=null && dec.getName()!=null) {
-            for (PhasedUnit unit: getUnits(project)) {
-                if (dec.getUnit().equals(unit.getUnit())) {
-                    //TODO: "object" declarations?
-                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
-                    getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = fdv.getDeclarationNode();
-                    if (decNode!=null) {
-                        RemoveAnnotionProposal.addRemoveAnnotationProposal(annotation, desc, dec,
-                                proposals, unit, decNode);
-                    }
-                    break;
-                }
             }
         }
     }
