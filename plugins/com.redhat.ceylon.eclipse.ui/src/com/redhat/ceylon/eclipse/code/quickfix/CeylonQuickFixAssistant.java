@@ -22,6 +22,7 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRe
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.name;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.addAddAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals;
+import static com.redhat.ceylon.eclipse.code.quickfix.AddConstraintSatisfiesProposal.createMissingBoundsText;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddParameterProposal.addParameterProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddParenthesesProposal.addAddParenthesesProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
@@ -110,6 +111,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
@@ -1381,7 +1383,8 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-    private void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, StringBuilder typeParamConstDef, List<ProducedType> pts) {
+    private void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, 
+    		StringBuilder typeParamConstDef, List<ProducedType> pts) {
         if (pts != null) {
             for (ProducedType pt : pts) {
                 appendTypeParams(typeParams, typeParamDef, typeParamConstDef, pt);
@@ -1389,21 +1392,26 @@ public class CeylonQuickFixAssistant {
         }
     }
     
-    private void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, StringBuilder typeParamConstDef, ProducedType pt) {
+    private void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, 
+    		StringBuilder typeParamConstDef, ProducedType pt) {
         if (pt != null) {
             if (pt.getDeclaration() instanceof UnionType) {
-                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, ((UnionType) pt.getDeclaration()).getCaseTypes());
+                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, 
+                		((UnionType) pt.getDeclaration()).getCaseTypes());
             }
             else if (pt.getDeclaration() instanceof IntersectionType) {
-                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, ((IntersectionType) pt.getDeclaration()).getSatisfiedTypes());
+                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, 
+                		((IntersectionType) pt.getDeclaration()).getSatisfiedTypes());
             }
             else if (pt.getDeclaration() instanceof TypeParameter) {
-                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, (TypeParameter) pt.getDeclaration());
+                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, 
+                		(TypeParameter) pt.getDeclaration());
             }
         }
     }
 
-    private void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, StringBuilder typeParamConstDef, TypeParameter typeParam) {
+    private void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, 
+    		StringBuilder typeParamConstDef, TypeParameter typeParam) {
         if (typeParams.contains(typeParam)) {
             return;
         } else {
@@ -1646,15 +1654,13 @@ public class CeylonQuickFixAssistant {
     }
 
     private void addCreateTypeParameterProposal(Collection<ICompletionProposal> proposals, 
-    		IProject project, Tree.CompilationUnit cu, Node node, String brokenName) {
+    		IProject project, Tree.CompilationUnit cu, final Node node, String brokenName) {
     	FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(node);
         fcv.visit(cu);
         Tree.Declaration decl = fcv.getDeclaration();
         Declaration d = decl==null ? null : decl.getDeclarationModel();
-		if (d == null || 
-                !(d instanceof Method ||
-                    d instanceof ClassOrInterface) || 
-                d.isActual()) {
+		if (d == null || d.isActual() ||
+                !(d instanceof Method || d instanceof ClassOrInterface)) {
             return;
         }
         
@@ -1674,10 +1680,63 @@ public class CeylonQuickFixAssistant {
         //TODO: generate type constraints when it appears 
         //      as a type argument!
         
+        class FindTypeParameterConstraintVisitor extends Visitor {
+        	List<ProducedType> result;
+        	@Override
+        	public void visit(Tree.SimpleType that) {
+        	    super.visit(that);
+        	    List<TypeParameter> tps = that.getDeclarationModel().getTypeParameters();
+        	    Tree.TypeArgumentList tal = that.getTypeArgumentList();
+        	    if (tal!=null) {
+        	    	List<Tree.Type> tas = tal.getTypes();
+        	    	for (int i=0; i<tas.size(); i++) {
+        	    		if (tas.get(i)==node) {
+        	    			result = tps.get(i).getSatisfiedTypes();
+        	    		}
+        	    	}
+        	    }
+        	}
+        	@Override
+        	public void visit(Tree.StaticMemberOrTypeExpression that) {
+        	    super.visit(that);
+        	    Declaration d = that.getDeclaration();
+        	    if (d instanceof Generic) {
+        	    	List<TypeParameter> tps = ((Generic) d).getTypeParameters();
+        	    	Tree.TypeArguments tal = that.getTypeArguments();
+        	    	if (tal instanceof Tree.TypeArgumentList) {
+        	    		List<Tree.Type> tas = ((Tree.TypeArgumentList) tal).getTypes();
+        	    		for (int i=0; i<tas.size(); i++) {
+        	    			if (tas.get(i)==node) {
+        	    				result = tps.get(i).getSatisfiedTypes();
+        	    			}
+        	    		}
+        	    	}
+        	    }
+        	}
+        }
+        FindTypeParameterConstraintVisitor ftpcv = 
+        		new FindTypeParameterConstraintVisitor();
+        ftpcv.visit(cu);
+        String constraints;
+        if (ftpcv.result==null) {
+        	constraints = null;
+        }
+        else {
+        	String bounds = createMissingBoundsText(ftpcv.result);
+        	if (bounds.isEmpty()) {
+        		constraints = null;
+        	}
+        	else {
+        		constraints = "given " + brokenName + 
+        				" satisfies " + bounds + " ";
+        	}
+        }
+        
         for (PhasedUnit unit : getUnits(project)) {
         	if (unit.getUnit().equals(cu.getUnit())) {
         		CreateProposal.addCreateTypeParameterProposal(proposals, 
-        				paramDef, paramDesc, ADD, d, unit, decl, offset);
+        				paramDef, paramDesc, ADD, d, unit, decl, offset,
+        				constraints);
         		break;
         	}
         }

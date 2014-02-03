@@ -107,9 +107,10 @@ class CreateProposal extends ChangeCorrectionProposal {
                 image, indent.length(), offset+il, file, change));
     }
 
-    static void addCreateProposal(Collection<ICompletionProposal> proposals, String def,
-            boolean local, String desc, Image image, PhasedUnit unit, Tree.Statement statement,
-            ProducedType returnType, List<ProducedType> paramTypes) {
+    static void addCreateProposal(Collection<ICompletionProposal> proposals, 
+    		String def, boolean local, String desc, Image image, PhasedUnit unit, 
+    		Tree.Statement statement, ProducedType returnType, 
+    		List<ProducedType> paramTypes) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange(local ? "Create Local" : "Create Toplevel", file);
         change.setEdit(new MultiTextEdit());
@@ -128,8 +129,9 @@ class CreateProposal extends ChangeCorrectionProposal {
                 image, 0, offset+il, file, change));
     }
 
-    static void addCreateEnumProposal(Collection<ICompletionProposal> proposals, String def,
-            String desc, Image image, PhasedUnit unit, Tree.Statement statement) {
+    static void addCreateEnumProposal(Collection<ICompletionProposal> proposals, 
+    		String def, String desc, Image image, PhasedUnit unit, 
+    		Tree.Statement statement) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Create Enumerated", file);
         IDocument doc = getDocument(change);
@@ -166,7 +168,7 @@ class CreateProposal extends ChangeCorrectionProposal {
 
     static void addCreateTypeParameterProposal(Collection<ICompletionProposal> proposals, 
             String def, String desc, Image image, Declaration dec, PhasedUnit unit,
-            Tree.Declaration decNode, int offset) {
+            Tree.Declaration decNode, int offset, String constraints) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
@@ -174,6 +176,12 @@ class CreateProposal extends ChangeCorrectionProposal {
 		CompilationUnit cu = unit.getCompilationUnit();
 		int il = applyImports(change, decs, cu);
         change.addEdit(new InsertEdit(offset, def));
+        if (constraints!=null) {
+        	int loc = getConstraintLoc(decNode);
+        	if (loc>=0) {
+        		change.addEdit(new InsertEdit(loc, constraints));
+        	}
+        }
         proposals.add(new CreateProposal(def, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
                 image, 0, offset+il, file, change));
@@ -212,6 +220,36 @@ class CreateProposal extends ChangeCorrectionProposal {
         proposals.add(new CreateProposal(pdef, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
                 image, 0, offset+il, file, change));
+    }
+    
+    static int getConstraintLoc(Tree.Declaration decNode) {
+        if( decNode instanceof Tree.ClassDefinition ) {
+            Tree.ClassDefinition classDefinition = (Tree.ClassDefinition) decNode;
+            return classDefinition.getClassBody().getStartIndex();
+        }
+        else if( decNode instanceof Tree.InterfaceDefinition ) {
+            Tree.InterfaceDefinition interfaceDefinition = (Tree.InterfaceDefinition) decNode;
+            return interfaceDefinition.getInterfaceBody().getStartIndex();
+        }
+        else if( decNode instanceof Tree.MethodDefinition ) {
+            Tree.MethodDefinition methodDefinition = (Tree.MethodDefinition) decNode;
+            return methodDefinition.getBlock().getStartIndex();
+        }
+        else if( decNode instanceof Tree.ClassDeclaration ) {
+            Tree.ClassDeclaration classDefinition = (Tree.ClassDeclaration) decNode;
+            return classDefinition.getClassSpecifier().getStartIndex();
+        }
+        else if( decNode instanceof Tree.InterfaceDefinition ) {
+            Tree.InterfaceDeclaration interfaceDefinition = (Tree.InterfaceDeclaration) decNode;
+            return interfaceDefinition.getTypeSpecifier().getStartIndex();
+        }
+        else if( decNode instanceof Tree.MethodDeclaration ) {
+            Tree.MethodDeclaration methodDefinition = (Tree.MethodDeclaration) decNode;
+            return methodDefinition.getSpecifierExpression().getStartIndex();
+        }
+        else {
+        	return -1;
+        }
     }
 
 }
