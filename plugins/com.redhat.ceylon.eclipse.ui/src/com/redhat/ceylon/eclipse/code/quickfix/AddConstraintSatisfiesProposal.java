@@ -22,7 +22,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassDefinition;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
@@ -54,7 +53,8 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
  */
 public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
 
-    public static void addConstraintSatisfiesProposals(Tree.CompilationUnit cu, Node node, Collection<ICompletionProposal> proposals, IProject project) {
+    public static void addConstraintSatisfiesProposals(Tree.CompilationUnit cu, Node node, 
+    		Collection<ICompletionProposal> proposals, IProject project) {
         node = determineNode(node);
         if( node == null ) {
             return;
@@ -65,35 +65,62 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
             return;
         }
 
-        List<ProducedType> missingSatisfiedTypes = determineMissingSatisfiedTypes(cu, node, typeParam);
+        List<ProducedType> missingSatisfiedTypes = 
+        		determineMissingSatisfiedTypes(cu, node, typeParam);
         if( missingSatisfiedTypes.isEmpty() ) {
             return;
         }
 
-        String changeText = createMissingSatisfiedTypesText(typeParam, missingSatisfiedTypes);
+        String changeText = createMissingBoundsText(missingSatisfiedTypes);
 
         for (PhasedUnit unit: getUnits(project)) {
             if (typeParam.getUnit().equals(unit.getUnit())) {
                 Node typeParamCont = determineTypeParamCont(cu, typeParam);
 
                 if( typeParamCont instanceof Tree.ClassDefinition ) {
-                    Tree.ClassDefinition classDefinition = (ClassDefinition) typeParamCont;
-                    addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, classDefinition.getTypeConstraintList(), classDefinition.getClassBody().getStartIndex());
+                    Tree.ClassDefinition classDefinition = (Tree.ClassDefinition) typeParamCont;
+                    addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
+                    		classDefinition.getTypeConstraintList(), 
+                    		classDefinition.getClassBody().getStartIndex());
                 }
                 else if( typeParamCont instanceof Tree.InterfaceDefinition ) {
                     Tree.InterfaceDefinition interfaceDefinition = (Tree.InterfaceDefinition) typeParamCont;
-                    addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, interfaceDefinition.getTypeConstraintList(), interfaceDefinition.getInterfaceBody().getStartIndex());
+                    addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
+                    		interfaceDefinition.getTypeConstraintList(), 
+                    		interfaceDefinition.getInterfaceBody().getStartIndex());
                 }
                 else if( typeParamCont instanceof Tree.MethodDefinition ) {
                     Tree.MethodDefinition methodDefinition = (Tree.MethodDefinition)typeParamCont;
-                    addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, methodDefinition.getTypeConstraintList(), methodDefinition.getBlock().getStartIndex());
+                    addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
+                    		methodDefinition.getTypeConstraintList(), 
+                    		methodDefinition.getBlock().getStartIndex());
+                }
+                else if( typeParamCont instanceof Tree.ClassDeclaration ) {
+                    Tree.ClassDeclaration classDefinition = (Tree.ClassDeclaration) typeParamCont;
+                    addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
+                    		classDefinition.getTypeConstraintList(), 
+                    		classDefinition.getClassSpecifier().getStartIndex());
+                }
+                else if( typeParamCont instanceof Tree.InterfaceDefinition ) {
+                    Tree.InterfaceDeclaration interfaceDefinition = (Tree.InterfaceDeclaration) typeParamCont;
+                    addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
+                    		interfaceDefinition.getTypeConstraintList(), 
+                    		interfaceDefinition.getTypeSpecifier().getStartIndex());
+                }
+                else if( typeParamCont instanceof Tree.MethodDeclaration ) {
+                    Tree.MethodDeclaration methodDefinition = (Tree.MethodDeclaration)typeParamCont;
+                    addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
+                    		methodDefinition.getTypeConstraintList(), 
+                    		methodDefinition.getSpecifierExpression().getStartIndex());
                 }
                 break;
             }
         }        
     }
 
-    private static void addConstraintSatisfiesProposals(TypeParameter typeParam, String missingSatisfiedType, PhasedUnit unit, Collection<ICompletionProposal> proposals, TypeConstraintList typeConstraints, Integer typeContainerBodyStartIndex) {
+    private static void addConstraintSatisfiesProposals(TypeParameter typeParam, 
+    		String missingSatisfiedType, PhasedUnit unit, Collection<ICompletionProposal> proposals, 
+    		TypeConstraintList typeConstraints, Integer typeContainerBodyStartIndex) {
         String changeText = null;
         Integer changeIndex = null;
     
@@ -114,7 +141,8 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
             IFile file = CeylonBuilder.getFile(unit);
             TextFileChange change = new TextFileChange("Add generic type constraints", file);
             change.setEdit(new InsertEdit(changeIndex, changeText));
-            AddConstraintSatisfiesProposal p = new AddConstraintSatisfiesProposal(typeParam, missingSatisfiedType, change);
+            AddConstraintSatisfiesProposal p = 
+            		new AddConstraintSatisfiesProposal(typeParam, missingSatisfiedType, change);
             if ( !proposals.contains(p)) {
                 proposals.add(p);
             }                               
@@ -163,7 +191,8 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
         return null;
     }
 
-    private static List<ProducedType> determineMissingSatisfiedTypes(CompilationUnit cu, Node node, TypeParameter typeParam) {
+    private static List<ProducedType> determineMissingSatisfiedTypes(CompilationUnit cu, 
+    		Node node, TypeParameter typeParam) {
         List<ProducedType> missingSatisfiedTypes = new ArrayList<ProducedType>();
     
         if( node instanceof Tree.Term ) {
@@ -171,7 +200,8 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
             fav.visit(cu);
             if( fav.parameter != null ) {
                 ProducedType type = fav.parameter.getType();
-                if( type != null && type.getDeclaration() != null && type.getDeclaration() instanceof ClassOrInterface ) {
+                if( type != null && type.getDeclaration() != null && 
+                		type.getDeclaration() instanceof ClassOrInterface ) {
                     missingSatisfiedTypes.add(type);
                 }
             }
@@ -264,8 +294,7 @@ public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
         }
     }
 
-    private static String createMissingSatisfiedTypesText(TypeParameter typeParam, 
-    		List<ProducedType> missingSatisfiedTypes) {
+    static String createMissingBoundsText(List<ProducedType> missingSatisfiedTypes) {
         StringBuffer missingSatisfiedTypesText = new StringBuffer();
         for( ProducedType missingSatisfiedType : missingSatisfiedTypes ) {
             if( missingSatisfiedTypesText.length() != 0 ) {
