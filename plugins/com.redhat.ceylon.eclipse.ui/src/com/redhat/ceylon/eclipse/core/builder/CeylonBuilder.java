@@ -85,6 +85,7 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.compiler.Options;
+import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
 import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
@@ -140,7 +141,9 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TaskEvent;
+import com.sun.source.util.TaskEvent.Kind;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.file.RelativePath.RelativeFile;
 import com.sun.tools.javac.file.ZipFileIndexCache;
@@ -2064,10 +2067,23 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             IProgressMonitor mon) 
                     throws VerifyError {
         
+        int numberOfJavaFiles = 0;
+        int numberOfCeylonFiles = 0;
+        
+        for (File file : sourceFiles) {
+            if (JavaCore.isJavaLikeFileName(file.getName())) {
+                numberOfJavaFiles ++;
+            } else if (file.getName().endsWith(".ceylon")){
+                numberOfCeylonFiles ++;
+            }
+        }
+
+        int numberOfSourceFiles = numberOfCeylonFiles + numberOfJavaFiles;
+        
         final SubMonitor monitor = SubMonitor.convert(mon, 
-                "Generating binaries for " + sourceFiles.size() + 
+                "Generating binaries for " + numberOfSourceFiles + 
                 " source files in project " + project.getName(), 
-                sourceFiles.size());
+                numberOfSourceFiles * 2);
 
         com.redhat.ceylon.compiler.java.tools.CeyloncTool compiler;
         try {
@@ -2103,12 +2119,28 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         task.setTaskListener(new TaskListener() {
             @Override
             public void started(TaskEvent ta) {
+                if (! ta.getKind().equals(Kind.PARSE) && ! ta.getKind().equals(Kind.ANALYZE)) {
+                    return;
+                }
                 String name = ta.getSourceFile().getName();
                 name = name.substring(name.lastIndexOf("/")+1);
-                monitor.subTask("- compiling " + name);
+                if (ta.getKind().equals(Kind.PARSE)) {
+                    CompilationUnitTree cut = ta.getCompilationUnit();
+                    if (cut != null && cut instanceof CeylonCompilationUnit) {
+                        monitor.subTask("- transforming " + name);
+                    } else {
+                        monitor.subTask("- parsing " + name);
+                    }
+                } 
+                if (ta.getKind().equals(Kind.ANALYZE)) {
+                    monitor.subTask("- generating bytecode for " + name);
+                }
             }
             @Override
             public void finished(TaskEvent ta) {
+                if (! ta.getKind().equals(Kind.PARSE) && ! ta.getKind().equals(Kind.ANALYZE)) {
+                    return;
+                }
                 monitor.worked(1);
             }
         });
