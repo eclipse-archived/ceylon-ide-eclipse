@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +35,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
 class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
     
@@ -227,8 +228,8 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
 				Matcher m = Pattern.compile("(\\s*)\\w+").matcher(prevLine);
 				if (m.find()) {
 					int whitespaceLen = m.group(1).length();
-					Node node = CeylonSourcePositionLocator.findNode(cu, lineInfo.getOffset() + whitespaceLen, lineInfo.getOffset() + whitespaceLen + 1);
-					return CeylonSourcePositionLocator.findStatement(cu, node);
+					Node node = findNode(cu, lineInfo.getOffset() + whitespaceLen, lineInfo.getOffset() + whitespaceLen + 1);
+					return findStatement(cu, node);
 				}
 			}
 		} catch (BadLocationException e) {

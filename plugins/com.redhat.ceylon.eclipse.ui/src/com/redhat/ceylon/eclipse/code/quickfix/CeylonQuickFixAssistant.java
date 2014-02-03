@@ -14,6 +14,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFA
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
@@ -26,7 +27,6 @@ import static com.redhat.ceylon.eclipse.code.quickfix.AddThrowsAnnotationProposa
 import static com.redhat.ceylon.eclipse.code.quickfix.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
-import static com.redhat.ceylon.eclipse.code.quickfix.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertGetterToMethodProposal.addConvertGetterToMethodProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertIfElseToThenElse.addConvertToThenElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertMethodToGetterProposal.addConvertMethodToGetterProposal;
@@ -37,6 +37,7 @@ import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToSpecifierProposal
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.FixAliasProposal.addFixAliasProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addReverseIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RemoveAliasProposal.addRemoveAliasProposal;
@@ -140,7 +141,6 @@ import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
-import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 /**
  * Popup quick fixes for problem annotations displayed in editor
@@ -238,8 +238,8 @@ public class CeylonQuickFixAssistant {
             addConvertToThenElseProposal(cu, doc, proposals, file, statement);
             addReverseIfElseProposal(doc, proposals, file, statement);
             
-            addConvertGetterToMethodProposal(proposals, editor, file, node);
-            addConvertMethodToGetterProposal(proposals, editor, file, node);
+            addConvertGetterToMethodProposal(proposals, editor, file, statement);
+            addConvertMethodToGetterProposal(proposals, editor, file, statement);
             
             addThrowsAnnotationProposal(proposals, statement, cu, file, doc);            
 
@@ -1510,10 +1510,9 @@ public class CeylonQuickFixAssistant {
         if (node instanceof Tree.SimpleType) {
             TypeDeclaration decl = ((Tree.SimpleType)node).getDeclarationModel();
             if( decl instanceof TypeParameter ) {
-                FindStatementVisitor fsv = new FindStatementVisitor(node, false);
-                fsv.visit(cu);
-                if( fsv.getStatement() instanceof Tree.AttributeDeclaration ) {
-                    Tree.AttributeDeclaration ad = (Tree.AttributeDeclaration) fsv.getStatement();
+            	Tree.Statement statement = findStatement(cu, node);
+                if(statement instanceof Tree.AttributeDeclaration ) {
+                    Tree.AttributeDeclaration ad = (Tree.AttributeDeclaration) statement;
                     Tree.SimpleType st = (Tree.SimpleType) ad.getType();
 
                     TypeParameter stTypeParam = null;
@@ -1818,18 +1817,17 @@ public class CeylonQuickFixAssistant {
             IProject project, String def, String desc, Image image, 
             Tree.CompilationUnit cu, Node node, ProducedType returnType, 
             List<ProducedType> paramTypes) {
-        FindStatementVisitor fsv = new FindStatementVisitor(node, false);
-        cu.visit(fsv);
         //if (!fsv.isToplevel()) {
-            Tree.Statement statement = fsv.getStatement();
-            if (statement==null) return;
-            for (PhasedUnit unit: getUnits(project)) {
-                if (unit.getUnit().equals(cu.getUnit())) {
-                    CreateProposal.addCreateProposal(proposals, def, true, desc, image, 
-                    		unit, statement, returnType, paramTypes);
-                    break;
-                }
-            }
+    	Tree.Statement statement = findStatement(cu, node);
+    	if (statement!=null) {
+    		for (PhasedUnit unit: getUnits(project)) {
+    			if (unit.getUnit().equals(cu.getUnit())) {
+    				CreateProposal.addCreateProposal(proposals, def, true, desc, image, 
+    						unit, statement, returnType, paramTypes);
+    				break;
+    			}
+    		}
+    	}
         //}
     }
 
@@ -1837,16 +1835,16 @@ public class CeylonQuickFixAssistant {
             IProject project, String def, String desc, Image image, 
             Tree.CompilationUnit cu, Node node, ProducedType returnType, 
             List<ProducedType> paramTypes) {
-        FindStatementVisitor fsv = new FindStatementVisitor(node, true);
-        cu.visit(fsv);
-        Tree.Statement statement = fsv.getStatement();
-        for (PhasedUnit unit: getUnits(project)) {
-            if (unit.getUnit().equals(cu.getUnit())) {
-                CreateProposal.addCreateProposal(proposals, def+"\n", false, desc, image, 
-                		unit, statement, returnType, paramTypes);
-                break;
-            }
-        }
+    	Tree.Statement statement = findToplevelStatement(cu, node);
+    	if (statement!=null) {
+    		for (PhasedUnit unit: getUnits(project)) {
+    			if (unit.getUnit().equals(cu.getUnit())) {
+    				CreateProposal.addCreateProposal(proposals, def+"\n", false, desc, image, 
+    						unit, statement, returnType, paramTypes);
+    				break;
+    			}
+    		}
+    	}
     }
 
     private List<ProducedType> appendNamedArgs(FindArgumentsVisitor fav, StringBuilder params) {

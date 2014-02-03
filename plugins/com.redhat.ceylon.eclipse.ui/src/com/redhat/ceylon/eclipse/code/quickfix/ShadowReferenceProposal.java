@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessName;
 
 import java.util.Collection;
 
@@ -13,13 +15,12 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
-import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 class ShadowReferenceProposal extends ChangeCorrectionProposal {
     
@@ -44,29 +45,32 @@ class ShadowReferenceProposal extends ChangeCorrectionProposal {
     static void addShadowSwitchReferenceProposal(IFile file, Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals, Node node) {
         if (node instanceof Tree.Term) {
-        	FindStatementVisitor fsv = new FindStatementVisitor(node, false);
-        	fsv.visit(cu);
-        	Tree.Statement s = fsv.getStatement();
-        	if (s instanceof Tree.SwitchStatement) {
-        		String name = AbstractRefactoring.guessName(node);
+        	Tree.Statement statement = findStatement(cu, node);
+        	if (statement instanceof Tree.SwitchStatement) {
+        		String name = guessName(node);
         		TextChange change = new TextFileChange("Shadow Reference", file);
         		change.setEdit(new MultiTextEdit());
-        		change.addEdit(new ReplaceEdit(s.getStartIndex(), node.getStartIndex()-s.getStartIndex(),
+        		Integer offset = statement.getStartIndex();
+				change.addEdit(new ReplaceEdit(offset, 
+        				node.getStartIndex()-offset,
         				"value " + name + " = "));
         		change.addEdit(new InsertEdit(node.getStopIndex()+1, "; switch (" + name));
         		if (node instanceof BaseMemberExpression) {
-        			FindReferenceVisitor frv = new FindReferenceVisitor(((BaseMemberExpression) node).getDeclaration());
-                    frv.visit(((Tree.SwitchStatement) s).getSwitchCaseList());
-                    for (Node n: frv.getNodes()) {
-                        Node identifyingNode = getIdentifyingNode(n);
-                        Integer start = identifyingNode.getStartIndex();
-                        if (start!=node.getStartIndex()) {
-                            change.addEdit(new ReplaceEdit(start, 
-                                    identifyingNode.getText().length(), name));
-                        }
-                    }
+        			Declaration d = ((BaseMemberExpression) node).getDeclaration();
+        			if (d!=null) {
+        				FindReferenceVisitor frv = new FindReferenceVisitor(d);
+        				frv.visit(((Tree.SwitchStatement) statement).getSwitchCaseList());
+        				for (Node n: frv.getNodes()) {
+        					Node identifyingNode = getIdentifyingNode(n);
+        					Integer start = identifyingNode.getStartIndex();
+        					if (start!=node.getStartIndex()) {
+        						change.addEdit(new ReplaceEdit(start, 
+        								identifyingNode.getText().length(), name));
+        					}
+        				}
+        			}
         		}
-        		proposals.add(new ShadowReferenceProposal(s.getStartIndex()+6, name.length(), file, change));
+        		proposals.add(new ShadowReferenceProposal(offset+6, name.length(), file, change));
         	}
         }
     }
@@ -76,14 +80,13 @@ class ShadowReferenceProposal extends ChangeCorrectionProposal {
         if (node instanceof Tree.Variable) {
             Tree.Variable var = (Tree.Variable) node;
             int offset = var.getIdentifier().getStartIndex();
-            String name = AbstractRefactoring.guessName(var.getSpecifierExpression().getExpression().getTerm());
+            String name = guessName(var.getSpecifierExpression().getExpression().getTerm());
             TextChange change = new TextFileChange("Shadow Reference", file);
             change.setEdit(new MultiTextEdit());
             change.addEdit(new InsertEdit(offset, name + " = "));
-            FindStatementVisitor fsv = new FindStatementVisitor(var, false);
-            fsv.visit(cu);
+            Tree.Statement statement = findStatement(cu, node);
             FindReferenceVisitor frv = new FindReferenceVisitor(var.getDeclarationModel());
-            frv.visit(fsv.getStatement());
+            frv.visit(statement);
             for (Node n: frv.getNodes()) {
                 Node identifyingNode = getIdentifyingNode(n);
                 Integer start = identifyingNode.getStartIndex();
@@ -95,7 +98,7 @@ class ShadowReferenceProposal extends ChangeCorrectionProposal {
             proposals.add(new ShadowReferenceProposal(offset, 1, file, change));
         }
         else if (node instanceof Tree.Term) {
-            String name = AbstractRefactoring.guessName(node);
+            String name = guessName(node);
             TextChange change = new TextFileChange("Shadow Reference", file);
 //            change.setEdit(new MultiTextEdit());
             Integer offset = node.getStartIndex();

@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
@@ -22,7 +23,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 public class ExtractValueRefactoring extends AbstractRefactoring {
 	
@@ -81,15 +81,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 		Integer start = node.getStartIndex();
 		int length = node.getStopIndex()-start+1;
 		String exp = toString(unparenthesize(term));
-		FindStatementVisitor fsv = new FindStatementVisitor(term, false);
-		rootNode.visit(fsv);
-		Tree.Statement statNode = fsv.getStatement();
-		/*if (statNode instanceof Tree.Declaration) {
-			Tree.AnnotationList anns = ((Tree.Declaration) statNode).getAnnotationList();
-			if (anns!=null && !anns.getAnnotations().isEmpty()) {
-				statNode = anns.getAnnotations().get(0);
-			}
-		}*/
+		Tree.Statement statement = findStatement(rootNode, node);
 		String typeDec;
 		ProducedType tm = term.getTypeModel();
 		if (tm==null || tm.isUnknown()) {
@@ -107,8 +99,8 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 		}
 		String dec = typeDec + " " +  newName + 
 				(getter ? " { return " + exp  + "; } " : " = " + exp + ";");
-        tfc.addEdit(new InsertEdit(statNode.getStartIndex(),
-				dec + "\n" + getIndent(statNode, doc)));
+        tfc.addEdit(new InsertEdit(statement.getStartIndex(),
+				dec + "\n" + getIndent(statement, doc)));
 		tfc.addEdit(new ReplaceEdit(start, length, newName));
     }
 

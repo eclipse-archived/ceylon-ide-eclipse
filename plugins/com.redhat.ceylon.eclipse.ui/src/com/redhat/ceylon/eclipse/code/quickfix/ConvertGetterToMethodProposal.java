@@ -49,7 +49,7 @@ public class ConvertGetterToMethodProposal extends ChangeCorrectionProposal {
             RenameRefactoring refactoring = new RenameRefactoring(editor) {
                 @Override
                 public String getName() {
-                    return "Convert getter to method";
+                    return "Convert Getter to Method";
                 };
             };
             refactoring.setNewName(getter.getName() + "()");
@@ -61,18 +61,21 @@ public class ConvertGetterToMethodProposal extends ChangeCorrectionProposal {
                 return;
             }
 
-            CompositeChange change = (CompositeChange) refactoring.createChange(new NullProgressMonitor());
+            CompositeChange change = refactoring.createChange(new NullProgressMonitor());
             if (change.getChildren().length == 0) {
                 return;
             }
             
             if (type instanceof Tree.ValueModifier) {
-                TextFileChange tfc = new TextFileChange("Convert getter to method", file);
-                tfc.setEdit(new ReplaceEdit(type.getStartIndex(), type.getStopIndex() - type.getStartIndex() + 1, "function"));
+                TextFileChange tfc = new TextFileChange("Convert Getter to Method", file);
+                tfc.setEdit(new ReplaceEdit(type.getStartIndex(), 
+                		type.getStopIndex() - type.getStartIndex() + 1, 
+                		"function"));
                 change.add(tfc);
             }
             
-            ConvertGetterToMethodProposal proposal = new ConvertGetterToMethodProposal(change, getter);
+            ConvertGetterToMethodProposal proposal = 
+            		new ConvertGetterToMethodProposal(change, getter);
             if (!proposals.contains(proposal)) {
                 proposals.add(proposal);
             }
