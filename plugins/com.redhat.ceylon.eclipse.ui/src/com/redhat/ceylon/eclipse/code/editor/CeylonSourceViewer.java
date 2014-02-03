@@ -749,7 +749,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 }
             }
             if (!imports.isEmpty()) {
-                List<InsertEdit> edits = importEdit(cu, imports.keySet(), imports.values(), null);
+                List<InsertEdit> edits = 
+                		importEdit(cu, imports.keySet(), imports.values(), null);
                 for (InsertEdit importEdit: edits) {
                     edit.addChild(importEdit);                    
                 }

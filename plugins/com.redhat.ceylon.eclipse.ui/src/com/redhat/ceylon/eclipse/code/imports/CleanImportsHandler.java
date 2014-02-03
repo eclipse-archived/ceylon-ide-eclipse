@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.name;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.escapedPackageName;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
@@ -180,12 +181,13 @@ public class CleanImportsHandler extends AbstractHandler {
                     i.getIdentifier().getErrors().isEmpty() &&
                     i.getErrors().isEmpty()) {
                 builder.append('\n').append(indent);
-                if ( !i.getImportModel().getAlias()
-                        .equals(i.getDeclarationModel().getName()) ) {
-                    builder.append(i.getImportModel().getAlias())
-                            .append("=");
+                if (!i.getImportModel().getAlias()
+                        .equals(i.getDeclarationModel().getName())) {
+                    String escapedAlias = name(i.getDeclarationModel(), 
+                    		i.getImportModel().getAlias());
+					builder.append(escapedAlias).append("=");
                 }
-                builder.append(i.getDeclarationModel().getName());
+                builder.append(name(i.getDeclarationModel()));
                 appendNestedImportElements(i, unused, builder);
                 builder.append(",");
             }
@@ -194,7 +196,7 @@ public class CleanImportsHandler extends AbstractHandler {
             if (d.getUnit().getPackage().getNameAsString()
                     .equals(packageName)) {
                 builder.append('\n').append(indent);
-                builder.append(d.getName()).append(",");
+                builder.append(name(d)).append(",");
             }
         }
         if (hasWildcard) {

@@ -2055,22 +2055,22 @@ public class CeylonContentProposer {
         return name(d.getDeclaration(), d.getName());
     }
     
-    private static String name(Declaration d) {
+    public static String name(Declaration d) {
         return name(d, d.getName());
     }
 
-    private static String name(Declaration d, String alias) {
+    public static String name(Declaration d, String alias) {
         if (alias==null) {
             return "";
         }
         char c = alias.charAt(0);
         if (d instanceof TypedDeclaration &&
-                (isUpperCase(c)||"object".equals(alias))) {
+                (isUpperCase(c) || 
+                		keywords.contains(alias))) {
             return "\\i" + alias;
         }
         else if (d instanceof TypeDeclaration &&
-                !(d instanceof Class && d.isAnonymous()) &&
-                isLowerCase(c)) {
+                isLowerCase(c) && !d.isAnonymous()) {
             return "\\I" + alias;
         }
         else {

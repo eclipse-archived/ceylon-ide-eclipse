@@ -19,6 +19,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.name;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddAnnotionProposal.addAddAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.quickfix.AddParameterProposal.addParameterProposal;
@@ -2017,7 +2018,7 @@ public class CeylonQuickFixAssistant {
 			if (aliases==null) {
 			    for (Declaration d: declarations) {
 			        if (d.getUnit().getPackage().equals(p)) {
-			            text.append(", ").append(d.getName());
+			            text.append(", ").append(name(d));
 			        }
 			    }
 			}
@@ -2030,7 +2031,7 @@ public class CeylonQuickFixAssistant {
                         if (alias!=null && !alias.equals(d.getName())) {
                             text.append(alias).append('=');
                         }
-                        text.append(d.getName());
+                        text.append(name(d));
                     }
                 }
 			}
@@ -2054,7 +2055,8 @@ public class CeylonQuickFixAssistant {
 			else {
 				int insertPosition = getBestImportInsertPosition(cu);
 				text.delete(0, 2);
-				text.insert(0, "import " + escapedPackageName(p) + " { ").append(" }"); 
+				text.insert(0, "import " + escapedPackageName(p) + " { ")
+				    .append(" }"); 
 				if (insertPosition==0) {
 					text.append("\n");
 				}
