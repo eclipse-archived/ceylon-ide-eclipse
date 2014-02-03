@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
@@ -234,6 +235,8 @@ public class CeylonQuickFixAssistant {
             Tree.Declaration declaration = findDeclaration(cu, node);
             Tree.TypedArgument argument = findArgument(cu, node);
             
+            addVerboseRefinementProposal(proposals, file, statement);
+            
             addAnnotationProposals(proposals, project, declaration,
             		doc, currentOffset);
             addTypingProposals(proposals, file, cu, node, declaration);
@@ -264,6 +267,26 @@ public class CeylonQuickFixAssistant {
             addConvertFromVerbatimProposal(proposals, file, cu, node);
         }
         
+    }
+
+	private void addVerboseRefinementProposal(
+            Collection<ICompletionProposal> proposals, IFile file,
+            Tree.Statement statement) {
+	    if (statement instanceof Tree.SpecifierStatement) {
+	    	Tree.SpecifierStatement ss = (Tree.SpecifierStatement) statement;
+	    	if (ss.getRefinement()) {
+	    		TextFileChange change = new TextFileChange("Convert to Verbose Refinement", file);
+	    		Tree.Expression e = ss.getSpecifierExpression().getExpression();
+	    		if (e!=null && !isTypeUnknown(e.getTypeModel())) {
+	    			Unit unit = ss.getUnit();
+	    			String type = unit.denotableType(e.getTypeModel())
+	    					.getProducedTypeName(unit);
+	    			change.setEdit(new InsertEdit(statement.getStartIndex(), 
+	    					"shared actual " + type + " "));
+	    			proposals.add(new ChangeCorrectionProposal("Convert to verbose refinement", change));
+	    		}
+	    	}
+	    }
     }
     
     private void addConvertToVerbatimProposal(Collection<ICompletionProposal> proposals,
