@@ -113,6 +113,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -130,9 +131,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -398,7 +396,7 @@ public class CeylonQuickFixAssistant {
         }
             
         if (decNode instanceof Tree.AttributeDeclaration) {
-            AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
+            Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
             Tree.SpecifierOrInitializerExpression se = 
             		attDecNode.getSpecifierOrInitializerExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
@@ -805,7 +803,7 @@ public class CeylonQuickFixAssistant {
         if (node instanceof Tree.Import) {
             node = ((Tree.Import) node).getImportPath();
         }
-        List<Identifier> ids = ((ImportPath) node).getIdentifiers();
+        List<Tree.Identifier> ids = ((Tree.ImportPath) node).getIdentifiers();
         String pkg = formatPath(ids);
         if (JDKUtils.isJDKAnyPackage(pkg)) {
             for (String mod: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
@@ -1379,6 +1377,7 @@ public class CeylonQuickFixAssistant {
                     INTERFACE, file, brokenName, null, null);
             CreateInNewUnitProposal.addCreateToplevelProposal(proposals, cdef, cdesc, 
                     CLASS, file, brokenName, null, null);
+            addCreateTypeParameterProposal(proposals, project, cu, node, brokenName);
         }
     }
 
@@ -1646,8 +1645,57 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-    private void addCreateParameterProposal(Collection<ICompletionProposal> proposals, IProject project, 
-            Tree.CompilationUnit cu, Node node,
+    private void addCreateTypeParameterProposal(Collection<ICompletionProposal> proposals, 
+    		IProject project, Tree.CompilationUnit cu, Node node, String brokenName) {
+    	FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(node);
+        fcv.visit(cu);
+        Tree.Declaration decl = fcv.getDeclaration();
+        Declaration d = decl==null ? null : decl.getDeclarationModel();
+		if (d == null || 
+                !(d instanceof Method ||
+                    d instanceof ClassOrInterface) || 
+                d.isActual()) {
+            return;
+        }
+        
+        Tree.TypeParameterList paramList = getTypeParameters(decl);
+        String paramDef;
+        int offset;
+        String paramDesc = "type parameter '" + brokenName + "'";
+        if (paramList != null) {
+            paramDef = ", " + brokenName;
+            offset = paramList.getStopIndex();
+        }
+        else {
+        	paramDef = "<" + brokenName + ">";
+        	offset = getIdentifyingNode(decl).getStopIndex()+1;
+        }
+        
+        //TODO: generate type constraints when it appears 
+        //      as a type argument!
+        
+        for (PhasedUnit unit : getUnits(project)) {
+        	if (unit.getUnit().equals(cu.getUnit())) {
+        		CreateProposal.addCreateTypeParameterProposal(proposals, 
+        				paramDef, paramDesc, ADD, d, unit, decl, offset);
+        		break;
+        	}
+        }
+
+    }
+    
+    private Tree.TypeParameterList getTypeParameters(Tree.Declaration decl) {
+    	if (decl instanceof Tree.ClassOrInterface) {
+    		return ((Tree.ClassOrInterface) decl).getTypeParameterList();
+    	}
+    	else if (decl instanceof Tree.AnyMethod) {
+    		return ((Tree.AnyMethod) decl).getTypeParameterList();
+    	}
+    	return null;
+    }
+
+    private void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
+    		IProject project, Tree.CompilationUnit cu, Node node,
             String brokenName, String def, ProducedType returnType) {
     	FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(node);
         fcv.visit(cu);

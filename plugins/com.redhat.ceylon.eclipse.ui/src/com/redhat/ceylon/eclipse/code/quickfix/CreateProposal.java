@@ -164,6 +164,21 @@ class CreateProposal extends ChangeCorrectionProposal {
                 image, 0, offset+il, file, change));
     }
 
+    static void addCreateTypeParameterProposal(Collection<ICompletionProposal> proposals, 
+            String def, String desc, Image image, Declaration dec, PhasedUnit unit,
+            Tree.Declaration decNode, int offset) {
+        IFile file = getFile(unit);
+        TextFileChange change = new TextFileChange("Add Parameter", file);
+        change.setEdit(new MultiTextEdit());
+        HashSet<Declaration> decs = new HashSet<Declaration>();
+		CompilationUnit cu = unit.getCompilationUnit();
+		int il = applyImports(change, decs, cu);
+        change.addEdit(new InsertEdit(offset, def));
+        proposals.add(new CreateProposal(def, 
+                "Add " + desc + " to '" + dec.getName() + "'", 
+                image, 0, offset+il, file, change));
+    }
+
     static void addCreateParameterAndAttributeProposal(Collection<ICompletionProposal> proposals, 
             String pdef, String adef, String desc, Image image, Declaration dec, PhasedUnit unit,
             Tree.Declaration decNode, Tree.ParameterList paramList, Tree.Body body, 
