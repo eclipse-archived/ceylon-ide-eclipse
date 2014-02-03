@@ -471,7 +471,9 @@ public class CeylonQuickFixAssistant {
             if (sie!=null) {
                 addSplitDeclarationProposal(doc, cu, proposals, file, attDecNode);
             }
-            addParameterProposal(doc, cu, proposals, file, attDecNode, sie, editor);
+            if (!(sie instanceof Tree.LazySpecifierExpression)) {
+            	addParameterProposal(doc, cu, proposals, file, attDecNode, sie, editor);
+            }
         }
         if (decNode instanceof Tree.MethodDeclaration) {
             Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) decNode;
