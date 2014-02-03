@@ -122,7 +122,7 @@ public class CompletionProcessor implements IContentAssistProcessor {
 		    					if (!pls.isEmpty()) {
 		    						infos.add(new ParameterContextInformation(declaration, 
 		    								mte.getTarget(), cpc.getRootNode().getUnit(), 
-		    								pls.get(0), that.getStartIndex()));
+		    								pls.get(0), that.getStartIndex(), true));
 		    					}
 		    				}
     	                }

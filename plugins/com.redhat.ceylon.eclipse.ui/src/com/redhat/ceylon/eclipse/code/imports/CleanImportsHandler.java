@@ -135,7 +135,9 @@ public class CleanImportsHandler extends AbstractHandler {
             if (hasWildcard || !list.isEmpty() || 
                     imports.isEmpty()) { //in this last case there is no existing import, but imports are proposed
                 lastToplevel = appendBreakIfNecessary(lastToplevel, packageName, builder);
-                Referenceable packageModel = imports.get(0).getImportPath().getModel();
+                Referenceable packageModel = imports.isEmpty() ?
+                		null : //TODO: what to do in this case? look up the Package where?
+                		imports.get(0).getImportPath().getModel();
                 String escapedPackageName = packageModel instanceof Package ?
                 	escapedPackageName((Package) packageModel) : packageName;
                 builder.append("import ").append(escapedPackageName).append(" {");
