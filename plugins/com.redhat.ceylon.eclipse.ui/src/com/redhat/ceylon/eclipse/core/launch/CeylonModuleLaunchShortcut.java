@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
@@ -41,8 +43,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
-import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
 
@@ -217,10 +217,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
                 if (cu!=null) {
                     ISelection selection = ce.getSelectionProvider().getSelection();
                     if (selection instanceof ITextSelection) {
-                        Node node = CeylonSourcePositionLocator.findNode(cu, (ITextSelection) selection);
-                        FindStatementVisitor fsv = new FindStatementVisitor(node, true);
-                        fsv.visit(cu);
-                        node = fsv.getStatement();
+                        Node node = findToplevelStatement(cu, findNode(cu, (ITextSelection) selection));
                         if (node instanceof Tree.AnyMethod) {
                             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
                             if (method!=null && method.isToplevel() && 

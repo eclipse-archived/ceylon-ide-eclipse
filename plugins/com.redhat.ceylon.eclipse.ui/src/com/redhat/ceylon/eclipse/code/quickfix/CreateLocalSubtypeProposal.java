@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.subtypeDeclaration;
@@ -20,10 +21,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.CreateSubtype;
-import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
     
@@ -48,16 +47,14 @@ class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
 
     static void addCreateLocalSubtypeProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file, Node node) {
-        FindStatementVisitor fsv = new FindStatementVisitor(node, true);
-        fsv.visit(cu);
-        Statement s = fsv.getStatement();
-        if (s!=null) {
+    	Tree.Statement statement = findToplevelStatement(cu, node);
+        if (statement!=null) {
             ProducedType type = CreateSubtypeInNewUnitProposal.getType(cu, node);
             if (type!=null && CreateSubtypeInNewUnitProposal.proposeSubtype(type)) {
                 TextChange change = new TextFileChange("Create Subtype", file);
 //                TextChange change = new DocumentChange("Create Subtype", doc);
                 change.setEdit(new MultiTextEdit());
-                Integer offset = s.getStartIndex();
+                Integer offset = statement.getStartIndex();
                 String name = type.getDeclaration().getName()
                 		.replace("&", "").replace("<", "").replace(">", "");
                 CreateSubtype cs = subtypeDeclaration(type, 

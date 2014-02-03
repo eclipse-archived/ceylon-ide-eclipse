@@ -74,6 +74,11 @@ public class CeylonSourcePositionLocator {
         return visitor.getStatement();
     }
 
+    public static Statement findToplevelStatement(Tree.CompilationUnit cu, Node node) {
+        FindStatementVisitor visitor = new FindStatementVisitor(node, true);
+        cu.visit(visitor);
+        return visitor.getStatement();
+    }
     
     public static Node findScope(Tree.CompilationUnit cu, int startOffset, int endOffset) {
         FindScopeVisitor visitor = new FindScopeVisitor(startOffset, endOffset);
