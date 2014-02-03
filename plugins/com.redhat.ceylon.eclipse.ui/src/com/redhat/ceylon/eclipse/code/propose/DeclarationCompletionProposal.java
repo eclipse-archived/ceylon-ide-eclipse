@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getParameters;
 import static com.redhat.ceylon.eclipse.code.propose.CompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.propose.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
@@ -44,12 +46,12 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 class DeclarationCompletionProposal extends CompletionProposal {
@@ -59,26 +61,28 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	private final boolean addimport;
 	private final ProducedReference producedReference;
 	private Scope scope;
+	private final boolean includeDefaulted;
 
 	DeclarationCompletionProposal(int offset, String prefix, 
 			String desc, String text, boolean selectParams,
 			CeylonParseController cpc, Declaration d) {
 		this(offset, prefix, desc, text, selectParams,
-				cpc, d, false, null, null);
+				cpc, d, false, null, null, true);
 	}
 	
 	DeclarationCompletionProposal(int offset, String prefix, 
 			String desc, String text, boolean selectParams,
 			CeylonParseController cpc, Declaration d, 
 			boolean addimport, ProducedReference producedReference,
-			Scope scope) {
-		super(offset, prefix, CeylonLabelProvider.getImageForDeclaration(d), 
+			Scope scope, boolean includeDefaulted) {
+		super(offset, prefix, getImageForDeclaration(d), 
 				desc, text, selectParams);
 		this.cpc = cpc;
 		this.declaration = d;
 		this.addimport = addimport;
 		this.producedReference = producedReference;
 		this.scope = scope;
+		this.includeDefaulted = includeDefaulted;
 	}
 
 	@Override
@@ -106,16 +110,26 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			if (declaration instanceof Generic) {
                 Generic generic = (Generic) declaration;
 				ParameterList paramList = null;
-				if (declaration instanceof Functional && getFirstPosition(false)>0) {
-					List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+				if (declaration instanceof Functional && 
+						getFirstPosition(false)>0) {
+					List<ParameterList> pls = 
+							((Functional) declaration).getParameterLists();
 					if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
 						paramList = pls.get(0);
 					}
 				}
-				if (paramList!=null && !paramList.getParameters().isEmpty() ||
-				        !generic.getTypeParameters().isEmpty()) {
-                    enterLinkedMode(document, paramList, generic);
+				if (paramList!=null) {
+					List<Parameter> params = getParameters(includeDefaulted, 
+							paramList.getParameters());
+					if (!params.isEmpty()) {
+						enterLinkedMode(document, params, null);
+						return; //NOTE: early exit!
+					}
                 }
+				List<TypeParameter> typeParams = generic.getTypeParameters();
+				if (!typeParams.isEmpty()) {
+					enterLinkedMode(document, null, typeParams);
+				}
 			}
 		}
 		
@@ -126,7 +140,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		if (declaration instanceof Generic) {
 			ParameterList pl = null;
 			if (declaration instanceof Functional) {
-				List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+				List<ParameterList> pls = 
+						((Functional) declaration).getParameterLists();
 				if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
 					pl = pls.get(0);
 				}
@@ -175,12 +190,10 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	
     private IEditingSupport editingSupport;
     
-	public void enterLinkedMode(IDocument document, ParameterList parameterList, 
-			Generic generic) {
-        boolean proposeTypeArguments = noValueArguments(parameterList);
-        int paramCount = proposeTypeArguments ? 
-        		generic.getTypeParameters().size() :
-        		parameterList.getParameters().size();
+	public void enterLinkedMode(IDocument document, List<Parameter> params, 
+			List<TypeParameter> typeParams) {
+        boolean proposeTypeArguments = params==null;
+        int paramCount = proposeTypeArguments ? typeParams.size() : params.size();
         if (paramCount==0) return;
 	    try {
 	        final LinkedModeModel linkedModeModel = new LinkedModeModel();
@@ -193,10 +206,10 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	        while (next>0 && i<paramCount) {
 	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
 	        	if (proposeTypeArguments) {
-	        		addTypeArgumentProposals(generic, loc, first, props, i);
+	        		addTypeArgumentProposals(typeParams, loc, first, props, i);
 	        	}
 	        	else {
-	        		addValueArgumentProposals(parameterList, loc, first, props, i);
+	        		addValueArgumentProposals(params, loc, first, props, i);
 	        	}
 		        LinkedPositionGroup linkedPositionGroup = new LinkedPositionGroup();
 		        int middle = getCompletionPosition(first, next);
@@ -264,12 +277,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	        e.printStackTrace();
 	    }
 	}
-
-    private boolean noValueArguments(ParameterList parameterList) {
-        return parameterList==null ||
-                parameterList.getParameters().isEmpty();
-    }
-
+	
 	protected int getCompletionPosition(int first, int next) {
 		return text.substring(first, first+next-1).lastIndexOf(' ')+1;
 	}
@@ -293,15 +301,16 @@ class DeclarationCompletionProposal extends CompletionProposal {
         return parenPos>0&&(bracePos>parenPos||bracePos<0);
     }
 
-	private void addValueArgumentProposals(ParameterList parameterList, final int loc,
+	private void addValueArgumentProposals(List<Parameter> params, final int loc,
 			int first, List<ICompletionProposal> props, final int index) {
-		Parameter p = parameterList.getParameters().get(index);
+		Parameter p = params.get(index);
 		if (p.getModel().isDynamicallyTyped()) {
 			return;
 		}
 		ProducedType type = producedReference.getTypedParameter(p)
 				.getType();
 		if (type==null) return;
+		Unit unit = p.getDeclaration().getUnit();
 		TypeDeclaration td = type.getDeclaration();
 		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
 			Declaration d = dwp.getDeclaration();
@@ -322,15 +331,21 @@ class DeclarationCompletionProposal extends CompletionProposal {
 				    ((td instanceof TypeParameter) && 
 						isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
 						    vt.isSubtypeOf(type))) {
-					addProposal(loc, first, props, index, d, false, p.isSequenced()&&isPosArgs());
+					boolean isIterArg = isNamedArgs() &&
+							index==params.size()-1 && 
+							unit.isIterableParameterType(type);
+					boolean isVarArg = p.isSequenced() && isPosArgs();
+					addProposal(loc, first, props, index, d, false, 
+							isIterArg || isVarArg);
 				}
 			}
 		}
 	}
 
-	private void addTypeArgumentProposals(Generic generic, final int loc,
-			int first, List<ICompletionProposal> props, final int index) {
-		TypeParameter p = generic.getTypeParameters().get(index);
+	private void addTypeArgumentProposals(List<TypeParameter> typeParams, 
+			final int loc, int first, List<ICompletionProposal> props, 
+			final int index) {
+		TypeParameter p = typeParams.get(index);
 		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
 			Declaration d = dwp.getDeclaration();
 			if (d instanceof TypeDeclaration && !dwp.isUnimported()) {
@@ -417,6 +432,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 					if (middleOffset>0&&document.getChar(middleOffset)=='>') middleOffset++;
 					while (middleOffset>0&&document.getChar(middleOffset)==' ') middleOffset++;
 					if (middleOffset>offset&&middleOffset<nextOffset) offset = middleOffset;
+					if (nextOffset==-1) nextOffset = offset;
 					document.replace(offset, nextOffset-offset, op+d.getName());
 				} 
 				catch (BadLocationException e) {
@@ -433,7 +449,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			}
 			@Override
 			public Image getImage() {
-				return CeylonLabelProvider.getImageForDeclaration(d);
+				return getImageForDeclaration(d);
 			}
 			@Override
 			public IContextInformation getContextInformation() {
@@ -448,15 +464,17 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
             if (!pls.isEmpty() && 
             		//TODO: for now there is no context info for type args lists - fix that!
-            		!(pls.get(0).getParameters().isEmpty()&&!((Generic)declaration).getTypeParameters().isEmpty())) {
+            		!(pls.get(0).getParameters().isEmpty() &&
+            				!((Generic)declaration).getTypeParameters().isEmpty())) {
             	int paren = text.indexOf('(');
             	if (paren<0) paren = text.indexOf('{');
-            	if (paren<0 && !getDisplayString().equals("show parameters")) { //ugh, horrible, todo!
+            	if (paren<0 && !getDisplayString().equals("show parameters")) { //ugh, horrible, TODO!
             		return super.getContextInformation();
             	}
             	return new ParameterContextInformation(declaration, 
             			producedReference, cpc.getRootNode().getUnit(), 
-            			pls.get(0), offset-prefix.length());
+            			pls.get(0), offset-prefix.length(),
+            			includeDefaulted);
             }
 		}
 		return null;

@@ -76,7 +76,9 @@ public class CompletionProposal implements ICompletionProposal,
                 if (end<0) end = text.indexOf(')');
                 if (end<0) end = text.indexOf(';');
                 if (end<0) end = text.length()-1;
-                if (endOfTypeArgs>0) end = end < endOfTypeArgs ? end : endOfTypeArgs;
+                if (endOfTypeArgs>0) {
+                	end = end < endOfTypeArgs ? end : endOfTypeArgs;
+                }
                 start = loc+1;
                 length = end-loc-1;
             }
