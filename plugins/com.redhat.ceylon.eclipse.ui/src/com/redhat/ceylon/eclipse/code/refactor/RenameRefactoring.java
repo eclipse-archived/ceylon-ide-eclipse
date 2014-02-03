@@ -44,7 +44,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         @Override
         protected boolean isReference(Declaration ref, String id) {
             return isReference(ref) && id!=null &&
-                    getDeclaration().getName().equals(id); //TODO: really lame way to tell if its an alias!
+                    getDeclaration().getName().equals(id); //TODO: really lame way to tell if it's an alias!
         }
     }
 
@@ -106,13 +106,18 @@ public class RenameRefactoring extends AbstractRefactoring {
 
 	@Override
 	int countReferences(Tree.CompilationUnit cu) {
-        FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-        FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
-        FindDocLinkReferencesVisitor fdlrv = new FindDocLinkReferencesVisitor(frv.getDeclaration());
+        FindReferencesVisitor frv = 
+        		new FindReferencesVisitor(declaration);
+        FindRefinementsVisitor fdv = 
+        		new FindRefinementsVisitor(frv.getDeclaration());
+        FindDocLinkReferencesVisitor fdlrv = 
+        		new FindDocLinkReferencesVisitor(frv.getDeclaration());
         cu.visit(frv);
         cu.visit(fdv);
         cu.visit(fdlrv);
-        return frv.getNodes().size() + fdv.getDeclarationNodes().size() + fdlrv.count;
+        return frv.getNodes().size() + 
+        		fdv.getDeclarationNodes().size() + 
+        		fdlrv.count;
 	}
 
 	public String getName() {
