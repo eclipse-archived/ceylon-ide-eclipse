@@ -48,7 +48,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     
     @Override
     public boolean performFinish() {
-        CeylonPlugin.getInstance().getDialogSettings().put("sharedPackage", page.isShared());
+        CeylonPlugin.getInstance().getDialogSettings()
+                .put("sharedPackage", page.isShared());
 
         final CreateCeylonSourceFileOperation op = 
                 new CreateCeylonSourceFileOperation("New Ceylon Package",
@@ -94,7 +95,9 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     public void addPages() {
         super.addPages();
         if (page == null) {
-            page= new NewPackageWizardPage();
+    		boolean shared = CeylonPlugin.getInstance().getDialogSettings()
+            		.getBoolean("sharedPackage");
+            page= new NewPackageWizardPage(shared);
             page.init(workbench, selection);
         }
         addPage(page);

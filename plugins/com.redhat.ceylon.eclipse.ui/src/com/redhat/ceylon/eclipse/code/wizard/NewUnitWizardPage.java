@@ -56,7 +56,7 @@ public class NewUnitWizardPage extends WizardPage {
     private IPackageFragment packageFragment;
     private String packageName = "";
     private boolean includePreamble = true;
-    private boolean shared = true;
+    boolean shared = true;
     private boolean declaration;
     private final boolean declarationButtonDisabled;
     
@@ -527,10 +527,6 @@ public class NewUnitWizardPage extends WizardPage {
     
     void createSharedField(Composite composite) {        
         new Label(composite, SWT.NONE);
-        
-		shared = CeylonPlugin.getInstance().getDialogSettings()
-        		.getBoolean("sharedPackage");
-        
         Button sharedPackage = new Button(composite, SWT.CHECK);
         sharedPackage.setText(getSharedPackageLabel());
         sharedPackage.setSelection(shared);
