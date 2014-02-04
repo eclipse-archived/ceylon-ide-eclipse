@@ -66,6 +66,10 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             
             final IAnnotationModel model = editor.getDocumentProvider()
                     .getAnnotationModel(editor.getEditorInput());
+            if (model==null) {
+            	return;
+            }
+            
             for (@SuppressWarnings("unchecked")
             Iterator<Annotation> iter = model.getAnnotationIterator(); 
                     iter.hasNext();) {
