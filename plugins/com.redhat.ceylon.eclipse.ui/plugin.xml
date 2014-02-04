@@ -1042,7 +1042,7 @@
                   visible="true"
                   name="aboveOpen"/>
             <command
-                  label="Open &amp;Ceylon Declaration..." 
+                  label="&amp;Open Ceylon Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
@@ -1065,6 +1065,15 @@
             <separator
                   visible="true"
                   name="belowOpen"/>
+            <command
+                  label="Show &amp;Repository Explorer..." 
+                  commandId="org.eclipse.ui.views.showView"
+                  icon="icons/repositories.gif"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.showRepositoryExplorer">
+                  <parameter
+                        name="org.eclipse.ui.views.showView.viewId"
+                        value="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
+            </command>
       </menuContribution>
       <menuContribution
             locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
@@ -1072,13 +1081,13 @@
                   label="Ceylon"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.ceylon">
             <command
-                  label="Open &amp;Ceylon Declaration..." 
+                  label="Open Ceylon Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   tooltip="Open Ceylon Declaration"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.openDeclaration"/>
             <command
-                  label="Show &amp;Repository Explorer..." 
+                  label="Show Repository Explorer..." 
                   commandId="org.eclipse.ui.views.showView"
                   icon="icons/repositories.gif"
                   tooltip="Show Repository Explorer"
