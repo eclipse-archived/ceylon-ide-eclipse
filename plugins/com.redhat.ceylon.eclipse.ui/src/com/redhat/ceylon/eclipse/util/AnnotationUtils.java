@@ -3,6 +3,14 @@ package com.redhat.ceylon.eclipse.util;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.ASSIGNMENT_ANNOTATION;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.OCCURRENCE_ANNOTATION;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.addImageAndLabel;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.fileUrl;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.loadStyleSheet;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertTopLevelFont;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
@@ -37,31 +45,27 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
-import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
-import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 
 public class AnnotationUtils {
-    // Following is just used for debugging to discover new annotation types to filter out
-    //  private static Set<String> fAnnotationTypes= new HashSet<String>();
     
-    public static final String SEARCH_ANNOTATION_TYPE= NewSearchUI.PLUGIN_ID + ".results"; //$NON-NLS-1$
+    public static final String SEARCH_ANNOTATION_TYPE = 
+    		NewSearchUI.PLUGIN_ID + ".results";
 
-    private static Set<String> sAnnotationTypesToFilter= new HashSet<String>();
+    private static Set<String> sAnnotationTypesToFilter = 
+    		new HashSet<String>();
 
     static {
-        sAnnotationTypesToFilter.add("org.eclipse.ui.workbench.texteditor.quickdiffUnchanged");
-        sAnnotationTypesToFilter.add("org.eclipse.ui.workbench.texteditor.quickdiffChange");
-        sAnnotationTypesToFilter.add("org.eclipse.ui.workbench.texteditor.quickdiffAddition");
-        sAnnotationTypesToFilter.add("org.eclipse.ui.workbench.texteditor.quickdiffDeletion");
+    	String prefix = "org.eclipse.ui.workbench.texteditor.";
+        sAnnotationTypesToFilter.add(prefix + "quickdiffUnchanged");
+        sAnnotationTypesToFilter.add(prefix + "quickdiffChange");
+        sAnnotationTypesToFilter.add(prefix + "quickdiffAddition");
+        sAnnotationTypesToFilter.add(prefix + "quickdiffDeletion");
         sAnnotationTypesToFilter.add("org.eclipse.debug.core.breakpoint");
         sAnnotationTypesToFilter.add(OCCURRENCE_ANNOTATION);
         sAnnotationTypesToFilter.add(ASSIGNMENT_ANNOTATION);
         sAnnotationTypesToFilter.add(ProjectionAnnotation.TYPE);
     }
-
-    private AnnotationUtils() { }
 
     /**
      * @return a nicely-formatted plain text string for the given set of annotations
@@ -69,21 +73,21 @@ public class AnnotationUtils {
     public static String formatAnnotationList(List<Annotation> annotations) {
         if (annotations!=null && !annotations.isEmpty()) {
             if (annotations.size()==1) {
-                return AnnotationUtils.formatSingleMessage(annotations.get(0));
+                return formatSingleMessage(annotations.get(0));
             }
             else {
-                return AnnotationUtils.formatMultipleMessages(annotations);
+                return formatMultipleMessages(annotations);
             }
         }
         return null;
     }
 
     /**
-     * @return true, if the given Annotation and Position are redundant, given the annotation
-     * information in the given Map
+     * @return true, if the given Annotation and Position are redundant, 
+     * given the annotation information in the given Map
      */
-    public static boolean addAndCheckDuplicateAnnotation(Map<Integer, List<Object>> map, 
-            Annotation annotation, Position position) {
+    public static boolean addAndCheckDuplicateAnnotation(Map<Integer, 
+    		List<Object>> map, Annotation annotation, Position position) {
         List<Object> annotationsAtPosition;
 
         if (!map.containsKey(position.offset)) {
@@ -93,7 +97,8 @@ public class AnnotationUtils {
             annotationsAtPosition = map.get(position.offset);
         }
 
-        // TODO this should call out to a language extension point first to see if the language can resolve duplicates
+        // TODO this should call out to a language extension point first 
+        //      to see if the language can resolve duplicates
         
         // Check to see if an error code is present on the marker / annotation
         Integer errorCode = -1;
@@ -122,35 +127,43 @@ public class AnnotationUtils {
     }
 
     /**
-     * @return the list of Annotations that reside at the given line for the given ISourceViewer
+     * @return the list of Annotations that reside at the given 
+     * line for the given ISourceViewer
      */
-    public static List<Annotation> getAnnotationsForLine(ISourceViewer viewer, final int line) {
-        final IDocument document= viewer.getDocument();
-        IPositionPredicate posPred= new IPositionPredicate() {
+    public static List<Annotation> getAnnotationsForLine(ISourceViewer viewer, 
+    		final int line) {
+        final IDocument document = viewer.getDocument();
+        IPositionPredicate posPred = new IPositionPredicate() {
             public boolean matchPosition(Position p) {
-                return AnnotationUtils.positionIsAtLine(p, document, line);
+                return positionIsAtLine(p, document, line);
             }
         };
         return getAnnotations(viewer, posPred);
     }
 
     /**
-     * @return the list of Annotations that reside at the given offset for the given ISourceViewer
+     * @return the list of Annotations that reside at the given 
+     * offset for the given ISourceViewer
      */
-    public static List<Annotation> getAnnotationsForOffset(ISourceViewer viewer, final int offset) {
-        IPositionPredicate posPred= new IPositionPredicate() {
+    public static List<Annotation> getAnnotationsForOffset(ISourceViewer viewer, 
+    		final int offset) {
+        IPositionPredicate posPred = new IPositionPredicate() {
             public boolean matchPosition(Position p) {
-                return offset >= p.offset && offset < p.offset + p.length;
+                return offset >= p.offset && 
+                		offset < p.offset + p.length;
             }
         };
         return getAnnotations(viewer, posPred);
     }
 
     /**
-     * @return true, if the given Position resides at the given line of the given IDocument
+     * @return true, if the given Position resides at the given 
+     * line of the given IDocument
      */
-    public static boolean positionIsAtLine(Position position, IDocument document, int line) {
-        if (position.getOffset() > -1 && position.getLength() > -1) {
+    public static boolean positionIsAtLine(Position position, 
+    		IDocument document, int line) {
+        if (position.getOffset() > -1 && 
+        		position.getLength() > -1) {
             try {
                 // RMF 11/10/2006 - This used to add 1 to the line computed by the document,
                 // which appears to be bogus. First, it didn't work right (annotation hovers
@@ -165,29 +178,19 @@ public class AnnotationUtils {
         }
         return false;
     }
-
+    
     /**
-     * @return the IAnnotationModel for the given ISourceViewer, if any
+     * @return the list of Annotations on the given ISourceViewer 
+     * that satisfy the given IPositionPredicate and that are worth 
+     * showing to the user as text (e.g., ignoring debugger breakpoint 
+     * annotations and source folding annotations)
      */
-    // TODO get rid of this one-line wrapper
-    public static IAnnotationModel getAnnotationModel(ISourceViewer viewer) {
-        // if (viewer instanceof ISourceViewerExtension2) {
-        // ISourceViewerExtension2 extension= (ISourceViewerExtension2) viewer;
-        //
-        // return extension.getVisualAnnotationModel();
-        // }
-        return viewer.getAnnotationModel();
-    }
-
-    /**
-     * @return the list of Annotations on the given ISourceViewer that satisfy the given
-     * IPositionPredicate and that are worth showing to the user as text (e.g., ignoring
-     * debugger breakpoint annotations and source folding annotations)
-     */
-    public static List<Annotation> getAnnotations(ISourceViewer viewer, IPositionPredicate posPred) {
-        IAnnotationModel model = getAnnotationModel(viewer);
-        if (model == null)
+    public static List<Annotation> getAnnotations(ISourceViewer viewer, 
+    		IPositionPredicate posPred) {
+        IAnnotationModel model = viewer.getAnnotationModel();
+        if (model == null) {
             return null;
+        }
         List<Annotation> annotations = new ArrayList<Annotation>();
         Iterator<?> iterator = model.getAnnotationIterator();
 
@@ -209,24 +212,25 @@ public class AnnotationUtils {
                     continue;
                 }
             }
-            if (position == null)
+            if (position == null || 
+            		!posPred.matchPosition(position)) {
                 continue;
-            if (!posPred.matchPosition(position))
-                continue;
+            }
             if (annotation instanceof AnnotationBag) {
                 AnnotationBag bag = (AnnotationBag) annotation;
                 for (Iterator<?> e = bag.iterator(); e.hasNext(); ) {
                     Annotation bagAnnotation = (Annotation) e.next();
                     position = model.getPosition(bagAnnotation);
-                    if (position != null
-                            && includeAnnotation(bagAnnotation, position)
-                            && !addAndCheckDuplicateAnnotation(map, bagAnnotation, position))
+                    if (position != null && 
+                    		includeAnnotation(bagAnnotation, position) && 
+                    		!addAndCheckDuplicateAnnotation(map, bagAnnotation, position))
                         annotations.add(bagAnnotation);
 
                 }
-            } else {
-                if (includeAnnotation(annotation, position)
-                        && !addAndCheckDuplicateAnnotation(map, annotation, position)) {
+            }
+            else {
+                if (includeAnnotation(annotation, position) && 
+                		!addAndCheckDuplicateAnnotation(map, annotation, position)) {
                     annotations.add(annotation);
                 }
             }
@@ -235,40 +239,39 @@ public class AnnotationUtils {
     }
 
     /**
-     * Check preferences, etc., to determine whether this annotation is actually showing.
-     * (Don't want to show a hover for a non-visible annotation.)
-     * @param annotation
-     * @param position
-     * @return
+     * Check preferences, etc., to determine whether this 
+     * annotation is actually showing. (Don't want to show a 
+     * hover for a non-visible annotation.)
      */
-    private static boolean includeAnnotation(Annotation annotation, Position position) {
+    private static boolean includeAnnotation(Annotation annotation, 
+    		Position position) {
         return !sAnnotationTypesToFilter.contains(annotation.getType());
     }
-
-    /**
-     * @see IVerticalRulerHover#getHoverInfo(ISourceViewer, int)
-     */
-    public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
-        return formatAnnotationList(getAnnotationsForLine(sourceViewer, lineNumber));
-    }
+    
+//    public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
+//        return formatAnnotationList(getAnnotationsForLine(sourceViewer, lineNumber));
+//    }
 
     public static void addMessageImageAndLabel(Annotation message,
             StringBuilder buffer) {
         URL icon = null;
         String text = null;
         if (message instanceof CeylonAnnotation) {
-            text = HTMLPrinter.convertToHTMLContent(message.getText());
+            text = convertToHTMLContent(message.getText());
             icon = getProblemIcon(((CeylonAnnotation) message).getSeverity());
         }
         else if (message instanceof CeylonInitializerAnnotation) {
             text = message.getText();
-            icon = DocumentationHover.fileUrl("information.gif");
+            icon = fileUrl("information.gif");
         }
         else if (message instanceof RefinementAnnotation) {
             Declaration dec = ((RefinementAnnotation) message).getDeclaration();
-            icon = dec.isFormal() ? DocumentationHover.fileUrl("implm_co.gif") : DocumentationHover.fileUrl("over_co.gif");
-            text = "refines&nbsp;&nbsp;<tt>" + HTMLPrinter.convertToHTMLContent(CeylonContentProposer.getDescriptionFor(dec))
-                    + "</tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt><b>" + ((TypeDeclaration) dec.getContainer()).getName() + 
+            icon = dec.isFormal() ? 
+            		fileUrl("implm_co.gif") : fileUrl("over_co.gif");
+            text = "refines&nbsp;&nbsp;<tt>" + 
+            		convertToHTMLContent(getDescriptionFor(dec)) + 
+            		"</tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt><b>" + 
+            		((TypeDeclaration) dec.getContainer()).getName() + 
                     "</b></tt>";
         }
         else if (message instanceof MarkerAnnotation) {
@@ -278,22 +281,26 @@ public class AnnotationUtils {
                 icon = getProblemIcon(sev);
                 String msg = (String)((MarkerAnnotation) message).getMarker()
                         .getAttribute(IMarker.MESSAGE);
-                text = "[Backend error] " + HTMLPrinter.convertToHTMLContent(msg).replace("\n", "<br/>");
+                text = "[Backend error] " + 
+                        convertToHTMLContent(msg).replace("\n", "<br/>");
             } 
             catch (CoreException e) {
                 e.printStackTrace();
             }
         }
-        else if (message!=null && SEARCH_ANNOTATION_TYPE.equals(message.getType())) {
-            text = "<b>Search result</b>";
-            icon = DocumentationHover.fileUrl("find_obj.gif");
-        }
-        else if (message!=null && TODO_ANNOTATION_TYPE.equals(message.getType())) {
-            text = "<b>Task</b><p>" + message.getText() + "</p>";
-            icon = DocumentationHover.fileUrl("tasks_tsk.gif");
+        else if (message!=null) {
+        	if (SEARCH_ANNOTATION_TYPE.equals(message.getType())) {
+        		text = "<b>Search result</b>";
+        		icon = fileUrl("find_obj.gif");
+        	}
+        	else if (TODO_ANNOTATION_TYPE.equals(message.getType())) {
+        		text = "<b>Task</b><p>" + message.getText() + "</p>";
+        		icon = fileUrl("tasks_tsk.gif");
+        	}
         }
         if (icon!=null) {
-            DocumentationHover.addImageAndLabel(buffer, null, icon.toExternalForm(), 16, 16, text, 20, 2);
+            addImageAndLabel(buffer, null, icon.toExternalForm(), 
+            		16, 16, text, 20, 2);
         }
     }
 
@@ -302,10 +309,10 @@ public class AnnotationUtils {
             return null;
         }
         if (severity.intValue()==SEVERITY_ERROR) {
-            return DocumentationHover.fileUrl("error_obj.gif");
+            return fileUrl("error_obj.gif");
         }
         else if (severity.intValue()==SEVERITY_WARNING) {
-            return DocumentationHover.fileUrl("warning_obj.gif");
+            return fileUrl("warning_obj.gif");
         }
         else {
             return null;
@@ -317,9 +324,9 @@ public class AnnotationUtils {
      */
     public static String formatSingleMessage(Annotation message) {
         StringBuilder buffer= new StringBuilder();
-        HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
+        insertPageProlog(buffer, 0, getStyleSheet());
         addMessageImageAndLabel(message, buffer);
-        HTMLPrinter.addPageEpilog(buffer);
+        addPageEpilog(buffer);
         return buffer.toString();
     }
 
@@ -327,30 +334,32 @@ public class AnnotationUtils {
      * Formats several messages as HTML text.
      */
     public static String formatMultipleMessages(List<Annotation> messages) {
-        StringBuilder buffer= new StringBuilder();
-        HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
-        DocumentationHover.addImageAndLabel(buffer, null, DocumentationHover.fileUrl("errorwarning_tab.gif").toExternalForm(),
+        StringBuilder buffer = new StringBuilder();
+        insertPageProlog(buffer, 0, getStyleSheet());
+        addImageAndLabel(buffer, null, 
+        		fileUrl("errorwarning_tab.gif").toExternalForm(),
                 16, 16, "Multiple messages at this line:", 20, 2);
         buffer.append("<hr/>");
         for (Annotation message: messages) {
             addMessageImageAndLabel(message, buffer);
         }
-        HTMLPrinter.addPageEpilog(buffer);
+        addPageEpilog(buffer);
         return buffer.toString();
     }
     
     private static String fgStyleSheet;
 
     public static String getStyleSheet() {
-        if (fgStyleSheet == null)
-            fgStyleSheet= DocumentationHover.loadStyleSheet() ;
+        if (fgStyleSheet == null) {
+            fgStyleSheet = loadStyleSheet();
+        }
         //Color c = CeylonTokenColorer.getCurrentThemeColor("messageHover");
         //String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
         String css= fgStyleSheet; //+ "body { background-color: #" + color + " }";
-        if (css != null) {
+        if (css!=null) {
             FontData fontData= JFaceResources.getFontRegistry()
                     .getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
-            css= HTMLPrinter.convertTopLevelFont(css, fontData);
+            css = convertTopLevelFont(css, fontData);
         }
         return css;
     }
@@ -358,9 +367,9 @@ public class AnnotationUtils {
 }
 
 /**
- * Interface that represents a single-argument predicate taking a textual Position.
- * Used by AnnotationUtils to detect annotations associated with a particular range
- * or location in source text.
+ * Interface that represents a single-argument predicate taking 
+ * a textual Position. Used by AnnotationUtils to detect annotations 
+ * associated with a particular range or location in source text.
  * @author rfuhrer
  */
 interface IPositionPredicate {

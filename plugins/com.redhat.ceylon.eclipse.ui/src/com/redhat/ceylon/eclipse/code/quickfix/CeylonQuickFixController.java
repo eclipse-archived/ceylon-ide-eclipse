@@ -12,7 +12,6 @@ package com.redhat.ceylon.eclipse.code.quickfix;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationModel;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 
 import java.util.ArrayList;
@@ -199,7 +198,7 @@ public class CeylonQuickFixController extends QuickAssistAssistant
     public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext quickAssistContext) {
         ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         ISourceViewer viewer = quickAssistContext.getSourceViewer();
-        collectProposals(quickAssistContext, getAnnotationModel(viewer),
+        collectProposals(quickAssistContext, viewer.getAnnotationModel(),
                 getAnnotationsForLine(viewer, getLine(quickAssistContext, viewer)), 
                         true, true, proposals);
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
