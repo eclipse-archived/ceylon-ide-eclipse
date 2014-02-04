@@ -373,13 +373,18 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                     }
                 }
 
-				if (srcPath==null && !modulesWithSourcesAlreadySearched.contains(module.toString())) {
+				if (srcPath==null && 
+						!modulesWithSourcesAlreadySearched.contains(module.toString())) {
 					//otherwise, use the src archive
 					srcPath = getSourceArchive(provider, jdtModule);
 				}
                 modulesWithSourcesAlreadySearched.add(module.toString());
                 IClasspathEntry newEntry = newLibraryEntry(modulePath, srcPath, null);
 				paths.put(newEntry.toString(), newEntry);
+                if (srcPath!=null) {
+                	IClasspathEntry newSourceEntry = newLibraryEntry(srcPath, srcPath, null);
+                	paths.put(newSourceEntry.toString(), newSourceEntry);
+                }
 				//}
 
 			}
