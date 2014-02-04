@@ -82,11 +82,14 @@ class CreateInNewUnitProposal implements ICompletionProposal,
         resolveImports(imports, returnType);
         resolveImports(imports, paramTypes);
         
-        def = imports(imports) + "\n\n" + def;
+        def = imports(imports) + 
+        		System.lineSeparator() + System.lineSeparator() + 
+        		def;
         proposals.add(new CreateInNewUnitProposal(desc, file, def, unitName, image));
     }
     
-    private static void resolveImports(List<Declaration> imports, List<ProducedType> pts) {
+    private static void resolveImports(List<Declaration> imports, 
+    		List<ProducedType> pts) {
         if (pts != null) {
             for (ProducedType pt : pts) {
                 resolveImports(imports, pt);

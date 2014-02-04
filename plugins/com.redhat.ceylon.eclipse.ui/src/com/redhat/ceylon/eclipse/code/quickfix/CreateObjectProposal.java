@@ -65,8 +65,10 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
                 	importType(already, pt, cu);
                 }
                 int il = applyImports(change, already, cu);
-				String dec = cs.getDefinition().replace("$className", "my" + name) + "\n";
-                dec = dec.replaceAll("\n", "\n" + getIndent(node, doc));
+				String dec = cs.getDefinition().replace("$className", "my" + name) + 
+						System.lineSeparator();
+                dec = dec.replaceAll(System.lineSeparator(),
+                		System.lineSeparator() + getIndent(node, doc));
                 change.addEdit(new InsertEdit(offset,dec));
                 proposals.add(new CreateObjectProposal(type, 
                         offset+7+il, name.length()+2, file, change));

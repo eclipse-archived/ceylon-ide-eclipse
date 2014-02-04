@@ -88,16 +88,17 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
         String indent;
         String bodyIndent=getIndent(body, doc);
         if (statements.isEmpty()) {
-            indent = "\n" + bodyIndent + getDefaultIndent();
+            indent = System.lineSeparator() + bodyIndent + 
+            		getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
         else {
             Tree.Statement statement = statements.get(statements.size()-1);
-            indent = "\n" + getIndent(statement, doc);
+            indent = System.lineSeparator() + getIndent(statement, doc);
             offset = statement.getStopIndex()+1;
         }
         
-        StringBuilder result = new StringBuilder("\n");
+        StringBuilder result = new StringBuilder(System.lineSeparator());
         Set<Declaration> already = new HashSet<Declaration>();
         
         Set<String> formalDeclNames = new HashSet<String>();
@@ -140,7 +141,8 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
         
         try {
             if (doc.getChar(offset)=='}' && result.length()>0) {
-                result.append("\n").append(bodyIndent);
+                result.append(System.lineSeparator())
+                        .append(bodyIndent);
             }
         } 
         catch (BadLocationException e) {

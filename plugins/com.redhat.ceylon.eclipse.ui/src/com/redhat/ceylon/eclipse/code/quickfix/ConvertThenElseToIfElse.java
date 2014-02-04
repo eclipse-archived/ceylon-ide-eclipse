@@ -153,17 +153,26 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 			
 			StringBuilder replace = new StringBuilder();
 			if (declaration != null) {
-				replace.append(declaration).append("\n").append(baseIndent);
+				replace.append(declaration)
+				        .append(System.lineSeparator())
+				        .append(baseIndent);
 			}
-			replace.append("if (").append(test).append(") {\n")
-					.append(baseIndent).append(indent).append(action).append(thenTerm).append(";\n")
-					.append(baseIndent).append("}\n")
-					.append(baseIndent).append("else {\n")
-					.append(baseIndent).append(indent).append(action).append(elseTerm).append(";\n")
+			replace.append("if (").append(test).append(") {")
+			        .append(System.lineSeparator())
+					.append(baseIndent).append(indent).append(action).append(thenTerm).append(";")
+					.append(System.lineSeparator())
+					.append(baseIndent).append("}")
+					.append(System.lineSeparator())
+					.append(baseIndent).append("else {")
+					.append(System.lineSeparator())
+					.append(baseIndent).append(indent).append(action).append(elseTerm).append(";")
+					.append(System.lineSeparator())
 					.append(baseIndent).append("}");
 
 			TextChange change = new TextFileChange("Convert To if-else", file);
-			change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
+			change.setEdit(new ReplaceEdit(statement.getStartIndex(), 
+					statement.getStopIndex() - statement.getStartIndex() + 1, 
+					replace.toString()));
 			proposals.add(new ConvertThenElseToIfElse(statement.getStartIndex(), file, change));
 		} catch (BadLocationException e) {
 			e.printStackTrace();

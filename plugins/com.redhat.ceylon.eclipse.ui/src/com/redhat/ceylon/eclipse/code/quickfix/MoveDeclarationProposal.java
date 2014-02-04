@@ -121,7 +121,7 @@ public class MoveDeclarationProposal implements ICompletionProposal {
 	            });*/
 	            String imports = CleanImportsHandler.imports(node, cu.getImportList());
 	            boolean success = NewUnitWizard.open(imports==null ? 
-	                        contents : imports + "\n" + contents, 
+	                        contents : imports + System.lineSeparator() + contents, 
 	                    getFile(editor.getEditorInput()), 
 	                    ((Tree.Declaration) node).getIdentifier().getText(), "Move to New Unit", 
 	                    "Create a new Ceylon compilation unit containing the selected declaration.");

@@ -183,7 +183,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         	allTypes.add(type);
         	appendInterface(type, td, def, true);
         }
-        def.append(" {\n");
+        def.append(" {").append(System.lineSeparator());
         for (DeclarationWithProximity dwp: td.getMatchingMemberDeclarations(null, "", 0).values()) {
         	Declaration d = dwp.getDeclaration();
         	if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
@@ -204,7 +204,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
             	if (pr instanceof ProducedTypedReference) {
             		def.append("    ")
             			.append(getRefinementTextFor(d, pr, unit, false, ""))
-            			.append("\n");
+            			.append(System.lineSeparator());
             	}
         	}
         }
@@ -236,7 +236,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         			}
         		}
     			imports.setLength(imports.length()-2);
-    			imports.append(" }\n");
+    			imports.append(" }").append(System.lineSeparator());
         	}
         }
         return new CreateSubtype(def.toString(), imports.toString(), allTypes);

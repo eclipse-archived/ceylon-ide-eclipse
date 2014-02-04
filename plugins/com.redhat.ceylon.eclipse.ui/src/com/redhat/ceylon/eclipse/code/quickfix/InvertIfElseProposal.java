@@ -106,7 +106,8 @@ class InvertIfElseProposal extends ChangeCorrectionProposal {
 			replace.append("if (").append(test).append(") ")
 					.append(elseStr);
 					if (isElseOnOwnLine(doc, ifBlock, elseBlock)) {
-						replace.append("\n").append(baseIndent);
+						replace.append(System.lineSeparator())
+						        .append(baseIndent);
 					} else {
 						replace.append(" ");
 					}
@@ -157,13 +158,16 @@ class InvertIfElseProposal extends ChangeCorrectionProposal {
 
 	private static String addEnclosingBraces(String s, String baseIndent, String indent) {
     	if (s.charAt(0) != '{') {
-    		return "{\n" + baseIndent + indent + indent(s, indent) + "\n" + baseIndent + "}";
+    		return "{" + System.lineSeparator() + baseIndent + 
+    				indent + indent(s, indent) + 
+    				System.lineSeparator() + baseIndent + "}";
     	}
 		return s;
 	}
 	
 	private static String indent(String s, String indentation) {
-		return s.replaceAll("\n(\\s*)", "\n$1" + indentation);
+		return s.replaceAll(System.lineSeparator()+"(\\s*)", 
+				System.lineSeparator()+"$1" + indentation);
 	}
 
 	private static String removeEnclosingParenthesis(String s) {
