@@ -1,9 +1,17 @@
 package com.redhat.ceylon.eclipse.ui.test.swtbot;
 
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
+import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -15,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -114,6 +123,36 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
         finally {
             javaFileEditor.setText(javaEditorText);
             javaFileEditor.saveAndClose();
+        }
+    }
+
+    @Test
+    public void bug821_AddedJavaClassNotSeen() throws InterruptedException, CoreException {
+
+        Utils.CeylonBuildSummary buildSummary = new Utils.CeylonBuildSummary(mainProject);
+        buildSummary.install();
+        IFile useFile = copyFileFromResources("bug821", "mainModule/Use.ceylon", mainProject, "src");        
+        try {
+            buildSummary.waitForBuildEnd(30);
+            assertThat("The build should not have any error",
+                    Utils.getProjectErrorMarkers(mainProject),
+                    Matchers.contains(stringContainsInOrder(Arrays.asList("src/mainModule/Use.ceylon", "l.2","type declaration does not exist"))));
+            
+            buildSummary = new Utils.CeylonBuildSummary(mainProject);
+            buildSummary.install();
+            IFile declarationFile = copyFileFromResources("bug821", "mainModule/UsedDeclaration.java", mainProject, "javaSrc");
+            try {
+                buildSummary.waitForBuildEnd(30);
+                assertThat("The build should not have any error",
+                        Utils.getProjectErrorMarkers(mainProject),
+                        Matchers.empty());
+            }
+            finally {
+                declarationFile.delete(true, null);
+            }
+        }
+        finally {
+            useFile.delete(true, null);
         }
     }
     
