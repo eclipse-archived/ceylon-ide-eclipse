@@ -6,10 +6,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
 final class NewPackageWizardPage extends NewUnitWizardPage {
-    NewPackageWizardPage() {
+	
+    NewPackageWizardPage(boolean shared) {
         super("New Ceylon Package", 
                 "Create a Ceylon package with a package descriptor.", 
                 "package", CEYLON_NEW_PACKAGE, true);
+        this.shared = shared;
     }
 
     @Override
