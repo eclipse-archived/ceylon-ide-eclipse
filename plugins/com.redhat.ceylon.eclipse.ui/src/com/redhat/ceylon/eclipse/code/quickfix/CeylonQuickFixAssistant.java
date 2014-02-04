@@ -345,7 +345,7 @@ public class CeylonQuickFixAssistant {
                 }
                 result.append(line);
             }
-            result.append("\n");
+            result.append(System.lineSeparator());
         }
         result.setLength(result.length()-1);
         return result.toString();
@@ -1324,18 +1324,21 @@ public class CeylonQuickFixAssistant {
                             }
                         }
                     }
-                    def = "class " + brokenName + typeParamDef + params + supertype + typeParamConstDef + " {\n";
+                    def = "class " + brokenName + typeParamDef + params + supertype + 
+                    		typeParamConstDef + " {" + System.lineSeparator();
                     if (!isVoid) {
                         for (DeclarationWithProximity dwp: et.getDeclaration()
                         		.getMatchingMemberDeclarations(null, "", 0).values()) {
                             Declaration d = dwp.getDeclaration();
                             if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
                                 ProducedReference pr = getRefinedProducedReference(et, d);
-                                def+= "$indent    " + getRefinementTextFor(d, pr, node.getUnit(), false, "") + "\n";
+                                def+= "$indent    " + 
+                                		getRefinementTextFor(d, pr, node.getUnit(), false, "") + 
+                                		System.lineSeparator();
                             }
                         }
                     }
-                    def+="$indent}";
+                    def += "$indent}";
                     desc = "class '" + brokenName + params + supertype + "'";
                     image = CeylonLabelProvider.CLASS;
                 }
@@ -1343,7 +1346,8 @@ public class CeylonQuickFixAssistant {
                     String type = isVoid ? "void" : 
                         stn.equals("unknown") ? "function" : stn;
                     String impl = isVoid ? " {}" : " { return nothing; }";
-                    def = type + " " + brokenName + typeParamDef + params + typeParamConstDef + impl;
+                    def = type + " " + brokenName + typeParamDef + params + 
+                    		typeParamConstDef + impl;
                     desc = "function '" + brokenName + params + "'";
                     image = METHOD;
                 }
@@ -1351,7 +1355,8 @@ public class CeylonQuickFixAssistant {
             else if (!isUpperCase) {
                 String type = isVoid ? "Anything" : 
                     stn.equals("unknown") ? "value" : stn;
-                def = type + " " + brokenName + " = " + defaultValue(node.getUnit(), et) + ";";
+                def = type + " " + brokenName + " = " + 
+                    defaultValue(node.getUnit(), et) + ";";
                 desc = "value '" + brokenName + "'";
                 image = ATTRIBUTE;
             }
@@ -2008,8 +2013,9 @@ public class CeylonQuickFixAssistant {
     	if (statement!=null) {
     		for (PhasedUnit unit: getUnits(project)) {
     			if (unit.getUnit().equals(cu.getUnit())) {
-    				CreateProposal.addCreateProposal(proposals, def+"\n", false, desc, image, 
-    						unit, statement, returnType, paramTypes);
+    				CreateProposal.addCreateProposal(proposals, 
+    						def+System.lineSeparator(), false, desc, 
+    						image, unit, statement, returnType, paramTypes);
     				break;
     			}
     		}
@@ -2190,10 +2196,10 @@ public class CeylonQuickFixAssistant {
 				text.insert(0, "import " + escapedPackageName(p) + " { ")
 				    .append(" }"); 
 				if (insertPosition==0) {
-					text.append("\n");
+					text.append(System.lineSeparator());
 				}
 				else {
-					text.insert(0, "\n");
+					text.insert(0, System.lineSeparator());
 				}
 				result.add(new InsertEdit(insertPosition, text.toString()));
 			}
@@ -2258,18 +2264,22 @@ public class CeylonQuickFixAssistant {
                 }
                 else {
                     //TODO: format it better!!!!
-                    StringBuilder sb = new StringBuilder("{\n");
+                    StringBuilder sb = new StringBuilder("{")
+                        .append(System.lineSeparator());
                     for (Tree.ImportMemberOrType imt: imtl.getImportMemberOrTypes()) {
                         if (!set.contains(imt.getDeclarationModel())) {
                             sb.append(getDefaultIndent());
                             if (imt.getAlias()!=null) {
-                                sb.append(imt.getAlias().getIdentifier().getText()).append('=');
+                                sb.append(imt.getAlias().getIdentifier().getText())
+                                    .append('=');
                             }
-                            sb.append(imt.getIdentifier().getText()).append(",\n");
+                            sb.append(imt.getIdentifier().getText()).append(",")
+                                .append(System.lineSeparator());
                         }
                     }
                     sb.setLength(sb.length()-2);
-                    sb.append("\n}");
+                    sb.append(System.lineSeparator())
+                        .append("}");
                     result.add(new ReplaceEdit(imtl.getStartIndex(), 
                             imtl.getStopIndex()-imtl.getStartIndex()+1, 
                             sb.toString()));
@@ -2293,10 +2303,10 @@ public class CeylonQuickFixAssistant {
                 text.delete(0, 2);
                 text.insert(0, "import " + newPackageName + " { ").append(" }"); 
                 if (insertPosition==0) {
-                    text.append("\n");
+                    text.append(System.lineSeparator());
                 }
                 else {
-                    text.insert(0, "\n");
+                    text.insert(0, System.lineSeparator());
                 }
                 result.add(new InsertEdit(insertPosition, text.toString()));
             }

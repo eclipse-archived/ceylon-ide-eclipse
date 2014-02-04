@@ -86,7 +86,8 @@ class CreateProposal extends ChangeCorrectionProposal {
         int offset;
         List<Tree.Statement> statements = body.getStatements();
         if (statements.isEmpty()) {
-            indentAfter = "\n" + getIndent(decNode, doc);
+            indentAfter = System.lineSeparator() + 
+            		getIndent(decNode, doc);
             indent = indentAfter + getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
@@ -94,7 +95,8 @@ class CreateProposal extends ChangeCorrectionProposal {
             Tree.Statement statement = statements.get(statements.size()-1);
             indent = "";
             offset = statement.getStartIndex();
-            indentAfter = "\n" + getIndent(statement, doc);
+            indentAfter = System.lineSeparator() + 
+            		getIndent(statement, doc);
         }
         HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
 		CompilationUnit cu = unit.getCompilationUnit();
@@ -112,7 +114,8 @@ class CreateProposal extends ChangeCorrectionProposal {
     		Tree.Statement statement, ProducedType returnType, 
     		List<ProducedType> paramTypes) {
         IFile file = getFile(unit);
-        TextFileChange change = new TextFileChange(local ? "Create Local" : "Create Toplevel", file);
+        TextFileChange change = new TextFileChange(local ? 
+        		"Create Local" : "Create Toplevel", file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
         String indent = getIndent(statement, doc);
@@ -123,7 +126,8 @@ class CreateProposal extends ChangeCorrectionProposal {
 		importType(alreadyImported, returnType, cu);
 		importTypes(alreadyImported, paramTypes, cu);
 		int il = applyImports(change, alreadyImported, cu);
-        change.addEdit(new InsertEdit(offset, def+"\n"+indent));
+        change.addEdit(new InsertEdit(offset, 
+        		def+System.lineSeparator()+indent));
         proposals.add(new CreateProposal(def, 
                 (local ? "Create local " : "Create toplevel ") + desc, 
                 image, 0, offset+il, file, change));
@@ -136,11 +140,11 @@ class CreateProposal extends ChangeCorrectionProposal {
         TextFileChange change = new TextFileChange("Create Enumerated", file);
         IDocument doc = getDocument(change);
         String indent = getIndent(statement, doc);
-        String s = indent + def + "\n";
+        String s = indent + def + System.lineSeparator();
         int offset = statement.getStopIndex()+2;
         if (offset>doc.getLength()) {
             offset = doc.getLength();
-            s = "\n" + s;
+            s = System.lineSeparator() + s;
         }
         //def = def.replace("$indent", indent);
         change.setEdit(new InsertEdit(offset, s));
@@ -201,13 +205,13 @@ class CreateProposal extends ChangeCorrectionProposal {
         int offset2;
         List<Tree.Statement> statements = body.getStatements();
         if (statements.isEmpty()) {
-            indentAfter = "\n" + getIndent(decNode, doc);
+            indentAfter = System.lineSeparator() + getIndent(decNode, doc);
             indent = indentAfter + getDefaultIndent();
             offset2 = body.getStartIndex()+1;
         }
         else {
             Tree.Statement statement = statements.get(statements.size()-1);
-            indent = "\n" + getIndent(statement, doc);
+            indent = System.lineSeparator() + getIndent(statement, doc);
             offset2 = statement.getStopIndex()+1;
             indentAfter = "";
         }

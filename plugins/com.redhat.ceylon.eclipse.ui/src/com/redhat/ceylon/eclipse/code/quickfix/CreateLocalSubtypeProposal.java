@@ -64,7 +64,8 @@ class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
                 	importType(already, pt, cu);
                 }
                 int il = applyImports(change, already, cu);
-				String dec = cs.getDefinition().replace("$className", "My" + name) + "\n\n";
+				String dec = cs.getDefinition().replace("$className", "My" + name) + 
+						System.lineSeparator() + System.lineSeparator();
                 change.addEdit(new InsertEdit(offset,dec));
                 proposals.add(new CreateLocalSubtypeProposal(type, 
                         offset+6+il, name.length()+2, file, change));

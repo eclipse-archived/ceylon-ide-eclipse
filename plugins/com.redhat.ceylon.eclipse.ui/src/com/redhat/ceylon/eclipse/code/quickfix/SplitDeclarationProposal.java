@@ -73,8 +73,9 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
         TextChange change = new TextFileChange("Split Declaration", file);
         change.setEdit(new MultiTextEdit());
         Integer offset = id.getStopIndex()+1;
-        change.addEdit(new InsertEdit(offset, params+";\n" + 
-                getIndent(decNode, doc) + dec.getName()));
+        change.addEdit(new InsertEdit(offset, params+";" + 
+        		System.lineSeparator() + getIndent(decNode, doc) + 
+        		dec.getName()));
         Type type = decNode.getType();
 		int il;
         if (type instanceof Tree.LocalModifier) {

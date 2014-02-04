@@ -130,12 +130,14 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         String indent;
         String bodyIndent=getIndent(body, document);
         if (statements.isEmpty()) {
-            indent = "\n" + bodyIndent + getDefaultIndent();
+            indent = System.lineSeparator() + bodyIndent + 
+            		getDefaultIndent();
             if (offset<0) offset = body.getStartIndex()+1;
         }
         else {
             Statement statement = statements.get(statements.size()-1);
-            indent = "\n" + getIndent(statement, document);
+            indent = System.lineSeparator() + 
+            		getIndent(statement, document);
             if (offset<0) offset = statement.getStopIndex()+1;
         }
         StringBuilder result = new StringBuilder();
@@ -148,15 +150,17 @@ class RefineFormalMembersProposal implements ICompletionProposal {
                         ci.isInheritedFromSupertype(d)) {
                     ProducedReference pr = getRefinedProducedReference(ci, d);
                     result.append(indent)
-                        .append(getRefinementTextFor(d, pr, node.getUnit(), isInterface, indent))
-                        .append(indent);
+                            .append(getRefinementTextFor(d, pr, node.getUnit(), 
+                                    isInterface, indent))
+                            .append(indent);
                     importSignatureTypes(d, cu, already);
                 }
             }
         }
         try {
             if (document.getChar(offset)=='}' && result.length()>0) {
-                result.append("\n").append(bodyIndent);
+                result.append(System.lineSeparator())
+                        .append(bodyIndent);
             }
         } 
         catch (BadLocationException e) {
