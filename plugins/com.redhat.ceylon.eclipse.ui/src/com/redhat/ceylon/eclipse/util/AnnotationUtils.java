@@ -14,6 +14,8 @@ import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDe
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
+import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
+import static org.eclipse.jface.resource.JFaceResources.getFontRegistry;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,8 +28,6 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.ui.PreferenceConstants;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -37,7 +37,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.projection.AnnotationBag;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.search.ui.NewSearchUI;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -71,7 +70,10 @@ public class AnnotationUtils {
      * @return a nicely-formatted plain text string for the given set of annotations
      */
     public static String formatAnnotationList(List<Annotation> annotations) {
-        if (annotations!=null && !annotations.isEmpty()) {
+        if (annotations == null || annotations.isEmpty()) {
+        	return null;
+        }
+        else {
             if (annotations.size()==1) {
                 return formatSingleMessage(annotations.get(0));
             }
@@ -79,7 +81,6 @@ public class AnnotationUtils {
                 return formatMultipleMessages(annotations);
             }
         }
-        return null;
     }
 
     /**
@@ -89,11 +90,11 @@ public class AnnotationUtils {
     public static boolean addAndCheckDuplicateAnnotation(Map<Integer, 
     		List<Object>> map, Annotation annotation, Position position) {
         List<Object> annotationsAtPosition;
-
         if (!map.containsKey(position.offset)) {
             annotationsAtPosition = new ArrayList<Object>();
             map.put(position.offset, annotationsAtPosition);
-        } else {
+        }
+        else {
             annotationsAtPosition = map.get(position.offset);
         }
 
@@ -102,7 +103,6 @@ public class AnnotationUtils {
         
         // Check to see if an error code is present on the marker / annotation
         Integer errorCode = -1;
-
         if (annotation instanceof CeylonAnnotation) {
             errorCode = ((CeylonAnnotation) annotation).getId();
         } 
@@ -130,15 +130,14 @@ public class AnnotationUtils {
      * @return the list of Annotations that reside at the given 
      * line for the given ISourceViewer
      */
-    public static List<Annotation> getAnnotationsForLine(ISourceViewer viewer, 
+    public static List<Annotation> getAnnotationsForLine(final ISourceViewer viewer, 
     		final int line) {
-        final IDocument document = viewer.getDocument();
-        IPositionPredicate posPred = new IPositionPredicate() {
+        return getAnnotations(viewer, new IPositionPredicate() {
+        	IDocument document = viewer.getDocument();
             public boolean matchPosition(Position p) {
                 return positionIsAtLine(p, document, line);
             }
-        };
-        return getAnnotations(viewer, posPred);
+        });
     }
 
     /**
@@ -147,13 +146,12 @@ public class AnnotationUtils {
      */
     public static List<Annotation> getAnnotationsForOffset(ISourceViewer viewer, 
     		final int offset) {
-        IPositionPredicate posPred = new IPositionPredicate() {
+        return getAnnotations(viewer, new IPositionPredicate() {
             public boolean matchPosition(Position p) {
                 return offset >= p.offset && 
                 		offset < p.offset + p.length;
             }
-        };
-        return getAnnotations(viewer, posPred);
+        });
     }
 
     /**
@@ -162,16 +160,12 @@ public class AnnotationUtils {
      */
     public static boolean positionIsAtLine(Position position, 
     		IDocument document, int line) {
-        if (position.getOffset() > -1 && 
-        		position.getLength() > -1) {
+        int offset = position.getOffset();
+		int length = position.getLength();
+		if (offset > -1 && length > -1) {
             try {
-                // RMF 11/10/2006 - This used to add 1 to the line computed by the document,
-                // which appears to be bogus. First, it didn't work right (annotation hovers
-                // never appeared); second, the line passed in comes from the Eclipse
-                // framework, so it should be consistent (wrt the index base) with what the
-                // IDocument API provides.
-                int startLine= document.getLineOfOffset(position.getOffset());
-                int endLine = document.getLineOfOffset(position.getOffset()+position.getLength());
+                int startLine= document.getLineOfOffset(offset);
+                int endLine = document.getLineOfOffset(offset+length);
                 return line >= startLine && line <= endLine;
             } 
             catch (BadLocationException x) {}
@@ -194,7 +188,7 @@ public class AnnotationUtils {
         List<Annotation> annotations = new ArrayList<Annotation>();
         Iterator<?> iterator = model.getAnnotationIterator();
 
-        Map<Integer, List<Object>> map = new HashMap<Integer, List<Object>>();
+        Map<Integer,List<Object>> map = new HashMap<Integer,List<Object>>();
 
         while (iterator.hasNext()) {
             Annotation annotation = (Annotation) iterator.next();
@@ -357,9 +351,8 @@ public class AnnotationUtils {
         //String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
         String css= fgStyleSheet; //+ "body { background-color: #" + color + " }";
         if (css!=null) {
-            FontData fontData= JFaceResources.getFontRegistry()
-                    .getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
-            css = convertTopLevelFont(css, fontData);
+            css = convertTopLevelFont(css, getFontRegistry()
+                    .getFontData(APPEARANCE_JAVADOC_FONT)[0]);
         }
         return css;
     }
