@@ -2877,12 +2877,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
             @Override
             public void error(String str) {
-                writer.append("Error: " + str + "\n");
+                writer.println("Error: " + str);
             }
 
             @Override
             public void warning(String str) {
-                writer.append("Warning: " + str + "\n");
+                writer.println("Warning: " + str);
             }
 
             @Override
