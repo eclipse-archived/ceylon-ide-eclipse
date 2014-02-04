@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
+import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
@@ -54,7 +55,10 @@ class ShadowReferenceProposal extends ChangeCorrectionProposal {
 				change.addEdit(new ReplaceEdit(offset, 
         				node.getStartIndex()-offset,
         				"value " + name + " = "));
-        		change.addEdit(new InsertEdit(node.getStopIndex()+1, "; switch (" + name));
+				change.addEdit(new InsertEdit(node.getStopIndex()+1, 
+        				";" + System.lineSeparator() + 
+        				getStatementIndent(statement) +
+        				"switch (" + name));
         		if (node instanceof BaseMemberExpression) {
         			Declaration d = ((BaseMemberExpression) node).getDeclaration();
         			if (d!=null) {
@@ -73,6 +77,18 @@ class ShadowReferenceProposal extends ChangeCorrectionProposal {
         		proposals.add(new ShadowReferenceProposal(offset+6, name.length(), file, change));
         	}
         }
+    }
+
+    //TODO: this is rubbish, we need a much better way to get indents
+    //      when we don't have an IDocument
+	private static String getStatementIndent(Tree.Statement statement) {
+	    int pos = statement.getToken().getCharPositionInLine();
+	    String di = CeylonAutoEditStrategy.getDefaultIndent();
+	    StringBuffer indent = new StringBuffer();
+	    for (int i=0; i<pos/di.length(); i++) {
+	    	indent.append(di);
+	    }
+	    return indent.toString();
     }
     
     static void addShadowReferenceProposal(IFile file, Tree.CompilationUnit cu, 
