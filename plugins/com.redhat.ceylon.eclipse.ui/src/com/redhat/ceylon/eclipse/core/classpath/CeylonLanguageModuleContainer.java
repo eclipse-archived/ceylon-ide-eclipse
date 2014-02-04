@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.classpath;
 
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,8 +55,11 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
         if (repoManager != null) {
             IPath ceylonLanguageBinaries = new Path(repoManager.getArtifact(new ArtifactContext("ceylon.language",TypeChecker.LANGUAGE_MODULE_VERSION, ArtifactContext.CAR)).getAbsolutePath());
             IPath ceylonLanguageSources = new Path(repoManager.getArtifact(new ArtifactContext("ceylon.language",TypeChecker.LANGUAGE_MODULE_VERSION, ArtifactContext.SRC)).getAbsolutePath());
-            entries = new IClasspathEntry[] { JavaCore.newLibraryEntry(ceylonLanguageBinaries, ceylonLanguageSources, null) };
-        } else {
+            IClasspathEntry entry = newLibraryEntry(ceylonLanguageBinaries, ceylonLanguageSources, null);
+            IClasspathEntry newSourceEntry = newLibraryEntry(ceylonLanguageSources, ceylonLanguageSources, null);
+            entries = new IClasspathEntry[] { entry, newSourceEntry };
+        }
+        else {
             entries = new IClasspathEntry[] {};
         }
     }
@@ -77,7 +81,8 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
             if (entry.getPath().equals(runtimeEntry.getPath()) ) {
                 containerToReplace = true;
             }
-            if (entry.getPath().segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID) ) {
+            if (entry.getPath().segment(0)
+            		.equals(CeylonProjectModulesContainer.CONTAINER_ID) ) {
                 containerToReplace = true;
                 ceylonClasspathEntry = entry;
                 containerToReplace = true;

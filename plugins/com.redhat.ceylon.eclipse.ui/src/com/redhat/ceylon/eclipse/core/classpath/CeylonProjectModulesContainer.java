@@ -425,7 +425,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 	    // we do this in a single step, the Aether repo might return the .jar
 	    // archive as a default result when not finding it with the .src extension.
 	    // In this case it will not try the second extension (-sources.jar).
-        String suffix = module.getArtifactType().equals(ArtifactResultType.MAVEN) ? ArtifactContext.MAVEN_SRC : ArtifactContext.SRC; 
+        String suffix = module.getArtifactType().equals(ArtifactResultType.MAVEN) ? 
+        		ArtifactContext.MAVEN_SRC : ArtifactContext.SRC; 
 	    ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
         		module.getVersion(), suffix);
 		File srcArtifact = provider.getArtifact(ctx);
