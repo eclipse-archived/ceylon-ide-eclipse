@@ -33,7 +33,7 @@ public class SelectedDeclarationMenuItems extends CompoundContributionItem {
                         "Go To Selected Declaration",
                         enabled, GOTO_IMAGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.showInHierarchyView", 
-                        "Show In Type Hierarchy &View",
+                        "Show In Type &Hierarchy View",
                         enabled, HIERARCHY_IMAGE)
             };
     }
