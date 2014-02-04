@@ -37,6 +37,16 @@
 			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-common/src</locationURI>
 		</link>
 		<link>
+			<name>sourcesCeylonProjects/ceylon-compiler</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-js</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-js/src</locationURI>
+		</link>
+		<link>
 			<name>sourcesCeylonProjects/ceylon-module-resolver</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -44,12 +54,32 @@
 		<link>
 			<name>sourcesCeylonProjects/ceylon-spec</name>
 			<type>2</type>
-			<locationURI>$%257BPARENT-3-PROJECT_LOC%257D/ceylon-spec/src</locationURI>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-spec/src</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-compiler/com</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-compiler/javax</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-compiler/langtools/src/share/classes/javax</locationURI>
 		</link>
 		<link>
 			<name>sourcesCeylonProjects/ceylon-module-resolver/com</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-compiler/com/redhat</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-compiler/src/com/redhat</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-compiler/com/sun</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-compiler/langtools/src/share/classes/com/sun</locationURI>
 		</link>
 		<link>
 			<name>sourcesCeylonProjects/ceylon-module-resolver/com/redhat</name>
