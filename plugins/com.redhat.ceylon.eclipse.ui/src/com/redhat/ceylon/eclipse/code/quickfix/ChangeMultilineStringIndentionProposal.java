@@ -22,12 +22,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 class FixMultilineStringIndentationProposal 
         extends ChangeCorrectionProposal {
 	
-    public static void addFixMultilineStringIndentation(Collection<ICompletionProposal> proposals, 
+    public static void addFixMultilineStringIndentation(
+    		Collection<ICompletionProposal> proposals, 
     		IFile file, Tree.CompilationUnit cu, Node node) {
     	if (node instanceof Tree.StringLiteral) {
     		Tree.StringLiteral literal = (Tree.StringLiteral) node;
     		int offset = literal.getStartIndex();
-    		int length = literal.getStopIndex() - literal.getStartIndex() + 1; 
+    		int length = literal.getStopIndex() - 
+    				literal.getStartIndex() + 1; 
     		Token token = literal.getToken();
 			int indentation = token.getCharPositionInLine() + 
 					getStartQuoteLength(token.getType());
@@ -45,7 +47,8 @@ class FixMultilineStringIndentationProposal
     	}
     }
     
-    private static String getFixedText(String text, int indentation) {
+    private static String getFixedText(String text, 
+    		int indentation) {
         StringBuilder result = new StringBuilder();
         for (String line: text.split("\n|\r\n?")) {
             if (result.length() == 0) {
@@ -63,7 +66,7 @@ class FixMultilineStringIndentationProposal
                 //the non-whitespace content
                 result.append(line);
             }
-            result.append("\n");
+            result.append(System.lineSeparator());
         }
         result.setLength(result.length()-1);
         return result.toString();
