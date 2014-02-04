@@ -528,6 +528,9 @@ public class NewUnitWizardPage extends WizardPage {
     void createSharedField(Composite composite) {        
         new Label(composite, SWT.NONE);
         
+		shared = CeylonPlugin.getInstance().getDialogSettings()
+        		.getBoolean("sharedPackage");
+        
         Button sharedPackage = new Button(composite, SWT.CHECK);
         sharedPackage.setText(getSharedPackageLabel());
         sharedPackage.setSelection(shared);
