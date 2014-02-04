@@ -23,33 +23,6 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 public class CeylonReferenceResolver {
 
-//    /**
-//     * Get the text associated with the given node for use in a link from (or
-//     * to) that node
-//     */
-//    public String getLinkText(Object node) {
-//        if (node instanceof Node) {
-//            return getNodeDeclarationName((Node) node);
-//        } 
-//        else {
-//            return null;
-//        }
-//    }
-//
-//    /**
-//     * Get the target for the given source node in the AST produced by the given
-//     * Parse Controller.
-//     */
-//    public Tree.Declaration getLinkTarget(Object node, 
-//    		IParseController controller) {
-//        if (node instanceof Node) {
-//            return getReferencedNode(node, controller);
-//        }
-//        else {
-//            return null;
-//        }
-//    }
-
     public static Node getReferencedNode(Node node, 
     		CeylonParseController controller) {
         return getReferencedNode(getReferencedModel(node), 
@@ -75,29 +48,6 @@ public class CeylonReferenceResolver {
         }
     }
 
-    /*private String getNodeDeclarationName(Node node) {
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            return ((Tree.MemberOrTypeExpression) node).getDeclaration().getName();
-        } 
-        else if (node instanceof Tree.SimpleType) {
-            return ((Tree.SimpleType) node).getDeclarationModel().getName();
-        } 
-        else if (node instanceof Tree.ImportMemberOrType) {
-            return ((Tree.ImportMemberOrType) node).getDeclarationModel()
-                    .getName();
-        }
-        if (node instanceof Tree.Declaration) {
-            return ((Tree.Declaration) node).getDeclarationModel()
-                    .getName();
-        } 
-        else if (node instanceof Tree.NamedArgument) {
-            return ((Tree.NamedArgument) node).getParameter().getName();
-        }
-        else {
-            return null;
-        }
-    }*/
-    
     public static Declaration getReferencedExplicitDeclaration(Node node, Tree.CompilationUnit rn) {
     	Declaration dec = getReferencedDeclaration(node);
     	if (dec!=null && dec.getUnit().equals(node.getUnit())) {
@@ -175,7 +125,6 @@ public class CeylonReferenceResolver {
             return null;
         }
         else {
-        	//Declaration dec = (Declaration) r;
             Tree.CompilationUnit root = cpc.getRootNode();            
             if (root!=null && root.getUnit()!=null && 
                     root.getUnit().equals(r.getUnit())) {
@@ -222,17 +171,5 @@ public class CeylonReferenceResolver {
             }
         }
     }
-
-    /*private static String getRelativePath(Referenceable r) {
-    	Unit unit = r.getUnit();
-		if (unit==null) {
-			return null;
-		}
-		else {
-			return unit.getPackage()
-					.getQualifiedNameString().replace('.', '/')
-					+ "/" + unit.getFilename();
-		}
-    }*/
 
 }
