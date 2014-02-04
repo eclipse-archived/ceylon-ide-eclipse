@@ -19,6 +19,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.operations.IWorkbenchOperationSupport;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 public class NewPackageWizard extends Wizard implements INewWizard {
 
     private IStructuredSelection selection;
@@ -46,11 +48,15 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     
     @Override
     public boolean performFinish() {
-        final CreateCeylonSourceFileOperation op = new CreateCeylonSourceFileOperation("New Ceylon Package",
-                page.getSourceDir(), 
-                page.getPackageFragment(), "package", 
-                page.isIncludePreamble(), 
-                (page.isShared() ? "shared " : "") + "package " + page.getPackageFragment().getElementName() + ";\n",
+        CeylonPlugin.getInstance().getDialogSettings().put("sharedPackage", page.isShared());
+
+        final CreateCeylonSourceFileOperation op = 
+                new CreateCeylonSourceFileOperation("New Ceylon Package",
+                        page.getSourceDir(), 
+                        page.getPackageFragment(), "package", 
+                        page.isIncludePreamble(), 
+                        (page.isShared() ? "shared " : "") + 
+                                "package " + page.getPackageFragment().getElementName() + ";\n",
                 getShell());
         try {
             getContainer().run(true, true, new IRunnableWithProgress() {
