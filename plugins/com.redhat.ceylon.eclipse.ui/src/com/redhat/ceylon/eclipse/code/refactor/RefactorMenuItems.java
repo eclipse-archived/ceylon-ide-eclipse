@@ -41,14 +41,14 @@ public class RefactorMenuItems extends CompoundContributionItem {
     private IContributionItem[] getItems(IEditorPart editor) {
         return new IContributionItem[] {
                 //new Separator(),
-                new DynamicMenuItem(PLUGIN_ID + ".action.rename", "&Rename...",
+                new DynamicMenuItem(PLUGIN_ID + ".action.rename", "Re&name...",
                         editor!=null && new RenameRefactoringAction(editor).isEnabled(), 
                         AbstractRefactoring.RENAME),
                 new DynamicMenuItem(PLUGIN_ID + ".action.moveDeclarationToNewUnit", 
-                        "Move to &New Unit...", new MoveDeclarationHandler().isEnabled(), 
+                        "Move to New &Unit...", new MoveDeclarationHandler().isEnabled(), 
                         AbstractRefactoring.MOVE),
                 new Separator(),
-                new DynamicMenuItem(PLUGIN_ID + ".action.inline", "&Inline...",
+                new DynamicMenuItem(PLUGIN_ID + ".action.inline", "Inlin&e...",
                         editor!=null && new InlineRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.COMP_CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.changeParameters", "Change &Parameters...",

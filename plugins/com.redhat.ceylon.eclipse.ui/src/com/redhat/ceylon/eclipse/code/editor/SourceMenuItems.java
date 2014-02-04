@@ -67,14 +67,14 @@ public class SourceMenuItems extends CompoundContributionItem {
         return new IContributionItem[] {
                 new DynamicMenuItem(ITextEditorActionDefinitionIds.QUICK_ASSIST, "&Quick Fix/Assist", true, FIX),
                 new Separator(),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.terminateStatement", "&Terminate Statement", true, TERMINATE),
+                new DynamicMenuItem(PLUGIN_ID + ".editor.terminateStatement", "Terminate &Statement", true, TERMINATE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.correctIndentation", "Correct &Indentation", true, CORRECT),
                 new Separator(),
                 new DynamicMenuItem(ITextEditorActionDefinitionIds.SHIFT_LEFT, "Shift &Left", true, LEFT),
                 new DynamicMenuItem(ITextEditorActionDefinitionIds.SHIFT_RIGHT, "Shift &Right", true, RIGHT),
                 new Separator(),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.toggleComment", "Togg&le Comment", true, TOGGLE),
+                new DynamicMenuItem(PLUGIN_ID + ".editor.toggleComment", "To&ggle Comment", true, TOGGLE),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.addBlockComment", "Add Block Comment", true, ADD),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.removeBlockComment", "Remove Block Comment", true, REMOVE)
             };
