@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -435,7 +436,20 @@ public class JDTModelLoader extends AbstractModelLoader {
         String className = name.replace('.', '/');
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
-            return jdtModule.containsClass(className + ".class") || jdtModule.containsClass(className + "_.class");
+            if (jdtModule.isCeylonBinaryArchive() || jdtModule.isJavaBinaryArchive()) {
+                return jdtModule.containsClass(className + ".class") || jdtModule.containsClass(className + "_.class");
+            } else if (jdtModule.isProjectModule()) {
+                for (IPackageFragmentRoot root : jdtModule.getPackageFragmentRoots()) {
+                    try {
+                        IFolder sourceFolder = (IFolder) root.getCorrespondingResource();
+                        if (sourceFolder.exists(new Path(className + ".java"))) {
+                            return true;
+                        }
+                    } catch (JavaModelException e) {
+                    }
+                }
+                return jdtModule.containsClass(className + ".class") || jdtModule.containsClass(className + "_.class");
+            }
         }
         return false;
     }
