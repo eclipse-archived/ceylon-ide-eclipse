@@ -57,7 +57,9 @@ public class NewPackageWizard extends Wizard implements INewWizard {
                         page.getPackageFragment(), "package", 
                         page.isIncludePreamble(), 
                         (page.isShared() ? "shared " : "") + 
-                                "package " + page.getPackageFragment().getElementName() + ";\n",
+                                "package " + 
+                                page.getPackageFragment().getElementName() + 
+                                ";" + System.lineSeparator(),
                 getShell());
         try {
             getContainer().run(true, true, new IRunnableWithProgress() {
