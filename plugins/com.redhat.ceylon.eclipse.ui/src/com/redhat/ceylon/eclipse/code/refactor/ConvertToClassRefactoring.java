@@ -85,8 +85,10 @@ public class ConvertToClassRefactoring extends AbstractRefactoring {
         int offset = od.getStopIndex()+1;
         //TODO: handle actual object declarations
         String mods = declaration.isShared() ? "shared " : "";
-        tfc.addEdit(new InsertEdit(offset, "\n" + getIndent(od, doc) + 
-                mods + newName + " " + declaration.getName() + " = " + newName + "();"));
+        tfc.addEdit(new InsertEdit(offset, 
+        		System.lineSeparator() + getIndent(od, doc) + 
+                mods + newName + " " + declaration.getName() + 
+                " = " + newName + "();"));
 	}
 
 	public void setNewName(String text) {
