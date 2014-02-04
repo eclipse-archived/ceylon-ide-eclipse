@@ -1,19 +1,28 @@
 package com.redhat.ceylon.eclipse.ui.test;
 
 import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+
 import junit.framework.Assert;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.swtbot.swt.finder.utils.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import com.redhat.ceylon.common.FileUtil;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
@@ -24,6 +33,7 @@ public abstract class AbstractMultiProjectTest {
     protected static String projectGroup = "model-and-phased-units";
     protected static String referencedCeylonProjectName = "referenced-ceylon-project";
     protected static String mainProjectName = "main-ceylon-project";
+    protected static IPath projectPathPrefix = new Path(System.getProperty("user.dir")).append("resources/" + projectGroup + "/");
 
     protected final static IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
@@ -35,6 +45,7 @@ public abstract class AbstractMultiProjectTest {
     protected static TypeChecker typeChecker = null;
     protected static JDTModelLoader modelLoader = null;
 
+    
     @BeforeClass
     public static void beforeClass() throws InterruptedException {
         importAndBuild();
@@ -54,11 +65,17 @@ public abstract class AbstractMultiProjectTest {
         }
     }
     
+    public static IFile copyFileFromResources(String testPrefix, String path, IProject destinationProject, String destinationPath) throws CoreException {
+        IPath pathToCopy = projectPathPrefix.append("test-source-files/" + testPrefix + "/" + path);
+        IFile result = destinationProject.getFile(destinationPath + "/" + path); 
+        result.create(new ByteArrayInputStream(FileUtils.read(pathToCopy.toFile()).getBytes(Charset.forName("UTF-8"))), true, null);
+        destinationProject.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, null);
+        return result;
+    }
+    
     public static void importAndBuild() throws InterruptedException {
         try {
             IPath projectDescriptionPath = null;
-            IPath userDirPath = new Path(System.getProperty("user.dir"));
-            IPath projectPathPrefix = userDirPath.append("resources/" + projectGroup + "/");
             
             final IWorkspace workspace = ResourcesPlugin.getWorkspace();
             
