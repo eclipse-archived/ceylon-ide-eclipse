@@ -1421,7 +1421,9 @@ public class CeylonContentProposer {
             Unit unit = node.getUnit();
             result.add(new RefinementCompletionProposal(offset, prefix,
                     getInlineFunctionDescriptionFor(p, null, unit),
-                    getInlineFunctionTextFor(p, null, unit, "\n" + getIndent(node, doc)),
+                    getInlineFunctionTextFor(p, null, unit, 
+                    		System.lineSeparator() + 
+                    		getIndent(node, doc)),
                     cpc, d));
         }
     }
@@ -1455,7 +1457,8 @@ public class CeylonContentProposer {
         //TODO: if it is equals() or hash, fill in the implementation
         result.add(new RefinementCompletionProposal(offset, prefix,  
                 getRefinementDescriptionFor(d, pr, node.getUnit()), 
-                getRefinementTextFor(d, pr, node.getUnit(), isInterface, "\n" + getIndent(node, doc), preamble), 
+                getRefinementTextFor(d, pr, node.getUnit(), isInterface, 
+                		System.lineSeparator() + getIndent(node, doc), preamble), 
                 cpc, d));
     }
     
@@ -1590,13 +1593,15 @@ public class CeylonContentProposer {
                         if (!pt.getDeclaration().isAnonymous()) {
                             body.append("is ");
                         }
-                        body.append(pt.getProducedTypeName(node.getUnit()));
-                        body.append(") {}\n");
+                        body.append(pt.getProducedTypeName(node.getUnit()))
+                            .append(") {}")
+                            .append(System.lineSeparator());
                     }
                     body.append(indent);
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             "switch (" + getDescriptionFor(dwp) + ")", 
-                            "switch (" + getTextFor(dwp) + ")\n" + body, 
+                            "switch (" + getTextFor(dwp) + ")" + 
+                            		System.lineSeparator() + body, 
                             true, cpc, d));
                 }
             }
@@ -2682,7 +2687,7 @@ public class CeylonContentProposer {
     }
 
     private static String extraIndent(String indent) {
-        return indent.contains("\n") ?  
+        return indent.contains(System.lineSeparator()) ?  
         		indent + getDefaultIndent() : indent;
     }
     
