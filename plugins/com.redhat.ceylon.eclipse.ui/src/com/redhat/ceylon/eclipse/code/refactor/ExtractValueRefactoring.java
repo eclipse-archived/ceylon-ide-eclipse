@@ -100,7 +100,8 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 		String dec = typeDec + " " +  newName + 
 				(getter ? " { return " + exp  + "; } " : " = " + exp + ";");
         tfc.addEdit(new InsertEdit(statement.getStartIndex(),
-				dec + "\n" + getIndent(statement, doc)));
+				dec + System.lineSeparator() + 
+				        getIndent(statement, doc)));
 		tfc.addEdit(new ReplaceEdit(start, length, newName));
     }
 

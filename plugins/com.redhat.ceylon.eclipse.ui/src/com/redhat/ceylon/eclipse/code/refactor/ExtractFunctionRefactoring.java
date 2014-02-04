@@ -369,7 +369,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             args = args.substring(0, args.length()-2);
         }
         
-        String indent = "\n" + getIndent(decNode, doc);
+        String indent = System.lineSeparator() + 
+        		getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 
         String typeParams = "";
@@ -509,7 +510,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             args = args.substring(0, args.length()-2);
         }
         
-        String indent = "\n" + getIndent(decNode, doc);
+        String indent = System.lineSeparator() + 
+        		getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 
         String typeParams = "";
