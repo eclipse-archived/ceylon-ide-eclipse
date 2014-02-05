@@ -442,7 +442,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 for (IPackageFragmentRoot root : jdtModule.getPackageFragmentRoots()) {
                     try {
                         IFolder sourceFolder = (IFolder) root.getCorrespondingResource();
-                        if (sourceFolder.exists(new Path(className + ".java"))) {
+                        if (sourceFolder != null && sourceFolder.exists(new Path(className + ".java"))) {
                             return true;
                         }
                     } catch (JavaModelException e) {
