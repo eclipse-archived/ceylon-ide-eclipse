@@ -268,8 +268,20 @@ public class JDTModule extends LazyModule {
         return artifactType;
     }
     
+    private Properties getClassesToSources() {
+        if (classesToSources.isEmpty() && getNameAsString().equals("java.base")) {
+            for (Map.Entry<Object, Object> entry : ((JDTModule)getLanguageModule()).getClassesToSources().entrySet()) {
+                if (entry.getKey().toString().startsWith("com/redhat/ceylon/compiler/java/language/")) {
+                    classesToSources.put(entry.getKey().toString().replace("com/redhat/ceylon/compiler/java/language/", "java/lang/"), 
+                                            entry.getValue().toString());
+                }
+            }
+        }
+        return classesToSources;
+    }
+    
     public String toSourceUnitRelativePath(String binaryUnitRelativePath) {
-        return classesToSources.getProperty(binaryUnitRelativePath);
+        return getClassesToSources().getProperty(binaryUnitRelativePath);
     }
     
     public String getJavaImplementationFile(String ceylonFileRelativePath) {
