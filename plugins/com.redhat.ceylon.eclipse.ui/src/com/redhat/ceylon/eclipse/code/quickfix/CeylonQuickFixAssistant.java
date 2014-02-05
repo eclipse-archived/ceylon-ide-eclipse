@@ -784,62 +784,44 @@ public class CeylonQuickFixAssistant {
             if (!msr.getResults().isEmpty()) break;
         }
     }
-
-    
-    /*public void addRefactoringProposals(IQuickFixInvocationContext context,
-            Collection<ICompletionProposal> proposals, Node node) {
-        try {
-            if (node instanceof Tree.Term) {
-                ExtractFunctionRefactoring efr = new ExtractFunctionRefactoring(context);
-                proposals.add( new ChangeCorrectionProposal("Extract function '" + efr.getNewName() + "'", 
-                        efr.createChange(new NullProgressMonitor()), 20, null));
-                ExtractValueRefactoring evr = new ExtractValueRefactoring(context);
-                proposals.add( new ChangeCorrectionProposal("Extract value '" + evr.getNewName() + "'", 
-                        evr.createChange(new NullProgressMonitor()), 20, null));
-            }
-        }
-        catch (CoreException ce) {}
-    }*/
     
     private void addCreateProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            Tree.MemberOrTypeExpression smte = (Tree.MemberOrTypeExpression) node;
-            String brokenName = getIdentifyingNode(node).getText();
-            if (brokenName.isEmpty()) return;
+    	if (node instanceof Tree.MemberOrTypeExpression) {
+    		Tree.MemberOrTypeExpression smte = (Tree.MemberOrTypeExpression) node;
+    		String brokenName = getIdentifyingNode(node).getText();
+    		if (!brokenName.isEmpty()) {
+    			DefinitionGenerator dg = DefinitionGenerator.create(brokenName, smte, cu);
+    			if (dg!=null) {
+    				if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
+    					addCreateMemberProposals(proposals, project, dg, 
+    							(Tree.QualifiedMemberOrTypeExpression) smte);
+    				}
+    				else {
+    					addCreateLocalProposals(proposals, project, dg);
+    					ClassOrInterface container = findClassContainer(cu, smte);
+    					if (container!=null && 
+    							container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
+    						do {
+    							addCreateMemberProposals(proposals, project, 
+    									dg, container);
+    							if (container.getContainer() instanceof Declaration) {
+    								container = findClassContainer((Declaration) container.getContainer());
+    							}
+    							else { 
+    								break;
+    							}
+    						}
+    						while (container!=null);
+    					}
+    					addCreateToplevelProposals(proposals, project, dg);
+    					addCreateToplevelProposal(proposals, dg, file);
 
-            if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
-                    addCreateMemberProposals(proposals, project, 
-                    		new DefinitionGenerator(brokenName, smte, cu), 
-                            (Tree.QualifiedMemberOrTypeExpression) smte);
-            }
-            else {
-                addCreateLocalProposals(proposals, project, 
-                		new DefinitionGenerator(brokenName, smte, cu));
-                ClassOrInterface container = findClassContainer(cu, smte);
-                if (container!=null && 
-                		container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
-                    do {
-                    	CreateProposal.addCreateMemberProposals(proposals, project, 
-                        		new DefinitionGenerator(brokenName, smte, cu), 
-                        		container);
-                        if(container.getContainer() instanceof Declaration)
-                            container = findClassContainer((Declaration) container.getContainer());
-                        else 
-                            break;
-                    }
-                    while(container != null);
-                }
-                addCreateToplevelProposals(proposals, project, 
-                		new DefinitionGenerator(brokenName, smte, cu));
-                addCreateToplevelProposal(proposals, 
-                		new DefinitionGenerator(brokenName, smte, cu), file);
-                
-                addCreateParameterProposal(proposals, project, 
-                		new DefinitionGenerator(brokenName, smte, cu));
-            }
-            
+    					addCreateParameterProposal(proposals, project, dg);
+    				}
+    			}
+    		}
         }
         //TODO: should we add this stuff back in??
         /*else if (node instanceof Tree.BaseType) {
@@ -924,54 +906,6 @@ public class CeylonQuickFixAssistant {
             return ((Tree.ObjectDefinition) decNode).getClassBody();
         }
         return null;
-    }
-
-    static List<ProducedType> appendNamedArgs(FindArgumentsVisitor fav, 
-    		StringBuilder params) {
-    	List<ProducedType> types = new ArrayList<ProducedType>();
-        for (Tree.NamedArgument a: fav.namedArgs.getNamedArguments()) {
-            if (a instanceof Tree.SpecifiedArgument) {
-                Tree.SpecifiedArgument na = (Tree.SpecifiedArgument) a;
-                ProducedType t = a.getUnit()
-                		.denotableType(na.getSpecifierExpression()
-                				.getExpression().getTypeModel());
-				params.append( t
-                            .getProducedTypeName() )
-                    .append(" ")
-                    .append(na.getIdentifier().getText());
-                params.append(", ");
-                types.add(t);
-            }
-        }
-        return types;
-    }
-
-    static List<ProducedType> appendPositionalArgs(FindArgumentsVisitor fav, 
-    		StringBuilder params) {
-    	List<ProducedType> types = new ArrayList<ProducedType>();
-        for (Tree.PositionalArgument pa: fav.positionalArgs.getPositionalArguments()) {
-        	if (pa instanceof Tree.ListedArgument) {
-        		Tree.Expression e = ((Tree.ListedArgument) pa).getExpression();
-        		if (e.getTypeModel()!=null) {
-        			ProducedType t = pa.getUnit()
-        					.denotableType(e.getTypeModel());
-        			params.append( t.getProducedTypeName() )
-        			.append(" ");
-        			if ( e.getTerm() instanceof Tree.StaticMemberOrTypeExpression ) {
-        				params.append( ((Tree.StaticMemberOrTypeExpression) e.getTerm())
-        						.getIdentifier().getText() );
-        			}
-        			else {
-        				int loc = params.length();
-        				params.append( e.getTypeModel().getDeclaration().getName() );
-        				params.setCharAt(loc, Character.toLowerCase(params.charAt(loc)));
-        			}
-        			params.append(", ");
-        			types.add(t);
-        		}
-        	}
-        }
-        return types;
     }
 
     private void addImportProposals(Tree.CompilationUnit cu, Node node,

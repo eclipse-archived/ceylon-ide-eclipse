@@ -102,19 +102,18 @@ class CreateProposal extends ChangeCorrectionProposal {
             offset = statement.getStartIndex();
             indentAfter = delim + getIndent(statement, doc);
         }
-        dg.generateShared(indent, delim);
-		if (dg.generated) {
-			HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
-			CompilationUnit cu = unit.getCompilationUnit();
-			importType(alreadyImported, dg.returnType, cu);
-			importTypes(alreadyImported, dg.paramTypes, cu);
-			int il = applyImports(change, alreadyImported, cu, doc);
-			String def = indent+dg.def+indentAfter;
-			change.addEdit(new InsertEdit(offset, def));
-			String desc = "Create " + dg.desc + " in '" + typeDec.getName() + "'";
-			proposals.add(new CreateProposal(def, desc, dg.image, 
-					offset+il, file, change));
+		HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
+		CompilationUnit cu = unit.getCompilationUnit();
+		importType(alreadyImported, dg.returnType, cu);
+		if (dg.parameters!=null) {
+			importTypes(alreadyImported, dg.parameters.values(), cu);
 		}
+		int il = applyImports(change, alreadyImported, cu, doc);
+		String def = indent + dg.generateShared(indentAfter, delim) + indentAfter;
+		change.addEdit(new InsertEdit(offset, def));
+		String desc = "Create " + dg.desc + " in '" + typeDec.getName() + "'";
+		proposals.add(new CreateProposal(def, desc, dg.image, 
+				offset+il, file, change));
     }
 
     private static void addCreateProposal(Collection<ICompletionProposal> proposals, 
@@ -128,19 +127,18 @@ class CreateProposal extends ChangeCorrectionProposal {
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
         String delim = getDefaultLineDelimiter(doc);
-        dg.generate(indent, delim);
-        if (dg.generated) {
-        	HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
-        	CompilationUnit cu = unit.getCompilationUnit();
-        	importType(alreadyImported, dg.returnType, cu);
-        	importTypes(alreadyImported, dg.paramTypes, cu);
-        	int il = applyImports(change, alreadyImported, cu, doc);
-        	String def = dg.def+delim+indent;
-			change.addEdit(new InsertEdit(offset, def));
-        	String desc = (local ? "Create local " : "Create toplevel ") + dg.desc;
-			proposals.add(new CreateProposal(def, desc, dg.image, 
-					offset+il, file, change));
-        }
+    	HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
+    	CompilationUnit cu = unit.getCompilationUnit();
+    	importType(alreadyImported, dg.returnType, cu);
+		if (dg.parameters!=null) {
+			importTypes(alreadyImported, dg.parameters.values(), cu);
+		}
+    	int il = applyImports(change, alreadyImported, cu, doc);
+    	String def = dg.generate(indent, delim) + delim + indent;
+		change.addEdit(new InsertEdit(offset, def));
+    	String desc = (local ? "Create local " : "Create toplevel ") + dg.desc;
+		proposals.add(new CreateProposal(def, desc, dg.image, 
+				offset+il, file, change));
     }
     
     static void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
@@ -176,10 +174,10 @@ class CreateProposal extends ChangeCorrectionProposal {
     static void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg) {
         //if (!fsv.isToplevel()) {
-    	Tree.Statement statement = findStatement(dg.cu, dg.node);
+    	Tree.Statement statement = findStatement(dg.rootNode, dg.node);
     	if (statement!=null) {
     		for (PhasedUnit unit: getUnits(project)) {
-    			if (unit.getUnit().equals(dg.cu.getUnit())) {
+    			if (unit.getUnit().equals(dg.rootNode.getUnit())) {
     				addCreateProposal(proposals, true, dg, 
     						unit, statement);
     				break;
@@ -191,10 +189,10 @@ class CreateProposal extends ChangeCorrectionProposal {
 
     static void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg) {
-    	Tree.Statement statement = findToplevelStatement(dg.cu, dg.node);
+    	Tree.Statement statement = findToplevelStatement(dg.rootNode, dg.node);
     	if (statement!=null) {
     		for (PhasedUnit unit: getUnits(project)) {
-    			if (unit.getUnit().equals(dg.cu.getUnit())) {
+    			if (unit.getUnit().equals(dg.rootNode.getUnit())) {
     				addCreateProposal(proposals, 
     						false, dg, unit, statement);
     				break;
