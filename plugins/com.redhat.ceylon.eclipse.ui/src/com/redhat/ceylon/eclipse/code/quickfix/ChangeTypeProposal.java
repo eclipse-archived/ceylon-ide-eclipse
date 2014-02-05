@@ -3,10 +3,10 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getRootNode;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.getDocument;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 

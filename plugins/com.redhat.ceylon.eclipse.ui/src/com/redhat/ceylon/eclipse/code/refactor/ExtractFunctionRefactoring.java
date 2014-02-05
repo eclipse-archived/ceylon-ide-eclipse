@@ -1,13 +1,13 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
+import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
