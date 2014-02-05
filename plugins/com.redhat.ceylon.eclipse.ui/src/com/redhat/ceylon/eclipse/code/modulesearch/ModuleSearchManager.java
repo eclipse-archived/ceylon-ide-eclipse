@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.modulesearch;
 
 import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
-import static com.redhat.ceylon.eclipse.code.quickfix.Util.getModuleQueryType;
+import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQueryType;
 
 import java.util.ArrayList;
 import java.util.Collection;

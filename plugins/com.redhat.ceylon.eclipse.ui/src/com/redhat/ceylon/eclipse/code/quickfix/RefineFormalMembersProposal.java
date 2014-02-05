@@ -1,15 +1,14 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.overloads;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Collection;
@@ -41,6 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class RefineFormalMembersProposal implements ICompletionProposal {
 
@@ -130,7 +130,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         List<Statement> statements = body.getStatements();
         String indent;
         String bodyIndent = getIndent(body, document);
-        String delim = getDefaultLineDelimiter(document);
+        String delim = Indents.getDefaultLineDelimiter(document);
         if (statements.isEmpty()) {
             indent = delim + bodyIndent + getDefaultIndent();
             if (offset<0) offset = body.getStartIndex()+1;

@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 
 import java.util.Collection;
@@ -71,7 +72,7 @@ class RemoveAnnotionProposal extends ChangeCorrectionProposal {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?
                     FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
-                    CeylonQuickFixAssistant.getRootNode(unit).visit(fdv);
+                    getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     if (decNode!=null) {
                         RemoveAnnotionProposal.addRemoveAnnotationProposal(annotation, desc, dec,

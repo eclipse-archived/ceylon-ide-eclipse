@@ -13,7 +13,7 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
+import com.redhat.ceylon.eclipse.code.quickfix.CeylonCorrectionProcessor;
 import com.redhat.ceylon.eclipse.code.quickfix.ProblemLocation;
 
 class ProblemInfo extends AnnotationInfo {
@@ -62,7 +62,7 @@ class ProblemInfo extends AnnotationInfo {
 		};
 		
 		ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-		new CeylonQuickFixController(editor).collectCorrections(quickAssistContext, location, proposals);
+		new CeylonCorrectionProcessor(editor).collectCorrections(quickAssistContext, location, proposals);
 		
 		return (ICompletionProposal[]) proposals.toArray(new ICompletionProposal[proposals.size()]);
 	}
@@ -77,7 +77,7 @@ class ProblemInfo extends AnnotationInfo {
 				((ISourceViewer) this.viewer), 
 				position.getOffset(),
 				position.getLength());
-		return new CeylonQuickFixController(markerAnnotation.getMarker())
+		return new CeylonCorrectionProcessor(markerAnnotation.getMarker())
 		        .computeQuickAssistProposals(context);
 	}
 

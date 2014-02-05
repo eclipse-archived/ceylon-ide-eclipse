@@ -1,13 +1,12 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFACE;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.findDeclaration;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.FindUtils.findDeclaration;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
 
@@ -26,6 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateEnumProposal extends ChangeCorrectionProposal {
     
@@ -120,11 +120,11 @@ class CreateEnumProposal extends ChangeCorrectionProposal {
         TextFileChange change = new TextFileChange("Create Enumerated", file);
         IDocument doc = getDocument(change);
         String indent = getIndent(statement, doc);
-        String s = indent + def + getDefaultLineDelimiter(doc);
+        String s = indent + def + Indents.getDefaultLineDelimiter(doc);
         int offset = statement.getStopIndex()+2;
         if (offset>doc.getLength()) {
             offset = doc.getLength();
-            s = getDefaultLineDelimiter(doc) + s;
+            s = Indents.getDefaultLineDelimiter(doc) + s;
         }
         change.setEdit(new InsertEdit(offset, s));
         proposals.add(new CreateEnumProposal(def, 

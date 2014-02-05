@@ -1,14 +1,14 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.overloads;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
 import java.util.HashSet;

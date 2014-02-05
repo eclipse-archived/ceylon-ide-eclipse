@@ -1,13 +1,13 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeEndOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static java.util.Collections.singletonMap;
 
 import java.util.List;

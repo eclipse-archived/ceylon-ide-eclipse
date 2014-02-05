@@ -1,17 +1,19 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getBody;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getRootNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.code.quickfix.CreateInNewUnitProposal.addCreateToplevelProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.CreateParameterProposal.addCreateParameterProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importTypes;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getClassOrInterfaceBody;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,10 +32,13 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateProposal extends ChangeCorrectionProposal {
     
@@ -90,7 +95,7 @@ class CreateProposal extends ChangeCorrectionProposal {
         String indentAfter;
         int offset;
         List<Tree.Statement> statements = body.getStatements();
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = Indents.getDefaultLineDelimiter(doc);
 		if (statements.isEmpty()) {
             indentAfter = delim + getIndent(decNode, doc);
             indent = indentAfter + getDefaultIndent();
@@ -126,7 +131,7 @@ class CreateProposal extends ChangeCorrectionProposal {
         IDocument doc = getDocument(change);
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = Indents.getDefaultLineDelimiter(doc);
     	HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
     	CompilationUnit cu = unit.getCompilationUnit();
     	importType(alreadyImported, dg.returnType, cu);
@@ -160,7 +165,7 @@ class CreateProposal extends ChangeCorrectionProposal {
 	                FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeDec);
 	                getRootNode(unit).visit(fdv);
 	                Tree.Declaration decNode = fdv.getDeclarationNode();
-	                Tree.Body body = getBody(decNode);
+	                Tree.Body body = getClassOrInterfaceBody(decNode);
 	                if (body!=null) {
 	                    addCreateMemberProposal(proposals, dg, 
 	                    		typeDec, unit, decNode, body);
@@ -201,4 +206,72 @@ class CreateProposal extends ChangeCorrectionProposal {
     	}
     }
         
+	static void addCreateProposals(Tree.CompilationUnit cu, Node node,
+            Collection<ICompletionProposal> proposals, IProject project,
+            IFile file) {
+	    Tree.MemberOrTypeExpression smte = (Tree.MemberOrTypeExpression) node;
+	    String brokenName = getIdentifyingNode(node).getText();
+	    if (!brokenName.isEmpty()) {
+	    	DefinitionGenerator dg = DefinitionGenerator.create(brokenName, smte, cu);
+	    	if (dg!=null) {
+	    		if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
+	    			addCreateMemberProposals(proposals, project, dg, 
+	    					(Tree.QualifiedMemberOrTypeExpression) smte);
+	    		}
+	    		else {
+	    			addCreateLocalProposals(proposals, project, dg);
+	    			ClassOrInterface container = findClassContainer(cu, smte);
+	    			if (container!=null && 
+	    					container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
+	    				do {
+	    					addCreateMemberProposals(proposals, project, 
+	    							dg, container);
+	    					if (container.getContainer() instanceof Declaration) {
+	    						container = findClassContainer((Declaration) container.getContainer());
+	    					}
+	    					else { 
+	    						break;
+	    					}
+	    				}
+	    				while (container!=null);
+	    			}
+	    			addCreateToplevelProposals(proposals, project, dg);
+	    			addCreateToplevelProposal(proposals, dg, file);
+
+	    			addCreateParameterProposal(proposals, project, dg);
+	    		}
+	    	}
+	    }
+    }
+
+
+    private static ClassOrInterface findClassContainer(Tree.CompilationUnit cu, Node node){
+		FindContainerVisitor fcv = new FindContainerVisitor(node);
+		fcv.visit(cu);
+    	Tree.Declaration declaration = fcv.getDeclaration();
+        if(declaration == null || declaration == node)
+            return null;
+        if(declaration instanceof Tree.ClassOrInterface)
+            return (ClassOrInterface) declaration.getDeclarationModel();
+        if(declaration instanceof Tree.MethodDefinition)
+            return findClassContainer(declaration.getDeclarationModel());
+        if(declaration instanceof Tree.ObjectDefinition)
+            return findClassContainer(declaration.getDeclarationModel());
+        return null;
+    }
+    
+    private static ClassOrInterface findClassContainer(Declaration declarationModel) {
+        do {
+            if(declarationModel == null)
+                return null;
+            if(declarationModel instanceof ClassOrInterface)
+                return (ClassOrInterface) declarationModel;
+            if(declarationModel.getContainer() instanceof Declaration)
+                declarationModel = (Declaration)declarationModel.getContainer();
+            else
+                return null;
+        }
+        while(true);
+    }
+    
 }

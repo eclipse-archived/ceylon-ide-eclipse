@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -20,6 +21,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -126,4 +128,13 @@ public class Util {
     public static Shell getShell() {
     	return getWorkbench().getActiveWorkbenchWindow().getShell();
     }
+
+	public static IPreferenceStore getPreferences() {
+	    try {
+	        return EditorsUI.getPreferenceStore();
+	    }
+	    catch (Exception e) {
+	        return null;
+	    }
+	}
 }

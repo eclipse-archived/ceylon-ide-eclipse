@@ -1,8 +1,16 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
-import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
+/*******************************************************************************
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *******************************************************************************/
+
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
@@ -38,97 +46,295 @@ import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToGetterProposal.ad
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateEnumProposal.addCreateEnumProposal;
-import static com.redhat.ceylon.eclipse.code.quickfix.CreateInNewUnitProposal.addCreateToplevelProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateObjectProposal.addCreateObjectProposal;
-import static com.redhat.ceylon.eclipse.code.quickfix.CreateParameterProposal.addCreateParameterProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateParameterProposal.addCreateParameterProposals;
-import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.addCreateLocalProposals;
-import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.addCreateMemberProposals;
-import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.addCreateToplevelProposals;
+import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.addCreateProposals;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateTypeParameterProposal.addCreateTypeParameterProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.InvertIfElseProposal.addReverseIfElseProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.ModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.quickfix.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RemoveAnnotionProposal.addRemoveAnnotationDecProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RenameAliasProposal.addRenameAliasProposal;
+import static com.redhat.ceylon.eclipse.code.quickfix.RenameDescriptorProposal.addRenameDescriptorProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.RenameVersionProposal.addRenameVersionProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.ShadowReferenceProposal.addShadowSwitchReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.addSpecifyTypeProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.SplitDeclarationProposal.addSplitDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.quickfix.UseAliasProposal.addUseAliasProposal;
-import static com.redhat.ceylon.eclipse.code.quickfix.Util.getModuleQueryType;
 import static com.redhat.ceylon.eclipse.code.quickfix.VerboseRefinementProposal.addVerboseRefinementProposal;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
+import static com.redhat.ceylon.eclipse.util.FindUtils.findArgument;
+import static com.redhat.ceylon.eclipse.util.FindUtils.findDeclaration;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
+import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
+import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.IEditorPart;
+import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IMarkerResolution;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
+import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
-import com.redhat.ceylon.cmr.api.JDKUtils;
-import com.redhat.ceylon.cmr.api.ModuleQuery;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Util;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
-import com.redhat.ceylon.eclipse.util.FindArgumentVisitor;
-import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
-import com.redhat.ceylon.eclipse.util.FindDeclarationVisitor;
+import com.redhat.ceylon.eclipse.util.MarkerUtils;
 
-/**
- * Popup quick fixes for problem annotations displayed in editor
- * @author gavin
- */
-public class CeylonQuickFixAssistant {
+public class CeylonCorrectionProcessor extends QuickAssistAssistant 
+        implements IQuickAssistProcessor {
+	
+    private CeylonEditor editor; //may only be used for quick assists!!!
+    private Tree.CompilationUnit model;
+    private IFile file; //may only be used for markers!
+	
+	public CeylonCorrectionProcessor(CeylonEditor editor) {
+        this.editor = editor;
+        setQuickAssistProcessor(this);        
+    }
 
+    public CeylonCorrectionProcessor(IMarker marker) {
+        IFileEditorInput input = MarkerUtils.getInput(marker);
+		if (input!=null) {
+			file = input.getFile();
+			IProject project = file.getProject();
+			IJavaProject javaProject = JavaCore.create(project);
+			TypeChecker tc = getProjectTypeChecker(project);
+			if (tc!=null) {
+				try {
+					for (IPackageFragmentRoot pfr: javaProject.getPackageFragmentRoots()) {
+						if (pfr.getPath().isPrefixOf(file.getFullPath())) {
+							IPath relPath = file.getFullPath().makeRelativeTo(pfr.getPath());
+							model = tc.getPhasedUnitFromRelativePath(relPath.toString())
+									.getCompilationUnit();	
+						}
+					}
+				} 
+				catch (JavaModelException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+        setQuickAssistProcessor(this);
+	}
+    
+    private IFile getFile() {
+        if (editor!=null && 
+                editor.getEditorInput() instanceof FileEditorInput) {
+            FileEditorInput input = (FileEditorInput) editor.getEditorInput();
+            if (input!=null) {
+                return input.getFile();
+            }
+        }
+        return file;
+    }
+    
+    private Tree.CompilationUnit getRootNode() {
+    	if (editor!=null) {
+    		return editor.getParseController().getRootNode();
+    	}
+    	else if (model!=null) {
+    		return (Tree.CompilationUnit) model;
+    	}
+    	else {
+    		return null;
+    	}
+    }
+    
+    @Override
+    public String getErrorMessage() {
+        return null;
+    }
+    
+    private void collectProposals(IQuickAssistInvocationContext context,
+            IAnnotationModel model, Collection<Annotation> annotations,
+            boolean addQuickFixes, boolean addQuickAssists,
+            Collection<ICompletionProposal> proposals) {
+        ArrayList<ProblemLocation> problems = new ArrayList<ProblemLocation>();
+        // collect problem locations and corrections from marker annotations
+        for (Annotation curr: annotations) {
+            if (curr instanceof CeylonAnnotation) {
+            	ProblemLocation problemLocation = getProblemLocation((CeylonAnnotation) curr, model);
+                if (problemLocation != null) {
+                    problems.add(problemLocation);
+                }
+            }
+        }
+        if (problems.isEmpty() && addQuickFixes) {
+        	 for (Annotation curr: annotations) {
+                 if (curr instanceof SimpleMarkerAnnotation) {
+                     collectMarkerProposals((SimpleMarkerAnnotation) curr, proposals);
+                 }        		 
+        	 }
+        }
+
+        ProblemLocation[] problemLocations =
+            (ProblemLocation[]) problems.toArray(new ProblemLocation[problems.size()]);
+        Arrays.sort(problemLocations);
+        if (addQuickFixes) {
+            collectCorrections(context, problemLocations, proposals);
+        }
+        if (addQuickAssists) {
+            collectAssists(context, problemLocations, proposals);
+        }
+    }
+
+    private static ProblemLocation getProblemLocation(CeylonAnnotation annotation, IAnnotationModel model) {
+        int problemId = annotation.getId();
+        if (problemId != -1) {
+            Position pos = model.getPosition((Annotation) annotation);
+            if (pos != null) {
+                return new ProblemLocation(pos.getOffset(), pos.getLength(),
+                        annotation); // java problems all handled by the quick assist processors
+            }
+        }
+        return null;
+    }
+
+    private void collectAssists(IQuickAssistInvocationContext context,
+            ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
+        if (proposals.isEmpty()) {
+            addProposals(context, editor, proposals);
+        }
+    }
+
+    private static void collectMarkerProposals(SimpleMarkerAnnotation annotation, Collection<ICompletionProposal> proposals) {
+        IMarker marker = annotation.getMarker();
+        IMarkerResolution[] res = IDE.getMarkerHelpRegistry().getResolutions(marker);
+        if (res.length > 0) {
+            for (int i = 0; i < res.length; i++) {
+                proposals.add(new CeylonMarkerResolutionProposal(res[i], marker));
+            }
+        }
+    }
+
+    @Override
+    public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext quickAssistContext) {
+        ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
+        ISourceViewer viewer = quickAssistContext.getSourceViewer();
+        collectProposals(quickAssistContext, viewer.getAnnotationModel(),
+                getAnnotationsForLine(viewer, getLine(quickAssistContext, viewer)), 
+                        true, true, proposals);
+        return proposals.toArray(new ICompletionProposal[proposals.size()]);
+    }
+
+    private int getLine(IQuickAssistInvocationContext quickAssistContext,
+            ISourceViewer viewer) {
+        try {
+            return viewer.getDocument().getLineOfOffset(quickAssistContext.getOffset());
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    
+    public void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
+            ProblemLocation location, Collection<ICompletionProposal> proposals) {
+        Tree.CompilationUnit rootNode = getRootNode();
+        if (rootNode!=null) {
+            addProposals(quickAssistContext, location, getFile(), 
+                    rootNode, proposals);
+        }
+    }
+    
+    private void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
+            ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
+        ISourceViewer viewer = quickAssistContext.getSourceViewer();
+        Tree.CompilationUnit rootNode = getRootNode();
+        for (int i=locations.length-1; i>=0; i--) {
+            ProblemLocation loc = locations[i];
+            if (loc.getOffset()<=viewer.getSelectedRange().x) {
+                for (int j=i; j>=0; j--) {
+                    ProblemLocation location = locations[j];
+                    if (location.getOffset()!=loc.getOffset()) break;
+                    addProposals(quickAssistContext, location, getFile(), 
+                            rootNode, proposals);
+                }
+                if (!proposals.isEmpty()) {
+                    viewer.setSelectedRange(loc.getOffset(), loc.getLength());
+                    return;
+                }
+            }
+        }
+        for (int i=0; i<locations.length; i++) {
+            ProblemLocation loc = locations[i];
+            for (int j=i; j<locations.length; j++) {
+                ProblemLocation location = locations[j];
+                if (location.getOffset()!=loc.getOffset()) break;
+                addProposals(quickAssistContext, location, getFile(), 
+                        rootNode, proposals);
+            }
+            if (!proposals.isEmpty()) {
+                viewer.setSelectedRange(loc.getOffset(), loc.getLength());
+                return;
+            }
+        }
+    }
+
+    public static boolean canFix(IMarker marker)  {
+    	try {
+	        if (marker.getType().equals(PROBLEM_MARKER_ID)) {
+	        	return marker.getAttribute(MarkerCreator.ERROR_CODE_KEY,0)>0;
+	        }
+	        else {
+	        	return false;
+	        }
+        }
+    	catch (CoreException e) {
+    		return false;
+    	}
+    }
+    
+    @Override
     public boolean canFix(Annotation annotation) {
-        int code;
         if (annotation instanceof CeylonAnnotation) {
-            code = ((CeylonAnnotation) annotation).getId();
+            return ((CeylonAnnotation) annotation).getId()>0;
         }
         else if (annotation instanceof MarkerAnnotation) {
-            code = ((MarkerAnnotation) annotation).getMarker()
-                   .getAttribute(MarkerCreator.ERROR_CODE_KEY, 0);
+            return canFix(((MarkerAnnotation) annotation).getMarker());
         }
         else {
             return false;
         }
-        return code>0;
     }
-
+    
+    @Override
     public boolean canAssist(IQuickAssistInvocationContext context) {
         //oops, all this is totally useless, because
         //this method never gets called :-/
@@ -138,33 +344,8 @@ public class CeylonQuickFixAssistant {
                 context.getOffset()+context.getLength()) instanceof Tree.Term;*/
         return true;
     }
-
-    public String[] getSupportedMarkerTypes() {
-        return new String[] { PROBLEM_MARKER_ID };
-    }
-
-    public static String getIndent(Node node, IDocument doc) {
-        if (node==null||node.getEndToken()==null||
-                node.getEndToken().getLine()==0) {
-            return "";
-        }
-        try {
-            IRegion region = doc.getLineInformation(node.getEndToken().getLine()-1);
-            String line = doc.get(region.getOffset(), region.getLength());
-            char[] chars = line.toCharArray();
-            for (int i=0; i<chars.length; i++) {
-                if (chars[i]!='\t' && chars[i]!=' ') {
-                    return line.substring(0,i);
-                }
-            }
-            return line;
-        }
-        catch (BadLocationException ble) {
-            return "";
-        }
-    }
     
-    public void addProposals(IQuickAssistInvocationContext context, ProblemLocation problem,
+    private void addProposals(IQuickAssistInvocationContext context, ProblemLocation problem,
             IFile file, Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals) {
         if (file==null) return;
         IProject project = file.getProject();
@@ -179,7 +360,7 @@ public class CeylonQuickFixAssistant {
         	}
         	addCreateEnumProposal(cu, node, problem, proposals, 
         			project, tc, file);
-        	addCreateProposals(cu, node, problem, proposals, 
+        	addCreationProposals(cu, node, problem, proposals, 
         			project, tc, file);
         	if (tc!=null) {
         		addRenameProposals(cu, node, problem, proposals, file);
@@ -318,10 +499,10 @@ public class CeylonQuickFixAssistant {
             addFixMultilineStringIndentation(proposals, file, cu, node);
             break;
         case 7000:
-            addModuleImportProposals(cu, proposals, project, tc, node);
+        	addModuleImportProposals(cu, proposals, project, tc, node);
             break;
         case 8000:
-            addRenameDescriptorProposal(cu, context, problem, proposals, file);
+        	addRenameDescriptorProposal(cu, context, problem, proposals, file);
             //TODO: figure out some other way to get a Shell!
             if (context.getSourceViewer()!=null) {
                 addMoveDirProposal(file, cu, project, proposals, 
@@ -331,7 +512,7 @@ public class CeylonQuickFixAssistant {
         }
     }
     
-    public void addProposals(IQuickAssistInvocationContext context, 
+    private void addProposals(IQuickAssistInvocationContext context, 
     		CeylonEditor editor, Collection<ICompletionProposal> proposals) {
         if (editor==null) return;
         
@@ -621,102 +802,12 @@ public class CeylonQuickFixAssistant {
             }
         }
     }
-
-	public static Tree.Declaration findDeclaration(Tree.CompilationUnit cu, Node node) {
-		FindDeclarationVisitor fcv = new FindDeclarationVisitor(node);
-		fcv.visit(cu);
-		return fcv.getDeclarationNode();
-	}
     
-	public static Tree.TypedArgument findArgument(Tree.CompilationUnit cu, Node node) {
-		FindArgumentVisitor fcv = new FindArgumentVisitor(node);
-		fcv.visit(cu);
-		return fcv.getArgumentNode();
-	}
-    
-
-    private void addRenameDescriptorProposal(Tree.CompilationUnit cu,
-            IQuickAssistInvocationContext context, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IFile file) {
-        String pn = escapedPackageName(cu.getUnit().getPackage());
-        //TODO: DocumentChange doesn't work for Problems View
-        TextFileChange change = new TextFileChange("Rename", file);
-//        DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());
-        change.setEdit(new ReplaceEdit(problem.getOffset(), problem.getLength(), pn));
-        proposals.add(new ChangeCorrectionProposal("Rename to '" + pn + "'", change, CHANGE));
-    }
-
-    private void addModuleImportProposals(Tree.CompilationUnit cu,
-            Collection<ICompletionProposal> proposals, IProject project,
-            TypeChecker tc, Node node) {
-        if (cu.getUnit().getPackage().getModule().isDefault()) {
-            return;
-        }
-        if (node instanceof Tree.Import) {
-            node = ((Tree.Import) node).getImportPath();
-        }
-        List<Tree.Identifier> ids = ((Tree.ImportPath) node).getIdentifiers();
-        String pkg = formatPath(ids);
-        if (JDKUtils.isJDKAnyPackage(pkg)) {
-            for (String mod: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
-                if (JDKUtils.isJDKPackage(mod, pkg)) {
-                    proposals.add(new AddModuleImportProposal(project, cu.getUnit(), mod, 
-                            JDK_MODULE_VERSION));
-                    return;
-                }
-            }
-        }
-        for (int i=ids.size(); i>0; i--) {
-            String pn = formatPath(ids.subList(0, i));
-            ModuleQuery query = new ModuleQuery(pn, getModuleQueryType(project));
-            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
-            query.setCount(2l);
-            ModuleSearchResult msr = tc.getContext().getRepositoryManager().searchModules(query);
-            ModuleDetails md = msr.getResult(pn);
-            if (md!=null) {
-                proposals.add(new AddModuleImportProposal(project, cu.getUnit(), md));
-            }
-            if (!msr.getResults().isEmpty()) break;
-        }
-    }
-    
-    private void addCreateProposals(Tree.CompilationUnit cu, Node node, 
+    private void addCreationProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {
     	if (node instanceof Tree.MemberOrTypeExpression) {
-    		Tree.MemberOrTypeExpression smte = (Tree.MemberOrTypeExpression) node;
-    		String brokenName = getIdentifyingNode(node).getText();
-    		if (!brokenName.isEmpty()) {
-    			DefinitionGenerator dg = DefinitionGenerator.create(brokenName, smte, cu);
-    			if (dg!=null) {
-    				if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
-    					addCreateMemberProposals(proposals, project, dg, 
-    							(Tree.QualifiedMemberOrTypeExpression) smte);
-    				}
-    				else {
-    					addCreateLocalProposals(proposals, project, dg);
-    					ClassOrInterface container = findClassContainer(cu, smte);
-    					if (container!=null && 
-    							container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
-    						do {
-    							addCreateMemberProposals(proposals, project, 
-    									dg, container);
-    							if (container.getContainer() instanceof Declaration) {
-    								container = findClassContainer((Declaration) container.getContainer());
-    							}
-    							else { 
-    								break;
-    							}
-    						}
-    						while (container!=null);
-    					}
-    					addCreateToplevelProposals(proposals, project, dg);
-    					addCreateToplevelProposal(proposals, dg, file);
-
-    					addCreateParameterProposal(proposals, project, dg);
-    				}
-    			}
-    		}
+    		addCreateProposals(cu, node, proposals, project, file);
         }
         //TODO: should we add this stuff back in??
         /*else if (node instanceof Tree.BaseType) {
@@ -743,79 +834,6 @@ public class CeylonQuickFixAssistant {
         }
     }
 
-
-    private ClassOrInterface findClassContainer(Tree.CompilationUnit cu, Node node){
-		FindContainerVisitor fcv = new FindContainerVisitor(node);
-		fcv.visit(cu);
-    	Tree.Declaration declaration = fcv.getDeclaration();
-        if(declaration == null || declaration == node)
-            return null;
-        if(declaration instanceof Tree.ClassOrInterface)
-            return (ClassOrInterface) declaration.getDeclarationModel();
-        if(declaration instanceof Tree.MethodDefinition)
-            return findClassContainer(declaration.getDeclarationModel());
-        if(declaration instanceof Tree.ObjectDefinition)
-            return findClassContainer(declaration.getDeclarationModel());
-        return null;
-    }
-    
-    private ClassOrInterface findClassContainer(Declaration declarationModel) {
-        do {
-            if(declarationModel == null)
-                return null;
-            if(declarationModel instanceof ClassOrInterface)
-                return (ClassOrInterface) declarationModel;
-            if(declarationModel.getContainer() instanceof Declaration)
-                declarationModel = (Declaration)declarationModel.getContainer();
-            else
-                return null;
-        }
-        while(true);
-    }
-    
-    static Tree.CompilationUnit getRootNode(PhasedUnit unit) {
-        IEditorPart ce = Util.getCurrentEditor();
-        if (ce instanceof CeylonEditor) {
-            CeylonParseController cpc = ((CeylonEditor) ce).getParseController();
-            if (cpc!=null) {
-            	Tree.CompilationUnit rn = cpc.getRootNode();
-                if (rn!=null) {
-                    Unit u = rn.getUnit();
-                    if (u.equals(unit.getUnit())) {
-                        return rn;
-                    }
-                }
-            }
-        }       
-        return unit.getCompilationUnit();
-    }
-
-    static Tree.Body getBody(Tree.Declaration decNode) {
-        if (decNode instanceof Tree.ClassDefinition) {
-            return ((Tree.ClassDefinition) decNode).getClassBody();
-        }
-        else if (decNode instanceof Tree.InterfaceDefinition){
-            return ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
-        }
-        else if (decNode instanceof Tree.ObjectDefinition){
-            return ((Tree.ObjectDefinition) decNode).getClassBody();
-        }
-        return null;
-    }
-    
-    public static String escapedPackageName(Package p) {
-    	List<String> path = p.getName();
-        StringBuilder sb = new StringBuilder();
-        for (int i=0; i<path.size(); i++) {
-            String pathPart = path.get(i);
-            if (!pathPart.isEmpty()) {
-                if (CeylonTokenColorer.keywords.contains(pathPart)) {
-                	pathPart = "\\i" + pathPart;
-                }
-                sb.append(pathPart);
-                if (i<path.size()-1) sb.append('.');
-            }
-        }
-        return sb.toString();
-    }
 }
+
+

@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 
 import java.util.Collection;
@@ -16,6 +15,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class ConvertStringProposal extends ChangeCorrectionProposal {
 
@@ -78,7 +78,7 @@ class ConvertStringProposal extends ChangeCorrectionProposal {
                 }
                 result.append(line);
             }
-            result.append(getDefaultLineDelimiter(doc));
+            result.append(Indents.getDefaultLineDelimiter(doc));
         }
         result.setLength(result.length()-1);
         return result.toString();

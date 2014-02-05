@@ -1,10 +1,9 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.name;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.escapedPackageName;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapedPackageName;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
@@ -40,6 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 public class CleanImportsHandler extends AbstractHandler {
     
@@ -65,7 +65,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 if (il==null || il.getImports().isEmpty()) {
                     start=0;
                     length=0;
-                    extra=getDefaultLineDelimiter(doc);
+                    extra=Indents.getDefaultLineDelimiter(doc);
                 }
                 else {
                     start = il.getStartIndex();
@@ -166,9 +166,9 @@ public class CleanImportsHandler extends AbstractHandler {
                         .append(" {");
                 appendImportElements(packageName, list, unused, 
                 		proposed, hasWildcard, builder, doc);
-                builder.append(getDefaultLineDelimiter(doc))
+                builder.append(Indents.getDefaultLineDelimiter(doc))
                         .append("}")
-                        .append(getDefaultLineDelimiter(doc));
+                        .append(Indents.getDefaultLineDelimiter(doc));
             }
         }
         if (builder.length()!=0) {
@@ -193,7 +193,7 @@ public class CleanImportsHandler extends AbstractHandler {
         String topLevel = di<0 ? 
                 currentPackage:currentPackage.substring(0, di);
         if (lastToplevel!=null && !topLevel.equals(lastToplevel)) {
-            builder.append(getDefaultLineDelimiter(doc));
+            builder.append(Indents.getDefaultLineDelimiter(doc));
         }
         return topLevel;
     }
@@ -206,7 +206,7 @@ public class CleanImportsHandler extends AbstractHandler {
             if (i.getDeclarationModel()!=null && 
                     i.getIdentifier().getErrors().isEmpty() &&
                     i.getErrors().isEmpty()) {
-                builder.append(getDefaultLineDelimiter(doc))
+                builder.append(Indents.getDefaultLineDelimiter(doc))
                         .append(indent);
                 if (!i.getImportModel().getAlias()
                         .equals(i.getDeclarationModel().getName())) {
@@ -222,13 +222,13 @@ public class CleanImportsHandler extends AbstractHandler {
         for (Declaration d: proposed) {
             if (d.getUnit().getPackage().getNameAsString()
                     .equals(packageName)) {
-                builder.append(getDefaultLineDelimiter(doc))
+                builder.append(Indents.getDefaultLineDelimiter(doc))
                        .append(indent);
                 builder.append(name(d)).append(",");
             }
         }
         if (hasWildcard) {
-            builder.append(getDefaultLineDelimiter(doc))
+            builder.append(Indents.getDefaultLineDelimiter(doc))
                     .append(indent)
                     .append("...");
         }
@@ -251,7 +251,7 @@ public class CleanImportsHandler extends AbstractHandler {
                         nimt.getErrors().isEmpty()) {
                     if (!unused.contains(nimt.getDeclarationModel())) {
                         found=true;
-                        builder.append(getDefaultLineDelimiter(doc))
+                        builder.append(Indents.getDefaultLineDelimiter(doc))
                                 .append(indent).append(indent);
                         if (!nimt.getImportModel().getAlias()
                                 .equals(nimt.getDeclarationModel().getName())) {
@@ -266,7 +266,7 @@ public class CleanImportsHandler extends AbstractHandler {
             if (imt.getImportMemberOrTypeList()
             		.getImportWildcard()!=null) {
                 found=true;
-                builder.append(getDefaultLineDelimiter(doc))
+                builder.append(Indents.getDefaultLineDelimiter(doc))
                         .append(indent).append(indent)
                         .append("...,");
             }
@@ -274,7 +274,7 @@ public class CleanImportsHandler extends AbstractHandler {
             if (found) {
                 // remove trailing ","
                 builder.setLength(builder.length()-1);
-                builder.append(getDefaultLineDelimiter(doc))
+                builder.append(Indents.getDefaultLineDelimiter(doc))
                         .append(indent)
                         .append('}');   
             } else {

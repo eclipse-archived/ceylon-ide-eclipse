@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 
 import java.util.ArrayList;
@@ -24,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateInNewUnitProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -63,7 +63,7 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public void apply(IDocument doc) {
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = Indents.getDefaultLineDelimiter(doc);
     	String def = dg.generate("", delim);
         List<Declaration> imports = new ArrayList<Declaration>();
         resolveImports(imports, dg.returnType);

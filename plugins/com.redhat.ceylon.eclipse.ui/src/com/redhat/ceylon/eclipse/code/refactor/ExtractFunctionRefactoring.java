@@ -2,11 +2,10 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -45,6 +44,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring {
     
@@ -370,7 +370,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             args = args.substring(0, args.length()-2);
         }
         
-        String indent = getDefaultLineDelimiter(doc) + 
+        String indent = Indents.getDefaultLineDelimiter(doc) + 
         		getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 
@@ -511,7 +511,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             args = args.substring(0, args.length()-2);
         }
         
-        String indent = getDefaultLineDelimiter(doc) + 
+        String indent = Indents.getDefaultLineDelimiter(doc) + 
         		getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 

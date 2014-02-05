@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,7 +86,7 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
-                    CeylonQuickFixAssistant.getRootNode(unit).visit(fdv);
+                    getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     if (decNode!=null) {
                         addAddAnnotationProposal(annotation, desc, dec,
@@ -167,13 +169,13 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
             if (prevAnnotation != null && isAnnotationOnSeparateLine(getAnnotationIdentifier(prevAnnotation))) {
                 newAnnotationOffset = prevAnnotation.getStopIndex() + 1;
                 newAnnotationText.append(System.getProperty("line.separator"));
-                newAnnotationText.append(CeylonQuickFixAssistant.getIndent(node, doc));
+                newAnnotationText.append(getIndent(node, doc));
                 newAnnotationText.append(newAnnotation);
             } else {
                 newAnnotationOffset = nextNodeStartIndex;
                 newAnnotationText.append(newAnnotation);
                 newAnnotationText.append(System.getProperty("line.separator"));
-                newAnnotationText.append(CeylonQuickFixAssistant.getIndent(node, doc));
+                newAnnotationText.append(getIndent(node, doc));
             }
         } else {
             newAnnotationOffset = nextNodeStartIndex;

@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.subtypeDeclaration;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
@@ -24,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.CreateSubtype;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
     
@@ -66,7 +66,7 @@ class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
                 	importType(already, pt, cu);
                 }
                 int il = applyImports(change, already, cu, doc);
-                String delim = getDefaultLineDelimiter(doc);
+                String delim = Indents.getDefaultLineDelimiter(doc);
 				String dec = cs.getDefinition().replace("$className", "My" + name) + 
 						delim + delim;
                 change.addEdit(new InsertEdit(offset,dec));

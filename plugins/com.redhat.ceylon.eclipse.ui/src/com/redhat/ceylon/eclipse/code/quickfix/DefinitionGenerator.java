@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateParameterProposal.defaultValue;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.ArrayList;
 import java.util.Collection;
