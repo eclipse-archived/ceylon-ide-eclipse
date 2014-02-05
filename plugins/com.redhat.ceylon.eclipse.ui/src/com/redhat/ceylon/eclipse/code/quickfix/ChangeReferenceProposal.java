@@ -6,9 +6,9 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.isImported;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.getDocument;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importEdit;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getLevenshteinDistance;
 
 import java.util.Collection;

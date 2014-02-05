@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.findImportNode;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.findImportNode;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importEdit;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;

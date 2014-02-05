@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importDeclaration;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createFatalErrorStatus;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
