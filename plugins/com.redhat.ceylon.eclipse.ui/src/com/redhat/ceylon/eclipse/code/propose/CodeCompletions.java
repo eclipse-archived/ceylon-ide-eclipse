@@ -358,7 +358,7 @@ public class CodeCompletions {
             return Collections.<Parameter>emptyList();
         }
         List<Parameter> pl = plists.get(0).getParameters();
-        return ProposalUtil.getParameters(includeDefaults, pl);
+        return CompletionUtil.getParameters(includeDefaults, pl);
     }
 
 	private static void appendNamedArgs(Declaration d, ProducedReference pr, 

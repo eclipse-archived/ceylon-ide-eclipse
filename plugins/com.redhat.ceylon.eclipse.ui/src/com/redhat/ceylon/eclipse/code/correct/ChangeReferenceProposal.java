@@ -1,14 +1,14 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshteinDistance;
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshteinDistance;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
 
 import java.util.Collection;
