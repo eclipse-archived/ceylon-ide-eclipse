@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.name;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.escapedPackageName;
@@ -18,6 +19,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -47,10 +49,11 @@ public class CleanImportsHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) 
             throws ExecutionException {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
+        IDocument doc = editor.getCeylonSourceViewer().getDocument();
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu!=null) {
             IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
-            String imports = imports(cu);
+            String imports = imports(cu, doc);
             if (imports!=null) {
                 TextFileChange tfc = 
                 		new TextFileChange("Clean Imports", file);
@@ -62,7 +65,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 if (il==null || il.getImports().isEmpty()) {
                     start=0;
                     length=0;
-                    extra=System.lineSeparator();
+                    extra=getDefaultLineDelimiter(doc);
                 }
                 else {
                     start = il.getStartIndex();
@@ -85,7 +88,8 @@ public class CleanImportsHandler extends AbstractHandler {
         return null;
     }
 
-    public static String imports(Node node, ImportList til) {
+    public static String imports(Node node, ImportList til,
+    		IDocument doc) {
         final List<Declaration> unused = 
                 new ArrayList<Declaration>();
         DetectUnusedImportsVisitor duiv = 
@@ -93,25 +97,28 @@ public class CleanImportsHandler extends AbstractHandler {
         til.visit(duiv);
         node.visit(duiv);
         return reorganizeImports(til, unused, 
-                Collections.<Declaration>emptyList());
+                Collections.<Declaration>emptyList(), doc);
     }
     
-    private String imports(final Tree.CompilationUnit cu) {
+    private String imports(final Tree.CompilationUnit cu, 
+    		IDocument doc) {
         final List<Declaration> proposals = new ArrayList<Declaration>();
         final List<Declaration> unused = new ArrayList<Declaration>();
         new ImportProposalsVisitor(cu, proposals, this).visit(cu);
         new DetectUnusedImportsVisitor(unused).visit(cu);
-        return reorganizeImports(cu.getImportList(), unused, proposals);
+        return reorganizeImports(cu.getImportList(), unused, proposals, doc);
     }
     
-    public static String imports(List<Declaration> proposed) {
+    public static String imports(List<Declaration> proposed,
+    		IDocument doc) {
         return reorganizeImports(null, 
         		Collections.<Declaration>emptyList(), 
-        		proposed);
+        		proposed, doc);
     }
     
     public static String reorganizeImports(ImportList til, 
-    		List<Declaration> unused, List<Declaration> proposed) {
+    		List<Declaration> unused, List<Declaration> proposed,
+    		IDocument doc) {
         Map<String,List<Tree.Import>> packages = 
                 new TreeMap<String,List<Tree.Import>>();
         if (til!=null) {
@@ -147,7 +154,7 @@ public class CleanImportsHandler extends AbstractHandler {
             if (hasWildcard || !list.isEmpty() || 
                     imports.isEmpty()) { //in this last case there is no existing import, but imports are proposed
                 lastToplevel = appendBreakIfNecessary(lastToplevel, 
-                		packageName, builder);
+                		packageName, builder, doc);
                 Referenceable packageModel = imports.isEmpty() ?
                         null : //TODO: what to do in this case? look up the Package where?
                         imports.get(0).getImportPath().getModel();
@@ -158,10 +165,10 @@ public class CleanImportsHandler extends AbstractHandler {
                         .append(escapedPackageName)
                         .append(" {");
                 appendImportElements(packageName, list, unused, 
-                		proposed, hasWildcard, builder);
-                builder.append(System.lineSeparator())
+                		proposed, hasWildcard, builder, doc);
+                builder.append(getDefaultLineDelimiter(doc))
                         .append("}")
-                        .append(System.lineSeparator());
+                        .append(getDefaultLineDelimiter(doc));
             }
         }
         if (builder.length()!=0) {
@@ -181,12 +188,12 @@ public class CleanImportsHandler extends AbstractHandler {
     }
 
     private static String appendBreakIfNecessary(String lastToplevel,
-            String currentPackage, StringBuilder builder) {
+            String currentPackage, StringBuilder builder, IDocument doc) {
         int di = currentPackage.indexOf('.');
         String topLevel = di<0 ? 
                 currentPackage:currentPackage.substring(0, di);
         if (lastToplevel!=null && !topLevel.equals(lastToplevel)) {
-            builder.append(System.lineSeparator());
+            builder.append(getDefaultLineDelimiter(doc));
         }
         return topLevel;
     }
@@ -194,12 +201,12 @@ public class CleanImportsHandler extends AbstractHandler {
     private static void appendImportElements(String packageName,
             List<Tree.ImportMemberOrType> elements, List<Declaration> unused, 
             List<Declaration> proposed, boolean hasWildcard, 
-            StringBuilder builder) {
+            StringBuilder builder, IDocument doc) {
         for (Tree.ImportMemberOrType i: elements) {
             if (i.getDeclarationModel()!=null && 
                     i.getIdentifier().getErrors().isEmpty() &&
                     i.getErrors().isEmpty()) {
-                builder.append(System.lineSeparator())
+                builder.append(getDefaultLineDelimiter(doc))
                         .append(indent);
                 if (!i.getImportModel().getAlias()
                         .equals(i.getDeclarationModel().getName())) {
@@ -208,20 +215,20 @@ public class CleanImportsHandler extends AbstractHandler {
                     builder.append(escapedAlias).append("=");
                 }
                 builder.append(name(i.getDeclarationModel()));
-                appendNestedImportElements(i, unused, builder);
+                appendNestedImportElements(i, unused, builder, doc);
                 builder.append(",");
             }
         }
         for (Declaration d: proposed) {
             if (d.getUnit().getPackage().getNameAsString()
                     .equals(packageName)) {
-                builder.append(System.lineSeparator())
+                builder.append(getDefaultLineDelimiter(doc))
                        .append(indent);
                 builder.append(name(d)).append(",");
             }
         }
         if (hasWildcard) {
-            builder.append(System.lineSeparator())
+            builder.append(getDefaultLineDelimiter(doc))
                     .append(indent)
                     .append("...");
         }
@@ -232,7 +239,7 @@ public class CleanImportsHandler extends AbstractHandler {
     }
 
     private static void appendNestedImportElements(Tree.ImportMemberOrType imt,
-            List<Declaration> unused, StringBuilder builder) {
+            List<Declaration> unused, StringBuilder builder, IDocument doc) {
         if (imt.getImportMemberOrTypeList()!=null) {
             builder.append(" {");
             boolean found=false;
@@ -244,7 +251,7 @@ public class CleanImportsHandler extends AbstractHandler {
                         nimt.getErrors().isEmpty()) {
                     if (!unused.contains(nimt.getDeclarationModel())) {
                         found=true;
-                        builder.append(System.lineSeparator())
+                        builder.append(getDefaultLineDelimiter(doc))
                                 .append(indent).append(indent);
                         if (!nimt.getImportModel().getAlias()
                                 .equals(nimt.getDeclarationModel().getName())) {
@@ -259,7 +266,7 @@ public class CleanImportsHandler extends AbstractHandler {
             if (imt.getImportMemberOrTypeList()
             		.getImportWildcard()!=null) {
                 found=true;
-                builder.append(System.lineSeparator())
+                builder.append(getDefaultLineDelimiter(doc))
                         .append(indent).append(indent)
                         .append("...,");
             }
@@ -267,7 +274,7 @@ public class CleanImportsHandler extends AbstractHandler {
             if (found) {
                 // remove trailing ","
                 builder.setLength(builder.length()-1);
-                builder.append(System.lineSeparator())
+                builder.append(getDefaultLineDelimiter(doc))
                         .append(indent)
                         .append('}');   
             } else {

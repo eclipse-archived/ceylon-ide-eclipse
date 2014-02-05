@@ -53,7 +53,7 @@ final class RefinementCompletionProposal extends CompletionProposal {
 		HashSet<Declaration> decs = new HashSet<Declaration>();
 		CompilationUnit cu = cpc.getRootNode();
 		importSignatureTypes(declaration, cu, decs);
-		applyImports(tc, decs, cu);
+		applyImports(tc, decs, cu, document);
 		return tc;
 	}
 

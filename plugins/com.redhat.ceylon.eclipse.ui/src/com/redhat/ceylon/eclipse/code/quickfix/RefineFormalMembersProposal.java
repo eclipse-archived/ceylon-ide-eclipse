@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
@@ -128,16 +129,15 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         //TODO: copy/pasted from ImplementFormalMembersProposal
         List<Statement> statements = body.getStatements();
         String indent;
-        String bodyIndent=getIndent(body, document);
+        String bodyIndent = getIndent(body, document);
+        String delim = getDefaultLineDelimiter(document);
         if (statements.isEmpty()) {
-            indent = System.lineSeparator() + bodyIndent + 
-            		getDefaultIndent();
+            indent = delim + bodyIndent + getDefaultIndent();
             if (offset<0) offset = body.getStartIndex()+1;
         }
         else {
             Statement statement = statements.get(statements.size()-1);
-            indent = System.lineSeparator() + 
-            		getIndent(statement, document);
+            indent = delim + getIndent(statement, document);
             if (offset<0) offset = statement.getStopIndex()+1;
         }
         StringBuilder result = new StringBuilder();
@@ -151,7 +151,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
                     ProducedReference pr = getRefinedProducedReference(ci, d);
                     result.append(indent)
                             .append(getRefinementTextFor(d, pr, node.getUnit(), 
-                                    isInterface, indent))
+                                    isInterface, indent, true))
                             .append(indent);
                     importSignatureTypes(d, cu, already);
                 }
@@ -159,14 +159,13 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         }
         try {
             if (document.getChar(offset)=='}' && result.length()>0) {
-                result.append(System.lineSeparator())
-                        .append(bodyIndent);
+                result.append(delim).append(bodyIndent);
             }
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        applyImports(change, already, cu);
+        applyImports(change, already, cu, document);
         change.addEdit(new InsertEdit(offset, result.toString()));
         change.initializeValidationData(null);
         try {

@@ -1,7 +1,10 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.ltk.core.refactoring.RefactoringCore.getUndoManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,9 +16,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
-import org.eclipse.ltk.core.refactoring.RefactoringCore;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
@@ -31,7 +34,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.LocalModifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant;
 
 public class RevealInferredTypeHandler extends AbstractHandler {
 
@@ -60,18 +62,20 @@ public class RevealInferredTypeHandler extends AbstractHandler {
         findCandidatesForRevelation(editor, localModifiers, valueIterators);
 
         if( !localModifiers.isEmpty() || !valueIterators.isEmpty() ) {
-            TextChange tfc = new TextFileChange("Reveal Inferred Types", ((IFileEditorInput) editor.getEditorInput()).getFile());
+            TextChange tfc = new TextFileChange("Reveal Inferred Types", 
+            		((IFileEditorInput) editor.getEditorInput()).getFile());
             tfc.setEdit(new MultiTextEdit());
             tfc.initializeValidationData(null);
 
             for (Tree.LocalModifier localModifier : localModifiers) {
-                if( localModifier.getStartIndex() != null && localModifier.getTypeModel() != null ) {
+                if( localModifier.getStartIndex() != null && 
+                		localModifier.getTypeModel() != null ) {
                     ProducedType pt = localModifier.getTypeModel();
                     tfc.addEdit(new ReplaceEdit(
                             localModifier.getStartIndex(), 
                             localModifier.getText().length(), 
                             pt.getProducedTypeName()));
-                    CeylonQuickFixAssistant.importType(imports, pt, rootNode);
+                    importType(imports, pt, rootNode);
                 }
             }
 
@@ -85,17 +89,19 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                     tfc.addEdit(new InsertEdit(
                             variable.getStartIndex(), 
                             pt.getProducedTypeName() + " "));
-                    CeylonQuickFixAssistant.importType(imports,  variable.getType().getTypeModel(), rootNode);
+                    importType(imports,  variable.getType().getTypeModel(), rootNode);
                 }
             }
-
-            CeylonQuickFixAssistant.applyImports(tfc, imports, rootNode);
             
             try {
+                IDocument doc = tfc.getCurrentDocument(null);
+    			applyImports(tfc, imports, rootNode, doc);
+
                 PerformChangeOperation changeOperation = new PerformChangeOperation(tfc);
-                changeOperation.setUndoManager(RefactoringCore.getUndoManager(), "Reveal Inferred Types");
+                changeOperation.setUndoManager(getUndoManager(), "Reveal Inferred Types");
                 getWorkspace().run(changeOperation, new NullProgressMonitor());
-            } catch (CoreException ce) {
+            }
+            catch (CoreException ce) {
                 throw new ExecutionException("Error reveal inferred types", ce);
             }
         }
@@ -103,7 +109,9 @@ public class RevealInferredTypeHandler extends AbstractHandler {
         return null;
     }
 
-    private void findCandidatesForRevelation(CeylonEditor editor, final List<Tree.LocalModifier> localModifiers, final List<Tree.ValueIterator> valueIterators) {
+    private void findCandidatesForRevelation(CeylonEditor editor, 
+    		final List<Tree.LocalModifier> localModifiers, 
+    		final List<Tree.ValueIterator> valueIterators) {
         if (editor != null && 
                 editor.getParseController() != null && 
                 editor.getParseController().getRootNode() != null && 

@@ -446,6 +446,10 @@ public class JDTModelLoader extends AbstractModelLoader {
                             return true;
                         }
                     } catch (JavaModelException e) {
+                    	e.printStackTrace();
+                    }
+                    catch (NullPointerException npe) {
+                    	npe.printStackTrace();
                     }
                 }
                 return jdtModule.containsClass(className + ".class") || jdtModule.containsClass(className + "_.class");
