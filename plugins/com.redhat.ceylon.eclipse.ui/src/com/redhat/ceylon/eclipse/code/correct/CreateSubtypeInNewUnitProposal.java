@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.appendParameters;
 import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.getRefinedProducedReference;
 
 import java.util.Collection;
 import java.util.Comparator;

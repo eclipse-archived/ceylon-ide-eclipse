@@ -2,10 +2,10 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.FORMAL_REFINEMENT;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.ProposalUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.FORMAL_REFINEMENT;
+import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;

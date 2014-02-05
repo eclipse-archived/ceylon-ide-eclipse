@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.propose.CompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.propose.ParameterContextValidator.findCharCount;
-import static com.redhat.ceylon.eclipse.code.propose.ProposalUtil.getParameters;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.getParameters;
 
 import java.util.ArrayList;
 import java.util.Collections;

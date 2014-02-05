@@ -4,9 +4,10 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedN
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.ProposalUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.FORMAL_REFINEMENT;
+import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -39,7 +40,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class RefineFormalMembersProposal implements ICompletionProposal {
@@ -57,7 +57,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
 
     @Override
     public Image getImage() {
-    	return CeylonContentProposer.FORMAL_REFINEMENT;
+    	return FORMAL_REFINEMENT;
     }
 
     @Override

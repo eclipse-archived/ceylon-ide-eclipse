@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
-import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
@@ -22,26 +21,27 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_S
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
-import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.LOCAL_NAME;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getInlineFunctionDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getInlineFunctionTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getNamedInvocationDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getNamedInvocationTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getPositionalInvocationDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getPositionalInvocationTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getTextForDocLink;
+import static com.redhat.ceylon.eclipse.code.propose.ArgumentListCompletions.addArgumentListProposal;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.getOccurrenceLocation;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.isEmptyModuleDescriptor;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.isEmptyPackageDescriptor;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.isModuleDescriptor;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.isPackageDescriptor;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.propose.ControlStructureCompletions.addForProposal;
+import static com.redhat.ceylon.eclipse.code.propose.ControlStructureCompletions.addIfExistsProposal;
+import static com.redhat.ceylon.eclipse.code.propose.ControlStructureCompletions.addSwitchProposal;
+import static com.redhat.ceylon.eclipse.code.propose.DocLink.getDocLink;
+import static com.redhat.ceylon.eclipse.code.propose.ImportCompletions.addImportProposal;
+import static com.redhat.ceylon.eclipse.code.propose.InlineFunctionCompletions.addInlineFunctionProposal;
+import static com.redhat.ceylon.eclipse.code.propose.KeywordCompletions.addKeywordProposals;
+import static com.redhat.ceylon.eclipse.code.propose.MemberNameCompletions.addMemberNameProposal;
+import static com.redhat.ceylon.eclipse.code.propose.MemberNameCompletions.addMemberNameProposals;
+import static com.redhat.ceylon.eclipse.code.propose.ModuleCompletions.addModuleCompletions;
+import static com.redhat.ceylon.eclipse.code.propose.ModuleCompletions.addModuleDescriptorCompletion;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.DOCLINK;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
@@ -54,71 +54,51 @@ import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ALI
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARGUMENT_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.UPPER_BOUND;
-import static com.redhat.ceylon.eclipse.code.propose.ProposalUtil.overloads;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
-import static com.redhat.ceylon.eclipse.util.Escaping.escape;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
-import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
+import static com.redhat.ceylon.eclipse.code.propose.PackageCompletions.addCurrentPackageNameCompletion;
+import static com.redhat.ceylon.eclipse.code.propose.PackageCompletions.addPackageCompletions;
+import static com.redhat.ceylon.eclipse.code.propose.PackageCompletions.addPackageDescriptorCompletion;
+import static com.redhat.ceylon.eclipse.code.propose.ParameterContextInformation.addFakeShowParametersCompletion;
+import static com.redhat.ceylon.eclipse.code.propose.ReferenceCompletions.addBasicProposal;
+import static com.redhat.ceylon.eclipse.code.propose.ReferenceCompletions.addDocLinkProposal;
+import static com.redhat.ceylon.eclipse.code.propose.ReferenceCompletions.addInvocationProposals;
+import static com.redhat.ceylon.eclipse.code.propose.ReferenceCompletions.addNamedArgumentProposal;
+import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.addRefinementProposal;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 import static java.lang.Character.isJavaIdentifierPart;
-import static java.lang.Character.isLowerCase;
-import static java.lang.Character.isUpperCase;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.cmr.api.JDKUtils;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
-import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
-import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.ImportList;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
-import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Parameter;
-import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
-import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -127,40 +107,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
-import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.RequiredTypeVisitor;
 
 public class CeylonContentProposer {
     
-    public static Image DEFAULT_REFINEMENT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(CeylonResources.CEYLON_DEFAULT_REFINEMENT);
-    public static Image FORMAL_REFINEMENT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(CeylonResources.CEYLON_FORMAL_REFINEMENT);
-    
-    
-    /**
-     * Returns an array of content proposals applicable relative to the AST of the given
-     * parse controller at the given position.
-     * 
-     * (The provided ITextViewer is not used in the default implementation provided here
-     * but but is stipulated by the IContentProposer interface for purposes such as accessing
-     * the IDocument for which content proposals are sought.)
-     * 
-     * @param controller  A parse controller from which the AST of the document being edited
-     *             can be obtained
-     * @param int      The offset for which content proposals are sought
-     * @param viewer    The viewer in which the document represented by the AST in the given
-     *             parse controller is being displayed (may be null for some implementations)
-     * @param returnedParamInfo 
-     * @return        An array of completion proposals applicable relative to the AST of the given
-     *             parse controller at the given position
-     */
     public ICompletionProposal[] getContentProposals(CeylonParseController cpc,
             final int offset, ITextViewer viewer, boolean filter, 
             boolean returnedParamInfo) {
@@ -294,55 +246,6 @@ public class CeylonContentProposer {
         }
     }
 
-    public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
-        if (node.getToken()==null) return null;
-        FindOccurrenceLocationVisitor visitor = new FindOccurrenceLocationVisitor(node);
-        cu.visit(visitor);
-        return visitor.getOccurrenceLocation();
-    }
-
-    private static class DocLink {
-//        String linkName;
-    	String declName;
-    	int declStart;
-    }
-    
-    private static DocLink getDocLink(String text, int offsetInToken, final int offset) {     
-        
-        Matcher docLinkMatcher = Pattern.compile("\\[\\[(.*?)\\]\\]").matcher(text);
-        if (text==null || offset==0 || !docLinkMatcher.find()) {
-            return null;
-        }
-
-        DocLink docLink = null;
-        docLinkMatcher.reset();
-        while (docLinkMatcher.find()) {
-            for (int i = 1; i <= docLinkMatcher.groupCount(); i++) { // loop for safety
-                if (offsetInToken >= docLinkMatcher.start(i) && 
-                        offsetInToken <= docLinkMatcher.end(i)) {
-                    docLink = new DocLink();
-                    String docLinkText = docLinkMatcher.group(i);
-                    int separatorIndex = docLinkText.indexOf("|");
-                    if( separatorIndex > -1 ) {
-//                        docLink.linkName = docLinkText.substring(0, separatorIndex);
-                        docLink.declName = docLinkText.substring(separatorIndex+1);
-                        docLink.declStart = docLinkMatcher.start(i)+separatorIndex+1;
-                    } else {
-                        docLink.declName = docLinkText;
-                        docLink.declStart = docLinkMatcher.start(i);
-                    }
-                    break;
-                }
-            }
-        }
-        
-        if (docLink == null) { // it will be empty string if we are in a wiki ref
-            return null;
-        }
-        
-        return docLink;
-    }
-    
     private static PositionedPrefix compensateForMissingCharacter(final int offset,
             ITextViewer viewer, List<CommonToken> tokens) {
 
@@ -383,23 +286,16 @@ public class CeylonContentProposer {
                      token.getText().substring(0, offsetInToken+1),
                      token.getStartIndex());
             }
-            else if (token.getType() == ASTRING_LITERAL || token.getType() == AVERBATIM_STRING) {
-                DocLink docLink = getDocLink(token.getText(), offset - token.getStartIndex(), offsetInToken);
+            else if (token.getType() == ASTRING_LITERAL || 
+            		token.getType() == AVERBATIM_STRING) {
+                DocLink docLink = getDocLink(token.getText(), 
+                		offset - token.getStartIndex(), 
+                		offsetInToken);
                 if (docLink != null) {
                     // if caret is after '|'
-                    if( offsetInToken >= docLink.declStart-1 ) {
-                        // if caret is after the '.' and the '.' is a member lookup
-                        if ((offsetInToken > (docLink.declStart + docLink.declName.lastIndexOf('.') -1) ) 
-                                && docLink.declName.lastIndexOf('.') > docLink.declName.lastIndexOf("::")) {
-                            PositionedPrefix pp = new PositionedPrefix(token.getStartIndex()+docLink.declStart, true);
-                            if (docLink.declStart + docLink.declName.lastIndexOf('.') <= offsetInToken) {
-                                pp.prefix = docLink.declName.substring(docLink.declName.lastIndexOf('.') + 1, offsetInToken - docLink.declStart +1);
-                                pp.type = docLink.declName.substring(0, docLink.declName.lastIndexOf('.'));
-                            }
-                            return pp;
-                        } else { // type lookup, handle package later
-                            return new PositionedPrefix(docLink.declName, token.getStartIndex()+docLink.declStart);
-                        }
+                    if (offsetInToken >= docLink.declStart-1) {
+                        return positionedPrefixForDocLink(token, offsetInToken,
+                                docLink);
                     }
                 }
                 return null; // in literal but no docRef
@@ -452,6 +348,29 @@ public class CeylonContentProposer {
         }
     }
 
+	private static PositionedPrefix positionedPrefixForDocLink(
+            CommonToken token, int offsetInToken, DocLink docLink) {
+	    // if caret is after the '.' and the '.' is a member lookup
+	    int start = docLink.declStart;
+		String name = docLink.declName;
+		int offset = token.getStartIndex();
+		int dotLoc = name.lastIndexOf('.');
+		int scopeLoc = name.lastIndexOf("::");
+		if ((offsetInToken > start + dotLoc - 1) 
+	            && dotLoc > scopeLoc) {
+	        PositionedPrefix pp = new PositionedPrefix(offset+start, true);
+	        if (start + dotLoc <= offsetInToken) {
+	            pp.prefix = name.substring(dotLoc + 1, 
+	            		offsetInToken - start +1);
+	            pp.type = name.substring(0, dotLoc);
+	        }
+	        return pp;
+	    }
+	    else { // type lookup, handle package later
+	        return new PositionedPrefix(name, offset+start);
+	    }
+    }
+
     private static CommonToken getTokenAtCaret(final int offset, ITextViewer viewer,
             List<CommonToken> tokens) {
         //find the token behind the caret, adjusting to an 
@@ -479,7 +398,7 @@ public class CeylonContentProposer {
     
     static final class ParameterInfo 
             extends DeclarationCompletionProposal {
-		private ParameterInfo(int offset, String prefix, String desc,
+		ParameterInfo(int offset, String prefix, String desc,
 				String text, boolean selectParams, CeylonParseController cpc,
 				Declaration d, boolean addimport,
 				ProducedReference producedReference, Scope scope) {
@@ -607,180 +526,6 @@ public class CeylonContentProposer {
         return node;
     }
     
-    private static void addPackageCompletions(CeylonParseController cpc, 
-            int offset, String prefix, Tree.ImportPath path, Node node, 
-            List<ICompletionProposal> result, boolean withBody) {
-        String fullPath = fullPath(offset, prefix, path);
-        addPackageCompletions(offset, prefix, node, result, fullPath.length(), 
-        		fullPath+prefix, cpc, withBody);
-    }
-
-    private static void addModuleCompletions(CeylonParseController cpc, 
-            int offset, String prefix, Tree.ImportPath path, Node node, 
-            List<ICompletionProposal> result, boolean withBody) {
-        String fullPath = fullPath(offset, prefix, path);
-        addModuleCompletions(offset, prefix, node, result, fullPath.length(), 
-        		fullPath+prefix, cpc, withBody);
-    }
-
-    private static String fullPath(int offset, String prefix,
-            Tree.ImportPath path) {
-        StringBuilder fullPath = new StringBuilder();
-        if (path!=null) {
-            fullPath.append(Util.formatPath(path.getIdentifiers()));
-            fullPath.append('.');
-            fullPath.setLength(offset-path.getStartIndex()-prefix.length());
-        }
-        return fullPath.toString();
-    }
-
-    private static void addPackageCompletions(final int offset, final String prefix,
-            Node node, List<ICompletionProposal> result, final int len, String pfp,
-            final CeylonParseController cpc, final boolean withBody) {
-        //TODO: someday it would be nice to propose from all packages 
-        //      and auto-add the module dependency!
-        /*TypeChecker tc = CeylonBuilder.getProjectTypeChecker(cpc.getProject().getRawProject());
-        if (tc!=null) {
-        for (Module m: tc.getContext().getModules().getListOfModules()) {*/
-        //Set<Package> packages = new HashSet<Package>();
-        Unit unit = node.getUnit();
-        if (unit!=null) { //a null unit can occur if we have not finished parsing the file
-            Module module = unit.getPackage().getModule();
-            for (final Package p: module.getAllPackages()) {
-                //if (!packages.contains(p)) {
-                    //packages.add(p);
-                //if ( p.getModule().equals(module) || p.isShared() ) {
-                    final String pkg = escapePackageName(p);
-                    if (!pkg.isEmpty() && pkg.startsWith(pfp)) {
-                        boolean already = false;
-                        if (!pfp.equals(pkg)) {
-                            //don't add already imported packages, unless
-                            //it is an exact match to the typed path
-                            for (ImportList il: node.getUnit().getImportLists()) {
-                                if (il.getImportedScope()==p) {
-                                    already = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!already) {
-                        	final String completed = pkg + (withBody?" { ... }":"");
-                            result.add(new CompletionProposal(offset, prefix, PACKAGE, 
-                            		completed, completed.substring(len), false) {
-                                @Override
-                                public Point getSelection(IDocument document) {
-                                	if (withBody) {
-                                		return new Point(offset+completed.length()-prefix.length()-len-5, 3);
-                                	}
-                                	else {
-                                		return new Point(offset+completed.length()-prefix.length()-len, 0);
-                                	}
-                                }
-                                @Override
-                                public String getAdditionalProposalInfo() {
-                                    return getDocumentationFor(cpc, p);
-                                }
-                            });
-                        }
-                    }
-                //}
-            }
-        }
-    }
-    
-    private static final SortedSet<String> JDK_MODULE_VERSION_SET = new TreeSet<String>();
-    {
-        JDK_MODULE_VERSION_SET.add(AbstractModelLoader.JDK_MODULE_VERSION);
-    }
-    
-    private static void addModuleCompletions(int offset, String prefix, Node node, 
-    		List<ICompletionProposal> result, final int len, String pfp,
-            final CeylonParseController cpc, final boolean withBody) {
-        if (pfp.startsWith("java.")) {
-            for (final String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
-                if (name.startsWith(pfp) &&
-                        !moduleAlreadyImported(cpc, name)) {
-                    String versioned = withBody ? getModuleString(name, JDK_MODULE_VERSION) + ";" : name;
-                    result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-                                      versioned, versioned.substring(len), false) {
-                        @Override
-                        public String getAdditionalProposalInfo() {
-                            return getDocumentationForModule(name, JDK_MODULE_VERSION, 
-                                    "This module forms part of the Java SDK.");
-                        }
-                    });
-                }
-            }
-        }
-        else {
-            final TypeChecker tc = cpc.getTypeChecker();
-            if (tc!=null) {
-                IProject project = cpc.getProject();
-                for (final ModuleDetails module: getModuleSearchResults(pfp, tc,project)
-                        .getResults()) {
-                    final String name = module.getName();
-                    if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
-                            !moduleAlreadyImported(cpc, name)) {
-                        for (final ModuleVersionDetails version : module.getVersions().descendingSet()) {
-                            final String versioned = withBody ? getModuleString(name, version.getVersion()) + ";" : name;
-                            result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-                                    versioned, versioned.substring(len), false) {
-                            	@Override
-                            	public Point getSelection(
-                            			IDocument document) {
-                                    if (withBody) {
-                                    	return new Point(offset+versioned.length()-prefix.length()-len-version.getVersion().length()-2, 
-                                    			version.getVersion().length());
-                                    }
-                                    else {
-                                    	return new Point(offset+versioned.length()-prefix.length()-len, 0);
-                                    }
-                            	}
-                                @Override
-                                public String getAdditionalProposalInfo() {
-                                    return JDKUtils.isJDKModule(name) ?
-                                            getDocumentationForModule(name, JDK_MODULE_VERSION,
-                                                    "This module forms part of the Java SDK.") :
-                                            getDocumentationFor(module, version.getVersion());
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static boolean moduleAlreadyImported(CeylonParseController cpc, final String mod) {
-        if (mod.equals(Module.LANGUAGE_MODULE_NAME)) {
-            return true;
-        }
-        List<Tree.ModuleDescriptor> md = cpc.getRootNode().getModuleDescriptors();
-		if (!md.isEmpty()) {
-			Tree.ImportModuleList iml = md.get(0).getImportModuleList();
-			if (iml!=null) {
-				for (Tree.ImportModule im: iml.getImportModules()) {
-					if (im.getImportPath()!=null) {
-						if (formatPath(im.getImportPath().getIdentifiers()).equals(mod)) {
-							return true;
-						}
-					}
-				}
-			}
-        }
-        //Disabled, because once the module is imported, it hangs around!
-//        for (ModuleImport mi: node.getUnit().getPackage().getModule().getImports()) {
-//            if (mi.getModule().getNameAsString().equals(mod)) {
-//                return true;
-//            }
-//        }
-        return false;
-    }
-
-    private static String getModuleString(final String name, final String version) {
-        return name + " \"" + version + "\"";
-    }
-
     private static boolean isIdentifierOrKeyword(Token token) {
         int type = token.getType();
         return type==LIDENTIFIER || 
@@ -819,67 +564,15 @@ public class CeylonContentProposer {
             addCurrentPackageNameCompletion(cpc, offset, prefix, result);
         }
         else if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
-            addPackageCompletions(cpc, offset, prefix, null, node, result, 
+        	addPackageCompletions(cpc, offset, prefix, null, node, result, 
             		nextTokenType(cpc, token)!=CeylonLexer.LBRACE);
         }
         else if (node instanceof Tree.ImportModule && offset>token.getStopIndex()+1) {
-            addModuleCompletions(cpc, offset, prefix, null, node, result, 
+        	addModuleCompletions(cpc, offset, prefix, null, node, result, 
             		nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL);
         }
         else if (node instanceof Tree.ImportPath) {
-            new Visitor() {
-                @Override
-                public void visit(Tree.ModuleDescriptor that) {
-                    super.visit(that);
-                    if (that.getImportPath()==node) {
-                        addCurrentPackageNameCompletion(cpc, offset, 
-                                fullPath(offset, prefix, that.getImportPath()) + prefix, 
-                                result);
-                    }
-                }
-                public void visit(Tree.PackageDescriptor that) {
-                    super.visit(that);
-                    if (that.getImportPath()==node) {
-                        addCurrentPackageNameCompletion(cpc, offset, 
-                                fullPath(offset, prefix, that.getImportPath()) + prefix, 
-                                result);
-                    }
-                }
-                @Override
-                public void visit(Tree.Import that) {
-                    super.visit(that);
-                    if (that.getImportPath()==node) {
-                        addPackageCompletions(cpc, offset, prefix, 
-                        		(Tree.ImportPath) node, node, result, 
-                        		nextTokenType(cpc, token)!=CeylonLexer.LBRACE);
-                    }
-                }
-                @Override
-                public void visit(Tree.PackageLiteral that) {
-                    super.visit(that);
-                    if (that.getImportPath()==node) {
-                        addPackageCompletions(cpc, offset, prefix, 
-                        		(Tree.ImportPath) node, node, result, false);
-                    }
-                }
-                @Override
-                public void visit(Tree.ImportModule that) {
-                    super.visit(that);
-                    if (that.getImportPath()==node) {
-                        addModuleCompletions(cpc, offset, prefix, 
-                        		(Tree.ImportPath) node, node, result, 
-                        		nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL);
-                    }
-                }
-                @Override
-                public void visit(Tree.ModuleLiteral that) {
-                    super.visit(that);
-                    if (that.getImportPath()==node) {
-                        addModuleCompletions(cpc, offset, prefix, 
-                        		(Tree.ImportPath) node, node, result, false);
-                    }
-                }
-            }.visit(cpc.getRootNode());
+            new ImportVisitor(prefix, token, offset, node, cpc, result).visit(cpc.getRootNode());
         }
         else if (isEmptyModuleDescriptor(cpc)) {
             addModuleDescriptorCompletion(cpc, offset, prefix, result);
@@ -907,7 +600,7 @@ public class CeylonContentProposer {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 
-    private static int nextTokenType(final CeylonParseController cpc,
+    static int nextTokenType(final CeylonParseController cpc,
 			final CommonToken token) {
 		for (int i=token.getTokenIndex()+1; i<cpc.getTokens().size(); i++) {
 			CommonToken tok = cpc.getTokens().get(i);
@@ -923,128 +616,13 @@ public class CeylonContentProposer {
                 node.getEndToken()!=null && 
                ((CommonToken)node.getEndToken()).getStopIndex()>=offset-2;
     }
-
-	public static void addMemberNameProposals(final int offset,
-			final CeylonParseController cpc, final Node node,
-			final List<ICompletionProposal> result) {
-		final Integer startIndex2 = node.getStartIndex();
-		new Visitor() {
-			@Override
-			public void visit(Tree.StaticMemberOrTypeExpression that) {
-				Integer startIndex = that.getTypeArguments().getStartIndex();
-				if (startIndex!=null && startIndex2!=null &&
-					startIndex.intValue()==startIndex2.intValue()) {
-					addMemberNameProposal(offset, "", that, result);
-				}
-				super.visit(that);
-			}
-			public void visit(Tree.SimpleType that) {
-				Integer startIndex = that.getTypeArgumentList().getStartIndex();
-				if (startIndex!=null && startIndex2!=null &&
-					startIndex.intValue()==startIndex2.intValue()) {
-					addMemberNameProposal(offset, "", that, result);
-				}
-				super.visit(that);
-			}
-		}.visit(cpc.getRootNode());
-	}
-
-	public static void addArgumentListProposal(final int offset,
-			final CeylonParseController cpc, final Node node,
-			final Scope scope, final IDocument document,
-			final List<ICompletionProposal> result) {
-		final Integer startIndex2 = node.getStartIndex();
-		final Integer stopIndex2 = node.getStopIndex();
-		final String typeArgText;
-		try {
-			typeArgText = document.get(startIndex2, stopIndex2-startIndex2+1);
-		} 
-		catch (BadLocationException e) {
-			e.printStackTrace();
-			return;
-		}
-		new Visitor() {
-			@Override
-			public void visit(Tree.StaticMemberOrTypeExpression that) {
-				Integer startIndex = that.getTypeArguments().getStartIndex();
-				if (startIndex!=null && startIndex2!=null &&
-					startIndex.intValue()==startIndex2.intValue()) {
-					ProducedReference pr = that.getTarget();
-					Declaration d = that.getDeclaration();
-					if (d instanceof Functional && pr!=null) {
-						try {
-							String pref = document.get(that.getStartIndex(), 
-									that.getStopIndex()-that.getStartIndex()+1);
-				        	addInvocationProposals(offset, pref, cpc, result, 
-				        			new DeclarationWithProximity(d, 0), pr, 
-				        			scope, null, typeArgText);
-						} 
-						catch (BadLocationException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				super.visit(that);
-			}
-			public void visit(Tree.SimpleType that) {
-				Integer startIndex = that.getTypeArgumentList().getStartIndex();
-				if (startIndex!=null && startIndex2!=null &&
-					startIndex.intValue()==startIndex2.intValue()) {
-					Declaration d = that.getDeclarationModel();
-					if (d instanceof Functional) {
-						try {
-							String pref = document.get(that.getStartIndex(), 
-									that.getStopIndex()-that.getStartIndex()+1);
-				        	addInvocationProposals(offset, pref, cpc, result, 
-				        			new DeclarationWithProximity(d, 0), 
-				        			    that.getTypeModel(), scope, 
-				        			    null, typeArgText);
-						}
-						catch (BadLocationException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				super.visit(that);
-			}
-		}.visit(cpc.getRootNode());
-	}
-
-	public static void addFakeShowParametersCompletion(
-			final CeylonParseController cpc, final Node node,
-			final CommonToken token, final List<ICompletionProposal> result) {
-		new Visitor() {
-			@Override
-			public void visit(Tree.InvocationExpression that) {
-				Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
-				if (pal!=null) {
-					Integer startIndex = pal.getStartIndex();
-					Integer startIndex2 = node.getStartIndex();
-					if (startIndex!=null && startIndex2!=null &&
-							startIndex.intValue()==startIndex2.intValue()) {
-						Tree.Primary primary = that.getPrimary();
-						if (primary instanceof Tree.MemberOrTypeExpression) {
-							Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) primary;
-							if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
-								result.add(new ParameterInfo(token.getStartIndex(), "", 
-										"show parameters", "", false, cpc, 
-										mte.getDeclaration(), false, mte.getTarget(),
-										node.getScope()));
-							}
-						}
-					}
-				}
-				super.visit(that);
-			}
-		}.visit(cpc.getRootNode());
-	}
     
     /**
      * BaseMemberExpressions in Annotations have funny lying
      * scopes, but we can extract the real scope out of the
      * identifier! (Yick)
      */
-    static Scope getRealScope(final Node node, CompilationUnit cu) {
+    private static Scope getRealScope(final Node node, CompilationUnit cu) {
     	
         class FindScopeVisitor extends Visitor {
             Scope scope;
@@ -1126,7 +704,7 @@ public class CeylonContentProposer {
                 }
             }
             //otherwise guess something from the type
-        	addMemberNameProposal(offset, prefix, node, result);
+            addMemberNameProposal(offset, prefix, node, result);
         }
         else if (node instanceof Tree.TypedDeclaration && 
         		!(node instanceof Tree.Variable && 
@@ -1142,7 +720,7 @@ public class CeylonContentProposer {
                     if (isRefinementProposable(dec, ol, scope) && !filter && 
                     		dec instanceof MethodOrValue) {
                     	MethodOrValue m = (MethodOrValue) dec;
-                        for (Declaration d: ProposalUtil.overloads(dec)) {
+                        for (Declaration d: CompletionUtil.overloads(dec)) {
                             if ((d.isDefault() || d.isFormal()) &&
                             		t.isSubtypeOf(m.getType())) {
                                 try {
@@ -1188,10 +766,10 @@ public class CeylonContentProposer {
                 if (isInvocationProposable(dwp, ol) && 
                         !isQualifiedType(node) && 
                         !inDoc && noParamsFollow) {
-                    for (Declaration d: ProposalUtil.overloads(dec)) {
+                    for (Declaration d: CompletionUtil.overloads(dec)) {
                         ProducedReference pr = isMember? 
                                 getQualifiedProducedReference(node, d) :
-                                getRefinedProducedReference(scope, d);
+                                RefinementCompletions.getRefinedProducedReference(scope, d);
                         addInvocationProposals(offset, prefix, cpc, result, 
                                 new DeclarationWithProximity(d, dwp), 
                                 pr, scope, ol, null);
@@ -1221,7 +799,7 @@ public class CeylonContentProposer {
                 }
                 
                 if (isRefinementProposable(dec, ol, scope) && !memberOp && !isMember && !filter) {
-                    for (Declaration d: ProposalUtil.overloads(dec)) {
+                    for (Declaration d: CompletionUtil.overloads(dec)) {
                         if (d.isDefault() || d.isFormal()) {
                         	addRefinementProposal(offset, prefix, cpc, scope, node, result, d, doc, true);
                         }
@@ -1237,74 +815,6 @@ public class CeylonContentProposer {
                (node instanceof Tree.QualifiedMemberOrTypeExpression &&
                        ((Tree.QualifiedMemberOrTypeExpression) node).getStaticMethodReference());
     }
-
-    private static boolean isPackageDescriptor(CeylonParseController cpc) {
-        return cpc.getRootNode() != null && 
-                cpc.getRootNode().getUnit() != null &&
-                cpc.getRootNode().getUnit().getFilename().equals("package.ceylon"); 
-    }
-
-    private static boolean isModuleDescriptor(CeylonParseController cpc) {
-        return cpc.getRootNode() != null && 
-                cpc.getRootNode().getUnit() != null &&
-                cpc.getRootNode().getUnit().getFilename().equals("module.ceylon"); 
-    }
-
-    private static boolean isEmptyModuleDescriptor(CeylonParseController cpc) {
-        return isModuleDescriptor(cpc) && 
-                cpc.getRootNode() != null && 
-                cpc.getRootNode().getModuleDescriptors().isEmpty(); 
-    }
-
-    private static void addModuleDescriptorCompletion(CeylonParseController cpc, int offset, 
-            String prefix, List<ICompletionProposal> result) {
-        if (!"module".startsWith(prefix)) return; 
-        IFile file = cpc.getProject().getFile(cpc.getPath());
-        String moduleName = getPackageName(file);
-        if (moduleName!=null) {
-            String moduleDesc = "module " + moduleName;
-            String moduleText = "module " + moduleName + " \"1.0.0\" {}";
-            final int selectionStart = offset - prefix.length() + moduleName.length() + 9;
-            final int selectionLength = 5;
-
-            result.add(new CompletionProposal(offset, prefix, ARCHIVE, moduleDesc, moduleText, false) {
-                @Override
-                public Point getSelection(IDocument document) {
-                    return new Point(selectionStart, selectionLength);
-                }});
-        }
-    }
-    
-    private static void addCurrentPackageNameCompletion(CeylonParseController cpc, int offset, 
-            String prefix, List<ICompletionProposal> result) {
-        IFile file = cpc.getProject().getFile(cpc.getPath());
-        String moduleName = getPackageName(file);
-        if (moduleName!=null) {
-            result.add(new CompletionProposal(offset, prefix, 
-                    isModuleDescriptor(cpc) ? ARCHIVE : PACKAGE, 
-                            moduleName, moduleName, false));
-        }
-    }
-    
-    private static boolean isEmptyPackageDescriptor(CeylonParseController cpc) {
-        return cpc.getRootNode() != null &&
-                cpc.getRootNode().getUnit() != null &&
-                cpc.getRootNode().getUnit().getFilename().equals("package.ceylon") && 
-                cpc.getRootNode().getPackageDescriptors().isEmpty();
-    }
-
-    private static void addPackageDescriptorCompletion(CeylonParseController cpc, int offset, 
-            String prefix, List<ICompletionProposal> result) {
-        if (!"package".startsWith(prefix)) return; 
-        IFile file = cpc.getProject().getFile(cpc.getPath());
-        String packageName = getPackageName(file);
-        if (packageName!=null) {
-            String packageDesc = "package " + packageName;
-            String packageText = "package " + packageName + ";";
-
-            result.add(new CompletionProposal(offset, prefix, PACKAGE, packageDesc, packageText, false));
-        }
-    }    
 
     private static boolean noParametersFollow(CommonToken nextToken) {
         return nextToken==null ||
@@ -1402,21 +912,6 @@ public class CeylonContentProposer {
                         ((TypeParameter) d).getContainer()==((Tree.TypeConstraint) node).getDeclarationModel().getContainer());
     }
     
-    private static void addInlineFunctionProposal(int offset, String prefix, CeylonParseController cpc,
-            Node node, List<ICompletionProposal> result, Declaration d, IDocument doc) {
-        //TODO: type argument substitution using the ProducedReference of the primary node
-        if (d.isParameter()) {
-            Parameter p = ((MethodOrValue) d).getInitializerParameter();
-            Unit unit = node.getUnit();
-            result.add(new RefinementCompletionProposal(offset, prefix,
-                    getInlineFunctionDescriptionFor(p, null, unit),
-                    getInlineFunctionTextFor(p, null, unit, 
-                    		Indents.getDefaultLineDelimiter(doc) + 
-                    		getIndent(node, doc)),
-                    cpc, d));
-        }
-    }
-
     /*private static boolean isParameterOfNamedArgInvocation(Node node, Declaration d) {
         if (node instanceof Tree.NamedArgumentList) {
             ParameterList pl = ((Tree.NamedArgumentList) node).getNamedArgumentList()
@@ -1438,20 +933,6 @@ public class CeylonContentProposer {
         return scope==d.getNamedArgumentList();
     }
 
-    private static void addRefinementProposal(int offset, String prefix, final CeylonParseController cpc,
-            Scope scope, Node node, List<ICompletionProposal> result, final Declaration d, IDocument doc,
-            boolean preamble) {
-        boolean isInterface = scope instanceof Interface;
-        ProducedReference pr = getRefinedProducedReference(scope, d);
-        //TODO: if it is equals() or hash, fill in the implementation
-        String delim = Indents.getDefaultLineDelimiter(doc);
-		result.add(new RefinementCompletionProposal(offset, prefix,  
-                getRefinementDescriptionFor(d, pr, node.getUnit()), 
-                getRefinementTextFor(d, pr, node.getUnit(), isInterface, 
-                		delim + getIndent(node, doc), true, preamble), 
-                cpc, d));
-    }
-    
     private static ProducedReference getQualifiedProducedReference(Node node, Declaration d) {
         ProducedType pt = ((Tree.QualifiedMemberOrTypeExpression) node)
                     .getPrimary().getTypeModel();
@@ -1461,408 +942,10 @@ public class CeylonContentProposer {
         return d.getProducedReference(pt, Collections.<ProducedType>emptyList());
     }
 
-    public static ProducedReference getRefinedProducedReference(Scope scope, Declaration d) {
-        return refinedProducedReference(scope.getDeclaringType(d), d);
-    }
-
-    public static ProducedReference getRefinedProducedReference(ProducedType superType, 
-            Declaration d) {
-        if (superType.getDeclaration() instanceof IntersectionType) {
-            for (ProducedType pt: superType.getDeclaration().getSatisfiedTypes()) {
-                ProducedReference result = getRefinedProducedReference(pt, d);
-                if (result!=null) return result;
-            }
-            return null; //never happens?
-        }
-        else {
-            ProducedType declaringType = superType.getDeclaration().getDeclaringType(d);
-            if (declaringType==null) return null;
-            ProducedType outerType = superType.getSupertype(declaringType.getDeclaration());
-            return refinedProducedReference(outerType, d);
-        }
-    }
-    
-    private static ProducedReference refinedProducedReference(ProducedType outerType, 
-            Declaration d) {
-        List<ProducedType> params = new ArrayList<ProducedType>();
-        if (d instanceof Generic) {
-            for (TypeParameter tp: ((Generic)d).getTypeParameters()) {
-                params.add(tp.getType());
-            }
-        }
-        return d.getProducedReference(outerType, params);
-    }
-    
-    private static void addBasicProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d, Scope scope) {
-        result.add(new DeclarationCompletionProposal(offset, prefix,
-                getDescriptionFor(dwp), getTextFor(dwp), 
-                true, cpc, d, dwp.isUnimported(), d.getReference(), 
-                scope, true));
-    }
-
-    private static void addImportProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d, Scope scope) {
-        result.add(new DeclarationCompletionProposal(offset, prefix,
-				d.getName(), escapeName(d), true, cpc, d, dwp.isUnimported(), 
-				d.getReference(), scope, true));
-    }
-
-    private static void addDocLinkProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d, Scope scope) {
-        ProducedReference pr = d.getProducedReference(null,
-                		Collections.<ProducedType>emptyList());
-		result.add(new DeclarationCompletionProposal(offset, prefix,
-				d.getName(), getTextForDocLink(cpc, dwp),
-                true, cpc, d, false, pr, scope, true));
-    }
-
-    private static void addForProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d) {
-        if (d instanceof Value) {
-            TypedDeclaration td = (TypedDeclaration) d;
-            if (td.getType()!=null && 
-                    d.getUnit().isIterableType(td.getType())) {
-                String elemName;
-                if (d.getName().length()==1) {
-                    elemName = "element";
-                }
-                else if (d.getName().endsWith("s")) {
-                    elemName = d.getName().substring(0, d.getName().length()-1);
-                }
-                else {
-                    elemName = d.getName().substring(0, 1);
-                }
-                result.add(new DeclarationCompletionProposal(offset, prefix, 
-                        "for (" + elemName + " in " + getDescriptionFor(dwp) + ")", 
-                        "for (" + elemName + " in " + getTextFor(dwp) + ") {}",
-                        true, cpc, d));
-            }
-        }
-    }
-
-    private static void addIfExistsProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d) {
-        if (!dwp.isUnimported()) {
-            if (d instanceof Value) {
-                TypedDeclaration v = (TypedDeclaration) d;
-                if (v.getType()!=null &&
-                        d.getUnit().isOptionalType(v.getType()) && 
-                        !v.isVariable()) {
-                    result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            "if (exists " + getDescriptionFor(dwp) + ")", 
-                            "if (exists " + getTextFor(dwp) + ") {}", 
-                            true, cpc, d));
-                }
-            }
-        }
-    }
-
-    private static void addSwitchProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d, Node node, 
-            IDocument doc) {
-        if (!dwp.isUnimported()) {
-            if (d instanceof Value) {
-                TypedDeclaration v = (TypedDeclaration) d;
-                if (v.getType()!=null &&
-                        v.getType().getCaseTypes()!=null && 
-                        !v.isVariable()) {
-                    StringBuilder body = new StringBuilder();
-                    String indent = getIndent(node, doc);
-                    for (ProducedType pt: v.getType().getCaseTypes()) {
-                        body.append(indent).append("case (");
-                        if (!pt.getDeclaration().isAnonymous()) {
-                            body.append("is ");
-                        }
-                        body.append(pt.getProducedTypeName(node.getUnit()))
-                            .append(") {}")
-                            .append(Indents.getDefaultLineDelimiter(doc));
-                    }
-                    body.append(indent);
-                    result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            "switch (" + getDescriptionFor(dwp) + ")", 
-                            "switch (" + getTextFor(dwp) + ")" + 
-                            		Indents.getDefaultLineDelimiter(doc) + body, 
-                            true, cpc, d));
-                }
-            }
-        }
-    }
-
-    private static void addNamedArgumentProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d) {
-        result.add(new DeclarationCompletionProposal(offset, prefix, 
-                getDescriptionFor(dwp), 
-                getTextFor(dwp) + " = nothing;", 
-                true, cpc, d));
-    }
-
-    private static void addInvocationProposals(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, ProducedReference pr, Scope scope,
-            OccurrenceLocation ol, String typeArgs) {
-        Declaration d = pr.getDeclaration();
-        Unit unit = cpc.getRootNode().getUnit();
-        if (!(d instanceof Functional)) return;
-        boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
-        Functional fd = (Functional) d;
-        List<ParameterList> pls = fd.getParameterLists();
-        if (!pls.isEmpty()) {
-            List<Parameter> ps = pls.get(0).getParameters();
-            boolean hasDefaulted = ps.size()!=ProposalUtil.getParameters(false, ps).size();
-			if (!isAbstractClass ||
-            		ol==EXTENDS || ol==CLASS_ALIAS) {
-                if (hasDefaulted) {
-                    result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, false, null), 
-                            getPositionalInvocationTextFor(dwp, ol, pr, unit, false, null), true,
-                            cpc, d, dwp.isUnimported(), pr, scope, false));
-                }
-                result.add(new DeclarationCompletionProposal(offset, prefix, 
-                        getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, true, typeArgs), 
-                        getPositionalInvocationTextFor(dwp, ol, pr, unit, true, typeArgs), true,
-                        cpc, d, dwp.isUnimported(), pr, scope, true));
-            }
-            if (!isAbstractClass &&
-            		ol!=EXTENDS && ol!=CLASS_ALIAS &&
-                    !fd.isOverloaded() && typeArgs==null) {
-                //if there is at least one parameter, 
-                //suggest a named argument invocation
-                if (hasDefaulted) {
-                    result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getNamedInvocationDescriptionFor(dwp, pr, unit, false), 
-                            getNamedInvocationTextFor(dwp, pr, unit, false), true,
-                            cpc, d, dwp.isUnimported(), pr, scope, false));
-                }
-                if (!ps.isEmpty()) {
-                    result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getNamedInvocationDescriptionFor(dwp, pr, unit, true), 
-                            getNamedInvocationTextFor(dwp, pr, unit, true), true,
-                            cpc, d, dwp.isUnimported(), pr, scope, true));
-                }
-            }
-        }
-    }
-    
-	protected static void addMemberNameProposal(int offset, String prefix,
-            Node node, List<ICompletionProposal> result) {
-        String suggestedName = null;
-        if (node instanceof Tree.TypeDeclaration) {
-            /*Tree.TypeDeclaration td = (Tree.TypeDeclaration) node;
-            prefix = td.getIdentifier()==null ? 
-                    "" : td.getIdentifier().getText();
-            suggestedName = prefix;*/
-            //TODO: dictionary completions?
-            return;
-        }
-        else if (node instanceof Tree.TypedDeclaration) {
-            Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
-            if (td.getType() instanceof Tree.SimpleType) {
-            	Tree.Identifier id = td.getIdentifier();
-            	if (id==null || offset>=id.getStartIndex() && offset<=id.getStopIndex()+1) {
-            		suggestedName = ((Tree.SimpleType) td.getType()).getIdentifier().getText();
-            	}
-            }
-        }
-        else if (node instanceof Tree.SimpleType) {
-            suggestedName = ((Tree.SimpleType) node).getIdentifier().getText();
-        }
-        else if (node instanceof Tree.BaseTypeExpression) {
-            suggestedName = ((Tree.BaseTypeExpression) node).getIdentifier().getText();
-        }
-        else if (node instanceof Tree.QualifiedTypeExpression) {
-            suggestedName = ((Tree.QualifiedTypeExpression) node).getIdentifier().getText();
-        }
-        if (suggestedName!=null) {
-        	suggestedName = lower(suggestedName);
-        	if (!suggestedName.startsWith(prefix)) {
-        		suggestedName = prefix + upper(suggestedName);
-        	}
-    		result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
-    				suggestedName, escape(suggestedName), false));
-        }
-    }
-
-    private static String lower(String suggestedName) {
-        return Character.toLowerCase(suggestedName.charAt(0)) + 
-                suggestedName.substring(1);
-    }
-
-    private static String upper(String suggestedName) {
-        return Character.toUpperCase(suggestedName.charAt(0)) + 
-                suggestedName.substring(1);
-    }
-
-    private static void addKeywordProposals(CeylonParseController cpc, int offset, 
-    		String prefix, List<ICompletionProposal> result, Node node) {
-        if( isModuleDescriptor(cpc) ) {
-            if( prefix.isEmpty() || "import".startsWith(prefix) ) {
-                if (node instanceof Tree.CompilationUnit) {
-                    List<Tree.ModuleDescriptor> moduleDescriptors = 
-                    		cpc.getRootNode().getModuleDescriptors();
-                    if (!moduleDescriptors.isEmpty()) {
-                        Tree.ModuleDescriptor moduleDescriptor = moduleDescriptors.get(0);
-                        if (moduleDescriptor.getImportModuleList() != null && 
-                            moduleDescriptor.getImportModuleList().getStartIndex() < offset ) {
-                            addKeywordProposal(offset, prefix, result, "import");
-                        }
-                    }
-                }
-                else if (node instanceof Tree.ImportModuleList || 
-                        node instanceof Tree.BaseMemberExpression) {
-                    addKeywordProposal(offset, prefix, result, "import");
-                }
-            }
-        }
-        else if (!prefix.isEmpty()) {
-            for (String keyword: keywords) {
-                if (keyword.startsWith(prefix)) {
-                    addKeywordProposal(offset, prefix, result, keyword);
-                }
-            }
-        }
-    }
-
-    private static void addKeywordProposal(int offset, String prefix, List<ICompletionProposal> result, final String keyword) {
-        result.add(new CompletionProposal(offset, prefix, null, keyword, keyword, true) {
-            @Override
-            public StyledString getStyledDisplayString() {
-                return new StyledString(keyword, CeylonLabelProvider.KW_STYLER);
-            }
-        });
-    }
-    
-    /*private static void addTemplateProposal(int offset, String prefix, 
-            List<ICompletionProposal> result) {
-        if (!prefix.isEmpty()) {
-            if ("class".startsWith(prefix)) {
-                String prop = "class Class() {}";
-                result.add(sourceProposal(offset, prefix, null, 
-                        null, prop, prop, true));
-            }
-            if ("interface".startsWith(prefix)) {
-                String prop = "interface Interface {}";
-                result.add(sourceProposal(offset, prefix, null, 
-                        null, prop, prop, true));
-            }
-            if ("void".startsWith(prefix)) {
-                String prop = "void method() {}";
-                result.add(sourceProposal(offset, prefix, null, 
-                        null, prop, prop, true));
-            }
-            if ("function".startsWith(prefix)) {
-                String prop = "function method() { return nothing; }";
-                result.add(sourceProposal(offset, prefix, null, 
-                        null, prop, prop, true));
-            }
-            if ("value".startsWith(prefix)) {
-                String prop = "value attribute = nothing;";
-                result.add(sourceProposal(offset, prefix, null, 
-                        null, prop, prop, true));
-                prop = "value attribute { return nothing; }";
-                result.add(sourceProposal(offset, prefix, null, 
-                        null, prop, prop, true));
-            }
-            if ("object".startsWith(prefix)) {
-                String prop = "object instance {}";
-                result.add(sourceProposal(offset, prefix, null, 
-                        null, prop, prop, true));
-            }
-        }
-    }*/
-    
-    /*private static String getDocumentationFor(CeylonParseController cpc, Declaration d) {
-        return getDocumentation(getReferencedNode(d, getCompilationUnit(cpc, d)));
-    }*/
-    
     private static Set<DeclarationWithProximity> sortProposals(final String prefix, 
             final ProducedType type, Map<String, DeclarationWithProximity> proposals) {
         Set<DeclarationWithProximity> set = new TreeSet<DeclarationWithProximity>(
-                new Comparator<DeclarationWithProximity>() {
-                    public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
-                        boolean xbt = x.getDeclaration() instanceof NothingType;
-                        boolean ybt = y.getDeclaration() instanceof NothingType;
-                        if (xbt&&ybt) {
-                            return 0;
-                        }
-                        if (xbt&&!ybt) {
-                            return 1;
-                        }
-                        if (ybt&&!xbt) {
-                            return -1;
-                        }
-                        ProducedType xtype = getResultType(x.getDeclaration());
-                        ProducedType ytype = getResultType(y.getDeclaration());
-                        boolean xbottom = xtype!=null && xtype.getDeclaration() instanceof NothingType;
-                        boolean ybottom = ytype!=null && ytype.getDeclaration() instanceof NothingType;
-                        if (xbottom && !ybottom) {
-                            return 1;
-                        }
-                        if (ybottom && !xbottom) {
-                            return -1;
-                        }
-                        String xName = x.getName();
-                        String yName = y.getName();
-                        if (!prefix.isEmpty() && isUpperCase(prefix.charAt(0))) {
-                            if (isLowerCase(xName.charAt(0)) && 
-                                    isUpperCase(yName.charAt(0))) {
-                                return 1;
-                            }
-                            else if (isUpperCase(xName.charAt(0)) && 
-                                    isLowerCase(yName.charAt(0))) {
-                                return -1;
-                            }
-                        }
-                        if (type!=null) {
-                            boolean xassigns = xtype!=null && xtype.isSubtypeOf(type);
-                            boolean yassigns = ytype!=null && ytype.isSubtypeOf(type);
-                            if (xassigns && !yassigns) {
-                                return -1;
-                            }
-                            if (yassigns && !xassigns) {
-                                return 1;
-                            }
-                            if (xassigns && yassigns) {
-                                boolean xtd = x.getDeclaration() instanceof TypedDeclaration;
-                                boolean ytd = y.getDeclaration() instanceof TypedDeclaration;
-                                if (xtd && !ytd) {
-                                    return -1;
-                                }
-                                if (ytd && !xtd) {
-                                    return 1;
-                                }
-                            }
-                        }
-                        if (x.getProximity()!=y.getProximity()) {
-                            return new Integer(x.getProximity()).compareTo(y.getProximity());
-                        }
-                        //if (!prefix.isEmpty() && isLowerCase(prefix.charAt(0))) {
-                        if (isLowerCase(xName.charAt(0)) && 
-                                isUpperCase(yName.charAt(0))) {
-                            return -1;
-                        }
-                        else if (isUpperCase(xName.charAt(0)) && 
-                                isLowerCase(yName.charAt(0))) {
-                            return 1;
-                        }
-                        int nc = xName.compareTo(yName);
-                        if (nc==0) {
-                            String xqn = x.getDeclaration().getQualifiedNameString();
-                            String yqn = y.getDeclaration().getQualifiedNameString();
-                            return xqn.compareTo(yqn);
-                        }
-                        else {
-                            return nc;
-                        }
-                    }
-                });
+                new ProposalComparator(prefix, type));
         set.addAll(proposals.values());
         return set;
     }

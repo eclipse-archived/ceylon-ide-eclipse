@@ -4,8 +4,8 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.def
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.ArrayList;
