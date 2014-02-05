@@ -231,7 +231,8 @@ public class InlineRefactoring extends AbstractRefactoring {
 		final Set<Declaration> already = new HashSet<Declaration>();
 		AddImportsVisitor aiv = new AddImportsVisitor(already);
 		declarationNode.visit(aiv);
-		applyImports(change, already, declarationNode.getDeclarationModel(), cu);
+		applyImports(change, already, 
+				declarationNode.getDeclarationModel(), cu, document);
 		return aiv.importedFromDeclarationPackage;
 	}
 

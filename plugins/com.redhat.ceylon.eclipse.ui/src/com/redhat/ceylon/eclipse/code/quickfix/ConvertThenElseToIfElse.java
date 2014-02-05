@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 
 import java.util.Collection;
 
@@ -24,7 +27,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueModifier;
-import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
@@ -146,27 +148,28 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     			return;
     		}
 
-			String baseIndent = CeylonQuickFixAssistant.getIndent(statement, doc);
-			String indent = CeylonAutoEditStrategy.getDefaultIndent();
+			String baseIndent = getIndent(statement, doc);
+			String indent = getDefaultIndent();
 			
 			test = removeEnclosingParentesis(test);
 			
 			StringBuilder replace = new StringBuilder();
+			String delim = getDefaultLineDelimiter(doc);
 			if (declaration != null) {
 				replace.append(declaration)
-				        .append(System.lineSeparator())
+				        .append(delim)
 				        .append(baseIndent);
 			}
 			replace.append("if (").append(test).append(") {")
-			        .append(System.lineSeparator())
+			        .append(delim)
 					.append(baseIndent).append(indent).append(action).append(thenTerm).append(";")
-					.append(System.lineSeparator())
+					.append(delim)
 					.append(baseIndent).append("}")
-					.append(System.lineSeparator())
+					.append(delim)
 					.append(baseIndent).append("else {")
-					.append(System.lineSeparator())
+					.append(delim)
 					.append(baseIndent).append(indent).append(action).append(elseTerm).append(";")
-					.append(System.lineSeparator())
+					.append(delim)
 					.append(baseIndent).append("}");
 
 			TextChange change = new TextFileChange("Convert To if-else", file);

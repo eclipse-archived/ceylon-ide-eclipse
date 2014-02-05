@@ -13,6 +13,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -83,5 +84,14 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 		 new AutoEdit(document, tokens, command)
 		         .customizeDocumentCommand();
 	 }
+
+	public static String getDefaultLineDelimiter(IDocument document) {
+	    if (document instanceof IDocumentExtension4) {
+	    	return ((IDocumentExtension4) document).getDefaultLineDelimiter();
+	    }
+	    else {
+	    	return System.lineSeparator();
+	    }
+	}
 	 
 }

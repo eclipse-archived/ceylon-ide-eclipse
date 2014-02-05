@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
@@ -59,16 +60,17 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
                 String name = type.getDeclaration().getName().replace("&", "")
                 		.replace("<", "").replace(">", "");
                 CreateSubtype cs = subtypeDeclaration(type, 
-                		cu.getUnit().getPackage(), cu.getUnit(), true);
+                		cu.getUnit().getPackage(), cu.getUnit(), 
+                		true, doc);
             	HashSet<Declaration> already = new HashSet<Declaration>();
                 for (ProducedType pt: cs.getImportedTypes()) {
                 	importType(already, pt, cu);
                 }
-                int il = applyImports(change, already, cu);
+                int il = applyImports(change, already, cu, doc);
+                String delim = getDefaultLineDelimiter(doc);
 				String dec = cs.getDefinition().replace("$className", "my" + name) + 
-						System.lineSeparator();
-                dec = dec.replaceAll(System.lineSeparator(),
-                		System.lineSeparator() + getIndent(node, doc));
+						delim;
+                dec = dec.replaceAll(delim, delim + getIndent(node, doc));
                 change.addEdit(new InsertEdit(offset,dec));
                 proposals.add(new CreateObjectProposal(type, 
                         offset+7+il, name.length()+2, file, change));

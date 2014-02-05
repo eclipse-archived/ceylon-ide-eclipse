@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
@@ -86,19 +87,19 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
         List<Tree.Statement> statements = body.getStatements();
         int offset;
         String indent;
-        String bodyIndent=getIndent(body, doc);
-        if (statements.isEmpty()) {
-            indent = System.lineSeparator() + bodyIndent + 
-            		getDefaultIndent();
+        String bodyIndent = getIndent(body, doc);
+        String delim = getDefaultLineDelimiter(doc);
+		if (statements.isEmpty()) {
+            indent = delim + bodyIndent + getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
         else {
             Tree.Statement statement = statements.get(statements.size()-1);
-            indent = System.lineSeparator() + getIndent(statement, doc);
+            indent = delim + getIndent(statement, doc);
             offset = statement.getStopIndex()+1;
         }
         
-        StringBuilder result = new StringBuilder(System.lineSeparator());
+        StringBuilder result = new StringBuilder(delim);
         Set<Declaration> already = new HashSet<Declaration>();
         
         Set<String> formalDeclNames = new HashSet<String>();
@@ -112,7 +113,8 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
                     formalDeclNames.add(d.getName());
                     ProducedReference pr = getRefinedProducedReference(ci, d);
                     result.append(indent)
-                        .append(getRefinementTextFor(d, pr, node.getUnit(), false, indent))
+                        .append(getRefinementTextFor(d, pr, node.getUnit(), false, 
+                        		indent, true))
                         .append(indent);
                     importSignatureTypes(d, cu, already);
                 }
@@ -131,7 +133,8 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
                         ambiguouslyDeclNames.add(m.getName());
                         ProducedReference pr = getRefinedProducedReference(ci, m);
                         result.append(indent)
-                            .append(getRefinementTextFor(m, pr, node.getUnit(), false, indent))
+                            .append(getRefinementTextFor(m, pr, node.getUnit(), false, 
+                            		indent, true))
                             .append(indent);
                         importSignatureTypes(m, cu, already);
                     }
@@ -141,8 +144,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
         
         try {
             if (doc.getChar(offset)=='}' && result.length()>0) {
-                result.append(System.lineSeparator())
-                        .append(bodyIndent);
+                result.append(delim).append(bodyIndent);
             }
         } 
         catch (BadLocationException e) {
@@ -168,7 +170,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
         
         TextFileChange change = new TextFileChange(name, file);
         change.setEdit(new MultiTextEdit());
-        applyImports(change, already, cu);
+        applyImports(change, already, cu, doc);
         change.addEdit(new InsertEdit(offset, result.toString()));
         ImplementFormalAndAmbiguouslyInheritedMembersProposal proposal = new ImplementFormalAndAmbiguouslyInheritedMembersProposal(name, refinementsNames, offset, file, change);
         if (!proposals.contains(proposal)) {

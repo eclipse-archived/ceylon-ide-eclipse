@@ -16,6 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class InferTypeVisitor extends Visitor {
+	
     Unit unit;
     Declaration dec;
     ProducedType inferredType;
@@ -50,7 +51,8 @@ class InferTypeVisitor extends Visitor {
         Term term = that.getSpecifierOrInitializerExpression()==null ? 
                 null : that.getSpecifierOrInitializerExpression().getExpression().getTerm();
         if (term instanceof Tree.BaseMemberExpression) {
-            if (((Tree.BaseMemberExpression) term).getDeclaration().equals(dec)) {
+            Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
+			if (d!=null && d.equals(dec)) {
                 intersect(that.getType().getTypeModel());
             }
         }
@@ -62,12 +64,14 @@ class InferTypeVisitor extends Visitor {
         Term term = that.getSpecifierExpression()==null ? 
                 null : that.getSpecifierExpression().getExpression().getTerm();
         if (bme instanceof Tree.BaseMemberExpression) {
-            if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
+            Declaration d = ((Tree.BaseMemberExpression) bme).getDeclaration();
+			if (d!=null && d.equals(dec)) {
                 if (term!=null) union(term.getTypeModel());
             }
         } 
         if (term instanceof Tree.BaseMemberExpression) {
-            if (((Tree.BaseMemberExpression) term).getDeclaration().equals(dec)) {
+            Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
+			if (d!=null && d.equals(dec)) {
                 if (bme!=null) intersect(bme.getTypeModel());
             }
         }
@@ -108,7 +112,8 @@ class InferTypeVisitor extends Visitor {
         Tree.Term t = that.getExpression().getTerm();
         if (t instanceof Tree.BaseMemberExpression) {
             Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
-            if (bme.getDeclaration().equals(dec)) {
+            Declaration d = bme.getDeclaration();
+			if (d!=null && d.equals(dec)) {
                 Parameter p = that.getParameter();
                 if (p!=null && pr!=null) {
                     ProducedType ft = pr.getTypedParameter(p)
@@ -127,7 +132,8 @@ class InferTypeVisitor extends Visitor {
         Tree.Term t = that.getExpression().getTerm();
         if (t instanceof Tree.BaseMemberExpression) {
             Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
-            if (bme.getDeclaration().equals(dec)) {
+            Declaration d = bme.getDeclaration();
+			if (d!=null && d.equals(dec)) {
                 Parameter p = that.getParameter();
                 if (p!=null && pr!=null) {
                 	//TODO: is this correct?
@@ -144,7 +150,8 @@ class InferTypeVisitor extends Visitor {
         Tree.Term t = that.getSpecifierExpression().getExpression().getTerm();
         if (t instanceof Tree.BaseMemberExpression) {
             Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
-            if (bme.getDeclaration().equals(dec)) {
+            Declaration d = bme.getDeclaration();
+			if (d!=null && d.equals(dec)) {
                 Parameter p = that.getParameter();
                 if (p!=null && pr!=null) {
                     ProducedType ft = pr.getTypedParameter(p)
@@ -159,7 +166,8 @@ class InferTypeVisitor extends Visitor {
         super.visit(that);
         Tree.Term bme = that.getExpression().getTerm();
         if (bme instanceof Tree.BaseMemberExpression) {
-            if (((Tree.BaseMemberExpression) bme).getDeclaration().equals(dec)) {
+            Declaration bmed = ((Tree.BaseMemberExpression) bme).getDeclaration();
+			if (bmed!=null && bmed.equals(dec)) {
                 Declaration d = that.getDeclaration();
                 if (d instanceof TypedDeclaration) {
                     intersect(((TypedDeclaration) d).getType());

@@ -2,10 +2,14 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getOccurrenceLocation;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importEdit;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.isImported;
+import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.getDocument;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getLevenshteinDistance;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,6 +27,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
@@ -53,6 +58,7 @@ class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompl
             Tree.CompilationUnit cu) {
         TextFileChange change = new TextFileChange("Change Reference", file);
         change.setEdit(new MultiTextEdit());
+        IDocument doc = getDocument(change);
         Declaration dec = dwp.getDeclaration();
         String pkg = "";
         if (dec.isToplevel() && !isImported(dec, cu) && isInPackage(cu, dec)) {
@@ -60,7 +66,8 @@ class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompl
             pkg = " in '" + pn + "'";
             if (!pn.isEmpty() && !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                 if (getOccurrenceLocation(cu, findNode(cu, problem.getOffset()))!=IMPORT) {
-                    List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), null, null);
+                    List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), 
+                    		null, null, doc);
                     for (InsertEdit ie: ies) {
                         change.addEdit(ie);
                     }
@@ -98,5 +105,20 @@ class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompl
 	public int getContextInformationPosition() {
 		return -1;
 	}
+    
+    static void addRenameProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
+            Collection<ICompletionProposal> proposals, IFile file) {
+          String brokenName = getIdentifyingNode(node).getText();
+          if (brokenName.isEmpty()) return;
+          for (DeclarationWithProximity dwp: getProposals(node, node.getScope(), cu).values()) {
+              int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
+              //TODO: would it be better to just sort by dist, and
+              //      then select the 3 closest possibilities?
+              if (dist<=brokenName.length()/3+1) {
+                  addRenameProposal(problem, proposals, file, 
+                          brokenName, dwp, dist, cu);
+              }
+          }
+    }
     
 }

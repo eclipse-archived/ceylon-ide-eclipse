@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
@@ -90,7 +91,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         Unit unit = editor.getParseController().getRootNode()
                 .getUnit();
         CreateSubtype cs = subtypeDeclaration(type, 
-        		unit.getPackage(), unit, false);
+        		unit.getPackage(), unit, false, doc);
         NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
                 Util.getFile(editor.getEditorInput()), 
         		"My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
@@ -119,7 +120,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
 	}
 	
     public static CreateSubtype subtypeDeclaration(ProducedType type, 
-    		Package pkg, Unit unit, boolean object) {
+    		Package pkg, Unit unit, boolean object, IDocument doc) {
         TypeDeclaration td = type.getDeclaration();
         StringBuilder def = new StringBuilder();
         if (object) {
@@ -183,7 +184,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         	allTypes.add(type);
         	appendInterface(type, td, def, true);
         }
-        def.append(" {").append(System.lineSeparator());
+        def.append(" {").append(getDefaultLineDelimiter(doc));
         for (DeclarationWithProximity dwp: td.getMatchingMemberDeclarations(null, "", 0).values()) {
         	Declaration d = dwp.getDeclaration();
         	if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
@@ -203,8 +204,8 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         		ProducedReference pr = getRefinedProducedReference(type, d);
             	if (pr instanceof ProducedTypedReference) {
             		def.append("    ")
-            			.append(getRefinementTextFor(d, pr, unit, false, ""))
-            			.append(System.lineSeparator());
+            			.append(getRefinementTextFor(d, pr, unit, false, "", false))
+            			.append(getDefaultLineDelimiter(doc));
             	}
         	}
         }
@@ -236,7 +237,8 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         			}
         		}
     			imports.setLength(imports.length()-2);
-    			imports.append(" }").append(System.lineSeparator());
+    			imports.append(" }")
+    			        .append(getDefaultLineDelimiter(doc));
         	}
         }
         return new CreateSubtype(def.toString(), imports.toString(), allTypes);

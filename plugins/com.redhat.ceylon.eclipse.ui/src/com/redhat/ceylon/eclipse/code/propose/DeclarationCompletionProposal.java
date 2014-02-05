@@ -91,7 +91,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		if (addimport) {
 			try {
 				List<InsertEdit> ies = importEdit(cpc.getRootNode(), 
-					Collections.singleton(declaration), null, null);
+					Collections.singleton(declaration), null, null, 
+					document);
 				for (InsertEdit ie: ies) {
 					ie.apply(document);
 					offset+=ie.getText().length();

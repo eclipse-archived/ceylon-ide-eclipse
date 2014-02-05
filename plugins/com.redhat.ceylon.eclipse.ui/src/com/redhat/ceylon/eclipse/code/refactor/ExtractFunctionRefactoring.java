@@ -4,6 +4,7 @@ import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
@@ -369,7 +370,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             args = args.substring(0, args.length()-2);
         }
         
-        String indent = System.lineSeparator() + 
+        String indent = getDefaultLineDelimiter(doc) + 
         		getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 
@@ -407,7 +408,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     type = returnType.getProducedTypeName();
                     HashSet<Declaration> decs = new HashSet<Declaration>();
                     importType(decs, returnType, rootNode);
-                    applyImports(tfc, decs, rootNode);
+                    applyImports(tfc, decs, rootNode, doc);
                 }
                 else {
                     type = "function";
@@ -510,7 +511,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             args = args.substring(0, args.length()-2);
         }
         
-        String indent = System.lineSeparator() + 
+        String indent = getDefaultLineDelimiter(doc) + 
         		getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 
@@ -556,7 +557,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 content = returnType.getProducedTypeName();
                 HashSet<Declaration> already = new HashSet<Declaration>();
                 importType(already, returnType, rootNode);
-                applyImports(tfc, already, rootNode);
+                applyImports(tfc, already, rootNode, doc);
             }
             else {
                 content = "function";

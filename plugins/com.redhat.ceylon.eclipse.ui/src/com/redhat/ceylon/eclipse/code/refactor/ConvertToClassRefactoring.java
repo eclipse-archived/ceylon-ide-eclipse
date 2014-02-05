@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -86,7 +87,7 @@ public class ConvertToClassRefactoring extends AbstractRefactoring {
         //TODO: handle actual object declarations
         String mods = declaration.isShared() ? "shared " : "";
         tfc.addEdit(new InsertEdit(offset, 
-        		System.lineSeparator() + getIndent(od, doc) + 
+        		getDefaultLineDelimiter(doc) + getIndent(od, doc) + 
                 mods + newName + " " + declaration.getName() + 
                 " = " + newName + "();"));
 	}

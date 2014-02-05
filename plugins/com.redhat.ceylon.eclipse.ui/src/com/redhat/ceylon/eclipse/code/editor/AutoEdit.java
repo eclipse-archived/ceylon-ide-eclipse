@@ -34,7 +34,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
@@ -111,7 +110,7 @@ class AutoEdit {
 			{ "(", ")", CLOSE_PARENS },
 			{ "[", "]", CLOSE_BRACKETS }};
 
-	public void closeOpening() {
+	private void closeOpening() {
 		
 		try {
 			// TODO: improve this, check the surrounding token type!
@@ -256,7 +255,7 @@ class AutoEdit {
 		}
 	}
     
-    public boolean isIndent(String text) {
+    private boolean isIndent(String text) {
         if (!text.isEmpty() && 
         		text.length() % getIndentSpaces()==0) {
             for (char c: text.toCharArray()) {
@@ -612,7 +611,7 @@ class AutoEdit {
         }
     }
     
-    int count(String token) {
+    private int count(String token) {
     	int count = 0;
     	List<CommonToken> tokens = getTokens();
 		for (CommonToken tok: tokens) {
@@ -623,7 +622,7 @@ class AutoEdit {
     	return count;
     }
 
-	protected List<CommonToken> getTokens() {
+	private List<CommonToken> getTokens() {
 		return tokens;
 	}
     
@@ -693,7 +692,7 @@ class AutoEdit {
                 startOfPrev, endOfPrev, closeBraces, buf);
     }
     
-    boolean isInheritanceClause(CommonToken t) {
+    private boolean isInheritanceClause(CommonToken t) {
         if (t==null) return false;
         int tt = t.getType(); 
     	return tt==CeylonLexer.EXTENDS||
@@ -702,7 +701,7 @@ class AutoEdit {
     			tt==CeylonLexer.SATISFIES;
     }
     
-    boolean isOperatorChar(char ch) {
+    private boolean isOperatorChar(char ch) {
         return ch=='+'||
                 ch=='-'||
                 ch=='/'||
@@ -720,7 +719,7 @@ class AutoEdit {
                 ch=='!';
     }
     
-    boolean isBinaryOperator(CommonToken t) {
+    private boolean isBinaryOperator(CommonToken t) {
         if (t==null) return false;
         int tt = t.getType(); 
     	return tt==CeylonLexer.SPECIFY||
@@ -835,15 +834,12 @@ class AutoEdit {
         if (newlineChar==null && line>0) {
         	return document.getLineDelimiter(line-1);
         }
-        else if (document instanceof IDocumentExtension4) {
-            return ((IDocumentExtension4) document).getDefaultLineDelimiter();
-        }
         else {
-            return System.lineSeparator();
+        	return CeylonAutoEditStrategy.getDefaultLineDelimiter(document);
         }
     }
 
-    private String getIndent(int start, int end) 
+	private String getIndent(int start, int end) 
             throws BadLocationException {
         if (start<0||end<0) return "";
         int nestingLevel = 0;
@@ -885,7 +881,7 @@ class AutoEdit {
                 firstEndOfWhitespace(start, end)-start);
     }
 
-    int parenCount(int start, int end) {
+    private int parenCount(int start, int end) {
         int count=0;
         for (Iterator<CommonToken> it = getTokenIterator(getTokens(), 
                 new Region(start, end-start)); it.hasNext();) {

@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getFile;
+import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
@@ -26,7 +28,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 
@@ -119,9 +120,9 @@ public class MoveDeclarationProposal implements ICompletionProposal {
 	            		}
 	            	}
 	            });*/
-	            String imports = CleanImportsHandler.imports(node, cu.getImportList());
+	            String imports = imports(node, cu.getImportList(), document);
 	            boolean success = NewUnitWizard.open(imports==null ? 
-	                        contents : imports + System.lineSeparator() + contents, 
+	                        contents : imports + getDefaultLineDelimiter(document) + contents, 
 	                    getFile(editor.getEditorInput()), 
 	                    ((Tree.Declaration) node).getIdentifier().getText(), "Move to New Unit", 
 	                    "Create a new Ceylon compilation unit containing the selected declaration.");
