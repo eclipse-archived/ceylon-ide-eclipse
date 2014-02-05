@@ -3,11 +3,11 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getBody;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getRootNode;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 

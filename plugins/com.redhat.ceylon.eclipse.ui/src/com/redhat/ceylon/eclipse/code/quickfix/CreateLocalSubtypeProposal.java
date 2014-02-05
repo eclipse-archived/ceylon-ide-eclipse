@@ -2,9 +2,9 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.subtypeDeclaration;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
 
 import java.util.Collection;
 import java.util.HashSet;
