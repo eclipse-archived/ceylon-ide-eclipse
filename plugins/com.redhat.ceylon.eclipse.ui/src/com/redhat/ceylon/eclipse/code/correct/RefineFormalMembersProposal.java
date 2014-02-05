@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
-import static com.redhat.ceylon.eclipse.code.correct.Util.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.overloads;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.propose.ProposalUtil.overloads;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;

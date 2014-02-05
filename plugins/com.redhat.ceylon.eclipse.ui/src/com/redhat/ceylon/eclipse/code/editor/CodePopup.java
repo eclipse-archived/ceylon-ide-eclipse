@@ -4,7 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodePath;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
 

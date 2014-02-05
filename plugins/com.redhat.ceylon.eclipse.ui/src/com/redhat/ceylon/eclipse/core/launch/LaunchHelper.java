@@ -33,7 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
@@ -90,7 +90,7 @@ public class LaunchHelper {
         Declaration declarationToRun = null;
         IFile fileToRun = null; 
         if (topLevelDeclarations.size() == 0) {
-            MessageDialog.openError(Util.getShell(), "Ceylon Launcher", 
+            MessageDialog.openError(EditorUtil.getShell(), "Ceylon Launcher", 
             		"No ceylon runnable element"); 
         } 
         else if (topLevelDeclarations.size() > 1) {
@@ -324,7 +324,7 @@ public class LaunchHelper {
 	}
 
     static Declaration chooseDeclaration(final List<Declaration> decls) {
-        FilteredItemsSelectionDialog sd = new CeylonTopLevelSelectionDialog(Util.getShell(), false, decls);
+        FilteredItemsSelectionDialog sd = new CeylonTopLevelSelectionDialog(EditorUtil.getShell(), false, decls);
 
         if (sd.open() == Window.OK) {
             return (Declaration)sd.getFirstResult();
@@ -344,7 +344,7 @@ public class LaunchHelper {
     	
     	Set<Module> modules = getModules(project, true);
 	    
-	    FilteredItemsSelectionDialog cmsd = new CeylonModuleSelectionDialog(Util.getShell(), modules, "Choose Ceylon Module"); 
+	    FilteredItemsSelectionDialog cmsd = new CeylonModuleSelectionDialog(EditorUtil.getShell(), modules, "Choose Ceylon Module"); 
 	    if (cmsd.open() == Window.OK) {
 	        return (Module)cmsd.getFirstResult();
 	    }

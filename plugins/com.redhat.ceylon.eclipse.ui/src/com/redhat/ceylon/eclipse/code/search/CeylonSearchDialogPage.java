@@ -35,7 +35,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.editors.text.TextEditor;
 
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 public class CeylonSearchDialogPage extends DialogPage 
 		implements ISearchPage {
@@ -171,9 +171,9 @@ public class CeylonSearchDialogPage extends DialogPage
 
     private void initSearchPattern() {
         searchPattern = "";
-        IEditorPart currentEditor = Util.getCurrentEditor();
+        IEditorPart currentEditor = EditorUtil.getCurrentEditor();
         if (currentEditor instanceof TextEditor) {
-            String s = Util.getSelectionText((TextEditor) currentEditor);
+            String s = EditorUtil.getSelectionText((TextEditor) currentEditor);
             if (s!=null) {
                 StringTokenizer tokens = new StringTokenizer(s);
                 if (tokens.hasMoreTokens()) {

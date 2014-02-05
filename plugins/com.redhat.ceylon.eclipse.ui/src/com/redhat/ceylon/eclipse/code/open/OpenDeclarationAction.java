@@ -9,7 +9,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -37,7 +37,7 @@ public class OpenDeclarationAction extends Action {
         dialog.setTitle("Open Ceylon Declaration");
         dialog.setMessage("Select a Ceylon declaration to open:");
         if (editor instanceof ITextEditor) {
-            dialog.setInitialPattern(Util.getSelectionText((ITextEditor) editor));
+            dialog.setInitialPattern(EditorUtil.getSelectionText((ITextEditor) editor));
         }
         dialog.open();
         Object[] types = dialog.getResult();

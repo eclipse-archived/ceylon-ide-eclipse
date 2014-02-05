@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
-import static com.redhat.ceylon.eclipse.code.editor.Util.getActivePage;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -30,7 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
@@ -169,7 +169,7 @@ public class CeylonSourcePositionLocator {
 	}
     
     public static void gotoDeclaration(Declaration d, IProject project) {
-        gotoDeclaration(d, project, Util.getCurrentEditor());
+        gotoDeclaration(d, project, EditorUtil.getCurrentEditor());
     }
     
     public static void gotoDeclaration(Declaration d, IProject project, IEditorPart editor) {

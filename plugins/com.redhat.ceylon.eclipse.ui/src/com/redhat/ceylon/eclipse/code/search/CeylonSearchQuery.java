@@ -22,7 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
@@ -78,7 +78,7 @@ class CeylonSearchQuery implements ISearchQuery {
 		this.includeReferences = includeReferences;
 		this.regex = regex;
 		this.resources = resources;
-        this.page = Util.getActivePage();
+        this.page = EditorUtil.getActivePage();
 	}
 
 	@Override

@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getStyledDescriptionFor;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Comparator;

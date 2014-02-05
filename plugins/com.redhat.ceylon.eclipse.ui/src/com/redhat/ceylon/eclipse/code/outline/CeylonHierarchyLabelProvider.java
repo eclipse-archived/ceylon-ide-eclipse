@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MULTIPLE_TYPES_IMAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getStyledDescriptionFor;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import org.eclipse.core.resources.IProject;

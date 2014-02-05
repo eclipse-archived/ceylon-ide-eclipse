@@ -31,8 +31,8 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.PACKAGES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.STRINGS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.TYPES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getCurrentThemeColor;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.appendParameters;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.appendParameters;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
@@ -143,7 +143,7 @@ import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
 import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
@@ -308,7 +308,7 @@ public class DocumentationHover
         		close(control);
         		CompilationUnit rn = editor.getParseController().getRootNode();
         		Node node = findNode(rn, Integer.parseInt(location.substring(4)));
-        		SpecifyTypeProposal.create(rn, node, Util.getFile(editor.getEditorInput()))
+        		SpecifyTypeProposal.create(rn, node, EditorUtil.getFile(editor.getEditorInput()))
         		        .apply(editor.getParseController().getDocument());
         	}
         	else if (location.startsWith("exv:")) {
@@ -1221,7 +1221,7 @@ public class DocumentationHover
 					buffer.append("<p>");
 					for (Parameter p: pl.getParameters()) {
 					    StringBuilder params = new StringBuilder();
-						appendParameters(p.getModel(), params, cpc);
+					    appendParameters(p.getModel(), params, cpc);
 						String def = getDefaultValue(p, cpc);
 						StringBuilder doc = new StringBuilder();
 						Tree.Declaration refNode = (Tree.Declaration) getReferencedNode(p.getModel(), cpc);

@@ -36,7 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 
@@ -186,7 +186,7 @@ public class CeylonOutlineNode implements IAdaptable {
     
     public StyledString getLabel() {
         if (category==DEFAULT_CATEGORY && declaration) {
-            IEditorPart currentEditor = Util.getCurrentEditor();
+            IEditorPart currentEditor = EditorUtil.getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {
                 CeylonEditor ce = (CeylonEditor) currentEditor;
                 Node node = findNode(ce.getParseController().getRootNode(), startOffset);
@@ -202,7 +202,7 @@ public class CeylonOutlineNode implements IAdaptable {
 
     public int getDecorations() {
         if (category==DEFAULT_CATEGORY && declaration) {
-            IEditorPart currentEditor = Util.getCurrentEditor();
+            IEditorPart currentEditor = EditorUtil.getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {
                 CeylonEditor ce = (CeylonEditor) currentEditor;
                 Node node = findNode(ce.getParseController().getRootNode(), startOffset);

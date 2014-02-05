@@ -18,7 +18,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
@@ -48,7 +48,7 @@ public class OpenTypeAction extends Action {
         dialog.setTitle("Open Ceylon or Java Type");
         dialog.setMessage("Select a Ceylon or Java type to open:");
         if (editor instanceof ITextEditor) {
-            dialog.setInitialPattern(Util.getSelectionText((ITextEditor) editor));
+            dialog.setInitialPattern(EditorUtil.getSelectionText((ITextEditor) editor));
         }
         dialog.open();
         Object[] types = dialog.getResult();

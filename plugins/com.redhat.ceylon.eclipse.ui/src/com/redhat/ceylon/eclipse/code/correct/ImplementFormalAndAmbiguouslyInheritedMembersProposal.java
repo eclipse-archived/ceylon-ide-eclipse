@@ -4,8 +4,8 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.overloads;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.propose.ProposalUtil.overloads;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -30,7 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrectionProposal {
 
@@ -48,7 +48,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends ChangeCorrec
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset);
+        EditorUtil.gotoLocation(file, offset);
     }
     
     @Override

@@ -7,7 +7,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 abstract class AbstractRefactoringAction extends TextEditorAction {
     final AbstractRefactoring refactoring;
@@ -22,7 +22,7 @@ abstract class AbstractRefactoringAction extends TextEditorAction {
     }
 
     public void run() {
-        for (IEditorPart ed: Util.getActivePage().getDirtyEditors()) {
+        for (IEditorPart ed: EditorUtil.getActivePage().getDirtyEditors()) {
             if (ed instanceof CeylonEditor && ed!=editor) {
                 String msg = "Please save other open Ceylon editors before refactoring";
                 if (editor!=null && editor.isDirty()) {

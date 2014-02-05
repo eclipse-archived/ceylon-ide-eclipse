@@ -3,8 +3,8 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendImportStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getModuleSearchResults;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 

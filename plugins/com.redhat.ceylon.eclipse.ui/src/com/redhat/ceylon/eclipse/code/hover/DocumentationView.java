@@ -47,7 +47,7 @@ import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
 import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
@@ -171,7 +171,7 @@ public class DocumentationView extends ViewPart {
         else if (location.startsWith("stp:")) {
             CompilationUnit rn = editor.getParseController().getRootNode();
             Node node = findNode(rn, Integer.parseInt(location.substring(4)));
-            SpecifyTypeProposal.create(rn, node, Util.getFile(editor.getEditorInput()))
+            SpecifyTypeProposal.create(rn, node, EditorUtil.getFile(editor.getEditorInput()))
                     .apply(editor.getParseController().getDocument());
         }
         else if (location.startsWith("exv:")) {

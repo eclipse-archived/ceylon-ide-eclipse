@@ -3,6 +3,9 @@ package com.redhat.ceylon.eclipse.util;
 import org.eclipse.core.resources.IProject;
 
 import com.redhat.ceylon.cmr.api.ModuleQuery;
+import com.redhat.ceylon.cmr.api.ModuleSearchResult;
+import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public class ModuleQueries {
@@ -19,6 +22,13 @@ public class ModuleQueries {
 	        }
 	    }
 	    return ModuleQuery.Type.CODE;
+	}
+
+	public static ModuleSearchResult getModuleSearchResults(String prefix,
+	        TypeChecker tc, IProject project) {
+	    ModuleQuery query = new ModuleQuery(prefix, getModuleQueryType(project));
+	    query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+	    return tc.getContext().getRepositoryManager().completeModules(query);
 	}
 
 }

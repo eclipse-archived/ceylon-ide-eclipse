@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
 
@@ -23,7 +24,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 
 public class ChangeParametersInputPage extends UserInputWizardPage {
     
@@ -69,7 +69,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
 		for (Parameter p: fun.getParameterLists().get(0).getParameters()) {
 		    TableItem item = new TableItem(parameters, SWT.NONE);
 		    item.setImage(CeylonLabelProvider.getImageForDeclaration(p.getModel()));
-		    item.setText(CeylonContentProposer.getDescriptionFor(p.getModel()));
+		    item.setText(getDescriptionFor(p.getModel()));
 		}
 
         Button upButton = new Button(composite, SWT.PUSH);

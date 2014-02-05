@@ -5,8 +5,8 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_APPLICATION;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
@@ -66,7 +66,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -120,7 +120,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
     @Override
     public void launch(IEditorPart editor, String mode) {
-        IFile file = Util.getFile(editor.getEditorInput());
+        IFile file = EditorUtil.getFile(editor.getEditorInput());
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             CeylonParseController cpc = ce.getParseController();
@@ -201,7 +201,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         Declaration declarationToRun = null;
         IFile fileToRun = null; 
         if (topLevelDeclarations.size() == 0) {
-            MessageDialog.openError(Util.getShell(), "Ceylon Launcher", 
+            MessageDialog.openError(EditorUtil.getShell(), "Ceylon Launcher", 
             		"No ceylon runnable element"); 
         } 
         else if (topLevelDeclarations.size() > 1) {
@@ -221,7 +221,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
     private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".TOPLEVEL_DECLARATION_SELECTION_DIALOG";
     public static Declaration chooseDeclaration(final List<Declaration> declarations) {
-        FilteredItemsSelectionDialog sd = new FilteredItemsSelectionDialog(Util.getShell())
+        FilteredItemsSelectionDialog sd = new FilteredItemsSelectionDialog(EditorUtil.getShell())
         {
             {
                 setTitle("Ceylon Launcher");
@@ -434,7 +434,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     private void launch(Declaration declarationToRun, IFile fileToRun, String mode) {
         String err = canLaunch(declarationToRun, fileToRun, mode);
         if (err != null) {
-            MessageDialog.openError(Util.getShell(), "Ceylon Launcher Error", err); 
+            MessageDialog.openError(EditorUtil.getShell(), "Ceylon Launcher Error", err); 
             return;
         }
         ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, fileToRun, getConfigurationType());
@@ -502,7 +502,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
      */
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList) {
         IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
-        ElementListSelectionDialog dialog= new ElementListSelectionDialog(Util.getShell(), labelProvider);
+        ElementListSelectionDialog dialog= new ElementListSelectionDialog(EditorUtil.getShell(), labelProvider);
         dialog.setElements(configList.toArray());
         dialog.setTitle("Ceylon Launcher");  
         dialog.setMessage("Please choose a configuration to start the Ceylon application");
@@ -546,7 +546,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             wc.setMappedResources(new IResource[] {file});
             config = wc.doSave();
         } catch (CoreException exception) {
-            MessageDialog.openError(Util.getShell(), "Ceylon Launcher Error", 
+            MessageDialog.openError(EditorUtil.getShell(), "Ceylon Launcher Error", 
                     exception.getStatus().getMessage());
         } 
         return config;

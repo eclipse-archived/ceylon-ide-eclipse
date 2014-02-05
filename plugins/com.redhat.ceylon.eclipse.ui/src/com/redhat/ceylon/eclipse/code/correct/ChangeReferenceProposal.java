@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
-import static com.redhat.ceylon.eclipse.code.correct.Util.getLevenshteinDistance;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshteinDistance;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
@@ -29,7 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompletionProposalExtension {
     
@@ -49,7 +49,7 @@ class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompl
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset, length);
+        EditorUtil.gotoLocation(file, offset, length);
     }
 
     static void addRenameProposal(ProblemLocation problem,

@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.name;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapedPackageName;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.ArrayList;
@@ -119,7 +119,7 @@ public class ImportProposals {
 			if (aliases==null) {
 			    for (Declaration d: declarations) {
 			        if (d.getUnit().getPackage().equals(p)) {
-			            text.append(", ").append(name(d));
+			            text.append(", ").append(escapeName(d));
 			        }
 			    }
 			}
@@ -132,7 +132,7 @@ public class ImportProposals {
                         if (alias!=null && !alias.equals(d.getName())) {
                             text.append(alias).append('=');
                         }
-                        text.append(name(d));
+                        text.append(escapeName(d));
                     }
                 }
 			}
@@ -156,7 +156,7 @@ public class ImportProposals {
 			else {
 				int insertPosition = getBestImportInsertPosition(cu);
 				text.delete(0, 2);
-				text.insert(0, "import " + escapedPackageName(p) + " { ")
+				text.insert(0, "import " + escapePackageName(p) + " { ")
 				    .append(" }"); 
 				String delim = Indents.getDefaultLineDelimiter(doc);
 				if (insertPosition==0) {
