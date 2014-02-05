@@ -64,7 +64,6 @@ import static com.redhat.ceylon.eclipse.code.propose.ReferenceCompletions.addInv
 import static com.redhat.ceylon.eclipse.code.propose.ReferenceCompletions.addNamedArgumentProposal;
 import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.addRefinementProposal;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
-import static java.lang.Character.isJavaIdentifierPart;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -268,84 +267,38 @@ public class CeylonContentProposer {
             //start of an empty file
             return new PositionedPrefix(text.substring(0, offset), 0);
         }
-        //try to guess the character the user just typed
-        //(it would be the character immediately behind
-        //the caret, i.e. at offset-1)
-        char charAtOffset = text.charAt(offset-1);
-        int offsetInToken = offset-1-token.getStartIndex();
-        boolean inToken = offsetInToken>=0 && 
-                offsetInToken<token.getText().length();
         
-        //int end = offset;
-        if (inToken && 
-                charAtOffset==token.getText().charAt(offsetInToken)) {
-            //then we're not missing the typed character 
-            //from the tree we were passed by IMP
-            if (isIdentifierOrKeyword(token)) {
-                return new PositionedPrefix(
-                     token.getText().substring(0, offsetInToken+1),
-                     token.getStartIndex());
-            }
-            else if (token.getType() == ASTRING_LITERAL || 
-            		token.getType() == AVERBATIM_STRING) {
-                DocLink docLink = getDocLink(token.getText(), 
-                		offset - token.getStartIndex(), 
-                		offsetInToken);
-                if (docLink != null) {
-                    // if caret is after '|'
-                    if (offsetInToken >= docLink.declStart-1) {
-                        return positionedPrefixForDocLink(token, offsetInToken,
-                                docLink);
-                    }
-                }
-                return null; // in literal but no docRef
-            }
-            else {
-                return new PositionedPrefix(offset, isMemberOperator(token));
-            }
-        } 
-        else {
-            //then we are missing the typed character from
-            //the tree, along with possibly some other
-            //previously typed characters
-            boolean isIdentifierChar = isJavaIdentifierPart(charAtOffset);
-            if (isIdentifierChar) {
-                if (token.getType()==CeylonLexer.WS) {
-                    //we are typing in or after whitespace
-                    String prefix = text.substring(token.getStartIndex(), offset).trim();
-                    return new PositionedPrefix(prefix, offset-prefix.length()-1);
-                }
-                else if (isIdentifierOrKeyword(token)) {
-                    //we are typing in or after within an 
-                    //identifier or keyword
-                    String prefix = text.substring(token.getStartIndex(), offset);
-                    return new PositionedPrefix(prefix, token.getStartIndex());
-                }
-                else if (offset<=token.getStopIndex()+1) {
-                    //we are typing in or after a comment 
-                    //block or strings, etc - not much 
-                    //useful compensation we can do here
-                    return new PositionedPrefix(
-                            Character.toString(charAtOffset), 
-                            offset-1);
-                }
-                else {
-                    //after a member dereference and other
-                    //misc cases of punctuation, etc
-                    return new PositionedPrefix(
-                            text.substring(token.getStopIndex()+1, offset),
-                            token.getStopIndex());
-                }
-            }
-            //disable this for now cos it causes problem in
-            //import statements
-            /*else if (charAtOffset=='.') {
-                return new PositionedPrefix(offset-2, true);
-            }
-            else {*/
-                return new PositionedPrefix(offset-1, false);
-            //}
+        int offsetInToken = offset-1-token.getStartIndex();
+        
+        //then we're not missing the typed character 
+        //from the tree we were passed by IMP
+        if (isIdentifierOrKeyword(token)) {
+        	return new PositionedPrefix(
+        			token.getText().substring(0, offsetInToken+1),
+        			token.getStartIndex());
         }
+        else if (isStringLiteral(token)) {
+        	DocLink docLink = getDocLink(token.getText(), 
+        			offset - token.getStartIndex(), 
+        			offsetInToken);
+        	if (docLink != null) {
+        		// if caret is after '|'
+        		if (offsetInToken >= docLink.declStart-1) {
+        			return positionedPrefixForDocLink(token, offsetInToken,
+        					docLink);
+        		}
+        	}
+        	return null; // in literal but no docRef
+        }
+        else {
+        	return new PositionedPrefix(offset, isMemberOperator(token));
+        }
+    }
+
+	private static boolean isStringLiteral(CommonToken token) {
+	    int type = token.getType();
+		return type == ASTRING_LITERAL || 
+        		type == AVERBATIM_STRING;
     }
 
 	private static PositionedPrefix positionedPrefixForDocLink(
@@ -373,25 +326,12 @@ public class CeylonContentProposer {
 
     private static CommonToken getTokenAtCaret(final int offset, ITextViewer viewer,
             List<CommonToken> tokens) {
-        //find the token behind the caret, adjusting to an 
-        //earlier token if the token we find is not at the 
-        //same position in the current text (in which case 
-        //it is probably a token that actually comes after 
-        //what we are currently typing)
         if (offset==0) {
             return null;
         }
         int index = getTokenIndexAtCharacter(tokens, offset-1);
-        if (index<0) index = -index;
-        while (index>=0) {
-            CommonToken token = (CommonToken) tokens.get(index);
-            String text = viewer.getDocument().get();
-            boolean tokenHasMoved = text.charAt(token.getStartIndex())!=
-                    token.getText().charAt(0);
-            if (!tokenHasMoved) {
-                return token;
-            }
-            index--;
+        if (index>=0) {
+            return (CommonToken) tokens.get(index);
         }
         return null;
     }
