@@ -19,7 +19,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 
 public class CeylonSearchResult extends AbstractTextSearchResult
@@ -110,7 +110,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 			IEditorPart editor) {
 		IEditorInput ei = editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
-			return getMatchesForFile(Util.getFile(ei));
+			return getMatchesForFile(EditorUtil.getFile(ei));
 		}
 		else if (ei instanceof FileStoreEditorInput) {
 			return getMatchesForURI(((FileStoreEditorInput)ei).getURI());
@@ -125,7 +125,7 @@ public class CeylonSearchResult extends AbstractTextSearchResult
 		IEditorInput ei = editor.getEditorInput();
 		if (ei instanceof IFileEditorInput) {
 			IFile file = getFile(match.getElement());
-			return file!=null && file.equals(Util.getFile(ei));
+			return file!=null && file.equals(EditorUtil.getFile(ei));
 		}
 		else if (ei instanceof FileStoreEditorInput) {
 			String path = ((CeylonElement) match.getElement()).getVirtualFile().getPath();

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.open;
 
-import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.editor.Util.getSelection;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedModel;

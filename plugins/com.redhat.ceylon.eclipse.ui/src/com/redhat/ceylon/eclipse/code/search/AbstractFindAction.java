@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.editor.Util.getProject;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getProject;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;

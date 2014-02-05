@@ -22,7 +22,7 @@ import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -80,7 +80,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                     runner.run(config, launch, monitor);
                 } catch (Exception e) {
                 	e.printStackTrace();
-                	MessageDialog.openError(Util.getShell(), "Ceylon Module Launcher Error", 
+                	MessageDialog.openError(EditorUtil.getShell(), "Ceylon Module Launcher Error", 
                             "Internal Error");
                 }
             }

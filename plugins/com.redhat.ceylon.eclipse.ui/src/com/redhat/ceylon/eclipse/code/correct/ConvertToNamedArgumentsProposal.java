@@ -19,7 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
 class ConvertToNamedArgumentsProposal extends ChangeCorrectionProposal {
@@ -36,7 +36,7 @@ class ConvertToNamedArgumentsProposal extends ChangeCorrectionProposal {
 	@Override
     public void apply(IDocument document) {
 		 super.apply(document);
-		 Util.gotoLocation(file, offset);
+		 EditorUtil.gotoLocation(file, offset);
     }
     
     public static void addConvertToNamedArgumentsProposal(Collection<ICompletionProposal> proposals, 

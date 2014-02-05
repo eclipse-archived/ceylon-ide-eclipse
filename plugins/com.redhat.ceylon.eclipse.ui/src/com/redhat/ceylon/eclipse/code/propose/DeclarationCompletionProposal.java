@@ -3,9 +3,9 @@ package com.redhat.ceylon.eclipse.code.propose;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getParameters;
 import static com.redhat.ceylon.eclipse.code.propose.CompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.propose.ParameterContextValidator.findCharCount;
+import static com.redhat.ceylon.eclipse.code.propose.ProposalUtil.getParameters;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,7 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 class DeclarationCompletionProposal extends CompletionProposal {
@@ -224,7 +224,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	            i++;
 	        }
             linkedModeModel.forceInstall();
-            final CeylonEditor editor = (CeylonEditor) Util.getCurrentEditor();
+            final CeylonEditor editor = (CeylonEditor) EditorUtil.getCurrentEditor();
             linkedModeModel.addLinkingListener(new ILinkedModeListener() {
                 @Override
                 public void left(LinkedModeModel model, int flags) {

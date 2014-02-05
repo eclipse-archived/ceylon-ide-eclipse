@@ -28,7 +28,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class Util {
+public class EditorUtil {
     
     public static IProject getProject(IEditorInput input) {
         if (input instanceof IFileEditorInput) {

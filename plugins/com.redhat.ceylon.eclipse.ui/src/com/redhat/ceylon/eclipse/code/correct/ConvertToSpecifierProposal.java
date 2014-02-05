@@ -13,7 +13,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ConvertToSpecifierProposal extends ChangeCorrectionProposal {
     
@@ -29,7 +29,7 @@ class ConvertToSpecifierProposal extends ChangeCorrectionProposal {
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset);
+        EditorUtil.gotoLocation(file, offset);
     }
 
     static void addConvertToSpecifierProposal(IDocument doc,

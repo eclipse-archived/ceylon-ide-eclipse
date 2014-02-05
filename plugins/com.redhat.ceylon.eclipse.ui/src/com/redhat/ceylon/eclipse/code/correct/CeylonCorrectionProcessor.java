@@ -112,7 +112,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 
@@ -517,8 +517,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (editor==null) return;
         
         IDocument doc = context.getSourceViewer().getDocument();
-        IProject project = Util.getProject(editor.getEditorInput());
-        IFile file = Util.getFile(editor.getEditorInput());
+        IProject project = EditorUtil.getProject(editor.getEditorInput());
+        IFile file = EditorUtil.getFile(editor.getEditorInput());
         
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu!=null) {

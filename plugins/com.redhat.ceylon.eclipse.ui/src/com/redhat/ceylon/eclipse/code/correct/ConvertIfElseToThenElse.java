@@ -34,7 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
     
@@ -50,7 +50,7 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset);
+        EditorUtil.gotoLocation(file, offset);
     }
     
     static void addConvertToThenElseProposal(CompilationUnit cu, IDocument doc,

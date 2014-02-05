@@ -1,8 +1,9 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
-import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.name;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapedPackageName;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapeAliasedName;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
@@ -159,7 +160,7 @@ public class CleanImportsHandler extends AbstractHandler {
                         null : //TODO: what to do in this case? look up the Package where?
                         imports.get(0).getImportPath().getModel();
                 String escapedPackageName = packageModel instanceof Package ?
-                        escapedPackageName((Package) packageModel) : 
+                        escapePackageName((Package) packageModel) : 
                         packageName;
                 builder.append("import ")
                         .append(escapedPackageName)
@@ -210,11 +211,11 @@ public class CleanImportsHandler extends AbstractHandler {
                         .append(indent);
                 if (!i.getImportModel().getAlias()
                         .equals(i.getDeclarationModel().getName())) {
-                    String escapedAlias = name(i.getDeclarationModel(), 
+                    String escapedAlias = escapeAliasedName(i.getDeclarationModel(), 
                             i.getImportModel().getAlias());
                     builder.append(escapedAlias).append("=");
                 }
-                builder.append(name(i.getDeclarationModel()));
+                builder.append(escapeName(i.getDeclarationModel()));
                 appendNestedImportElements(i, unused, builder, doc);
                 builder.append(",");
             }
@@ -224,7 +225,7 @@ public class CleanImportsHandler extends AbstractHandler {
                     .equals(packageName)) {
                 builder.append(Indents.getDefaultLineDelimiter(doc))
                        .append(indent);
-                builder.append(name(d)).append(",");
+                builder.append(escapeName(d)).append(",");
             }
         }
         if (hasWildcard) {

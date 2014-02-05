@@ -15,7 +15,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 public class AddSpreadToVariadicParameterProposal extends ChangeCorrectionProposal {
     
@@ -61,7 +61,7 @@ public class AddSpreadToVariadicParameterProposal extends ChangeCorrectionPropos
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset);
+        EditorUtil.gotoLocation(file, offset);
     }
 
     @Override

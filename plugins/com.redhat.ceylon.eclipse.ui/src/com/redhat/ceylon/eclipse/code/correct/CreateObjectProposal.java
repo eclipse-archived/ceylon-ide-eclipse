@@ -23,7 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.correct.CreateSubtypeInNewUnitProposal.CreateSubtype;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateObjectProposal extends ChangeCorrectionProposal {
@@ -44,7 +44,7 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset, length);
+        EditorUtil.gotoLocation(file, offset, length);
     }
 
     static void addCreateObjectProposal(IDocument doc, Tree.CompilationUnit cu,

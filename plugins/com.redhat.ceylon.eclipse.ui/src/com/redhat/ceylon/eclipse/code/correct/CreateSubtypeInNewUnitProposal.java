@@ -1,8 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.Util.getSelectedNode;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.appendParameters;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -39,12 +40,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
-import com.redhat.ceylon.eclipse.code.propose.RequiredTypeVisitor;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.util.RequiredTypeVisitor;
 
 class CreateSubtypeInNewUnitProposal implements ICompletionProposal, 
 		ICompletionProposalExtension6 {
@@ -93,7 +93,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         CreateSubtype cs = subtypeDeclaration(type, 
         		unit.getPackage(), unit, false, doc);
         NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
-                Util.getFile(editor.getEditorInput()), 
+                EditorUtil.getFile(editor.getEditorInput()), 
         		"My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
         		"Create Subtype", "Create a new Ceylon compilation unit containing the new class.");
     }
@@ -147,14 +147,15 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
                 for (ProducedType pt: td.getSatisfiedTypes()) {
                     if (pt.getDeclaration() instanceof Class) {
                         foundClass = true;
-                        appendParameters(pt, (Class) pt.getDeclaration(), unit, def);
+                        appendParameters((Class) pt.getDeclaration(), 
+                        		pt, unit, def);
                         break;
                     }
                 }
             }
             if (td instanceof Class) {
                 foundClass = true;
-            	appendParameters(type, (Class) td, unit, def);
+            	appendParameters((Class) td, type, unit, def);
             }
             if (!foundClass) {
             	def.append("()");
@@ -266,30 +267,6 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
 			}
 		}
 	}
-
-    public static void appendParameters(ProducedType type, Class c,
-            Unit unit, StringBuilder def) {
-        CeylonContentProposer.appendParameters(c, type, unit, def);
-//        if (c.getParameterList()==null ||
-//                c.getParameterList().getParameters().isEmpty()) {
-//        	def.append("()");
-//        }
-//        else {
-//        	def.append("(");
-//        	for (Parameter p: c.getParameterList().getParameters()) {
-//        		ProducedTypedReference ptr = type.getTypedParameter(p);
-//        		if (ptr.getType()!=null && ptr.getFullType().isWellDefined()) {
-//        			def.append(ptr.getFullType().getProducedTypeName());
-//        		}
-//        		else {
-//        			def.append("Anything");
-//        		}
-//        		def.append(" ").append(p.getName()).append(", ");
-//        	}
-//        	def.setLength(def.length()-2);
-//        	def.append(")");
-//        }
-    }
 
     private static void appendInterface(ProducedType type, TypeDeclaration td,
             StringBuilder def, boolean first) {

@@ -31,7 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
 class CreateTypeParameterProposal extends ChangeCorrectionProposal {
@@ -52,7 +52,7 @@ class CreateTypeParameterProposal extends ChangeCorrectionProposal {
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset, length);
+        EditorUtil.gotoLocation(file, offset, length);
     }
 
     static IDocument getDocument(TextFileChange change) {

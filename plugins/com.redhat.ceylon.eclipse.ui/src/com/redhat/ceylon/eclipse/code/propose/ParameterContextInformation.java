@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.appendDeclarationText;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getParameters;
+import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.appendDeclarationText;
+import static com.redhat.ceylon.eclipse.code.propose.ProposalUtil.getParameters;
 
 import java.util.List;
 

@@ -19,7 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class AssignToLocalProposal extends ChangeCorrectionProposal {
     
@@ -38,7 +38,7 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset, length);
+        EditorUtil.gotoLocation(file, offset, length);
     }
     
     static void addAssignToLocalProposal(IFile file, Tree.CompilationUnit cu, 

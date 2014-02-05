@@ -33,7 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SmallAsOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SmallerOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class InvertIfElseProposal extends ChangeCorrectionProposal {
     
@@ -49,7 +49,7 @@ class InvertIfElseProposal extends ChangeCorrectionProposal {
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        Util.gotoLocation(file, offset);
+        EditorUtil.gotoLocation(file, offset);
     }
     
     static void addReverseIfElseProposal(IDocument doc,

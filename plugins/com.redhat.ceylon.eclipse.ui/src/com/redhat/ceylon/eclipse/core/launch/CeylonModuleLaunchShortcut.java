@@ -41,7 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
@@ -93,7 +93,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
             wc.setMappedResources(new IResource[] {resource});
             config = wc.doSave();
         } catch (CoreException exception) {
-            MessageDialog.openError(Util.getShell(), "Ceylon Module Launcher Error", 
+            MessageDialog.openError(EditorUtil.getShell(), "Ceylon Module Launcher Error", 
                     exception.getStatus().getMessage()); 
         }
         return config;
@@ -153,7 +153,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      */
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList) {
         IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
-        ElementListSelectionDialog dialog= new ElementListSelectionDialog(Util.getShell(), labelProvider);
+        ElementListSelectionDialog dialog= new ElementListSelectionDialog(EditorUtil.getShell(), labelProvider);
         dialog.setElements(configList.toArray());
         dialog.setTitle("Ceylon Launcher");  
         dialog.setMessage("Please choose a configuration to start the Ceylon application");
@@ -208,7 +208,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      */
     @Override
     public void launch(IEditorPart editor, String mode) {
-        IFile file = Util.getFile(editor.getEditorInput());
+        IFile file = EditorUtil.getFile(editor.getEditorInput());
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             CeylonParseController cpc = ce.getParseController();

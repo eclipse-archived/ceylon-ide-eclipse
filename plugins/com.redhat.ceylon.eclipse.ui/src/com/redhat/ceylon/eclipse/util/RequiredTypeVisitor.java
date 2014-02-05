@@ -1,4 +1,6 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.util;
+
+import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 
 import java.util.List;
 
@@ -201,7 +203,7 @@ public class RequiredTypeVisitor extends Visitor
     @Override
     public void visit(Tree.Return that) {
         ProducedType ort = requiredType;
-        requiredType = CeylonContentProposer.type(that.getDeclaration());
+        requiredType = getResultType(that.getDeclaration());
         super.visit(that);
         requiredType = ort;
     }
@@ -232,9 +234,9 @@ public class RequiredTypeVisitor extends Visitor
     @Override
     public void visit(Tree.DocLink that) {
         ProducedType ort = requiredType;
-        requiredType = CeylonContentProposer.type(that.getBase());
+        requiredType = getResultType(that.getBase());
         if (requiredType == null && that.getBase()!=null) {
-        	requiredType = CeylonContentProposer.fullType(that.getBase());
+        	requiredType = that.getBase().getReference().getFullType();
         }
         super.visit(that);
         requiredType = ort;

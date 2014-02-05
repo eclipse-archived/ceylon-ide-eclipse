@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
-import static com.redhat.ceylon.eclipse.code.editor.Util.getActivePage;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
@@ -27,7 +27,7 @@ import org.eclipse.ui.PartInitException;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 
@@ -101,7 +101,7 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 			final IRegion region, boolean canShowMultipleHyperlinks) {
 		try {
 			final IDocument doc = textViewer.getDocument();
-			ICompilationUnit cu = (ICompilationUnit) JavaCore.create(Util.getFile(Util.getCurrentEditor().getEditorInput()));
+			ICompilationUnit cu = (ICompilationUnit) JavaCore.create(EditorUtil.getFile(EditorUtil.getCurrentEditor().getEditorInput()));
 			if (cu==null) return null;
 			IJavaElement[] selection = cu.codeSelect(region.getOffset(), region.getLength());
 			for (final IJavaElement je: selection) {

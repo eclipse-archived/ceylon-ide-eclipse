@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.editor.Util.gotoLocation;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.gotoLocation;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.READ_ACCESSES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
@@ -71,6 +71,10 @@ public class JavaQueryParticipant implements IQueryParticipant {
                 @Override
                 public ProducedReference getProducedReference(ProducedType pt,
                         List<ProducedType> typeArguments) {
+                    return null;
+                }
+                @Override
+                public ProducedReference getReference() {
                     return null;
                 }
                 @Override

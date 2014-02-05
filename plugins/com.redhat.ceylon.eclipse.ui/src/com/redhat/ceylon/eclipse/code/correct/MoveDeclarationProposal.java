@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.Util.getSelectedNode;
-import static com.redhat.ceylon.eclipse.code.editor.Util.getFile;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
