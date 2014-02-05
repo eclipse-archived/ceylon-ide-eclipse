@@ -9,7 +9,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -33,7 +32,7 @@ public class CompletionUtil {
 	        List<Parameter> list = new ArrayList<Parameter>();
 	        for (Parameter p: pl) {
 	            if (!p.isDefaulted() || 
-	            		(p==pl.get(pl.size()-1) && 
+	            		(p==pl.get(pl.size()-1) && p.getType()!=null &&
 				                p.getDeclaration().getUnit()
 				                        .isIterableParameterType(p.getType()))) {
 	            	list.add(p);
