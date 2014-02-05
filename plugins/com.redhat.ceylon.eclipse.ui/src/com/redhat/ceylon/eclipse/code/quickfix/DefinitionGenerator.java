@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.defaultValue;
+import static com.redhat.ceylon.eclipse.code.quickfix.CreateParameterProposal.defaultValue;
 
 import java.util.ArrayList;
 import java.util.List;
