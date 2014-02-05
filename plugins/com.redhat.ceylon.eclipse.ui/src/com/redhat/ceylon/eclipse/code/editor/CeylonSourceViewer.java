@@ -12,9 +12,9 @@ package com.redhat.ceylon.eclipse.code.editor;
 *******************************************************************************/
 
 
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
-import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importEdit;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 

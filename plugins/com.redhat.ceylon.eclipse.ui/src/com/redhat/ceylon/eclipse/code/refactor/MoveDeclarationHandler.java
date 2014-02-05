@@ -5,8 +5,8 @@ import static com.redhat.ceylon.eclipse.code.editor.Util.getCurrentEditor;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
+import com.redhat.ceylon.eclipse.code.correct.MoveDeclarationProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.quickfix.MoveDeclarationProposal;
 
 public class MoveDeclarationHandler extends AbstractHandler {
     

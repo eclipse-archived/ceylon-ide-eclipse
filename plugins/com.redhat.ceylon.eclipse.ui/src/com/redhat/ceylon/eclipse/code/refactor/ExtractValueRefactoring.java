@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
-import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
