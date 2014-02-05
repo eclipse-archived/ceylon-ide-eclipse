@@ -467,7 +467,11 @@ public class JDTModule extends LazyModule {
     }
     
     public boolean isProjectModule() {
-        return ! (isCeylonArchive() || isJavaBinaryArchive()) && isAvailable();
+        return ! (isCeylonArchive() || isJavaBinaryArchive()) && isAvailable() && !isJDKModule();
+    }
+    
+    public boolean isJDKModule() {
+        return JDKUtils.isJDKModule(getNameAsString()) || JDKUtils.isOracleJDKModule(getNameAsString());
     }
     
     public boolean isUnresolved() {
