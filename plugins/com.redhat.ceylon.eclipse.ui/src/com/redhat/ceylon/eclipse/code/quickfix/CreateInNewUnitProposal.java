@@ -64,29 +64,30 @@ class CreateInNewUnitProposal implements ICompletionProposal,
     @Override
     public void apply(IDocument doc) {
         String delim = getDefaultLineDelimiter(doc);
-    	dg.generate("", delim);
+    	String def = dg.generate("", delim);
         List<Declaration> imports = new ArrayList<Declaration>();
         resolveImports(imports, dg.returnType);
-        resolveImports(imports, dg.paramTypes);
+        if (dg.parameters!=null) {
+        	resolveImports(imports, dg.parameters.values());
+        }
         String imps = imports(imports, doc);
-		NewUnitWizard.open(imps.isEmpty() ? dg.def : imps + delim + delim + dg.def, 
-        		file, dg.brokenName, 
+        if (!imps.isEmpty()) {
+        	def = imps + delim + delim + def;
+        }
+		NewUnitWizard.open(def, file, dg.brokenName, 
                 "Create Missing Declaration in New Unit",
                 "Create a new Ceylon compilation unit with the missing declaration.");
     }
 
     static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, 
             DefinitionGenerator dg, IFile file) {        
-        dg.generate("", ""); //TODO: awful hack to generate desc/image!!!!
-        if (dg.generated) {
-        	proposals.add(new CreateInNewUnitProposal(file, dg));
-        }
+    	proposals.add(new CreateInNewUnitProposal(file, dg));
     }
     
     private static void resolveImports(List<Declaration> imports, 
-    		List<ProducedType> pts) {
-        if (pts != null) {
-            for (ProducedType pt : pts) {
+    		Collection<ProducedType> producedTypes) {
+        if (producedTypes!=null) {
+            for (ProducedType pt : producedTypes) {
                 resolveImports(imports, pt);
             }
         }

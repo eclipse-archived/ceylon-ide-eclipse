@@ -142,7 +142,7 @@ class CreateParameterProposal extends ChangeCorrectionProposal {
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
     		IProject project, DefinitionGenerator dg) {
     	FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(dg.node);
-        fcv.visit(dg.cu);
+        fcv.visit(dg.rootNode);
         Tree.Declaration decl = fcv.getDeclaration();
         if (decl == null || 
                 decl.getDeclarationModel() == null || 
@@ -152,20 +152,18 @@ class CreateParameterProposal extends ChangeCorrectionProposal {
         
         Tree.ParameterList paramList = getParameters(decl);
         if (paramList != null) {
-        	dg.generate("", ""); //TODO: is this right?
-        	if (dg.generated) {
-        		String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + 
-        				dg.def.substring(0, dg.def.length() - 1);
-        		String paramDesc = "parameter '" + dg.brokenName + "'";
-
-        		for (PhasedUnit unit : getUnits(project)) {
-        			if (unit.getUnit().equals(dg.cu.getUnit())) {
-        				addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, 
-        						decl.getDeclarationModel(), unit, decl, paramList, dg.returnType);
-        				break;
-        			}
-        		}
-        	}
+        	String def = dg.generate("", "");
+        	//TODO: really ugly and fragile way to strip off the trailing ;
+    		String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + 
+    				def.substring(0, def.length() - 1);
+    		String paramDesc = "parameter '" + dg.brokenName + "'";
+    		for (PhasedUnit unit : getUnits(project)) {
+    			if (unit.getUnit().equals(dg.rootNode.getUnit())) {
+    				addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, 
+    						decl.getDeclarationModel(), unit, decl, paramList, dg.returnType);
+    				break;
+    			}
+    		}
         }
     }
 
