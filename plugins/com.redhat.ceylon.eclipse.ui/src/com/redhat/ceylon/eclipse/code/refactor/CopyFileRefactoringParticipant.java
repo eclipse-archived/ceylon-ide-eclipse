@@ -134,9 +134,10 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                 change.addEdit(edit);
             }
             if (!imports.isEmpty()) {
-                List<InsertEdit> edits1 = importEdit(cu, 
-                        imports.keySet(), imports.values(), null);
-                for (TextEdit edit: edits1) {
+                List<InsertEdit> list = importEdit(cu, 
+                        imports.keySet(), imports.values(), 
+                        null, change.getCurrentDocument(null));
+                for (TextEdit edit: list) {
                     change.addEdit(edit);
                 }
             }

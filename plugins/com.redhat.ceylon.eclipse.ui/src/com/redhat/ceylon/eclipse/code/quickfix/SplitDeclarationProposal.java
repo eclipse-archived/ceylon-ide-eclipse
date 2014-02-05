@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
@@ -74,7 +75,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
         change.setEdit(new MultiTextEdit());
         Integer offset = id.getStopIndex()+1;
         change.addEdit(new InsertEdit(offset, params+";" + 
-        		System.lineSeparator() + getIndent(decNode, doc) + 
+        		getDefaultLineDelimiter(doc) + getIndent(decNode, doc) + 
         		dec.getName()));
         Type type = decNode.getType();
 		int il;
@@ -90,7 +91,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
 				explicitType = infType.getProducedTypeName();
 				HashSet<Declaration> decs = new HashSet<Declaration>();
 				importType(decs, infType, cu);
-				il=applyImports(change, decs, cu);
+				il=applyImports(change, decs, cu, doc);
 			}
             change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
         }

@@ -271,7 +271,8 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             change.setEdit(new MultiTextEdit());
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = importEdit(cu, 
-                        imports.keySet(), imports.values(), null);
+                        imports.keySet(), imports.values(), null, 
+                        change.getCurrentDocument(null));
                 for (TextEdit edit: edits) {
                     change.addEdit(edit);
                 }
@@ -293,11 +294,12 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             final Map<Declaration, String> imports) {
         try {
             if (!imports.isEmpty()) {
+                IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                TextFileChange change = new TextFileChange(file.getName(), file);
                 List<TextEdit> edits = importEditForMove(phasedUnit.getCompilationUnit(), 
-                        imports.keySet(), imports.values(), newName, oldName);
+                        imports.keySet(), imports.values(), newName, oldName, 
+                        change.getCurrentDocument(null));
                 if (!edits.isEmpty()) {
-                    IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                    TextFileChange change = new TextFileChange(file.getName(), file);
                     change.setEdit(new MultiTextEdit());
                     for (TextEdit edit: edits) {
                         change.addEdit(edit);

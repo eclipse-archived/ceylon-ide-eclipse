@@ -7,11 +7,13 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_L
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 
 import java.util.Collection;
 
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -26,6 +28,9 @@ class FixMultilineStringIndentationProposal
     		Collection<ICompletionProposal> proposals, 
     		IFile file, Tree.CompilationUnit cu, Node node) {
     	if (node instanceof Tree.StringLiteral) {
+			TextFileChange change = 
+					new TextFileChange("Fix Multiline String", file);
+			IDocument doc = CreateProposal.getDocument(change);
     		Tree.StringLiteral literal = (Tree.StringLiteral) node;
     		int offset = literal.getStartIndex();
     		int length = literal.getStopIndex() - 
@@ -33,10 +38,8 @@ class FixMultilineStringIndentationProposal
     		Token token = literal.getToken();
 			int indentation = token.getCharPositionInLine() + 
 					getStartQuoteLength(token.getType());
-			String text = getFixedText(token.getText(), indentation);
+			String text = getFixedText(token.getText(), indentation, doc);
     		if (text!=null) {
-    			TextFileChange change = 
-    					new TextFileChange("Fix Multiline String", file);
     			change.setEdit(new ReplaceEdit(offset, length, text));
     			FixMultilineStringIndentationProposal proposal = 
     					new FixMultilineStringIndentationProposal(change);
@@ -48,7 +51,7 @@ class FixMultilineStringIndentationProposal
     }
     
     private static String getFixedText(String text, 
-    		int indentation) {
+    		int indentation, IDocument doc) {
         StringBuilder result = new StringBuilder();
         for (String line: text.split("\n|\r\n?")) {
             if (result.length() == 0) {
@@ -66,7 +69,7 @@ class FixMultilineStringIndentationProposal
                 //the non-whitespace content
                 result.append(line);
             }
-            result.append(System.lineSeparator());
+            result.append(getDefaultLineDelimiter(doc));
         }
         result.setLength(result.length()-1);
         return result.toString();

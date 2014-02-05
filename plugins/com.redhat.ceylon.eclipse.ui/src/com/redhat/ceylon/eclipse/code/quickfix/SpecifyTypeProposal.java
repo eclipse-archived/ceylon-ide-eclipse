@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.quickfix;
 
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
+import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.getDocument;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -46,7 +47,7 @@ public class SpecifyTypeProposal extends ChangeCorrectionProposal {
 	public static SpecifyTypeProposal create(Tree.CompilationUnit cu,
 			Node node, IFile file) {
 		final Tree.Type type = (Tree.Type) node;
-        TextFileChange change =  new TextFileChange("Specify Type", file);
+        TextFileChange change = new TextFileChange("Specify Type", file);
         change.setEdit(new MultiTextEdit());
         Integer offset = node.getStartIndex();
         ProducedType infType = inferType(cu, type);
@@ -60,7 +61,7 @@ public class SpecifyTypeProposal extends ChangeCorrectionProposal {
         	explicitType = infType.getProducedTypeName();
             HashSet<Declaration> decs = new HashSet<Declaration>();
 			importType(decs, infType, cu);
-			il = applyImports(change, decs, cu);
+			il = applyImports(change, decs, cu, getDocument(change));
         }
         change.addEdit(new ReplaceEdit(offset, type.getText().length(), explicitType)); 
             //Note: don't use problem.getLength() because it's wrong from the problem list

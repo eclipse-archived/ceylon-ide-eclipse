@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.importType;
@@ -58,14 +59,16 @@ class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
                 String name = type.getDeclaration().getName()
                 		.replace("&", "").replace("<", "").replace(">", "");
                 CreateSubtype cs = subtypeDeclaration(type, 
-                		cu.getUnit().getPackage(), cu.getUnit(), false);
+                		cu.getUnit().getPackage(), cu.getUnit(), 
+                		false, doc);
             	HashSet<Declaration> already = new HashSet<Declaration>();
                 for (ProducedType pt: cs.getImportedTypes()) {
                 	importType(already, pt, cu);
                 }
-                int il = applyImports(change, already, cu);
+                int il = applyImports(change, already, cu, doc);
+                String delim = getDefaultLineDelimiter(doc);
 				String dec = cs.getDefinition().replace("$className", "My" + name) + 
-						System.lineSeparator() + System.lineSeparator();
+						delim + delim;
                 change.addEdit(new InsertEdit(offset,dec));
                 proposals.add(new CreateLocalSubtypeProposal(type, 
                         offset+6+il, name.length()+2, file, change));

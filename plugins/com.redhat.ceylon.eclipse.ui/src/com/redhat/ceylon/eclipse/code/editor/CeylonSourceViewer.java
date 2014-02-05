@@ -283,7 +283,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         try {
                             MultiTextEdit edit = new MultiTextEdit();
                             if (imports!=null) {
-                                pasteImports(imports, edit, text);
+                                pasteImports(imports, edit, text, doc);
                             }
                             edit.addChild(new ReplaceEdit(offset, length, text));
                             edit.apply(doc);
@@ -711,14 +711,16 @@ public class CeylonSourceViewer extends ProjectionViewer {
         return v.results;
     }
     
-    void pasteImports(Map<Declaration,String> map, MultiTextEdit edit, String pastedText) {
+    void pasteImports(Map<Declaration,String> map, MultiTextEdit edit, 
+    		String pastedText, IDocument doc) {
         if (!map.isEmpty()) {
             CeylonParseController pc = editor.getParseController();
             if (pc==null || pc.getRootNode()==null) return;
             Tree.CompilationUnit cu = pc.getRootNode();
             Unit unit = cu.getUnit();
             //copy them, so as to not affect the clipboard
-            Map<Declaration,String> imports = new LinkedHashMap<Declaration,String>(); 
+            Map<Declaration,String> imports = 
+            		new LinkedHashMap<Declaration,String>(); 
             imports.putAll(map);
             for (Iterator<Map.Entry<Declaration,String>> i=imports.entrySet().iterator(); 
                     i.hasNext();) {
@@ -750,7 +752,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
             }
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = 
-                		importEdit(cu, imports.keySet(), imports.values(), null);
+                		importEdit(cu, imports.keySet(), imports.values(), 
+                				null, doc);
                 for (InsertEdit importEdit: edits) {
                     edit.addChild(importEdit);                    
                 }

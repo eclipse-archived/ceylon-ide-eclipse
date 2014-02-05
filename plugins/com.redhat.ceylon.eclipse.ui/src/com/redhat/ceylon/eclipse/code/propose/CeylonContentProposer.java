@@ -24,6 +24,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDefaultValue;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
@@ -1422,7 +1423,7 @@ public class CeylonContentProposer {
             result.add(new RefinementCompletionProposal(offset, prefix,
                     getInlineFunctionDescriptionFor(p, null, unit),
                     getInlineFunctionTextFor(p, null, unit, 
-                    		System.lineSeparator() + 
+                    		getDefaultLineDelimiter(doc) + 
                     		getIndent(node, doc)),
                     cpc, d));
         }
@@ -1455,10 +1456,11 @@ public class CeylonContentProposer {
         boolean isInterface = scope instanceof Interface;
         ProducedReference pr = getRefinedProducedReference(scope, d);
         //TODO: if it is equals() or hash, fill in the implementation
-        result.add(new RefinementCompletionProposal(offset, prefix,  
+        String delim = getDefaultLineDelimiter(doc);
+		result.add(new RefinementCompletionProposal(offset, prefix,  
                 getRefinementDescriptionFor(d, pr, node.getUnit()), 
                 getRefinementTextFor(d, pr, node.getUnit(), isInterface, 
-                		System.lineSeparator() + getIndent(node, doc), preamble), 
+                		delim + getIndent(node, doc), true, preamble), 
                 cpc, d));
     }
     
@@ -1595,13 +1597,13 @@ public class CeylonContentProposer {
                         }
                         body.append(pt.getProducedTypeName(node.getUnit()))
                             .append(") {}")
-                            .append(System.lineSeparator());
+                            .append(getDefaultLineDelimiter(doc));
                     }
                     body.append(indent);
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             "switch (" + getDescriptionFor(dwp) + ")", 
                             "switch (" + getTextFor(dwp) + ")" + 
-                            		System.lineSeparator() + body, 
+                            		getDefaultLineDelimiter(doc) + body, 
                             true, cpc, d));
                 }
             }
@@ -2192,13 +2194,14 @@ public class CeylonContentProposer {
     
     public static String getRefinementTextFor(Declaration d, 
     		ProducedReference pr, Unit unit, boolean isInterface, 
-    		String indent) {
-    	return getRefinementTextFor(d, pr, unit, isInterface, indent, true);
+    		String indent, boolean containsNewline) {
+    	return getRefinementTextFor(d, pr, unit, isInterface, 
+    			indent, containsNewline, true);
     }
     
     public static String getRefinementTextFor(Declaration d, 
     		ProducedReference pr, Unit unit, boolean isInterface, 
-    		String indent, boolean preamble) {
+    		String indent, boolean containsNewline, boolean preamble) {
     	StringBuilder result = new StringBuilder();
     	if (preamble) {
     		result.append("shared actual ");
@@ -2210,22 +2213,23 @@ public class CeylonContentProposer {
         appendTypeParameters(d, result);
         appendParameters(d, pr, unit, result);
         if (d instanceof Class) {
-            result.append(extraIndent(extraIndent(indent)))
+            result.append(extraIndent(extraIndent(indent, containsNewline), containsNewline))
                 .append(" extends super.").append(d.getName());
             appendPositionalArgs(d, pr, unit, result, true);
         }
-        appendConstraints(d, pr, unit, indent, result);
+        appendConstraints(d, pr, unit, indent, containsNewline, result);
         appendImpl(d, pr, isInterface, unit, indent, result);
         return result.toString();
     }
 
     private static void appendConstraints(Declaration d, ProducedReference pr,
-            Unit unit, String indent, StringBuilder result) {
+            Unit unit, String indent, boolean containsNewline, 
+            StringBuilder result) {
         if (d instanceof Functional) {
             for (TypeParameter tp: ((Functional) d).getTypeParameters()) {
                 List<ProducedType> sts = tp.getSatisfiedTypes();
                 if (!sts.isEmpty()) {
-                    result.append(extraIndent(extraIndent(indent)))
+                    result.append(extraIndent(extraIndent(indent, containsNewline), containsNewline))
                         .append("given ").append(tp.getName())
                         .append(" satisfies ");
                     boolean first = true;
@@ -2686,9 +2690,8 @@ public class CeylonContentProposer {
         }
     }
 
-    private static String extraIndent(String indent) {
-        return indent.contains(System.lineSeparator()) ?  
-        		indent + getDefaultIndent() : indent;
+    private static String extraIndent(String indent, boolean containsNewline) {
+        return containsNewline ? indent + getDefaultIndent() : indent;
     }
     
     public static void appendParameters(Declaration d, StringBuilder result, 

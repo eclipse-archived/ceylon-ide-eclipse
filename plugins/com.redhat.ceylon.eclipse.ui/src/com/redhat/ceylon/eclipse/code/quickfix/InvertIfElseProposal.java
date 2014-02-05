@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
+import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,7 +33,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SmallAsOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SmallerOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
-import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 
 class InvertIfElseProposal extends ChangeCorrectionProposal {
@@ -95,18 +97,20 @@ class InvertIfElseProposal extends ChangeCorrectionProposal {
     		if (test == null) {
     			 test = "!" + term;
     		}
-			String baseIndent = CeylonQuickFixAssistant.getIndent(statement, doc);
-			String indent = CeylonAutoEditStrategy.getDefaultIndent();
+			String baseIndent = getIndent(statement, doc);
+			String indent = getDefaultIndent();
+			String delim = getDefaultLineDelimiter(doc);
 
 			String elseStr = getTerm(doc, elseBlock);
-			elseStr = addEnclosingBraces(elseStr, baseIndent, indent);
+			elseStr = addEnclosingBraces(elseStr, baseIndent, 
+					indent, delim);
     		test = removeEnclosingParenthesis(test);
 
 			StringBuilder replace = new StringBuilder();
 			replace.append("if (").append(test).append(") ")
 					.append(elseStr);
 					if (isElseOnOwnLine(doc, ifBlock, elseBlock)) {
-						replace.append(System.lineSeparator())
+						replace.append(delim)
 						        .append(baseIndent);
 					} else {
 						replace.append(" ");
@@ -156,18 +160,19 @@ class InvertIfElseProposal extends ChangeCorrectionProposal {
 		return doc.getLineOfOffset(ifBlock.getStopIndex()) != doc.getLineOfOffset(elseBlock.getStartIndex());
 	}
 
-	private static String addEnclosingBraces(String s, String baseIndent, String indent) {
+	private static String addEnclosingBraces(String s, String baseIndent, 
+			String indent, String delim) {
     	if (s.charAt(0) != '{') {
-    		return "{" + System.lineSeparator() + baseIndent + 
-    				indent + indent(s, indent) + 
-    				System.lineSeparator() + baseIndent + "}";
+    		return "{" + delim + baseIndent + 
+    				indent + indent(s, indent, delim) + 
+    				delim + baseIndent + "}";
     	}
 		return s;
 	}
 	
-	private static String indent(String s, String indentation) {
-		return s.replaceAll(System.lineSeparator()+"(\\s*)", 
-				System.lineSeparator()+"$1" + indentation);
+	private static String indent(String s, String indentation,
+			String delim) {
+		return s.replaceAll(delim+"(\\s*)", delim+"$1" + indentation);
 	}
 
 	private static String removeEnclosingParenthesis(String s) {

@@ -36,8 +36,10 @@ class AddParameterProposal extends ChangeCorrectionProposal {
     final int offset; 
     final IFile file;
     
-    AddParameterProposal(Declaration dec, int offset, IFile file, TextChange change) {
-        super("Add to parameter list of '" + dec.getName() + "'", change, ADD);
+    AddParameterProposal(Declaration dec, int offset, IFile file, 
+    		TextChange change) {
+        super("Add to parameter list of '" + dec.getName() + "'", 
+        		change, ADD);
         this.offset=offset;
         this.file=file;
     }
@@ -58,7 +60,8 @@ class AddParameterProposal extends ChangeCorrectionProposal {
             //TODO: copy/pasted from SplitDeclarationProposal 
             String params = null;
             if (decNode instanceof Tree.MethodDeclaration) {
-                List<ParameterList> pls = ((Tree.MethodDeclaration) decNode).getParameterLists();
+                List<ParameterList> pls = 
+                		((Tree.MethodDeclaration) decNode).getParameterLists();
                 if (pls.isEmpty()) {
                     return;
                 } 
@@ -81,7 +84,8 @@ class AddParameterProposal extends ChangeCorrectionProposal {
             fcv.visit(cu);
             Tree.Declaration container = fcv.getDeclaration();
             if (container instanceof Tree.ClassDefinition) {
-                ParameterList pl = ((Tree.ClassDefinition) container).getParameterList();
+                ParameterList pl = 
+                		((Tree.ClassDefinition) container).getParameterList();
                 String def;
                 if (sie==null) {
                     def = " = nothing";
@@ -102,7 +106,8 @@ class AddParameterProposal extends ChangeCorrectionProposal {
                     if (params!=null) def = " = " + params + def;
                     change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
                 }
-                String param = (pl.getParameters().isEmpty() ? "" : ", ") + dec.getName() + def;
+                String param = (pl.getParameters().isEmpty() ? "" : ", ") + 
+                		dec.getName() + def;
                 Integer offset = pl.getStopIndex();
                 change.addEdit(new InsertEdit(offset, param));
                 Type type = decNode.getType();
@@ -118,9 +123,10 @@ class AddParameterProposal extends ChangeCorrectionProposal {
 						explicitType = infType.getProducedTypeName();
 						HashSet<Declaration> decs = new HashSet<Declaration>();
 						importType(decs, infType, cu);
-						shift=applyImports(change, decs, cu);
+						shift = applyImports(change, decs, cu, doc);
 					}
-                    change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
+                    change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), 
+                    		explicitType));
                 }
                 proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
                         offset+param.length()+shift, file, change));

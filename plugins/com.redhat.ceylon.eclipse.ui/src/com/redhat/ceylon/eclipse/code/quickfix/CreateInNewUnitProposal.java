@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 
 import java.util.ArrayList;
@@ -27,19 +28,12 @@ import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 class CreateInNewUnitProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
     
-    private final String desc;
     private final IFile file;
-    private final String def;
-    private final String unitName;
-    private final Image image;
+    private final DefinitionGenerator dg;
 
-    CreateInNewUnitProposal(String desc, IFile file, String def,
-            String unitName, Image image) {
-        this.desc = desc;
+    CreateInNewUnitProposal(IFile file, DefinitionGenerator dg) {
         this.file = file;
-        this.def = def;
-        this.unitName = unitName;
-        this.image = image;
+        this.dg = dg;
     }
 
     @Override
@@ -49,12 +43,12 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public Image getImage() {
-        return image;
+        return dg.image;
     }
 
     @Override
     public String getDisplayString() {
-        return "Create toplevel " + desc + " in new unit";
+        return "Create toplevel " + dg.desc + " in new unit";
     }
 
     @Override
@@ -69,23 +63,24 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public void apply(IDocument doc) {
-        NewUnitWizard.open(def, file, unitName, 
+        String delim = getDefaultLineDelimiter(doc);
+    	dg.generate("", delim);
+        List<Declaration> imports = new ArrayList<Declaration>();
+        resolveImports(imports, dg.returnType);
+        resolveImports(imports, dg.paramTypes);
+        String imps = imports(imports, doc);
+		NewUnitWizard.open(imps.isEmpty() ? dg.def : imps + delim + delim + dg.def, 
+        		file, dg.brokenName, 
                 "Create Missing Declaration in New Unit",
                 "Create a new Ceylon compilation unit with the missing declaration.");
     }
 
     static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, 
-            String def, String desc, Image image, IFile file, String unitName, 
-            ProducedType returnType, List<ProducedType> paramTypes) {
-        
-        List<Declaration> imports = new ArrayList<Declaration>();
-        resolveImports(imports, returnType);
-        resolveImports(imports, paramTypes);
-        
-        def = imports(imports) + 
-        		System.lineSeparator() + System.lineSeparator() + 
-        		def;
-        proposals.add(new CreateInNewUnitProposal(desc, file, def, unitName, image));
+            DefinitionGenerator dg, IFile file) {        
+        dg.generate("", ""); //TODO: awful hack to generate desc/image!!!!
+        if (dg.generated) {
+        	proposals.add(new CreateInNewUnitProposal(file, dg));
+        }
     }
     
     private static void resolveImports(List<Declaration> imports, 
