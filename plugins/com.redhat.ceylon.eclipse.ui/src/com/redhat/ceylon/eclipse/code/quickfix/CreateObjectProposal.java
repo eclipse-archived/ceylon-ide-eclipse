@@ -1,11 +1,10 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.subtypeDeclaration;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.quickfix.CreateSubtypeInNewUnitProposal.CreateSubtype;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateObjectProposal extends ChangeCorrectionProposal {
     
@@ -67,7 +67,7 @@ class CreateObjectProposal extends ChangeCorrectionProposal {
                 	importType(already, pt, cu);
                 }
                 int il = applyImports(change, already, cu, doc);
-                String delim = getDefaultLineDelimiter(doc);
+                String delim = Indents.getDefaultLineDelimiter(doc);
 				String dec = cs.getDefinition().replace("$className", "my" + name) + 
 						delim;
                 dec = dec.replaceAll(delim, delim + getIndent(node, doc));

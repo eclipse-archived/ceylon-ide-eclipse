@@ -1,10 +1,9 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.quickfix.SpecifyTypeProposal.inferType;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,6 +26,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class SplitDeclarationProposal extends ChangeCorrectionProposal {
     
@@ -75,7 +75,7 @@ class SplitDeclarationProposal extends ChangeCorrectionProposal {
         change.setEdit(new MultiTextEdit());
         Integer offset = id.getStopIndex()+1;
         change.addEdit(new InsertEdit(offset, params+";" + 
-        		getDefaultLineDelimiter(doc) + getIndent(decNode, doc) + 
+        		Indents.getDefaultLineDelimiter(doc) + getIndent(decNode, doc) + 
         		dec.getName()));
         Type type = decNode.getType();
 		int il;

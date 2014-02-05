@@ -11,17 +11,13 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_L
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getIndentSpaces;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getIndentWithSpaces;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getPreferences;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.initialIndent;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
+import static com.redhat.ceylon.eclipse.code.editor.Util.getPreferences;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIterator;
 import static java.lang.Character.isWhitespace;
@@ -38,8 +34,9 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.eclipse.util.Indents;
 
-class AutoEdit {
+class AutoEdit extends Indents {
 	
 	public AutoEdit(IDocument document, List<CommonToken> tokens,
 			DocumentCommand command) {
@@ -52,6 +49,10 @@ class AutoEdit {
 	private List<CommonToken> tokens;
 	private DocumentCommand command;
 	
+    //TODO: when pasting inside an existing string literal, should
+    //      we automagically escape unescaped quotes in the pasted
+    //      text?
+    
     public void customizeDocumentCommand() {
     	
         //Note that IMP's Correct Indentation sends us a tab
@@ -835,7 +836,7 @@ class AutoEdit {
         	return document.getLineDelimiter(line-1);
         }
         else {
-        	return CeylonAutoEditStrategy.getDefaultLineDelimiter(document);
+        	return Indents.getDefaultLineDelimiter(document);
         }
     }
 

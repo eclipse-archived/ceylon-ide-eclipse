@@ -1,11 +1,10 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessName;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
 
@@ -24,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class ShadowReferenceProposal extends ChangeCorrectionProposal {
     
@@ -59,7 +59,7 @@ class ShadowReferenceProposal extends ChangeCorrectionProposal {
         				"value " + name + " = "));
 				IDocument doc = getDocument(change);
 				change.addEdit(new InsertEdit(node.getStopIndex()+1, ";" + 
-						getDefaultLineDelimiter(doc) + getIndent(statement, doc) +
+						Indents.getDefaultLineDelimiter(doc) + getIndent(statement, doc) +
         				"switch (" + name));
         		if (node instanceof BaseMemberExpression) {
         			Declaration d = ((BaseMemberExpression) node).getDeclaration();

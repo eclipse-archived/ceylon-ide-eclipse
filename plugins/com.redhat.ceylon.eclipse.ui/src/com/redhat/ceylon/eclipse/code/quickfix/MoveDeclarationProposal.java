@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.editor.Util.getFile;
 import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
@@ -30,6 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 public class MoveDeclarationProposal implements ICompletionProposal {
 
@@ -122,7 +122,7 @@ public class MoveDeclarationProposal implements ICompletionProposal {
 	            });*/
 	            String imports = imports(node, cu.getImportList(), document);
 	            boolean success = NewUnitWizard.open(imports==null ? 
-	                        contents : imports + getDefaultLineDelimiter(document) + contents, 
+	                        contents : imports + Indents.getDefaultLineDelimiter(document) + contents, 
 	                    getFile(editor.getEditorInput()), 
 	                    ((Tree.Declaration) node).getIdentifier().getText(), "Move to New Unit", 
 	                    "Create a new Ceylon compilation unit containing the selected declaration.");

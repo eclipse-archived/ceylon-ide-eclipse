@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.name;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapedPackageName;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ImportProposals {
 
@@ -155,9 +156,9 @@ public class ImportProposals {
 			else {
 				int insertPosition = getBestImportInsertPosition(cu);
 				text.delete(0, 2);
-				text.insert(0, "import " + CeylonQuickFixAssistant.escapedPackageName(p) + " { ")
+				text.insert(0, "import " + escapedPackageName(p) + " { ")
 				    .append(" }"); 
-				String delim = getDefaultLineDelimiter(doc);
+				String delim = Indents.getDefaultLineDelimiter(doc);
 				if (insertPosition==0) {
 					text.append(delim);
 				}
@@ -173,7 +174,7 @@ public class ImportProposals {
     public static List<TextEdit> importEditForMove(Tree.CompilationUnit cu,
             Iterable<Declaration> declarations, Iterable<String> aliases,
             String newPackageName, String oldPackageName, IDocument doc) {
-    	String delim = getDefaultLineDelimiter(doc);
+    	String delim = Indents.getDefaultLineDelimiter(doc);
         List<TextEdit> result = new ArrayList<TextEdit>();
         Set<Declaration> set = new HashSet<Declaration>();
         for (Declaration d: declarations) {

@@ -1,10 +1,9 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.HashSet;
@@ -24,6 +23,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ExtractValueRefactoring extends AbstractRefactoring {
 	
@@ -101,7 +101,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 		String dec = typeDec + " " +  newName + 
 				(getter ? " { return " + exp  + "; } " : " = " + exp + ";");
         tfc.addEdit(new InsertEdit(statement.getStartIndex(),
-				dec + getDefaultLineDelimiter(doc) + getIndent(statement, doc)));
+				dec + Indents.getDefaultLineDelimiter(doc) + getIndent(statement, doc)));
 		tfc.addEdit(new ReplaceEdit(start, length, newName));
     }
 

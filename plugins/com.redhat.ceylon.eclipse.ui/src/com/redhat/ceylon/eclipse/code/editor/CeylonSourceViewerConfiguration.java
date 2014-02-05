@@ -54,7 +54,7 @@ import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.propose.CompletionProcessor;
-import com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixController;
+import com.redhat.ceylon.eclipse.code.quickfix.CeylonCorrectionProcessor;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
@@ -193,7 +193,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
         if (editor==null) return null;
-        CeylonQuickFixController quickAssist = new CeylonQuickFixController(editor);
+        CeylonCorrectionProcessor quickAssist = new CeylonCorrectionProcessor(editor);
         quickAssist.enableColoredLabels(true);
 		return quickAssist;
     }

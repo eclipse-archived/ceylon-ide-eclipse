@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.quickfix.Util.getSelectedNode;
@@ -45,6 +44,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
 import com.redhat.ceylon.eclipse.code.propose.RequiredTypeVisitor;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateSubtypeInNewUnitProposal implements ICompletionProposal, 
 		ICompletionProposalExtension6 {
@@ -184,7 +184,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         	allTypes.add(type);
         	appendInterface(type, td, def, true);
         }
-        def.append(" {").append(getDefaultLineDelimiter(doc));
+        def.append(" {").append(Indents.getDefaultLineDelimiter(doc));
         for (DeclarationWithProximity dwp: td.getMatchingMemberDeclarations(null, "", 0).values()) {
         	Declaration d = dwp.getDeclaration();
         	if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
@@ -205,7 +205,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
             	if (pr instanceof ProducedTypedReference) {
             		def.append("    ")
             			.append(getRefinementTextFor(d, pr, unit, false, "", false))
-            			.append(getDefaultLineDelimiter(doc));
+            			.append(Indents.getDefaultLineDelimiter(doc));
             	}
         	}
         }
@@ -238,7 +238,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         		}
     			imports.setLength(imports.length()-2);
     			imports.append(" }")
-    			        .append(getDefaultLineDelimiter(doc));
+    			        .append(Indents.getDefaultLineDelimiter(doc));
         	}
         }
         return new CreateSubtype(def.toString(), imports.toString(), allTypes);

@@ -1,15 +1,15 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getBody;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getRootNode;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getClassOrInterfaceBody;
+import static com.redhat.ceylon.eclipse.code.quickfix.Util.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -288,7 +288,7 @@ class CreateParameterProposal extends ChangeCorrectionProposal {
                     getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     Tree.ParameterList paramList = getParameters(decNode);
-                    Tree.Body body = getBody(decNode);
+                    Tree.Body body = getClassOrInterfaceBody(decNode);
                     if (body!=null && paramList!=null) {
                         if (!paramList.getParameters().isEmpty()) {
                             pdef = ", " + pdef;

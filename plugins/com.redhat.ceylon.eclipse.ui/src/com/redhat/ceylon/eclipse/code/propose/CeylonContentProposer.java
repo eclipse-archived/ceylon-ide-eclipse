@@ -23,8 +23,6 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIF
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDefaultValue;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
@@ -50,10 +48,12 @@ import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ALI
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARGUMENT_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.UPPER_BOUND;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.escapedPackageName;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
-import static com.redhat.ceylon.eclipse.code.quickfix.Util.getModuleQueryType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
+import static com.redhat.ceylon.eclipse.util.Escaping.escape;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapedPackageName;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQueryType;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
@@ -131,6 +131,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 public class CeylonContentProposer {
     
@@ -1423,7 +1424,7 @@ public class CeylonContentProposer {
             result.add(new RefinementCompletionProposal(offset, prefix,
                     getInlineFunctionDescriptionFor(p, null, unit),
                     getInlineFunctionTextFor(p, null, unit, 
-                    		getDefaultLineDelimiter(doc) + 
+                    		Indents.getDefaultLineDelimiter(doc) + 
                     		getIndent(node, doc)),
                     cpc, d));
         }
@@ -1456,7 +1457,7 @@ public class CeylonContentProposer {
         boolean isInterface = scope instanceof Interface;
         ProducedReference pr = getRefinedProducedReference(scope, d);
         //TODO: if it is equals() or hash, fill in the implementation
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = Indents.getDefaultLineDelimiter(doc);
 		result.add(new RefinementCompletionProposal(offset, prefix,  
                 getRefinementDescriptionFor(d, pr, node.getUnit()), 
                 getRefinementTextFor(d, pr, node.getUnit(), isInterface, 
@@ -1597,13 +1598,13 @@ public class CeylonContentProposer {
                         }
                         body.append(pt.getProducedTypeName(node.getUnit()))
                             .append(") {}")
-                            .append(getDefaultLineDelimiter(doc));
+                            .append(Indents.getDefaultLineDelimiter(doc));
                     }
                     body.append(indent);
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
                             "switch (" + getDescriptionFor(dwp) + ")", 
                             "switch (" + getTextFor(dwp) + ")" + 
-                            		getDefaultLineDelimiter(doc) + body, 
+                            		Indents.getDefaultLineDelimiter(doc) + body, 
                             true, cpc, d));
                 }
             }
@@ -1715,15 +1716,6 @@ public class CeylonContentProposer {
                 suggestedName.substring(1);
     }
 
-    private static String escape(String suggestedName) {
-        if (keywords.contains(suggestedName)) {
-            return "\\i" + suggestedName;
-        }
-        else {
-            return suggestedName;
-        }
-    }
-    
     private static void addKeywordProposals(CeylonParseController cpc, int offset, 
     		String prefix, List<ICompletionProposal> result, Node node) {
         if( isModuleDescriptor(cpc) ) {

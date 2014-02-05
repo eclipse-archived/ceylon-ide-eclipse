@@ -1,9 +1,8 @@
 package com.redhat.ceylon.eclipse.code.quickfix;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
-import static com.redhat.ceylon.eclipse.code.quickfix.CeylonQuickFixAssistant.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
 
@@ -29,6 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueModifier;
 import com.redhat.ceylon.eclipse.code.editor.Util;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     
@@ -154,7 +154,7 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
 			test = removeEnclosingParentesis(test);
 			
 			StringBuilder replace = new StringBuilder();
-			String delim = getDefaultLineDelimiter(doc);
+			String delim = Indents.getDefaultLineDelimiter(doc);
 			if (declaration != null) {
 				replace.append(declaration)
 				        .append(delim)
