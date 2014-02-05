@@ -1,10 +1,10 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.FORMAL_REFINEMENT;
-import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.quickfix.ImportProposals.importSignatureTypes;
 
 import java.util.HashSet;
 

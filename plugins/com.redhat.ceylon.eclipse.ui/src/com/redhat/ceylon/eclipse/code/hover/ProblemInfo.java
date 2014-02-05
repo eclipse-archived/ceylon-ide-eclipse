@@ -11,10 +11,10 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.TextInvocationContext;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
+import com.redhat.ceylon.eclipse.code.correct.CeylonCorrectionProcessor;
+import com.redhat.ceylon.eclipse.code.correct.ProblemLocation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.quickfix.CeylonCorrectionProcessor;
-import com.redhat.ceylon.eclipse.code.quickfix.ProblemLocation;
 
 class ProblemInfo extends AnnotationInfo {
     
