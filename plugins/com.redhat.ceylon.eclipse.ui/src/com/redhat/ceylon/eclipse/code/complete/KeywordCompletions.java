@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
-import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.isModuleDescriptor;
 
 import java.util.List;
 

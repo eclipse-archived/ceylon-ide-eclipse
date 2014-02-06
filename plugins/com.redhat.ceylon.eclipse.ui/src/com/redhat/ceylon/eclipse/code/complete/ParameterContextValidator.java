@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
 import java.util.ArrayList;
 import java.util.List;

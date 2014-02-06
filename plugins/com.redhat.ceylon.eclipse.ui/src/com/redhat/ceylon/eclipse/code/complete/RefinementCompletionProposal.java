@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.DEFAULT_REFINEMENT;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
-import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.DEFAULT_REFINEMENT;
-import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.FORMAL_REFINEMENT;
 
 import java.util.HashSet;
 

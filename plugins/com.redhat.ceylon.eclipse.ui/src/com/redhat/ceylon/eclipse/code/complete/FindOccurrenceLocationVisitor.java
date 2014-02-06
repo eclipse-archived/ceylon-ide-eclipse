@@ -1,18 +1,18 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.CLASS_ALIAS;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXPRESSION;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.META;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.OF;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.SATISFIES;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ALIAS;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_ARGUMENT_LIST;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.TYPE_PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.UPPER_BOUND;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.DOCLINK;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.DOCLINK;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.OF;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.SATISFIES;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ALIAS;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ARGUMENT_LIST;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.UPPER_BOUND;
 
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;

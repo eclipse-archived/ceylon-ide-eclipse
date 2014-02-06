@@ -13,6 +13,8 @@ package com.redhat.ceylon.eclipse.code.hover;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.isAvailable;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameters;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
@@ -31,8 +33,6 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.PACKAGES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.STRINGS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.TYPES;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getCurrentThemeColor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.appendParameters;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;

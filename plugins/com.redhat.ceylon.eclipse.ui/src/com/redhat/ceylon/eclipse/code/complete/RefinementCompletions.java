@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.ArrayList;

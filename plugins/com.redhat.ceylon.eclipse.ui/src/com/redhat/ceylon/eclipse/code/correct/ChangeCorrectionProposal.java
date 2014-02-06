@@ -44,7 +44,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.eclipse.code.propose.CompletionProposal;
+import com.redhat.ceylon.eclipse.code.complete.CompletionProposal;
 
 
 /**

@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendDeclarationText;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.appendDeclarationText;
-import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.getParameters;
 
 import java.util.List;
 
@@ -20,8 +20,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.ParameterInfo;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.propose.CeylonCompletionProcessor.ParameterInfo;
 
 public class ParameterContextInformation implements IContextInformation {
 	

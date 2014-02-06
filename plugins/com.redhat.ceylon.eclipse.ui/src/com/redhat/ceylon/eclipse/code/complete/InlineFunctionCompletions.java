@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getInlineFunctionDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getInlineFunctionTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionTextFor;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.List;

@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getNamedInvocationDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getNamedInvocationTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getPositionalInvocationDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getPositionalInvocationTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getTextForDocLink;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.CLASS_ALIAS;
-import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedInvocationDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedInvocationTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextForDocLink;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 
 import java.util.Collections;
 import java.util.List;

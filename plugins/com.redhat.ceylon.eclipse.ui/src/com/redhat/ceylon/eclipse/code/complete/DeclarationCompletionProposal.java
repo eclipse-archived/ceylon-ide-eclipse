@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
+import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonCompletionProcessor.NO_COMPLETIONS;
-import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.getParameters;
-import static com.redhat.ceylon.eclipse.code.propose.ParameterContextValidator.findCharCount;
 
 import java.util.ArrayList;
 import java.util.Collections;

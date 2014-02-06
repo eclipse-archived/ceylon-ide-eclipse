@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.propose.ReferenceCompletions.addInvocationProposals;
+import static com.redhat.ceylon.eclipse.code.complete.ReferenceCompletions.addInvocationProposals;
 
 import java.util.List;
 
