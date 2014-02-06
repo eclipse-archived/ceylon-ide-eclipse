@@ -378,9 +378,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	break;
         case 300:
         case 350:
-        	if (context.getSourceViewer()!=null) { //TODO: figure out some other way to get the Document!
-        		addImplementFormalAndAmbiguouslyInheritedMembersProposal(cu, node, 
-        		        proposals, file, context.getSourceViewer().getDocument());
+        	if (context.getSourceViewer()!=null) {
+        		//TODO: figure out some other way to get the Document!
+        		IDocument document = context.getSourceViewer().getDocument();
+				addImplementFormalAndAmbiguouslyInheritedMembersProposal(cu, node, 
+        		        proposals, file, document);
         	}
         //fallthrough:
         case 310:
@@ -423,7 +425,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	addMakeVariableProposal(proposals, project, node);
         	break;
         case 801:
-        	addMakeVariableDecProposal(cu, proposals, project, node);
+        	addMakeVariableDecProposal(proposals, project, cu, node);
         	break;
         case 802:
         	break;
