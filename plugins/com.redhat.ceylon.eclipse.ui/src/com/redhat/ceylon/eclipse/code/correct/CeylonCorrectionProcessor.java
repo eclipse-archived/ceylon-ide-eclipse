@@ -11,15 +11,16 @@ package com.redhat.ceylon.eclipse.code.correct;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeAbstractProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeActualProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeAbstractDecProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeActualDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeContainerAbstractProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeDefaultDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeDefaultProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeFormalProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeFormalDecProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeRefinedSharedProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedPropsalForSupertypes;
+import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals;
@@ -106,7 +107,6 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -233,7 +233,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    private static void collectMarkerProposals(SimpleMarkerAnnotation annotation, Collection<ICompletionProposal> proposals) {
+    private static void collectMarkerProposals(SimpleMarkerAnnotation annotation, 
+    		Collection<ICompletionProposal> proposals) {
         IMarker marker = annotation.getMarker();
         IMarkerResolution[] res = IDE.getMarkerHelpRegistry().getResolutions(marker);
         if (res.length > 0) {
@@ -386,7 +387,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	}
         //fallthrough:
         case 310:
-        	addMakeAbstractProposal(proposals, project, node);
+        	addMakeAbstractDecProposal(proposals, project, node);
         	break;
         case 400:
         	addMakeSharedProposal(proposals, project, node);
@@ -396,7 +397,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	addMakeDefaultProposal(proposals, project, node);
         	break;
         case 600:
-        	addMakeActualProposal(proposals, project, node);
+        	addMakeActualDecProposal(proposals, project, node);
         	break;
         case 701:
         	addMakeSharedDecProposal(proposals, project, node);
@@ -415,7 +416,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addMakeSharedProposal(proposals, project, node);
             break;
         case 713:
-            addMakeSharedPropsalForSupertypes(proposals, project, node);
+            addMakeSharedProposalForSupertypes(proposals, project, node);
             break;
         case 800:
         case 804:
@@ -450,6 +451,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	break;
         case 1300:
         case 1301:
+        	addMakeRefinedSharedProposal(proposals, project, node);
         	addRemoveAnnotationDecProposal(proposals, "actual", project, node);
         	break;
         case 1302:
@@ -463,7 +465,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	break;
         case 1400:
         case 1401:
-        	addMakeFormalProposal(proposals, project, node);
+        	addMakeFormalDecProposal(proposals, project, node);
         	break;
         case 1500:
         	addRemoveAnnotationDecProposal(proposals, "variable", project, node);
@@ -599,11 +601,30 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             			!d.isShared()) {
             		addMakeSharedDecProposal(proposals, project, decNode);
             	}
-            	if (d.isClassOrInterfaceMember() && 
-            			d.isShared() &&
-            			!d.isDefault() && !d.isFormal() &&
-            			!(d instanceof Interface)) {
-            		addMakeDefaultDecProposal(proposals, project, decNode);
+            	if (d.isClassOrInterfaceMember() &&
+            			!d.isDefault() && !d.isFormal()) {
+            		if (decNode instanceof Tree.AnyClass) {
+            			addMakeDefaultDecProposal(proposals, project, decNode);
+            		}
+            		else if (decNode instanceof Tree.AnyAttribute) {
+            			addMakeDefaultDecProposal(proposals, project, decNode);
+            		}
+            		else if (decNode instanceof Tree.AnyMethod) {
+            			addMakeDefaultDecProposal(proposals, project, decNode);
+            		}
+            		if (decNode instanceof Tree.ClassDefinition) {
+            			addMakeFormalDecProposal(proposals, project, decNode);
+            		}
+            		else if (decNode instanceof Tree.AttributeDeclaration) {
+            			if (((Tree.AttributeDeclaration) decNode).getSpecifierOrInitializerExpression()==null) {
+            				addMakeFormalDecProposal(proposals, project, decNode);
+            			}
+            		}
+            		else if (decNode instanceof Tree.MethodDeclaration) {
+            			if (((Tree.MethodDeclaration) decNode).getSpecifierExpression()==null) {
+            				addMakeFormalDecProposal(proposals, project, decNode);
+            			}
+            		}
             	}
             }
         }

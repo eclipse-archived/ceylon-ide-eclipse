@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static java.util.Arrays.asList;
@@ -35,7 +36,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class AddAnnotionProposal extends ChangeCorrectionProposal {
@@ -110,7 +110,7 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
     private static void addAddAnnotationProposal(String annotation, String desc, 
             Declaration dec, Collection<ICompletionProposal> proposals, 
             PhasedUnit unit, Tree.Declaration decNode) {
-        IFile file = CeylonBuilder.getFile(unit);
+        IFile file = getFile(unit);
         TextFileChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
         InsertEdit insertEdit = createInsertAnnotationEdit(annotation, 
@@ -145,7 +145,8 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
         Tree.Annotation nextAnnotation = null;
         Tree.AnnotationList annotationList = getAnnotationList(node);
         if (annotationList != null) {
-            for (Tree.Annotation annotation : annotationList.getAnnotations()) {
+            for (Tree.Annotation annotation:
+            	    annotationList.getAnnotations()) {
                 if (isAnnotationAfter(newAnnotationName, 
                 		getAnnotationIdentifier(annotation))) {
                     prevAnnotation = annotation;
@@ -268,12 +269,13 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
     private static IDocument getDocument(TextFileChange change) {
         try {
             return change.getCurrentDocument(null);
-        } catch (CoreException e) {
+        }
+        catch (CoreException e) {
             throw new RuntimeException(e);
         }
     }
 
-    static void addMakeActualProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeActualDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         boolean shared = decNode.getDeclarationModel().isShared();
@@ -326,20 +328,23 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         Declaration d = decNode.getDeclarationModel();
-        addAddAnnotationProposal(node, "default", "Make Default", 
+        addAddAnnotationProposal(node, 
+        		d.isShared() ? "default" : "shared default", 
+        		d.isShared() ? "Make Default" : "Make Shared Default", 
         		d, proposals, project);
     }
 
-    static void addMakeFormalProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeFormalDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
-        boolean shared = decNode.getDeclarationModel().isShared();
-        addAddAnnotationProposal(node, shared ? "formal" : "shared formal",
-                shared ? "Make Formal" : "Make Shared Formal",
-                decNode.getDeclarationModel(), proposals, project);
+        Declaration d = decNode.getDeclarationModel();
+        addAddAnnotationProposal(node, 
+        		d.isShared() ? "formal" : "shared formal",
+        		d.isShared() ? "Make Formal" : "Make Shared Formal",
+                d, proposals, project);
     }
 
-    static void addMakeAbstractProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeAbstractDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Declaration dec;
         if (node instanceof Tree.Declaration) {
@@ -422,7 +427,7 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
         		v.dec, proposals, project);
     }
     
-    static void addMakeSharedPropsalForSupertypes(Collection<ICompletionProposal> proposals, 
+    static void addMakeSharedProposalForSupertypes(Collection<ICompletionProposal> proposals, 
     		IProject project, Node node) {
         if (node instanceof Tree.ClassOrInterface) {
             Tree.ClassOrInterface c = (Tree.ClassOrInterface) node;
@@ -453,6 +458,21 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
                 }
             }
         }
+    }
+    
+    static void addMakeRefinedSharedProposal(Collection<ICompletionProposal> proposals, 
+    		IProject project, Node node) {
+    	if (node instanceof Tree.Declaration) {
+    		Declaration refined = ((Tree.Declaration) node).getDeclarationModel()
+    				.getRefinedDeclaration();
+    		if (refined.isDefault() || refined.isFormal()) {
+    			addMakeSharedProposal(proposals, project, refined);
+    		}
+    		else {
+    			addAddAnnotationProposal(node, "shared default", "Make Shared Default", 
+    					refined, proposals, project);
+    		}
+    	}
     }
     
     static void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
@@ -539,9 +559,9 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
     static void addMakeSharedDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
     	if (node instanceof Tree.Declaration) {
-    		addAddAnnotationProposal(node, "shared", "Make Shared",  
-    				((Tree.Declaration) node).getDeclarationModel(), 
-    				proposals, project);
+    		Declaration d = ((Tree.Declaration) node).getDeclarationModel();
+			addAddAnnotationProposal(node, "shared", "Make Shared",  
+    				d, proposals, project);
     	}
     }
     
