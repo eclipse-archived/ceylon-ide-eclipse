@@ -46,7 +46,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer;
+import com.redhat.ceylon.eclipse.code.complete.CodeCompletions;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 
@@ -257,7 +257,7 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
             if (element instanceof Declaration) {
                 Declaration declaration = (Declaration) element;
                 if (showCompleteDescription) {
-                    styledText = CeylonContentProposer.getStyledDescriptionFor(declaration);
+                    styledText = CodeCompletions.getStyledDescriptionFor(declaration);
                 } else {
                     styledText = new StyledString(declaration.getName());
                 }

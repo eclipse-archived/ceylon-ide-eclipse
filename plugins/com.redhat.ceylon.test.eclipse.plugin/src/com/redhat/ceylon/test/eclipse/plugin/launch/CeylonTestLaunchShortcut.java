@@ -48,7 +48,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Util;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -82,7 +82,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
             processCeylonEditorSelection(name, entries, (CeylonEditor)editor);
         }
         if (entries.isEmpty()) {
-            IFile file = Util.getFile(editor.getEditorInput());
+            IFile file = EditorUtil.getFile(editor.getEditorInput());
             processFile(name, entries, file);
         }
 
