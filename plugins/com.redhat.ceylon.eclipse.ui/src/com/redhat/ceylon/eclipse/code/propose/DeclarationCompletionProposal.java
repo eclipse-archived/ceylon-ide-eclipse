@@ -4,8 +4,8 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.propose.CompletionProcessor.NO_COMPLETIONS;
-import static com.redhat.ceylon.eclipse.code.propose.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.getParameters;
+import static com.redhat.ceylon.eclipse.code.propose.ParameterContextValidator.findCharCount;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +19,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IEditingSupport;
 import org.eclipse.jface.text.IEditingSupportRegistry;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
@@ -56,6 +58,113 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 class DeclarationCompletionProposal extends CompletionProposal {
 	
+	final class NestedCompletionProposal implements ICompletionProposal, 
+	        ICompletionProposalExtension2 {
+	    private final String op;
+	    private final int loc;
+	    private final int index;
+	    private final boolean basic;
+	    private final Declaration d;
+
+	    NestedCompletionProposal(String op, int loc, int index, boolean basic,
+	            Declaration d) {
+		    this.op = op;
+		    this.loc = loc;
+		    this.index = index;
+		    this.basic = basic;
+		    this.d = d;
+	    }
+
+	    public String getAdditionalProposalInfo() {
+	    	return null;
+	    }
+
+	    @Override
+	    public void apply(IDocument document) {
+	    	try {
+	    		IRegion li = document.getLineInformationOfOffset(loc);
+	    		int endOfLine = li.getOffset() + li.getLength();
+	    		int startOfArgs = getFirstPosition(basic);
+	    		int offset = findCharCount(index, document, 
+	    				loc+startOfArgs, endOfLine, 
+	    				",;", "", true)+1;
+	    		while (offset>0&&document.getChar(offset)==' ') offset++;
+	    		int nextOffset = findCharCount(index+1, document, 
+	    				loc+startOfArgs, endOfLine, 
+	    				",;", "", true);
+	    		int middleOffset = findCharCount(1, document, 
+	    		        offset, nextOffset, 
+	    				"=", "", true)+1;
+	    		if (middleOffset>0&&document.getChar(middleOffset)=='>') middleOffset++;
+	    		while (middleOffset>0&&document.getChar(middleOffset)==' ') middleOffset++;
+	    		if (middleOffset>offset&&middleOffset<nextOffset) offset = middleOffset;
+	    		if (nextOffset==-1) nextOffset = offset;
+	    		document.replace(offset, nextOffset-offset, op+d.getName());
+	    	} 
+	    	catch (BadLocationException e) {
+	    		e.printStackTrace();
+	    	}
+	    }
+
+	    @Override
+	    public Point getSelection(IDocument document) {
+	    	return null;
+	    }
+
+	    @Override
+	    public String getDisplayString() {
+	    	return op+d.getName();
+	    }
+
+	    @Override
+	    public Image getImage() {
+	    	return getImageForDeclaration(d);
+	    }
+
+	    @Override
+	    public IContextInformation getContextInformation() {
+	    	return null;
+	    }
+
+		@Override
+        public void apply(ITextViewer viewer, char trigger, int stateMask,
+                int offset) {
+			apply(viewer.getDocument());
+	        
+        }
+
+		@Override
+        public void selected(ITextViewer viewer, boolean smartToggle) {}
+
+		@Override
+        public void unselected(ITextViewer viewer) {}
+
+		@Override
+        public boolean validate(IDocument document, int currentOffset,
+                DocumentEvent event) {
+	        if (event==null) {
+	        	return true;
+	        }
+	        else {
+	    		try {
+	    			IRegion li = document.getLineInformationOfOffset(loc);
+	    			int endOfLine = li.getOffset() + li.getLength();
+	    			int startOfArgs = getFirstPosition(basic);
+	    			int offset = findCharCount(index, document, 
+	    					loc+startOfArgs, endOfLine, 
+	    					",;", "", true)+1;
+	    			String content= document.get(offset, currentOffset - offset);
+	    			if ((op+d.getName()).startsWith(content.trim())) {
+	    				return true;
+	    			}
+	    		} catch (BadLocationException e) {
+	    			// ignore concurrently modified document
+	    		}
+	        	return false;
+	        }
+        }
+    }
+
 	private final CeylonParseController cpc;
 	private final Declaration declaration;
 	private final boolean addimport;
@@ -410,53 +519,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			final Declaration d, final boolean basic, 
 			final boolean spread) {
 	    final String op = spread?"*":"";
-		props.add(new ICompletionProposal() {
-			public String getAdditionalProposalInfo() {
-				return null;
-			}
-			@Override
-			public void apply(IDocument document) {
-				try {
-					IRegion li = document.getLineInformationOfOffset(loc);
-					int endOfLine = li.getOffset() + li.getLength();
-					int startOfArgs = getFirstPosition(basic);
-					int offset = findCharCount(index, document, 
-								loc+startOfArgs, endOfLine, 
-								",;", "", true)+1;
-					while (offset>0&&document.getChar(offset)==' ') offset++;
-					int nextOffset = findCharCount(index+1, document, 
-							loc+startOfArgs, endOfLine, 
-							",;", "", true);
-					int middleOffset = findCharCount(1, document, 
-					        offset, nextOffset, 
-							"=", "", true)+1;
-					if (middleOffset>0&&document.getChar(middleOffset)=='>') middleOffset++;
-					while (middleOffset>0&&document.getChar(middleOffset)==' ') middleOffset++;
-					if (middleOffset>offset&&middleOffset<nextOffset) offset = middleOffset;
-					if (nextOffset==-1) nextOffset = offset;
-					document.replace(offset, nextOffset-offset, op+d.getName());
-				} 
-				catch (BadLocationException e) {
-					e.printStackTrace();
-				}
-			}
-			@Override
-			public Point getSelection(IDocument document) {
-				return null;
-			}
-			@Override
-			public String getDisplayString() {
-				return op+d.getName();
-			}
-			@Override
-			public Image getImage() {
-				return getImageForDeclaration(d);
-			}
-			@Override
-			public IContextInformation getContextInformation() {
-				return null;
-			}
-		});
+		props.add(new NestedCompletionProposal(op, loc, index, basic, d));
 	}
 	
 	@Override
