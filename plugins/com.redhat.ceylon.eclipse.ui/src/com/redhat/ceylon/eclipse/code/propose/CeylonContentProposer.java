@@ -34,7 +34,6 @@ import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.propose.ControlStructureCompletions.addForProposal;
 import static com.redhat.ceylon.eclipse.code.propose.ControlStructureCompletions.addIfExistsProposal;
 import static com.redhat.ceylon.eclipse.code.propose.ControlStructureCompletions.addSwitchProposal;
-import static com.redhat.ceylon.eclipse.code.propose.DocLink.getDocLink;
 import static com.redhat.ceylon.eclipse.code.propose.ImportCompletions.addImportProposal;
 import static com.redhat.ceylon.eclipse.code.propose.InlineFunctionCompletions.addInlineFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.propose.KeywordCompletions.addKeywordProposals;
@@ -127,50 +126,23 @@ public class CeylonContentProposer {
         List<CommonToken> tokens = cpc.getTokens(); 
         Tree.CompilationUnit rn = cpc.getRootNode();
         
-        //compensate for the fact that we get sent an old
-        //tree that doesn't contain the characters the user
-        //just typed
-        PositionedPrefix result = compensateForMissingCharacter(offset, viewer,
-                tokens);
-        if (result==null) {
-            return null;
-        }
-        
         //adjust the token to account for unclosed blocks
         //we search for the first non-whitespace/non-comment
         //token to the left of the caret
-        int tokenIndex = getTokenIndexAtCharacter(tokens, result.start);
+        int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
         if (tokenIndex<0) tokenIndex = -tokenIndex;
         CommonToken adjustedToken = adjust(tokenIndex, offset, tokens);
         int tt = adjustedToken.getType();
         
         if (offset<=adjustedToken.getStopIndex() && 
             offset>=adjustedToken.getStartIndex()) {
-            if (tt==MULTI_COMMENT||tt==LINE_COMMENT) {
-                return null;
-            }
-            if (tt==STRING_LITERAL ||
-                tt==STRING_END ||
-                tt==STRING_MID ||
-                tt==STRING_START ||
-                tt==VERBATIM_STRING ||
-                tt==CHAR_LITERAL ||
-                tt==FLOAT_LITERAL ||
-                tt==NATURAL_LITERAL) {
+            if (isCommentOrCodeStringLiteral(adjustedToken)) {
                 return null;
             }
         }
-        int line=-1;
-        try {
-            line = viewer.getDocument().getLineOfOffset(offset);
-        }
-        catch (BadLocationException e) {
-            e.printStackTrace();
-        }
-        
-        if (tt==LINE_COMMENT &&
+        if (isLineComment(adjustedToken) &&
             offset>=adjustedToken.getStartIndex() && 
-            adjustedToken.getLine()==line+1) {
+            adjustedToken.getLine()==getLine(offset,viewer)+1) {
             return null;
         }
         
@@ -186,46 +158,102 @@ public class CeylonContentProposer {
         //      an expression, since RequiredTypeVisitor
         //      doesn't know how to search up the tree for
         //      the containing InvocationExpression
-        RequiredTypeVisitor rtv = new RequiredTypeVisitor(node, adjustedToken);
-        rtv.visit(rn);
-        ProducedType requiredType = rtv.getType();
+        ProducedType requiredType = determineRequiredType(rn, 
+        		adjustedToken, node);
         
-        Scope scope = getRealScope(node, rn);
- 
+        String prefix = "";
+        if (isIdentifierOrKeyword(adjustedToken)) {
+        	int offsetInToken = offset - adjustedToken.getStartIndex();
+        	String text = adjustedToken.getText();
+			if (offsetInToken<=text.length()) {
+        		prefix = text.substring(0, offsetInToken);
+			}
+        }
+        boolean isMemberOp = isMemberOperator(adjustedToken);
+        String qualified = null;
+        
         // special handling for doc links
-        boolean inDoc = false;
-        String qual = ""; //empty for all except
-        if ((tt==ASTRING_LITERAL || tt==AVERBATIM_STRING) &&
+        boolean inDoc = isAnnotationStringLiteral(adjustedToken) &&
                 offset>adjustedToken.getStartIndex() &&
-                offset<adjustedToken.getStopIndex()) {
-
-            inDoc = true;
-            int qualMarker = result.prefix.lastIndexOf("::");
-            if (qualMarker > -1 && offset > (adjustedToken.getStartIndex() + qualMarker +1) ) {
-                qual = result.prefix.substring(0, qualMarker + 2);
-                result.prefix = result.prefix.substring(qualMarker + 2);
-            }
-            if (result.isMemberOp && result.type != null) {
-                qual = result.type + ".";
-            } 
+                offset<adjustedToken.getStopIndex();
+        if (inDoc) {
+        	Tree.DocLink docLink = (Tree.DocLink) node;
+        	int offsetInLink = offset-docLink.getStartIndex();
+        	String text = docLink.getToken().getText();
+        	int bar = text.indexOf('|')+1;
+        	if (offsetInLink<bar) {
+        		return null;
+        	}
+        	qualified = text.substring(bar, offsetInLink);
+			int dcolon = qualified.indexOf("::");
+			String pkg = null;
+			if (dcolon>=0) {
+				pkg = qualified.substring(0, dcolon+2);
+				qualified = qualified.substring(dcolon+2);
+			}
+			int dot = qualified.indexOf('.')+1;
+			isMemberOp = dot>0;
+			prefix = qualified.substring(dot);
+			if (dcolon>=0) {
+				qualified = pkg + qualified;
+			}
         }
         
+        Scope scope = getRealScope(node, rn);
+        
         //construct completions when outside ordinary code
-        ICompletionProposal[] completions = constructCompletions(offset, result.prefix, cpc, node, 
-        		adjustedToken, scope, returnedParamInfo, result.isMemberOp, viewer.getDocument());
+        ICompletionProposal[] completions = constructCompletions(offset, prefix, cpc, node, 
+        		adjustedToken, scope, returnedParamInfo, isMemberOp, viewer.getDocument());
         if (completions==null) {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals = getProposals(node, scope, 
-            		result.prefix, result.isMemberOp, rn);
+            		prefix, isMemberOp, rn);
             filterProposals(filter, rn, requiredType, proposals);
-            Set<DeclarationWithProximity> sortedProposals = sortProposals(result.prefix, 
+            Set<DeclarationWithProximity> sortedProposals = sortProposals(prefix, 
             		requiredType, proposals);
-            completions = constructCompletions(offset, qual+result.prefix, sortedProposals, cpc,
-                             scope, node, adjustedToken, result.isMemberOp, viewer.getDocument(), 
-                             filter, inDoc);
+            completions = constructCompletions(offset, inDoc ? qualified : prefix, 
+            		sortedProposals, cpc, scope, node, adjustedToken, isMemberOp, 
+            		viewer.getDocument(), filter, inDoc);
         }
         return completions;
         
+    }
+
+	private ProducedType determineRequiredType(Tree.CompilationUnit rn,
+            CommonToken adjustedToken, Node node) {
+	    RequiredTypeVisitor rtv = new RequiredTypeVisitor(node, adjustedToken);
+        rtv.visit(rn);
+        ProducedType requiredType = rtv.getType();
+	    return requiredType;
+    }
+
+	private int getLine(final int offset, ITextViewer viewer) {
+	    int line=-1;
+        try {
+            line = viewer.getDocument().getLineOfOffset(offset);
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+	    return line;
+    }
+
+	private boolean isLineComment(CommonToken adjustedToken) {
+	    return adjustedToken.getType()==LINE_COMMENT;
+    }
+
+	private boolean isCommentOrCodeStringLiteral(CommonToken adjustedToken) {
+		int tt = adjustedToken.getType();
+	    return tt==MULTI_COMMENT ||
+	    	tt==LINE_COMMENT ||
+	    	tt==STRING_LITERAL ||
+	        tt==STRING_END ||
+	        tt==STRING_MID ||
+	        tt==STRING_START ||
+	        tt==VERBATIM_STRING ||
+	        tt==CHAR_LITERAL ||
+	        tt==FLOAT_LITERAL ||
+	        tt==NATURAL_LITERAL;
     }
 
     private void filterProposals(boolean filter, Tree.CompilationUnit rn,
@@ -245,95 +273,10 @@ public class CeylonContentProposer {
         }
     }
 
-    private static PositionedPrefix compensateForMissingCharacter(final int offset,
-            ITextViewer viewer, List<CommonToken> tokens) {
-
-        //What is going on here is that when I have a list of proposals open
-        //and then I type a character, IMP sends us the old syntax tree and
-        //doesn't bother to even send us the character I just typed, except
-        //in the ITextViewer. So we need to do some guessing to figure out
-        //that there is a missing character in the token stream and take
-        //corrective action. This should be fixed in IMP!
-        
-        return getPositionedPrefix(offset, viewer, 
-                getTokenAtCaret(offset, viewer, tokens));
-    }
-
-    private static PositionedPrefix getPositionedPrefix(final int offset,
-            ITextViewer viewer, CommonToken token) {
-        String text = viewer.getDocument().get();
-        if (token==null || offset==0) {
-            //no earlier token, so we're typing at the 
-            //start of an empty file
-            return new PositionedPrefix(text.substring(0, offset), 0);
-        }
-        
-        int offsetInToken = offset-1-token.getStartIndex();
-        
-        //then we're not missing the typed character 
-        //from the tree we were passed by IMP
-        if (isIdentifierOrKeyword(token)) {
-        	return new PositionedPrefix(
-        			token.getText().substring(0, offsetInToken+1),
-        			token.getStartIndex());
-        }
-        else if (isStringLiteral(token)) {
-        	DocLink docLink = getDocLink(token.getText(), 
-        			offset - token.getStartIndex(), 
-        			offsetInToken);
-        	if (docLink != null) {
-        		// if caret is after '|'
-        		if (offsetInToken >= docLink.declStart-1) {
-        			return positionedPrefixForDocLink(token, offsetInToken,
-        					docLink);
-        		}
-        	}
-        	return null; // in literal but no docRef
-        }
-        else {
-        	return new PositionedPrefix(offset, isMemberOperator(token));
-        }
-    }
-
-	private static boolean isStringLiteral(CommonToken token) {
+	private static boolean isAnnotationStringLiteral(CommonToken token) {
 	    int type = token.getType();
 		return type == ASTRING_LITERAL || 
         		type == AVERBATIM_STRING;
-    }
-
-	private static PositionedPrefix positionedPrefixForDocLink(
-            CommonToken token, int offsetInToken, DocLink docLink) {
-	    // if caret is after the '.' and the '.' is a member lookup
-	    int start = docLink.declStart;
-		String name = docLink.declName;
-		int offset = token.getStartIndex();
-		int dotLoc = name.lastIndexOf('.');
-		int scopeLoc = name.lastIndexOf("::");
-		if ((offsetInToken > start + dotLoc - 1) 
-	            && dotLoc > scopeLoc) {
-	        PositionedPrefix pp = new PositionedPrefix(offset+start, true);
-	        if (start + dotLoc <= offsetInToken) {
-	            pp.prefix = name.substring(dotLoc + 1, 
-	            		offsetInToken - start +1);
-	            pp.type = name.substring(0, dotLoc);
-	        }
-	        return pp;
-	    }
-	    else { // type lookup, handle package later
-	        return new PositionedPrefix(name, offset+start);
-	    }
-    }
-
-    private static CommonToken getTokenAtCaret(final int offset, ITextViewer viewer,
-            List<CommonToken> tokens) {
-        if (offset==0) {
-            return null;
-        }
-        int index = getTokenIndexAtCharacter(tokens, offset-1);
-        if (index>=0) {
-            return (CommonToken) tokens.get(index);
-        }
-        return null;
     }
     
     static final class ParameterInfo 
@@ -352,23 +295,6 @@ public class CeylonContentProposer {
 		@Override
 		public void apply(IDocument document) {}
 	}
-
-	private static class PositionedPrefix {
-        String type;
-        String prefix;
-        int start;
-        boolean isMemberOp;
-        PositionedPrefix(String prefix, int start) {
-            this.prefix=prefix;
-            this.start=start;
-            this.isMemberOp=false;
-        }
-        PositionedPrefix(int start, boolean isMemberOp) {
-            this.prefix="";
-            this.isMemberOp=isMemberOp;
-            this.start=start;
-        }
-    }
     
     private static CommonToken adjust(int tokenIndex, int offset, List<CommonToken> tokens) {
         CommonToken adjustedToken = tokens.get(tokenIndex); 
