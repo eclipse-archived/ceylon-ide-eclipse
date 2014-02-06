@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.fullPath;
-import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.nextTokenType;
-import static com.redhat.ceylon.eclipse.code.propose.ModuleCompletions.addModuleCompletions;
-import static com.redhat.ceylon.eclipse.code.propose.PackageCompletions.addCurrentPackageNameCompletion;
-import static com.redhat.ceylon.eclipse.code.propose.PackageCompletions.addPackageCompletions;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.nextTokenType;
+import static com.redhat.ceylon.eclipse.code.complete.ModuleCompletions.addModuleCompletions;
+import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addCurrentPackageNameCompletion;
+import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageCompletions;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
 public enum OccurrenceLocation { 
     EXTENDS, 

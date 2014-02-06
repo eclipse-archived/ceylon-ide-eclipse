@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getStyledDescriptionFor;
 
 import java.util.Comparator;
 import java.util.List;

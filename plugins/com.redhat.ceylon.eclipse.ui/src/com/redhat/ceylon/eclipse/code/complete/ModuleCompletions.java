@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.code.propose;
+package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
-import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
 

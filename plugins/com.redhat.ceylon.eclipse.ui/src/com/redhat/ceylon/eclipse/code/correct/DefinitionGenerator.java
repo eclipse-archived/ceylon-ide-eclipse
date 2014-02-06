@@ -1,11 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.defaultValue;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.ArrayList;

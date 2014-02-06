@@ -1,13 +1,13 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.getProposals;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.FORMAL_REFINEMENT;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonCompletionProcessor.getProposals;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.overloads;
-import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.FORMAL_REFINEMENT;
-import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;

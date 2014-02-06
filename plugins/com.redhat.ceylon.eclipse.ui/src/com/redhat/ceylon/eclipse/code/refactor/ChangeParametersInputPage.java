@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
 

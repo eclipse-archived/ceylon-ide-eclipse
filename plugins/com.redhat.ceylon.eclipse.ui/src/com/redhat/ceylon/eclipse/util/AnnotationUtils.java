@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.ASSIGNMENT_ANNOTATION;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.OCCURRENCE_ANNOTATION;
@@ -10,7 +11,6 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertTopLevelFont;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
-import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
