@@ -58,6 +58,10 @@ public class Utils {
 
     public static void openInEditor(IProject project, String fileName) {
         final IFile runFile = project.getFile(fileName);
+        openInEditor(runFile);
+    }
+
+    public static void openInEditor(final IFile runFile) {
         Display.getDefault().syncExec(new Runnable() {
             public void run() {
                 try {
