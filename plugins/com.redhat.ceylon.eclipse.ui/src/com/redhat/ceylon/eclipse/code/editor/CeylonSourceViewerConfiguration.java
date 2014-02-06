@@ -54,7 +54,7 @@ import com.redhat.ceylon.eclipse.code.outline.HierarchyInput;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.propose.CompletionProcessor;
+import com.redhat.ceylon.eclipse.code.propose.CeylonCompletionProcessor;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
@@ -138,7 +138,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         if (editor==null) return null;
         ContentAssistant contentAssistant = new ContentAssistant();
-        CompletionProcessor completionProcessor = new CompletionProcessor(editor);
+        CeylonCompletionProcessor completionProcessor = new CeylonCompletionProcessor(editor);
         contentAssistant.addCompletionListener(new CompletionListener(editor, completionProcessor));
         contentAssistant.setContentAssistProcessor(completionProcessor, DEFAULT_CONTENT_TYPE);
 		configCompletionPopup(contentAssistant);
@@ -369,10 +369,10 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     private static final class CompletionListener 
             implements ICompletionListener {
 	    private CeylonEditor editor;
-        private CompletionProcessor processor;
+        private CeylonCompletionProcessor processor;
 
         private CompletionListener(CeylonEditor editor,
-                CompletionProcessor processor) {
+                CeylonCompletionProcessor processor) {
             this.editor = editor;
             this.processor = processor;
 	        

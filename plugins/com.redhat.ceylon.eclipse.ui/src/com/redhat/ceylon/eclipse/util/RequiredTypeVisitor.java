@@ -18,7 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.NamedArgumentList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class RequiredTypeVisitor extends Visitor 
+class RequiredTypeVisitor extends Visitor 
         implements NaturalVisitor {
     
     private Node node;
