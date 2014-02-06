@@ -21,7 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.ParameterInfo;
+import com.redhat.ceylon.eclipse.code.propose.CeylonCompletionProcessor.ParameterInfo;
 
 public class ParameterContextInformation implements IContextInformation {
 	

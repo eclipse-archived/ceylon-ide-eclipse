@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonCompletionProcessor.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.FORMAL_REFINEMENT;

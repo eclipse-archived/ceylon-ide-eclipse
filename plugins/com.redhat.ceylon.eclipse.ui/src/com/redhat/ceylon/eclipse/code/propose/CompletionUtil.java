@@ -4,12 +4,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.antlr.runtime.CommonToken;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.ITextViewer;
+
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CompletionUtil {
@@ -83,6 +91,61 @@ public class CompletionUtil {
 	    FindOccurrenceLocationVisitor visitor = new FindOccurrenceLocationVisitor(node);
 	    cu.visit(visitor);
 	    return visitor.getOccurrenceLocation();
+	}
+
+	static int nextTokenType(final CeylonParseController cpc,
+			final CommonToken token) {
+		for (int i=token.getTokenIndex()+1; i<cpc.getTokens().size(); i++) {
+			CommonToken tok = cpc.getTokens().get(i);
+			if (tok.getChannel()!=CommonToken.HIDDEN_CHANNEL) {
+				return tok.getType();
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * BaseMemberExpressions in Annotations have funny lying
+	 * scopes, but we can extract the real scope out of the
+	 * identifier! (Yick)
+	 */
+	static Scope getRealScope(final Node node, CompilationUnit cu) {
+		
+	    class FindScopeVisitor extends Visitor {
+	        Scope scope;
+	        public void visit(Tree.Declaration that) {
+	            super.visit(that);
+	            AnnotationList al = that.getAnnotationList();
+	            if (al!=null) {
+	                for (Tree.Annotation a: al.getAnnotations()) {
+	                    Integer i = a.getPrimary().getStartIndex();
+	                    Integer j = node.getStartIndex();
+	                    if (i.intValue()==j.intValue()) {
+	                        scope = that.getDeclarationModel().getScope();
+	                    }
+	                }
+	            }
+	        }
+	        
+	        public void visit(Tree.DocLink that) {
+	            super.visit(that);
+	            scope = ((Tree.DocLink)node).getPkg();
+	        }
+	    };
+	    FindScopeVisitor fsv = new FindScopeVisitor();
+	    fsv.visit(cu);
+	    return fsv.scope==null ? node.getScope() : fsv.scope;
+	}
+
+	static int getLine(final int offset, ITextViewer viewer) {
+	    int line=-1;
+	    try {
+	        line = viewer.getDocument().getLineOfOffset(offset);
+	    }
+	    catch (BadLocationException e) {
+	        e.printStackTrace();
+	    }
+	    return line;
 	}
 
 }

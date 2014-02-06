@@ -1,9 +1,10 @@
 package com.redhat.ceylon.eclipse.code.propose;
 
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.fullPath;
+import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.nextTokenType;
 import static com.redhat.ceylon.eclipse.code.propose.ModuleCompletions.addModuleCompletions;
 import static com.redhat.ceylon.eclipse.code.propose.PackageCompletions.addCurrentPackageNameCompletion;
 import static com.redhat.ceylon.eclipse.code.propose.PackageCompletions.addPackageCompletions;
-import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.fullPath;
 
 import java.util.List;
 
@@ -60,7 +61,7 @@ final class ImportVisitor extends Visitor {
         if (that.getImportPath()==node) {
             addPackageCompletions(cpc, offset, prefix, 
             		(Tree.ImportPath) node, node, result, 
-            		CeylonContentProposer.nextTokenType(cpc, token)!=CeylonLexer.LBRACE);
+            		nextTokenType(cpc, token)!=CeylonLexer.LBRACE);
         }
     }
 
@@ -79,7 +80,7 @@ final class ImportVisitor extends Visitor {
         if (that.getImportPath()==node) {
             addModuleCompletions(cpc, offset, prefix, 
             		(Tree.ImportPath) node, node, result, 
-            		CeylonContentProposer.nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL);
+            		nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL);
         }
     }
 

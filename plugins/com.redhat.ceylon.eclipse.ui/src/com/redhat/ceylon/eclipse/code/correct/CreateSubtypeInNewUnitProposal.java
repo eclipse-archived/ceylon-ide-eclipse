@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedN
 import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.appendParameters;
 import static com.redhat.ceylon.eclipse.code.propose.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.propose.RefinementCompletions.getRefinedProducedReference;
+import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,7 +45,6 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 import com.redhat.ceylon.eclipse.util.Indents;
-import com.redhat.ceylon.eclipse.util.RequiredTypeVisitor;
 
 class CreateSubtypeInNewUnitProposal implements ICompletionProposal, 
 		ICompletionProposalExtension6 {
@@ -333,9 +333,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         else if (node instanceof Tree.SpecifierOrInitializerExpression ||
                 node instanceof Tree.Return || 
                 node instanceof Tree.PositionalArgumentList) {
-            RequiredTypeVisitor rtv = new RequiredTypeVisitor(node, null);
-            rtv.visit(cu);
-            return rtv.getType();
+        	return getRequiredType(cu, node, null);
         }
         else {
             return null;

@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.propose.CeylonContentProposer.getProposals;
+import static com.redhat.ceylon.eclipse.code.propose.CeylonCompletionProcessor.getProposals;
 import static com.redhat.ceylon.eclipse.code.propose.CompletionUtil.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.code.propose.OccurrenceLocation.IMPORT;
 
