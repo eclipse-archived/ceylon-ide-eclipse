@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
@@ -168,15 +170,15 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
         if (dec!=null) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
-//                    ProducedType t = null;
+                    ProducedType t = null;
                     Node typeNode = null;
                     
-                    if( dec instanceof TypeParameter) {
-//                        t = ((TypeParameter) dec).getType();
+                    if (dec instanceof TypeParameter) {
+                        t = ((TypeParameter) dec).getType();
                         typeNode = node;
                     }
                     
-                    if( dec instanceof TypedDeclaration ) {
+                    if (dec instanceof TypedDeclaration) {
                         TypedDeclaration typedDec = (TypedDeclaration)dec;
                         FindDeclarationNodeVisitor fdv = 
                         		new FindDeclarationNodeVisitor(typedDec);
@@ -185,22 +187,26 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
                         		(Tree.TypedDeclaration) fdv.getDeclarationNode();
                         if (decNode!=null) {
                             typeNode = decNode.getType();
-//                            if (typeNode!=null) {
-//                                t=((Tree.Type)typeNode).getTypeModel();
-//                            }
+                            if (typeNode!=null) {
+                                t=((Tree.Type)typeNode).getTypeModel();
+                            }
                         }
                     }
                     
-                    /*if (t != null && typeNode != null) {
-                        ProducedType newType = intersect ? 
-                                intersectionType(t, type, unit.getUnit()) : 
-                                unionType(t, type, unit.getUnit());
-                        addChangeTypeProposal(typeNode, problem, 
-                                proposals, dec, newType, getFile(unit), 
-                                unit.getCompilationUnit());
-                    }*/
-                    addChangeTypeProposal(typeNode, problem, proposals, dec, 
-                    		type, getFile(unit), unit.getCompilationUnit());
+                    if (typeNode != null) {
+                    	addChangeTypeProposal(typeNode, problem, proposals, dec, 
+                    			type, getFile(unit), unit.getCompilationUnit());
+                    	if (t != null) {
+                    		ProducedType newType = intersect ? 
+                    				intersectionType(t, type, unit.getUnit()) : 
+                    				unionType(t, type, unit.getUnit());
+                    		if (!newType.isExactly(t)) {
+                    			addChangeTypeProposal(typeNode, problem, 
+                    					proposals, dec, newType, getFile(unit), 
+                    					unit.getCompilationUnit());
+                    		}
+                    	}
+                    }
                 }
             }
         }
