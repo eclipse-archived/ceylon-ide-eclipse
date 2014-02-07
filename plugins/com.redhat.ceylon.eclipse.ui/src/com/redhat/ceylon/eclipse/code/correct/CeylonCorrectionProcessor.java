@@ -32,6 +32,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAs
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addRenameProposals;
+import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToMethodProposal.addConvertGetterToMethodProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertIfElseToThenElse.addConvertToThenElseProposal;
@@ -513,10 +514,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                         context.getSourceViewer().getTextWidget().getShell());
             }
             break;
+        case 9000:
+        	addChangeRefiningTypeProposal(file, cu, proposals, node);
+        	break;
         }
     }
-    
-    private void addProposals(IQuickAssistInvocationContext context, 
+
+	private void addProposals(IQuickAssistInvocationContext context, 
     		CeylonEditor editor, Collection<ICompletionProposal> proposals) {
         if (editor==null) return;
         
