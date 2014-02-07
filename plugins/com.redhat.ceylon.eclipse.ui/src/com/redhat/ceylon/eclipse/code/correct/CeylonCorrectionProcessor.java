@@ -24,6 +24,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals;
+import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddParenthesesProposal.addAddParenthesesProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
@@ -51,11 +52,12 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateObjectProposal.addCre
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreateProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.correct.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.addImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addReverseIfElseProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationDecProposal;
@@ -191,7 +193,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         // collect problem locations and corrections from marker annotations
         for (Annotation curr: annotations) {
             if (curr instanceof CeylonAnnotation) {
-            	ProblemLocation problemLocation = getProblemLocation((CeylonAnnotation) curr, model);
+            	ProblemLocation problemLocation = 
+            			getProblemLocation((CeylonAnnotation) curr, model);
                 if (problemLocation != null) {
                     problems.add(problemLocation);
                 }
@@ -216,7 +219,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    private static ProblemLocation getProblemLocation(CeylonAnnotation annotation, IAnnotationModel model) {
+    private static ProblemLocation getProblemLocation(CeylonAnnotation annotation, 
+    		IAnnotationModel model) {
         int problemId = annotation.getId();
         if (problemId != -1) {
             Position pos = model.getPosition((Annotation) annotation);
@@ -247,19 +251,18 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     }
 
     @Override
-    public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext quickAssistContext) {
+    public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext context) {
         ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-        ISourceViewer viewer = quickAssistContext.getSourceViewer();
-        collectProposals(quickAssistContext, viewer.getAnnotationModel(),
-                getAnnotationsForLine(viewer, getLine(quickAssistContext, viewer)), 
+        ISourceViewer viewer = context.getSourceViewer();
+        collectProposals(context, viewer.getAnnotationModel(),
+                getAnnotationsForLine(viewer, getLine(context, viewer)), 
                         true, true, proposals);
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
     }
 
-    private int getLine(IQuickAssistInvocationContext quickAssistContext,
-            ISourceViewer viewer) {
+    private int getLine(IQuickAssistInvocationContext context, ISourceViewer viewer) {
         try {
-            return viewer.getDocument().getLineOfOffset(quickAssistContext.getOffset());
+            return viewer.getDocument().getLineOfOffset(context.getOffset());
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -267,18 +270,18 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
     
-    public void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
+    public void collectCorrections(IQuickAssistInvocationContext context,
             ProblemLocation location, Collection<ICompletionProposal> proposals) {
         Tree.CompilationUnit rootNode = getRootNode();
         if (rootNode!=null) {
-            addProposals(quickAssistContext, location, getFile(), 
+            addProposals(context, location, getFile(), 
                     rootNode, proposals);
         }
     }
     
-    private void collectCorrections(IQuickAssistInvocationContext quickAssistContext,
+    private void collectCorrections(IQuickAssistInvocationContext context,
             ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
-        ISourceViewer viewer = quickAssistContext.getSourceViewer();
+        ISourceViewer viewer = context.getSourceViewer();
         Tree.CompilationUnit rootNode = getRootNode();
         for (int i=locations.length-1; i>=0; i--) {
             ProblemLocation loc = locations[i];
@@ -286,7 +289,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 for (int j=i; j>=0; j--) {
                     ProblemLocation location = locations[j];
                     if (location.getOffset()!=loc.getOffset()) break;
-                    addProposals(quickAssistContext, location, getFile(), 
+                    addProposals(context, location, getFile(), 
                             rootNode, proposals);
                 }
                 if (!proposals.isEmpty()) {
@@ -300,7 +303,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             for (int j=i; j<locations.length; j++) {
                 ProblemLocation location = locations[j];
                 if (location.getOffset()!=loc.getOffset()) break;
-                addProposals(quickAssistContext, location, getFile(), 
+                addProposals(context, location, getFile(), 
                         rootNode, proposals);
             }
             if (!proposals.isEmpty()) {
@@ -348,8 +351,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         return true;
     }
     
-    private void addProposals(IQuickAssistInvocationContext context, ProblemLocation problem,
-            IFile file, Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals) {
+    private void addProposals(IQuickAssistInvocationContext context, 
+    		ProblemLocation problem, IFile file, Tree.CompilationUnit cu, 
+    		Collection<ICompletionProposal> proposals) {
         if (file==null) return;
         IProject project = file.getProject();
         TypeChecker tc = getProjectTypeChecker(project);
@@ -359,7 +363,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 100:
         case 102:
         	if (tc!=null) {
-        		ImportProposals.addImportProposals(cu, node, proposals, file);
+        		addImportProposals(cu, node, proposals, file);
         	}
         	addCreateEnumProposal(cu, node, problem, proposals, 
         			project, tc, file);
@@ -417,6 +421,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 711:
             addMakeSharedProposal(proposals, project, node);
             break;
+        case 712:
+        	addExportModuleImportProposal(proposals, project, node);
+        	break;
         case 713:
             addMakeSharedProposalForSupertypes(proposals, project, node);
             break;
@@ -505,7 +512,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addFixMultilineStringIndentation(proposals, file, cu, node);
             break;
         case 7000:
-        	addModuleImportProposals(cu, proposals, project, tc, node);
+        	addModuleImportProposals(proposals, project, tc, node);
             break;
         case 8000:
         	addRenameDescriptorProposal(cu, context, problem, proposals, file);
@@ -566,7 +573,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             		declaration, currentOffset);
             
             addArgumentProposals(proposals, doc, file, argument);
-            addImportProposals(editor, cu, proposals, file, node);
+            addRefactorImportProposals(editor, cu, proposals, file, node);
             
             addConvertToIfElseProposal(doc, proposals, file, statement);
             addConvertToThenElseProposal(cu, doc, proposals, file, statement);
@@ -744,8 +751,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
     }
 
-    private void addImportProposals(CeylonEditor editor, Tree.CompilationUnit cu,
-            Collection<ICompletionProposal> proposals, IFile file, Node node) {
+    private void addRefactorImportProposals(CeylonEditor editor, 
+    		Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals, 
+    		IFile file, Node node) {
         
         class FindImportVisitor extends Visitor {
             private Declaration declaration;

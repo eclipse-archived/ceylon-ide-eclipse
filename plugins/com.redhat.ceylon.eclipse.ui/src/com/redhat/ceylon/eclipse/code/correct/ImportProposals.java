@@ -138,19 +138,22 @@ public class ImportProposals {
 			}
 			Tree.Import importNode = findImportNode(cu, p.getNameAsString());
 			if (importNode!=null) {
-				Tree.ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
+				Tree.ImportMemberOrTypeList imtl = 
+						importNode.getImportMemberOrTypeList();
 				if (imtl.getImportWildcard()!=null) {
 					//Do nothing
 				}
 				else {
-					int insertPosition = getBestImportMemberInsertPosition(importNode);
+					int insertPosition = 
+							getBestImportMemberInsertPosition(importNode);
 					if (declarationBeingDeleted!=null &&
 						imtl.getImportMemberOrTypes().size()==1 &&
 						imtl.getImportMemberOrTypes().get(0).getDeclarationModel()
 							.equals(declarationBeingDeleted)) {
 						text.delete(0, 2);
 					}
-					result.add(new InsertEdit(insertPosition, text.toString()));
+					result.add(new InsertEdit(insertPosition, 
+							text.toString()));
 				}
 			} 
 			else {
@@ -165,7 +168,8 @@ public class ImportProposals {
 				else {
 					text.insert(0, delim);
 				}
-				result.add(new InsertEdit(insertPosition, text.toString()));
+				result.add(new InsertEdit(insertPosition, 
+						text.toString()));
 			}
 		}
 		return result;
@@ -199,10 +203,12 @@ public class ImportProposals {
         }
         Tree.Import oldImportNode = findImportNode(cu, oldPackageName);
         if (oldImportNode!=null) {
-            Tree.ImportMemberOrTypeList imtl = oldImportNode.getImportMemberOrTypeList();
+            Tree.ImportMemberOrTypeList imtl = 
+            		oldImportNode.getImportMemberOrTypeList();
             if (imtl!=null) {
                 int remaining = 0;
-                for (Tree.ImportMemberOrType imt: imtl.getImportMemberOrTypes()) {
+                for (Tree.ImportMemberOrType imt: 
+                	    imtl.getImportMemberOrTypes()) {
                     if (!set.contains(imt.getDeclarationModel())) {
                         remaining++;
                     }
@@ -214,7 +220,8 @@ public class ImportProposals {
                 else {
                     //TODO: format it better!!!!
                     StringBuilder sb = new StringBuilder("{").append(delim);
-                    for (Tree.ImportMemberOrType imt: imtl.getImportMemberOrTypes()) {
+                    for (Tree.ImportMemberOrType imt: 
+                    	    imtl.getImportMemberOrTypes()) {
                         if (!set.contains(imt.getDeclarationModel())) {
                             sb.append(getDefaultIndent());
                             if (imt.getAlias()!=null) {
@@ -236,12 +243,14 @@ public class ImportProposals {
         if (!cu.getUnit().getPackage().getQualifiedNameString().equals(newPackageName)) {
             Tree.Import importNode = findImportNode(cu, newPackageName);
             if (importNode!=null) {
-                Tree.ImportMemberOrTypeList imtl = importNode.getImportMemberOrTypeList();
+                Tree.ImportMemberOrTypeList imtl = 
+                		importNode.getImportMemberOrTypeList();
                 if (imtl.getImportWildcard()!=null) {
                     //Do nothing
                 }
                 else {
-                    int insertPosition = getBestImportMemberInsertPosition(importNode);
+                    int insertPosition = 
+                    		getBestImportMemberInsertPosition(importNode);
                     result.add(new InsertEdit(insertPosition, text.toString()));
                 }
             } 
@@ -267,8 +276,10 @@ public class ImportProposals {
         return stopIndex+1;
     }
 
-    public static Tree.Import findImportNode(Tree.CompilationUnit cu, String packageName) {
-        FindImportNodeVisitor visitor = new FindImportNodeVisitor(packageName);
+    public static Tree.Import findImportNode(Tree.CompilationUnit cu, 
+    		String packageName) {
+        FindImportNodeVisitor visitor = 
+        		new FindImportNodeVisitor(packageName);
         cu.visit(visitor);
         return visitor.getResult();
     }
@@ -313,10 +324,12 @@ public class ImportProposals {
 	public static void importSignatureTypes(Declaration declaration, 
 			Tree.CompilationUnit rootNode, Set<Declaration> tc) {
 		if (declaration instanceof TypedDeclaration) {
-			importType(tc, ((TypedDeclaration) declaration).getType(), rootNode);
+			importType(tc, ((TypedDeclaration) declaration).getType(), 
+					rootNode);
 		}
 		if (declaration instanceof Functional) {
-			for (ParameterList pl: ((Functional) declaration).getParameterLists()) {
+			for (ParameterList pl: 
+				    ((Functional) declaration).getParameterLists()) {
 				for (Parameter p: pl.getParameters()) {
 					importType(tc, p.getType(), rootNode);
 				}
