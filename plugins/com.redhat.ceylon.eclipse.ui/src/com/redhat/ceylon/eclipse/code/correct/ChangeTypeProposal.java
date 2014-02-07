@@ -21,6 +21,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -41,7 +42,7 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
     ChangeTypeProposal(ProblemLocation problem, IFile file, 
             String name, String type, int offset,
             TextFileChange change) {
-        super("Change type of '"+ name + "' to '" + type + "'", 
+        super("Change type of "+ name + " to '" + type + "'", 
                 change);
         this.offset = offset;
         this.length = type.length();
@@ -67,10 +68,20 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
         int offset = node.getStartIndex();
         int length = node.getStopIndex()-offset+1;
         HashSet<Declaration> decs = new HashSet<Declaration>();
-		importType(decs, newType, cu);
-		int il=applyImports(change, decs, cu, doc);
+        importType(decs, newType, cu);
+        int il=applyImports(change, decs, cu, doc);
         change.addEdit(new ReplaceEdit(offset, length, typeName));
-        proposals.add(new ChangeTypeProposal(problem, file, dec.getName(), 
+        String name;
+        if (dec.isParameter()) {
+        	name = "parameter '" + dec.getName() + "' of '" + ((Declaration) dec.getContainer()).getName() + "'";
+        }
+        else if (dec.isClassOrInterfaceMember()) {
+        	name = "member '" +  dec.getName() + "' of '" + ((ClassOrInterface) dec.getContainer()).getName() + "'";
+        }
+        else {
+        	name = "'" + dec.getName() + "'";
+        }
+		proposals.add(new ChangeTypeProposal(problem, file, name, 
                 typeName, offset+il, change));
     }
     
