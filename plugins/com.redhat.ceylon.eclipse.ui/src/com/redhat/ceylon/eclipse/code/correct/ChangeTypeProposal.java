@@ -2,11 +2,10 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 
@@ -33,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.eclipse.util.FindUtils;
 
 class ChangeTypeProposal extends ChangeCorrectionProposal {
 
@@ -82,7 +82,7 @@ class ChangeTypeProposal extends ChangeCorrectionProposal {
         if (node instanceof Tree.SimpleType) {
             TypeDeclaration decl = ((Tree.SimpleType)node).getDeclarationModel();
             if( decl instanceof TypeParameter ) {
-            	Tree.Statement statement = findStatement(cu, node);
+            	Tree.Statement statement = FindUtils.findStatement(cu, node);
                 if(statement instanceof Tree.AttributeDeclaration ) {
                     Tree.AttributeDeclaration ad = (Tree.AttributeDeclaration) statement;
                     Tree.SimpleType st = (Tree.SimpleType) ad.getType();

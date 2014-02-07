@@ -1,14 +1,12 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.CreateInNewUnitProposal.addCreateToplevelProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -38,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateProposal extends ChangeCorrectionProposal {
@@ -179,7 +178,7 @@ class CreateProposal extends ChangeCorrectionProposal {
     static void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg) {
         //if (!fsv.isToplevel()) {
-    	Tree.Statement statement = findStatement(dg.rootNode, dg.node);
+    	Tree.Statement statement = FindUtils.findStatement(dg.rootNode, dg.node);
     	if (statement!=null) {
     		for (PhasedUnit unit: getUnits(project)) {
     			if (unit.getUnit().equals(dg.rootNode.getUnit())) {
@@ -194,7 +193,7 @@ class CreateProposal extends ChangeCorrectionProposal {
 
     static void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg) {
-    	Tree.Statement statement = findToplevelStatement(dg.rootNode, dg.node);
+    	Tree.Statement statement = FindUtils.findToplevelStatement(dg.rootNode, dg.node);
     	if (statement!=null) {
     		for (PhasedUnit unit: getUnits(project)) {
     			if (unit.getUnit().equals(dg.rootNode.getUnit())) {

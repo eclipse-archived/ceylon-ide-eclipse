@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessName;
 
 import java.util.Collection;
@@ -20,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.util.FindUtils;
 
 class AssignToLocalProposal extends ChangeCorrectionProposal {
     
@@ -45,7 +45,7 @@ class AssignToLocalProposal extends ChangeCorrectionProposal {
             Collection<ICompletionProposal> proposals, Node node, 
             int currentOffset) {
         //if (node instanceof Tree.Term) {
-            Tree.Statement st = findStatement(cu, node);
+            Tree.Statement st = FindUtils.findStatement(cu, node);
             Node expression;
             Node expanse;
             if (st instanceof Tree.ExpressionStatement) {
