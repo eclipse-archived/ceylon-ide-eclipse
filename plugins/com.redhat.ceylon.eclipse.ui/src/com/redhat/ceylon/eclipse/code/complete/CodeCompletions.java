@@ -244,13 +244,6 @@ public class CodeCompletions {
         return d instanceof TypedDeclaration && 
         		((TypedDeclaration) d).isVariable();
     }
-        
-    /*private static String getAttributeRefinementTextFor(Declaration d) {
-        StringBuilder result = new StringBuilder();
-        result.append("super.").append(d.getName())
-            .append(" = ").append(d.getName()).append(";");
-        return result.toString();
-    }*/
     
     static String getRefinementDescriptionFor(Declaration d, 
     		ProducedReference pr, Unit unit) {
@@ -272,8 +265,6 @@ public class CodeCompletions {
         appendNamedArgumentText(p, pr, result);
         appendTypeParameters(p.getModel(), result);
         appendParameters(p.getModel(), pr, unit, result);
-        /*result.append(" - refine declaration in ") 
-            .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
     }
     
@@ -287,12 +278,23 @@ public class CodeCompletions {
         if (d!=null) {
             if (d.isFormal()) result.append("formal ");
             if (d.isDefault()) result.append("default ");
+            if (isVariable(d)) result.append("variable ");
             appendDeclarationText(d, d.getUnit(), result);
             appendTypeParameters(d, result);
             appendParameters(d, result, cpc);
-            /*result.append(" - refine declaration in ") 
-                .append(((Declaration) d.getContainer()).getName());*/
         }
+        return result.toString();
+    }
+    
+    public static String getDescriptionFor(Declaration d, 
+    		ProducedReference pr, Unit unit) {
+        StringBuilder result = new StringBuilder();
+        if (d.isFormal()) result.append("formal ");
+        if (d.isDefault()) result.append("default ");
+        if (isVariable(d)) result.append("variable ");
+        appendDeclarationText(d, pr, unit, result);
+        appendTypeParameters(d, result);
+        appendParameters(d, pr, unit, result);
         return result.toString();
     }
     
@@ -301,6 +303,7 @@ public class CodeCompletions {
         if (d!=null) {
             if (d.isFormal()) result.append("formal ", ANN_STYLER);
             if (d.isDefault()) result.append("default ", ANN_STYLER);
+            if (isVariable(d)) result.append("variable ", ANN_STYLER);
             appendDeclarationText(d, result);
             appendTypeParameters(d, result);
             appendParameters(d, result);

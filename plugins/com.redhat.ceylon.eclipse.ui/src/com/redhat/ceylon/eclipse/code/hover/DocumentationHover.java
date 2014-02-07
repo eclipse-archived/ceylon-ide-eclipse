@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -121,6 +122,7 @@ import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
@@ -896,7 +898,8 @@ public class DocumentationHover
 		}
 	}
 
-	public static String getBaseURL(IJavaElement element, boolean isBinary) throws JavaModelException {
+	public static String getBaseURL(IJavaElement element, boolean isBinary) 
+			throws JavaModelException {
 		if (isBinary) {
 			// Source attachment usually does not include Javadoc resources
 			// => Always use the Javadoc location as base:
@@ -912,7 +915,8 @@ public class DocumentationHover
 				}
 				return baseURL.toExternalForm();
 			}
-		} else {
+		}
+		else {
 			IResource resource= element.getResource();
 			if (resource != null) {
 				/*
@@ -929,39 +933,23 @@ public class DocumentationHover
 		return null;
 	}
 
-	public static String getDocumentationFor(CeylonParseController cpc, Package pack) {
+	public static String getDocumentationFor(CeylonParseController cpc, 
+			Package pack) {
 	    StringBuilder buffer= new StringBuilder();
+		addMainPackageDescription(pack, buffer);
+		Module mod = addPackageModuleInfo(pack, buffer);
+		addPackageDocumentation(cpc, pack, buffer);
+		addAdditionalPackageInfo(buffer, mod);
+		addPackageMembers(buffer, pack);
+		insertPageProlog(buffer, 0, getStyleSheet());
+		addPageEpilog(buffer);
+		return buffer.toString();
 		
-		addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
-				16, 16, "<b><tt>" + highlightLine(description(pack)) +"</tt></b>", 20, 4);
-		buffer.append("<hr/>");
-		Module mod = pack.getModule();
-		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
-				16, 16, "in module&nbsp;&nbsp;<tt><a " + link(mod) + ">" + 
-					getLabel(mod) +"</a></tt>", 20, 2);
+	}
 
-		PhasedUnit pu = cpc.getTypeChecker()
-				.getPhasedUnitFromRelativePath(pack.getNameAsString().replace('.', '/') + "/package.ceylon");
-		if (pu!=null) {
-			List<Tree.PackageDescriptor> packageDescriptors = pu.getCompilationUnit().getPackageDescriptors();
-			if (!packageDescriptors.isEmpty()) {
-			    Tree.PackageDescriptor refnode = packageDescriptors.get(0);
-			    if (refnode!=null) {
-			        appendDocAnnotationContent(refnode.getAnnotationList(), buffer, pack);
-			        appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, pack);
-			        appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
-			    }
-			}
-		}
-		
-		if (mod.isJava()) {
-			buffer.append("<p>This package is implemented in Java.</p>");
-		}
-		if (JDKUtils.isJDKModule(mod.getNameAsString())) {
-			buffer.append("<p>This package forms part of the Java SDK.</p>");			
-		}
-		
-		boolean first = true;
+	private static void addPackageMembers(StringBuilder buffer, 
+			Package pack) {
+	    boolean first = true;
 		for (Declaration dec: pack.getMembers()) {
 			if (dec instanceof Class && ((Class)dec).isOverloaded()) {
 				continue;
@@ -978,18 +966,68 @@ public class DocumentationHover
 				/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
 					16, 16, "<tt><a " + link(dec) + ">" + 
 			        dec.getName() + "</a></tt>", 20, 2);*/
-				buffer.append("<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>");
+				buffer.append("<tt><a ")
+					.append(link(dec))
+					.append(">")
+					.append(dec.getName())
+					.append("</a></tt>");
 			}
 		}
 		if (!first) {
 			buffer.append(".<br/>");
 		}
-		
-		insertPageProlog(buffer, 0, getStyleSheet());
-		addPageEpilog(buffer);
-		return buffer.toString();
-		
-	}
+    }
+
+	private static void addAdditionalPackageInfo(StringBuilder buffer,
+            Module mod) {
+	    if (mod.isJava()) {
+			buffer.append("<p>This package is implemented in Java.</p>");
+		}
+		if (JDKUtils.isJDKModule(mod.getNameAsString())) {
+			buffer.append("<p>This package forms part of the Java SDK.</p>");			
+		}
+    }
+
+	private static void addMainPackageDescription(Package pack,
+            StringBuilder buffer) {
+	    addImageAndLabel(buffer, pack, 
+	    		fileUrl(getIcon(pack)).toExternalForm(), 
+				16, 16, 
+				"<b><tt>" + highlightLine(description(pack)) +"</tt></b>", 
+				20, 4);
+		buffer.append("<hr/>");
+    }
+
+	private static Module addPackageModuleInfo(Package pack,
+            StringBuilder buffer) {
+	    Module mod = pack.getModule();
+		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
+				16, 16, 
+				"in module&nbsp;&nbsp;<tt><a " + link(mod) + ">" + 
+						getLabel(mod) +"</a></tt>", 
+				20, 2);
+	    return mod;
+    }
+
+	private static void addPackageDocumentation(CeylonParseController cpc,
+            Package pack, StringBuilder buffer) {
+	    String packageFileName = pack.getNameAsString().replace('.', '/') + 
+	    		"/package.ceylon";
+		PhasedUnit pu = cpc.getTypeChecker()
+				.getPhasedUnitFromRelativePath(packageFileName);
+		if (pu!=null) {
+			List<Tree.PackageDescriptor> packageDescriptors = 
+					pu.getCompilationUnit().getPackageDescriptors();
+			if (!packageDescriptors.isEmpty()) {
+			    Tree.PackageDescriptor refnode = packageDescriptors.get(0);
+			    if (refnode!=null) {
+			        appendDocAnnotationContent(refnode.getAnnotationList(), buffer, pack);
+			        appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, pack);
+			        appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
+			    }
+			}
+		}
+    }
 
     private static String description(Package pack) {
         return "package " + getLabel(pack);
@@ -999,11 +1037,15 @@ public class DocumentationHover
 	    return getDocumentationForModule(mod.getName(), version, mod.getDoc());
     }
 	
-	public static String getDocumentationForModule(String name, String version, String doc) {
+	public static String getDocumentationForModule(String name, 
+			String version, String doc) {
 		StringBuilder buffer= new StringBuilder();
 		
-		addImageAndLabel(buffer, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
-				16, 16, "<b><tt>" + highlightLine(description(name, version)) + "</tt></b>", 20, 4);
+		addImageAndLabel(buffer, null, 
+				fileUrl("jar_l_obj.gif").toExternalForm(), 
+				16, 16, 
+				"<b><tt>" + highlightLine(description(name, version)) + "</tt></b>",
+				20, 4);
 		buffer.append("<hr/>");
 		
 		if (doc!=null) {
@@ -1020,14 +1062,22 @@ public class DocumentationHover
         return "module " + name + " \"" + version + "\"";
     }
 
-	public static String getDocumentationFor(CeylonParseController cpc, Module mod) {
-		StringBuilder buffer= new StringBuilder();
+	public static String getDocumentationFor(CeylonParseController cpc, 
+			Module mod) {
+		StringBuilder buffer = new StringBuilder();
+		addMainModuleDescription(mod, buffer);
+		addAdditionalModuleInfo(buffer, mod);
+		addModuleDocumentation(cpc, mod, buffer);
+		addModuleMembers(buffer, mod);
+		insertPageProlog(buffer, 0, getStyleSheet());
+		addPageEpilog(buffer);
+		return buffer.toString();
 		
-		addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
-				16, 16, "<b><tt>" + highlightLine(description(mod)) + "</tt></b>", 20, 4);
-		buffer.append("<hr/>");
+	}
 
-		if (mod.isJava()) {
+	private static void addAdditionalModuleInfo(StringBuilder buffer, 
+			Module mod) {
+	    if (mod.isJava()) {
 			buffer.append("<p>This module is implemented in Java.</p>");
 		}
 		if (mod.isDefault()) {
@@ -1036,11 +1086,27 @@ public class DocumentationHover
 		if (JDKUtils.isJDKModule(mod.getNameAsString())) {
 			buffer.append("<p>This module forms part of the Java SDK.</p>");			
 		}
+    }
 
+	private static void addMainModuleDescription(Module mod,
+            StringBuilder buffer) {
+	    addImageAndLabel(buffer, mod, 
+	    		fileUrl(getIcon(mod)).toExternalForm(), 
+				16, 16, 
+				"<b><tt>" + highlightLine(description(mod)) + "</tt></b>", 
+				20, 4);
+		buffer.append("<hr/>");
+    }
+
+	private static void addModuleDocumentation(CeylonParseController cpc,
+            Module mod, StringBuilder buffer) {
+	    String moduleFileName = mod.getNameAsString().replace('.', '/') + 
+	    		"/module.ceylon";
 		PhasedUnit pu = cpc.getTypeChecker()
-				.getPhasedUnitFromRelativePath(mod.getNameAsString().replace('.', '/') + "/module.ceylon");
+				.getPhasedUnitFromRelativePath(moduleFileName);
 		if (pu!=null) {
-            List<Tree.ModuleDescriptor> moduleDescriptors = pu.getCompilationUnit().getModuleDescriptors();
+            List<Tree.ModuleDescriptor> moduleDescriptors = 
+            		pu.getCompilationUnit().getModuleDescriptors();
             if (!moduleDescriptors.isEmpty()) {
                 Tree.ModuleDescriptor refnode = moduleDescriptors.get(0);
                 if (refnode!=null) {
@@ -1051,8 +1117,11 @@ public class DocumentationHover
                 }
             }
 		}
-				
-		boolean first = true;
+    }
+
+	private static void addModuleMembers(StringBuilder buffer, 
+			Module mod) {
+	    boolean first = true;
 		for (Package pack: mod.getPackages()) {
 			if (pack.isShared()) {
 				if (first) {
@@ -1066,95 +1135,115 @@ public class DocumentationHover
 				/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
 					16, 16, "<tt><a " + link(dec) + ">" + 
 			        dec.getName() + "</a></tt>", 20, 2);*/
-				buffer.append("<tt><a " + link(pack) + ">" + pack.getNameAsString() + "</a></tt>");
+				buffer.append("<tt><a ")
+					.append(link(pack))
+					.append(">")
+					.append(pack.getNameAsString())
+					.append("</a></tt>");
 			}
 		}
 		if (!first) {
 			buffer.append(".<br/>");
 		}
-		
-		insertPageProlog(buffer, 0, getStyleSheet());
-		addPageEpilog(buffer);
-		return buffer.toString();
-		
-	}
+    }
 
 	private static String description(Module mod) {
         return "module " + getLabel(mod) + " \"" + mod.getVersion() + "\"";
     }
 
-	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec) {
+	public static String getDocumentationFor(CeylonParseController cpc, 
+			Declaration dec) {
 		return getDocumentationFor(cpc, dec, null);
 	}
 	
-	public static String getDocumentationFor(CeylonParseController cpc, Declaration dec, Node node) {
+	public static String getDocumentationFor(CeylonParseController cpc, 
+			Declaration dec, Node node) {
 		if (dec==null) return null;
 		StringBuilder buffer = new StringBuilder();
 		insertPageProlog(buffer, 0, getStyleSheet());
-		
-		Package pack = dec.getUnit().getPackage();
-		
-		addImageAndLabel(buffer, dec, fileUrl(getIcon(dec)).toExternalForm(), 
-				16, 16, "<b><tt>" + (dec.isDeprecated() ? "<s>":"") + 
-				highlightLine(description(dec, cpc)) + 
-				(dec.isDeprecated() ? "</s>":"") + "</tt></b>", 20, 4);
-		buffer.append("<hr/>");
-		
-		if (dec.isParameter()) {
-			Declaration pd = ((MethodOrValue) dec).getInitializerParameter().getDeclaration();
-			addImageAndLabel(buffer, pd, fileUrl(getIcon(pd)).toExternalForm(),
-					16, 16, "parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + pd.getName() +"</a></tt>", 20, 2);
-		}
-		else if (dec instanceof TypeParameter) {
-			Declaration pd = ((TypeParameter) dec).getDeclaration();
-			addImageAndLabel(buffer, pd, fileUrl(getIcon(pd)).toExternalForm(),
-					16, 16, "type parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + pd.getName() +"</a></tt>", 20, 2);
+		addMainDescription(buffer, dec, node, cpc);
+		addContainerInfo(dec, node, buffer);
+		boolean hasDoc = addDoc(cpc, dec, node, buffer);
+		boolean obj = addInheritanceInfo(dec, buffer);
+        addRefinementInfo(cpc, dec, node, buffer, hasDoc);
+		addReturnType(dec, buffer, node, obj);
+		addParameters(cpc, dec, node, buffer);
+		addClassMembersInfo(dec, buffer);
+		if (dec instanceof NothingType) {
+		    addNothingTypeInfo(buffer);
 		}
 		else {
-			if (dec.isClassOrInterfaceMember()) {
-				ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
-				addImageAndLabel(buffer, outer, fileUrl(getIcon(outer)).toExternalForm(), 16, 16, 
-						"member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
-						convertToHTMLContent(outer.getType().getProducedTypeName()) + "</a></tt>", 20, 2);
-			}
+		    appendExtraActions(dec, buffer);
 
-			if ((dec.isShared() || dec.isToplevel()) &&
-			        !(dec instanceof NothingType)) {
-				String label;
-				if (pack.getNameAsString().isEmpty()) {
-					label = "in default package";
+		}
+		addPageEpilog(buffer);
+		return buffer.toString();
+	}
+
+	private static void addMainDescription(StringBuilder buffer,
+            Declaration dec, Node node, CeylonParseController cpc) {
+	    addImageAndLabel(buffer, dec, 
+	    		fileUrl(getIcon(dec)).toExternalForm(), 
+				16, 16, 
+				"<b><tt>" + 
+				(dec.isDeprecated() ? "<s>":"") + 
+				highlightLine(description(dec, node, cpc)) + 
+				(dec.isDeprecated() ? "</s>":"") + 
+				"</tt></b>", 
+				20, 4);
+		buffer.append("<hr/>");
+    }
+
+	private static void addClassMembersInfo(Declaration dec,
+            StringBuilder buffer) {
+	    if (dec instanceof ClassOrInterface) {
+			if (!dec.getMembers().isEmpty()) {
+				boolean first = true;
+				for (Declaration mem: dec.getMembers()) {
+					if (mem instanceof Method && 
+							((Method)mem).isOverloaded()) {
+						continue;
+					}
+					if (mem.isShared() && !dec.isAnonymous()) {
+						if (first) {
+							buffer.append("<hr/>Members:&nbsp;&nbsp;");
+							first = false;
+						}
+						else {
+							buffer.append(", ");
+						}
+
+						/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
+					          16, 16, "<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>", 20, 2);*/
+						buffer.append("<tt><a ")
+							.append(link(mem))
+							.append(">")
+							.append(mem.getName()) 
+							.append("</a></tt>");
+					}
 				}
-				else {
-					label = "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
-							getPackageLabel(dec) +"</a></tt>";
+				if (!first) {
+					buffer.append(".<br/>");
+					//extraBreak = true;
 				}
-				addImageAndLabel(buffer, pack, fileUrl(getIcon(pack)).toExternalForm(), 
-						16, 16, label, 20, 2);
-				Module mod = pack.getModule();
-				addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
-						16, 16, "in module&nbsp;&nbsp;<tt><a " + link(mod) + ">" + 
-							getModuleLabel(dec) +"</a></tt>", 20, 2);
 			}
 		}
-		
-		boolean hasDoc = false;
-		Node rn = getReferencedNode(dec, cpc);
-		if (rn instanceof Tree.Declaration) {
-		    Tree.Declaration refnode = (Tree.Declaration) rn;
-			appendDeprecatedAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
-			int len = buffer.length();
-			appendDocAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
-			hasDoc = buffer.length()!=len;
-			appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, resolveScope(dec));
-			appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
-		}
-		
-		appendJavadoc(dec, cpc.getProject(), buffer, node);
-		
-		//boolean extraBreak = false;
+    }
+
+	private static void addNothingTypeInfo(StringBuilder buffer) {
+	    buffer.append("Special bottom type defined by the language. "
+	            + "<code>Nothing</code> is assignable to all types, but has no value. "
+	            + "A function or value of type <code>Nothing</code> either throws "
+	            + "an exception, or never returns.");
+    }
+
+	private static boolean addInheritanceInfo(Declaration dec,
+            StringBuilder buffer) {
+	    //boolean extraBreak = false;
 		boolean obj=false;
 		if (dec instanceof TypedDeclaration) {
-			TypeDeclaration td = ((TypedDeclaration) dec).getTypeDeclaration();
+			TypeDeclaration td = 
+					((TypedDeclaration) dec).getTypeDeclaration();
 			if (td!=null && td.isAnonymous()) {
 				obj=true;
 				documentInheritance(td, buffer);	
@@ -1163,25 +1252,79 @@ public class DocumentationHover
 		else if (dec instanceof TypeDeclaration) {
 			documentInheritance((TypeDeclaration) dec, buffer);	
 		}
-		
-        Declaration rd = dec.getRefinedDeclaration();
+	    return obj;
+    }
+
+	private static void addRefinementInfo(CeylonParseController cpc,
+            Declaration dec, Node node, StringBuilder buffer, 
+            boolean hasDoc) {
+	    Declaration rd = dec.getRefinedDeclaration();
 		if (dec!=rd) {
 			buffer.append("<p>");
-			addImageAndLabel(buffer, rd, fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
-					16, 16, "refines&nbsp;&nbsp;<tt><a " + link(rd) + ">" + rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
-					convertToHTMLContent(((TypeDeclaration) rd.getContainer()).getType().getProducedTypeName()) + 
-					"</tt>", 20, 2);
+			TypeDeclaration superclass = (TypeDeclaration) rd.getContainer();
+			ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
+			ProducedType sup = getQualifyingType(node, outer).getSupertype(superclass);
+			String qualifyingType = sup.getProducedTypeName();
+			addImageAndLabel(buffer, rd, 
+					fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
+					16, 16, 
+					"refines&nbsp;&nbsp;<tt><a " + link(rd) + ">" + 
+							rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
+							convertToHTMLContent(qualifyingType) + 
+							"</tt>", 
+					20, 2);
 			buffer.append("</p>");
 			if (!hasDoc) {
-		        Tree.Declaration refnode2 = (Tree.Declaration) getReferencedNode(rd, cpc);
+		        Tree.Declaration refnode2 = 
+		        		(Tree.Declaration) getReferencedNode(rd, cpc);
 		        if (refnode2!=null) {
-		            appendDocAnnotationContent(refnode2.getAnnotationList(), buffer, resolveScope(rd));
+		            appendDocAnnotationContent(refnode2.getAnnotationList(), 
+		            		buffer, resolveScope(rd));
 		        }
 			}
 		}
-		
-		if (dec instanceof TypedDeclaration && !obj) {
-			ProducedType ret = ((TypedDeclaration) dec).getType();
+    }
+
+	private static void addParameters(CeylonParseController cpc,
+            Declaration dec, Node node, StringBuilder buffer) {
+	    if (dec instanceof Functional) {
+	    	ProducedReference ptr = getProducedReference(dec, node);
+			for (ParameterList pl: ((Functional) dec).getParameterLists()) {
+				if (!pl.getParameters().isEmpty()) {
+					buffer.append("<p>");
+					for (Parameter p: pl.getParameters()) {
+					    StringBuilder params = new StringBuilder();
+					    appendParameters(p.getModel(), params, cpc);
+						String def = getDefaultValue(p, cpc);
+						StringBuilder doc = new StringBuilder();
+						Tree.Declaration refNode = 
+								(Tree.Declaration) getReferencedNode(p.getModel(), cpc);
+						if (refNode!=null) {
+							appendDocAnnotationContent(refNode.getAnnotationList(), 
+									doc, resolveScope(dec));
+						}
+						ProducedType type = ptr.getTypedParameter(p).getFullType();
+						if (type==null) type = new UnknownType(dec.getUnit()).getType();
+                        addImageAndLabel(buffer, p.getModel(), 
+                        		fileUrl("methpro_obj.gif").toExternalForm(),
+								16, 16, 
+								"accepts&nbsp;&nbsp;<tt><a " + link(type.getDeclaration()) + ">" + 
+										convertToHTMLContent(type.getProducedTypeName()) + 
+										"</a>&nbsp;<a " + link(p.getModel()) + ">"+ p.getName() +
+										convertToHTMLContent(params.toString()) + "</a>" + 
+										convertToHTMLContent(def) + "</tt>" + doc, 
+								20, 2);
+					}
+					buffer.append("</p>");
+				}
+			}
+		}
+    }
+
+	private static void addReturnType(Declaration dec, StringBuilder buffer,
+            Node node, boolean obj) {
+	    if (dec instanceof TypedDeclaration && !obj) {
+			ProducedType ret = getProducedReference(dec, node).getType();
 			if (ret!=null) {
 				buffer.append("<p>");
 				List<ProducedType> list;
@@ -1205,84 +1348,121 @@ public class DocumentationHover
 				}
 				buf.setLength(buf.length()-1);
 				buf.append("</tt>");
-				addImageAndLabel(buffer, ret.getDeclaration(), fileUrl("stepreturn_co.gif").toExternalForm(), 
+				addImageAndLabel(buffer, ret.getDeclaration(), 
+						fileUrl("stepreturn_co.gif").toExternalForm(), 
 						16, 16, buf.toString(), 20, 2);
 				buffer.append("</p>");
 			}
 		}
-		if (dec instanceof Functional) {
-			for (ParameterList pl: ((Functional) dec).getParameterLists()) {
-				if (!pl.getParameters().isEmpty()) {
-					buffer.append("<p>");
-					for (Parameter p: pl.getParameters()) {
-					    StringBuilder params = new StringBuilder();
-					    appendParameters(p.getModel(), params, cpc);
-						String def = getDefaultValue(p, cpc);
-						StringBuilder doc = new StringBuilder();
-						Tree.Declaration refNode = (Tree.Declaration) getReferencedNode(p.getModel(), cpc);
-						if (refNode!=null) {
-							appendDocAnnotationContent(refNode.getAnnotationList(), doc, resolveScope(dec));
-						}
-						ProducedType type = p.getType();
-						if (type==null) type = new UnknownType(dec.getUnit()).getType();
-                        addImageAndLabel(buffer, p.getModel(), fileUrl("methpro_obj.gif"/*"stepinto_co.gif"*/).toExternalForm(),
-								16, 16, "accepts&nbsp;&nbsp;<tt><a " + link(type.getDeclaration()) + ">" + 
-								convertToHTMLContent(type.getProducedTypeName()) + 
-								"</a>&nbsp;<a " + link(p.getModel()) + ">"+ p.getName() +
-								convertToHTMLContent(params.toString()) + "</a>" + convertToHTMLContent(def) + "</tt>" + doc, 20, 2);
-					}
-					buffer.append("</p>");
-				}
-			}
-		}
-		
-		if (dec instanceof ClassOrInterface) {
-			if (!dec.getMembers().isEmpty()) {
-				boolean first = true;
-				for (Declaration mem: dec.getMembers()) {
-					if (mem instanceof Method && ((Method)mem).isOverloaded()) {
-						continue;
-					}
-					if (mem.isShared() && !dec.isAnonymous()) {
-						if (first) {
-							buffer.append("<hr/>Members:&nbsp;&nbsp;");
-							first = false;
-						}
-						else {
-							buffer.append(", ");
-						}
+    }
 
-						/*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
-					          16, 16, "<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>", 20, 2);*/
-						buffer.append("<tt><a " + link(mem) + ">" + mem.getName() + "</a></tt>");
-					}
-				}
-				if (!first) {
-					buffer.append(".<br/>");
-					//extraBreak = true;
-				}
-			}
+	private static ProducedReference getProducedReference(Declaration dec,
+            Node node) {
+	    if (node instanceof Tree.MemberOrTypeExpression) {
+	    	return ((Tree.MemberOrTypeExpression) node).getTarget();
+	    }
+		ClassOrInterface outer = dec.isClassOrInterfaceMember() ? 
+				(ClassOrInterface) dec.getContainer() : null;
+		return dec.getProducedReference(getQualifyingType(node, outer),
+	    				Collections.<ProducedType>emptyList());
+    }
+
+	private static boolean addDoc(CeylonParseController cpc, 
+			Declaration dec, Node node, StringBuilder buffer) {
+	    boolean hasDoc = false;
+		Node rn = getReferencedNode(dec, cpc);
+		if (rn instanceof Tree.Declaration) {
+		    Tree.Declaration refnode = (Tree.Declaration) rn;
+			appendDeprecatedAnnotationContent(refnode.getAnnotationList(), 
+					buffer, resolveScope(dec));
+			int len = buffer.length();
+			appendDocAnnotationContent(refnode.getAnnotationList(), 
+					buffer, resolveScope(dec));
+			hasDoc = buffer.length()!=len;
+			appendThrowAnnotationContent(refnode.getAnnotationList(), 
+					buffer, resolveScope(dec));
+			appendSeeAnnotationContent(refnode.getAnnotationList(), 
+					buffer);
 		}
 		
-		if (dec instanceof NothingType) {
-		    buffer.append("Special bottom type defined by the language. "
-		            + "<code>Nothing</code> is assignable to all types, but has no value. "
-		            + "A function or value of type <code>Nothing</code> either throws "
-		            + "an exception, or never returns.");
+		appendJavadoc(dec, cpc.getProject(), buffer, node);
+	    return hasDoc;
+    }
+
+	private static void addContainerInfo(Declaration dec, Node node,
+            StringBuilder buffer) {
+		Package pack = dec.getUnit().getPackage();
+	    if (dec.isParameter()) {
+			Declaration pd = 
+					((MethodOrValue) dec).getInitializerParameter()
+					        .getDeclaration();
+			addImageAndLabel(buffer, pd, 
+					fileUrl(getIcon(pd)).toExternalForm(),
+					16, 16, 
+					"parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + 
+					        pd.getName() +"</a></tt>", 20, 2);
+		}
+		else if (dec instanceof TypeParameter) {
+			Declaration pd = ((TypeParameter) dec).getDeclaration();
+			addImageAndLabel(buffer, pd, 
+					fileUrl(getIcon(pd)).toExternalForm(),
+					16, 16, 
+					"type parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + 
+							pd.getName() +"</a></tt>", 
+					20, 2);
 		}
 		else {
+			if (dec.isClassOrInterfaceMember()) {
+				ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
+				String qualifyingType = 
+						getQualifyingType(node, outer).getProducedTypeName();
+				addImageAndLabel(buffer, outer, 
+						fileUrl(getIcon(outer)).toExternalForm(), 
+						16, 16, 
+						"member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
+								convertToHTMLContent(qualifyingType) + "</a></tt>", 20, 2);
+			}
 
-		    //if (dec.getUnit().getFilename().endsWith(".ceylon")) {
-		    //if (extraBreak) 
-		    appendExtraActions(dec, buffer);
-
+			if ((dec.isShared() || dec.isToplevel()) &&
+			        !(dec instanceof NothingType)) {
+				String label;
+				if (pack.getNameAsString().isEmpty()) {
+					label = "in default package";
+				}
+				else {
+					label = "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
+							getPackageLabel(dec) +"</a></tt>";
+				}
+				addImageAndLabel(buffer, pack, 
+						fileUrl(getIcon(pack)).toExternalForm(), 
+						16, 16, label, 20, 2);
+				Module mod = pack.getModule();
+				addImageAndLabel(buffer, mod, 
+						fileUrl(getIcon(mod)).toExternalForm(), 
+						16, 16, 
+						"in module&nbsp;&nbsp;<tt><a " + link(mod) + ">" + 
+								getModuleLabel(dec) +"</a></tt>", 
+						20, 2);
+			}
 		}
-		
-		addPageEpilog(buffer);
-		return buffer.toString();
-	}
+    }
 
-    public static String getDefaultValue(Parameter p, CeylonParseController cpc) {
+	private static ProducedType getQualifyingType(Node node,
+            ClassOrInterface outer) {
+		if (outer == null) {
+			return null;
+		}
+	    if (node instanceof Tree.MemberOrTypeExpression) {
+	    	ProducedReference pr = ((Tree.MemberOrTypeExpression) node).getTarget();
+	    	if (pr!=null) {
+	    		return pr.getQualifyingType();
+	    	}
+	    }
+	    return outer.getType();
+    }
+
+    public static String getDefaultValue(Parameter p, 
+    		CeylonParseController cpc) {
         if (p.isDefaulted()) {
             if (p.getModel() instanceof Functional) {
                 return " => ...";
@@ -1296,7 +1476,8 @@ public class DocumentationHover
         }
     }
 
-    public static void appendExtraActions(Declaration dec, StringBuilder buffer) {
+    public static void appendExtraActions(Declaration dec, 
+    		StringBuilder buffer) {
         buffer.append("<hr/>");
         String unitName = null;
         if (dec.getUnit() instanceof CeylonUnit) {
@@ -1308,29 +1489,48 @@ public class DocumentationHover
             unitName = dec.getUnit().getFilename();
         }
                 
-        addImageAndLabel(buffer, null, fileUrl("unit.gif").toExternalForm(), 
-                16, 16, "<a href='dec:" + declink(dec) + "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
-                        unitName + 
-                        "</tt>", 20, 2);
+        addImageAndLabel(buffer, null, 
+        		fileUrl("unit.gif").toExternalForm(), 
+                16, 16, 
+                "<a href='dec:" + declink(dec) + 
+                        "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
+                        unitName + "</tt>", 
+                20, 2);
         //}
         buffer.append("<hr/>");
-        addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
-                16, 16, "<a href='ref:" + declink(dec) + "'>find references</a> to&nbsp;&nbsp;<tt>" +
-                        dec.getName() + "</tt>", 20, 2);
+        addImageAndLabel(buffer, null, 
+        		fileUrl("search_ref_obj.png").toExternalForm(), 
+                16, 16, 
+                "<a href='ref:" + declink(dec) + 
+                        "'>find references</a> to&nbsp;&nbsp;<tt>" +
+                        dec.getName() + "</tt>",
+                20, 2);
         if (dec instanceof ClassOrInterface) {
-            addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
-                    16, 16, "<a href='sub:" + declink(dec) + "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
-                            dec.getName() + "</tt>", 20, 2);
+            addImageAndLabel(buffer, null, 
+            		fileUrl("search_decl_obj.png").toExternalForm(), 
+                    16, 16, 
+                    "<a href='sub:" + declink(dec) + 
+                            "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
+                            dec.getName() + "</tt>",
+                    20, 2);
         }
         if (dec instanceof Value) {
-            addImageAndLabel(buffer, null, fileUrl("search_ref_obj.png").toExternalForm(), 
-                    16, 16, "<a href='ass:" + declink(dec) + "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
-                            dec.getName() + "</tt>", 20, 2);
+            addImageAndLabel(buffer, null, 
+            		fileUrl("search_ref_obj.png").toExternalForm(), 
+                    16, 16, 
+                    "<a href='ass:" + declink(dec) + 
+                            "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
+                            dec.getName() + "</tt>", 
+                    20, 2);
         }
         if (dec.isFormal()||dec.isDefault()) {
-            addImageAndLabel(buffer, null, fileUrl("search_decl_obj.png").toExternalForm(), 
-                    16, 16, "<a href='act:" + declink(dec) + "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
-                            dec.getName() + "</tt>", 20, 2);
+            addImageAndLabel(buffer, null, 
+            		fileUrl("search_decl_obj.png").toExternalForm(), 
+                    16, 16, 
+                    "<a href='act:" + declink(dec) + 
+                            "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
+                            dec.getName() + "</tt>", 
+                    20, 2);
         }
     }
 
@@ -1339,9 +1539,12 @@ public class DocumentationHover
 			ProducedType sup = ((Class) dec).getExtendedType();
 			if (sup!=null) {
 				buffer.append("<p>");
-				addImageAndLabel(buffer, sup.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
-						16, 16, "extends <tt><a " + link(sup.getDeclaration()) + ">" + 
-				        HTMLPrinter.convertToHTMLContent(sup.getProducedTypeName()) +"</a></tt>", 20, 2);
+				addImageAndLabel(buffer, sup.getDeclaration(), 
+						fileUrl("super_co.gif").toExternalForm(), 
+						16, 16, 
+						"extends <tt><a " + link(sup.getDeclaration()) + ">" + 
+								convertToHTMLContent(sup.getProducedTypeName()) +"</a></tt>", 
+				        20, 2);
 				buffer.append("</p>");
 				//extraBreak = true;
 			}
@@ -1351,9 +1554,12 @@ public class DocumentationHover
 			if (!sts.isEmpty()) {
 				buffer.append("<p>");
 				for (ProducedType td: sts) {
-				    addImageAndLabel(buffer, td.getDeclaration(), fileUrl("super_co.gif").toExternalForm(), 
-				    16, 16, "satisfies <tt><a " + link(td.getDeclaration()) + ">" + 
-				    convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
+					addImageAndLabel(buffer, td.getDeclaration(), 
+							fileUrl("super_co.gif").toExternalForm(), 
+							16, 16, 
+							"satisfies <tt><a " + link(td.getDeclaration()) + ">" + 
+									convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 
+							20, 2);
 				    //extraBreak = true;
 				}
 				buffer.append("</p>");
@@ -1362,10 +1568,13 @@ public class DocumentationHover
 			if (cts!=null) {
 				buffer.append("<p>");
 				for (ProducedType td: cts) {
-					addImageAndLabel(buffer, td.getDeclaration(), fileUrl("sub_co.gif").toExternalForm(), 
-							16, 16, (td.getDeclaration().isSelfType() ? "has self type" : "has case") + 
+					addImageAndLabel(buffer, td.getDeclaration(), 
+							fileUrl("sub_co.gif").toExternalForm(), 
+							16, 16, 
+							(td.getDeclaration().isSelfType() ? "has self type" : "has case") + 
 							" <tt><a " + link(td.getDeclaration()) + ">" + 
-							convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 20, 2);
+							convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 
+							20, 2);
 					//extraBreak = true;
 				}
 				buffer.append("</p>");
@@ -1373,8 +1582,12 @@ public class DocumentationHover
 //		}
 	}
 
-	private static String description(Declaration dec, CeylonParseController cpc) {
-		String result = getDescriptionFor(dec, cpc);
+	private static String description(Declaration dec, 
+			Node node, CeylonParseController cpc) {
+		ProducedReference pr = getProducedReference(dec, node);
+		String result = node==null ? 
+				getDescriptionFor(dec, pr, dec.getUnit()) :
+				getDescriptionFor(dec, pr, node.getUnit());
 		if (dec instanceof TypeDeclaration) {
 			TypeDeclaration td = (TypeDeclaration) dec;
 			if (td.isAlias() && td.getExtendedType()!=null) {
@@ -1412,7 +1625,8 @@ public class DocumentationHover
     public static String getInitalValue(Declaration dec, CeylonParseController cpc) {
         Node refnode = getReferencedNode(dec, cpc);
         if (refnode instanceof Tree.AttributeDeclaration) {
-        	Tree.SpecifierOrInitializerExpression sie = ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
+        	Tree.SpecifierOrInitializerExpression sie = 
+        			((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
         	if (sie!=null) {
         		if (sie.getExpression()!=null) {
         			Tree.Term term = sie.getExpression().getTerm();
@@ -1420,7 +1634,8 @@ public class DocumentationHover
         				return " = " + term.getToken().getText();
         			}
         			else if (term instanceof Tree.BaseMemberOrTypeExpression) {
-        			    Tree.BaseMemberOrTypeExpression bme = (Tree.BaseMemberOrTypeExpression) term;
+        			    Tree.BaseMemberOrTypeExpression bme = 
+        			    		(Tree.BaseMemberOrTypeExpression) term;
         			    if (bme.getIdentifier()!=null) {
         			        return " = " + bme.getIdentifier().getText();
         			    }
@@ -1825,9 +2040,11 @@ public class DocumentationHover
     private static Scope resolveScope(Declaration decl) {
         if (decl == null) {
             return null;
-        } else if (decl instanceof Scope) {
+        }
+        else if (decl instanceof Scope) {
             return (Scope) decl;
-        } else {
+        }
+        else {
             return decl.getContainer();
         }
     }
@@ -1835,9 +2052,11 @@ public class DocumentationHover
     private static Module resolveModule(Scope scope) {
         if (scope == null) {
             return null;
-        } else if (scope instanceof Package) {
+        }
+        else if (scope instanceof Package) {
             return ((Package) scope).getModule();
-        } else {
+        }
+        else {
             return resolveModule(scope.getContainer());
         }
     }
