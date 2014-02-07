@@ -3,10 +3,12 @@ package com.redhat.ceylon.eclipse.code.imports;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeEndOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodePath;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static java.util.Collections.singletonMap;
 
@@ -17,6 +19,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
@@ -29,13 +32,20 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ModuleImportUtil {
 
-    public static void removeModuleImports(IProject project, Module target, 
-            List<String> moduleNames) {
+    public static void exportModuleImports(IProject project, 
+    		Module target, String moduleName) {
+        PhasedUnit unit = findPhasedUnit(project, target);
+        exportModuleImports(getFile(unit), 
+                unit.getCompilationUnit(), 
+                moduleName);
+    }
+
+    public static void removeModuleImports(IProject project, 
+    		Module target, List<String> moduleNames) {
         if (moduleNames.isEmpty()) return;
         PhasedUnit unit = findPhasedUnit(project, target);
         removeModuleImports(getFile(unit), 
@@ -43,9 +53,27 @@ public class ModuleImportUtil {
                 moduleNames);
     }
 
+    public static void exportModuleImports(IFile file, CompilationUnit cu, 
+            String moduleName) {
+        TextFileChange textFileChange = 
+        		new TextFileChange("Export Module Imports", file);
+        textFileChange.setEdit(new MultiTextEdit());
+        InsertEdit edit = createExportEdit(cu, moduleName);
+        if (edit!=null) {
+        	textFileChange.addEdit(edit);
+        }
+        try {
+            textFileChange.perform(new NullProgressMonitor());
+        }
+        catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     public static void removeModuleImports(IFile file, CompilationUnit cu, 
             List<String> moduleNames) {
-        TextFileChange textFileChange = new TextFileChange("Remove Module Import", file);
+        TextFileChange textFileChange = 
+        		new TextFileChange("Remove Module Imports", file);
         textFileChange.setEdit(new MultiTextEdit());
         for (String moduleName: moduleNames) {
             DeleteEdit edit = createRemoveEdit(cu, moduleName);
@@ -55,7 +83,8 @@ public class ModuleImportUtil {
         }
         try {
             textFileChange.perform(new NullProgressMonitor());
-        } catch (CoreException e) {
+        }
+        catch (CoreException e) {
             throw new RuntimeException(e);
         }
     }
@@ -64,9 +93,9 @@ public class ModuleImportUtil {
             String moduleName, String moduleVersion) {
         int offset = addModuleImports(project, target, 
                 singletonMap(moduleName, moduleVersion));
-        gotoLocation(CeylonSourcePositionLocator.getNodePath(
-                findPhasedUnit(project, target).getCompilationUnit(), project, 
-                getProjectTypeChecker(project)), 
+        gotoLocation(getNodePath(
+                findPhasedUnit(project, target).getCompilationUnit(), 
+                		project, getProjectTypeChecker(project)), 
                 offset + moduleName.length() + 
                         getDefaultIndent().length() + 10, 
                 moduleVersion.length());
@@ -83,27 +112,34 @@ public class ModuleImportUtil {
 
     public static int addModuleImports(IFile file, CompilationUnit cu, 
             Map<String, String> moduleNamesAndVersions) {
-        TextFileChange textFileChange = new TextFileChange("Add Module Imports", file);
+        TextFileChange textFileChange = 
+        		new TextFileChange("Add Module Imports", file);
         textFileChange.setEdit(new MultiTextEdit());
-        for (Map.Entry<String, String> entry: moduleNamesAndVersions.entrySet()) {
-            InsertEdit edit = createAddEdit(cu, entry.getKey(), entry.getValue());
-            if (edit!=null) {
-                textFileChange.addEdit(edit);
-            }
-        }
         try {
+        	for (Map.Entry<String, String> entry: 
+        		moduleNamesAndVersions.entrySet()) {
+        		InsertEdit edit = createAddEdit(cu, entry.getKey(), 
+        				entry.getValue(), 
+        				textFileChange.getCurrentDocument(null));
+        		if (edit!=null) {
+        			textFileChange.addEdit(edit);
+        		}
+        	}
             textFileChange.perform(new NullProgressMonitor());
-        } catch (CoreException e) {
+        }
+        catch (CoreException e) {
             throw new RuntimeException(e);
         }
         return textFileChange.getEdit().getOffset();
     }
 
-    private static PhasedUnit findPhasedUnit(IProject project, Module module) {
+    private static PhasedUnit findPhasedUnit(IProject project, 
+    		Module module) {
         String moduleFullPath = module.getUnit().getFullPath();
-        List<PhasedUnit> phasedUnits = CeylonBuilder.getUnits(project);
-        for (PhasedUnit phasedUnit : phasedUnits) {
-            if (phasedUnit.getUnit().getFullPath().equals(moduleFullPath)) {
+        List<PhasedUnit> phasedUnits = getUnits(project);
+        for (PhasedUnit phasedUnit: phasedUnits) {
+            if (phasedUnit.getUnit().getFullPath()
+            		.equals(moduleFullPath)) {
                 return phasedUnit;
             }
         }
@@ -111,18 +147,19 @@ public class ModuleImportUtil {
     }
 
     private static InsertEdit createAddEdit(CompilationUnit unit, 
-            String moduleName, String moduleVersion) {
+            String moduleName, String moduleVersion, IDocument doc) {
         ImportModuleList iml = getImportList(unit);    
         if (iml==null) return null;
         int offset;
         if (iml.getImportModules().isEmpty()) {
             offset = iml.getStartIndex() + 1;
-        } else {
+        }
+        else {
             offset = iml.getImportModules()
                     .get(iml.getImportModules().size() - 1)
                     .getStopIndex() + 1;
         }
-        String newline = System.getProperty("line.separator");
+        String newline = Indents.getDefaultLineDelimiter(doc);
         StringBuilder importModule = new StringBuilder();
         appendImportStatement(importModule, 
                 moduleName, moduleVersion, newline);
@@ -134,22 +171,24 @@ public class ModuleImportUtil {
 
     public static void appendImportStatement(StringBuilder importModule,
             String moduleName, String moduleVersion, String newline) {
-        importModule.append(newline);
-        importModule.append(getDefaultIndent());
-        importModule.append("import ");
-        importModule.append(moduleName);
-        importModule.append(" \"");
-        importModule.append(moduleVersion);
-        importModule.append("\";");
+        importModule.append(newline)
+		        .append(getDefaultIndent())
+		        .append("import ")
+		        .append(moduleName)
+		        .append(" \"")
+		        .append(moduleVersion)
+		        .append("\";");
     }
 
-    private static DeleteEdit createRemoveEdit(CompilationUnit unit, String moduleName) {
+    private static DeleteEdit createRemoveEdit(CompilationUnit unit, 
+    		String moduleName) {
         ImportModuleList iml = getImportList(unit);    
         if (iml==null) return null;
         ImportModule prev = null;
         for (ImportModule im: iml.getImportModules()) {
             ImportPath ip = im.getImportPath();
-            if (ip!=null && formatPath(ip.getIdentifiers()).equals(moduleName)) {
+            if (ip!=null && 
+            		formatPath(ip.getIdentifiers()).equals(moduleName)) {
                 int startOffset = getNodeStartOffset(im);
                 int length = getNodeLength(im);
                 //TODO: handle whitespace for first import in list
@@ -161,6 +200,21 @@ public class ModuleImportUtil {
                 return new DeleteEdit(startOffset, length);
             }
             prev = im;
+        }
+        return null;
+    }
+
+    private static InsertEdit createExportEdit(CompilationUnit unit, 
+    		String moduleName) {
+        ImportModuleList iml = getImportList(unit);    
+        if (iml==null) return null;
+        for (ImportModule im: iml.getImportModules()) {
+            ImportPath ip = im.getImportPath();
+            if (ip!=null && 
+            		formatPath(ip.getIdentifiers()).equals(moduleName)) {
+                int startOffset = getNodeStartOffset(im);
+                return new InsertEdit(startOffset, "shared ");
+            }
         }
         return null;
     }
