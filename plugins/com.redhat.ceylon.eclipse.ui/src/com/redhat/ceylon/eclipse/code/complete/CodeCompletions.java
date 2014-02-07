@@ -674,15 +674,7 @@ public class CodeCompletions {
                     else {
                         result.append("(");
                         for (Parameter p: params.getParameters()) {
-                            ProducedTypedReference ppr = pr==null ? 
-                                    null : pr.getTypedParameter(p);
-                            if (p.getModel() == null) {
-                                result.append(p.getName());
-                            }
-                            else {
-                                appendDeclarationText(p.getModel(), ppr, unit, result);
-                                appendParameters(p.getModel(), ppr, unit, result);
-                            }
+                            appendParameter(result, pr, p, unit);
                             /*ProducedType type = p.getType();
                             if (pr!=null) {
                                 type = type.substitute(pr.getTypeArguments());
@@ -711,6 +703,19 @@ public class CodeCompletions {
                 }
             }
         }
+    }
+
+	public static void appendParameter(StringBuilder result,
+            ProducedReference pr, Parameter p, Unit unit) {
+	    ProducedTypedReference ppr = pr==null ? 
+	            null : pr.getTypedParameter(p);
+	    if (p.getModel() == null) {
+	        result.append(p.getName());
+	    }
+	    else {
+	        appendDeclarationText(p.getModel(), ppr, unit, result);
+	        appendParameters(p.getModel(), ppr, unit, result);
+	    }
     }
     
     private static void appendParameters(Declaration d, StyledString result) {
