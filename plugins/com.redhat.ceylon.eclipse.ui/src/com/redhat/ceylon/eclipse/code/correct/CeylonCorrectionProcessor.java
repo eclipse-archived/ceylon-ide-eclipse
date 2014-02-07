@@ -69,7 +69,6 @@ import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.ad
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.VerboseRefinementProposal.addVerboseRefinementProposal;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -116,6 +115,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
+import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 
 public class CeylonCorrectionProcessor extends QuickAssistAssistant 
@@ -552,7 +552,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertToNamedArgumentsProposal(proposals, file, cu, 
             		editor, currentOffset);
             
-            Tree.Statement statement = findStatement(cu, node);
+            Tree.Statement statement = FindUtils.findStatement(cu, node);
             Tree.Declaration declaration = findDeclaration(cu, node);
             Tree.TypedArgument argument = findArgument(cu, node);
             

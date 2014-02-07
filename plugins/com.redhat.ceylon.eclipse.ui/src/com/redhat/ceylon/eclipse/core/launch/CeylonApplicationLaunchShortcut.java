@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledD
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_APPLICATION;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
@@ -72,6 +71,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.FindUtils;
 
 public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
@@ -129,7 +129,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                 if (cu!=null) {
                     ISelection selection = ce.getSelectionProvider().getSelection();
                     if (selection instanceof ITextSelection) {
-                        Node node = findToplevelStatement(cu, findNode(cu, (ITextSelection) selection));
+                        Node node = FindUtils.findToplevelStatement(cu, findNode(cu, (ITextSelection) selection));
                         if (node instanceof Tree.AnyMethod) {
                             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
                             if (method.isToplevel() && 

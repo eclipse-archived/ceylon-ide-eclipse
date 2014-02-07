@@ -26,7 +26,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.util.FindUtils;
 
 public class ChangeRefiningTypeProposal {
 
@@ -56,7 +56,7 @@ public class ChangeRefiningTypeProposal {
 	static void addChangeRefiningParametersProposal(IFile file,
 	        CompilationUnit cu, Collection<ICompletionProposal> proposals,
 	        Node node) {
-	    Tree.Declaration decNode = (Tree.Declaration) CeylonSourcePositionLocator.findStatement(cu, node);
+	    Tree.Declaration decNode = (Tree.Declaration) FindUtils.findStatement(cu, node);
 	    Tree.ParameterList list;
 	    if (decNode instanceof Tree.AnyMethod) {
 	    	list = ((Tree.AnyMethod) decNode).getParameterLists().get(0);

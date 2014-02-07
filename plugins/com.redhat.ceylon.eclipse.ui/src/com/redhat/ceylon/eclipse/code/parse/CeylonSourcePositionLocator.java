@@ -28,7 +28,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
@@ -36,7 +35,6 @@ import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
-import com.redhat.ceylon.eclipse.util.FindStatementVisitor;
 
 /**
  * NOTE:  This version of the ISourcePositionLocator is for use when the Source
@@ -68,19 +66,7 @@ public class CeylonSourcePositionLocator {
         return visitor.getNode();
     }
 
-    public static Statement findStatement(Tree.CompilationUnit cu, Node node) {
-        FindStatementVisitor visitor = new FindStatementVisitor(node, false);
-        cu.visit(visitor);
-        return visitor.getStatement();
-    }
-
-    public static Statement findToplevelStatement(Tree.CompilationUnit cu, Node node) {
-        FindStatementVisitor visitor = new FindStatementVisitor(node, true);
-        cu.visit(visitor);
-        return visitor.getStatement();
-    }
-    
-    public static Node findScope(Tree.CompilationUnit cu, int startOffset, int endOffset) {
+    private static Node findScope(Tree.CompilationUnit cu, int startOffset, int endOffset) {
         FindScopeVisitor visitor = new FindScopeVisitor(startOffset, endOffset);
         cu.visit(visitor);
         return visitor.getNode();

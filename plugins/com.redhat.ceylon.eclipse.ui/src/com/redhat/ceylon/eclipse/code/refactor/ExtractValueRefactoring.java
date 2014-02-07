@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findStatement;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -23,6 +22,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ExtractValueRefactoring extends AbstractRefactoring {
@@ -82,7 +82,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
 		Integer start = node.getStartIndex();
 		int length = node.getStopIndex()-start+1;
 		String exp = toString(unparenthesize(term));
-		Tree.Statement statement = findStatement(rootNode, node);
+		Tree.Statement statement = FindUtils.findStatement(rootNode, node);
 		String typeDec;
 		ProducedType tm = term.getTypeModel();
 		if (tm==null || tm.isUnknown()) {
