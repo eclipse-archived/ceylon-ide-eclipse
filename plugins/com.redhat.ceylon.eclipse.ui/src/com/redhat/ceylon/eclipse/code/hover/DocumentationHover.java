@@ -157,11 +157,6 @@ import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 
-/**
- * Provides Javadoc as hover info for Java elements.
- *
- * @since 2.1
- */
 public class DocumentationHover 
         implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 	
