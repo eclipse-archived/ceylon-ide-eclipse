@@ -12,14 +12,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 final class ImportProposalsVisitor extends Visitor {
 	private final CompilationUnit cu;
 	private final List<Declaration> proposals;
-	private final CleanImportsHandler handler;
 
 	ImportProposalsVisitor(CompilationUnit cu,
-			List<Declaration> proposals,
-			CleanImportsHandler handler) {
+			List<Declaration> proposals) {
 		this.cu = cu;
 		this.proposals = proposals;
-		this.handler = handler;
 	}
 
 	public void visit(Tree.BaseMemberOrTypeExpression that) {
@@ -60,7 +57,7 @@ final class ImportProposalsVisitor extends Visitor {
 			prop = possibles.get(0);
 		}
 		else {
-			prop = handler.select(possibles);
+			prop = CleanImportsHandler.select(possibles);
 		}
 		if (prop!=null) {
 			proposals.add(prop);

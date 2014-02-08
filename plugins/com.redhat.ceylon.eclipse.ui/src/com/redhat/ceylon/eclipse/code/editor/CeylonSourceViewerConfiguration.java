@@ -78,6 +78,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String CLOSE_QUOTES = "closeQuotes";
     
     public static final String NORMALIZE_WS = "normalizedWs";
+    public static final String NORMALIZE_NL = "normalizedNl";
+    public static final String CLEAN_IMPORTS = "cleanImports";
     
     protected final CeylonEditor editor;
     
@@ -130,6 +132,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(LINKED_MODE_RENAME, true);
         preferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
         preferenceStore.setDefault(NORMALIZE_WS, false);
+        preferenceStore.setDefault(NORMALIZE_NL, false);
+        preferenceStore.setDefault(CLEAN_IMPORTS, false);
         preferenceStore.setDefault(CLOSE_PARENS, true);
         preferenceStore.setDefault(CLOSE_BRACKETS, true);
         preferenceStore.setDefault(CLOSE_ANGLES, true);

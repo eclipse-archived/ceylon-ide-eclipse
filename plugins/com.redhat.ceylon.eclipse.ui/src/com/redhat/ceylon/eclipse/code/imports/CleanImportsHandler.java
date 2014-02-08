@@ -51,6 +51,12 @@ public class CleanImportsHandler extends AbstractHandler {
             throws ExecutionException {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         IDocument doc = editor.getCeylonSourceViewer().getDocument();
+        cleanImports(editor, doc);
+        return null;
+    }
+
+    public static void cleanImports(CeylonEditor editor, IDocument doc)
+            throws ExecutionException {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu!=null) {
             IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
@@ -86,7 +92,6 @@ public class CleanImportsHandler extends AbstractHandler {
 //                }
             }
         }
-        return null;
     }
 
     public static String imports(Node node, ImportList til,
@@ -101,11 +106,11 @@ public class CleanImportsHandler extends AbstractHandler {
                 Collections.<Declaration>emptyList(), doc);
     }
     
-    private String imports(final Tree.CompilationUnit cu, 
+    private static String imports(final Tree.CompilationUnit cu, 
     		IDocument doc) {
         final List<Declaration> proposals = new ArrayList<Declaration>();
         final List<Declaration> unused = new ArrayList<Declaration>();
-        new ImportProposalsVisitor(cu, proposals, this).visit(cu);
+        new ImportProposalsVisitor(cu, proposals).visit(cu);
         new DetectUnusedImportsVisitor(unused).visit(cu);
         return reorganizeImports(cu.getImportList(), unused, proposals, doc);
     }
@@ -403,7 +408,7 @@ public class CleanImportsHandler extends AbstractHandler {
         }
     }
     
-    public Declaration select(List<Declaration> proposals) {
+    public static Declaration select(List<Declaration> proposals) {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         ImportSelectionDialog fid = 
                 new ImportSelectionDialog(editor.getSite().getShell(),
