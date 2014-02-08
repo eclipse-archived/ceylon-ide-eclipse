@@ -11,6 +11,7 @@
 
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.configCompletionPopup;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
@@ -25,10 +26,13 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
 import static com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider.isSrcArchive;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
+import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
+import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.GROUP_RULERS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.DELETE_NEXT_WORD;
@@ -53,6 +57,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
 import org.eclipse.jface.action.Action;
@@ -64,7 +69,9 @@ import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.DocumentRewriteSession;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
@@ -93,6 +100,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -1379,6 +1387,43 @@ public class CeylonEditor extends TextEditor {
     
     public ICharacterPairMatcher getBracketMatcher() {
         return bracketMatcher;
+    }
+    
+    @Override
+    public void doSave(IProgressMonitor progressMonitor) {
+        IPreferenceStore prefs = EditorsUI.getPreferenceStore();
+		if (prefs.getBoolean(NORMALIZE_WS) &&
+        		prefs.getBoolean(EDITOR_SPACES_FOR_TABS)) {
+			ISourceViewer viewer = getSourceViewer();
+			IDocument doc = viewer.getDocument();
+            DocumentRewriteSession rewriteSession= null;
+            if (doc instanceof IDocumentExtension4) {
+                rewriteSession = ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+            }
+            
+            try {
+            	String text = doc.get();
+            	if (text.indexOf('\t')>=0) {
+            		new ReplaceEdit(0, text.length(),
+            				text.replace("\t", getDefaultIndent()))
+            			.apply(doc);
+            		int offset = viewer.getTextWidget().getCaretOffset();
+            		int shift = text.substring(0, offset).replace("\t", getDefaultIndent()).length()
+            				- offset;
+            		Point range = viewer.getSelectedRange();
+            		viewer.setSelectedRange(range.x+shift, range.y);
+            	}
+            }
+            catch (Exception e) {
+            	e.printStackTrace();
+            }
+            finally {
+                if (doc instanceof IDocumentExtension4) {
+                    ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
+                }
+            }
+        }
+        super.doSave(progressMonitor);
     }
 
 //    protected void doSetInput(IEditorInput input) throws CoreException {

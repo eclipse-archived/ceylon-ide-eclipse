@@ -77,6 +77,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String CLOSE_BRACES = "closeBraces";
     public static final String CLOSE_QUOTES = "closeQuotes";
     
+    public static final String NORMALIZE_WS = "normalizedWs";
+    
     protected final CeylonEditor editor;
     
     public CeylonSourceViewerConfiguration(CeylonEditor editor) {
@@ -127,6 +129,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(LINKED_MODE, true);
         preferenceStore.setDefault(LINKED_MODE_RENAME, true);
         preferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
+        preferenceStore.setDefault(NORMALIZE_WS, true);
         preferenceStore.setDefault(CLOSE_PARENS, true);
         preferenceStore.setDefault(CLOSE_BRACKETS, true);
         preferenceStore.setDefault(CLOSE_ANGLES, true);
