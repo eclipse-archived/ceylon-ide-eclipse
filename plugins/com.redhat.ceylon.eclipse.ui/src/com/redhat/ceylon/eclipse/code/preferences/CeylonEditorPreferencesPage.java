@@ -22,8 +22,10 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndentWithSpaces;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
+import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
@@ -31,6 +33,8 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.ScaleFieldEditor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -44,6 +48,8 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
+
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 public class CeylonEditorPreferencesPage 
         extends FieldEditorPreferencePage 
@@ -397,19 +403,30 @@ public class CeylonEditorPreferencesPage
     
     private void onSaveSection() {
         Composite group = createGroup(1, "On save");
+        final Composite parent = getFieldEditorParent(group);
         normalizeWs = new BooleanFieldEditor(NORMALIZE_WS, 
                 "Convert tabs to spaces (if insert spaces for tabs enabled)",
-                getFieldEditorParent(group));
+                parent);
         normalizeWs.load();
+        normalizeWs.setEnabled(getIndentWithSpaces(), parent);
+        listener=new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                if (event.getProperty().equals(EDITOR_SPACES_FOR_TABS)) {
+                    normalizeWs.setEnabled(getIndentWithSpaces(), parent);
+                }
+            }
+        };
+        EditorUtil.getPreferences().addPropertyChangeListener(listener);
         addField(normalizeWs);
         normalizeNl = new BooleanFieldEditor(NORMALIZE_NL, 
                 "Fix line endings",
-                getFieldEditorParent(group));
+                parent);
         normalizeNl.load();
         addField(normalizeWs);
         cleanImports = new BooleanFieldEditor(CLEAN_IMPORTS, 
                 "Clean imports",
-                getFieldEditorParent(group));
+                parent);
         cleanImports.load();
         addField(cleanImports);
     }
@@ -455,6 +472,16 @@ public class CeylonEditorPreferencesPage
         closeQuotes.load();
         addField(closeQuotes);
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
+    }
+    
+    private IPropertyChangeListener listener;
+    
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (listener!=null) {
+            EditorUtil.getPreferences().removePropertyChangeListener(listener);
+        }
     }
 
 }
