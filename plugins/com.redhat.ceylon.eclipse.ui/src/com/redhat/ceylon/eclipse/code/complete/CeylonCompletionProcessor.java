@@ -68,6 +68,7 @@ import static com.redhat.ceylon.eclipse.code.complete.ReferenceCompletions.addDo
 import static com.redhat.ceylon.eclipse.code.complete.ReferenceCompletions.addInvocationProposals;
 import static com.redhat.ceylon.eclipse.code.complete.ReferenceCompletions.addNamedArgumentProposal;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.addRefinementProposal;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
@@ -698,7 +699,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 Declaration dec = dwp.getDeclaration();
                 
                 if (isPackageOrModuleDescriptor && !inDoc) {
-                    if (!dec.isAnnotation()||!(dec instanceof Method)) continue;
+                    if (!dec.isAnnotation()||!(dec instanceof Method)) {
+                        continue;
+                    }
                 }
                 
                 if (isParameterOfNamedArgInvocation(scope, dwp)) {
@@ -716,7 +719,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     for (Declaration d: overloads(dec)) {
                         ProducedReference pr = isMember? 
                                 getQualifiedProducedReference(node, d) :
-                                RefinementCompletions.getRefinedProducedReference(scope, d);
+                                getRefinedProducedReference(scope, d);
                         addInvocationProposals(offset, prefix, cpc, result, 
                                 new DeclarationWithProximity(d, dwp), 
                                 pr, scope, ol, null);
