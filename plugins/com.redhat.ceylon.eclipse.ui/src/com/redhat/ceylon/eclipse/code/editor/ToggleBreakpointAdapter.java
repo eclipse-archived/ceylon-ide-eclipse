@@ -38,6 +38,8 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
         if (selection instanceof ITextSelection) {
             ITextSelection textSel= (ITextSelection) selection;
             IEditorPart editorPart= (IEditorPart) part.getAdapter(IEditorPart.class);
+            //TODO: handle org.eclipse.ui.ide.FileStoreEditorInput
+            //      to set breakpoints in code from archives
             IFileEditorInput fileInput= (IFileEditorInput) editorPart.getEditorInput();
             final IFile origSrcFile= fileInput.getFile();
             final int lineNumber = textSel.getStartLine()+1;
