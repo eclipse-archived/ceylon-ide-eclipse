@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositio
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextForDocLink;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 
@@ -62,47 +63,48 @@ public class ReferenceCompletions {
             DeclarationWithProximity dwp, ProducedReference pr, Scope scope,
             OccurrenceLocation ol, String typeArgs) {
         Declaration d = pr.getDeclaration();
-        Unit unit = cpc.getRootNode().getUnit();
-        if (!(d instanceof Functional)) return;
-        boolean isAbstractClass = d instanceof Class && ((Class) d).isAbstract();
-        Functional fd = (Functional) d;
-        List<ParameterList> pls = fd.getParameterLists();
-        if (!pls.isEmpty()) {
-            List<Parameter> ps = pls.get(0).getParameters();
-            boolean hasDefaulted = ps.size()!=CompletionUtil.getParameters(false, ps).size();
-			if (!isAbstractClass ||
-            		ol==EXTENDS || ol==CLASS_ALIAS) {
-                if (hasDefaulted) {
+        if (d instanceof Functional) {
+            Unit unit = cpc.getRootNode().getUnit();
+            boolean isAbstractClass = 
+                    d instanceof Class && ((Class) d).isAbstract();
+            Functional fd = (Functional) d;
+            List<ParameterList> pls = fd.getParameterLists();
+            if (!pls.isEmpty()) {
+                List<Parameter> ps = pls.get(0).getParameters();
+                boolean hasDefaulted = ps.size()!=getParameters(false, ps).size();
+                if (!isAbstractClass ||
+                        ol==EXTENDS || ol==CLASS_ALIAS) {
+                    if (hasDefaulted) {
+                        result.add(new DeclarationCompletionProposal(offset, prefix, 
+                                getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, false, null), 
+                                getPositionalInvocationTextFor(dwp, ol, pr, unit, false, null), true,
+                                cpc, d, dwp.isUnimported(), pr, scope, false));
+                    }
                     result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, false, null), 
-                            getPositionalInvocationTextFor(dwp, ol, pr, unit, false, null), true,
-                            cpc, d, dwp.isUnimported(), pr, scope, false));
-                }
-                result.add(new DeclarationCompletionProposal(offset, prefix, 
-                        getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, true, typeArgs), 
-                        getPositionalInvocationTextFor(dwp, ol, pr, unit, true, typeArgs), true,
-                        cpc, d, dwp.isUnimported(), pr, scope, true));
-            }
-            if (!isAbstractClass &&
-            		ol!=EXTENDS && ol!=CLASS_ALIAS &&
-                    !fd.isOverloaded() && typeArgs==null) {
-                //if there is at least one parameter, 
-                //suggest a named argument invocation
-                if (hasDefaulted) {
-                    result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getNamedInvocationDescriptionFor(dwp, pr, unit, false), 
-                            getNamedInvocationTextFor(dwp, pr, unit, false), true,
-                            cpc, d, dwp.isUnimported(), pr, scope, false));
-                }
-                if (!ps.isEmpty()) {
-                    result.add(new DeclarationCompletionProposal(offset, prefix, 
-                            getNamedInvocationDescriptionFor(dwp, pr, unit, true), 
-                            getNamedInvocationTextFor(dwp, pr, unit, true), true,
+                            getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, true, typeArgs), 
+                            getPositionalInvocationTextFor(dwp, ol, pr, unit, true, typeArgs), true,
                             cpc, d, dwp.isUnimported(), pr, scope, true));
+                }
+                if (!isAbstractClass &&
+                        ol!=EXTENDS && ol!=CLASS_ALIAS &&
+                        !fd.isOverloaded() && typeArgs==null) {
+                    //if there is at least one parameter, 
+                    //suggest a named argument invocation
+                    if (hasDefaulted) {
+                        result.add(new DeclarationCompletionProposal(offset, prefix, 
+                                getNamedInvocationDescriptionFor(dwp, pr, unit, false), 
+                                getNamedInvocationTextFor(dwp, pr, unit, false), true,
+                                cpc, d, dwp.isUnimported(), pr, scope, false));
+                    }
+                    if (!ps.isEmpty()) {
+                        result.add(new DeclarationCompletionProposal(offset, prefix, 
+                                getNamedInvocationDescriptionFor(dwp, pr, unit, true), 
+                                getNamedInvocationTextFor(dwp, pr, unit, true), true,
+                                cpc, d, dwp.isUnimported(), pr, scope, true));
+                    }
                 }
             }
         }
     }
-    
 
 }

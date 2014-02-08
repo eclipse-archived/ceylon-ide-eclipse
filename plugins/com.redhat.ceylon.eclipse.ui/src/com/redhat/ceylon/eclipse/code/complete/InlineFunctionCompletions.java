@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionTextFor;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.List;
@@ -15,7 +16,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Indents;
 
 public class InlineFunctionCompletions {
 	
@@ -28,7 +28,7 @@ public class InlineFunctionCompletions {
             result.add(new RefinementCompletionProposal(offset, prefix,
                     getInlineFunctionDescriptionFor(p, null, unit),
                     getInlineFunctionTextFor(p, null, unit, 
-                    		Indents.getDefaultLineDelimiter(doc) + 
+                    		getDefaultLineDelimiter(doc) + 
                     		getIndent(node, doc)),
                     cpc, d));
         }

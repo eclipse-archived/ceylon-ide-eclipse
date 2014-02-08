@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 
@@ -52,7 +53,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -200,8 +200,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		if (addimport) {
 			try {
 				List<InsertEdit> ies = importEdit(cpc.getRootNode(), 
-					Collections.singleton(declaration), null, null, 
-					document);
+				        Collections.singleton(declaration), 
+				        null, null, document);
 				for (InsertEdit ie: ies) {
 					ie.apply(document);
 					offset+=ie.getText().length();
@@ -216,7 +216,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		super.apply(document);
 		
 		if (EditorsUI.getPreferenceStore()
-				.getBoolean(CeylonSourceViewerConfiguration.LINKED_MODE)) {
+				.getBoolean(LINKED_MODE)) {
 			if (declaration instanceof Generic) {
                 Generic generic = (Generic) declaration;
 				ParameterList paramList = null;
@@ -224,7 +224,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
 						getFirstPosition(false)>0) {
 					List<ParameterList> pls = 
 							((Functional) declaration).getParameterLists();
-					if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
+					if (!pls.isEmpty() && 
+					        !pls.get(0).getParameters().isEmpty()) {
 						paramList = pls.get(0);
 					}
 				}
@@ -252,7 +253,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			if (declaration instanceof Functional) {
 				List<ParameterList> pls = 
 						((Functional) declaration).getParameterLists();
-				if (!pls.isEmpty() && !pls.get(0).getParameters().isEmpty()) {
+				if (!pls.isEmpty() && 
+				        !pls.get(0).getParameters().isEmpty()) {
 					pl = pls.get(0);
 				}
 			}
@@ -267,7 +269,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
                 return super.getSelection(document);
             }
         	int middle = getCompletionPosition(first, next);
-			return new Point(offset-prefix.length()+first+middle, next-middle);
+			return new Point(offset-prefix.length()+first+middle, 
+			        next-middle);
 		}
 		return super.getSelection(document);
 	}
@@ -279,8 +282,11 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		try {
 			int start = loc+lastOffset;
 			int end = loc+text.length()-1;
-			if (text.endsWith(";")) end--;
-			comma = findCharCount(1, document, start, end, ",;", "", true) - start;
+			if (text.endsWith(";")) {
+			    end--;
+			}
+			comma = findCharCount(1, document, start, end, ",;", "", true) 
+			        - start;
 		} 
 		catch (BadLocationException e) {
 			e.printStackTrace();
@@ -289,7 +295,11 @@ class DeclarationCompletionProposal extends CompletionProposal {
 			int angleIndex = text.lastIndexOf('>');
 			int parenIndex = text.lastIndexOf(')');
 			int braceIndex = text.lastIndexOf('}');
-			return (typeArgList ? angleIndex : (braceIndex>parenIndex?braceIndex:parenIndex))-lastOffset;
+			int index = typeArgList ? 
+			        angleIndex : 
+			        (braceIndex>parenIndex ?
+			                braceIndex : parenIndex);
+            return index - lastOffset;
 		}
 		return comma;
 	}
@@ -303,29 +313,35 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	public void enterLinkedMode(IDocument document, List<Parameter> params, 
 			List<TypeParameter> typeParams) {
         boolean proposeTypeArguments = params==null;
-        int paramCount = proposeTypeArguments ? typeParams.size() : params.size();
+        int paramCount = proposeTypeArguments ? 
+                typeParams.size() : params.size();
         if (paramCount==0) return;
 	    try {
-	        final LinkedModeModel linkedModeModel = new LinkedModeModel();
+	        final LinkedModeModel linkedModeModel = 
+	                new LinkedModeModel();
 	        final int loc = offset-prefix.length();
 	        int first = getFirstPosition(proposeTypeArguments);
 	        if (first<=0) return; //no arg list
-	        int next = getNextPosition(document, first, proposeTypeArguments);
+	        int next = getNextPosition(document, first, 
+	                proposeTypeArguments);
 	        if (next<=0) return; //empty arg list
 	        int i=0;
 	        while (next>0 && i<paramCount) {
-	        	List<ICompletionProposal> props = new ArrayList<ICompletionProposal>();
+	        	List<ICompletionProposal> props = 
+	        	        new ArrayList<ICompletionProposal>();
 	        	if (proposeTypeArguments) {
 	        		addTypeArgumentProposals(typeParams, loc, first, props, i);
 	        	}
 	        	else {
 	        		addValueArgumentProposals(params, loc, first, props, i);
 	        	}
-		        LinkedPositionGroup linkedPositionGroup = new LinkedPositionGroup();
+		        LinkedPositionGroup linkedPositionGroup = 
+		                new LinkedPositionGroup();
 		        int middle = getCompletionPosition(first, next);
-		        ProposalPosition linkedPosition = new ProposalPosition(document, 
-		        		loc+first+middle, next-middle, i, 
-		        		props.toArray(NO_COMPLETIONS));
+		        ProposalPosition linkedPosition = 
+		                new ProposalPosition(document, 
+		                        loc+first+middle, next-middle, i, 
+		                        props.toArray(NO_COMPLETIONS));
 		        linkedPositionGroup.addPosition(linkedPosition);
 		        first = first+next+1;
 		        next = getNextPosition(document, first, proposeTypeArguments);
@@ -333,7 +349,8 @@ class DeclarationCompletionProposal extends CompletionProposal {
 	            i++;
 	        }
             linkedModeModel.forceInstall();
-            final CeylonEditor editor = (CeylonEditor) EditorUtil.getCurrentEditor();
+            final CeylonEditor editor = 
+                    (CeylonEditor) EditorUtil.getCurrentEditor();
             linkedModeModel.addLinkingListener(new ILinkedModeListener() {
                 @Override
                 public void left(LinkedModeModel model, int flags) {
@@ -366,27 +383,32 @@ class DeclarationCompletionProposal extends CompletionProposal {
             ui.setDoContextInfo(true);
             ui.enter();
             
-            if (viewer instanceof IEditingSupportRegistry) {
-                editingSupport = new IEditingSupport() {
-                    public boolean ownsFocusShell() {
-                        Shell editorShell= editor.getSite().getShell();
-                        Shell activeShell= editorShell.getDisplay().getActiveShell();
-                        if (editorShell == activeShell)
-                            return true;
-                        return false;
-                    }
-                    public boolean isOriginator(DocumentEvent event, IRegion subjectRegion) {
-                        return false; //leave on external modification outside positions
-                    }
-                };
-				((IEditingSupportRegistry) viewer).register(editingSupport);
-            }
+            registerEditingSupport(editor, viewer);
 
 	    }
 	    catch (Exception e) {
 	        e.printStackTrace();
 	    }
 	}
+
+    private void registerEditingSupport(final CeylonEditor editor,
+            CeylonSourceViewer viewer) {
+        if (viewer instanceof IEditingSupportRegistry) {
+            editingSupport = new IEditingSupport() {
+                public boolean ownsFocusShell() {
+                    Shell editorShell= editor.getSite().getShell();
+                    Shell activeShell= editorShell.getDisplay().getActiveShell();
+                    if (editorShell == activeShell)
+                        return true;
+                    return false;
+                }
+                public boolean isOriginator(DocumentEvent event, IRegion subjectRegion) {
+                    return false; //leave on external modification outside positions
+                }
+            };
+        	((IEditingSupportRegistry) viewer).register(editingSupport);
+        }
+    }
 	
 	protected int getCompletionPosition(int first, int next) {
 		return text.substring(first, first+next-1).lastIndexOf(' ')+1;
@@ -396,7 +418,11 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		int anglePos = text.indexOf('<');
 		int parenPos = text.indexOf('(');
 		int bracePos = text.indexOf('{');
-		return (basicProposal ? anglePos : (bracePos>0&&(bracePos<parenPos||parenPos<0) ? bracePos : parenPos))+1;
+		int index = basicProposal ? 
+		        anglePos : 
+		        (bracePos>0&&(bracePos<parenPos||parenPos<0) ? 
+		                bracePos : parenPos);
+        return index+1;
 	}
 	
 	protected boolean isNamedArgs() {
@@ -490,7 +516,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
 		for (ProducedType ub: upperBounds) {
 			if (!t.isSubtypeOf(ub) &&
 					!(ub.containsTypeParameters() &&
-					    t.getDeclaration().inherits(ub.getDeclaration()))) {
+					        t.getDeclaration().inherits(ub.getDeclaration()))) {
 				ok = false;
 				break;
 			}
@@ -529,7 +555,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
             if (!pls.isEmpty() && 
             		//TODO: for now there is no context info for type args lists - fix that!
             		!(pls.get(0).getParameters().isEmpty() &&
-            				!((Generic)declaration).getTypeParameters().isEmpty())) {
+            				!((Generic) declaration).getTypeParameters().isEmpty())) {
             	int paren = text.indexOf('(');
             	if (paren<0) paren = text.indexOf('{');
             	if (paren<0 && !getDisplayString().equals("show parameters")) { //ugh, horrible, TODO!
