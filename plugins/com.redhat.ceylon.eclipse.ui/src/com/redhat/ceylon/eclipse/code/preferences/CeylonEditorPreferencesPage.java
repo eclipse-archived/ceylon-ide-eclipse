@@ -18,6 +18,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 
@@ -59,6 +60,7 @@ public class CeylonEditorPreferencesPage
     RadioGroupFieldEditor autoActivationChars;
     BooleanFieldEditor smartCaret;
     BooleanFieldEditor pasteCorrectIndent;
+    BooleanFieldEditor normalizeWs;
     BooleanFieldEditor autoFoldImports;
     BooleanFieldEditor autoFoldComments;
     BooleanFieldEditor closeParens;
@@ -86,6 +88,7 @@ public class CeylonEditorPreferencesPage
         linkedModeRename.store();
         smartCaret.store();
         pasteCorrectIndent.store();
+        normalizeWs.store();
         autoFoldImports.store();
         autoFoldComments.store();
         closeAngles.store();
@@ -112,6 +115,7 @@ public class CeylonEditorPreferencesPage
         linkedModeRename.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
+        normalizeWs.loadDefault();
         autoFoldImports.loadDefault();
         autoFoldComments.loadDefault();
         closeAngles.loadDefault();
@@ -380,6 +384,11 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent(group));
         pasteCorrectIndent.load();
         addField(pasteCorrectIndent);
+        normalizeWs = new BooleanFieldEditor(NORMALIZE_WS, 
+                "Convert tabs to spaces on save (if insert spaces for tabs enabled)",
+                getFieldEditorParent(group));
+        normalizeWs.load();
+        addField(normalizeWs);
     }
     
     protected Composite getFieldEditorParent(Composite group) {
