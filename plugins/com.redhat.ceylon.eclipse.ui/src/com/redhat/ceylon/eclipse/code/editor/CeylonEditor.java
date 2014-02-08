@@ -27,6 +27,7 @@ import static com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvide
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -94,6 +95,7 @@ import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.StyledTextContent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -1394,25 +1396,29 @@ public class CeylonEditor extends TextEditor {
         IPreferenceStore prefs = EditorsUI.getPreferenceStore();
 		if (prefs.getBoolean(NORMALIZE_WS) &&
         		prefs.getBoolean(EDITOR_SPACES_FOR_TABS)) {
-			ISourceViewer viewer = getSourceViewer();
+			CeylonSourceViewer viewer = getCeylonSourceViewer();
 			IDocument doc = viewer.getDocument();
             DocumentRewriteSession rewriteSession= null;
             if (doc instanceof IDocumentExtension4) {
                 rewriteSession = ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
             }
             
+            Point range = viewer.getSelectedRange();
+            int modelOffset = range.x;
+            int modelLength = range.y;
             try {
             	String text = doc.get();
-            	if (text.indexOf('\t')>=0) {
-            		new ReplaceEdit(0, text.length(),
-            				text.replace("\t", getDefaultIndent()))
-            			.apply(doc);
-            		int offset = viewer.getTextWidget().getCaretOffset();
-            		int shift = text.substring(0, offset).replace("\t", getDefaultIndent()).length()
-            				- offset;
-            		Point range = viewer.getSelectedRange();
-            		viewer.setSelectedRange(range.x+shift, range.y);
-            	}
+                String normalized = normalize(text, doc);
+                if (!normalized.equals(text)) {
+                    StyledText widget = viewer.getTextWidget();
+                    Point selection = widget.getSelectionRange();
+                    StyledTextContent content = widget.getContent();
+                    int offset = normalize(content.getTextRange(0, selection.x), doc).length();
+                    int length = normalize(content.getTextRange(selection.x, selection.y), doc).length();
+                    modelOffset = viewer.widgetOffset2ModelOffset(offset);
+                    modelLength = viewer.widgetOffset2ModelOffset(offset+length)-modelOffset;
+                    new ReplaceEdit(0, text.length(), normalized).apply(doc);
+                }
             }
             catch (Exception e) {
             	e.printStackTrace();
@@ -1421,9 +1427,19 @@ public class CeylonEditor extends TextEditor {
                 if (doc instanceof IDocumentExtension4) {
                     ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
                 }
+                viewer.setSelectedRange(modelOffset, modelLength);
             }
         }
         super.doSave(progressMonitor);
+    }
+
+    private static String normalize(String text, IDocument doc) {
+        text = text.replace("\t", getDefaultIndent());
+        String delim = getDefaultLineDelimiter(doc);
+        for (String s: doc.getLegalLineDelimiters()) {
+            text = text.replace(s, delim);
+        }
+        return text;
     }
 
 //    protected void doSetInput(IEditorInput input) throws CoreException {
