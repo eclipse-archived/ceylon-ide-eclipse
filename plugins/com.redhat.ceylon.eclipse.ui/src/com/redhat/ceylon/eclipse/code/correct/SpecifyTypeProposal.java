@@ -27,7 +27,7 @@ public class SpecifyTypeProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     SpecifyTypeProposal(int offset, IFile file, String type, TextFileChange change) {
-        super("Specify type '" + type + "'", change);
+        super("Specify explicit type '" + type + "'", change);
         this.offset = offset;
         length = type.length();
         this.file = file;
