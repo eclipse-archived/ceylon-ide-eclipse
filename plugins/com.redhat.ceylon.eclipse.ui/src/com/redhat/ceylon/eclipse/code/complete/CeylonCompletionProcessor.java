@@ -750,7 +750,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     for (Declaration d: overloads(dec)) {
                         if (d.isDefault() || d.isFormal()) {
                         	addRefinementProposal(offset, prefix, cpc, scope, node, 
-                        			result, d, doc, true);
+                        			result, d, (ClassOrInterface) scope, doc, true);
                         }
                     }
                 }
@@ -759,8 +759,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 
-	private static void addRefinementProposals(final int offset,
-            Set<DeclarationWithProximity> set, final CeylonParseController cpc,
+	private static void addRefinementProposals(int offset,
+            Set<DeclarationWithProximity> set, CeylonParseController cpc,
             Scope scope, Node node, IDocument doc, boolean filter,
             final List<ICompletionProposal> result, OccurrenceLocation ol,
             ProducedType t, boolean preamble) {
@@ -775,8 +775,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 	                    try {
 	                        String pfx = doc.get(node.getStartIndex(), 
 	                        		offset-node.getStartIndex());
-	                    	addRefinementProposal(offset, pfx, cpc, scope, 
-	                    			node, result, d, doc, preamble);
+	                    	addRefinementProposal(offset, pfx, cpc, scope, node, 
+	                    			result, d, (ClassOrInterface) scope, doc, preamble);
 	                    }
 	                    catch (BadLocationException e) {
 	                        e.printStackTrace();
@@ -848,7 +848,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
     private static boolean isRefinementProposable(Declaration dec, 
     		OccurrenceLocation ol, Scope scope) {
-        return ol==null && (dec instanceof MethodOrValue || dec instanceof Class) && 
+        return ol==null && 
+        		(dec instanceof MethodOrValue || dec instanceof Class) && 
         		scope instanceof ClassOrInterface &&
                 ((ClassOrInterface) scope).isInheritedFromSupertype(dec);
     }

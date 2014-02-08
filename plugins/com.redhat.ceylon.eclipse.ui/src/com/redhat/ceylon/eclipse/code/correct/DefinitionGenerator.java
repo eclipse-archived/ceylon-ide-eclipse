@@ -95,7 +95,7 @@ class DefinitionGenerator {
                             ProducedReference pr = 
                             		getRefinedProducedReference(returnType, d);
                             String text = getRefinementTextFor(d, pr, node.getUnit(), 
-									false, "", false);
+									false, null, "", false);
 							def.append(indent).append(defIndent)
 							    .append(text).append(delim);
                         }

@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPara
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 
 import java.util.Collection;
@@ -130,7 +131,8 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
             def.append("class $className");
             boolean first = true;
             for (ProducedType ta: type.getTypeArgumentList()) {
-                if (ta!=null && ta.getDeclaration() instanceof TypeParameter) {
+                if (ta!=null && 
+                		ta.getDeclaration() instanceof TypeParameter) {
                     if (first) {
                         def.append("<");
                         first=false;
@@ -185,8 +187,9 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         	allTypes.add(type);
         	appendInterface(type, td, def, true);
         }
-        def.append(" {").append(Indents.getDefaultLineDelimiter(doc));
-        for (DeclarationWithProximity dwp: td.getMatchingMemberDeclarations(null, "", 0).values()) {
+        def.append(" {").append(getDefaultLineDelimiter(doc));
+        for (DeclarationWithProximity dwp: 
+        	    td.getMatchingMemberDeclarations(null, "", 0).values()) {
         	Declaration d = dwp.getDeclaration();
         	if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
         		if (d instanceof ClassOrInterface) {
@@ -205,7 +208,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         		ProducedReference pr = getRefinedProducedReference(type, d);
             	if (pr instanceof ProducedTypedReference) {
             		def.append("    ")
-            			.append(getRefinementTextFor(d, pr, unit, false, "", false))
+            			.append(getRefinementTextFor(d, pr, unit, false, null, "", false))
             			.append(Indents.getDefaultLineDelimiter(doc));
             	}
         	}

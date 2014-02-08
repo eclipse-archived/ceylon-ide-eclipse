@@ -15,6 +15,7 @@ import java.util.List;
 import org.eclipse.jface.viewers.StyledString;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
@@ -171,14 +172,15 @@ public class CodeCompletions {
     
     public static String getRefinementTextFor(Declaration d, 
     		ProducedReference pr, Unit unit, boolean isInterface, 
-    		String indent, boolean containsNewline) {
-    	return getRefinementTextFor(d, pr, unit, isInterface, 
+    		ClassOrInterface ci, String indent, boolean containsNewline) {
+    	return getRefinementTextFor(d, pr, unit, isInterface, ci, 
     			indent, containsNewline, true);
     }
     
     public static String getRefinementTextFor(Declaration d, 
-    		ProducedReference pr, Unit unit, boolean isInterface, 
-    		String indent, boolean containsNewline, boolean preamble) {
+    		ProducedReference pr, Unit unit, boolean isInterface,
+    		ClassOrInterface ci, String indent, boolean containsNewline, 
+    		boolean preamble) {
     	StringBuilder result = new StringBuilder();
     	if (preamble) {
     		result.append("shared actual ");
@@ -190,12 +192,13 @@ public class CodeCompletions {
         appendTypeParameters(d, result);
         appendParameters(d, pr, unit, result);
         if (d instanceof Class) {
-            result.append(extraIndent(extraIndent(indent, containsNewline), containsNewline))
+            result.append(extraIndent(extraIndent(indent, containsNewline), 
+            		containsNewline))
                 .append(" extends super.").append(d.getName());
             appendPositionalArgs(d, pr, unit, result, true);
         }
         appendConstraints(d, pr, unit, indent, containsNewline, result);
-        appendImpl(d, pr, isInterface, unit, indent, result);
+        appendImpl(d, pr, isInterface, unit, indent, result, ci);
         return result.toString();
     }
 
@@ -206,7 +209,8 @@ public class CodeCompletions {
             for (TypeParameter tp: ((Functional) d).getTypeParameters()) {
                 List<ProducedType> sts = tp.getSatisfiedTypes();
                 if (!sts.isEmpty()) {
-                    result.append(extraIndent(extraIndent(indent, containsNewline), containsNewline))
+                    result.append(extraIndent(extraIndent(indent, containsNewline), 
+                    		containsNewline))
                         .append("given ").append(tp.getName())
                         .append(" satisfies ");
                     boolean first = true;
@@ -604,8 +608,21 @@ public class CodeCompletions {
   }*/
     
     private static void appendImpl(Declaration d, ProducedReference pr, 
-    		boolean isInterface, Unit unit, String indent, StringBuilder result) {
-        if (d instanceof Method) {
+    		boolean isInterface, Unit unit, String indent, StringBuilder result,
+    		ClassOrInterface ci) {
+    	if (d instanceof Method) {
+    		if (ci!=null && !ci.isAnonymous()) {
+    			if (d.getName().equals("equals")) {
+    				List<ParameterList> pl = ((Method) d).getParameterLists();
+    				if (!pl.isEmpty()) {
+    					List<Parameter> ps = pl.get(0).getParameters();
+    					if (!ps.isEmpty()) {
+    						appendEqualsImpl(unit, indent, result, ci, ps);
+    						return;
+    					}
+    				}
+    			}
+    		}
             if (!d.isFormal()) {
                 result.append(" => super.").append(d.getName());
                 appendPositionalArgs(d, pr, unit, result, true);
@@ -622,6 +639,12 @@ public class CodeCompletions {
             }
         }
         else if (d instanceof MethodOrValue) {
+        	if (ci!=null && !ci.isAnonymous()) {
+        		if (d.getName().equals("hash")) {
+					appendHashImpl(unit, indent, result, ci);
+					return;
+        		}
+        	}
             if (isInterface||d.isParameter()) {
                 if (d.isFormal()) {
                     result.append(" => nothing;");
@@ -649,6 +672,89 @@ public class CodeCompletions {
             //TODO: in the case of a class, formal member refinements!
             result.append(" {}");
         }
+    }
+
+	private static void appendHashImpl(Unit unit, String indent, 
+			StringBuilder result, ClassOrInterface ci) {
+		result.append(" {")
+			.append(indent).append(getDefaultIndent())
+			.append("variable value hash = 1;")
+			.append(indent).append(getDefaultIndent());
+		String ind = indent+getDefaultIndent();
+	    appendMembersToHash(unit, ind, result, ci);
+	    result.append("return hash;")
+			.append(indent)
+			.append("}");
+    }
+
+	private static void appendEqualsImpl(Unit unit, String indent,
+            StringBuilder result, ClassOrInterface ci, List<Parameter> ps) {
+	    Parameter p = ps.get(0);
+	    result.append(" {")
+	    	.append(indent).append(getDefaultIndent())
+	    	.append("if (is ").append(ci.getName()).append(" ").append(p.getName()).append(") {")
+	    	.append(indent).append(getDefaultIndent()).append(getDefaultIndent())
+	    	.append("return ");
+	    String ind = indent+getDefaultIndent()+getDefaultIndent()+getDefaultIndent();
+	    appendMembersToEquals(unit, ind, result, ci, p);
+	    result.append(indent).append(getDefaultIndent())
+	    	.append("}")
+	    	.append(indent).append(getDefaultIndent())
+	    	.append("else {")
+	    	.append(indent).append(getDefaultIndent()).append(getDefaultIndent())
+	    	.append("return false;")
+	    	.append(indent).append(getDefaultIndent())
+	    	.append("}")
+	    	.append(indent)
+	    	.append("}");
+    }
+
+	private static void appendMembersToEquals(Unit unit, String indent,
+            StringBuilder result, ClassOrInterface ci, Parameter p) {
+	    boolean found = false;
+	    for (Declaration m: ci.getMembers()) {
+	    	if (m instanceof Value) {
+	    		Value value = (Value) m;
+	    		if (!value.isTransient()) {
+	    			if (!unit.getNullValueDeclaration().getType()
+	    					.isSubtypeOf(value.getType())) {
+	    				result.append(value.getName())
+	    					.append("==")
+	    					.append(p.getName())
+	    					.append(".")
+	    					.append(value.getName())
+	    					.append(" && ")
+	    					.append(indent);
+	    				found = true;
+	    			}
+	    		}
+	    	}
+	    }
+		if (found) {
+			result.setLength(result.length()-4-indent.length());
+			result.append(";");
+		}
+		else {
+			result.append("true;");
+		}
+    }
+
+	private static void appendMembersToHash(Unit unit, String indent,
+            StringBuilder result, ClassOrInterface ci) {
+	    for (Declaration m: ci.getMembers()) {
+	    	if (m instanceof Value) {
+	    		Value value = (Value) m;
+	    		if (!value.isTransient()) {
+	    			if (!unit.getNullValueDeclaration().getType()
+	    					.isSubtypeOf(value.getType())) {
+	    				result.append("hash = 31*hash + ")
+	    					.append(value.getName())
+	    					.append(".hash;")
+	    					.append(indent);
+	    			}
+	    		}
+	    	}
+	    }
     }
 
     private static String extraIndent(String indent, boolean containsNewline) {
