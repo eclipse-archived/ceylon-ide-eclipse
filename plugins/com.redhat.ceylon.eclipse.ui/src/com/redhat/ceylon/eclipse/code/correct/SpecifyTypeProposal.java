@@ -47,7 +47,7 @@ public class SpecifyTypeProposal extends ChangeCorrectionProposal {
 	public static SpecifyTypeProposal create(Tree.CompilationUnit cu,
 			Node node, IFile file) {
 		final Tree.Type type = (Tree.Type) node;
-        TextFileChange change = new TextFileChange("Specify Type", file);
+        TextFileChange change = new TextFileChange("Specify Explicit Type", file);
         change.setEdit(new MultiTextEdit());
         Integer offset = node.getStartIndex();
         ProducedType infType = inferType(cu, type);
