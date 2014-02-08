@@ -151,7 +151,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
                     ProducedReference pr = getRefinedProducedReference(ci, d);
                     result.append(indent)
                             .append(getRefinementTextFor(d, pr, node.getUnit(), 
-                                    isInterface, indent, true))
+                                    isInterface, ci, indent, true))
                             .append(indent);
                     importSignatureTypes(d, cu, already);
                 }

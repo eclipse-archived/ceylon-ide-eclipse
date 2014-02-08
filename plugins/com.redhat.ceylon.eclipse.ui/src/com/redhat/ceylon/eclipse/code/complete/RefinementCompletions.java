@@ -11,6 +11,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
 
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
@@ -32,9 +33,10 @@ public class RefinementCompletions {
     public static Image FORMAL_REFINEMENT = CeylonPlugin.getInstance()
             .getImageRegistry().get(CeylonResources.CEYLON_FORMAL_REFINEMENT);
     
-    static void addRefinementProposal(int offset, String prefix, final CeylonParseController cpc,
-            Scope scope, Node node, List<ICompletionProposal> result, final Declaration d, IDocument doc,
-            boolean preamble) {
+    static void addRefinementProposal(int offset, String prefix, 
+    		CeylonParseController cpc, Scope scope, Node node, 
+    		List<ICompletionProposal> result, final Declaration d, 
+    		ClassOrInterface ci, IDocument doc, boolean preamble) {
         boolean isInterface = scope instanceof Interface;
         ProducedReference pr = getRefinedProducedReference(scope, d);
         //TODO: if it is equals() or hash, fill in the implementation
@@ -42,11 +44,12 @@ public class RefinementCompletions {
 		result.add(new RefinementCompletionProposal(offset, prefix,  
                 getRefinementDescriptionFor(d, pr, node.getUnit()), 
                 getRefinementTextFor(d, pr, node.getUnit(), isInterface, 
-                		delim + getIndent(node, doc), true, preamble), 
+                		ci, delim + getIndent(node, doc), true, preamble), 
                 cpc, d));
     }
     
-    public static ProducedReference getRefinedProducedReference(Scope scope, Declaration d) {
+    public static ProducedReference getRefinedProducedReference(Scope scope, 
+    		Declaration d) {
         return refinedProducedReference(scope.getDeclaringType(d), d);
     }
 
@@ -60,9 +63,11 @@ public class RefinementCompletions {
             return null; //never happens?
         }
         else {
-            ProducedType declaringType = superType.getDeclaration().getDeclaringType(d);
+            ProducedType declaringType = 
+            		superType.getDeclaration().getDeclaringType(d);
             if (declaringType==null) return null;
-            ProducedType outerType = superType.getSupertype(declaringType.getDeclaration());
+            ProducedType outerType = 
+            		superType.getSupertype(declaringType.getDeclaration());
             return refinedProducedReference(outerType, d);
         }
     }
@@ -71,7 +76,7 @@ public class RefinementCompletions {
             Declaration d) {
         List<ProducedType> params = new ArrayList<ProducedType>();
         if (d instanceof Generic) {
-            for (TypeParameter tp: ((Generic)d).getTypeParameters()) {
+            for (TypeParameter tp: ((Generic) d).getTypeParameters()) {
                 params.add(tp.getType());
             }
         }
