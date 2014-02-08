@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_INSERT;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
@@ -18,9 +19,11 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
@@ -40,7 +43,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 public class CeylonEditorPreferencesPage 
@@ -61,6 +63,8 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor smartCaret;
     BooleanFieldEditor pasteCorrectIndent;
     BooleanFieldEditor normalizeWs;
+    BooleanFieldEditor normalizeNl;
+    BooleanFieldEditor cleanImports;
     BooleanFieldEditor autoFoldImports;
     BooleanFieldEditor autoFoldComments;
     BooleanFieldEditor closeParens;
@@ -89,6 +93,8 @@ public class CeylonEditorPreferencesPage
         smartCaret.store();
         pasteCorrectIndent.store();
         normalizeWs.store();
+        normalizeNl.store();
+        cleanImports.store();
         autoFoldImports.store();
         autoFoldComments.store();
         closeAngles.store();
@@ -116,6 +122,8 @@ public class CeylonEditorPreferencesPage
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
         normalizeWs.loadDefault();
+        normalizeNl.loadDefault();
+        cleanImports.loadDefault();
         autoFoldImports.loadDefault();
         autoFoldComments.loadDefault();
         closeAngles.loadDefault();
@@ -145,7 +153,7 @@ public class CeylonEditorPreferencesPage
         textEditorsLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                PreferencesUtil.createPreferenceDialogOn(getShell(), 
+                createPreferenceDialogOn(getShell(), 
                         "org.eclipse.ui.preferencePages.GeneralTextEditor", null, null);
             }
         });
@@ -155,7 +163,7 @@ public class CeylonEditorPreferencesPage
         colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                PreferencesUtil.createPreferenceDialogOn(getShell(), 
+                createPreferenceDialogOn(getShell(), 
                         "org.eclipse.ui.preferencePages.ColorsAndFonts", null, 
                         "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
             }
@@ -166,7 +174,7 @@ public class CeylonEditorPreferencesPage
         annotationsLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                PreferencesUtil.createPreferenceDialogOn(getShell(), 
+                createPreferenceDialogOn(getShell(), 
                         "org.eclipse.ui.editors.preferencePages.Annotations", null, null);
             }
         });
@@ -193,6 +201,7 @@ public class CeylonEditorPreferencesPage
         autocloseSection();
         bracketHighlightingSection();        
         foldingSection();
+        onSaveSection();
     }
 
     private Composite createGroup(int cols, String text) {
@@ -384,11 +393,25 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent(group));
         pasteCorrectIndent.load();
         addField(pasteCorrectIndent);
+    }
+    
+    private void onSaveSection() {
+        Composite group = createGroup(1, "On save");
         normalizeWs = new BooleanFieldEditor(NORMALIZE_WS, 
-                "Convert tabs to spaces on save (if insert spaces for tabs enabled)",
+                "Convert tabs to spaces (if insert spaces for tabs enabled)",
                 getFieldEditorParent(group));
         normalizeWs.load();
         addField(normalizeWs);
+        normalizeNl = new BooleanFieldEditor(NORMALIZE_NL, 
+                "Fix line endings",
+                getFieldEditorParent(group));
+        normalizeNl.load();
+        addField(normalizeWs);
+        cleanImports = new BooleanFieldEditor(CLEAN_IMPORTS, 
+                "Clean imports",
+                getFieldEditorParent(group));
+        cleanImports.load();
+        addField(cleanImports);
     }
     
     protected Composite getFieldEditorParent(Composite group) {

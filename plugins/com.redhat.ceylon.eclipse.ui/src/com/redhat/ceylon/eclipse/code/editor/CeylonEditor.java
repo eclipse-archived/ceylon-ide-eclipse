@@ -11,6 +11,8 @@
 
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.configCompletionPopup;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
@@ -50,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -128,6 +131,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import ceylon.language.StringBuilder;
 
+import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
@@ -1393,51 +1397,74 @@ public class CeylonEditor extends TextEditor {
     
     @Override
     public void doSave(IProgressMonitor progressMonitor) {
+        CeylonSourceViewer viewer = getCeylonSourceViewer();
+        IDocument doc = viewer.getDocument();
         IPreferenceStore prefs = EditorsUI.getPreferenceStore();
-		if (prefs.getBoolean(NORMALIZE_WS) &&
-        		prefs.getBoolean(EDITOR_SPACES_FOR_TABS)) {
-			CeylonSourceViewer viewer = getCeylonSourceViewer();
-			IDocument doc = viewer.getDocument();
-            DocumentRewriteSession rewriteSession= null;
-            if (doc instanceof IDocumentExtension4) {
-                rewriteSession = ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+		boolean normalizeWs = prefs.getBoolean(NORMALIZE_WS) &&
+        		prefs.getBoolean(EDITOR_SPACES_FOR_TABS);
+		boolean normalizeNl = prefs.getBoolean(NORMALIZE_NL);
+		boolean cleanImports = prefs.getBoolean(CLEAN_IMPORTS);
+		if (cleanImports) {
+		    try {
+                CleanImportsHandler.cleanImports(this, doc);
             }
-            
-            Point range = viewer.getSelectedRange();
-            int modelOffset = range.x;
-            int modelLength = range.y;
-            try {
-            	String text = doc.get();
-                String normalized = normalize(text, doc);
-                if (!normalized.equals(text)) {
-                    StyledText widget = viewer.getTextWidget();
-                    Point selection = widget.getSelectionRange();
-                    StyledTextContent content = widget.getContent();
-                    int offset = normalize(content.getTextRange(0, selection.x), doc).length();
-                    int length = normalize(content.getTextRange(selection.x, selection.y), doc).length();
-                    modelOffset = viewer.widgetOffset2ModelOffset(offset);
-                    modelLength = viewer.widgetOffset2ModelOffset(offset+length)-modelOffset;
-                    new ReplaceEdit(0, text.length(), normalized).apply(doc);
-                }
+		    catch (ExecutionException e) {
+                e.printStackTrace();
             }
-            catch (Exception e) {
-            	e.printStackTrace();
-            }
-            finally {
-                if (doc instanceof IDocumentExtension4) {
-                    ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
-                }
-                viewer.setSelectedRange(modelOffset, modelLength);
-            }
+		}
+        if (normalizeWs || normalizeNl) {
+            normalize(viewer, doc, normalizeWs, normalizeNl);
         }
         super.doSave(progressMonitor);
     }
 
-    private static String normalize(String text, IDocument doc) {
-        text = text.replace("\t", getDefaultIndent());
-        String delim = getDefaultLineDelimiter(doc);
-        for (String s: doc.getLegalLineDelimiters()) {
-            text = text.replace(s, delim);
+    private static void normalize(CeylonSourceViewer viewer, IDocument doc,
+            boolean normalizeWs, boolean normalizeNl) {
+        DocumentRewriteSession rewriteSession= null;
+        if (doc instanceof IDocumentExtension4) {
+            rewriteSession = ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+        }
+        
+        Point range = viewer.getSelectedRange();
+        int modelOffset = range.x;
+        int modelLength = range.y;
+        try {
+        	String text = doc.get();
+            String normalized = normalize(text, doc, normalizeWs, normalizeNl);
+            if (!normalized.equals(text)) {
+                StyledText widget = viewer.getTextWidget();
+                Point selection = widget.getSelectionRange();
+                StyledTextContent content = widget.getContent();
+                int offset = normalize(content.getTextRange(0, selection.x), 
+                        doc, normalizeWs, normalizeNl).length();
+                int length = normalize(content.getTextRange(selection.x, selection.y), 
+                        doc, normalizeWs, normalizeNl).length();
+                modelOffset = viewer.widgetOffset2ModelOffset(offset);
+                modelLength = viewer.widgetOffset2ModelOffset(offset+length)-modelOffset;
+                new ReplaceEdit(0, text.length(), normalized).apply(doc);
+            }
+        }
+        catch (Exception e) {
+        	e.printStackTrace();
+        }
+        finally {
+            if (doc instanceof IDocumentExtension4) {
+                ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
+            }
+            viewer.setSelectedRange(modelOffset, modelLength);
+        }
+    }
+
+    private static String normalize(String text, IDocument doc, 
+            boolean normalizeWs, boolean normalizeNl) {
+        if (normalizeWs) {
+            text = text.replace("\t", getDefaultIndent());
+        }
+        if (normalizeNl) {
+            String delim = getDefaultLineDelimiter(doc);
+            for (String s: doc.getLegalLineDelimiters()) {
+                text = text.replace(s, delim);
+            }
         }
         return text;
     }
