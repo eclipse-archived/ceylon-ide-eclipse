@@ -18,9 +18,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-public class ArgumentListCompletions {
+public class TypeArgumentListCompletions {
 	
-	public static void addArgumentListProposal(final int offset,
+	public static void addTypeArgumentListProposal(final int offset,
 			final CeylonParseController cpc, final Node node,
 			final Scope scope, final IDocument document,
 			final List<ICompletionProposal> result) {
@@ -48,7 +48,7 @@ public class ArgumentListCompletions {
 									that.getStopIndex()-that.getStartIndex()+1);
 				        	addInvocationProposals(offset, pref, cpc, result, 
 				        			new DeclarationWithProximity(d, 0), pr, 
-				        			scope, null, typeArgText);
+				        			scope, null, typeArgText, false);
 						} 
 						catch (BadLocationException e) {
 							e.printStackTrace();
@@ -69,7 +69,7 @@ public class ArgumentListCompletions {
 				        	addInvocationProposals(offset, pref, cpc, result, 
 				        			new DeclarationWithProximity(d, 0), 
 				        			    that.getTypeModel(), scope, 
-				        			    null, typeArgText);
+				        			    null, typeArgText, false);
 						}
 						catch (BadLocationException e) {
 							e.printStackTrace();

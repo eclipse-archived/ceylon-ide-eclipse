@@ -27,7 +27,6 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_S
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
-import static com.redhat.ceylon.eclipse.code.complete.ArgumentListCompletions.addArgumentListProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addDocLinkProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addForProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addIfExistsProposal;
@@ -70,6 +69,7 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.addNamedArgumentProposal;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.addRefinementProposal;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
+import static com.redhat.ceylon.eclipse.code.complete.TypeArgumentListCompletions.addTypeArgumentListProposal;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
@@ -523,7 +523,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         else if (node instanceof Tree.TypeArgumentList && 
         		token.getType()==LARGER_OP) {
         	if (offset==token.getStopIndex()+1) {
-        		addArgumentListProposal(offset, cpc, node, scope, document, result);
+        		addTypeArgumentListProposal(offset, cpc, node, scope, document, result);
         	}
         	else if (isMemberNameProposable(offset, node, prefix, memberOp)) {
         		addMemberNameProposals(offset, cpc, node, result);
@@ -589,7 +589,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
-                    addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                    addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope, false);
                 }
             }
         }
@@ -664,12 +664,12 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         !isQualifiedType(node) && 
                         !inDoc && noParamsFollow) {
                     for (Declaration d: overloads(dec)) {
-                        ProducedReference pr = isMember? 
+                        ProducedReference pr = isMember ? 
                                 getQualifiedProducedReference(node, d) :
                                 getRefinedProducedReference(scope, d);
                         addInvocationProposals(offset, prefix, cpc, result, 
                                 new DeclarationWithProximity(d, dwp), 
-                                pr, scope, ol, null);
+                                pr, scope, ol, null, isMember);
                     }
                 }
                 
@@ -683,7 +683,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 		addImportProposal(offset, prefix, cpc, result, dwp, dec, scope);
                 	}
                 	else {
-                		addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                		addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope, isMember);
                 	}
                 }
                 

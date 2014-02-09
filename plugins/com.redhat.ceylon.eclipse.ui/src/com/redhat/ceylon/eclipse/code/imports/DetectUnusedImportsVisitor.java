@@ -65,7 +65,7 @@ class DetectUnusedImportsVisitor extends Visitor {
         }
     }
     
-    private Declaration getAbstraction(Declaration d) {
+    private static Declaration getAbstraction(Declaration d) {
         if (isOverloadedVersion(d)) {
             return d.getContainer().getDirectMember(d.getName(), null, false);
         }
