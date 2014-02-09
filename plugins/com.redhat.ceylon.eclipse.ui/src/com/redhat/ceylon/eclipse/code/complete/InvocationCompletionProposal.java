@@ -1,9 +1,20 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendDeclarationText;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedInvocationDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedInvocationTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -11,8 +22,11 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImag
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
+import org.antlr.runtime.CommonToken;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -29,35 +43,102 @@ import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-class DeclarationCompletionProposal extends CompletionProposal {
+class InvocationCompletionProposal extends CompletionProposal {
 	
+    static void addReferenceProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration dec, Scope scope) {
+        result.add(new InvocationCompletionProposal(offset, prefix,
+                getDescriptionFor(dwp), getTextFor(dwp), 
+                dec, dec.getReference(), scope, cpc, 
+                true, true));
+    }
+    
+    static void addInvocationProposals(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, ProducedReference pr, Scope scope,
+            OccurrenceLocation ol, String typeArgs) {
+        Declaration dec = pr.getDeclaration();
+        if (dec instanceof Functional) {
+            Unit unit = cpc.getRootNode().getUnit();
+            boolean isAbstractClass = 
+                    dec instanceof Class && ((Class) dec).isAbstract();
+            Functional fd = (Functional) dec;
+            List<ParameterList> pls = fd.getParameterLists();
+            if (!pls.isEmpty()) {
+                List<Parameter> ps = pls.get(0).getParameters();
+                boolean hasDefaulted = ps.size()!=getParameters(false, ps).size();
+                if (!isAbstractClass ||
+                        ol==EXTENDS || ol==CLASS_ALIAS) {
+                    if (hasDefaulted) {
+                        result.add(new InvocationCompletionProposal(offset, prefix, 
+                                getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, false, null), 
+                                getPositionalInvocationTextFor(dwp, ol, pr, unit, false, null), dec,
+                                pr, scope, cpc, true, false));
+                    }
+                    result.add(new InvocationCompletionProposal(offset, prefix, 
+                            getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, true, typeArgs), 
+                            getPositionalInvocationTextFor(dwp, ol, pr, unit, true, typeArgs), dec,
+                            pr, scope, cpc, true, true));
+                }
+                if (!isAbstractClass &&
+                        ol!=EXTENDS && ol!=CLASS_ALIAS &&
+                        !fd.isOverloaded() && typeArgs==null) {
+                    //if there is at least one parameter, 
+                    //suggest a named argument invocation
+                    if (hasDefaulted) {
+                        result.add(new InvocationCompletionProposal(offset, prefix, 
+                                getNamedInvocationDescriptionFor(dwp, pr, unit, false), 
+                                getNamedInvocationTextFor(dwp, pr, unit, false), dec,
+                                pr, scope, cpc, true, false));
+                    }
+                    if (!ps.isEmpty()) {
+                        result.add(new InvocationCompletionProposal(offset, prefix, 
+                                getNamedInvocationDescriptionFor(dwp, pr, unit, true), 
+                                getNamedInvocationTextFor(dwp, pr, unit, true), dec,
+                                pr, scope, cpc, true, true));
+                    }
+                }
+            }
+        }
+    }
+    
 	final class NestedCompletionProposal implements ICompletionProposal, 
 	        ICompletionProposalExtension2 {
 	    private final String op;
@@ -167,51 +248,76 @@ class DeclarationCompletionProposal extends CompletionProposal {
 
 	private final CeylonParseController cpc;
 	private final Declaration declaration;
-	private final boolean addimport;
 	private final ProducedReference producedReference;
 	private Scope scope;
 	private final boolean includeDefaulted;
-
-	DeclarationCompletionProposal(int offset, String prefix, 
-			String desc, String text, boolean selectParams,
-			CeylonParseController cpc, Declaration d) {
-		this(offset, prefix, desc, text, selectParams,
-				cpc, d, false, null, null, true);
-	}
 	
-	DeclarationCompletionProposal(int offset, String prefix, 
-			String desc, String text, boolean selectParams,
-			CeylonParseController cpc, Declaration d, 
-			boolean addimport, ProducedReference producedReference,
-			Scope scope, boolean includeDefaulted) {
-		super(offset, prefix, getImageForDeclaration(d), 
+	private InvocationCompletionProposal(int offset, String prefix, 
+			String desc, String text, Declaration dec,
+			ProducedReference producedReference, Scope scope, 
+			CeylonParseController cpc,
+			boolean selectParams, boolean includeDefaulted) {
+		super(offset, prefix, getImageForDeclaration(dec), 
 				desc, text, selectParams);
 		this.cpc = cpc;
-		this.declaration = d;
-		this.addimport = addimport;
+		this.declaration = dec;
 		this.producedReference = producedReference;
 		this.scope = scope;
 		this.includeDefaulted = includeDefaulted;
 	}
 
+    private DocumentChange imports(IDocument document)
+            throws BadLocationException {
+        DocumentChange tc = new DocumentChange("imports", document);
+        tc.setEdit(new MultiTextEdit());
+        HashSet<Declaration> decs = new HashSet<Declaration>();
+        CompilationUnit cu = cpc.getRootNode();
+        importDeclaration(decs, declaration, cu);
+        if (declaration instanceof Functional) {
+            List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+            if (!pls.isEmpty()) {
+                for (Parameter p: pls.get(0).getParameters()) {
+                    MethodOrValue pm = p.getModel();
+                    if (pm instanceof Method) {
+                        for (ParameterList ppl: ((Method) pm).getParameterLists()) {
+                            for (Parameter pp: ppl.getParameters()) {
+                                importSignatureTypes(pp.getModel(), cu, decs);
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
+        applyImports(tc, decs, cu, document);
+        return tc;
+    }
+
 	@Override
 	public void apply(IDocument document) {
 		
-		if (addimport) {
-			try {
-				List<InsertEdit> ies = importEdit(cpc.getRootNode(), 
-				        Collections.singleton(declaration), 
-				        null, null, document);
-				for (InsertEdit ie: ies) {
-					ie.apply(document);
-					offset+=ie.getText().length();
-				}
-						
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+	    /*try {
+	        List<InsertEdit> ies = importEdit(cpc.getRootNode(), 
+	                Collections.singleton(declaration), 
+	                null, null, document);
+	        for (InsertEdit ie: ies) {
+	            ie.apply(document);
+	            offset+=ie.getText().length();
+	        }
+
+	    } 
+	    catch (Exception e) {
+	        e.printStackTrace();
+	    }*/
+        
+        int originalLength = document.getLength();
+        try {
+            imports(document).perform(new NullProgressMonitor());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        offset += document.getLength() - originalLength;
 		
 		super.apply(document);
 		
@@ -371,7 +477,7 @@ class DeclarationCompletionProposal extends CompletionProposal {
                 }
                 @Override
                 public void resume(LinkedModeModel model, int flags) {
-                    editor.setLinkedMode(model, DeclarationCompletionProposal.this);
+                    editor.setLinkedMode(model, InvocationCompletionProposal.this);
                 }
             });
             editor.setLinkedMode(linkedModeModel, this);
@@ -558,15 +664,195 @@ class DeclarationCompletionProposal extends CompletionProposal {
             				!((Generic) declaration).getTypeParameters().isEmpty())) {
             	int paren = text.indexOf('(');
             	if (paren<0) paren = text.indexOf('{');
-            	if (paren<0 && !getDisplayString().equals("show parameters")) { //ugh, horrible, TODO!
-            		return super.getContextInformation();
-            	}
-            	return new ParameterContextInformation(declaration, 
-            			producedReference, cpc.getRootNode().getUnit(), 
-            			pls.get(0), offset-prefix.length(),
-            			includeDefaulted);
+//            	if (paren<0 && isParameterInfo()) {
+//            		return null;
+//            	}
+//            	else {
+            	    return new ParameterContextInformation(declaration, 
+            	            producedReference, cpc.getRootNode().getUnit(), 
+            	            pls.get(0), offset-prefix.length(),
+            	            includeDefaulted);
+//            	}
             }
 		}
 		return null;
 	}
+	
+	boolean isParameterInfo() {
+	    return false;
+	}
+	
+    static final class ParameterInfo 
+            extends InvocationCompletionProposal {
+        private ParameterInfo(int offset, Declaration dec, 
+                ProducedReference producedReference,
+                Scope scope, CeylonParseController cpc) {
+            super(offset, "", "show parameters", "", dec, 
+                    producedReference, scope, cpc, 
+                    false, true);
+        }
+        @Override
+        boolean isParameterInfo() {
+            return true;
+        }
+        @Override
+        public Point getSelection(IDocument document) {
+            return null;
+        }
+        @Override
+        public void apply(IDocument document) {}
+    }
+
+    static List<IContextInformation> computeParameterContextInformation(final int offset,
+            final Tree.CompilationUnit rootNode, final ITextViewer viewer) {
+        final List<IContextInformation> infos = 
+                new ArrayList<IContextInformation>();
+        rootNode.visit(new Visitor() {
+            @Override
+            public void visit(Tree.InvocationExpression that) {
+                Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
+                if (pal!=null) {
+                    //TODO: should reuse logic for adjusting tokens
+                    //      from CeylonContentProposer!!
+                    Integer start = pal.getStartIndex();
+                    Integer stop = pal.getStopIndex();
+                    if (start!=null && stop!=null && offset>start) { 
+                        String string = "";
+                        if (offset>stop) {
+                            try {
+                                string = viewer.getDocument()
+                                        .get(stop+1, offset-stop-1);
+                            } 
+                            catch (BadLocationException e) {}
+                        }
+                        if (string.trim().isEmpty()) {
+                            Tree.MemberOrTypeExpression mte = 
+                                    (Tree.MemberOrTypeExpression) that.getPrimary();
+                            Declaration declaration = mte.getDeclaration();
+                            if (declaration instanceof Functional) {
+                                List<ParameterList> pls = 
+                                        ((Functional) declaration).getParameterLists();
+                                if (!pls.isEmpty()) {
+                                    infos.add(new ParameterContextInformation(declaration, 
+                                            mte.getTarget(), rootNode.getUnit(), 
+                                            pls.get(0), that.getStartIndex(), true));
+                                }
+                            }
+                        }
+                    }
+                }
+                super.visit(that);
+            }
+        });
+        return infos;
+    }
+    
+    static void addFakeShowParametersCompletion(final Node node, 
+            final CommonToken token, final CeylonParseController cpc, 
+            final List<ICompletionProposal> result) {
+        new Visitor() {
+            @Override
+            public void visit(Tree.InvocationExpression that) {
+                Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
+                if (pal!=null) {
+                    Integer startIndex = pal.getStartIndex();
+                    Integer startIndex2 = node.getStartIndex();
+                    if (startIndex!=null && startIndex2!=null &&
+                            startIndex.intValue()==startIndex2.intValue()) {
+                        Tree.Primary primary = that.getPrimary();
+                        if (primary instanceof Tree.MemberOrTypeExpression) {
+                            Tree.MemberOrTypeExpression mte = 
+                                    (Tree.MemberOrTypeExpression) primary;
+                            if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
+                                result.add(new ParameterInfo(token.getStartIndex(),
+                                        mte.getDeclaration(), mte.getTarget(), 
+                                        node.getScope(), cpc));
+                            }
+                        }
+                    }
+                }
+                super.visit(that);
+            }
+        }.visit(cpc.getRootNode());
+    }
+    
+    static class ParameterContextInformation 
+            implements IContextInformation {
+        
+        private final Declaration declaration;
+        private final ProducedReference producedReference;
+        private final ParameterList parameterList;
+        private final int offset;
+        private final Unit unit;
+        private final boolean includeDefaulted;
+            
+        private ParameterContextInformation(Declaration declaration,
+                ProducedReference producedReference, Unit unit,
+                ParameterList parameterList, int offset, 
+                boolean includeDefaulted) {
+            this.declaration = declaration;
+            this.producedReference = producedReference;
+            this.unit = unit;
+            this.parameterList = parameterList;
+            this.offset = offset;
+            this.includeDefaulted = includeDefaulted;
+        }
+
+        @Override
+        public String getContextDisplayString() {
+            return declaration.getName();
+        }
+        
+        @Override
+        public Image getImage() {
+            return getImageForDeclaration(declaration);
+        }
+        
+        @Override
+        public String getInformationDisplayString() {
+            List<Parameter> ps = getParameters(includeDefaulted, 
+                    parameterList.getParameters());
+            if (ps.isEmpty()) {
+                return "no parameters";
+            }
+            StringBuilder sb = new StringBuilder();
+            for (Parameter p: ps) {
+                if (includeDefaulted || 
+                        !p.isDefaulted() ||
+                        (p==ps.get(ps.size()-1) || 
+                                unit.isIterableParameterType(p.getType()))) {
+                    if (producedReference==null) {
+                        sb.append(p.getName());
+                    }
+                    else {
+                        ProducedTypedReference pr = producedReference.getTypedParameter(p);
+                        appendDeclarationText(p.getModel(), pr, unit, sb);
+                    }
+                    sb.append(", ");
+                }
+            }
+            if (sb.length()>0) {
+                sb.setLength(sb.length()-2);
+            }
+            return sb.toString();
+        }
+        
+        @Override
+        public boolean equals(Object that) {
+            if (that instanceof ParameterContextInformation) {
+                return ((ParameterContextInformation) that).declaration
+                        .equals(declaration);
+            }
+            else {
+                return false;
+            }
+            
+        }
+
+        int getOffset() {
+            return offset;
+        }
+        
+    }
+    
 }

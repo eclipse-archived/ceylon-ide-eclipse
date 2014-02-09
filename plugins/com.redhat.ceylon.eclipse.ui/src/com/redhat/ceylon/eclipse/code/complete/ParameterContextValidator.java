@@ -15,10 +15,12 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 
+import com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.ParameterContextInformation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 
-class ParameterContextValidator implements IContextInformationValidator, IContextInformationPresenter {
+class ParameterContextValidator 
+        implements IContextInformationValidator, IContextInformationPresenter {
 	
 	private int position;
 	private IContextInformation information;
@@ -26,20 +28,28 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 	private ITextViewer viewer;
     private CeylonEditor editor;
 	
-	public ParameterContextValidator(CeylonEditor editor) {
+	ParameterContextValidator(CeylonEditor editor) {
         this.editor = editor;
     }
 
     @Override
-	public boolean updatePresentation(int brokenPosition, TextPresentation presentation) {
+	public boolean updatePresentation(int brokenPosition, 
+	        TextPresentation presentation) {
 
 		int currentParameter = -1;
 		int position = ((CeylonSourceViewer) viewer).getSelectedRange().x;
+        IDocument doc = viewer.getDocument();
 		try {
-			int paren = viewer.getDocument().get(this.position, position-this.position).indexOf('(');
-			if (paren<0) paren = viewer.getDocument().get(this.position, position-this.position).indexOf('{');
-			if (paren<0) this.position = viewer.getDocument().get(0, position).lastIndexOf('(');
-			currentParameter = getCharCount(viewer.getDocument(), 
+            int paren = doc.get(this.position, position-this.position)
+                    .indexOf('(');
+			if (paren<0) {
+			    paren = doc.get(this.position, position-this.position)
+			            .indexOf('{');
+			}
+			if (paren<0) {
+			    this.position = doc.get(0, position).lastIndexOf('(');
+			}
+			currentParameter = getCharCount(doc, 
 					this.position+paren+1, position, ",;", "", true);
 		} 
 		catch (BadLocationException x) {
@@ -58,27 +68,34 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 		int[] commas = computeCommaPositions(s);
 
 		if (commas.length - 2 < currentParameter) {
-			presentation.addStyleRange(new StyleRange(0, s.length(), null, null, SWT.NORMAL));
+			presentation.addStyleRange(new StyleRange(0, s.length(), 
+			        null, null, SWT.NORMAL));
 			return true;
 		}
 
 		int start = commas[currentParameter] + 1;
 		int end = commas[currentParameter + 1];
-		if (start > 0)
-			presentation.addStyleRange(new StyleRange(0, start, null, null, SWT.NORMAL));
-
-		if (end > start)
-			presentation.addStyleRange(new StyleRange(start, end - start, null, null, SWT.BOLD));
-
-		if (end < s.length())
-			presentation.addStyleRange(new StyleRange(end, s.length() - end, null, null, SWT.NORMAL));
-
+		if (start > 0) {
+			presentation.addStyleRange(new StyleRange(0, start, 
+			        null, null, SWT.NORMAL));
+		}
+		if (end > start) {
+			presentation.addStyleRange(new StyleRange(start, end - start, 
+			        null, null, SWT.BOLD));
+		}
+		if (end < s.length()) {
+			presentation.addStyleRange(new StyleRange(end, s.length() - end, 
+			        null, null, SWT.NORMAL));
+		}
 		return true;
 	}
 
 	@Override
-	public void install(IContextInformation info, ITextViewer viewer, int documentPosition) {
-		this.position = ((ParameterContextInformation) info).offset;
+	public void install(IContextInformation info, ITextViewer viewer, 
+	        int documentPosition) {
+		ParameterContextInformation pci = 
+		        (InvocationCompletionProposal.ParameterContextInformation) info;
+        this.position = pci.getOffset();
 		this.viewer = viewer;
 		this.information = info;
 		this.currentParameter= -1;
@@ -88,24 +105,28 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 	public boolean isContextInformationValid(int brokenPosition) {
 	    if (editor.isInLinkedMode()) {
 	        Object linkedModeOwner = editor.getLinkedModeOwner();
-            if (linkedModeOwner instanceof DeclarationCompletionProposal) {
+            if (linkedModeOwner instanceof InvocationCompletionProposal) {
 	            return true;
 	        }
 	    }
 		try {
-			int position = ((CeylonSourceViewer) viewer).getSelectedRange().x;
+			int position = 
+			        ((CeylonSourceViewer) viewer).getSelectedRange().x;
 			if (position < this.position) {
 				return false;
 			}
 			
 			IDocument document = viewer.getDocument();
-			IRegion line = document.getLineInformationOfOffset(this.position);
+			IRegion line = 
+			        document.getLineInformationOfOffset(this.position);
 			
-			if (position < line.getOffset() || position >= document.getLength()) {
+			if (position < line.getOffset() || 
+			        position >= document.getLength()) {
 				return false;
 			}
 			
-			return getCharCount(document, this.position, position, "{(<", "{)>", false)>=1;
+			return getCharCount(document, this.position, position, 
+			        "{(<", "{)>", false) >= 1;
 
 		} 
 		catch (BadLocationException x) {
@@ -124,10 +145,14 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 		return false;
 	}*/
 	
-	static int getCharCount(IDocument document, final int start, final int end, 
-			String increments, String decrements, boolean considerNesting) throws BadLocationException {
+	private static int getCharCount(IDocument document, 
+	        final int start, final int end, 
+			String increments, String decrements, 
+			boolean considerNesting) 
+			        throws BadLocationException {
 
-		Assert.isTrue((increments.length() != 0 || decrements.length() != 0) && !increments.equals(decrements));
+		Assert.isTrue((increments.length() != 0 || decrements.length() != 0) 
+		        && !increments.equals(decrements));
 
 		final int NONE= 0;
 		final int BRACKET= 1;
@@ -149,13 +174,16 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 						if (next == '*') {
 							// a comment starts, advance to the comment end
 							offset= getCommentEnd(document, offset + 1, end);
-						} else if (next == '/') {
+						}
+						else if (next == '/') {
 							// '//'-comment: nothing to do anymore on this line
 							int nextLine= document.getLineOfOffset(offset) + 1;
-							if (nextLine == document.getNumberOfLines())
+							if (nextLine == document.getNumberOfLines()) {
 								offset= end;
-							else
+							}
+							else {
 								offset= document.getLineOffset(nextLine);
+							}
 						}
 					}
 					break;
@@ -184,9 +212,11 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 					//$FALL-THROUGH$
 				case ']':
 					if (considerNesting) {
-						if (nestingMode == BRACKET)
-							if (--nestingLevel == 0)
+						if (nestingMode == BRACKET) {
+							if (--nestingLevel == 0) {
 								nestingMode= NONE;
+							}
+						}
 						break;
 					}
 					//$FALL-THROUGH$
@@ -206,9 +236,11 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 					//$FALL-THROUGH$
 				case ')':
 					if (considerNesting) {
-						if (nestingMode == PAREN)
-							if (--nestingLevel == 0)
+						if (nestingMode == PAREN) {
+							if (--nestingLevel == 0) {
 								nestingMode= NONE;
+							}
+						}
 						break;
 					}
 					//$FALL-THROUGH$
@@ -228,15 +260,18 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 					//$FALL-THROUGH$
 				case '}':
 					if (considerNesting) {
-						if (nestingMode == BRACE)
-							if (--nestingLevel == 0)
+						if (nestingMode == BRACE) {
+							if (--nestingLevel == 0) {
 								nestingMode= NONE;
+							}
+						}
 						break;
 					}
 					//$FALL-THROUGH$
 				case '<':
 					if (considerNesting) {
-						if (nestingMode == ANGLE || nestingMode == NONE /*&& checkGenericsHeuristic(document, offset - 1, start - 1)*/) {
+						if (nestingMode == ANGLE || nestingMode == NONE 
+						        /*&& checkGenericsHeuristic(document, offset - 1, start - 1)*/) {
 							nestingMode= ANGLE;
 							nestingLevel++;
 						}
@@ -245,15 +280,18 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 					//$FALL-THROUGH$
 				case '>':
 					if (considerNesting) {
-						if (nestingMode == ANGLE)
-							if (--nestingLevel == 0)
+						if (nestingMode == ANGLE) {
+							if (--nestingLevel == 0) {
 								nestingMode= NONE;
+							}
+						}
 						break;
 					}
 					//$FALL-THROUGH$
 				default:
-					if (nestingLevel != 0)
+					if (nestingLevel != 0) {
 						continue;
+					}
 
 					if (increments.indexOf(curr) >= 0) {
 						++ charCount;
@@ -268,10 +306,14 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 		return charCount;
 	}
 
-	static int findCharCount(int count, IDocument document, final int start, final int end, 
-			String increments, String decrements, boolean considerNesting) throws BadLocationException {
+	static int findCharCount(int count, IDocument document, 
+	        final int start, final int end, 
+			String increments, String decrements, 
+			boolean considerNesting) 
+			        throws BadLocationException {
 
-		Assert.isTrue((increments.length() != 0 || decrements.length() != 0) && !increments.equals(decrements));
+		Assert.isTrue((increments.length() != 0 || decrements.length() != 0) 
+		        && !increments.equals(decrements));
 
 		final int NONE= 0;
 		final int BRACKET= 1;
@@ -299,13 +341,16 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 						if (next == '*') {
 							// a comment starts, advance to the comment end
 							offset= getCommentEnd(document, offset + 1, end);
-						} else if (next == '/') {
+						}
+						else if (next == '/') {
 							// '//'-comment: nothing to do anymore on this line
 							int nextLine= document.getLineOfOffset(offset) + 1;
-							if (nextLine == document.getNumberOfLines())
+							if (nextLine == document.getNumberOfLines()) {
 								offset= end;
-							else
+							}
+							else {
 								offset= document.getLineOffset(nextLine);
+							}
 						}
 					}
 					break;
@@ -335,8 +380,9 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 				case ']':
 					if (considerNesting) {
 						if (nestingMode == BRACKET)
-							if (--nestingLevel == 0)
+							if (--nestingLevel == 0) {
 								nestingMode= NONE;
+							}
 						break;
 					}
 					//$FALL-THROUGH$
@@ -359,9 +405,11 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 						if (nestingMode == 0) {
 							return offset-1;
 						}
-						if (nestingMode == PAREN)
-							if (--nestingLevel == 0)
+						if (nestingMode == PAREN) {
+							if (--nestingLevel == 0) {
 								nestingMode= NONE;
+							}
+						}
 						break;
 					}
 					//$FALL-THROUGH$
@@ -381,9 +429,11 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 					//$FALL-THROUGH$
 				case '}':
 					if (considerNesting) {
-						if (nestingMode == BRACE)
-							if (--nestingLevel == 0)
+						if (nestingMode == BRACE) {
+							if (--nestingLevel == 0) {
 								nestingMode= NONE;
+							}
+						}
 						break;
 					}
 					//$FALL-THROUGH$
@@ -402,9 +452,11 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 				            return offset-1;
 				        }
 				        if (considerNesting) {
-				            if (nestingMode == ANGLE)
-				                if (--nestingLevel == 0)
+				            if (nestingMode == ANGLE) {
+				                if (--nestingLevel == 0) {
 				                    nestingMode= NONE;
+				                }
+				            }
 				            break;
 				        }
 				    }
@@ -424,7 +476,8 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 
 		return -1;
 	}
-	static int[] computeCommaPositions(String code) {
+	
+	private static int[] computeCommaPositions(String code) {
 		final int length= code.length();
 	    int pos= 0;
 	    int angleLevel= 0;
@@ -434,8 +487,9 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 			char ch= code.charAt(pos);
 			switch (ch) {
 	            case ',':
-	            	if (angleLevel == 0)
+	            	if (angleLevel == 0) {
 	            		positions.add(new Integer(pos));
+	            	}
 		            break;
 	            case '<':
 	            case '(':
@@ -455,18 +509,21 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 	            default:
 	            	break;
             }
-			if (pos != -1)
+			if (pos != -1) {
 				pos++;
+			}
 		}
 		positions.add(new Integer(length));
 
 		int[] fields= new int[positions.size()];
-		for (int i= 0; i < fields.length; i++)
+		for (int i= 0; i < fields.length; i++) {
 	        fields[i]= positions.get(i).intValue();
+		}
 	    return fields;
     }
 
-	private static int getCommentEnd(IDocument d, int pos, int end) throws BadLocationException {
+	private static int getCommentEnd(IDocument d, int pos, int end) 
+	        throws BadLocationException {
 		while (pos < end) {
 			char curr= d.getChar(pos);
 			pos++;
@@ -479,17 +536,20 @@ class ParameterContextValidator implements IContextInformationValidator, IContex
 		return end;
 	}
 
-	private static int getStringEnd(IDocument d, int pos, int end, char ch) throws BadLocationException {
+	private static int getStringEnd(IDocument d, int pos, int end, char ch) 
+	        throws BadLocationException {
 		while (pos < end) {
 			char curr= d.getChar(pos);
 			pos++;
 			if (curr == '\\') {
 				// ignore escaped characters
 				pos++;
-			} else if (curr == ch) {
+			}
+			else if (curr == ch) {
 				return pos;
 			}
 		}
 		return end;
 	}
+	
 }
