@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
@@ -37,9 +39,11 @@ class ParameterContextValidator
         
         String s = information.getInformationDisplayString();
         presentation.clear();
+        
         if (this.position==-1) {
             presentation.addStyleRange(new StyleRange(0, s.length(), 
                     null, null, SWT.BOLD));
+            addItalics(presentation, s);
             return true;
         }
         
@@ -76,6 +80,7 @@ class ParameterContextValidator
 		if (commas.length - 2 < currentParameter) {
 			presentation.addStyleRange(new StyleRange(0, s.length(), 
 			        null, null, SWT.NORMAL));
+			addItalics(presentation, s);
 			return true;
 		}
 
@@ -94,8 +99,27 @@ class ParameterContextValidator
 			        null, null, SWT.NORMAL));
 		}
 		
+        addItalics(presentation, s);
+		
 		return true;
 	}
+
+    private void addItalics(TextPresentation presentation, String s) {
+        Matcher m2 = p2.matcher(s);
+        while (m2.find()) {
+            presentation.mergeStyleRange(new StyleRange(m2.start(), m2.end()-m2.start(), 
+                    null, null, SWT.ITALIC));
+        }
+//      Matcher m1 = p1.matcher(s);
+//      while (m1.find()) {
+//          presentation.mergeStyleRange(new StyleRange(m1.start(), m1.end()-m1.start()+1, 
+//                  typeColor, null));
+//      }
+    }
+
+//    final Pattern p1 = Pattern.compile("\\b\\p{javaUpperCase}\\w*\\b");
+    final Pattern p2 = Pattern.compile("\\b\\p{javaLowerCase}\\w*\\b");
+//    final Color typeColor = color(getCurrentTheme().getColorRegistry(), TYPES);
 
 	@Override
 	public void install(IContextInformation info, ITextViewer viewer, 
