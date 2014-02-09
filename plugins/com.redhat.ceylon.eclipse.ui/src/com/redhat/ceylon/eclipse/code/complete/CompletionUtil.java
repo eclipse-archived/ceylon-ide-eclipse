@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
@@ -9,10 +10,13 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -153,5 +157,34 @@ public class CompletionUtil {
 	    }
 	    return line;
 	}
+
+    public static boolean isInBounds(List<ProducedType> upperBounds, ProducedType t) {
+    	boolean ok = true;
+    	for (ProducedType ub: upperBounds) {
+    		if (!t.isSubtypeOf(ub) &&
+    				!(ub.containsTypeParameters() &&
+    				        t.getDeclaration().inherits(ub.getDeclaration()))) {
+    			ok = false;
+    			break;
+    		}
+    	}
+    	return ok;
+    }
+
+    public static List<DeclarationWithProximity> getSortedProposedValues(Scope scope, Unit unit) {
+    	List<DeclarationWithProximity> results = new ArrayList<DeclarationWithProximity>(
+    			scope.getMatchingDeclarations(unit, "", 0).values());
+    	Collections.sort(results, new Comparator<DeclarationWithProximity>() {
+    		public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
+    			if (x.getProximity()<y.getProximity()) return -1;
+    			if (x.getProximity()>y.getProximity()) return 1;
+    			int c = x.getDeclaration().getName().compareTo(y.getDeclaration().getName());
+    			if (c!=0) return c;  
+    			return x.getDeclaration().getQualifiedNameString()
+    					.compareTo(y.getDeclaration().getQualifiedNameString());
+    		}
+    	});
+    	return results;
+    }
 
 }

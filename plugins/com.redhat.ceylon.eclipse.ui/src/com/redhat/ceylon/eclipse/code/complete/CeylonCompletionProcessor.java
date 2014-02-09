@@ -653,8 +653,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 
                 if (isParameterOfNamedArgInvocation(scope, dwp)) {
                     if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
-                        addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec);
-                        addInlineFunctionProposal(offset, dec, node, prefix, cpc, doc, result);
+                        addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                        addInlineFunctionProposal(offset, dec, scope, node, prefix, cpc, doc, result);
                     }
                 }
                 

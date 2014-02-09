@@ -10,6 +10,8 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositio
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
@@ -21,8 +23,6 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -148,8 +148,8 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    private final boolean basic;
 	    private final Declaration d;
 
-	    NestedCompletionProposal(Declaration dec, int loc, int index, boolean basic,
-	            String op) {
+	    NestedCompletionProposal(Declaration dec, int loc, int index, 
+	            boolean basic, String op) {
 		    this.op = op;
 		    this.loc = loc;
 		    this.index = index;
@@ -163,6 +163,10 @@ class InvocationCompletionProposal extends CompletionProposal {
 
 	    @Override
 	    public void apply(IDocument document) {
+	        //the following awfulness is necessary because the
+	        //insertion point may have changed (and even its
+	        //text may have changed, since the proposal was
+	        //instantiated).
 	    	try {
 	    		IRegion li = document.getLineInformationOfOffset(loc);
 	    		int endOfLine = li.getOffset() + li.getLength();
@@ -235,14 +239,13 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    }
 
         private String getText() {
-            String str = op+d.getName();
+            StringBuilder sb = new StringBuilder()
+                    .append(op).append(d.getName());
             if (d instanceof Class && !basic) {
-                StringBuilder sb = new StringBuilder();
                 appendPositionalArgs(d, d.getReference(), 
                         cpc.getRootNode().getUnit(), sb, false);
-                str += sb;
             }
-            return str;
+            return sb.toString();
         }
 
 	    @Override
@@ -269,7 +272,6 @@ class InvocationCompletionProposal extends CompletionProposal {
         public void apply(ITextViewer viewer, char trigger, int stateMask,
                 int offset) {
 			apply(viewer.getDocument());
-	        
         }
 
 		@Override
@@ -589,9 +591,10 @@ class InvocationCompletionProposal extends CompletionProposal {
 		ProducedType type = producedReference.getTypedParameter(p)
 				.getType();
 		if (type==null) return;
-		Unit unit = p.getDeclaration().getUnit();
+		Unit unit = cpc.getRootNode().getUnit();
 		TypeDeclaration td = type.getDeclaration();
-		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
+		for (DeclarationWithProximity dwp: 
+		        getSortedProposedValues(scope, unit)) {
 		    if (dwp.isUnimported()) {
 		        //don't propose unimported stuff b/c adding
 		        //imports drops us out of linked mode and
@@ -599,15 +602,16 @@ class InvocationCompletionProposal extends CompletionProposal {
 		        continue;
 		    }
 			Declaration d = dwp.getDeclaration();
-			if (d instanceof Value) {
+			final String name = d.getName();
+            if (d instanceof Value) {
 				if (d.getUnit().getPackage().getNameAsString()
 						.equals(Module.LANGUAGE_MODULE_NAME)) {
-					if (d.getName().equals("process") ||
-							d.getName().equals("language") ||
-							d.getName().equals("emptyIterator") ||
-							d.getName().equals("infinity") ||
-							d.getName().endsWith("IntegerValue") ||
-							d.getName().equals("finished")) {
+					if (name.equals("process") ||
+							name.equals("language") ||
+							name.equals("emptyIterator") ||
+							name.equals("infinity") ||
+							name.endsWith("IntegerValue") ||
+							name.equals("finished")) {
 						continue;
 					}
 				}
@@ -628,10 +632,10 @@ class InvocationCompletionProposal extends CompletionProposal {
 			        !((Class) d).isAbstract() && !d.isAnnotation()) {
                 if (d.getUnit().getPackage().getNameAsString()
                         .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    if (d.getName().equals("String") ||
-                            d.getName().equals("Integer") ||
-                            d.getName().equals("Float") ||
-                            d.getName().equals("Character")) {
+                    if (name.equals("String") ||
+                            name.equals("Integer") ||
+                            name.equals("Float") ||
+                            name.equals("Character")) {
                         continue;
                     }
                 }
@@ -639,6 +643,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 if (ct!=null && !ct.isNothing() &&
                     ((td instanceof TypeParameter) && 
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
+                            ct.getDeclaration().equals(type.getDeclaration()) ||
                             ct.isSubtypeOf(type))) {
                     boolean isIterArg = namedInvocation &&
                             index==params.size()-1 && 
@@ -655,7 +660,8 @@ class InvocationCompletionProposal extends CompletionProposal {
 			final int loc, int first, List<ICompletionProposal> props, 
 			final int index) {
 		TypeParameter p = typeParams.get(index);
-		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
+		Unit unit = cpc.getRootNode().getUnit();
+		for (DeclarationWithProximity dwp: getSortedProposedValues(scope, unit)) {
 			Declaration d = dwp.getDeclaration();
 			if (d instanceof TypeDeclaration && !dwp.isUnimported()) {
 				TypeDeclaration td = (TypeDeclaration) d;
@@ -676,42 +682,13 @@ class InvocationCompletionProposal extends CompletionProposal {
 							continue;
 						}
 					}
-					if (isInBounds(p.getSatisfiedTypes(), t)) {
+					if (CompletionUtil.isInBounds(p.getSatisfiedTypes(), t)) {
 						props.add(new NestedCompletionProposal(d, loc, index, 
 						        true, ""));
 					}
 				}
 			}
 		}
-	}
-
-	public boolean isInBounds(List<ProducedType> upperBounds, ProducedType t) {
-		boolean ok = true;
-		for (ProducedType ub: upperBounds) {
-			if (!t.isSubtypeOf(ub) &&
-					!(ub.containsTypeParameters() &&
-					        t.getDeclaration().inherits(ub.getDeclaration()))) {
-				ok = false;
-				break;
-			}
-		}
-		return ok;
-	}
-
-	public List<DeclarationWithProximity> getSortedProposedValues() {
-		List<DeclarationWithProximity> results = new ArrayList<DeclarationWithProximity>(
-				scope.getMatchingDeclarations(cpc.getRootNode().getUnit(), "", 0).values());
-		Collections.sort(results, new Comparator<DeclarationWithProximity>() {
-			public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
-				if (x.getProximity()<y.getProximity()) return -1;
-				if (x.getProximity()>y.getProximity()) return 1;
-				int c = x.getDeclaration().getName().compareTo(y.getDeclaration().getName());
-				if (c!=0) return c;  
-				return x.getDeclaration().getQualifiedNameString()
-						.compareTo(y.getDeclaration().getQualifiedNameString());
-			}
-		});
-		return results;
 	}
 
 	@Override
