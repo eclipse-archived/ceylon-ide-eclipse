@@ -363,9 +363,8 @@ public class CodeCompletions {
         if (plists==null || plists.isEmpty()) {
             return Collections.<Parameter>emptyList();
         }
-        List<Parameter> pl = plists.get(0).getParameters();
-        return CompletionUtil.getParameters(includeDefaults, 
-                namedInvocation, pl);
+        return CompletionUtil.getParameters(plists.get(0), 
+                includeDefaults, namedInvocation);
     }
 
 	private static void appendNamedArgs(Declaration d, ProducedReference pr, 
