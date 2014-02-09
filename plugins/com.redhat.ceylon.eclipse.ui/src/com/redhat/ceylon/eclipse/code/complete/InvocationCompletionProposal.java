@@ -761,10 +761,11 @@ class InvocationCompletionProposal extends CompletionProposal {
             extends InvocationCompletionProposal {
         private ParameterInfo(int offset, Declaration dec, 
                 ProducedReference producedReference,
-                Scope scope, CeylonParseController cpc) {
+                Scope scope, CeylonParseController cpc, 
+                boolean namedInvocation) {
             super(offset, "", "show parameters", "", dec, 
                     producedReference, scope, cpc, true, 
-                    true, false);
+                    true, namedInvocation);
         }
         @Override
         boolean isParameterInfo() {
@@ -819,7 +820,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                     infos.add(new ParameterContextInformation(declaration, 
                                             mte.getTarget(), rootNode.getUnit(), 
                                             pls.get(0), al.getStartIndex(), 
-                                            true, false, false));
+                                            true, al instanceof Tree.NamedArgumentList, false));
                                 }
                             }
                         }
@@ -853,7 +854,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                             if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
                                 result.add(new ParameterInfo(al.getStartIndex(),
                                         mte.getDeclaration(), mte.getTarget(), 
-                                        node.getScope(), cpc));
+                                        node.getScope(), cpc, 
+                                        al instanceof Tree.NamedArgumentList));
                             }
                         }
                     }
@@ -928,10 +930,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                             appendParameter(sb, pr, p, unit);
                         }
                     }
-                    sb.append(", ");
+                    sb.append(namedInvocation ? " = ... ; " : ", ");
                 }
             }
-            if (sb.length()>0) {
+            if (!namedInvocation && sb.length()>0) {
                 sb.setLength(sb.length()-2);
             }
             return sb.toString();
