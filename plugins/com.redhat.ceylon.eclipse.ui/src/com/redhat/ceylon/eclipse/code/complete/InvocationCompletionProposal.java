@@ -784,12 +784,15 @@ class InvocationCompletionProposal extends CompletionProposal {
         rootNode.visit(new Visitor() {
             @Override
             public void visit(Tree.InvocationExpression that) {
-                Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
-                if (pal!=null) {
+                Tree.ArgumentList al = that.getPositionalArgumentList();
+                if (al==null) {
+                    al = that.getNamedArgumentList();
+                }
+                if (al!=null) {
                     //TODO: should reuse logic for adjusting tokens
                     //      from CeylonContentProposer!!
-                    Integer start = pal.getStartIndex();
-                    Integer stop = pal.getStopIndex();
+                    Integer start = al.getStartIndex();
+                    Integer stop = al.getStopIndex();
                     if (start!=null && stop!=null && offset>start) { 
                         String string = "";
                         if (offset>stop) {
@@ -814,7 +817,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                     infos.clear();
                                     infos.add(new ParameterContextInformation(declaration, 
                                             mte.getTarget(), rootNode.getUnit(), 
-                                            pls.get(0), pal.getStartIndex(), 
+                                            pls.get(0), al.getStartIndex(), 
                                             true, false, false));
                                 }
                             }
@@ -833,9 +836,12 @@ class InvocationCompletionProposal extends CompletionProposal {
         new Visitor() {
             @Override
             public void visit(Tree.InvocationExpression that) {
-                Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
-                if (pal!=null) {
-                    Integer startIndex = pal.getStartIndex();
+                Tree.ArgumentList al = that.getPositionalArgumentList();
+                if (al==null) {
+                    al = that.getNamedArgumentList();
+                }
+                if (al!=null) {
+                    Integer startIndex = al.getStartIndex();
                     Integer startIndex2 = node.getStartIndex();
                     if (startIndex!=null && startIndex2!=null &&
                             startIndex.intValue()==startIndex2.intValue()) {
@@ -844,7 +850,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                             Tree.MemberOrTypeExpression mte = 
                                     (Tree.MemberOrTypeExpression) primary;
                             if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
-                                result.add(new ParameterInfo(pal.getStartIndex(),
+                                result.add(new ParameterInfo(al.getStartIndex(),
                                         mte.getDeclaration(), mte.getTarget(), 
                                         node.getScope(), cpc));
                             }
