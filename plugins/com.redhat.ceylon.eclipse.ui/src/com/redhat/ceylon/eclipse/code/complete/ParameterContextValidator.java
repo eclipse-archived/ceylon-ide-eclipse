@@ -46,11 +46,11 @@ class ParameterContextValidator
 			    paren = doc.get(this.position, position-this.position)
 			            .indexOf('{');
 			}
-			if (paren<0) {
+			if (paren<0) { //TODO: is this really useful?
 			    this.position = doc.get(0, position).lastIndexOf('(');
 			}
 			currentParameter = getCharCount(doc, 
-					this.position+paren+1, position, ",;", "", true);
+					this.position+paren+1, position, ",", "", true);
 		} 
 		catch (BadLocationException x) {
 			return false;
@@ -127,9 +127,9 @@ class ParameterContextValidator
 			        position >= document.getLength()) {
 				return false;
 			}
-			
+//			document.get(this.position, position-this.position)
 			return getCharCount(document, this.position, position, 
-			        "{(<", "{)>", false) >= 1;
+			        "{(", "{)", false) >= 0;
 
 		} 
 		catch (BadLocationException x) {
@@ -148,6 +148,12 @@ class ParameterContextValidator
 		return false;
 	}*/
 	
+    private static final int NONE = 0;
+    private static final int BRACKET = 1;
+    private static final int BRACE = 2;
+    private static final int PAREN = 3;
+    private static final int ANGLE = 4;
+
 	private static int getCharCount(IDocument document, 
 	        final int start, final int end, 
 			String increments, String decrements, 
@@ -157,23 +163,18 @@ class ParameterContextValidator
 		Assert.isTrue((increments.length() != 0 || decrements.length() != 0) 
 		        && !increments.equals(decrements));
 
-		final int NONE= 0;
-		final int BRACKET= 1;
-		final int BRACE= 2;
-		final int PAREN= 3;
-		final int ANGLE= 4;
+		int nestingMode = NONE;
+		int nestingLevel = 0;
 
-		int nestingMode= NONE;
-		int nestingLevel= 0;
-
-		int charCount= 0;
-		int offset= start;
+		int charCount = 0;
+		int offset = start;
+		char prev = ' ';
 		while (offset < end) {
-			char curr= document.getChar(offset++);
+			char curr = document.getChar(offset++);
 			switch (curr) {
 				case '/':
 					if (offset < end) {
-						char next= document.getChar(offset);
+						char next = document.getChar(offset);
 						if (next == '*') {
 							// a comment starts, advance to the comment end
 							offset= getCommentEnd(document, offset + 1, end);
@@ -282,7 +283,8 @@ class ParameterContextValidator
 					}
 					//$FALL-THROUGH$
 				case '>':
-					if (considerNesting) {
+					if (considerNesting 
+					        && prev != '=') { //check that it's not a fat arrow
 						if (nestingMode == ANGLE) {
 							if (--nestingLevel == 0) {
 								nestingMode= NONE;
@@ -292,16 +294,13 @@ class ParameterContextValidator
 					}
 					//$FALL-THROUGH$
 				default:
-					if (nestingLevel != 0) {
-						continue;
-					}
-
-					if (increments.indexOf(curr) >= 0) {
-						++ charCount;
-					}
-
-					if (decrements.indexOf(curr) >= 0) {
-						-- charCount;
+					if (nestingLevel==0) {
+					    if (increments.indexOf(curr) >= 0) {
+					        ++ charCount;
+					    }
+					    if (decrements.indexOf(curr) >= 0) {
+					        -- charCount;
+					    }
 					}
 			}
 		}

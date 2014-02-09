@@ -127,7 +127,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonCompletionProcessor implements IContentAssistProcessor {
 	
-    private static final char[] CONTEXT_INFO_ACTIVATION_CHARS = new char[] { ',', '(' };
+    private static final char[] CONTEXT_INFO_ACTIVATION_CHARS = ",(;{".toCharArray();
     
 	private static final IContextInformation[] NO_CONTEXTS = new IContextInformation[0];
 	static ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
@@ -212,8 +212,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     public IContextInformationValidator getContextInformationValidator() {
-		if (validator == null) {
-			validator= new ParameterContextValidator(editor);
+		if (validator==null) {
+			validator = new ParameterContextValidator(editor);
 		}
         return validator;
     }
@@ -544,6 +544,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 	    	int type = token.getType();
 			return type==LPAREN || type==COMMA;
 	    }
+	    else if (node instanceof Tree.NamedArgumentList) {
+            int type = token.getType();
+            return type==LBRACE || type==SEMICOLON;
+        }
 	    else {
 	    	return false;
 	    }
