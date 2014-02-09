@@ -83,17 +83,18 @@ class InvocationCompletionProposal extends CompletionProposal {
 	
     static void addReferenceProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration dec, Scope scope) {
+            DeclarationWithProximity dwp, Declaration dec, Scope scope,
+            boolean isMember) {
         result.add(new InvocationCompletionProposal(offset, prefix,
                 getDescriptionFor(dwp), getTextFor(dwp), 
                 dec, dec.getReference(), scope, cpc, 
-                true, false, false));
+                true, false, false, isMember));
     }
     
     static void addInvocationProposals(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, ProducedReference pr, Scope scope,
-            OccurrenceLocation ol, String typeArgs) {
+            OccurrenceLocation ol, String typeArgs, boolean isMember) {
         Declaration dec = pr.getDeclaration();
         if (dec instanceof Functional) {
             Unit unit = cpc.getRootNode().getUnit();
@@ -110,12 +111,12 @@ class InvocationCompletionProposal extends CompletionProposal {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, false, null), 
                                 getPositionalInvocationTextFor(dwp, ol, pr, unit, false, null), dec,
-                                pr, scope, cpc, false, true, false));
+                                pr, scope, cpc, false, true, false, isMember));
                     }
                     result.add(new InvocationCompletionProposal(offset, prefix, 
                             getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, true, typeArgs), 
                             getPositionalInvocationTextFor(dwp, ol, pr, unit, true, typeArgs), dec,
-                            pr, scope, cpc, true, true, false));
+                            pr, scope, cpc, true, true, false, isMember));
                 }
                 if (!isAbstractClass &&
                         ol!=EXTENDS && ol!=CLASS_ALIAS &&
@@ -126,13 +127,13 @@ class InvocationCompletionProposal extends CompletionProposal {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getNamedInvocationDescriptionFor(dwp, pr, unit, false), 
                                 getNamedInvocationTextFor(dwp, pr, unit, false), dec,
-                                pr, scope, cpc, false, false, true));
+                                pr, scope, cpc, false, false, true, isMember));
                     }
                     if (!ps.isEmpty()) {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getNamedInvocationDescriptionFor(dwp, pr, unit, true), 
                                 getNamedInvocationTextFor(dwp, pr, unit, true), dec,
-                                pr, scope, cpc, true, false, true));
+                                pr, scope, cpc, true, false, true, isMember));
                     }
                 }
             }
@@ -310,12 +311,14 @@ class InvocationCompletionProposal extends CompletionProposal {
 	private final boolean includeDefaulted;
 	private final boolean namedInvocation;
     private final boolean positionalInvocation;
+    private final boolean qualified;
 	
 	private InvocationCompletionProposal(int offset, String prefix, 
 			String desc, String text, Declaration dec,
 			ProducedReference producedReference, Scope scope, 
 			CeylonParseController cpc, boolean includeDefaulted,
-			boolean positionalInvocation, boolean namedInvocation) {
+			boolean positionalInvocation, boolean namedInvocation, 
+			boolean qualified) {
 		super(offset, prefix, getImageForDeclaration(dec), 
 				desc, text, true);
 		this.cpc = cpc;
@@ -325,6 +328,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 		this.includeDefaulted = includeDefaulted;
 		this.namedInvocation = namedInvocation;
 		this.positionalInvocation = positionalInvocation;
+		this.qualified = qualified;
 	}
 
     private DocumentChange imports(IDocument document)
@@ -333,7 +337,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         tc.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs = new HashSet<Declaration>();
         CompilationUnit cu = cpc.getRootNode();
-        importDeclaration(decs, declaration, cu);
+        if (!qualified) {
+            importDeclaration(decs, declaration, cu);
+        }
         if (declaration instanceof Functional) {
             List<ParameterList> pls = ((Functional) declaration).getParameterLists();
             if (!pls.isEmpty()) {
@@ -751,7 +757,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 boolean namedInvocation) {
             super(offset, "", "show parameters", "", dec, 
                     producedReference, scope, cpc, true, 
-                    true, namedInvocation);
+                    true, namedInvocation, false);
         }
         @Override
         boolean isParameterInfo() {
