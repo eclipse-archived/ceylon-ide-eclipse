@@ -169,7 +169,9 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    		int offset = findCharCount(index, document, 
 	    				loc+startOfArgs, endOfLine, 
 	    				",;", "", true)+1;
-	    		while (offset>0&&document.getChar(offset)==' ') offset++;
+	    		if (offset>0&&document.getChar(offset)==' ') {
+	    		    offset++;
+	    		}
 	    		int nextOffset = findCharCount(index+1, document, 
 	    				loc+startOfArgs, endOfLine, 
 	    				",;", "", true);
@@ -179,8 +181,14 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    		if (middleOffset>0&&document.getChar(middleOffset)=='>') middleOffset++;
 	    		while (middleOffset>0&&document.getChar(middleOffset)==' ') middleOffset++;
 	    		if (middleOffset>offset&&middleOffset<nextOffset) offset = middleOffset;
-	    		if (nextOffset==-1) nextOffset = offset;
-	    		document.replace(offset, nextOffset-offset, op+d.getName());
+	    		String str = op+d.getName();
+	    		if (nextOffset==-1) {
+	    		    nextOffset = offset;
+	    		}
+	    		if (document.getChar(nextOffset)=='}') {
+	    		    str = str + " ";
+	    		}
+	    		document.replace(offset, nextOffset-offset, str);
 	    	} 
 	    	catch (BadLocationException e) {
 	    		e.printStackTrace();
