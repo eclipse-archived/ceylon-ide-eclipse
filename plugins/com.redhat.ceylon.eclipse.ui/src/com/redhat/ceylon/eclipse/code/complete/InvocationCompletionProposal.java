@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendDeclarationText;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameter;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedInvocationDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedInvocationTextFor;
@@ -182,12 +183,12 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    		if (middleOffset>0&&document.getChar(middleOffset)=='>') middleOffset++;
 	    		while (middleOffset>0&&document.getChar(middleOffset)==' ') middleOffset++;
 	    		if (middleOffset>offset&&middleOffset<nextOffset) offset = middleOffset;
-	    		String str = op+d.getName();
+	    		String str = getText();
 	    		if (nextOffset==-1) {
 	    		    nextOffset = offset;
 	    		}
 	    		if (document.getChar(nextOffset)=='}') {
-	    		    str = str + " ";
+	    		    str += " ";
 	    		}
 	    		document.replace(offset, nextOffset-offset, str);
 	    	} 
@@ -196,6 +197,17 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    	}
 	    }
 
+        private String getText() {
+            String str = op+d.getName();
+            if (d instanceof Class && !basic) {
+                StringBuilder sb = new StringBuilder();
+                appendPositionalArgs(d, d.getReference(), 
+                        cpc.getRootNode().getUnit(), sb, false);
+                str += sb;
+            }
+            return str;
+        }
+
 	    @Override
 	    public Point getSelection(IDocument document) {
 	    	return null;
@@ -203,7 +215,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 
 	    @Override
 	    public String getDisplayString() {
-	    	return op+d.getName();
+	    	return getText();
 	    }
 
 	    @Override
@@ -243,7 +255,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    			int offset = findCharCount(index, document, 
 	    					loc+startOfArgs, endOfLine, 
 	    					",;", "", true)+1;
-	    			String content= document.get(offset, currentOffset - offset);
+	    			String content = document.get(offset, currentOffset - offset);
 	    			if ((op+d.getName()).startsWith(content.trim())) {
 	    				return true;
 	    			}
@@ -416,14 +428,14 @@ class InvocationCompletionProposal extends CompletionProposal {
                 typeParams.size() : params.size();
         if (paramCount==0) return;
 	    try {
-	        final LinkedModeModel linkedModeModel = 
-	                new LinkedModeModel();
 	        final int loc = offset-prefix.length();
 	        int first = getFirstPosition(proposeTypeArguments);
 	        if (first<=0) return; //no arg list
 	        int next = getNextPosition(document, first, 
 	                proposeTypeArguments);
 	        if (next<=0) return; //empty arg list
+            final LinkedModeModel linkedModeModel = 
+                    new LinkedModeModel();
 	        int i=0;
 	        while (next>0 && i<paramCount) {
 	        	List<ICompletionProposal> props = 
@@ -573,6 +585,30 @@ class InvocationCompletionProposal extends CompletionProposal {
 					addProposal(loc, first, props, index, d, false, 
 							isIterArg || isVarArg);
 				}
+			}
+			if (d instanceof Class && !dwp.isUnimported() && 
+			        !((Class) d).isAbstract() && !d.isAnnotation()) {
+                if (d.getUnit().getPackage().getNameAsString()
+                        .equals(Module.LANGUAGE_MODULE_NAME)) {
+                    if (d.getName().equals("String") ||
+                            d.getName().equals("Integer") ||
+                            d.getName().equals("Float") ||
+                            d.getName().equals("Character")) {
+                        continue;
+                    }
+                }
+                ProducedType ct = ((Class) d).getType();
+                if (ct!=null && !ct.isNothing() &&
+                    ((td instanceof TypeParameter) && 
+                        isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
+                            ct.isSubtypeOf(type))) {
+                    boolean isIterArg = isNamedArgs() &&
+                            index==params.size()-1 && 
+                            unit.isIterableParameterType(type);
+                    boolean isVarArg = p.isSequenced() && isPosArgs();
+                    addProposal(loc, first, props, index, d, false, 
+                            isIterArg || isVarArg);
+                }
 			}
 		}
 	}
