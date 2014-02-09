@@ -1,12 +1,15 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
@@ -35,10 +38,12 @@ import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
@@ -46,13 +51,16 @@ import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -68,10 +76,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         @Override
         public String getInformationDisplayString() {
             if (declaration instanceof TypedDeclaration) {
-                Unit unit = cpc.getRootNode().getUnit();
-                return fullType ?
-                        pr.getFullType().getProducedTypeName(unit) :
-                        pr.getType().getProducedTypeName(unit);
+                final Unit unit = cpc.getRootNode().getUnit();
+                return getType().getProducedTypeName(unit);
             }
             else {
                 return null;
@@ -106,22 +112,22 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 getRefinementTextFor(dec, pr, unit, isInterface, ci, 
                         getDefaultLineDelimiter(doc) + getIndent(node, doc), 
                         true, preamble), 
-                cpc, dec, false));
+                cpc, dec, scope, false));
     }
     
     static void addNamedArgumentProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration dec) {
+            DeclarationWithProximity dwp, Declaration dec, Scope scope) {
         //TODO: type argument substitution using the ProducedReference of the primary node
         result.add(new RefinementCompletionProposal(offset, prefix, 
                 dec.getReference(), //TODO: this needs to do type arg substitution
                 getDescriptionFor(dwp), 
                 getTextFor(dwp) + " = nothing;", 
-                cpc, dec, true));
+                cpc, dec, scope, true));
     }
 
     static void addInlineFunctionProposal(int offset, Declaration dec, 
-            Node node, String prefix, CeylonParseController cpc, 
+            Scope scope, Node node, String prefix, CeylonParseController cpc, 
             IDocument doc, List<ICompletionProposal> result) {
         //TODO: type argument substitution using the ProducedReference of the primary node
         if (dec.isParameter()) {
@@ -132,7 +138,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     getInlineFunctionDescriptionFor(p, null, unit),
                     getInlineFunctionTextFor(p, null, unit, 
                             getDefaultLineDelimiter(doc) + getIndent(node, doc)),
-                    cpc, dec, false));
+                    cpc, dec, scope, false));
         }
     }
 
@@ -175,10 +181,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 	private final Declaration declaration;
 	private final ProducedReference pr;
 	private final boolean fullType;
+	private final Scope scope;
 
 	private RefinementCompletionProposal(int offset, String prefix, 
 			ProducedReference pr, String desc, String text, 
-			CeylonParseController cpc, Declaration dec,
+			CeylonParseController cpc, Declaration dec, Scope scope,
 			boolean fullType) {
 		super(offset, prefix, dec.isFormal() ? 
 					FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
@@ -187,7 +194,14 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 		this.declaration = dec;
 		this.pr = pr;
 		this.fullType = fullType;
+		this.scope = scope;
 	}
+
+    private ProducedType getType() {
+        return fullType ?
+                pr.getFullType() :
+                pr.getType();
+    }
 
 	@Override
 	public void apply(IDocument document) {
@@ -229,7 +243,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         new LinkedModeModel();
                 List<ICompletionProposal> props = 
                         new ArrayList<ICompletionProposal>();
-                //TODO: add linked mode proposals here!
+                addProposals(loc+pos, 7, props, prefix);
                 LinkedPositionGroup linkedPositionGroup = 
                         new LinkedPositionGroup();
                 ProposalPosition linkedPosition = 
@@ -307,6 +321,130 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     @Override
     public IContextInformation getContextInformation() {
         return new ReturnValueContextInfo();
+    }
+    
+    private void addProposals(final int loc, int len, 
+            List<ICompletionProposal> props, String prefix) {
+        Unit unit = cpc.getRootNode().getUnit();
+        ProducedType type = getType();
+        if (type==null) return;
+        TypeDeclaration td = type.getDeclaration();
+        for (DeclarationWithProximity dwp: 
+                getSortedProposedValues(scope, unit)) {
+            if (dwp.isUnimported()) {
+                //don't propose unimported stuff b/c adding
+                //imports drops us out of linked mode and
+                //because it results in a pause
+                continue;
+            }
+            Declaration d = dwp.getDeclaration();
+            final String name = d.getName();
+            String[] split = prefix.split("\\s+");
+            if (split.length>0 && 
+                    name.equals(split[split.length-1])) {
+                continue;
+            }
+            if (d instanceof Value) {
+                if (d.getUnit().getPackage().getNameAsString()
+                        .equals(Module.LANGUAGE_MODULE_NAME)) {
+                    if (name.equals("process") ||
+                            name.equals("language") ||
+                            name.equals("emptyIterator") ||
+                            name.equals("infinity") ||
+                            name.endsWith("IntegerValue") ||
+                            name.equals("finished")) {
+                        continue;
+                    }
+                }
+                ProducedType vt = ((Value) d).getType();
+                if (vt!=null && !vt.isNothing() &&
+                    ((td instanceof TypeParameter) && 
+                        isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
+                            vt.isSubtypeOf(type))) {
+                    props.add(new NestedCompletionProposal(d, loc, len));
+                }
+            }
+            if (d instanceof Class && 
+                    !((Class) d).isAbstract() && !d.isAnnotation()) {
+                if (d.getUnit().getPackage().getNameAsString()
+                        .equals(Module.LANGUAGE_MODULE_NAME)) {
+                    if (name.equals("String") ||
+                            name.equals("Integer") ||
+                            name.equals("Float") ||
+                            name.equals("Character")) {
+                        continue;
+                    }
+                }
+                ProducedType ct = ((Class) d).getType();
+                if (ct!=null && !ct.isNothing() &&
+                    ((td instanceof TypeParameter) && 
+                        isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
+                            ct.getDeclaration().equals(type.getDeclaration()) ||
+                            ct.isSubtypeOf(type))) {
+                    props.add(new NestedCompletionProposal(d, loc, len));
+                }
+            }
+        }
+    }
+    
+    final class NestedCompletionProposal implements ICompletionProposal {
+        
+        private final Declaration d;
+        private final int offset;
+        private final int len;
+        
+        public NestedCompletionProposal(Declaration d, int offset, int len) {
+            super();
+            this.d = d;
+            this.offset = offset;
+            this.len = len;
+        }
+
+        @Override
+        public void apply(IDocument document) {
+            try {
+                document.replace(offset, len, getText());
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public Point getSelection(IDocument document) {
+            return null;
+        }
+
+        @Override
+        public String getAdditionalProposalInfo() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayString() {
+            return getText();
+        }
+
+        @Override
+        public Image getImage() {
+            return getImageForDeclaration(d);
+        }
+
+        @Override
+        public IContextInformation getContextInformation() {
+           return null;
+        }
+        
+        private String getText() {
+            StringBuilder sb = new StringBuilder()
+                    .append(d.getName());
+            if (d instanceof Class) {
+                appendPositionalArgs(d, d.getReference(), 
+                        cpc.getRootNode().getUnit(), sb, false);
+            }
+            return sb.toString();
+        }
+
     }
     
 }
