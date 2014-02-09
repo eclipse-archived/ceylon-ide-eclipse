@@ -127,9 +127,9 @@ class ParameterContextValidator
 			        position >= document.getLength()) {
 				return false;
 			}
-//			document.get(this.position, position-this.position)
-			return getCharCount(document, this.position, position, 
-			        "{(", "{)", false) >= 0;
+//			System.out.println(document.get(this.position, position-this.position));
+			return getCharCount(document, this.position, position, ";", "", true)==0 && 
+			        getCharCount(document, this.position, position, "{(", "})", false) > 0;
 
 		} 
 		catch (BadLocationException x) {
