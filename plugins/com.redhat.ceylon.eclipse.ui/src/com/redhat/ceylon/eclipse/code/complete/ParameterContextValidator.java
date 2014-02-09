@@ -34,7 +34,15 @@ class ParameterContextValidator
     @Override
 	public boolean updatePresentation(int brokenPosition, 
 	        TextPresentation presentation) {
-
+        
+        String s = information.getInformationDisplayString();
+        presentation.clear();
+        if (this.position==-1) {
+            presentation.addStyleRange(new StyleRange(0, s.length(), 
+                    null, null, SWT.BOLD));
+            return true;
+        }
+        
 		int currentParameter = -1;
 		CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
         int position = viewer.getSelectedRange().x;
@@ -63,7 +71,6 @@ class ParameterContextValidator
 		presentation.clear();
 		this.currentParameter = currentParameter;
 
-		String s = information.getInformationDisplayString();
 		int[] commas = computeCommaPositions(s);
 
 		if (commas.length - 2 < currentParameter) {
@@ -86,6 +93,7 @@ class ParameterContextValidator
 			presentation.addStyleRange(new StyleRange(end, s.length() - end, 
 			        null, null, SWT.NORMAL));
 		}
+		
 		return true;
 	}
 
@@ -96,6 +104,9 @@ class ParameterContextValidator
 	        ParameterContextInformation pci = 
 	                (InvocationCompletionProposal.ParameterContextInformation) info;
 	        this.position = pci.getArgumentListOffset();
+	    }
+	    else {
+	        this.position = -1;
 	    }
 	    Assert.isTrue(viewer==editor.getCeylonSourceViewer());
 		this.information = info;
