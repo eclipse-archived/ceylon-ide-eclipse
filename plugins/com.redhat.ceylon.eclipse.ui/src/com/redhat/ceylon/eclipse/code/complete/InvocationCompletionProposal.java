@@ -874,7 +874,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         private final boolean includeDefaulted;
         private final boolean inLinkedMode;
         private final boolean namedInvocation;
-            
+        
         private ParameterContextInformation(Declaration declaration,
                 ProducedReference producedReference, Unit unit,
                 ParameterList parameterList, int offset, 
@@ -889,10 +889,10 @@ class InvocationCompletionProposal extends CompletionProposal {
             this.inLinkedMode = inLinkedMode;
             this.namedInvocation = namedInvocation;
         }
-
+        
         @Override
         public String getContextDisplayString() {
-            return declaration.getName();
+            return "Parameters of '" + declaration.getName() + "'";
         }
         
         @Override
@@ -946,9 +946,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             else {
                 return false;
             }
-            
         }
-
+        
         int getOffset() {
             return offset;
         }
