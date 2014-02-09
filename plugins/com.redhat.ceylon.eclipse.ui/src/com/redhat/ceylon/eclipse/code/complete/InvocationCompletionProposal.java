@@ -580,18 +580,6 @@ class InvocationCompletionProposal extends CompletionProposal {
         return index+1;
 	}
 	
-//	protected boolean isNamedArgs() {
-//        int parenPos = text.indexOf('(');
-//        int bracePos = text.indexOf('{');
-//        return bracePos>0&&(bracePos<parenPos||parenPos<0);
-//	}
-//
-//    private boolean isPosArgs() {
-//        int parenPos = text.indexOf('(');
-//        int bracePos = text.indexOf('{');
-//        return parenPos>0&&(bracePos>parenPos||bracePos<0);
-//    }
-
 	private void addValueArgumentProposals(List<Parameter> params, final int loc,
 			int first, List<ICompletionProposal> props, final int index) {
 		Parameter p = params.get(index);
