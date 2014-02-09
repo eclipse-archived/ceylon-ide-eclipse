@@ -484,9 +484,31 @@ class AddAnnotionProposal extends ChangeCorrectionProposal {
             		(Tree.StaticMemberOrTypeExpression) node;
             dec = qmte.getDeclaration();
         }
+        //TODO: handle much more kinds of types!
         else if (node instanceof Tree.SimpleType) {
-            Tree.SimpleType qmte = (Tree.SimpleType) node;
-            dec = qmte.getDeclarationModel();
+            Tree.SimpleType st = (Tree.SimpleType) node;
+            dec = st.getDeclarationModel();
+        }
+        else if (node instanceof Tree.OptionalType) {
+            Tree.OptionalType ot = (Tree.OptionalType) node;
+            if (ot.getDefiniteType() instanceof Tree.SimpleType) {
+                Tree.SimpleType st = (Tree.SimpleType) ot.getDefiniteType();
+                dec = st.getDeclarationModel();
+            }
+        }
+        else if (node instanceof Tree.IterableType) {
+            Tree.IterableType it = (Tree.IterableType) node;
+            if (it.getElementType() instanceof Tree.SimpleType) {
+                Tree.SimpleType st = (Tree.SimpleType) it.getElementType();
+                dec = st.getDeclarationModel();
+            }
+        }
+        else if (node instanceof Tree.SequenceType) {
+            Tree.SequenceType qt = (Tree.SequenceType) node;
+            if (qt.getElementType() instanceof Tree.SimpleType) {
+                Tree.SimpleType st = (Tree.SimpleType) qt.getElementType();
+                dec = st.getDeclarationModel();
+            }
         }
         else if (node instanceof Tree.ImportMemberOrType) {
             Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
