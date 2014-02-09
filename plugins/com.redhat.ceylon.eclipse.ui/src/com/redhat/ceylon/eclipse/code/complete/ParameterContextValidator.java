@@ -25,7 +25,6 @@ class ParameterContextValidator
 	private int position;
 	private IContextInformation information;
 	private int currentParameter;
-	private ITextViewer viewer;
     private CeylonEditor editor;
 	
 	ParameterContextValidator(CeylonEditor editor) {
@@ -37,7 +36,8 @@ class ParameterContextValidator
 	        TextPresentation presentation) {
 
 		int currentParameter = -1;
-		int position = ((CeylonSourceViewer) viewer).getSelectedRange().x;
+		CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
+        int position = viewer.getSelectedRange().x;
         IDocument doc = viewer.getDocument();
 		try {
             int paren = doc.get(this.position, position-this.position)
@@ -98,7 +98,7 @@ class ParameterContextValidator
 	                (InvocationCompletionProposal.ParameterContextInformation) info;
 	        this.position = pci.getOffset();
 	    }
-		this.viewer = viewer;
+	    Assert.isTrue(viewer==editor.getCeylonSourceViewer());
 		this.information = info;
 		this.currentParameter= -1;
 	}
@@ -113,8 +113,8 @@ class ParameterContextValidator
 	        }
 	    }
 		try {
-			int position = 
-			        ((CeylonSourceViewer) viewer).getSelectedRange().x;
+			CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
+            int position = viewer.getSelectedRange().x;
 			if (position < this.position) {
 				return false;
 			}
