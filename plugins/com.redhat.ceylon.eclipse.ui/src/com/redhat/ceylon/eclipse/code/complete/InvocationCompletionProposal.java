@@ -299,11 +299,13 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    			if (eq>0) {
 	    			    content = content.substring(eq+1);
 	    			}
-	    			if ((op+dec.getName()).startsWith(content.trim()) ||
-	    			        dec.getName().startsWith(content.trim())) {
+	    			String filter = content.trim().toLowerCase();
+                    if ((op+dec.getName()).toLowerCase().startsWith(filter) ||
+	    			        dec.getName().toLowerCase().startsWith(filter)) {
 	    				return true;
 	    			}
-	    		} catch (BadLocationException e) {
+	    		}
+	    		catch (BadLocationException e) {
 	    			// ignore concurrently modified document
 	    		}
 	        	return false;

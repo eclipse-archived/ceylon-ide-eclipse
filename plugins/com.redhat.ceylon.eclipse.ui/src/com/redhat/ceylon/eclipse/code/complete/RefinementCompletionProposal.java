@@ -465,11 +465,15 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             }
             else {
                 try {
-                    String content = document.get(offset, currentOffset - offset);
-                    if ((dec.getName()).startsWith(content.trim())) {
+                    String content = document.get(offset, 
+                            currentOffset-offset);
+                    String filter = content.trim().toLowerCase();
+                    if ((dec.getName().toLowerCase())
+                            .startsWith(filter)) {
                         return true;
                     }
-                } catch (BadLocationException e) {
+                }
+                catch (BadLocationException e) {
                     // ignore concurrently modified document
                 }
                 return false;
