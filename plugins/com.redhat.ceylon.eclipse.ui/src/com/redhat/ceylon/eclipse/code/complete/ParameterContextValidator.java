@@ -429,6 +429,9 @@ class ParameterContextValidator
 					//$FALL-THROUGH$
 				case '}':
 					if (considerNesting) {
+                        if (nestingMode == 0) {
+                            return offset-1;
+                        }
 						if (nestingMode == BRACE) {
 							if (--nestingLevel == 0) {
 								nestingMode= NONE;
