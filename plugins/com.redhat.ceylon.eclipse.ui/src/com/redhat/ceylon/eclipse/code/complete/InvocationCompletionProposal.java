@@ -195,6 +195,35 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    	catch (BadLocationException e) {
 	    		e.printStackTrace();
 	    	}
+	    	//adding imports drops us out of linked mode :(
+            /*try {
+                DocumentChange tc = new DocumentChange("imports", document);
+                tc.setEdit(new MultiTextEdit());
+                HashSet<Declaration> decs = new HashSet<Declaration>();
+                CompilationUnit cu = cpc.getRootNode();
+                importDeclaration(decs, d, cu);
+                if (d instanceof Functional) {
+                    List<ParameterList> pls = ((Functional) d).getParameterLists();
+                    if (!pls.isEmpty()) {
+                        for (Parameter p: pls.get(0).getParameters()) {
+                            MethodOrValue pm = p.getModel();
+                            if (pm instanceof Method) {
+                                for (ParameterList ppl: ((Method) pm).getParameterLists()) {
+                                    for (Parameter pp: ppl.getParameters()) {
+                                        importSignatureTypes(pp.getModel(), cu, decs);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                }
+                applyImports(tc, decs, cu, document);
+                tc.perform(new NullProgressMonitor());
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }*/
 	    }
 
         private String getText() {
@@ -560,8 +589,14 @@ class InvocationCompletionProposal extends CompletionProposal {
 		Unit unit = p.getDeclaration().getUnit();
 		TypeDeclaration td = type.getDeclaration();
 		for (DeclarationWithProximity dwp: getSortedProposedValues()) {
+		    if (dwp.isUnimported()) {
+		        //don't propose unimported stuff b/c adding
+		        //imports drops us out of linked mode and
+		        //because it results in a pause
+		        continue;
+		    }
 			Declaration d = dwp.getDeclaration();
-			if (d instanceof Value && !dwp.isUnimported()) {
+			if (d instanceof Value) {
 				if (d.getUnit().getPackage().getNameAsString()
 						.equals(Module.LANGUAGE_MODULE_NAME)) {
 					if (d.getName().equals("process") ||
@@ -586,7 +621,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 							isIterArg || isVarArg);
 				}
 			}
-			if (d instanceof Class && !dwp.isUnimported() && 
+			if (d instanceof Class && 
 			        !((Class) d).isAbstract() && !d.isAnnotation()) {
                 if (d.getUnit().getPackage().getNameAsString()
                         .equals(Module.LANGUAGE_MODULE_NAME)) {
