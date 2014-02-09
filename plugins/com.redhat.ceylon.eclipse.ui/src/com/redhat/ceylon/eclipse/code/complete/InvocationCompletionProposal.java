@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendDeclarationText;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameter;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedInvocationDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedInvocationTextFor;
@@ -87,7 +88,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         result.add(new InvocationCompletionProposal(offset, prefix,
                 getDescriptionFor(dwp), getTextFor(dwp), 
                 dec, dec.getReference(), scope, cpc, 
-                true, true));
+                true));
     }
     
     static void addInvocationProposals(int offset, String prefix, 
@@ -110,12 +111,12 @@ class InvocationCompletionProposal extends CompletionProposal {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, false, null), 
                                 getPositionalInvocationTextFor(dwp, ol, pr, unit, false, null), dec,
-                                pr, scope, cpc, true, false));
+                                pr, scope, cpc, false));
                     }
                     result.add(new InvocationCompletionProposal(offset, prefix, 
                             getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, true, typeArgs), 
                             getPositionalInvocationTextFor(dwp, ol, pr, unit, true, typeArgs), dec,
-                            pr, scope, cpc, true, true));
+                            pr, scope, cpc, true));
                 }
                 if (!isAbstractClass &&
                         ol!=EXTENDS && ol!=CLASS_ALIAS &&
@@ -126,13 +127,13 @@ class InvocationCompletionProposal extends CompletionProposal {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getNamedInvocationDescriptionFor(dwp, pr, unit, false), 
                                 getNamedInvocationTextFor(dwp, pr, unit, false), dec,
-                                pr, scope, cpc, true, false));
+                                pr, scope, cpc, false));
                     }
                     if (!ps.isEmpty()) {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getNamedInvocationDescriptionFor(dwp, pr, unit, true), 
                                 getNamedInvocationTextFor(dwp, pr, unit, true), dec,
-                                pr, scope, cpc, true, true));
+                                pr, scope, cpc, true));
                     }
                 }
             }
@@ -263,10 +264,9 @@ class InvocationCompletionProposal extends CompletionProposal {
 	private InvocationCompletionProposal(int offset, String prefix, 
 			String desc, String text, Declaration dec,
 			ProducedReference producedReference, Scope scope, 
-			CeylonParseController cpc,
-			boolean selectParams, boolean includeDefaulted) {
+			CeylonParseController cpc, boolean includeDefaulted) {
 		super(offset, prefix, getImageForDeclaration(dec), 
-				desc, text, selectParams);
+				desc, text, true);
 		this.cpc = cpc;
 		this.declaration = dec;
 		this.producedReference = producedReference;
@@ -679,7 +679,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             	    return new ParameterContextInformation(declaration, 
             	            producedReference, cpc.getRootNode().getUnit(), 
             	            pls.get(0), offset-prefix.length(),
-            	            includeDefaulted);
+            	            includeDefaulted, !isParameterInfo());
 //            	}
             }
 		}
@@ -696,8 +696,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 ProducedReference producedReference,
                 Scope scope, CeylonParseController cpc) {
             super(offset, "", "show parameters", "", dec, 
-                    producedReference, scope, cpc, 
-                    false, true);
+                    producedReference, scope, cpc, true);
         }
         @Override
         boolean isParameterInfo() {
@@ -743,7 +742,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                 if (!pls.isEmpty()) {
                                     infos.add(new ParameterContextInformation(declaration, 
                                             mte.getTarget(), rootNode.getUnit(), 
-                                            pls.get(0), that.getStartIndex(), true));
+                                            pls.get(0), that.getStartIndex(), true, false));
                                 }
                             }
                         }
@@ -793,17 +792,19 @@ class InvocationCompletionProposal extends CompletionProposal {
         private final int offset;
         private final Unit unit;
         private final boolean includeDefaulted;
+        private final boolean inLinkedMode;
             
         private ParameterContextInformation(Declaration declaration,
                 ProducedReference producedReference, Unit unit,
                 ParameterList parameterList, int offset, 
-                boolean includeDefaulted) {
+                boolean includeDefaulted, boolean inLinkedMode) {
             this.declaration = declaration;
             this.producedReference = producedReference;
             this.unit = unit;
             this.parameterList = parameterList;
             this.offset = offset;
             this.includeDefaulted = includeDefaulted;
+            this.inLinkedMode = inLinkedMode;
         }
 
         @Override
@@ -834,7 +835,12 @@ class InvocationCompletionProposal extends CompletionProposal {
                     }
                     else {
                         ProducedTypedReference pr = producedReference.getTypedParameter(p);
-                        appendDeclarationText(p.getModel(), pr, unit, sb);
+                        if (inLinkedMode) {
+                            appendDeclarationText(p.getModel(), pr, unit, sb);   
+                        }
+                        else {
+                            appendParameter(sb, pr, p, unit);
+                        }
                     }
                     sb.append(", ");
                 }
