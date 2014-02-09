@@ -103,10 +103,11 @@ class InvocationCompletionProposal extends CompletionProposal {
             Functional fd = (Functional) dec;
             List<ParameterList> pls = fd.getParameterLists();
             if (!pls.isEmpty()) {
-                List<Parameter> ps = pls.get(0).getParameters();
+                ParameterList parameterList = pls.get(0);
+                List<Parameter> ps = parameterList.getParameters();
                 if (!isAbstractClass ||
                         ol==EXTENDS || ol==CLASS_ALIAS) {
-                    if (ps.size()!=getParameters(false, false, ps).size()) {
+                    if (ps.size()!=getParameters(parameterList, false, false).size()) {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getPositionalInvocationDescriptionFor(dwp, ol, pr, unit, false, null), 
                                 getPositionalInvocationTextFor(dwp, ol, pr, unit, false, null), dec,
@@ -122,7 +123,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                         !fd.isOverloaded() && typeArgs==null) {
                     //if there is at least one parameter, 
                     //suggest a named argument invocation
-                    if (ps.size()!=getParameters(false, true, ps).size()) {
+                    if (ps.size()!=getParameters(parameterList, false, true).size()) {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getNamedInvocationDescriptionFor(dwp, pr, unit, false), 
                                 getNamedInvocationTextFor(dwp, pr, unit, false), dec,
@@ -382,8 +383,8 @@ class InvocationCompletionProposal extends CompletionProposal {
 					}
 				}
 				if (paramList!=null) {
-					List<Parameter> params = getParameters(includeDefaulted, 
-					        namedInvocation, paramList.getParameters());
+					List<Parameter> params = getParameters(paramList, 
+					        includeDefaulted, namedInvocation);
 					if (!params.isEmpty()) {
 						enterLinkedMode(document, params, null);
 						return; //NOTE: early exit!
@@ -901,8 +902,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         
         @Override
         public String getInformationDisplayString() {
-            List<Parameter> ps = getParameters(includeDefaulted, 
-                    namedInvocation, parameterList.getParameters());
+            List<Parameter> ps = getParameters(parameterList, 
+                    includeDefaulted, namedInvocation);
             if (ps.isEmpty()) {
                 return "no parameters";
             }

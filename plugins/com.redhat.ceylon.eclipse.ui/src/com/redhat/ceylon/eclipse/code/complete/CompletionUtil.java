@@ -11,6 +11,7 @@ import org.eclipse.jface.text.ITextViewer;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -31,17 +32,18 @@ public class CompletionUtil {
 	    }
 	}
 
-	static List<Parameter> getParameters(boolean includeDefaults,
-	        boolean namedInvocation, List<Parameter> pl) {
+	static List<Parameter> getParameters(ParameterList pl,
+	        boolean includeDefaults, boolean namedInvocation) {
+        List<Parameter> ps = pl.getParameters();
 	    if (includeDefaults) {
-	        return pl;
+            return ps;
 	    }
 	    else {
 	        List<Parameter> list = new ArrayList<Parameter>();
-	        for (Parameter p: pl) {
+	        for (Parameter p: ps) {
 	            if (!p.isDefaulted() || 
 	            		(namedInvocation && 
-	            		        p==pl.get(pl.size()-1) && 
+	            		        p==ps.get(ps.size()-1) && 
 	            		        p.getType()!=null &&
 				                p.getDeclaration().getUnit()
 				                        .isIterableParameterType(p.getType()))) {
