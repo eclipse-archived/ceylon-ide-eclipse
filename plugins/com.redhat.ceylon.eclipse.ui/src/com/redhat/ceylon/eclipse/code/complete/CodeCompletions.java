@@ -479,16 +479,21 @@ public class CodeCompletions {
         }
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
-            ProducedType type = td.getType();
-            if (type==null) type = new UnknownType(d.getUnit()).getType();
             boolean isSequenced = d.isParameter() && 
                     ((MethodOrValue) d).getInitializerParameter()
                             .isSequenced();
-            if (pr!=null) {
-                type = type.substitute(pr.getTypeArguments());
+            ProducedType type;
+            if (pr == null) {
+                type = td.getType();
+            }
+            else {
+                type = pr.getType();
+            }
+            if (type==null) {
+                type = new UnknownType(unit).getType();
             }
             if (isSequenced) {
-                type = d.getUnit().getIteratedType(type);
+                type = unit.getIteratedType(type);
             }
             String typeName = type.getProducedTypeName(unit);
             if (td.isDynamicallyTyped()) {
@@ -817,15 +822,46 @@ public class CodeCompletions {
 
 	public static void appendParameter(StringBuilder result,
             ProducedReference pr, Parameter p, Unit unit) {
-	    ProducedTypedReference ppr = pr==null ? 
-	            null : pr.getTypedParameter(p);
 	    if (p.getModel() == null) {
 	        result.append(p.getName());
 	    }
 	    else {
+	        ProducedTypedReference ppr = pr==null ? 
+	                null : pr.getTypedParameter(p);
 	        appendDeclarationText(p.getModel(), ppr, unit, result);
 	        appendParameters(p.getModel(), ppr, unit, result);
 	    }
+    }
+    
+    public static void appendParameterContextInfo(StringBuilder result,
+            ProducedReference pr, Parameter p, Unit unit, 
+            boolean namedInvocation, boolean isListedValues) {
+        if (p.getModel() == null) {
+            result.append(p.getName());
+        }
+        else {
+            ProducedTypedReference ppr = pr==null ? 
+                    null : pr.getTypedParameter(p);
+            String typeName;
+            ProducedType type = ppr.getType();
+            if (isListedValues) {
+                ProducedType et = unit.getIteratedType(type);
+                typeName = et.getProducedTypeName(unit);
+                if (unit.isEntryType(et)) {
+                    typeName = '<' + typeName + '>';
+                }
+                typeName += unit.isNonemptyIterableType(type) ? '+' : '*';
+            }
+            else {
+                typeName = type.getProducedTypeName(unit);
+            }
+            result.append(typeName).append(" ").append(p.getName());
+            appendParameters(p.getModel(), ppr, unit, result);
+        }
+        if (namedInvocation && !isListedValues) {
+            result.append(p.getModel() instanceof Method ? 
+                    " => ... " : " = ... " );
+        }
     }
     
     private static void appendParameters(Declaration d, StyledString result) {

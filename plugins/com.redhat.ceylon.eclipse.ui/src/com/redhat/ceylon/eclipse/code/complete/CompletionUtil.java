@@ -13,6 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
@@ -44,6 +45,7 @@ public class CompletionUtil {
 	            if (!p.isDefaulted() || 
 	            		(namedInvocation && 
 	            		        p==ps.get(ps.size()-1) && 
+	            		        p.getModel() instanceof Value &&
 	            		        p.getType()!=null &&
 				                p.getDeclaration().getUnit()
 				                        .isIterableParameterType(p.getType()))) {

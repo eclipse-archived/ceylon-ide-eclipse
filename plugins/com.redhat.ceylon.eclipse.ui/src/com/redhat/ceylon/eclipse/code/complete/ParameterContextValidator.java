@@ -40,17 +40,16 @@ class ParameterContextValidator
         int position = viewer.getSelectedRange().x;
         IDocument doc = viewer.getDocument();
 		try {
-            int paren = doc.get(this.position, position-this.position)
-                    .indexOf('(');
-			if (paren<0) {
-			    paren = doc.get(this.position, position-this.position)
-			            .indexOf('{');
-			}
-			if (paren<0) { //TODO: is this really useful?
-			    this.position = doc.get(0, position).lastIndexOf('(');
-			}
+	        boolean namedInvocation = doc.getChar(this.position)=='{';
+	        if (!namedInvocation) Assert.isTrue(doc.getChar(this.position)=='(');
+//            int paren = doc.get(this.position, position-this.position)
+//                    .indexOf(namedInvocation?'{':'(');
+//			if (paren<0) { //TODO: is this really useful?
+//			    this.position = doc.get(0, position).lastIndexOf('(');
+//			}
 			currentParameter = getCharCount(doc, 
-					this.position+paren+1, position, ",", "", true);
+					this.position+1, position, 
+					namedInvocation?";":",", "", true);
 		} 
 		catch (BadLocationException x) {
 			return false;
@@ -96,7 +95,7 @@ class ParameterContextValidator
 	    if (info instanceof InvocationCompletionProposal.ParameterContextInformation) {
 	        ParameterContextInformation pci = 
 	                (InvocationCompletionProposal.ParameterContextInformation) info;
-	        this.position = pci.getOffset();
+	        this.position = pci.getArgumentListOffset();
 	    }
 	    Assert.isTrue(viewer==editor.getCeylonSourceViewer());
 		this.information = info;
@@ -484,14 +483,16 @@ class ParameterContextValidator
 	
 	private static int[] computeCommaPositions(String code) {
 		final int length= code.length();
-	    int pos= 0;
-	    int angleLevel= 0;
+	    int pos = 0;
+	    int angleLevel = 0;
 		List<Integer> positions= new ArrayList<Integer>();
 		positions.add(new Integer(-1));
+		char prev = ' ';
 		while (pos < length && pos != -1) {
-			char ch= code.charAt(pos);
+			char ch = code.charAt(pos);
 			switch (ch) {
 	            case ',':
+                case ';':
 	            	if (angleLevel == 0) {
 	            		positions.add(new Integer(pos));
 	            	}
@@ -503,6 +504,7 @@ class ParameterContextValidator
 	            	angleLevel++;
 	            	break;
 	            case '>':
+	                if (prev=='=') break;
 	            case ')':
 	            case '}':
 	            case ']':

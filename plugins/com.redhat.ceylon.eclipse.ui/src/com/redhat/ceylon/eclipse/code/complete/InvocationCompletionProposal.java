@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendDeclarationText;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameter;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterContextInfo;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedInvocationDescriptionFor;
@@ -148,13 +147,13 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    private final boolean basic;
 	    private final Declaration d;
 
-	    NestedCompletionProposal(String op, int loc, int index, boolean basic,
-	            Declaration d) {
+	    NestedCompletionProposal(Declaration dec, int loc, int index, boolean basic,
+	            String op) {
 		    this.op = op;
 		    this.loc = loc;
 		    this.index = index;
 		    this.basic = basic;
-		    this.d = d;
+		    this.d = dec;
 	    }
 
 	    public String getAdditionalProposalInfo() {
@@ -627,8 +626,8 @@ class InvocationCompletionProposal extends CompletionProposal {
 							index==params.size()-1 && 
 							unit.isIterableParameterType(type);
 					boolean isVarArg = p.isSequenced() && positionalInvocation;
-					addProposal(loc, first, props, index, d, false, 
-							isIterArg || isVarArg);
+					props.add(new NestedCompletionProposal(d, 
+                    loc, index, false, isIterArg || isVarArg ? "*" : ""));
 				}
 			}
 			if (d instanceof Class && 
@@ -651,8 +650,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                             index==params.size()-1 && 
                             unit.isIterableParameterType(type);
                     boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    addProposal(loc, first, props, index, d, false, 
-                            isIterArg || isVarArg);
+                    props.add(new NestedCompletionProposal(d, loc, index, false, 
+                            isIterArg || isVarArg ? "*" : ""));
                 }
 			}
 		}
@@ -684,7 +683,8 @@ class InvocationCompletionProposal extends CompletionProposal {
 						}
 					}
 					if (isInBounds(p.getSatisfiedTypes(), t)) {
-						addProposal(loc, first, props, index, d, true, false);
+						props.add(new NestedCompletionProposal(d, loc, index, 
+						        true, ""));
 					}
 				}
 			}
@@ -720,36 +720,22 @@ class InvocationCompletionProposal extends CompletionProposal {
 		return results;
 	}
 
-	private void addProposal(final int loc, int first,
-			List<ICompletionProposal> props, final int index, 
-			final Declaration d, final boolean basic, 
-			final boolean spread) {
-	    final String op = spread?"*":"";
-		props.add(new NestedCompletionProposal(op, loc, index, basic, d));
-	}
-	
 	@Override
 	public IContextInformation getContextInformation() {
-		if (declaration instanceof Functional) {
-		    List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-            if (!pls.isEmpty() && 
-            		//TODO: for now there is no context info for type args lists - fix that!
-            		!(pls.get(0).getParameters().isEmpty() &&
-            				!((Generic) declaration).getTypeParameters().isEmpty())) {
-            	int paren = text.indexOf('(');
-            	if (paren<0) paren = text.indexOf('{');
-//            	if (paren<0 && isParameterInfo()) {
-//            		return null;
-//            	}
-//            	else {
-            	    return new ParameterContextInformation(declaration, 
-            	            producedReference, cpc.getRootNode().getUnit(), 
-            	            pls.get(0), offset-prefix.length(),
-            	            includeDefaulted, namedInvocation, 
-            	            !isParameterInfo());
-//            	}
-            }
-		}
+	    if (namedInvocation||positionalInvocation) { //TODO: context info for type arg lists!
+	        if (declaration instanceof Functional) {
+	            List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+	            if (!pls.isEmpty()) {
+	                int argListOffset = isParameterInfo() ? 
+	                        this.offset : 
+	                            offset-prefix.length() + text.indexOf(namedInvocation?'{':'(');
+	                return new ParameterContextInformation(declaration, 
+	                        producedReference, cpc.getRootNode().getUnit(), 
+	                        pls.get(0), argListOffset, includeDefaulted, 
+	                        namedInvocation, !isParameterInfo());
+	            }
+	        }
+	    }
 		return null;
 	}
 	
@@ -871,7 +857,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         private final Declaration declaration;
         private final ProducedReference producedReference;
         private final ParameterList parameterList;
-        private final int offset;
+        private final int argumentListOffset;
         private final Unit unit;
         private final boolean includeDefaulted;
         private final boolean inLinkedMode;
@@ -879,14 +865,14 @@ class InvocationCompletionProposal extends CompletionProposal {
         
         private ParameterContextInformation(Declaration declaration,
                 ProducedReference producedReference, Unit unit,
-                ParameterList parameterList, int offset, 
+                ParameterList parameterList, int argumentListOffset, 
                 boolean includeDefaulted, boolean namedInvocation, 
                 boolean inLinkedMode) {
             this.declaration = declaration;
             this.producedReference = producedReference;
             this.unit = unit;
             this.parameterList = parameterList;
-            this.offset = offset;
+            this.argumentListOffset = argumentListOffset;
             this.includeDefaulted = includeDefaulted;
             this.inLinkedMode = inLinkedMode;
             this.namedInvocation = namedInvocation;
@@ -909,34 +895,33 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (ps.isEmpty()) {
                 return "no parameters";
             }
-            StringBuilder sb = new StringBuilder();
+            StringBuilder result = new StringBuilder();
             for (Parameter p: ps) {
-                if (includeDefaulted || 
-                        !p.isDefaulted() ||
-                        (namedInvocation && 
-                                p==ps.get(ps.size()-1) || 
-                                p.getType()!=null &&
-                                unit.isIterableParameterType(p.getType()))) {
+                boolean isListedValues = namedInvocation && 
+                        p==ps.get(ps.size()-1) &&
+                        p.getModel() instanceof Value && 
+                        p.getType()!=null &&
+                        unit.isIterableParameterType(p.getType());
+                if (includeDefaulted || !p.isDefaulted() ||
+                        isListedValues) {
                     if (producedReference==null) {
-                        sb.append(p.getName());
+                        result.append(p.getName());
                     }
                     else {
                         ProducedTypedReference pr = 
                                 producedReference.getTypedParameter(p);
-                        if (inLinkedMode) {
-                            appendDeclarationText(p.getModel(), pr, unit, sb);   
-                        }
-                        else {
-                            appendParameter(sb, pr, p, unit);
-                        }
+                        appendParameterContextInfo(result, pr, p, unit, 
+                                namedInvocation, isListedValues);
                     }
-                    sb.append(namedInvocation ? " = ... ; " : ", ");
+                    if (!isListedValues) {
+                        result.append(namedInvocation ? "; " : ", ");
+                    }
                 }
             }
-            if (!namedInvocation && sb.length()>0) {
-                sb.setLength(sb.length()-2);
+            if (!namedInvocation && result.length()>0) {
+                result.setLength(result.length()-2);
             }
-            return sb.toString();
+            return result.toString();
         }
         
         @Override
@@ -950,8 +935,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             }
         }
         
-        int getOffset() {
-            return offset;
+        int getArgumentListOffset() {
+            return argumentListOffset;
         }
         
     }
