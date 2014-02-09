@@ -146,15 +146,15 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    private final int loc;
 	    private final int index;
 	    private final boolean basic;
-	    private final Declaration d;
+	    private final Declaration dec;
 
-	    NestedCompletionProposal(Declaration dec, int loc, int index, 
-	            boolean basic, String op) {
+	    NestedCompletionProposal(Declaration dec, int loc, 
+	            int index, boolean basic, String op) {
 		    this.op = op;
 		    this.loc = loc;
 		    this.index = index;
 		    this.basic = basic;
-		    this.d = dec;
+		    this.dec = dec;
 	    }
 
 	    public String getAdditionalProposalInfo() {
@@ -240,9 +240,9 @@ class InvocationCompletionProposal extends CompletionProposal {
 
         private String getText() {
             StringBuilder sb = new StringBuilder()
-                    .append(op).append(d.getName());
-            if (d instanceof Class && !basic) {
-                appendPositionalArgs(d, d.getReference(), 
+                    .append(op).append(dec.getName());
+            if (dec instanceof Class && !basic) {
+                appendPositionalArgs(dec, dec.getReference(), 
                         cpc.getRootNode().getUnit(), sb, false);
             }
             return sb.toString();
@@ -260,7 +260,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 
 	    @Override
 	    public Image getImage() {
-	    	return getImageForDeclaration(d);
+	    	return getImageForDeclaration(dec);
 	    }
 
 	    @Override
@@ -295,7 +295,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    					loc+startOfArgs, endOfLine, 
 	    					",;", "", true)+1;
 	    			String content = document.get(offset, currentOffset - offset);
-	    			if ((op+d.getName()).startsWith(content.trim())) {
+	    			if ((op+dec.getName()).startsWith(content.trim())) {
 	    				return true;
 	    			}
 	    		} catch (BadLocationException e) {
@@ -606,12 +606,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (d instanceof Value) {
 				if (d.getUnit().getPackage().getNameAsString()
 						.equals(Module.LANGUAGE_MODULE_NAME)) {
-					if (name.equals("process") ||
-							name.equals("language") ||
-							name.equals("emptyIterator") ||
-							name.equals("infinity") ||
-							name.endsWith("IntegerValue") ||
-							name.equals("finished")) {
+					if (CompletionUtil.isIgnoredLanguageModuleValue(name)) {
 						continue;
 					}
 				}
@@ -632,10 +627,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 			        !((Class) d).isAbstract() && !d.isAnnotation()) {
                 if (d.getUnit().getPackage().getNameAsString()
                         .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    if (name.equals("String") ||
-                            name.equals("Integer") ||
-                            name.equals("Float") ||
-                            name.equals("Character")) {
+                    if (CompletionUtil.isIgnoredLanguageModuleClass(name)) {
                         continue;
                     }
                 }
@@ -656,7 +648,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 		}
 	}
 
-	private void addTypeArgumentProposals(List<TypeParameter> typeParams, 
+    private void addTypeArgumentProposals(List<TypeParameter> typeParams, 
 			final int loc, int first, List<ICompletionProposal> props, 
 			final int index) {
 		TypeParameter p = typeParams.get(index);
@@ -672,17 +664,11 @@ class InvocationCompletionProposal extends CompletionProposal {
 						!td.inherits(td.getUnit().getExceptionDeclaration())) {
 					if (td.getUnit().getPackage().getNameAsString()
 							.equals(Module.LANGUAGE_MODULE_NAME)) {
-						if (!td.getName().equals("Object") && 
-								!td.getName().equals("Anything") &&
-								!td.getName().equals("String") &&
-								!td.getName().equals("Integer") &&
-								!td.getName().equals("Character") &&
-								!td.getName().equals("Float") &&
-								!td.getName().equals("Boolean")) {
+						if (CompletionUtil.isIgnoredLanguageModuleType(td)) {
 							continue;
 						}
 					}
-					if (CompletionUtil.isInBounds(p.getSatisfiedTypes(), t)) {
+					if (isInBounds(p.getSatisfiedTypes(), t)) {
 						props.add(new NestedCompletionProposal(d, loc, index, 
 						        true, ""));
 					}
@@ -691,7 +677,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 		}
 	}
 
-	@Override
+    @Override
 	public IContextInformation getContextInformation() {
 	    if (namedInvocation||positionalInvocation) { //TODO: context info for type arg lists!
 	        if (declaration instanceof Functional) {
@@ -699,7 +685,8 @@ class InvocationCompletionProposal extends CompletionProposal {
 	            if (!pls.isEmpty()) {
 	                int argListOffset = isParameterInfo() ? 
 	                        this.offset : 
-	                            offset-prefix.length() + text.indexOf(namedInvocation?'{':'(');
+	                            offset-prefix.length() + 
+	                            text.indexOf(namedInvocation?'{':'(');
 	                return new ParameterContextInformation(declaration, 
 	                        producedReference, cpc.getRootNode().getUnit(), 
 	                        pls.get(0), argListOffset, includeDefaulted, 

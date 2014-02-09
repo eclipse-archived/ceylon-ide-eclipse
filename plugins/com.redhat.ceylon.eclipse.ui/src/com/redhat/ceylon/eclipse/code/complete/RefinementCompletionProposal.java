@@ -9,6 +9,8 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinem
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleClass;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
@@ -347,12 +349,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             if (d instanceof Value) {
                 if (d.getUnit().getPackage().getNameAsString()
                         .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    if (name.equals("process") ||
-                            name.equals("language") ||
-                            name.equals("emptyIterator") ||
-                            name.equals("infinity") ||
-                            name.endsWith("IntegerValue") ||
-                            name.equals("finished")) {
+                    if (isIgnoredLanguageModuleValue(name)) {
                         continue;
                     }
                 }
@@ -368,10 +365,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     !((Class) d).isAbstract() && !d.isAnnotation()) {
                 if (d.getUnit().getPackage().getNameAsString()
                         .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    if (name.equals("String") ||
-                            name.equals("Integer") ||
-                            name.equals("Float") ||
-                            name.equals("Character")) {
+                    if (isIgnoredLanguageModuleClass(name)) {
                         continue;
                     }
                 }
@@ -387,15 +381,17 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
     }
     
-    final class NestedCompletionProposal implements ICompletionProposal {
+    final class NestedCompletionProposal 
+            implements ICompletionProposal {
         
-        private final Declaration d;
+        private final Declaration dec;
         private final int offset;
         private final int len;
         
-        public NestedCompletionProposal(Declaration d, int offset, int len) {
+        public NestedCompletionProposal(Declaration dec, 
+                int offset, int len) {
             super();
-            this.d = d;
+            this.dec = dec;
             this.offset = offset;
             this.len = len;
         }
@@ -427,7 +423,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
         @Override
         public Image getImage() {
-            return getImageForDeclaration(d);
+            return getImageForDeclaration(dec);
         }
 
         @Override
@@ -437,9 +433,9 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         
         private String getText() {
             StringBuilder sb = new StringBuilder()
-                    .append(d.getName());
-            if (d instanceof Class) {
-                appendPositionalArgs(d, d.getReference(), 
+                    .append(dec.getName());
+            if (dec instanceof Class) {
+                appendPositionalArgs(dec, dec.getReference(), 
                         cpc.getRootNode().getUnit(), sb, false);
             }
             return sb.toString();

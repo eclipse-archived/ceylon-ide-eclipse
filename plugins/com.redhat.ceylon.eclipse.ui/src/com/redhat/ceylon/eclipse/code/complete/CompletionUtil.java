@@ -16,6 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -185,6 +186,35 @@ public class CompletionUtil {
     		}
     	});
     	return results;
+    }
+
+    static boolean isIgnoredLanguageModuleClass(final String name) {
+        return name.equals("String") ||
+                name.equals("Integer") ||
+                name.equals("Float") ||
+                name.equals("Character");
+    }
+
+    static boolean isIgnoredLanguageModuleValue(final String name) {
+        return name.equals("process") ||
+                name.equals("runtime") ||
+                name.equals("system") ||
+                name.equals("operatingSystem") ||
+        		name.equals("language") ||
+        		name.equals("emptyIterator") ||
+        		name.equals("infinity") ||
+        		name.endsWith("IntegerValue") ||
+        		name.equals("finished");
+    }
+
+    static boolean isIgnoredLanguageModuleType(TypeDeclaration td) {
+        return !td.getName().equals("Object") && 
+        		!td.getName().equals("Anything") &&
+        		!td.getName().equals("String") &&
+        		!td.getName().equals("Integer") &&
+        		!td.getName().equals("Character") &&
+        		!td.getName().equals("Float") &&
+        		!td.getName().equals("Boolean");
     }
 
 }
