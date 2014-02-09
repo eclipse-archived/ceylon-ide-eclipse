@@ -28,6 +28,12 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIF
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.complete.ArgumentListCompletions.addArgumentListProposal;
+import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addDocLinkProposal;
+import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addForProposal;
+import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addIfExistsProposal;
+import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addImportProposal;
+import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addNamedArgumentProposal;
+import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addSwitchProposal;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getLine;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getRealScope;
@@ -37,11 +43,10 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDes
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isPackageDescriptor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.nextTokenType;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
-import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletions.addForProposal;
-import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletions.addIfExistsProposal;
-import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletions.addSwitchProposal;
-import static com.redhat.ceylon.eclipse.code.complete.ImportCompletions.addImportProposal;
-import static com.redhat.ceylon.eclipse.code.complete.InlineFunctionCompletions.addInlineFunctionProposal;
+import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addFakeShowParametersCompletion;
+import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addInvocationProposals;
+import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addReferenceProposal;
+import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.computeParameterContextInformation;
 import static com.redhat.ceylon.eclipse.code.complete.KeywordCompletions.addKeywordProposals;
 import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addMemberNameProposal;
 import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addMemberNameProposals;
@@ -62,13 +67,9 @@ import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.UPPER_B
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addCurrentPackageNameCompletion;
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageCompletions;
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageDescriptorCompletion;
-import static com.redhat.ceylon.eclipse.code.complete.ParameterContextInformation.addFakeShowParametersCompletion;
-import static com.redhat.ceylon.eclipse.code.complete.ReferenceCompletions.addBasicProposal;
-import static com.redhat.ceylon.eclipse.code.complete.ReferenceCompletions.addDocLinkProposal;
-import static com.redhat.ceylon.eclipse.code.complete.ReferenceCompletions.addInvocationProposals;
-import static com.redhat.ceylon.eclipse.code.complete.ReferenceCompletions.addNamedArgumentProposal;
-import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.addRefinementProposal;
-import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletions.getRefinedProducedReference;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.addInlineFunctionProposal;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.addRefinementProposal;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
@@ -99,7 +100,6 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
-import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -111,7 +111,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
@@ -121,9 +120,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgumentList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -179,9 +176,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     		ICompletionProposal[] contentProposals = 
     				getContentProposals(editor.getParseController(), 
     						offset, viewer, filter, returnedParamInfo);
-    		if (contentProposals!=null &&
-    				contentProposals.length==1 && 
-    				contentProposals[0] instanceof ParameterInfo) {
+    		if (contentProposals!=null && contentProposals.length==1 && 
+    				contentProposals[0] instanceof 
+    				        InvocationCompletionProposal.ParameterInfo) {
     			returnedParamInfo = true;
     		}
 			return contentProposals;
@@ -200,47 +197,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     public IContextInformation[] computeContextInformation(final ITextViewer viewer, 
     		final int offset) {
-    	final List<IContextInformation> infos = new ArrayList<IContextInformation>();
-    	final CeylonParseController cpc = editor.getParseController();
+    	CeylonParseController cpc = editor.getParseController();
 		cpc.parse(viewer.getDocument(), new NullProgressMonitor(), null);
-    	cpc.getRootNode().visit(new Visitor() {
-    		@Override
-    		public void visit(InvocationExpression that) {
-    			PositionalArgumentList pal = that.getPositionalArgumentList();
-				if (pal!=null) {
-					//TODO: should reuse logic for adjusting tokens
-					//      from CeylonContentProposer!!
-    				Integer start = pal.getStartIndex();
-					Integer stop = pal.getStopIndex();
-					if (start!=null && stop!=null && offset>start) { 
-						String string = "";
-						if (offset>stop) {
-							try {
-								string = viewer.getDocument()
-										.get(stop+1, offset-stop-1).trim();
-							} 
-							catch (BadLocationException e) {}
-						}
-						if (string.isEmpty()) {
-	    					Tree.MemberOrTypeExpression mte = 
-	    							(Tree.MemberOrTypeExpression) that.getPrimary();
-		    				Declaration declaration = mte.getDeclaration();
-		    				if (declaration instanceof Functional) {
-		    					List<ParameterList> pls = 
-		    							((Functional) declaration).getParameterLists();
-		    					if (!pls.isEmpty()) {
-		    						infos.add(new ParameterContextInformation(declaration, 
-		    								mte.getTarget(), cpc.getRootNode().getUnit(), 
-		    								pls.get(0), that.getStartIndex(), true));
-		    					}
-		    				}
-    	                }
-    				}
-    			}
-    			super.visit(that);
-    		}
-		});
-        return infos.toArray(NO_CONTEXTS);
+    	return computeParameterContextInformation(offset, cpc.getRootNode(), viewer)
+    	        .toArray(NO_CONTEXTS);
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
@@ -415,23 +375,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         		type == AVERBATIM_STRING;
     }
     
-    static final class ParameterInfo 
-            extends DeclarationCompletionProposal {
-		ParameterInfo(int offset, String prefix, String desc,
-				String text, boolean selectParams, CeylonParseController cpc,
-				Declaration d, boolean addimport,
-				ProducedReference producedReference, Scope scope) {
-			super(offset, prefix, desc, text, selectParams, cpc, d, addimport,
-					producedReference, scope, true);
-		}
-		@Override
-		public Point getSelection(IDocument document) {
-			return null;
-		}
-		@Override
-		public void apply(IDocument document) {}
-	}
-    
     private static CommonToken adjust(int tokenIndex, int offset, 
     		List<CommonToken> tokens) {
         CommonToken adjustedToken = tokens.get(tokenIndex); 
@@ -546,7 +489,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         
         if (!returnedParamInfo && atStartOfPositionalArgument(node, token)) {
-        	addFakeShowParametersCompletion(cpc, node, token, result);
+        	addFakeShowParametersCompletion(node, token, cpc, result);
         }
         else if (node instanceof Tree.PackageLiteral) {
         	addPackageCompletions(cpc, offset, prefix, null, node, result, false);
@@ -642,7 +585,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
-                    addBasicProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                    addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope);
                 }
             }
         }
@@ -707,7 +650,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 if (isParameterOfNamedArgInvocation(scope, dwp)) {
                     if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
                         addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec);
-                        addInlineFunctionProposal(offset, prefix, cpc, node, result, dec, doc);
+                        addInlineFunctionProposal(offset, dec, node, prefix, cpc, doc, result);
                     }
                 }
                 
@@ -736,7 +679,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 		addImportProposal(offset, prefix, cpc, result, dwp, dec, scope);
                 	}
                 	else {
-                		addBasicProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                		addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope);
                 	}
                 }
                 
@@ -752,8 +695,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 		!memberOp && !isMember && !filter) {
                     for (Declaration d: overloads(dec)) {
                         if (d.isDefault() || d.isFormal()) {
-                        	addRefinementProposal(offset, prefix, cpc, scope, node, 
-                        			result, d, (ClassOrInterface) scope, doc, true);
+                        	addRefinementProposal(offset, d, (ClassOrInterface) scope, node, scope, 
+                        			prefix, cpc, doc, result, true);
                         }
                     }
                 }
@@ -778,8 +721,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 	                    try {
 	                        String pfx = doc.get(node.getStartIndex(), 
 	                        		offset-node.getStartIndex());
-	                    	addRefinementProposal(offset, pfx, cpc, scope, node, 
-	                    			result, d, (ClassOrInterface) scope, doc, preamble);
+	                    	addRefinementProposal(offset, d, (ClassOrInterface) scope, node, scope, 
+	                    			pfx, cpc, doc, result, preamble);
 	                    }
 	                    catch (BadLocationException e) {
 	                        e.printStackTrace();

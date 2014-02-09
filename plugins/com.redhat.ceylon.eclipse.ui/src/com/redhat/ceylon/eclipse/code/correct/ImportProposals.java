@@ -228,7 +228,8 @@ public class ImportProposals {
                                 sb.append(imt.getAlias().getIdentifier().getText())
                                     .append('=');
                             }
-                            sb.append(imt.getIdentifier().getText()).append(",")
+                            sb.append(imt.getIdentifier().getText())
+                                .append(",")
                                 .append(delim);
                         }
                     }
@@ -240,7 +241,8 @@ public class ImportProposals {
                 }
             }
         }
-        if (!cu.getUnit().getPackage().getQualifiedNameString().equals(newPackageName)) {
+        if (!cu.getUnit().getPackage().getQualifiedNameString()
+                .equals(newPackageName)) {
             Tree.Import importNode = findImportNode(cu, newPackageName);
             if (importNode!=null) {
                 Tree.ImportMemberOrTypeList imtl = 
@@ -351,12 +353,14 @@ public class ImportProposals {
 			Tree.CompilationUnit rootNode) {
 		if (type==null) return;
 		if (type.getDeclaration() instanceof UnionType) {
-			for (ProducedType t: type.getDeclaration().getCaseTypes()) {
+			for (ProducedType t: 
+			    type.getDeclaration().getCaseTypes()) {
 				importType(tfc, t, rootNode);
 			}
 		}
 		else if (type.getDeclaration() instanceof IntersectionType) {
-			for (ProducedType t: type.getDeclaration().getSatisfiedTypes()) {
+			for (ProducedType t: 
+			    type.getDeclaration().getSatisfiedTypes()) {
 				importType(tfc, t, rootNode);
 			}
 		}
@@ -377,7 +381,6 @@ public class ImportProposals {
 		Package p = declaration.getUnit().getPackage();
 		if (!p.getNameAsString().isEmpty() && 
 			!p.equals(rootNode.getUnit().getPackage()) &&
-//			!((declaration instanceof MethodOrValue) && ((MethodOrValue)declaration).isParameter()) &&
 			!p.getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
 			if (!isImported(declaration, rootNode)) {
 				declarations.add(declaration);
