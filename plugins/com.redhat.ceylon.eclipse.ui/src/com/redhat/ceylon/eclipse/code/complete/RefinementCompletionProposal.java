@@ -1,10 +1,12 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
@@ -39,6 +41,7 @@ import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
@@ -66,7 +69,9 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         public String getInformationDisplayString() {
             if (declaration instanceof TypedDeclaration) {
                 Unit unit = cpc.getRootNode().getUnit();
-                return pr.getType().getProducedTypeName(unit);
+                return fullType ?
+                        pr.getFullType().getProducedTypeName(unit) :
+                        pr.getType().getProducedTypeName(unit);
             }
             else {
                 return null;
@@ -101,9 +106,20 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 getRefinementTextFor(dec, pr, unit, isInterface, ci, 
                         getDefaultLineDelimiter(doc) + getIndent(node, doc), 
                         true, preamble), 
-                cpc, dec));
+                cpc, dec, false));
     }
     
+    static void addNamedArgumentProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration dec) {
+        //TODO: type argument substitution using the ProducedReference of the primary node
+        result.add(new RefinementCompletionProposal(offset, prefix, 
+                dec.getReference(), //TODO: this needs to do type arg substitution
+                getDescriptionFor(dwp), 
+                getTextFor(dwp) + " = nothing;", 
+                cpc, dec, true));
+    }
+
     static void addInlineFunctionProposal(int offset, Declaration dec, 
             Node node, String prefix, CeylonParseController cpc, 
             IDocument doc, List<ICompletionProposal> result) {
@@ -116,7 +132,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     getInlineFunctionDescriptionFor(p, null, unit),
                     getInlineFunctionTextFor(p, null, unit, 
                             getDefaultLineDelimiter(doc) + getIndent(node, doc)),
-                    cpc, dec));
+                    cpc, dec, false));
         }
     }
 
@@ -158,16 +174,19 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 	private final CeylonParseController cpc;
 	private final Declaration declaration;
 	private final ProducedReference pr;
+	private final boolean fullType;
 
 	private RefinementCompletionProposal(int offset, String prefix, 
 			ProducedReference pr, String desc, String text, 
-			CeylonParseController cpc, Declaration dec) {
+			CeylonParseController cpc, Declaration dec,
+			boolean fullType) {
 		super(offset, prefix, dec.isFormal() ? 
 					FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
 				desc, text, false);
 		this.cpc = cpc;
 		this.declaration = dec;
 		this.pr = pr;
+		this.fullType = fullType;
 	}
 
 	@Override
@@ -181,7 +200,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 		}
 		offset += document.getLength() - originalLength;
 		super.apply(document);
-		enterLinkedMode(document, null, null);
+		enterLinkedMode(document);
 	}
 
 	private DocumentChange imports(IDocument document)
@@ -201,8 +220,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 		return getDocumentationFor(cpc, declaration);	
 	}
 	
-    public void enterLinkedMode(IDocument document, List<Parameter> params, 
-            List<TypeParameter> typeParams) {
+    public void enterLinkedMode(IDocument document) {
         try {
             final int loc = offset-prefix.length();
             int pos = text.indexOf("nothing");

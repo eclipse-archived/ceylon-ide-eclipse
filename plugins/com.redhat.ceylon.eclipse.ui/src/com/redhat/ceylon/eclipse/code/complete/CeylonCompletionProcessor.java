@@ -32,7 +32,6 @@ import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.ad
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addForProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addIfExistsProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addImportProposal;
-import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addNamedArgumentProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addSwitchProposal;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getLine;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getOccurrenceLocation;
@@ -68,6 +67,7 @@ import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addCurr
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageCompletions;
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageDescriptorCompletion;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.addInlineFunctionProposal;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.addNamedArgumentProposal;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.addRefinementProposal;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;

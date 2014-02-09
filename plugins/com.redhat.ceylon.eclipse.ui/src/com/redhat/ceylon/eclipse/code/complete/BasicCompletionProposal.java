@@ -32,15 +32,6 @@ class BasicCompletionProposal extends CompletionProposal {
                 dec.getName(), escapeName(dec), dec, cpc));
     }
 
-    static void addNamedArgumentProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration dec) {
-        result.add(new BasicCompletionProposal(offset, prefix, 
-                getDescriptionFor(dwp), 
-                getTextFor(dwp) + " = nothing;", 
-                dec, cpc));
-    }
-
     static void addDocLinkProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d, Scope scope) {
