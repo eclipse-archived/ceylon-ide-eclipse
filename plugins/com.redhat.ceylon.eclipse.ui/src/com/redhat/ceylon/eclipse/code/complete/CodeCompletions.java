@@ -317,9 +317,8 @@ public class CodeCompletions {
         return result;
     }
     
-    private static void appendPositionalArgs(Declaration d, 
-    		ProducedReference pr, Unit unit, StringBuilder result, 
-    		boolean includeDefaulted) {
+    static void appendPositionalArgs(Declaration d, ProducedReference pr, 
+            Unit unit, StringBuilder result, boolean includeDefaulted) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, 
             		includeDefaulted);
