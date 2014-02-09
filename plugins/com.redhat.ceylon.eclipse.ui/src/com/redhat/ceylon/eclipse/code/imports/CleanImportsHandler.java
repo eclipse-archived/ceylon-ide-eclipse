@@ -61,7 +61,7 @@ public class CleanImportsHandler extends AbstractHandler {
         if (cu!=null) {
             IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
             String imports = imports(cu, doc);
-            if (imports!=null) {
+            if (imports!=null && !imports.trim().isEmpty()) {
                 TextFileChange tfc = 
                 		new TextFileChange("Clean Imports", file);
                 tfc.setEdit(new MultiTextEdit());
