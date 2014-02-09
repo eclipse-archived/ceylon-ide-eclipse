@@ -85,7 +85,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
         @Override
         public String getContextDisplayString() {
-            return declaration.getName();
+            return "Return value of '" + declaration.getName() + "'";
         }
     }
 
