@@ -18,6 +18,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static java.lang.Character.isJavaIdentifierPart;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,7 +32,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IEditingSupport;
 import org.eclipse.jface.text.IEditingSupportRegistry;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
@@ -245,7 +248,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         new LinkedModeModel();
                 List<ICompletionProposal> props = 
                         new ArrayList<ICompletionProposal>();
-                addProposals(loc+pos, 7, props, prefix);
+                addProposals(loc+pos, props, prefix);
                 LinkedPositionGroup linkedPositionGroup = 
                         new LinkedPositionGroup();
                 ProposalPosition linkedPosition = 
@@ -325,7 +328,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         return new ReturnValueContextInfo();
     }
     
-    private void addProposals(final int loc, int len, 
+    private void addProposals(final int loc, 
             List<ICompletionProposal> props, String prefix) {
         Unit unit = cpc.getRootNode().getUnit();
         ProducedType type = getType();
@@ -358,7 +361,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     ((td instanceof TypeParameter) && 
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
                             vt.isSubtypeOf(type))) {
-                    props.add(new NestedCompletionProposal(d, loc, len));
+                    props.add(new NestedCompletionProposal(d, loc));
                 }
             }
             if (d instanceof Class && 
@@ -375,30 +378,31 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
                             ct.getDeclaration().equals(type.getDeclaration()) ||
                             ct.isSubtypeOf(type))) {
-                    props.add(new NestedCompletionProposal(d, loc, len));
+                    props.add(new NestedCompletionProposal(d, loc));
                 }
             }
         }
     }
     
-    final class NestedCompletionProposal 
-            implements ICompletionProposal {
+    final class NestedCompletionProposal implements ICompletionProposal, 
+            ICompletionProposalExtension2 {
         
         private final Declaration dec;
         private final int offset;
-        private final int len;
         
-        public NestedCompletionProposal(Declaration dec, 
-                int offset, int len) {
+        public NestedCompletionProposal(Declaration dec, int offset) {
             super();
             this.dec = dec;
             this.offset = offset;
-            this.len = len;
         }
 
         @Override
         public void apply(IDocument document) {
             try {
+                int len = 0;
+                while (isJavaIdentifierPart(document.getChar(offset+len))) {
+                    len++;
+                }
                 document.replace(offset, len, getText());
             }
             catch (BadLocationException e) {
@@ -439,6 +443,37 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         cpc.getRootNode().getUnit(), sb, false);
             }
             return sb.toString();
+        }
+
+        @Override
+        public void apply(ITextViewer viewer, char trigger, 
+                int stateMask, int offset) {
+            apply(viewer.getDocument());
+        }
+
+        @Override
+        public void selected(ITextViewer viewer, boolean smartToggle) {}
+
+        @Override
+        public void unselected(ITextViewer viewer) {}
+
+        @Override
+        public boolean validate(IDocument document, int currentOffset,
+                DocumentEvent event) {
+            if (event==null) {
+                return true;
+            }
+            else {
+                try {
+                    String content = document.get(offset, currentOffset - offset);
+                    if ((dec.getName()).startsWith(content.trim())) {
+                        return true;
+                    }
+                } catch (BadLocationException e) {
+                    // ignore concurrently modified document
+                }
+                return false;
+            }
         }
 
     }

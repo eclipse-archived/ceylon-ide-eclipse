@@ -147,7 +147,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    private final int index;
 	    private final boolean basic;
 	    private final Declaration dec;
-
+	    
 	    NestedCompletionProposal(Declaration dec, int loc, 
 	            int index, boolean basic, String op) {
 		    this.op = op;
@@ -269,8 +269,8 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    }
 
 		@Override
-        public void apply(ITextViewer viewer, char trigger, int stateMask,
-                int offset) {
+        public void apply(ITextViewer viewer, char trigger, 
+                int stateMask, int offset) {
 			apply(viewer.getDocument());
         }
 
@@ -295,7 +295,12 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    					loc+startOfArgs, endOfLine, 
 	    					",;", "", true)+1;
 	    			String content = document.get(offset, currentOffset - offset);
-	    			if ((op+dec.getName()).startsWith(content.trim())) {
+	    			int eq = content.indexOf("=");
+	    			if (eq>0) {
+	    			    content = content.substring(eq+1);
+	    			}
+	    			if ((op+dec.getName()).startsWith(content.trim()) ||
+	    			        dec.getName().startsWith(content.trim())) {
 	    				return true;
 	    			}
 	    		} catch (BadLocationException e) {
