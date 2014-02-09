@@ -839,7 +839,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }.visit(cpc.getRootNode());
     }
     
-    static class ParameterContextInformation 
+    static final class ParameterContextInformation 
             implements IContextInformation {
         
         private final Declaration declaration;
@@ -890,7 +890,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                         sb.append(p.getName());
                     }
                     else {
-                        ProducedTypedReference pr = producedReference.getTypedParameter(p);
+                        ProducedTypedReference pr = 
+                                producedReference.getTypedParameter(p);
                         if (inLinkedMode) {
                             appendDeclarationText(p.getModel(), pr, unit, sb);   
                         }

@@ -695,8 +695,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 		!memberOp && !isMember && !filter) {
                     for (Declaration d: overloads(dec)) {
                         if (d.isDefault() || d.isFormal()) {
-                        	addRefinementProposal(offset, d, (ClassOrInterface) scope, node, scope, 
-                        			prefix, cpc, doc, result, true);
+                        	addRefinementProposal(offset, d, (ClassOrInterface) scope, 
+                        	        node, scope, prefix, cpc, doc, result, true);
                         }
                     }
                 }
@@ -721,8 +721,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 	                    try {
 	                        String pfx = doc.get(node.getStartIndex(), 
 	                        		offset-node.getStartIndex());
-	                    	addRefinementProposal(offset, d, (ClassOrInterface) scope, node, scope, 
-	                    			pfx, cpc, doc, result, preamble);
+	                    	addRefinementProposal(offset, d, (ClassOrInterface) scope, 
+	                    	        node, scope, pfx, cpc, doc, result, preamble);
 	                    }
 	                    catch (BadLocationException e) {
 	                        e.printStackTrace();
