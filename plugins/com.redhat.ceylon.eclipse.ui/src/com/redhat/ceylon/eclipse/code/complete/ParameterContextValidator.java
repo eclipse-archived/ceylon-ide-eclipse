@@ -93,9 +93,11 @@ class ParameterContextValidator
 	@Override
 	public void install(IContextInformation info, ITextViewer viewer, 
 	        int documentPosition) {
-		ParameterContextInformation pci = 
-		        (InvocationCompletionProposal.ParameterContextInformation) info;
-        this.position = pci.getOffset();
+	    if (info instanceof InvocationCompletionProposal.ParameterContextInformation) {
+	        ParameterContextInformation pci = 
+	                (InvocationCompletionProposal.ParameterContextInformation) info;
+	        this.position = pci.getOffset();
+	    }
 		this.viewer = viewer;
 		this.information = info;
 		this.currentParameter= -1;
@@ -105,7 +107,8 @@ class ParameterContextValidator
 	public boolean isContextInformationValid(int brokenPosition) {
 	    if (editor.isInLinkedMode()) {
 	        Object linkedModeOwner = editor.getLinkedModeOwner();
-            if (linkedModeOwner instanceof InvocationCompletionProposal) {
+            if (linkedModeOwner instanceof InvocationCompletionProposal ||
+                linkedModeOwner instanceof RefinementCompletionProposal) {
 	            return true;
 	        }
 	    }
