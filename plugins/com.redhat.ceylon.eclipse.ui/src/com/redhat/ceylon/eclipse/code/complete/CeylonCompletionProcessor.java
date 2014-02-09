@@ -489,7 +489,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         
         if (!returnedParamInfo && atStartOfPositionalArgument(node, token)) {
-        	addFakeShowParametersCompletion(node, token, cpc, result);
+        	addFakeShowParametersCompletion(node, cpc, result);
         }
         else if (node instanceof Tree.PackageLiteral) {
         	addPackageCompletions(cpc, offset, prefix, null, node, result, false);

@@ -32,7 +32,7 @@ public class CompletionUtil {
 	}
 
 	static List<Parameter> getParameters(boolean includeDefaults,
-	        List<Parameter> pl) {
+	        boolean namedInvocation, List<Parameter> pl) {
 	    if (includeDefaults) {
 	        return pl;
 	    }
@@ -40,7 +40,9 @@ public class CompletionUtil {
 	        List<Parameter> list = new ArrayList<Parameter>();
 	        for (Parameter p: pl) {
 	            if (!p.isDefaulted() || 
-	            		(p==pl.get(pl.size()-1) && p.getType()!=null &&
+	            		(namedInvocation && 
+	            		        p==pl.get(pl.size()-1) && 
+	            		        p.getType()!=null &&
 				                p.getDeclaration().getUnit()
 				                        .isIterableParameterType(p.getType()))) {
 	            	list.add(p);

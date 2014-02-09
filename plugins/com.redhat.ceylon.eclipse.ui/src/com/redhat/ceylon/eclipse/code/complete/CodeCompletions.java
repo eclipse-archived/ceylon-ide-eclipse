@@ -321,7 +321,7 @@ public class CodeCompletions {
             Unit unit, StringBuilder result, boolean includeDefaulted) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, 
-            		includeDefaulted);
+            		includeDefaulted, false);
             if (params.isEmpty()) {
                 result.append("()");
             }
@@ -358,13 +358,14 @@ public class CodeCompletions {
     }
 
     private static List<Parameter> getParameters(Functional fd, 
-    		boolean includeDefaults) {
+    		boolean includeDefaults, boolean namedInvocation) {
         List<ParameterList> plists = fd.getParameterLists();
         if (plists==null || plists.isEmpty()) {
             return Collections.<Parameter>emptyList();
         }
         List<Parameter> pl = plists.get(0).getParameters();
-        return CompletionUtil.getParameters(includeDefaults, pl);
+        return CompletionUtil.getParameters(includeDefaults, 
+                namedInvocation, pl);
     }
 
 	private static void appendNamedArgs(Declaration d, ProducedReference pr, 
@@ -372,7 +373,7 @@ public class CodeCompletions {
             boolean descriptionOnly) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, 
-            		includeDefaulted);
+            		includeDefaulted, true);
             if (params.isEmpty()) {
                 result.append(" {}");
             }
