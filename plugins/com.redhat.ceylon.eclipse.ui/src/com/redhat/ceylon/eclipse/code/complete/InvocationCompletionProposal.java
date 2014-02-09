@@ -303,21 +303,6 @@ class InvocationCompletionProposal extends CompletionProposal {
 
 	@Override
 	public void apply(IDocument document) {
-		
-	    /*try {
-	        List<InsertEdit> ies = importEdit(cpc.getRootNode(), 
-	                Collections.singleton(declaration), 
-	                null, null, document);
-	        for (InsertEdit ie: ies) {
-	            ie.apply(document);
-	            offset+=ie.getText().length();
-	        }
-
-	    } 
-	    catch (Exception e) {
-	        e.printStackTrace();
-	    }*/
-        
         int originalLength = document.getLength();
         try {
             imports(document).perform(new NullProgressMonitor());
