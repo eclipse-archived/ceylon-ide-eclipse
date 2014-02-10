@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
+import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.ArrayList;
@@ -388,16 +388,6 @@ public class ImportProposals {
 			}
 		}
 	}
-	
-	//TODO: copy/pasted from DetectUnusedImportsVisitor
-    private static Declaration getAbstraction(Declaration d) {
-        if (isOverloadedVersion(d)) {
-            return d.getContainer().getDirectMember(d.getName(), null, false);
-        }
-        else {
-            return d;
-        }
-    }
 
     public static boolean isImported(Declaration declaration,
             Tree.CompilationUnit rootNode) {
