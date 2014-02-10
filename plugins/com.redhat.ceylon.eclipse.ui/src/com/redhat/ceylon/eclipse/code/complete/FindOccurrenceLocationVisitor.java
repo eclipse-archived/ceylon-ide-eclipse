@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.ALIAS_REF;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CASE;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.DOCLINK;
@@ -85,6 +87,22 @@ class FindOccurrenceLocationVisitor extends Visitor
     public void visit(Tree.CaseTypes that) {
         if (inBounds(that)) {
             occurrence = OF;
+        }
+        super.visit(that);
+    }
+    
+    public void visit(Tree.CatchClause that) {
+        if (inBounds(that) && 
+                !inBounds(that.getBlock())) {
+            occurrence = CATCH;
+        }
+        super.visit(that);
+    }
+    
+    public void visit(Tree.CaseClause that) {
+        if (inBounds(that) && 
+                !inBounds(that.getBlock())) {
+            occurrence = CASE;
         }
         super.visit(that);
     }

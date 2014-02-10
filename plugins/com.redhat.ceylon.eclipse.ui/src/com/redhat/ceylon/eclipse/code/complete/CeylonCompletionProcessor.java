@@ -3,10 +3,12 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CASE_TYPES;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.COMMA;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.FLOAT_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.IS_OP;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LARGER_OP;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LBRACE;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
@@ -51,6 +53,8 @@ import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addM
 import static com.redhat.ceylon.eclipse.code.complete.ModuleCompletions.addModuleCompletions;
 import static com.redhat.ceylon.eclipse.code.complete.ModuleCompletions.addModuleDescriptorCompletion;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.ALIAS_REF;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CASE;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.DOCLINK;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
@@ -121,6 +125,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -251,13 +256,13 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         int tt = adjustedToken.getType();
         
         if (offset<=adjustedToken.getStopIndex() && 
-            offset>=adjustedToken.getStartIndex()) {
+            offset>adjustedToken.getStartIndex()) {
             if (isCommentOrCodeStringLiteral(adjustedToken)) {
                 return null;
             }
         }
         if (isLineComment(adjustedToken) &&
-            offset>=adjustedToken.getStartIndex() && 
+            offset>adjustedToken.getStartIndex() && 
             adjustedToken.getLine()==getLine(offset,viewer)+1) {
             return null;
         }
@@ -266,6 +271,17 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         Node node = getTokenNode(adjustedToken.getStartIndex(), 
                 adjustedToken.getStopIndex()+1, 
                 tt, rn, offset);
+        
+        //it's useful to know the type of the preceding 
+        //token, if any
+        int index = adjustedToken.getTokenIndex();
+        if (offset<=adjustedToken.getStopIndex()+1 && 
+            offset>adjustedToken.getStartIndex()) {
+            index--;
+        }
+        int previousTokenType = index>=0 ? 
+                adjust(index, offset, tokens).getType() : 
+                -1;
                 
         //find the type that is expected in the current
         //location so we can prioritize proposals of that
@@ -332,7 +348,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             completions = 
             		constructCompletions(offset, inDoc ? qualified : prefix, 
             				sortedProposals, cpc, scope, node, adjustedToken, 
-            				isMemberOp, viewer.getDocument(), filter, inDoc);
+            				isMemberOp, viewer.getDocument(), filter, inDoc,
+            				requiredType, previousTokenType);
         }
         return completions;
         
@@ -585,7 +602,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     private static ICompletionProposal[] constructCompletions(final int offset, 
     		final String prefix, Set<DeclarationWithProximity> set, 
     		CeylonParseController cpc, Scope scope, Node node, CommonToken token, 
-    		boolean memberOp, IDocument doc, boolean filter, boolean inDoc) {
+    		boolean memberOp, IDocument doc, boolean filter, boolean inDoc,
+    		ProducedType requiredType, int previousTokenType) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
@@ -603,6 +621,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         		node instanceof Tree.QualifiedTypeExpression) 
         		&& prefix.isEmpty() && 
         		isMemberNameProposable(offset, node, prefix, memberOp)) {
+            
+            //TODO: we get to here after "if (is Type", which is 
+            //     not quite right - we should also propose 
+            //     narrowable value references in that case 
+                  
             //member names we can refine
             ProducedType t=null;
             if (node instanceof Tree.Type) {
@@ -640,7 +663,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         	boolean isMember = 
         			node instanceof Tree.QualifiedMemberOrTypeExpression;
         	
-            if (!filter && !inDoc && !isMember) {
+            if (!filter && !inDoc && !isMember && ol!=CATCH && ol!=CASE) {
                 addKeywordProposals(cpc, offset, prefix, result, node);
                 //addTemplateProposal(offset, prefix, result);
             }
@@ -665,7 +688,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 
                 CommonToken nextToken = getNextToken(cpc, token);
                 boolean noParamsFollow = noParametersFollow(nextToken);
-                if (isInvocationProposable(dwp, ol) && 
+                if (isInvocationProposable(dwp, ol, previousTokenType) && 
                         !isQualifiedType(node) && 
                         !inDoc && noParamsFollow) {
                     for (Declaration d: overloads(dec)) {
@@ -678,7 +701,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     }
                 }
                 
-                if (isProposable(dwp, ol, scope) && 
+                if (isProposable(dwp, ol, scope, node.getUnit(), requiredType, 
+                            previousTokenType) && 
                         (definitelyRequiresType(ol) || noParamsFollow || 
                         		dwp.getDeclaration() instanceof Functional)) {
                 	if (ol==DOCLINK) {
@@ -697,7 +721,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 	}
                 }
                 
-                if (isProposable(dwp, ol, scope) && ol!=IMPORT &&
+                if (isProposable(dwp, ol, scope, node.getUnit(), requiredType, 
+                            previousTokenType) && 
+                        ol!=IMPORT && ol!=CASE && ol!=CATCH &&
                         isDirectlyInsideBlock(node, cpc, scope, token) && 
                         !memberOp && !filter) {
                     addForProposal(offset, prefix, cpc, result, dwp, dec);
@@ -826,39 +852,66 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
     
     private static boolean isInvocationProposable(DeclarationWithProximity dwp, 
-    		OccurrenceLocation ol) {
+    		OccurrenceLocation ol, int previousTokenType) {
         Declaration dec = dwp.getDeclaration();
         return dec instanceof Functional && 
-                //!((Functional) dec).getParameterLists().isEmpty() &&
+                previousTokenType!=IS_OP && (previousTokenType!=CASE_TYPES||ol==OF) &&
                 (ol==null || 
-                 ol==EXPRESSION && (!(dec instanceof Class) || !((Class)dec).isAbstract()) || 
-                 ol==EXTENDS && dec instanceof Class && !((Class)dec).isFinal() && 
-                         ((Class)dec).getTypeParameters().isEmpty() ||
+                 ol==EXPRESSION && (!(dec instanceof Class) || !((Class) dec).isAbstract()) || 
+                 ol==EXTENDS && dec instanceof Class && !((Class) dec).isFinal() && 
+                         ((Class) dec).getTypeParameters().isEmpty() ||
                  ol==CLASS_ALIAS && dec instanceof Class ||
                  ol==PARAMETER_LIST && dec instanceof Method && 
                          dec.isAnnotation()) &&
                 dwp.getNamedArgumentList()==null &&
                 (!dec.isAnnotation() || !(dec instanceof Method) || 
-                        !((Method)dec).getParameterLists().isEmpty() &&
-                        !((Method)dec).getParameterLists().get(0).getParameters().isEmpty());
+                        !((Method) dec).getParameterLists().isEmpty() &&
+                        !((Method) dec).getParameterLists().get(0).getParameters().isEmpty());
     }
 
     private static boolean isProposable(DeclarationWithProximity dwp, 
-    		OccurrenceLocation ol, Scope scope) {
+    		OccurrenceLocation ol, Scope scope, Unit unit, 
+    		ProducedType requiredType, int previousTokenType) {
         Declaration dec = dwp.getDeclaration();
-        return (ol!=EXTENDS || dec instanceof Class && !((Class)dec).isFinal()) && 
+        return (ol!=EXTENDS || dec instanceof Class && !((Class) dec).isFinal()) && 
                (ol!=CLASS_ALIAS || dec instanceof Class) &&
                (ol!=SATISFIES || dec instanceof Interface) &&
-               (ol!=OF || dec instanceof Class || (dec instanceof Value && ((Value) dec).getTypeDeclaration()!=null && 
-                        ((Value) dec).getTypeDeclaration().isAnonymous())) && 
-               ((ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND && ol!=TYPE_ALIAS) || dec instanceof TypeDeclaration) &&
+               (ol!=OF || dec instanceof Class || isAnonymousClassValue(dec)) && 
+               ((ol!=TYPE_ARGUMENT_LIST && ol!=UPPER_BOUND && ol!=TYPE_ALIAS && ol!=CATCH) || 
+                       dec instanceof TypeDeclaration) &&
+               (ol!=CATCH || isExceptionType(unit, dec)) &&
                (ol!=PARAMETER_LIST ||
-                        dec instanceof TypeDeclaration || 
-                        dec instanceof Method && dec.isAnnotation() || //i.e. an annotation 
-                        dec instanceof Value && dec.getContainer().equals(scope)) && //a parameter ref
+                       dec instanceof TypeDeclaration || 
+                       dec instanceof Method && dec.isAnnotation() || //i.e. an annotation 
+                       dec instanceof Value && dec.getContainer().equals(scope)) && //a parameter ref
                (ol!=IMPORT || !dwp.isUnimported()) &&
+               (ol!=CASE || isCaseOfSwitch(requiredType, dec, previousTokenType)) &&
+               (previousTokenType!=IS_OP && (previousTokenType!=CASE_TYPES||ol==OF) || 
+                       dec instanceof TypeDeclaration) &&
                ol!=TYPE_PARAMETER_LIST && 
                dwp.getNamedArgumentList()==null;
+    }
+
+    private static boolean isCaseOfSwitch(ProducedType requiredType,
+            Declaration dec, int previousTokenType) {
+        return dec instanceof TypeDeclaration && previousTokenType==IS_OP &&
+                    (requiredType==null ||
+                    !dec.equals(requiredType.getDeclaration()) &&
+                    ((TypeDeclaration) dec).inherits(requiredType.getDeclaration())) || 
+                isAnonymousClassValue(dec) && 
+                    (requiredType==null ||
+                    ((TypedDeclaration) dec).getType().isSubtypeOf(requiredType));
+    }
+
+    private static boolean isExceptionType(Unit unit, Declaration dec) {
+        return dec instanceof TypeDeclaration && 
+                   ((TypeDeclaration) dec).inherits(unit.getExceptionDeclaration());
+    }
+
+    private static boolean isAnonymousClassValue(Declaration dec) {
+        return dec instanceof Value && 
+                ((Value) dec).getTypeDeclaration()!=null && 
+                ((Value) dec).getTypeDeclaration().isAnonymous();
     }
 
     private static boolean isTypeParameterOfCurrentDeclaration(Node node, Declaration d) {

@@ -16,6 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.NamedArgumentList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SwitchCaseList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class RequiredTypeVisitor extends Visitor 
@@ -152,19 +153,32 @@ class RequiredTypeVisitor extends Visitor
     public void visit(Tree.SwitchStatement that) {
         ProducedType ort = requiredType;
         Tree.SwitchClause switchClause = that.getSwitchClause();
+        ProducedType srt = that.getUnit().getAnythingDeclaration().getType();
 		if (switchClause!=null) {
         	switchClause.visit(this);
         	if (switchClause.getExpression()!=null) {
-        		requiredType = switchClause.getExpression().getTypeModel();
+        	    srt = switchClause.getExpression().getTypeModel();
         	}
         	else {
-        		requiredType = null;
+        	    srt = null;
         	}
         }
-        if (that.getSwitchCaseList()!=null) {
-        	that.getSwitchCaseList().visit(this);
+        SwitchCaseList switchCaseList = that.getSwitchCaseList();
+        if (switchCaseList!=null) {
+            for (Tree.CaseClause cc: switchCaseList.getCaseClauses()) {
+                if (cc==node || cc.getCaseItem()==node) {
+                    finalResult = srt;
+                }
+                if (cc.getCaseItem()!=null) {
+                    requiredType = srt;
+                    cc.getCaseItem().visit(this);
+                }
+                if (cc.getBlock()!=null) {
+                    requiredType = ort;
+                    cc.getBlock().visit(this);
+                }
+            }
         }
-        super.visit(that);
         requiredType = ort;
     }
     
