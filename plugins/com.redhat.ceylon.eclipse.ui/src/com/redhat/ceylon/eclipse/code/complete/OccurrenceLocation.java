@@ -7,6 +7,8 @@ public enum OccurrenceLocation {
     OF(false),
     UPPER_BOUND(false),
     TYPE_ALIAS(false),
+    CASE(false),
+    CATCH(false),
     IMPORT(false),
     EXPRESSION(false),
     PARAMETER_LIST(false),
