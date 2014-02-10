@@ -715,11 +715,17 @@ public class CodeCompletions {
 	    	.append("}");
     }
 
+    private static boolean isObjectField(Declaration m) {
+        return m.getName().equals("hash") ||
+                m.getName().equals("string");
+    }
+
 	private static void appendMembersToEquals(Unit unit, String indent,
             StringBuilder result, ClassOrInterface ci, Parameter p) {
 	    boolean found = false;
 	    for (Declaration m: ci.getMembers()) {
-	    	if (m instanceof Value) {
+	    	if (m instanceof Value && 
+	    	        !isObjectField(m)) {
 	    		Value value = (Value) m;
 	    		if (!value.isTransient()) {
 	    			if (!unit.getNullValueDeclaration().getType()
@@ -748,7 +754,8 @@ public class CodeCompletions {
 	private static void appendMembersToHash(Unit unit, String indent,
             StringBuilder result, ClassOrInterface ci) {
 	    for (Declaration m: ci.getMembers()) {
-	    	if (m instanceof Value) {
+	    	if (m instanceof Value && 
+                    !isObjectField(m)) {
 	    		Value value = (Value) m;
 	    		if (!value.isTransient()) {
 	    			if (!unit.getNullValueDeclaration().getType()
