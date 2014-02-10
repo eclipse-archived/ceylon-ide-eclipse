@@ -61,6 +61,7 @@ import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESS
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.FUNCTION_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.SATISFIES;
@@ -536,11 +537,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else if (isEmptyModuleDescriptor(cpc)) {
             addModuleDescriptorCompletion(cpc, offset, prefix, result);
-            addKeywordProposals(cpc, offset, prefix, result, node);
+            addKeywordProposals(cpc, offset, prefix, result, node, null);
         }
         else if (isEmptyPackageDescriptor(cpc)) {
             addPackageDescriptorCompletion(cpc, offset, prefix, result);
-            addKeywordProposals(cpc, offset, prefix, result, node);
+            addKeywordProposals(cpc, offset, prefix, result, node, null);
         }
         else if (node instanceof Tree.TypeArgumentList && 
         		token.getType()==LARGER_OP) {
@@ -663,8 +664,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         	boolean isMember = 
         			node instanceof Tree.QualifiedMemberOrTypeExpression;
         	
-            if (!filter && !inDoc && !isMember && ol!=CATCH && ol!=CASE) {
-                addKeywordProposals(cpc, offset, prefix, result, node);
+            if (!filter && !inDoc && !isMember) {
+                addKeywordProposals(cpc, offset, prefix, result, node, ol);
                 //addTemplateProposal(offset, prefix, result);
             }
             
@@ -673,7 +674,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             for (DeclarationWithProximity dwp: set) {
                 Declaration dec = dwp.getDeclaration();
                 
-                if (isPackageOrModuleDescriptor && !inDoc) {
+                if (isPackageOrModuleDescriptor && !inDoc && 
+                        ol!=META && (ol==null||!ol.reference)) {
                     if (!dec.isAnnotation()||!(dec instanceof Method)) {
                         continue;
                     }
