@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
@@ -20,15 +21,19 @@ class DetectUnusedImportsVisitor extends Visitor {
     @Override
     public void visit(Tree.Import that) {
         super.visit(that);
-        for (Tree.ImportMemberOrType i: that.getImportMemberOrTypeList()
-                .getImportMemberOrTypes()) {
-            if (i.getDeclarationModel()!=null)
+        for (Tree.ImportMemberOrType i: 
+                that.getImportMemberOrTypeList()
+                    .getImportMemberOrTypes()) {
+            if (i.getDeclarationModel()!=null) {
                 result.add(i.getDeclarationModel());
+            }
             if (i.getImportMemberOrTypeList()!=null) {
-                for (Tree.ImportMemberOrType j: i.getImportMemberOrTypeList()
-                        .getImportMemberOrTypes()) {
-                    if (j.getDeclarationModel()!=null)
+                for (Tree.ImportMemberOrType j: 
+                        i.getImportMemberOrTypeList()
+                            .getImportMemberOrTypes()) {
+                    if (j.getDeclarationModel()!=null) {
                         result.add(j.getDeclarationModel());
+                    }
                 }
             }
         }
@@ -46,11 +51,29 @@ class DetectUnusedImportsVisitor extends Visitor {
     }
         
     @Override
+    public void visit(Tree.QualifiedMemberOrTypeExpression that) {
+        super.visit(that);
+        final Declaration d = that.getDeclaration();
+        if (!d.getName().equals(that.getIdentifier().getText())) {
+            remove(getAbstraction(d));
+        }
+    }
+
+    @Override
     public void visit(Tree.BaseMemberOrTypeExpression that) {
         super.visit(that);
         remove(getAbstraction(that.getDeclaration()));
     }
 
+    @Override
+    public void visit(Tree.QualifiedType that) {
+        super.visit(that);
+        final TypeDeclaration d = that.getDeclarationModel();
+        if (!d.getName().equals(that.getIdentifier().getText())) {
+            remove(getAbstraction(d));
+        }
+    } 
+    
     @Override
     public void visit(Tree.BaseType that) {
         super.visit(that);
