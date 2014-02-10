@@ -45,6 +45,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.nextTokenTy
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addFakeShowParametersCompletion;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addInvocationProposals;
+import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addProgramElementReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.computeParameterContextInformation;
 import static com.redhat.ceylon.eclipse.code.complete.KeywordCompletionProposal.addKeywordProposals;
@@ -662,7 +663,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else {
         	boolean isMember = 
-        			node instanceof Tree.QualifiedMemberOrTypeExpression;
+        			node instanceof Tree.QualifiedMemberOrTypeExpression ||
+        			node instanceof Tree.QualifiedType ||
+        			node instanceof Tree.MemberLiteral && 
+        			        ((Tree.MemberLiteral) node).getType()!=null;
         	
             if (!filter && !inDoc && !isMember) {
                 addKeywordProposals(cpc, offset, prefix, result, node, ol);
@@ -715,7 +719,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 	}
                 	else if (ol!=null && ol.reference) {
                 	    if (isReferenceProposable(ol, dec)) {
-                	        addImportProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                	        addProgramElementReferenceProposal(offset, prefix, cpc, result, 
+                	                dwp, dec, scope, isMember);
                 	    }
                 	}
                 	else {

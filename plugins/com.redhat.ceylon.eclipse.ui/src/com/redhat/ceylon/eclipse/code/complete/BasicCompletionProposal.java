@@ -34,9 +34,9 @@ class BasicCompletionProposal extends CompletionProposal {
 
     static void addDocLinkProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration d, Scope scope) {
+            DeclarationWithProximity dwp, Declaration dec, Scope scope) {
         result.add(new BasicCompletionProposal(offset, prefix,
-                d.getName(), getTextForDocLink(cpc, dwp), d, cpc));
+                dec.getName(), getTextForDocLink(cpc, dwp), dec, cpc));
     }
 
     static void addForProposal(int offset, String prefix, 
