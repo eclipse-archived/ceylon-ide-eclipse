@@ -33,6 +33,9 @@ class FillInArgumentNameProposal extends CorrectionProposal {
                     Tree.FunctionArgument fa = (Tree.FunctionArgument) e.getTerm();
                     if (!fa.getParameterLists().isEmpty()) {
                         int startIndex = fa.getParameterLists().get(0).getStartIndex();
+                        if (fa.getType().getToken()==null) {
+                            change.addEdit(new InsertEdit(startIndex, "function "));
+                        }
                         change.addEdit(new InsertEdit(startIndex, name));
                         try {
                             if (doc.getChar(sa.getStopIndex())==';') {
