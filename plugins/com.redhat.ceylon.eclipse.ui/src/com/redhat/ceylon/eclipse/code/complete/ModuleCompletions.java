@@ -71,19 +71,23 @@ public class ModuleCompletions {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
-                        for (final ModuleVersionDetails version : module.getVersions().descendingSet()) {
-                            final String versioned = withBody ? getModuleString(name, version.getVersion()) + ";" : name;
+                        for (final ModuleVersionDetails version: 
+                            module.getVersions().descendingSet()) {
+                            final String versioned = withBody ? 
+                                    getModuleString(name, version.getVersion()) + ";" : 
+                                        name;
                             result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
                                     versioned, versioned.substring(len), false) {
                             	@Override
                             	public Point getSelection(
                             			IDocument document) {
+                                    final int off = offset+versioned.length()-prefix.length()-len;
                                     if (withBody) {
-                                    	return new Point(offset+versioned.length()-prefix.length()-len-version.getVersion().length()-2, 
-                                    			version.getVersion().length());
+                                    	final int verlen = version.getVersion().length();
+                                        return new Point(off-verlen-2, verlen);
                                     }
                                     else {
-                                    	return new Point(offset+versioned.length()-prefix.length()-len, 0);
+                                    	return new Point(off, 0);
                                     }
                             	}
                                 @Override
