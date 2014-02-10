@@ -12,6 +12,7 @@ package com.redhat.ceylon.eclipse.code.correct;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -71,7 +72,7 @@ class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
         
 		protected void addLinkedPosition(final IDocument document,
 		        Identifier id, Declaration d) {
-		    if (id!=null && d!=null && dec.equals(d)) {
+		    if (id!=null && d!=null && dec.equals(getAbstraction(d))) {
 		        try {
 		            int pos = id.getStartIndex()+adjust;
 					int len = id.getText().length();

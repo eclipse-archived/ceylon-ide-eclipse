@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
-import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
+import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
 
 import java.util.Iterator;
 import java.util.List;
@@ -85,15 +85,6 @@ class DetectUnusedImportsVisitor extends Visitor {
         super.visit(that);
         if (that.getType()==null) {
             remove(getAbstraction(that.getDeclaration()));
-        }
-    }
-    
-    private static Declaration getAbstraction(Declaration d) {
-        if (isOverloadedVersion(d)) {
-            return d.getContainer().getDirectMember(d.getName(), null, false);
-        }
-        else {
-            return d;
         }
     }
 

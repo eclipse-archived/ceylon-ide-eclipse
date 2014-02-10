@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
+
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
@@ -29,5 +32,14 @@ public class FindUtils {
 	    cu.visit(visitor);
 	    return visitor.getStatement();
 	}
+
+    public static Declaration getAbstraction(Declaration d) {
+        if (isOverloadedVersion(d)) {
+            return d.getContainer().getDirectMember(d.getName(), null, false);
+        }
+        else {
+            return d;
+        }
+    }
 
 }
