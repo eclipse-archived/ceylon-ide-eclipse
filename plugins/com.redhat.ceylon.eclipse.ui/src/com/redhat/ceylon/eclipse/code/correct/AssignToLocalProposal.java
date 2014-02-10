@@ -21,7 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 
-class AssignToLocalProposal extends ChangeCorrectionProposal {
+class AssignToLocalProposal extends CorrectionProposal {
     
     final IFile file;
     final int offset;

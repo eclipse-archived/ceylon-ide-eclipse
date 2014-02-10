@@ -48,7 +48,7 @@ public class ChangeRefiningTypeProposal {
 	    		change.setEdit(new ReplaceEdit(node.getStartIndex(), 
 	    				node.getStopIndex()-node.getStartIndex()+1, 
 	    				type));
-	    		proposals.add(new ChangeCorrectionProposal("Change type to '" + type + "'", change));
+	    		proposals.add(new CorrectionProposal("Change type to '" + type + "'", change));
 	    	}
 	    }
 	}
@@ -117,7 +117,7 @@ public class ChangeRefiningTypeProposal {
 				change.addEdit(new InsertEdit(offset, buf.toString()));
 			}
 			if (change.getEdit().hasChildren()) {
-				proposals.add(new ChangeCorrectionProposal("Change parameter list", change));
+				proposals.add(new CorrectionProposal("Change parameter list", change));
 			}
 	    }
 	}

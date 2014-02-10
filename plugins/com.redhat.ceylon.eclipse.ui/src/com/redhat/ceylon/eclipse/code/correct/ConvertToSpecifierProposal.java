@@ -15,7 +15,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-class ConvertToSpecifierProposal extends ChangeCorrectionProposal {
+class ConvertToSpecifierProposal extends CorrectionProposal {
     
     final int offset; 
     final IFile file;

@@ -22,7 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class FixMultilineStringIndentationProposal 
-        extends ChangeCorrectionProposal {
+        extends CorrectionProposal {
 	
     public static void addFixMultilineStringIndentation(
     		Collection<ICompletionProposal> proposals, 

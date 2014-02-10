@@ -39,7 +39,7 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
 
-class CreateProposal extends ChangeCorrectionProposal {
+class CreateProposal extends CorrectionProposal {
     
     final int offset;
     final IFile file;

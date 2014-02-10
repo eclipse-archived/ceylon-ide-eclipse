@@ -40,7 +40,7 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
-class CreateParameterProposal extends ChangeCorrectionProposal {
+class CreateParameterProposal extends CorrectionProposal {
     
     final int offset;
     final IFile file;

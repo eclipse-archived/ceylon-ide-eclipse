@@ -51,7 +51,7 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
  * }
  * </pre>
  */
-public class AddConstraintSatisfiesProposal extends ChangeCorrectionProposal {
+public class AddConstraintSatisfiesProposal extends CorrectionProposal {
 
     public static void addConstraintSatisfiesProposals(Tree.CompilationUnit cu, Node node, 
     		Collection<ICompletionProposal> proposals, IProject project) {

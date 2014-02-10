@@ -19,7 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 
-public class AddThrowsAnnotationProposal extends ChangeCorrectionProposal {
+public class AddThrowsAnnotationProposal extends CorrectionProposal {
     
     public static void addThrowsAnnotationProposal(Collection<ICompletionProposal> proposals, 
     		Tree.Statement statement, Tree.CompilationUnit cu, IFile file, IDocument doc) {

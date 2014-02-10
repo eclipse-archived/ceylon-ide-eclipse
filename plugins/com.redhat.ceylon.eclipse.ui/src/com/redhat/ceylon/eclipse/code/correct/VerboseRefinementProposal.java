@@ -13,7 +13,7 @@ import org.eclipse.text.edits.InsertEdit;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
-class VerboseRefinementProposal extends ChangeCorrectionProposal {
+class VerboseRefinementProposal extends CorrectionProposal {
 
 	private VerboseRefinementProposal(Change change) {
 		super("Convert to verbose refinement", change);

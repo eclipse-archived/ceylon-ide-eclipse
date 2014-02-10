@@ -44,14 +44,9 @@ import org.eclipse.ui.IEditorPart;
 
 
 /**
- * Implementation of a Java completion proposal to be used for quick fix 
- * and quick assist proposals that are based on a {@link Change}. The 
- * proposal offers additional proposal information (based on the 
- * {@link Change}).
- * 
- * @since 3.8
+ * A quick fix/assist proposal based on a {@link Change}.
  */
-public class ChangeCorrectionProposal 
+class CorrectionProposal 
         implements ICompletionProposal, ICompletionProposalExtension5, ICompletionProposalExtension6 {
 
     private static final NullChange COMPUTING_CHANGE = 
@@ -71,7 +66,7 @@ public class ChangeCorrectionProposal
      * @param image the image that is displayed for this proposal or <code>null</code> if no image
      *            is desired
      */
-    public ChangeCorrectionProposal(String name, Change change, Image image) {
+    public CorrectionProposal(String name, Change change, Image image) {
         if (name == null) {
             throw new IllegalArgumentException("Name must not be null");
         }
@@ -88,7 +83,7 @@ public class ChangeCorrectionProposal
      *            if the change will be created by implementors of {@link #createChange()}.
      * @param relevance The relevance of this proposal.
      */
-    public ChangeCorrectionProposal(String name, Change change) {
+    public CorrectionProposal(String name, Change change) {
         this(name, change, MINOR_CHANGE);
     }
 

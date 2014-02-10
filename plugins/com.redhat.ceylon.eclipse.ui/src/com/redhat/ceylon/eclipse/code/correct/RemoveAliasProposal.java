@@ -17,7 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-class RemoveAliasProposal extends ChangeCorrectionProposal {
+class RemoveAliasProposal extends CorrectionProposal {
         
     protected static final class AliasRemovalVisitor extends Visitor {
         private final Declaration dec;

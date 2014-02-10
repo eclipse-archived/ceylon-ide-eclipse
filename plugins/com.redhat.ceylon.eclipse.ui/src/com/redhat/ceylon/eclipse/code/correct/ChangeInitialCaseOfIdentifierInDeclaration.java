@@ -14,7 +14,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 
 public class ChangeInitialCaseOfIdentifierInDeclaration 
-        extends ChangeCorrectionProposal {
+        extends CorrectionProposal {
 
     public static void addChangeIdentifierCaseProposal(Node node, 
     		Collection<ICompletionProposal> proposals, IFile file) {

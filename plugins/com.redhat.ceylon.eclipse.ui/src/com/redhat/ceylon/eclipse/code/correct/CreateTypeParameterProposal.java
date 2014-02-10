@@ -34,7 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
-class CreateTypeParameterProposal extends ChangeCorrectionProposal {
+class CreateTypeParameterProposal extends CorrectionProposal {
     
     final int offset;
     final IFile file;

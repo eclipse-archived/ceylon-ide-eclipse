@@ -31,7 +31,7 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
-class AddParameterProposal extends ChangeCorrectionProposal {
+class AddParameterProposal extends CorrectionProposal {
     
     final int offset; 
     final IFile file;
