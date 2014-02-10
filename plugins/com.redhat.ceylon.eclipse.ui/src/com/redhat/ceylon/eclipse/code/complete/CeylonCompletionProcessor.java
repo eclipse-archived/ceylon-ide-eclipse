@@ -50,10 +50,12 @@ import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addM
 import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addMemberNameProposals;
 import static com.redhat.ceylon.eclipse.code.complete.ModuleCompletions.addModuleCompletions;
 import static com.redhat.ceylon.eclipse.code.complete.ModuleCompletions.addModuleDescriptorCompletion;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.ALIAS_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.DOCLINK;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.FUNCTION_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PARAMETER_LIST;
@@ -61,7 +63,9 @@ import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.SATISFI
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ARGUMENT_LIST;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_PARAMETER_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.UPPER_BOUND;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.VALUE_REF;
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addCurrentPackageNameCompletion;
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageCompletions;
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageDescriptorCompletion;
@@ -114,6 +118,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -682,8 +687,13 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 	else if (ol==IMPORT) {
                 		addImportProposal(offset, prefix, cpc, result, dwp, dec, scope);
                 	}
+                	else if (ol!=null && ol.reference) {
+                	    if (isReferenceProposable(ol, dec)) {
+                	        addImportProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                	    }
+                	}
                 	else {
-                		addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope, isMember);
+                        addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope, isMember);
                 	}
                 }
                 
@@ -707,6 +717,17 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    private static boolean isReferenceProposable(OccurrenceLocation ol,
+            Declaration dec) {
+        return (ol==VALUE_REF || !(dec instanceof Value)) &&
+            (ol==FUNCTION_REF || !(dec instanceof Method)) &&
+            (ol==ALIAS_REF || !(dec instanceof TypeAlias)) &&
+            (ol==TYPE_PARAMETER_REF || !(dec instanceof TypeParameter)) &&
+            //note: classes and interfaces are almost always proposable 
+            //      because they are legal qualifiers for other refs
+            (ol!=TYPE_PARAMETER_REF || dec instanceof TypeParameter);
     }
 
 	private static void addRefinementProposals(int offset,

@@ -1,18 +1,26 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.ALIAS_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.DOCLINK;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.FUNCTION_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.INTERFACE_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.MODULE_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.OF;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PACKAGE_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.SATISFIES;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ARGUMENT_LIST;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_PARAMETER_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.UPPER_BOUND;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.VALUE_REF;
 
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -189,7 +197,35 @@ class FindOccurrenceLocationVisitor extends Visitor
         super.visit(that);
         if (inBounds(that)) {
             if (occurrence!=TYPE_ARGUMENT_LIST) {
-                occurrence = META;
+                switch (that.getNodeType()) {
+                case "ModuleLiteral": 
+                    occurrence=MODULE_REF; 
+                    break;
+                case "PackageLiteral": 
+                    occurrence=PACKAGE_REF; 
+                    break;
+                case "ValueLiteral": 
+                    occurrence=VALUE_REF; 
+                    break;
+                case "FunctionLiteral": 
+                    occurrence=FUNCTION_REF; 
+                    break;
+                case "InterfaceLiteral": 
+                    occurrence=INTERFACE_REF; 
+                    break;
+                case "ClassLiteral": 
+                    occurrence=CLASS_REF; 
+                    break;
+                case "TypeParameterLiteral": 
+                    occurrence=TYPE_PARAMETER_REF; 
+                    break;
+                case "AliasLiteral": 
+                    occurrence=ALIAS_REF; 
+                    break;
+                default:
+                    occurrence = META;
+                }
+                
             }
         }
     }
