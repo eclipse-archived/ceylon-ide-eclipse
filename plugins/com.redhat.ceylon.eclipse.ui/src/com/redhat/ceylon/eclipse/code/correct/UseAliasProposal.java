@@ -18,11 +18,11 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtension6 {
     
-    Tree.ImportMemberOrType node;
-    Declaration dec;
-    CeylonEditor editor;
+    private final Tree.ImportMemberOrType node;
+    private final Declaration dec;
+    private final CeylonEditor editor;
     
-    UseAliasProposal(Tree.ImportMemberOrType node, 
+    private UseAliasProposal(Tree.ImportMemberOrType node, 
             Declaration dec, CeylonEditor editor) {
         this.node = node;
         this.dec = dec;

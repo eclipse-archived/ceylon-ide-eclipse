@@ -21,8 +21,6 @@ import org.eclipse.jface.text.link.LinkedPositionGroup;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -51,19 +49,26 @@ class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
 		}
 
 		@Override
-		public void visit(BaseMemberOrTypeExpression that) {
+		public void visit(Tree.StaticMemberOrTypeExpression that) {
 		    super.visit(that);
 		    addLinkedPosition(document, that.getIdentifier(), 
 		            that.getDeclaration());
 		}
-
+		
 		@Override
-		public void visit(BaseType that) {
+		public void visit(Tree.SimpleType that) {
 		    super.visit(that);
 		    addLinkedPosition(document, that.getIdentifier(), 
 		            that.getDeclarationModel());
 		}
 
+        @Override
+        public void visit(Tree.MemberLiteral that) {
+            super.visit(that);
+            addLinkedPosition(document, that.getIdentifier(), 
+                    that.getDeclaration());
+        }
+        
 		protected void addLinkedPosition(final IDocument document,
 		        Identifier id, Declaration d) {
 		    if (id!=null && d!=null && dec.equals(d)) {
