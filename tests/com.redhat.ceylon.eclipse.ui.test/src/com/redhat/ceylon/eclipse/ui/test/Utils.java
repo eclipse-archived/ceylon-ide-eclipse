@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.ui.test;
 
+import static org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable.asyncExec;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -11,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IBuildContext;
@@ -25,23 +29,32 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathContainer;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
+import org.eclipse.swtbot.swt.finder.results.Result;
+import org.eclipse.swtbot.swt.finder.results.VoidResult;
+import org.eclipse.swtbot.swt.finder.utils.Position;
+import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
+import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
+import org.junit.Assert;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 
 public class Utils {
 
@@ -146,6 +159,66 @@ public class Utils {
         }
         catch(WidgetNotFoundException e) {}
         return bot;
+    }
+
+    /**
+     * Create a mouse event
+     *
+     * @param x the x co-ordinate of the mouse event.
+     * @param y the y co-ordinate of the mouse event.
+     * @param button the mouse button that was clicked.
+     * @param stateMask the state of the keyboard modifier keys.
+     * @param count the number of times the mouse was clicked.
+     * @return an event that encapsulates {@link #widget} and {@link #display}
+     * @since 1.2
+     */
+    private static Event createMouseEvent(Widget widget, Display display, int x, int y, int button, int stateMask, int count) {
+        Event event = new Event();
+        event.time = (int) System.currentTimeMillis();
+        event.widget = widget;
+        event.display = display;
+        event.x = x;
+        event.y = y;
+        event.button = button;
+        event.stateMask = stateMask;
+        event.count = count;
+        return event;
+    }
+
+    /**
+     * Sends a non-blocking notification of the specified type to the widget.
+     *
+     * @param eventType the type of event.
+     * @param createEvent the event to be sent to the {@link #widget}.
+     * @param widget the widget to send the event to.
+     */
+    public static void notify(final int eventType, final Event createEvent, final Widget widget, final Display display) {
+        createEvent.type = eventType;
+        UIThreadRunnable.asyncExec(display, new VoidResult() {
+            public void run() {
+                if ((widget == null) || widget.isDisposed()) {
+                    return;
+                }
+                try {
+                    if (! ((Boolean) SWTUtils.invokeMethod(widget, "isEnabled")).booleanValue()) {
+                        return;
+                    }
+                } catch (Exception e) {
+                }
+                
+                widget.notifyListeners(eventType, createEvent);
+            }
+        });
+
+        UIThreadRunnable.syncExec(new VoidResult() {
+            public void run() {
+                // do nothing, just wait for sync.
+            }
+        });
+
+        long playbackDelay = SWTBotPreferences.PLAYBACK_DELAY;
+        if (playbackDelay > 0)
+            SWTUtils.sleep(playbackDelay);
     }
 
     public static void resetWorkbench(SWTWorkbenchBot bot) {
@@ -447,5 +520,57 @@ public class Utils {
         return summary;
     }
     
+    public static void ctrlClick(final SWTBotEclipseEditor editor) {
+        Rectangle caretCoordinates = UIThreadRunnable.syncExec(editor.getStyledText().display, new Result<Rectangle>() {
+            @Override
+            public Rectangle run() {
+                int offset = editor.getStyledText().widget.getCaretOffset();                
+                return editor.getStyledText().widget.getTextBounds(offset, offset + 1);
+            }
+        });
+        
+        final Point pointToMoveAndClick = new Point(caretCoordinates.x + (caretCoordinates.width / 2), caretCoordinates.y + caretCoordinates.height / 2);
+       
+        editor.setFocus();
+        asyncExec(editor.getStyledText().display, new VoidResult() {
+            @Override
+            public void run() {
+                Point absoluteCoordinates = editor.getStyledText().widget.toDisplay(pointToMoveAndClick);
+                editor.getStyledText().display.setCursorLocation(absoluteCoordinates);
+            }
+        });
+        Event event = Utils.createMouseEvent(editor.getStyledText().widget, editor.getStyledText().display, pointToMoveAndClick.x, pointToMoveAndClick.y, 0, SWT.CTRL, 1);
+        Utils.notify(SWT.MouseMove, event, editor.getStyledText().widget, editor.getStyledText().display);
+        editor.bot().sleep(500);
+        event = Utils.createMouseEvent(editor.getStyledText().widget, editor.getStyledText().display, pointToMoveAndClick.x, pointToMoveAndClick.y, 1, SWT.CTRL, 1);
+        Utils.notify(SWT.MouseDown, event, editor.getStyledText().widget, editor.getStyledText().display);
+        event = Utils.createMouseEvent(editor.getStyledText().widget, editor.getStyledText().display, pointToMoveAndClick.x, pointToMoveAndClick.y, 1, SWT.CTRL, 1);
+        Utils.notify(SWT.MouseUp, event, editor.getStyledText().widget, editor.getStyledText().display);
+    }
+    
+    public static SWTBotEclipseEditor showEditorByTitle(SWTWorkbenchBot bot, String title) {
+        try {
+            SWTBotEditor editor = bot.editorByTitle(title);
+            Assert.assertNotNull("No opened editor found with title '" + title + "'", editor);
+            SWTBotEclipseEditor textEditor = editor.toTextEditor();
+            textEditor.show();
+            return textEditor;
+        } catch(WidgetNotFoundException e) {
+            Assert.fail("No opened editor found with title '" + title + "'");
+        }
+        return null;
+    }
 
+    public static Position positionInTextEditor(SWTBotEclipseEditor editor, String match, int offset) {
+        Pattern pattern = Pattern.compile(match);
+        for (int line=0; line < editor.getLineCount(); line++) {
+            String lineText = editor.getTextOnLine(line);
+            Matcher matcher = pattern.matcher(lineText);
+            if (matcher.find()) {
+                return new Position(line, matcher.start() + offset);
+            }
+        }
+        Assert.fail("The editor of file '" + editor.getTitle() + "' doesn't contain any string matching '" + match + "'");
+        return null;
+    }
 }
