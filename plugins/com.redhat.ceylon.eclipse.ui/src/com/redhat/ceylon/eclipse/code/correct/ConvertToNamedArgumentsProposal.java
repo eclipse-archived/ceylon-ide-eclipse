@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -28,7 +26,7 @@ class ConvertToNamedArgumentsProposal extends ChangeCorrectionProposal {
     final IFile file;
     
     public ConvertToNamedArgumentsProposal(int offset, IFile file, Change change) {
-	    super("Convert to named arguments", change, CORRECTION);
+	    super("Convert to named arguments", change);
         this.offset=offset;
         this.file=file;
     }

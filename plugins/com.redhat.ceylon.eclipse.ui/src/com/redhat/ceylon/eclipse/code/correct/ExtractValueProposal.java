@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
+
 import java.util.Collection;
 
 import org.eclipse.jface.text.IDocument;
@@ -12,7 +14,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractValueRefactoringAction;
 
 public class ExtractValueProposal implements ICompletionProposal {
@@ -30,7 +31,7 @@ public class ExtractValueProposal implements ICompletionProposal {
 
     @Override
     public Image getImage() {
-    	return CeylonLabelProvider.CHANGE;
+    	return CHANGE;
     }
 
     @Override
