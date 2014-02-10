@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CASE;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 
@@ -16,9 +19,11 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 public class KeywordCompletionProposal extends CompletionProposal {
     
     static void addKeywordProposals(CeylonParseController cpc, int offset, 
-    		String prefix, List<ICompletionProposal> result, Node node) {
-        if (isModuleDescriptor(cpc)) {
-            if( prefix.isEmpty() || "import".startsWith(prefix) ) {
+    		String prefix, List<ICompletionProposal> result, Node node,
+    		OccurrenceLocation ol) {
+        if (isModuleDescriptor(cpc) && 
+                ol!=META && (ol==null||!ol.reference)) {
+            if (prefix.isEmpty() || "import".startsWith(prefix)) {
                 if (node instanceof Tree.CompilationUnit) {
                     List<Tree.ModuleDescriptor> moduleDescriptors = 
                     		cpc.getRootNode().getModuleDescriptors();
@@ -36,7 +41,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
                 }
             }
         }
-        else if (!prefix.isEmpty()) {
+        else if (!prefix.isEmpty() && ol!=CATCH && ol!=CASE) {
             for (String keyword: keywords) {
                 if (keyword.startsWith(prefix)) {
                     addKeywordProposal(offset, prefix, result, keyword);
