@@ -127,6 +127,7 @@ public class Utils {
 
                 // import operation to import project files if copy checkbox is selected
                 if (importSource != null) {
+                    @SuppressWarnings("rawtypes")
                     List filesToImport = FileSystemStructureProvider.INSTANCE
                             .getChildren(importSource);
                     ImportOperation operation = new ImportOperation(project
@@ -249,6 +250,7 @@ public class Utils {
         private boolean installed = false;
         private CountDownLatch firstBuildLatch = new CountDownLatch(1);
         private int kind;
+        @SuppressWarnings("rawtypes")
         private Map args;
         private IProject project;
         private Collection<IClasspathContainer> resolvedCpContainers;
@@ -286,7 +288,7 @@ public class Utils {
         }
         
         @Override
-        protected void startBuild(int kind, Map args, IProject project, 
+        protected void startBuild(int kind, @SuppressWarnings("rawtypes") Map args, IProject project, 
                 IBuildConfiguration config, IBuildContext context, IProgressMonitor monitor) {
             if (! this.project.equals(project)) {
                 summaryToFill = new CeylonBuildSummary(project);
@@ -382,8 +384,14 @@ public class Utils {
             return kind;
         }
 
+        
+        @SuppressWarnings("rawtypes")
         public final Map getArgs() {
             return args;
+        }
+
+        public final boolean isReentrant() {
+            return isReentrant;
         }
 
         public final IProject getProject() {

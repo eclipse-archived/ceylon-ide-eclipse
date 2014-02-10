@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.ui.test;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
-import java.io.StringReader;
 import java.nio.charset.Charset;
 
 import junit.framework.Assert;
@@ -22,12 +21,12 @@ import org.eclipse.swtbot.swt.finder.utils.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import com.redhat.ceylon.common.FileUtil;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.test.Utils.CeylonBuildSummary;
 
+@SuppressWarnings("deprecation")
 public abstract class AbstractMultiProjectTest {
 
     protected static String projectGroup = "model-and-phased-units";
