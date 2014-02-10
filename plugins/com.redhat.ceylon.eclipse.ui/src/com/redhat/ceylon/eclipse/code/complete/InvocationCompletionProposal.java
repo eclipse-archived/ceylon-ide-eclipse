@@ -21,6 +21,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSigna
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -70,6 +71,16 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 class InvocationCompletionProposal extends CompletionProposal {
 	
+    static void addProgramElementReferenceProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration dec, Scope scope,
+            boolean isMember) {
+        result.add(new InvocationCompletionProposal(offset, prefix,
+                dec.getName(), escapeName(dec),
+                dec, dec.getReference(), scope, cpc, 
+                true, false, false, isMember));
+    }
+    
     static void addReferenceProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration dec, Scope scope,
