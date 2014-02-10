@@ -35,6 +35,7 @@ import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.keyboard.KeyboardFactory;
 import org.eclipse.swtbot.swt.finder.keyboard.KeyboardStrategy;
 import org.eclipse.swtbot.swt.finder.keyboard.Keystrokes;
+import org.eclipse.swtbot.swt.finder.utils.Position;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -75,14 +76,11 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
     public void bug589_AddedJavaMethodNotSeen() throws InterruptedException, CoreException {
         openInEditor(mainProject, "src/mainModule/run.ceylon");
         openInEditor(mainProject, "javaSrc/mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java");
-
-        SWTBotEditor editor = bot.editorByTitle("JavaClassInCeylonModule_Main_Ceylon_Project.java");
-        Assert.assertNotNull(editor);
-        SWTBotEclipseEditor javaFileEditor = editor.toTextEditor();
-        javaFileEditor.show();
-        assertEquals("Wrong line 4 in file JavaClassInCeylonModule_Main_Ceylon_Project.java : ", javaFileEditor.getLines().get(3).trim(), "public class JavaClassInCeylonModule_Main_Ceylon_Project {");        
+        
+        SWTBotEclipseEditor javaFileEditor = Utils.showEditorByTitle(bot, "JavaClassInCeylonModule_Main_Ceylon_Project.java");
+        Position javaClassDeclarationPosition = Utils.positionInTextEditor(javaFileEditor, "public class JavaClassInCeylonModule_Main_Ceylon_Project", 0);
         String javaEditorText = javaFileEditor.getText();
-        javaFileEditor.insertText(4, 0, "public void newMethodToTest() {}\n");
+        javaFileEditor.insertText(javaClassDeclarationPosition.line + 1, 0, "public void newMethodToTest() {}\n");
         
         Utils.CeylonBuildSummary buildSummary = new Utils.CeylonBuildSummary(mainProject);
         buildSummary.install();
@@ -90,13 +88,10 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
         try {
             buildSummary.waitForBuildEnd(30);
             
-            editor = bot.editorByTitle("run.ceylon");
-            Assert.assertNotNull(editor);
-            SWTBotEclipseEditor ceylonFileEditor = editor.toTextEditor();
-            ceylonFileEditor.show();
-            assertEquals("Wrong line 33 in run.ceylon : ", ceylonFileEditor.getLines().get(33).trim(), "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();");
+            SWTBotEclipseEditor ceylonFileEditor = Utils.showEditorByTitle(bot, "run.ceylon");
+            Position javaClassUsePosition = Utils.positionInTextEditor(javaFileEditor, "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();", 0);
             String ceylonEditorText = ceylonFileEditor.getText();
-            ceylonFileEditor.insertText(34, 0,"v5.newMethodToTest();\n");
+            ceylonFileEditor.insertText(javaClassUsePosition.line + 1, 0,"v5.newMethodToTest();\n");
             
             /*
             ceylonFileEditor.navigateTo(18, 3);
