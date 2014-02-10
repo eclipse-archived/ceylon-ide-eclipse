@@ -1,13 +1,23 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.VERSION_STYLER;
+import static java.lang.Character.isLowerCase;
+import static java.lang.Character.isUpperCase;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.viewers.StyledString;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
@@ -26,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public class CompletionUtil {
 
@@ -215,6 +226,33 @@ public class CompletionUtil {
         		!td.getName().equals("Character") &&
         		!td.getName().equals("Float") &&
         		!td.getName().equals("Boolean");
+    }
+
+    public static void styleProposal(StyledString result, String string) {
+    	StringTokenizer tokens = new StringTokenizer(string, " ()<>", true);
+    	while (tokens.hasMoreTokens()) {
+    		String token = tokens.nextToken();
+    		if (isUpperCase(token.charAt(0))) {
+    			result.append(token, TYPE_ID_STYLER);
+    		}
+    		else if (isLowerCase(token.charAt(0))) {
+    			if (CeylonTokenColorer.keywords.contains(token)) {
+    				result.append(token, KW_STYLER);
+    			}
+    			else if (token.contains(".")) {
+    			    result.append(token, PACKAGE_STYLER);
+    			}
+    			else {
+    				result.append(token, ID_STYLER);
+    			}
+    		}
+    		else if (token.charAt(0)=='\"') {
+    			result.append(token, VERSION_STYLER);
+    		}
+    		else {
+    			result.append(token);
+    		}
+    	}
     }
 
 }

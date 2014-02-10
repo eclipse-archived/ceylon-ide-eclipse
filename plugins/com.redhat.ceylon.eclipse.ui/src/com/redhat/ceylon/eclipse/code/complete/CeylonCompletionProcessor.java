@@ -45,7 +45,7 @@ import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addInvocationProposals;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.computeParameterContextInformation;
-import static com.redhat.ceylon.eclipse.code.complete.KeywordCompletions.addKeywordProposals;
+import static com.redhat.ceylon.eclipse.code.complete.KeywordCompletionProposal.addKeywordProposals;
 import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addMemberNameProposal;
 import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addMemberNameProposals;
 import static com.redhat.ceylon.eclipse.code.complete.ModuleCompletions.addModuleCompletions;

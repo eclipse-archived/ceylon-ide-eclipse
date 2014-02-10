@@ -27,29 +27,21 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IEditingSupport;
-import org.eclipse.jface.text.IEditingSupportRegistry;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
-import org.eclipse.jface.text.link.LinkedModeUI;
-import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -74,9 +66,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 class InvocationCompletionProposal extends CompletionProposal {
@@ -140,7 +129,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
     
-	final class NestedCompletionProposal implements ICompletionProposal, 
+    final class NestedCompletionProposal implements ICompletionProposal, 
 	        ICompletionProposalExtension2 {
 	    private final String op;
 	    private final int loc;
@@ -329,7 +318,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 			boolean positionalInvocation, boolean namedInvocation, 
 			boolean qualified) {
 		super(offset, prefix, getImageForDeclaration(dec), 
-				desc, text, true);
+				desc, text);
 		this.cpc = cpc;
 		this.declaration = dec;
 		this.producedReference = producedReference;
@@ -415,24 +404,21 @@ class InvocationCompletionProposal extends CompletionProposal {
 	
 	@Override
 	public Point getSelection(IDocument document) {
-		if (declaration instanceof Generic) {
-        	int first = getFirstPosition();
-        	if (first<=0) {
-        	    //no arg list
-        		return super.getSelection(document);
-        	}
-        	int next = getNextPosition(document, first);
-            if (next<=0) {
-                //an empty arg list
-                return super.getSelection(document);
-            }
-        	int middle = getCompletionPosition(first, next);
-			return new Point(offset-prefix.length()+first+middle, 
-			        next-middle);
-		}
-		return super.getSelection(document);
+	    int first = getFirstPosition();
+	    if (first<=0) {
+	        //no arg list
+	        return super.getSelection(document);
+	    }
+	    int next = getNextPosition(document, first);
+	    if (next<=0) {
+	        //an empty arg list
+	        return super.getSelection(document);
+	    }
+	    int middle = getCompletionPosition(first, next);
+	    return new Point(offset-prefix.length()+first+middle, 
+	            next-middle);
 	}
-
+	
 	public int getNextPosition(IDocument document, 
 	        int lastOffset) {
 		int loc = offset-prefix.length();
@@ -469,8 +455,6 @@ class InvocationCompletionProposal extends CompletionProposal {
 		return getDocumentationFor(cpc, declaration);	
 	}
 	
-    private IEditingSupport editingSupport;
-    
 	public void enterLinkedMode(IDocument document, 
 	        List<Parameter> params, 
 			List<TypeParameter> typeParams) {
@@ -496,55 +480,18 @@ class InvocationCompletionProposal extends CompletionProposal {
 	        	else {
 	        		addValueArgumentProposals(params, loc, first, props, i);
 	        	}
-		        LinkedPositionGroup linkedPositionGroup = 
-		                new LinkedPositionGroup();
 		        int middle = getCompletionPosition(first, next);
 		        ProposalPosition linkedPosition = 
 		                new ProposalPosition(document, 
 		                        loc+first+middle, next-middle, i, 
 		                        props.toArray(NO_COMPLETIONS));
-		        linkedPositionGroup.addPosition(linkedPosition);
+                addLinkedPosition(linkedModeModel, linkedPosition);
 		        first = first+next+1;
 		        next = getNextPosition(document, first);
-	            linkedModeModel.addGroup(linkedPositionGroup);
 	            i++;
 	        }
-            linkedModeModel.forceInstall();
-            final CeylonEditor editor = 
-                    (CeylonEditor) EditorUtil.getCurrentEditor();
-            linkedModeModel.addLinkingListener(new ILinkedModeListener() {
-                @Override
-                public void left(LinkedModeModel model, int flags) {
-                    editor.clearLinkedMode();
-//                    linkedModeModel.exit(ILinkedModeListener.NONE);
-                    CeylonSourceViewer viewer= editor.getCeylonSourceViewer();
-                    if (viewer instanceof IEditingSupportRegistry) {
-                        ((IEditingSupportRegistry) viewer).unregister(editingSupport);
-                    }
-                    editor.getSite().getPage().activate(editor);
-                    if ((flags&EXTERNAL_MODIFICATION)==0 && viewer!=null) {
-                    	viewer.invalidateTextPresentation();
-                    }
-                }
-                @Override
-                public void suspend(LinkedModeModel model) {
-                    editor.clearLinkedMode();
-                }
-                @Override
-                public void resume(LinkedModeModel model, int flags) {
-                    editor.setLinkedMode(model, InvocationCompletionProposal.this);
-                }
-            });
-            editor.setLinkedMode(linkedModeModel, this);
-            CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
-			EditorLinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
-            ui.setExitPosition(viewer, loc+text.length(), 0, i);
-            ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
-            ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
-            ui.setDoContextInfo(true);
-            ui.enter();
-            
-            registerEditingSupport(editor, viewer);
+	        installLinkedMode(document, linkedModeModel, 
+	                i, loc+text.length());
 
 	    }
 	    catch (Exception e) {
@@ -552,25 +499,6 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    }
 	}
 
-    private void registerEditingSupport(final CeylonEditor editor,
-            CeylonSourceViewer viewer) {
-        if (viewer instanceof IEditingSupportRegistry) {
-            editingSupport = new IEditingSupport() {
-                public boolean ownsFocusShell() {
-                    Shell editorShell= editor.getSite().getShell();
-                    Shell activeShell= editorShell.getDisplay().getActiveShell();
-                    if (editorShell == activeShell)
-                        return true;
-                    return false;
-                }
-                public boolean isOriginator(DocumentEvent event, IRegion subjectRegion) {
-                    return false; //leave on external modification outside positions
-                }
-            };
-        	((IEditingSupportRegistry) viewer).register(editingSupport);
-        }
-    }
-	
 	protected int getCompletionPosition(int first, int next) {
 		return text.substring(first, first+next-1).lastIndexOf(' ')+1;
 	}

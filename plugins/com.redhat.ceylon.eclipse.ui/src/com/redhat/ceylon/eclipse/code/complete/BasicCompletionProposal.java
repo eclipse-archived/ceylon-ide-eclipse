@@ -121,7 +121,7 @@ class BasicCompletionProposal extends CompletionProposal {
 			String desc, String text, Declaration dec, 
 			CeylonParseController cpc) {
 		super(offset, prefix, getImageForDeclaration(dec), 
-				desc, text, false);
+				desc, text);
 		this.cpc = cpc;
 		this.declaration = dec;
 	}

@@ -1,27 +1,33 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.VERSION_STYLER;
-import static java.lang.Character.isLowerCase;
-import static java.lang.Character.isUpperCase;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.styleProposal;
 
-import java.util.StringTokenizer;
-
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IEditingSupport;
+import org.eclipse.jface.text.IEditingSupportRegistry;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension4;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.text.link.ILinkedModeListener;
+import org.eclipse.jface.text.link.LinkedModeModel;
+import org.eclipse.jface.text.link.LinkedModeUI;
+import org.eclipse.jface.text.link.LinkedPositionGroup;
+import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 
 public class CompletionProposal implements ICompletionProposal, 
@@ -30,80 +36,37 @@ public class CompletionProposal implements ICompletionProposal,
     
     protected final String text;
     private final Image image;
-    private final boolean selectParams;
     protected final String prefix;
     private final String description;
     protected int offset;
     
+    private IEditingSupport editingSupport;
+    
     CompletionProposal(int offset, String prefix, Image image,
-            String desc, String text, boolean selectParams) {
+            String desc, String text) {
         this.text=text;
         this.image = image;
-        this.selectParams = selectParams;
         this.offset = offset;
         this.prefix = prefix;
         this.description = desc;
-        if (description==null) {
-            throw new NullPointerException();
-        }
+        Assert.isNotNull(description);
     }
     
     @Override
     public Image getImage() {
         return image;
     }
+    
     @Override
     public Point getSelection(IDocument document) {
-        /*if (text.endsWith("= ")) {
-                return new Point(offset-prefix.length()+text.length(), 0);
-            }
-        else*/ 
-        if (selectParams) {
-            int locOfTypeArgs = text.indexOf('<');
-            int loc = locOfTypeArgs;
-            if (loc<0) loc = text.indexOf('(');
-            if (loc<0) loc = text.indexOf('=')+1;
-            int start;
-            int length;
-            if (loc<=0 || locOfTypeArgs<0 &&
-                    (text.contains("()") || text.contains("{}"))) {
-                start = text.endsWith("{}") ? text.length()-1 : text.length();
-                length = 0;
-            }
-            else {
-                int endOfTypeArgs = text.indexOf('>');
-                int end = text.indexOf(',');
-                if (end<0) end = text.indexOf(')');
-                if (end<0) end = text.indexOf(';');
-                if (end<0) end = text.length()-1;
-                if (endOfTypeArgs>0) {
-                	end = end < endOfTypeArgs ? end : endOfTypeArgs;
-                }
-                start = loc+1;
-                length = end-loc-1;
-            }
-            return new Point(offset-prefix.length() + start, length);
-        }
-        else {
-            int loc = text.indexOf("nothing;");
-            int length;
-            int start;
-            if (loc<0) {
-                start = offset + text.length()-prefix.length();
-                if (text.endsWith("{}")) start--;
-                length = 0;
-            }
-            else {
-                start = offset + loc-prefix.length();
-                length = 7;
-            }
-            return new Point(start, length);
-        }
+        return new Point(offset + text.length() - prefix.length(), 0);
+
     }
     
     public void apply(IDocument document) {
         try {
-            document.replace(offset-prefix.length(), prefix.length(), text);
+            document.replace(offset-prefix.length(), 
+                    prefix.length(), text);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -126,42 +89,8 @@ public class CompletionProposal implements ICompletionProposal,
 	@Override
 	public StyledString getStyledDisplayString() {
 		StyledString result = new StyledString();
-		String string = getDisplayString();
-		if (this instanceof RefinementCompletionProposal) {
-			if (string.startsWith("shared actual")) {
-				result.append(string.substring(0,13), ANN_STYLER);
-				string=string.substring(13);
-			}
-		}
-		style(result, string);
+		styleProposal(result, getDisplayString());
 		return result;
-	}
-
-	public static void style(StyledString result, String string) {
-		StringTokenizer tokens = new StringTokenizer(string, " ()<>", true);
-		while (tokens.hasMoreTokens()) {
-			String token = tokens.nextToken();
-			if (isUpperCase(token.charAt(0))) {
-				result.append(token, TYPE_ID_STYLER);
-			}
-			else if (isLowerCase(token.charAt(0))) {
-				if (CeylonTokenColorer.keywords.contains(token)) {
-					result.append(token, KW_STYLER);
-				}
-				else if (token.contains(".")) {
-				    result.append(token, PACKAGE_STYLER);
-				}
-				else {
-					result.append(token, ID_STYLER);
-				}
-			}
-			else if (token.charAt(0)=='\"') {
-				result.append(token, VERSION_STYLER);
-			}
-			else {
-				result.append(token);
-			}
-		}
 	}
 
 	@Override
@@ -169,4 +98,83 @@ public class CompletionProposal implements ICompletionProposal,
 		return null;
 	}
 	
+    private final class ProposalLinkedModeListener implements
+            ILinkedModeListener {
+        private final CeylonEditor editor;
+        
+        ProposalLinkedModeListener(CeylonEditor editor) {
+            this.editor = editor;
+        }
+        
+        @Override
+        public void left(LinkedModeModel model, int flags) {
+            editor.clearLinkedMode();
+            //linkedModeModel.exit(ILinkedModeListener.NONE);
+            CeylonSourceViewer viewer= editor.getCeylonSourceViewer();
+            if (viewer instanceof IEditingSupportRegistry) {
+                ((IEditingSupportRegistry) viewer).unregister(editingSupport);
+            }
+            editor.getSite().getPage().activate(editor);
+            if ((flags&EXTERNAL_MODIFICATION)==0 && viewer!=null) {
+                viewer.invalidateTextPresentation();
+            }
+        }
+        
+        @Override
+        public void suspend(LinkedModeModel model) {
+            editor.clearLinkedMode();
+        }
+        
+        @Override
+        public void resume(LinkedModeModel model, int flags) {
+            editor.setLinkedMode(model, this);
+        }
+    }
+
+    void addLinkedPosition(final LinkedModeModel linkedModeModel,
+            ProposalPosition linkedPosition) 
+                    throws BadLocationException {
+        LinkedPositionGroup linkedPositionGroup = new LinkedPositionGroup();
+        linkedPositionGroup.addPosition(linkedPosition);
+        linkedModeModel.addGroup(linkedPositionGroup);
+    }
+
+    void installLinkedMode(IDocument document, 
+            LinkedModeModel linkedModeModel, 
+            int exitSequenceNumber, int exitPosition)
+                    throws BadLocationException {
+        linkedModeModel.forceInstall();
+        CeylonEditor editor = (CeylonEditor) EditorUtil.getCurrentEditor();
+        linkedModeModel.addLinkingListener(new ProposalLinkedModeListener(editor));
+        editor.setLinkedMode(linkedModeModel, this);
+        CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
+        EditorLinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
+        ui.setExitPosition(viewer, exitPosition, 0, exitSequenceNumber);
+        ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
+        ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
+        ui.setDoContextInfo(true);
+        ui.enter();
+        
+        registerEditingSupport(editor, viewer);
+    }
+
+    private void registerEditingSupport(final CeylonEditor editor,
+            CeylonSourceViewer viewer) {
+        if (viewer instanceof IEditingSupportRegistry) {
+            editingSupport = new IEditingSupport() {
+                public boolean ownsFocusShell() {
+                    Shell editorShell= editor.getSite().getShell();
+                    Shell activeShell= editorShell.getDisplay().getActiveShell();
+                    if (editorShell == activeShell)
+                        return true;
+                    return false;
+                }
+                public boolean isOriginator(DocumentEvent event, IRegion subjectRegion) {
+                    return false; //leave on external modification outside positions
+                }
+            };
+            ((IEditingSupportRegistry) viewer).register(editingSupport);
+        }
+    }
+    
 }

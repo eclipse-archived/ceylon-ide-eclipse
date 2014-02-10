@@ -30,6 +30,80 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class ModuleCompletions {
+    
+    static final class ModuleDescriptorProposal extends CompletionProposal {
+        ModuleDescriptorProposal(int offset, String prefix, String moduleName) {
+            super(offset, prefix, ARCHIVE, 
+                    "module " + moduleName,
+                    "module " + moduleName + " \"1.0.0\" {}");
+        }
+
+        @Override
+        public Point getSelection(IDocument document) {
+            return new Point(offset - prefix.length() + text.indexOf('\"')+1, 5);
+        }
+    }
+
+    static final class ModuleProposal extends CompletionProposal {
+        private final int len;
+        private final String versioned;
+        private final ModuleDetails module;
+        private final boolean withBody;
+        private final ModuleVersionDetails version;
+        private final String name;
+
+        ModuleProposal(int offset, String prefix, int len, 
+                String versioned, ModuleDetails module,
+                boolean withBody, ModuleVersionDetails version, 
+                String name) {
+            super(offset, prefix, ARCHIVE, versioned, 
+                    versioned.substring(len));
+            this.len = len;
+            this.versioned = versioned;
+            this.module = module;
+            this.withBody = withBody;
+            this.version = version;
+            this.name = name;
+        }
+
+        @Override
+        public Point getSelection(IDocument document) {
+            final int off = offset+versioned.length()-prefix.length()-len;
+            if (withBody) {
+            	final int verlen = version.getVersion().length();
+                return new Point(off-verlen-2, verlen);
+            }
+            else {
+            	return new Point(off, 0);
+            }
+        }
+
+        @Override
+        public String getAdditionalProposalInfo() {
+            return JDKUtils.isJDKModule(name) ?
+                    getDocumentationForModule(name, JDK_MODULE_VERSION,
+                            "This module forms part of the Java SDK.") :
+                    getDocumentationFor(module, version.getVersion());
+        }
+    }
+    
+    static final class JDKModuleProposal extends CompletionProposal {
+        private final String name;
+
+        JDKModuleProposal(int offset, String prefix, int len, 
+                String versioned, String name) {
+            super(offset, prefix, ARCHIVE, versioned, 
+                    versioned.substring(len));
+            this.name = name;
+        }
+
+        @Override
+        public String getAdditionalProposalInfo() {
+            return getDocumentationForModule(name, JDK_MODULE_VERSION, 
+                    "This module forms part of the Java SDK.");
+        }
+    }
+
     private static final SortedSet<String> JDK_MODULE_VERSION_SET = new TreeSet<String>();
     {
         JDK_MODULE_VERSION_SET.add(AbstractModelLoader.JDK_MODULE_VERSION);
@@ -50,15 +124,9 @@ public class ModuleCompletions {
             for (final String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if (name.startsWith(pfp) &&
                         !moduleAlreadyImported(cpc, name)) {
-                    String versioned = withBody ? getModuleString(name, JDK_MODULE_VERSION) + ";" : name;
-                    result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-                                      versioned, versioned.substring(len), false) {
-                        @Override
-                        public String getAdditionalProposalInfo() {
-                            return getDocumentationForModule(name, JDK_MODULE_VERSION, 
-                                    "This module forms part of the Java SDK.");
-                        }
-                    });
+                    result.add(new JDKModuleProposal(offset, prefix, len,
+                            getModuleString(withBody, name, JDK_MODULE_VERSION), 
+                            name));
                 }
             }
         }
@@ -73,31 +141,9 @@ public class ModuleCompletions {
                             !moduleAlreadyImported(cpc, name)) {
                         for (final ModuleVersionDetails version: 
                             module.getVersions().descendingSet()) {
-                            final String versioned = withBody ? 
-                                    getModuleString(name, version.getVersion()) + ";" : 
-                                        name;
-                            result.add(new CompletionProposal(offset, prefix, ARCHIVE, 
-                                    versioned, versioned.substring(len), false) {
-                            	@Override
-                            	public Point getSelection(
-                            			IDocument document) {
-                                    final int off = offset+versioned.length()-prefix.length()-len;
-                                    if (withBody) {
-                                    	final int verlen = version.getVersion().length();
-                                        return new Point(off-verlen-2, verlen);
-                                    }
-                                    else {
-                                    	return new Point(off, 0);
-                                    }
-                            	}
-                                @Override
-                                public String getAdditionalProposalInfo() {
-                                    return JDKUtils.isJDKModule(name) ?
-                                            getDocumentationForModule(name, JDK_MODULE_VERSION,
-                                                    "This module forms part of the Java SDK.") :
-                                            getDocumentationFor(module, version.getVersion());
-                                }
-                            });
+                            result.add(new ModuleProposal(offset, prefix, len, 
+                                    getModuleString(withBody, name, version.getVersion()), 
+                                    module, withBody, version, name));
                         }
                     }
                 }
@@ -131,27 +177,18 @@ public class ModuleCompletions {
         return false;
     }
 
-    private static String getModuleString(final String name, final String version) {
-        return name + " \"" + version + "\"";
+    private static String getModuleString(boolean withBody, 
+            String name, String version) {
+        return withBody ? name + " \"" + version + "\";" : name;
     }
 
-
-    static void addModuleDescriptorCompletion(CeylonParseController cpc, int offset, 
-            String prefix, List<ICompletionProposal> result) {
+    static void addModuleDescriptorCompletion(CeylonParseController cpc, 
+            int offset, String prefix, List<ICompletionProposal> result) {
         if (!"module".startsWith(prefix)) return; 
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String moduleName = getPackageName(file);
         if (moduleName!=null) {
-            String moduleDesc = "module " + moduleName;
-            String moduleText = "module " + moduleName + " \"1.0.0\" {}";
-            final int selectionStart = offset - prefix.length() + moduleName.length() + 9;
-            final int selectionLength = 5;
-
-            result.add(new CompletionProposal(offset, prefix, ARCHIVE, moduleDesc, moduleText, false) {
-                @Override
-                public Point getSelection(IDocument document) {
-                    return new Point(selectionStart, selectionLength);
-                }});
+            result.add(new ModuleDescriptorProposal(offset, prefix, moduleName));
         }
     }
     

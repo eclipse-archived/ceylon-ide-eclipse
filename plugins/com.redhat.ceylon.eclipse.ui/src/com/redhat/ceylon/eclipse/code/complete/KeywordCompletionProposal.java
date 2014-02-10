@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 
 import java.util.List;
@@ -10,10 +11,10 @@ import org.eclipse.jface.viewers.StyledString;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-public class KeywordCompletions {
+public class KeywordCompletionProposal extends CompletionProposal {
+    
     static void addKeywordProposals(CeylonParseController cpc, int offset, 
     		String prefix, List<ICompletionProposal> result, Node node) {
         if (isModuleDescriptor(cpc)) {
@@ -43,14 +44,19 @@ public class KeywordCompletions {
             }
         }
     }
+    
+    KeywordCompletionProposal(int offset, String prefix, String keyword) {
+        super(offset, prefix, null, keyword, keyword);
+    }
 
-    static void addKeywordProposal(int offset, String prefix, List<ICompletionProposal> result, final String keyword) {
-        result.add(new CompletionProposal(offset, prefix, null, keyword, keyword, true) {
-            @Override
-            public StyledString getStyledDisplayString() {
-                return new StyledString(keyword, CeylonLabelProvider.KW_STYLER);
-            }
-        });
+    @Override
+    public StyledString getStyledDisplayString() {
+        return new StyledString(getDisplayString(), KW_STYLER);
+    }
+    
+    static void addKeywordProposal(int offset, String prefix, 
+            List<ICompletionProposal> result, String keyword) {
+        result.add(new KeywordCompletionProposal(offset, prefix, keyword));
     }
     
 
