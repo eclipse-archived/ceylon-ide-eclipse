@@ -1,44 +1,22 @@
 package com.redhat.ceylon.eclipse.ui.test.swtbot;
 
-import static org.eclipse.swtbot.swt.finder.SWTBotAssert.assertContains;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
-import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.eclipse.swtbot.swt.finder.keyboard.KeyboardFactory;
-import org.eclipse.swtbot.swt.finder.keyboard.KeyboardStrategy;
 import org.eclipse.swtbot.swt.finder.keyboard.Keystrokes;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
-import org.hamcrest.Matcher;
-import org.hamcrest.core.IsCollectionContaining;
-import org.hamcrest.core.IsEqual;
-import org.junit.Assert;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
 import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
 import com.redhat.ceylon.eclipse.ui.test.Utils;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class MainUITests extends AbstractMultiProjectTest {
+    
     private static SWTWorkbenchBot  bot;
     
     @BeforeClass
@@ -48,28 +26,125 @@ public class MainUITests extends AbstractMultiProjectTest {
         importAndBuild();
     }
     
-    @Test
-    public void gotoSelectedDeclarationFromLanguageModuleSource() {
-        String fileName = "src/mainModule/run.ceylon";
-        Utils.openInEditor(mainProject, fileName);
+    @After
+    public void after() {
+        bot.closeAllEditors();
+    }
+    
+    static protected abstract class NavigationStep {
+        String match;
+        int offset;
+        String titleOfOpenedEditor;
+
+        public NavigationStep(String match, int offset, String titleOfOpenedEditor) {
+            this.match = match;
+            this.offset = offset;
+            this.titleOfOpenedEditor = titleOfOpenedEditor;
+        }
         
-        SWTBotEditor editor = bot.editorByTitle("run.ceylon");
-        Assert.assertNotNull(editor);
-        SWTBotEclipseEditor runEditor = editor.toTextEditor();
-        runEditor.show();
-        runEditor.navigateTo(21, 1);
-        bot.sleep(500);
-        runEditor.pressShortcut(Keystrokes.F3);
-        bot.sleep(500);
-        editor = bot.editorByTitle("annotations.ceylon");
-        Assert.assertNotNull(editor);
-        SWTBotEclipseEditor annotationsEditor = editor.toTextEditor();
-        annotationsEditor.show();
-        annotationsEditor.navigateTo(4, 67);
-        bot.sleep(500);
-        annotationsEditor.pressShortcut(Keystrokes.F3);
-        bot.sleep(500);
-        editor = bot.editorByTitle("ClassDeclaration.ceylon");
-        assertNotNull("Following links should have led to open the file 'ClassDeclaration.ceylon'", editor);
+        abstract void navigateToCurrentDeclaration(SWTBotEclipseEditor editor);
+    }
+
+    static protected class CtrlClick extends NavigationStep {
+        public CtrlClick(String match, int offset, String titleOfOpenedEditor) {
+            super(match, offset, titleOfOpenedEditor);
+        }
+        void navigateToCurrentDeclaration(SWTBotEclipseEditor editor) {
+            Utils.ctrlClick(editor);
+        }
+    }
+    
+    static protected class GotoDeclaration extends NavigationStep {
+        public GotoDeclaration(String match, int offset, String titleOfOpenedEditor) {
+            super(match, offset, titleOfOpenedEditor);
+        }
+        void navigateToCurrentDeclaration(SWTBotEclipseEditor editor) {
+            editor.pressShortcut(Keystrokes.F3);
+        }
+    }
+
+    public void navigationTest(IFile initialFile, NavigationStep... navigationSteps) {
+        Utils.openInEditor(initialFile);
+        
+        SWTBotEclipseEditor editor = Utils.showEditorByTitle(bot, initialFile.getName());
+        for (NavigationStep step : navigationSteps) {
+            editor.navigateTo(Utils.positionInTextEditor(editor, step.match, step.offset));
+            bot.sleep(500);
+            step.navigateToCurrentDeclaration(editor);
+            bot.sleep(500);
+            editor = Utils.showEditorByTitle(bot, step.titleOfOpenedEditor);
+        }
+    }
+
+    @Test
+    public void gotoDeclarationFromLanguageModuleSource() {
+        navigationTest(mainProject.getFile("src/mainModule/run.ceylon"),
+                new GotoDeclaration("doc ", 1, "annotations.ceylon"),
+                new GotoDeclaration("\\bClassDeclaration\\b", 5, "ClassDeclaration.ceylon")
+        );
+    }
+
+    
+    @Test
+    public void ctrlClickDeclarationFromLanguageModuleSource() {
+        navigationTest(mainProject.getFile("src/mainModule/run.ceylon"),
+                new CtrlClick("doc ", 1, "annotations.ceylon"),
+                new CtrlClick("\\bClassDeclaration\\b", 5, "ClassDeclaration.ceylon")
+        );
+    }
+    
+    @Test
+    public void gotoDeclarationOnJavaLangAdditions() throws CoreException {
+        IFile initialFile = copyFileFromResources("navigateToSource", "mainModule/navigateToJavaLangAdditions.ceylon", mainProject, "src");
+        try {
+            navigationTest(initialFile,
+                    new GotoDeclaration("ObjectArray", 3, "ObjectArray.class")
+            );
+            navigationTest(initialFile,
+                    new GotoDeclaration("ByteArray", 3, "ByteArray.class")
+            );
+            navigationTest(initialFile,
+                    new GotoDeclaration("IntArray", 3, "IntArray.class")
+            );
+            navigationTest(initialFile,
+                    new GotoDeclaration("ShortArray", 3, "ShortArray.class")
+            );
+            navigationTest(initialFile,
+                    new GotoDeclaration("FloatArray", 3, "FloatArray.class")
+            );
+            navigationTest(initialFile,
+                    new GotoDeclaration("DoubleArray", 3, "DoubleArray.class")
+            );
+        } finally {
+            initialFile.delete(true, null);
+        }
+    }
+
+    
+    @Test
+    public void ctrlClickOnJavaLangAdditions() throws CoreException {
+        IFile initialFile = copyFileFromResources("navigateToSource", "mainModule/navigateToJavaLangAdditions.ceylon", mainProject, "src");
+        try {
+            navigationTest(initialFile,
+                    new CtrlClick("ObjectArray", 3, "ObjectArray.class")
+            );
+            navigationTest(initialFile,
+                    new CtrlClick("ByteArray", 3, "ByteArray.class")
+            );
+            navigationTest(initialFile,
+                    new CtrlClick("IntArray", 3, "IntArray.class")
+            );
+            navigationTest(initialFile,
+                    new CtrlClick("ShortArray", 3, "ShortArray.class")
+            );
+            navigationTest(initialFile,
+                    new CtrlClick("FloatArray", 3, "FloatArray.class")
+            );
+            navigationTest(initialFile,
+                    new CtrlClick("DoubleArray", 3, "DoubleArray.class")
+            );
+        } finally {
+            initialFile.delete(true, null);
+        }
     }
 }
