@@ -2,21 +2,36 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.commands.operations.IOperationHistory;
+import org.eclipse.core.commands.operations.IUndoContext;
+import org.eclipse.core.commands.operations.IUndoableOperation;
+import org.eclipse.core.commands.operations.OperationHistoryFactory;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IEditingSupport;
 import org.eclipse.jface.text.IEditingSupportRegistry;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.jface.text.IUndoManagerExtension;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
+import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -29,6 +44,23 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public abstract class AbstractRenameLinkedMode {
+
+    protected boolean showPreview = false;
+    private IUndoableOperation startingUndoOperation;
+    
+    protected final class PreviewingDeleteBlockingExitPolicy extends
+            DeleteBlockingExitPolicy {
+        protected PreviewingDeleteBlockingExitPolicy(IDocument document) {
+            super(document);
+        }
+
+        @Override
+        public ExitFlags doExit(LinkedModeModel model, VerifyEvent event, int offset, int length) {
+            showPreview = (event.stateMask & SWT.CTRL) != 0
+                            && (event.character == SWT.CR || event.character == SWT.LF);
+            return super.doExit(model, event, offset, length);
+        }
+    }
 
     private final class LinkedModeListener implements
 			ILinkedModeListener {
@@ -133,7 +165,7 @@ public abstract class AbstractRenameLinkedMode {
             LinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
 //            ui.setExitPosition(viewer, offset, 0, Integer.MAX_VALUE);
             ui.setExitPosition(viewer, offset, 0, LinkedPositionGroup.NO_STOP);
-            ui.setExitPolicy(createExitPolicy(document));
+            ui.setExitPolicy(new PreviewingDeleteBlockingExitPolicy(document));
             ui.enter();
             
 //            viewer.setSelectedRange(fOriginalSelection.x, fOriginalSelection.y); // by default, full word is selected; restore original selection
@@ -152,11 +184,7 @@ public abstract class AbstractRenameLinkedMode {
         }
     }
 
-    public DeleteBlockingExitPolicy createExitPolicy(final IDocument document) {
-        return new DeleteBlockingExitPolicy(document);
-    }
-
-	protected abstract void addLinkedPositions(IDocument document, 
+    protected abstract void addLinkedPositions(IDocument document, 
 			Tree.CompilationUnit rootNode, int adjust, 
 			LinkedPositionGroup linkedPositionGroup);
 
@@ -259,7 +287,76 @@ public abstract class AbstractRenameLinkedMode {
         String binding= bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + ".action.rename");
         return binding == null ? "" : binding;
     }
-
-    public void addMenuItems(IMenuManager manager) {}
     
+    void addMenuItems(IMenuManager manager) {
+        
+        IAction previewAction = createPreviewAction();
+        if (previewAction!=null) {
+            previewAction.setAccelerator(SWT.CTRL | SWT.CR);
+            previewAction.setEnabled(true);
+            manager.add(previewAction);
+        }
+
+        IAction openDialogAction = createOpenDialogAction();
+        if (openDialogAction!=null) {
+            manager.add(openDialogAction);
+        }
+    }
+    
+    protected Action createOpenDialogAction() { return null; }
+    protected Action createPreviewAction() { return null; }
+    
+    protected void saveEditorState() {
+        //save where we are before opening linked mode
+        IUndoManager undoManager = editor.getCeylonSourceViewer().getUndoManager();
+        if (undoManager instanceof IUndoManagerExtension) {
+            IUndoManagerExtension undoManagerExtension= (IUndoManagerExtension)undoManager;
+            IUndoContext undoContext = undoManagerExtension.getUndoContext();
+            IOperationHistory operationHistory = OperationHistoryFactory.getOperationHistory();
+            startingUndoOperation = operationHistory.getUndoOperation(undoContext);
+        }
+    }
+
+    protected void revertChanges()  {
+        //undo the change made in the current editor
+        //note: I would prefer to do it this way 
+        //      but that's not the way JDT does it
+//        DocumentChange change = new DocumentChange("Reverting Inline Rename", 
+//                namePosition.getDocument());
+//        change.setEdit(new MultiTextEdit());
+//        for (LinkedPosition lp: linkedPositionGroup.getPositions()) {
+//            change.addEdit(new ReplaceEdit(lp.getOffset(), 
+//                    lp.getLength(), 
+//                    getOriginalName()));
+//        }
+//        try {
+//            change.perform(new NullProgressMonitor());
+//        } 
+//        catch (CoreException e) {
+//            e.printStackTrace();
+//        }
+        try {
+            editor.getSite().getWorkbenchWindow().run(false, true, new IRunnableWithProgress() {
+                public void run(IProgressMonitor monitor) 
+                        throws InvocationTargetException, InterruptedException {
+                    IUndoManager undoManager = editor.getCeylonSourceViewer().getUndoManager();
+                    if (undoManager instanceof IUndoManagerExtension) {
+                        IUndoContext undoContext = ((IUndoManagerExtension) undoManager).getUndoContext();
+                        IOperationHistory operationHistory = OperationHistoryFactory.getOperationHistory();
+                        while (undoManager.undoable()) {
+                            if (startingUndoOperation != null && 
+                                    startingUndoOperation.equals(operationHistory.getUndoOperation(undoContext))) {
+                                return;
+                            }
+                            undoManager.undo();
+                        }
+                    }
+                }
+            });
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
