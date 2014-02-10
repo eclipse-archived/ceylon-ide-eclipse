@@ -19,11 +19,11 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 class RenameAliasProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
     
-    Tree.ImportMemberOrType node;
-    Declaration dec;
-    CeylonEditor editor;
+    private final Tree.ImportMemberOrType node;
+    private final Declaration dec;
+    private final CeylonEditor editor;
     
-    RenameAliasProposal(Tree.ImportMemberOrType node, 
+    private RenameAliasProposal(Tree.ImportMemberOrType node, 
             Declaration dec, CeylonEditor editor) {
         this.node = node;
         this.dec = dec;
