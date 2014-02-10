@@ -1414,13 +1414,15 @@ public class DocumentationHover
 		else {
 			if (dec.isClassOrInterfaceMember()) {
 				ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
-				String qualifyingType = 
-						getQualifyingType(node, outer).getProducedTypeName();
-				addImageAndLabel(buffer, outer, 
-						fileUrl(getIcon(outer)).toExternalForm(), 
-						16, 16, 
-						"member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
-								convertToHTMLContent(qualifyingType) + "</a></tt>", 20, 2);
+				ProducedType qt = getQualifyingType(node, outer);
+				if (qt!=null) {
+				    String qualifyingType = qt.getProducedTypeName();
+				    addImageAndLabel(buffer, outer, 
+				            fileUrl(getIcon(outer)).toExternalForm(), 
+				            16, 16, 
+				            "member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
+				                    convertToHTMLContent(qualifyingType) + "</a></tt>", 20, 2);
+				}
 			}
 
 			if ((dec.isShared() || dec.isToplevel()) &&
