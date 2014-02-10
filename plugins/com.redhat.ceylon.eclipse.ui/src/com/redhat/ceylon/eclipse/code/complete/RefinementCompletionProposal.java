@@ -42,6 +42,7 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -235,32 +236,32 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
     @Override
     public void apply(IDocument document) {
-        int originalLength = document.getLength();
         try {
-            imports(document).perform(new NullProgressMonitor());
+            createChange(document).perform(new NullProgressMonitor());
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        offset += document.getLength() - originalLength;
-        super.apply(document);
         if (EditorsUI.getPreferenceStore()
                 .getBoolean(LINKED_MODE)) {
             enterLinkedMode(document);
         }
     }
 
-    private DocumentChange imports(IDocument document)
+    private DocumentChange createChange(IDocument document)
             throws BadLocationException {
-        DocumentChange tc = new DocumentChange("imports", document);
-        tc.setEdit(new MultiTextEdit());
+        DocumentChange change = new DocumentChange("Complete Refinement", document);
+        change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs = new HashSet<Declaration>();
         CompilationUnit cu = cpc.getRootNode();
         //TODO for an inline function completion, we don't
         //     need to import the return type
         importSignatureTypes(declaration, cu, decs);
-        applyImports(tc, decs, cu, document);
-        return tc;
+        int il=applyImports(change, decs, cu, document);
+        change.addEdit(new ReplaceEdit(offset-prefix.length(), 
+                prefix.length(), text));
+        offset+=il;
+        return change;
     }
 
     public String getAdditionalProposalInfo() {
