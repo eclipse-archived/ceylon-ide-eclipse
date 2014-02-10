@@ -85,7 +85,7 @@ public class AddModuleImportProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return ChangeCorrectionProposal.style(getDisplayString());
+        return CorrectionUtil.styleProposal(getDisplayString());
     }
 
 	static void addModuleImportProposals(Collection<ICompletionProposal> proposals, 

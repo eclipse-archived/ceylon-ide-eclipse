@@ -43,7 +43,7 @@ class RenameAliasProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return ChangeCorrectionProposal.style(getDisplayString());
+        return CorrectionUtil.styleProposal(getDisplayString());
     }
 
     @Override

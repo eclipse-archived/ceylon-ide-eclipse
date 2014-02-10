@@ -125,6 +125,6 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return ChangeCorrectionProposal.style(getDisplayString());
+        return CorrectionUtil.styleProposal(getDisplayString());
     }
 }
