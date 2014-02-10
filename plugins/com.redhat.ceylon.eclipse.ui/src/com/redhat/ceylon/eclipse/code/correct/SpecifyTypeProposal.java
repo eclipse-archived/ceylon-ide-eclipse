@@ -20,7 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-public class SpecifyTypeProposal extends ChangeCorrectionProposal {
+public class SpecifyTypeProposal extends CorrectionProposal {
 
     final int offset;
     final int length;

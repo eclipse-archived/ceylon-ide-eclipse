@@ -12,7 +12,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-class FixAliasProposal extends ChangeCorrectionProposal {
+class FixAliasProposal extends CorrectionProposal {
     
     final int offset; 
     final IFile file;

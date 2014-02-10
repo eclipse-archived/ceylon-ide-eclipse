@@ -23,7 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 
-public class ConvertMethodToGetterProposal extends ChangeCorrectionProposal {
+public class ConvertMethodToGetterProposal extends CorrectionProposal {
 
     public static void addConvertMethodToGetterProposal(Collection<ICompletionProposal> proposals, 
     		CeylonEditor editor, IFile file, Node node) {

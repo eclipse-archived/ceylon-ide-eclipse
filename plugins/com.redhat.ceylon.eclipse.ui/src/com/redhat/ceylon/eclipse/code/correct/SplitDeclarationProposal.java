@@ -28,7 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 
-class SplitDeclarationProposal extends ChangeCorrectionProposal {
+class SplitDeclarationProposal extends CorrectionProposal {
     
     final int offset; 
     final IFile file;

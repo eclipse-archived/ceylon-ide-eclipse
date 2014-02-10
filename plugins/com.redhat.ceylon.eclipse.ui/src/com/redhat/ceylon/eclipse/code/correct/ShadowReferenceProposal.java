@@ -25,7 +25,7 @@ import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
 
-class ShadowReferenceProposal extends ChangeCorrectionProposal {
+class ShadowReferenceProposal extends CorrectionProposal {
     
     final IFile file;
     final int offset;

@@ -35,7 +35,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
-class ChangeTypeProposal extends ChangeCorrectionProposal {
+class ChangeTypeProposal extends CorrectionProposal {
 
     final int offset;
     final int length;

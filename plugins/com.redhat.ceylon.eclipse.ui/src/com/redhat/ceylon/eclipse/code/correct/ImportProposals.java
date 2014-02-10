@@ -102,7 +102,7 @@ public class ImportProposals {
 		    change.addEdit(new ReplaceEdit(id.getStartIndex(), brokenName.length(), 
 		            proposedName));
 		}*/
-        return new ChangeCorrectionProposal("Add import of '" + proposedName + "'" + 
+        return new CorrectionProposal("Add import of '" + proposedName + "'" + 
                 " in package " + declaration.getUnit().getPackage().getNameAsString(), 
                 change, CeylonLabelProvider.IMPORT);
     }

@@ -15,7 +15,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Indents;
 
-class ConvertStringProposal extends ChangeCorrectionProposal {
+class ConvertStringProposal extends CorrectionProposal {
 
 	private ConvertStringProposal(String name, Change change) {
 		super(name, change);

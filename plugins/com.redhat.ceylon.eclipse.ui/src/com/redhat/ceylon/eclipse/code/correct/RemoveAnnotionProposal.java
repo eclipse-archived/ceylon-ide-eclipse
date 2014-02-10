@@ -23,7 +23,7 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
-class RemoveAnnotionProposal extends ChangeCorrectionProposal {
+class RemoveAnnotionProposal extends CorrectionProposal {
     
     final int offset; 
     final IFile file;

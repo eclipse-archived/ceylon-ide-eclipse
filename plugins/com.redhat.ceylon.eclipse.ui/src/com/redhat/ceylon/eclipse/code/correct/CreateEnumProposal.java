@@ -27,7 +27,7 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.util.Indents;
 
-class CreateEnumProposal extends ChangeCorrectionProposal {
+class CreateEnumProposal extends CorrectionProposal {
     
     final int offset;
     final IFile file;

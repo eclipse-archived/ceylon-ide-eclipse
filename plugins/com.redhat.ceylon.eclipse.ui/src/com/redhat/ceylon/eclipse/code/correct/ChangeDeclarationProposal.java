@@ -13,7 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-class ChangeDeclarationProposal extends ChangeCorrectionProposal {
+class ChangeDeclarationProposal extends CorrectionProposal {
     
     final IFile file;
     final int offset;

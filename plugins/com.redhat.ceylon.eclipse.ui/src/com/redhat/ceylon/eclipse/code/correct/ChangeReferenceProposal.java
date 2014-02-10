@@ -31,7 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompletionProposalExtension {
+class ChangeReferenceProposal extends CorrectionProposal implements ICompletionProposalExtension {
     
     final int offset;
     final int length;

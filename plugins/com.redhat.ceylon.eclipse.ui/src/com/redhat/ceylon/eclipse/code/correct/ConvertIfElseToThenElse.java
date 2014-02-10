@@ -35,7 +35,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 
-class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
+class ConvertIfElseToThenElse extends CorrectionProposal {
     
     final int offset; 
     final IFile file;

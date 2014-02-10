@@ -34,7 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-class InvertIfElseProposal extends ChangeCorrectionProposal {
+class InvertIfElseProposal extends CorrectionProposal {
     
     final int offset; 
     final IFile file;

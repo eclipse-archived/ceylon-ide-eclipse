@@ -17,7 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-public class AddSpreadToVariadicParameterProposal extends ChangeCorrectionProposal {
+public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
     
     public static void addEllipsisToSequenceParameterProposal(CompilationUnit cu, Node node, Collection<ICompletionProposal> proposals, IFile file) {
         if( !(node instanceof Tree.Term) ) {

@@ -26,7 +26,7 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
 
-class CreateObjectProposal extends ChangeCorrectionProposal {
+class CreateObjectProposal extends CorrectionProposal {
     
     final int offset;
     final int length;

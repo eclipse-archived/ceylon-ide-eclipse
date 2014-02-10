@@ -25,7 +25,7 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
 
-class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
+class CreateLocalSubtypeProposal extends CorrectionProposal {
     
     final int offset;
     final int length;

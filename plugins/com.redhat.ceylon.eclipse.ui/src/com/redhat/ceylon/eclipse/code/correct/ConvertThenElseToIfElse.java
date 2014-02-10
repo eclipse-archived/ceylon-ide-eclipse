@@ -29,7 +29,7 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.util.Indents;
 
-class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
+class ConvertThenElseToIfElse extends CorrectionProposal {
     
     final int offset; 
     final IFile file;

@@ -20,7 +20,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
-class ConvertToNamedArgumentsProposal extends ChangeCorrectionProposal {
+class ConvertToNamedArgumentsProposal extends CorrectionProposal {
 	
     final int offset; 
     final IFile file;
