@@ -41,6 +41,7 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -64,7 +65,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -329,15 +329,25 @@ class InvocationCompletionProposal extends CompletionProposal {
 		this.qualified = qualified;
 	}
 
-    private DocumentChange imports(IDocument document)
+    private DocumentChange createChange(IDocument document)
             throws BadLocationException {
-        DocumentChange tc = new DocumentChange("imports", document);
-        tc.setEdit(new MultiTextEdit());
+        DocumentChange change = new DocumentChange("Complete Invocation", document);
+        change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs = new HashSet<Declaration>();
-        CompilationUnit cu = cpc.getRootNode();
+        Tree.CompilationUnit cu = cpc.getRootNode();
         if (!qualified) {
             importDeclaration(decs, declaration, cu);
         }
+        importCallableParameterParamTypes(decs, cu);
+        int il=applyImports(change, decs, cu, document);
+        change.addEdit(new ReplaceEdit(offset-prefix.length(), 
+                    prefix.length(), text));
+        offset+=il;
+        return change;
+    }
+
+    private void importCallableParameterParamTypes(HashSet<Declaration> decs,
+            Tree.CompilationUnit cu) {
         if (declaration instanceof Functional) {
             List<ParameterList> pls = ((Functional) declaration).getParameterLists();
             if (!pls.isEmpty()) {
@@ -351,56 +361,51 @@ class InvocationCompletionProposal extends CompletionProposal {
                         }
                     }
                 }
-            }
-            
+            }            
         }
-        applyImports(tc, decs, cu, document);
-        return tc;
     }
 
 	@Override
 	public void apply(IDocument document) {
-        int originalLength = document.getLength();
         try {
-            imports(document).perform(new NullProgressMonitor());
+            createChange(document).perform(new NullProgressMonitor());
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        offset += document.getLength() - originalLength;
-		
-		super.apply(document);
-		
 		if (EditorsUI.getPreferenceStore()
 				.getBoolean(LINKED_MODE)) {
-			if (declaration instanceof Generic) {
-                Generic generic = (Generic) declaration;
-				ParameterList paramList = null;
-				if (declaration instanceof Functional && 
-						(positionalInvocation||namedInvocation)) {
-					List<ParameterList> pls = 
-							((Functional) declaration).getParameterLists();
-					if (!pls.isEmpty() && 
-					        !pls.get(0).getParameters().isEmpty()) {
-						paramList = pls.get(0);
-					}
-				}
-				if (paramList!=null) {
-					List<Parameter> params = getParameters(paramList, 
-					        includeDefaulted, namedInvocation);
-					if (!params.isEmpty()) {
-						enterLinkedMode(document, params, null);
-						return; //NOTE: early exit!
-					}
-                }
-				List<TypeParameter> typeParams = generic.getTypeParameters();
-				if (!typeParams.isEmpty()) {
-					enterLinkedMode(document, null, typeParams);
-				}
-			}
+			activeLinkedMode(document);
 		}
-		
 	}
+
+    private void activeLinkedMode(IDocument document) {
+        if (declaration instanceof Generic) {
+            Generic generic = (Generic) declaration;
+        	ParameterList paramList = null;
+        	if (declaration instanceof Functional && 
+        			(positionalInvocation||namedInvocation)) {
+        		List<ParameterList> pls = 
+        				((Functional) declaration).getParameterLists();
+        		if (!pls.isEmpty() && 
+        		        !pls.get(0).getParameters().isEmpty()) {
+        			paramList = pls.get(0);
+        		}
+        	}
+        	if (paramList!=null) {
+        		List<Parameter> params = getParameters(paramList, 
+        		        includeDefaulted, namedInvocation);
+        		if (!params.isEmpty()) {
+        			enterLinkedMode(document, params, null);
+        			return; //NOTE: early exit!
+        		}
+            }
+        	List<TypeParameter> typeParams = generic.getTypeParameters();
+        	if (!typeParams.isEmpty()) {
+        		enterLinkedMode(document, null, typeParams);
+        	}
+        }
+    }
 	
 	@Override
 	public Point getSelection(IDocument document) {
