@@ -30,6 +30,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRenameLinkedMode;
 
 
+//TODO: implement preview, like for other linked modes
 class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
 
 	private final ImportMemberOrType element;

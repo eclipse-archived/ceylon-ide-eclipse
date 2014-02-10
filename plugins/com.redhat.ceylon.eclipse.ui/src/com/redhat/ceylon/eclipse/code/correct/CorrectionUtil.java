@@ -3,13 +3,17 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 
+import java.util.StringTokenizer;
+
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -99,5 +103,20 @@ class CorrectionUtil {
 	    }       
 	    return unit.getCompilationUnit();
 	}
+
+    static StyledString styleProposal(String name) {
+        StyledString result = new StyledString();
+        StringTokenizer tokens = new StringTokenizer(name, "'", false);
+        result.append(tokens.nextToken());
+        while (tokens.hasMoreTokens()) {
+            result.append('\'');
+            CompletionUtil.styleProposal(result, tokens.nextToken());
+            result.append('\'');
+            if (tokens.hasMoreTokens()) {
+                result.append(tokens.nextToken());
+            }
+        }
+        return result;
+    }
     
 }

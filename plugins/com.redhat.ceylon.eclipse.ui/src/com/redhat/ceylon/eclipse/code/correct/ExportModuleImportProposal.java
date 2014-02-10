@@ -66,7 +66,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return ChangeCorrectionProposal.style(getDisplayString());
+        return CorrectionUtil.styleProposal(getDisplayString());
     }
 
 	static void addExportModuleImportProposal(

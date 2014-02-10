@@ -78,7 +78,7 @@ class CreateLocalSubtypeProposal extends ChangeCorrectionProposal {
     
     @Override
     public StyledString getStyledDisplayString() {
-        return style(getDisplayString());
+        return CorrectionUtil.styleProposal(getDisplayString());
     }
     
 }

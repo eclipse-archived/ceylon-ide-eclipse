@@ -12,8 +12,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
 
-import java.util.StringTokenizer;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -44,8 +42,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
-
 
 /**
  * Implementation of a Java completion proposal to be used for quick fix 
@@ -65,21 +61,6 @@ public class ChangeCorrectionProposal
     private String fName;
     private Image fImage;
 
-    public static StyledString style(String name) {
-        StyledString result = new StyledString();
-        StringTokenizer tokens = new StringTokenizer(name, "'", false);
-        result.append(tokens.nextToken());
-        while (tokens.hasMoreTokens()) {
-            result.append('\'');
-            CompletionUtil.styleProposal(result, tokens.nextToken());
-            result.append('\'');
-            if (tokens.hasMoreTokens()) {
-                result.append(tokens.nextToken());
-            }
-        }
-        return result;
-    }
-    
     /**
      * Constructs a change correction proposal.
      * 

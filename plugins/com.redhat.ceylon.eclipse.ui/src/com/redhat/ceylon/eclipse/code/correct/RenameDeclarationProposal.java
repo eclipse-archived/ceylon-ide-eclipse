@@ -74,7 +74,7 @@ class RenameDeclarationProposal implements ICompletionProposal,
     
     @Override
 	public StyledString getStyledDisplayString() {
-		return ChangeCorrectionProposal.style(getDisplayString());
+		return CorrectionUtil.styleProposal(getDisplayString());
 	}
 
 	public static void add(Collection<ICompletionProposal> proposals,
