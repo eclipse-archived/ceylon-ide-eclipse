@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.ui.test.swtbot;
 
+import java.util.regex.Pattern;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
@@ -32,12 +34,15 @@ public class MainUITests extends AbstractMultiProjectTest {
     }
     
     static protected abstract class NavigationStep {
-        String match;
+        Pattern pattern;
         int offset;
         String titleOfOpenedEditor;
 
         public NavigationStep(String match, int offset, String titleOfOpenedEditor) {
-            this.match = match;
+            this(Pattern.compile(match, Pattern.LITERAL), offset, titleOfOpenedEditor);
+        }
+        public NavigationStep(Pattern pattern, int offset, String titleOfOpenedEditor) {
+            this.pattern = pattern;
             this.offset = offset;
             this.titleOfOpenedEditor = titleOfOpenedEditor;
         }
@@ -49,6 +54,9 @@ public class MainUITests extends AbstractMultiProjectTest {
         public CtrlClick(String match, int offset, String titleOfOpenedEditor) {
             super(match, offset, titleOfOpenedEditor);
         }
+        public CtrlClick(Pattern pattern, int offset, String titleOfOpenedEditor) {
+            super(pattern, offset, titleOfOpenedEditor);
+        }
         void navigateToCurrentDeclaration(SWTBotEclipseEditor editor) {
             Utils.ctrlClick(editor);
         }
@@ -57,6 +65,9 @@ public class MainUITests extends AbstractMultiProjectTest {
     static protected class GotoDeclaration extends NavigationStep {
         public GotoDeclaration(String match, int offset, String titleOfOpenedEditor) {
             super(match, offset, titleOfOpenedEditor);
+        }
+        public GotoDeclaration(Pattern pattern, int offset, String titleOfOpenedEditor) {
+            super(pattern, offset, titleOfOpenedEditor);
         }
         void navigateToCurrentDeclaration(SWTBotEclipseEditor editor) {
             editor.pressShortcut(Keystrokes.F3);
@@ -68,7 +79,7 @@ public class MainUITests extends AbstractMultiProjectTest {
         
         SWTBotEclipseEditor editor = Utils.showEditorByTitle(bot, initialFile.getName());
         for (NavigationStep step : navigationSteps) {
-            editor.navigateTo(Utils.positionInTextEditor(editor, step.match, step.offset));
+            editor.navigateTo(Utils.positionInTextEditor(editor, step.pattern, step.offset));
             bot.sleep(500);
             step.navigateToCurrentDeclaration(editor);
             bot.sleep(500);
@@ -80,7 +91,7 @@ public class MainUITests extends AbstractMultiProjectTest {
     public void gotoDeclarationFromLanguageModuleSource() {
         navigationTest(mainProject.getFile("src/mainModule/run.ceylon"),
                 new GotoDeclaration("doc ", 1, "annotations.ceylon"),
-                new GotoDeclaration("\\bClassDeclaration\\b", 5, "ClassDeclaration.ceylon")
+                new GotoDeclaration(Pattern.compile("\\bClassDeclaration\\b"), 5, "ClassDeclaration.ceylon")
         );
     }
 
