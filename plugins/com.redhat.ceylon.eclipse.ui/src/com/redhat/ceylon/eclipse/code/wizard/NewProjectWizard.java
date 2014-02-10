@@ -93,8 +93,16 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
         if (page==firstPage && !checkJre()) {
-        	displayJREError();
+        	displayError("Please select a Java 1.7 JRE");
         	return page;
+        }
+        else if (page==secondPage && !checkOutputPaths()) {
+            displayError("Please select a different Java output path");
+            return page;
+        }
+        else if (page==thirdPage && !checkOutputPaths()) {
+            displayError("Please select a different Ceylon output path");
+            return page;
         }
         else {
         	clearErrors();
@@ -104,8 +112,12 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
     public boolean performFinish() {
         if (!checkJre()) {
-        	displayJREError();
+        	displayError("Please select a Java 1.7 JRE");
         	return false;
+        }
+        if (!checkOutputPaths()) {
+            displayError("Java and Ceylon output paths collide");
+            return false;
         }
         
         boolean res= super.performFinish();
@@ -158,7 +170,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         return res;
     }
 
-	private Boolean checkJre() {
+    private boolean checkJre() {
 	    for (IClasspathEntry cpe: firstPage.getDefaultClasspathEntries()) {
             if (cpe.getEntryKind()==IClasspathEntry.CPE_CONTAINER) {                
                 IPath path = cpe.getPath();
@@ -179,15 +191,25 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         }
 	    return true;
     }
+	
+	private boolean checkOutputPaths() {
+	    String ceylonOut = thirdPage.getBlock().getOutputRepo();
+	    if (ceylonOut.startsWith("./")) {
+	        ceylonOut = "/" + firstPage.getProjectName() + ceylonOut.substring(1);
+	    }
+	    String javaOut = secondPage.getBuildPathsBlock()
+	            .getJavaOutputLocation().toPortableString();
+	    return !ceylonOut.equals(javaOut);
+	}
 
-	private void displayJREError() {
+	private void displayError(String message) {
 	    for (IWizardPage page: getPages()) {
 	    	if (page instanceof WizardPage) {
-	    		((WizardPage)page).setErrorMessage("Please select a Java 1.7 JRE");
+	    		((WizardPage) page).setErrorMessage(message);
 	    	}
 	    }
     }
-    
+
 	private void clearErrors() {
 	    for (IWizardPage page: getPages()) {
 	    	if (page instanceof WizardPage) {
