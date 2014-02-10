@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 
 import java.util.Collection;
@@ -42,7 +41,7 @@ class ConvertIfElseToThenElse extends ChangeCorrectionProposal {
     final IFile file;
     
     ConvertIfElseToThenElse(int offset, IFile file, TextChange change) {
-        super("Convert to then-else", change, CHANGE);
+        super("Convert to then-else", change);
         this.offset=offset;
         this.file=file;
     }

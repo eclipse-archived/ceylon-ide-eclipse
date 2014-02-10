@@ -15,7 +15,7 @@ public class FindUtils {
 		return fcv.getDeclarationNode();
 	}
 
-	public static Tree.TypedArgument findArgument(Tree.CompilationUnit cu, Node node) {
+	public static Tree.NamedArgument findArgument(Tree.CompilationUnit cu, Node node) {
 		FindArgumentVisitor fcv = new FindArgumentVisitor(node);
 		fcv.visit(cu);
 		return fcv.getArgumentNode();

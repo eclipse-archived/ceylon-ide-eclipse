@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
-
 import java.util.Collection;
 
 import org.antlr.runtime.Token;
@@ -20,7 +18,7 @@ import com.redhat.ceylon.eclipse.util.Indents;
 class ConvertStringProposal extends ChangeCorrectionProposal {
 
 	private ConvertStringProposal(String name, Change change) {
-		super(name, change, CHANGE);
+		super(name, change);
 	}
 
 	static void addConvertToVerbatimProposal(Collection<ICompletionProposal> proposals,

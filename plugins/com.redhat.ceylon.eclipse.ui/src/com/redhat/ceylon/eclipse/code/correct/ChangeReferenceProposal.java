@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshte
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 
@@ -40,7 +40,7 @@ class ChangeReferenceProposal extends ChangeCorrectionProposal implements ICompl
     ChangeReferenceProposal(ProblemLocation problem, IFile file, String name, 
             String pkg, Declaration dec, int dist, TextFileChange change) {
         super("Change reference to '" + name + "'" + pkg, change, 
-                CORRECTION/*CeylonLabelProvider.getImage(dec)*/);
+                MINOR_CHANGE/*CeylonLabelProvider.getImage(dec)*/);
         offset = problem.getOffset();
         length = name.length();
         this.file = file;

@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
@@ -36,7 +35,7 @@ class ConvertThenElseToIfElse extends ChangeCorrectionProposal {
     final IFile file;
     
     ConvertThenElseToIfElse(int offset, IFile file, TextChange change) {
-        super("Convert to if-else", change, CHANGE);
+        super("Convert to if-else", change);
         this.offset=offset;
         this.file=file;
     }

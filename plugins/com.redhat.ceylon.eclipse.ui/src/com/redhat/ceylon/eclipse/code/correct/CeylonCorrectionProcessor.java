@@ -53,6 +53,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreateProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposal;
+import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.correct.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
@@ -561,7 +562,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             Tree.Statement statement = FindUtils.findStatement(cu, node);
             Tree.Declaration declaration = findDeclaration(cu, node);
-            Tree.TypedArgument argument = findArgument(cu, node);
+            Tree.NamedArgument argument = findArgument(cu, node);
             
             addVerboseRefinementProposal(proposals, file, statement);
             
@@ -841,8 +842,12 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
         }
+        if (node instanceof Tree.SpecifiedArgument) {
+            Tree.SpecifiedArgument sa = (Tree.SpecifiedArgument) node;
+            addFillInArgumentNameProposal(proposals, doc, file, sa);
+        }
     }
-    
+
     private void addCreationProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
 
 import java.util.Collection;
 
@@ -46,7 +46,7 @@ final class MoveDirProposal implements ICompletionProposal {
 
     @Override
     public Image getImage() {
-        return CORRECTION; //TODO!!!!!
+        return MINOR_CHANGE; //TODO!!!!!
     }
 
     @Override

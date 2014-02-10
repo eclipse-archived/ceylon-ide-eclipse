@@ -10,7 +10,7 @@ package com.redhat.ceylon.eclipse.code.correct;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CORRECTION;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -89,7 +89,7 @@ public class ChangeCorrectionProposal
      * @param relevance The relevance of this proposal.
      */
     public ChangeCorrectionProposal(String name, Change change) {
-        this(name, change, CORRECTION);
+        this(name, change, MINOR_CHANGE);
     }
 
     /*

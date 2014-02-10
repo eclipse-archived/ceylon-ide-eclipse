@@ -10,20 +10,20 @@ public class FindArgumentVisitor
         implements NaturalVisitor {
 
     private final Node term;
-    private Tree.TypedArgument declaration;
-    private Tree.TypedArgument current;
+    private Tree.NamedArgument declaration;
+    private Tree.NamedArgument current;
 
     public FindArgumentVisitor(Node term) {
         this.term = term;
     }
 
-    public Tree.TypedArgument getArgumentNode() {
+    public Tree.NamedArgument getArgumentNode() {
         return declaration;
     }
 
     @Override
-    public void visit(Tree.TypedArgument that) {
-        Tree.TypedArgument outer = current;
+    public void visit(Tree.NamedArgument that) {
+        Tree.NamedArgument outer = current;
         current = that;
         super.visit(that);
         current = outer;

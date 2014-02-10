@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
 
 import java.util.Collection;
 
@@ -17,7 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 class VerboseRefinementProposal extends ChangeCorrectionProposal {
 
 	private VerboseRefinementProposal(Change change) {
-		super("Convert to verbose refinement", change, CHANGE);
+		super("Convert to verbose refinement", change);
 	}
 
 	static void addVerboseRefinementProposal(

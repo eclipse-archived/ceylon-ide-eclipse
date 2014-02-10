@@ -101,7 +101,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
     public static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
     public static Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
-    public static Image CORRECTION = imageRegistry.get(CEYLON_CORRECTION);
+    public static Image MINOR_CHANGE = imageRegistry.get(CEYLON_CORRECTION);
     public static Image CHANGE = imageRegistry.get(CEYLON_CHANGE);
     public static Image COMPOSITE_CHANGE = imageRegistry.get(CEYLON_COMPOSITE_CHANGE);
     public static Image RENAME = imageRegistry.get(CEYLON_RENAME);
