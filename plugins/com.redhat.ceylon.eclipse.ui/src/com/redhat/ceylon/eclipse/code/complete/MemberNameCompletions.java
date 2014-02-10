@@ -74,7 +74,7 @@ public class MemberNameCompletions {
         		suggestedName = prefix + upper(suggestedName);
         	}
     		result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
-    				suggestedName, escape(suggestedName), false));
+    				suggestedName, escape(suggestedName)));
         }
     }
 

@@ -44,7 +44,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.eclipse.code.complete.CompletionProposal;
+import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 
 
 /**
@@ -71,7 +71,7 @@ public class ChangeCorrectionProposal
         result.append(tokens.nextToken());
         while (tokens.hasMoreTokens()) {
             result.append('\'');
-            CompletionProposal.style(result, tokens.nextToken());
+            CompletionUtil.styleProposal(result, tokens.nextToken());
             result.append('\'');
             if (tokens.hasMoreTokens()) {
                 result.append(tokens.nextToken());

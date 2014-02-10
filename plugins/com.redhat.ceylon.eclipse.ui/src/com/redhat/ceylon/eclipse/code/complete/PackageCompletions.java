@@ -25,6 +25,49 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class PackageCompletions {
 
+    static final class PackageDescriptorProposal extends CompletionProposal {
+        PackageDescriptorProposal(int offset, String prefix, String packageName) {
+            super(offset, prefix, PACKAGE, 
+                    "package " + packageName, 
+                    "package " + packageName + ";");
+        }
+    }
+
+    static final class PackageProposal extends CompletionProposal {
+        private final boolean withBody;
+        private final int len;
+        private final Package p;
+        private final String completed;
+        private final CeylonParseController cpc;
+
+        PackageProposal(int offset, String prefix, boolean withBody, 
+                int len, Package p, String completed, 
+                CeylonParseController cpc) {
+            super(offset, prefix, PACKAGE, completed, 
+                    completed.substring(len));
+            this.withBody = withBody;
+            this.len = len;
+            this.p = p;
+            this.completed = completed;
+            this.cpc = cpc;
+        }
+
+        @Override
+        public Point getSelection(IDocument document) {
+        	if (withBody) {
+        		return new Point(offset+completed.length()-prefix.length()-len-5, 3);
+        	}
+        	else {
+        		return new Point(offset+completed.length()-prefix.length()-len, 0);
+        	}
+        }
+
+        @Override
+        public String getAdditionalProposalInfo() {
+            return getDocumentationFor(cpc, p);
+        }
+    }
+
     static void addPackageCompletions(CeylonParseController cpc, 
             int offset, String prefix, Tree.ImportPath path, Node node, 
             List<ICompletionProposal> result, boolean withBody) {
@@ -63,23 +106,8 @@ public class PackageCompletions {
                             }
                         }
                         if (!already) {
-                        	final String completed = pkg + (withBody?" { ... }":"");
-                            result.add(new CompletionProposal(offset, prefix, PACKAGE, 
-                            		completed, completed.substring(len), false) {
-                                @Override
-                                public Point getSelection(IDocument document) {
-                                	if (withBody) {
-                                		return new Point(offset+completed.length()-prefix.length()-len-5, 3);
-                                	}
-                                	else {
-                                		return new Point(offset+completed.length()-prefix.length()-len, 0);
-                                	}
-                                }
-                                @Override
-                                public String getAdditionalProposalInfo() {
-                                    return getDocumentationFor(cpc, p);
-                                }
-                            });
+                        	result.add(new PackageProposal(offset, prefix, withBody, 
+                                    len, p, pkg + (withBody ? " { ... }" : ""), cpc));
                         }
                     }
                 //}
@@ -87,27 +115,24 @@ public class PackageCompletions {
         }
     }
     
-    static void addPackageDescriptorCompletion(CeylonParseController cpc, int offset, 
-            String prefix, List<ICompletionProposal> result) {
+    static void addPackageDescriptorCompletion(CeylonParseController cpc, 
+            int offset, String prefix, List<ICompletionProposal> result) {
         if (!"package".startsWith(prefix)) return; 
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String packageName = getPackageName(file);
         if (packageName!=null) {
-            String packageDesc = "package " + packageName;
-            String packageText = "package " + packageName + ";";
-
-            result.add(new CompletionProposal(offset, prefix, PACKAGE, packageDesc, packageText, false));
+            result.add(new PackageDescriptorProposal(offset, prefix, packageName));
         }
     }    
 
-    static void addCurrentPackageNameCompletion(CeylonParseController cpc, int offset, 
-            String prefix, List<ICompletionProposal> result) {
+    static void addCurrentPackageNameCompletion(CeylonParseController cpc, 
+            int offset, String prefix, List<ICompletionProposal> result) {
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String moduleName = getPackageName(file);
         if (moduleName!=null) {
             result.add(new CompletionProposal(offset, prefix, 
                     isModuleDescriptor(cpc) ? ARCHIVE : PACKAGE, 
-                            moduleName, moduleName, false));
+                            moduleName, moduleName));
         }
     }
     

@@ -12,9 +12,12 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedPr
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleClass;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.styleProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -25,28 +28,21 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IEditingSupport;
-import org.eclipse.jface.text.IEditingSupportRegistry;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
-import org.eclipse.jface.text.link.LinkedModeUI;
-import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -68,15 +64,12 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public final class RefinementCompletionProposal extends CompletionProposal {
-	
+    
     final class ReturnValueContextInfo implements IContextInformation {
         @Override
         public String getInformationDisplayString() {
@@ -182,63 +175,98 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         return d.getProducedReference(outerType, params);
     }
     
-	private final CeylonParseController cpc;
-	private final Declaration declaration;
-	private final ProducedReference pr;
-	private final boolean fullType;
-	private final Scope scope;
+    private final CeylonParseController cpc;
+    private final Declaration declaration;
+    private final ProducedReference pr;
+    private final boolean fullType;
+    private final Scope scope;
 
-	private RefinementCompletionProposal(int offset, String prefix, 
-			ProducedReference pr, String desc, String text, 
-			CeylonParseController cpc, Declaration dec, Scope scope,
-			boolean fullType) {
-		super(offset, prefix, dec.isFormal() ? 
-					FORMAL_REFINEMENT : DEFAULT_REFINEMENT, 
-				desc, text, false);
-		this.cpc = cpc;
-		this.declaration = dec;
-		this.pr = pr;
-		this.fullType = fullType;
-		this.scope = scope;
-	}
+    private RefinementCompletionProposal(int offset, String prefix, 
+            ProducedReference pr, String desc, String text, 
+            CeylonParseController cpc, Declaration dec, Scope scope,
+            boolean fullType) {
+        super(offset, prefix, getIcon(dec), 
+                desc, text);
+        this.cpc = cpc;
+        this.declaration = dec;
+        this.pr = pr;
+        this.fullType = fullType;
+        this.scope = scope;
+    }
 
+    private static Image getIcon(Declaration dec) {
+        return dec.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT;
+    }
+
+    @Override
+    public StyledString getStyledDisplayString() {
+        StyledString result = new StyledString();
+        String string = getDisplayString();
+        if (string.startsWith("shared actual")) {
+            result.append(string.substring(0,13), ANN_STYLER);
+            string=string.substring(13);
+        }
+        styleProposal(result, string);
+        return result;
+    }
+    
     private ProducedType getType() {
         return fullType ?
                 pr.getFullType() :
                 pr.getType();
     }
+    
+    @Override
+    public Point getSelection(IDocument document) {
+        int loc = text.indexOf("nothing;");
+        int length;
+        int start;
+        if (loc<0) {
+            start = offset + text.length()-prefix.length();
+            if (text.endsWith("{}")) start--;
+            length = 0;
+        }
+        else {
+            start = offset + loc-prefix.length();
+            length = 7;
+        }
+        return new Point(start, length);
+    }
 
-	@Override
-	public void apply(IDocument document) {
-		int originalLength = document.getLength();
-		try {
-			imports(document).perform(new NullProgressMonitor());
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		offset += document.getLength() - originalLength;
-		super.apply(document);
-		enterLinkedMode(document);
-	}
+    @Override
+    public void apply(IDocument document) {
+        int originalLength = document.getLength();
+        try {
+            imports(document).perform(new NullProgressMonitor());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        offset += document.getLength() - originalLength;
+        super.apply(document);
+        if (EditorsUI.getPreferenceStore()
+                .getBoolean(LINKED_MODE)) {
+            enterLinkedMode(document);
+        }
+    }
 
-	private DocumentChange imports(IDocument document)
-			throws BadLocationException {
-		DocumentChange tc = new DocumentChange("imports", document);
-		tc.setEdit(new MultiTextEdit());
-		HashSet<Declaration> decs = new HashSet<Declaration>();
-		CompilationUnit cu = cpc.getRootNode();
-		//TODO for an inline function completion, we don't
-		//     need to import the return type
-		importSignatureTypes(declaration, cu, decs);
-		applyImports(tc, decs, cu, document);
-		return tc;
-	}
+    private DocumentChange imports(IDocument document)
+            throws BadLocationException {
+        DocumentChange tc = new DocumentChange("imports", document);
+        tc.setEdit(new MultiTextEdit());
+        HashSet<Declaration> decs = new HashSet<Declaration>();
+        CompilationUnit cu = cpc.getRootNode();
+        //TODO for an inline function completion, we don't
+        //     need to import the return type
+        importSignatureTypes(declaration, cu, decs);
+        applyImports(tc, decs, cu, document);
+        return tc;
+    }
 
-	public String getAdditionalProposalInfo() {
-		return getDocumentationFor(cpc, declaration);	
-	}
-	
+    public String getAdditionalProposalInfo() {
+        return getDocumentationFor(cpc, declaration);    
+    }
+    
     public void enterLinkedMode(IDocument document) {
         try {
             final int loc = offset-prefix.length();
@@ -249,77 +277,18 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 List<ICompletionProposal> props = 
                         new ArrayList<ICompletionProposal>();
                 addProposals(loc+pos, props, prefix);
-                LinkedPositionGroup linkedPositionGroup = 
-                        new LinkedPositionGroup();
                 ProposalPosition linkedPosition = 
                         new ProposalPosition(document, 
                                 loc+pos, 7, 0, 
                                 props.toArray(NO_COMPLETIONS));
-                linkedPositionGroup.addPosition(linkedPosition);
-                linkedModeModel.addGroup(linkedPositionGroup);
-                linkedModeModel.forceInstall();
-                final CeylonEditor editor = 
-                        (CeylonEditor) EditorUtil.getCurrentEditor();
-                linkedModeModel.addLinkingListener(new ILinkedModeListener() {
-                    @Override
-                    public void left(LinkedModeModel model, int flags) {
-                        editor.clearLinkedMode();
-                        //                    linkedModeModel.exit(ILinkedModeListener.NONE);
-                        CeylonSourceViewer viewer= editor.getCeylonSourceViewer();
-                        if (viewer instanceof IEditingSupportRegistry) {
-                            ((IEditingSupportRegistry) viewer).unregister(editingSupport);
-                        }
-                        editor.getSite().getPage().activate(editor);
-                        if ((flags&EXTERNAL_MODIFICATION)==0 && viewer!=null) {
-                            viewer.invalidateTextPresentation();
-                        }
-                    }
-                    @Override
-                    public void suspend(LinkedModeModel model) {
-                        editor.clearLinkedMode();
-                    }
-                    @Override
-                    public void resume(LinkedModeModel model, int flags) {
-                        editor.setLinkedMode(model, RefinementCompletionProposal.this);
-                    }
-                });
-                editor.setLinkedMode(linkedModeModel, this);
-                CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
-                EditorLinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
-                ui.setExitPosition(viewer, loc+text.length(), 0, 1);
-                ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
-                ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
-                ui.setDoContextInfo(true);
-                ui.enter();
-
-                registerEditingSupport(editor, viewer);
-                
+                addLinkedPosition(linkedModeModel, linkedPosition);
+                installLinkedMode(document, linkedModeModel, 
+                        1, loc+text.length());
             }
 
         }
         catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private IEditingSupport editingSupport;
-    
-    private void registerEditingSupport(final CeylonEditor editor,
-            CeylonSourceViewer viewer) {
-        if (viewer instanceof IEditingSupportRegistry) {
-            editingSupport = new IEditingSupport() {
-                public boolean ownsFocusShell() {
-                    Shell editorShell= editor.getSite().getShell();
-                    Shell activeShell= editorShell.getDisplay().getActiveShell();
-                    if (editorShell == activeShell)
-                        return true;
-                    return false;
-                }
-                public boolean isOriginator(DocumentEvent event, IRegion subjectRegion) {
-                    return false; //leave on external modification outside positions
-                }
-            };
-            ((IEditingSupportRegistry) viewer).register(editingSupport);
         }
     }
     
