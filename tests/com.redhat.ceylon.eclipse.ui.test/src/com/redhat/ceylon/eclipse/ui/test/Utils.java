@@ -352,9 +352,10 @@ public class Utils {
             if (summaryToFill == this) {
                 if (reentrantBuildSummary != null) {
                     reentrantBuildSummary.install();
+                } else {
+                    CeylonBuilder.replaceHook(ceylonBuildHookToRestore);
                 }
                 firstBuildLatch.countDown();
-                CeylonBuilder.replaceHook(ceylonBuildHookToRestore);
             }
         }
         
@@ -570,7 +571,10 @@ public class Utils {
     }
 
     public static Position positionInTextEditor(SWTBotEclipseEditor editor, String match, int offset) {
-        Pattern pattern = Pattern.compile(match);
+        return positionInTextEditor(editor, Pattern.compile(match, Pattern.LITERAL), offset);
+    }
+    
+    public static Position positionInTextEditor(SWTBotEclipseEditor editor, Pattern pattern, int offset) {
         for (int line=0; line < editor.getLineCount(); line++) {
             String lineText = editor.getTextOnLine(line);
             Matcher matcher = pattern.matcher(lineText);
@@ -578,7 +582,7 @@ public class Utils {
                 return new Position(line, matcher.start() + offset);
             }
         }
-        Assert.fail("The editor of file '" + editor.getTitle() + "' doesn't contain any string matching '" + match + "'");
+        Assert.fail("The editor of file '" + editor.getTitle() + "' doesn't contain any string matching '" + pattern + "'");
         return null;
     }
 }
