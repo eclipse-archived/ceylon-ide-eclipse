@@ -446,7 +446,7 @@ class AddAnnotionProposal extends CorrectionProposal {
             
             List<ProducedType> satisfiedTypes = 
                     c.getDeclarationModel().getSatisfiedTypes();
-            if( satisfiedTypes != null ) {
+            if (satisfiedTypes!=null) {
                 for (ProducedType satisfiedType: satisfiedTypes) {
                     addMakeSharedProposal(proposals, project, 
                             satisfiedType.getDeclaration());
@@ -542,32 +542,34 @@ class AddAnnotionProposal extends CorrectionProposal {
     
     static void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Declaration dec) {
-        if (dec != null) {
+        if (dec!=null) {
             if (dec instanceof UnionType) {
                 List<ProducedType> caseTypes = 
                         ((UnionType) dec).getCaseTypes();
-                for (ProducedType caseType : caseTypes) {
-                    addMakeSharedProposal(proposals, project, 
-                            caseType.getDeclaration());
+                for (ProducedType caseType: caseTypes) {
+                        addMakeSharedProposal(proposals, project, 
+                                caseType.getDeclaration());
                     for (ProducedType typeArgument: 
-                        caseType.getTypeArgumentList()) {
+                            caseType.getTypeArgumentList()) {
                         addMakeSharedProposal(proposals, project, 
                                 typeArgument.getDeclaration());
                     }
                 }
-            } else if (dec instanceof IntersectionType) {
+            }
+            else if (dec instanceof IntersectionType) {
                 List<ProducedType> satisfiedTypes = 
                         ((IntersectionType) dec).getSatisfiedTypes();
                 for (ProducedType satisfiedType: satisfiedTypes) {
                     addMakeSharedProposal(proposals, project,
                             satisfiedType.getDeclaration());
                     for (ProducedType typeArgument: 
-                        satisfiedType.getTypeArgumentList()) {
+                            satisfiedType.getTypeArgumentList()) {
                         addMakeSharedProposal(proposals, project,
                                 typeArgument.getDeclaration());
                     }
                 }
-            } else if (dec instanceof TypedDeclaration || 
+            }
+            else if (dec instanceof TypedDeclaration || 
                        dec instanceof ClassOrInterface || 
                        dec instanceof TypeAlias) {
                 if (!dec.isShared()) {

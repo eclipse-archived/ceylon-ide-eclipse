@@ -53,6 +53,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreateProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
@@ -427,6 +428,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 713:
             addMakeSharedProposalForSupertypes(proposals, project, node);
+            break;
+        case 714:
+            addExportModuleImportProposalForSupertypes(proposals, project, node);
             break;
         case 800:
         case 804:
