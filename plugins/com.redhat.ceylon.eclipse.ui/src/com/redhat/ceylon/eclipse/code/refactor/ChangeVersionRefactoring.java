@@ -23,8 +23,6 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class ChangeVersionRefactoring extends AbstractRefactoring {
@@ -39,19 +37,34 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
             this.module = module;
         }
         @Override
-        public void visit(ImportModule that) {
+        public void visit(Tree.ImportModule that) {
             super.visit(that);
-            if (that.getImportPath().getModel().getNameAsString()
-                    .equals(module.getNameAsString())) {
-                nodes.add(that.getVersion());
+            Tree.ImportPath ip = that.getImportPath();
+            String name = module.getNameAsString();
+            Tree.QuotedLiteral version = that.getVersion();
+            if (version!=null) {
+                if (ip!=null && ip.getModel()!=null &&
+                        ip.getModel().getNameAsString()
+                        .equals(name)) {
+                    nodes.add(version);
+                }
+                Tree.QuotedLiteral ql = that.getQuotedLiteral();
+                if (ql!=null && ql.getText().equals('"' + name + '"')) {
+                    nodes.add(version);
+                }
             }
         }
         @Override
-        public void visit(ModuleDescriptor that) {
+        public void visit(Tree.ModuleDescriptor that) {
             super.visit(that);
-            if (that.getImportPath().getModel().getNameAsString()
-                    .equals(module.getNameAsString())) {
-                nodes.add(that.getVersion());
+            Tree.QuotedLiteral version = that.getVersion();
+            if (version!=null) {
+                Tree.ImportPath ip = that.getImportPath();
+                if (ip!=null && ip.getModel()!=null &&
+                        ip.getModel().getNameAsString()
+                        .equals(module.getNameAsString())) {
+                    nodes.add(version);
+                }
             }
         }
     }
