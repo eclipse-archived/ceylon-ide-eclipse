@@ -54,15 +54,17 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
         Tree.SequencedArgument sa = nal.getSequencedArgument();
         for (Parameter p: nal.getNamedArgumentList().getParameterList()
                 .getParameters()) {
+            boolean found = false;
             if (sa!=null) {
                 Parameter param = sa.getParameter();
                 if (param==null) {
                     return;
                 }
                 if (param.getModel().equals(p.getModel())) {
-                    result.append("{ ");
-                    result.append(AbstractRefactoring.toString(sa, tokens));
-                    result.append(" }");
+                    found = true;
+                    result.append("{ ")
+                        .append(AbstractRefactoring.toString(sa, tokens))
+                        .append(" }");
                 }
             }
             for (Tree.NamedArgument na: args) {
@@ -71,6 +73,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                     return;
                 }
                 if (param.getModel().equals(p.getModel())) {
+                    found = true;
                     if (na instanceof Tree.SpecifiedArgument) {
                         Tree.SpecifiedArgument sna = (Tree.SpecifiedArgument) na;
                         Tree.SpecifierExpression se = sna.getSpecifierExpression();
@@ -101,7 +104,9 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                     }
                 }
             }
-            result.append(", ");
+            if (found) {
+                result.append(", ");
+            }
         }
         if (result.length()>1) {
             result.setLength(result.length()-2);
