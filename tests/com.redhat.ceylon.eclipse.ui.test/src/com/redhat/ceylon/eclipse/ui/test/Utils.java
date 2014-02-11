@@ -359,6 +359,17 @@ public class Utils {
             }
         }
         
+        @Override
+        protected void afterReentrantBuild() {
+            if (summaryToFill == this) {
+                if (reentrantBuildSummary != null &&
+                        ! reentrantBuildSummary.didFullBuild() &&
+                        ! reentrantBuildSummary.didIncrementalBuild()) {
+                    reentrantBuildSummary.endBuild();
+                }
+            }
+        }
+
         public boolean waitForBuildEnd(long timeoutInSeconds) throws InterruptedException {
             if (!installed) {
                 throw new RuntimeException("Cannot wait for a build with a non-installed hook !");
@@ -550,7 +561,8 @@ public class Utils {
         });
         Event event = Utils.createMouseEvent(editor.getStyledText().widget, editor.getStyledText().display, pointToMoveAndClick.x, pointToMoveAndClick.y, 0, SWT.CTRL, 1);
         Utils.notify(SWT.MouseMove, event, editor.getStyledText().widget, editor.getStyledText().display);
-        editor.bot().sleep(500);
+        event = Utils.createMouseEvent(editor.getStyledText().widget, editor.getStyledText().display, pointToMoveAndClick.x, pointToMoveAndClick.y, 0, SWT.CTRL, 1);
+        Utils.notify(SWT.MouseMove, event, editor.getStyledText().widget, editor.getStyledText().display);
         event = Utils.createMouseEvent(editor.getStyledText().widget, editor.getStyledText().display, pointToMoveAndClick.x, pointToMoveAndClick.y, 1, SWT.CTRL, 1);
         Utils.notify(SWT.MouseDown, event, editor.getStyledText().widget, editor.getStyledText().display);
         event = Utils.createMouseEvent(editor.getStyledText().widget, editor.getStyledText().display, pointToMoveAndClick.x, pointToMoveAndClick.y, 1, SWT.CTRL, 1);
