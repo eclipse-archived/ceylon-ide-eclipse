@@ -15,8 +15,8 @@
       <plugins>
 	      <plugin>
 	        <groupId>org.eclipse.tycho</groupId>
-	        <artifactId>tycho-surefire-plugin</artifactId>
-	        <executions>	            
+	        <artifactId>tycho-surefire-plugin</artifactId>	        
+	        <executions>
                 <execution>
                     <id>default-test</id>
                     <phase>integration-test</phase>
@@ -26,7 +26,7 @@
                     <inherited>true</inherited>
                     <configuration>
                       <useUIHarness>true</useUIHarness>
-                      <useUIThread>true</useUIThread>
+                      <useUIThread>true</useUIThread>                      
                       <includes>
                           <include>com/redhat/ceylon/eclipse/ui/test/CeylonIdeExampleTest.class</include>
                       </includes>
@@ -62,6 +62,22 @@
 		              </includes>
 		            </configuration>
 		        </execution>
+                <execution>                 
+                    <id>Headless tests With Source Loading</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>false</inherited>
+                    <configuration>
+                      <useUIHarness>false</useUIHarness>
+                      <useUIThread>false</useUIThread>
+	                  <argLine>${tycho.testArgLine} ${platformSystemProperties} -Dceylon.loadBinariesFirst=false</argLine>
+                      <includes>
+                          <include>com/redhat/ceylon/eclipse/ui/test/headless/ModelAndPhasedUnitsTests.class</include>
+                      </includes>
+                    </configuration>
+                </execution>
                 <execution>                 
                     <id>BuildLifecycleFirstStep</id>
                     <phase>integration-test</phase>
