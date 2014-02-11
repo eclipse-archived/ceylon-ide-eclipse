@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.IProject;
@@ -12,6 +13,7 @@ import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
@@ -193,26 +195,16 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     }
     
     private boolean checkOutputPaths() {
-        String ceylonOut = thirdPage.getBlock().getOutputRepo()
-                .toLowerCase();
-        if (ceylonOut.startsWith("./")) {
-            ceylonOut = "/" + firstPage.getProjectName() + 
-                    ceylonOut.substring(1);
+        String ceylonOutString = thirdPage.getBlock().getOutputRepo();
+        if (ceylonOutString.startsWith("."+File.separator)) {
+            ceylonOutString = firstPage.getProjectName() + 
+                    ceylonOutString.substring(1);
         }
-        if (ceylonOut.endsWith("/")) {
-            ceylonOut = ceylonOut.substring(0, ceylonOut.length()-1);
-        }
-        if (ceylonOut.endsWith("/")) {
-            ceylonOut = ceylonOut.substring(0, ceylonOut.length()-1);
-        }
-        String javaOut = secondPage.getBuildPathsBlock()
-                .getJavaOutputLocation().toPortableString()
-                .toLowerCase();
-        if (javaOut.endsWith("/")) {
-            javaOut = javaOut.substring(0, javaOut.length()-1);
-        }
-        return !ceylonOut.startsWith(javaOut) && 
-                !javaOut.startsWith(ceylonOut);
+        IPath ceylonOut = Path.fromOSString(ceylonOutString);
+        IPath javaOut = secondPage.getBuildPathsBlock()
+                .getJavaOutputLocation();
+        return !ceylonOut.isPrefixOf(javaOut) && 
+                !javaOut.isPrefixOf(ceylonOut);
     }
 
     private void displayError(String message) {
