@@ -45,6 +45,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertThenElseToIfElse.add
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToBlockProposal.addConvertToBlockProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToGetterProposal.addConvertToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateEnumProposal.addCreateEnumProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
@@ -562,6 +563,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     currentOffset);
             
             addConvertToNamedArgumentsProposal(proposals, file, cu, 
+                    editor, currentOffset);
+            addConvertToPositionalArgumentsProposal(proposals, file, cu, 
                     editor, currentOffset);
             
             Tree.Statement statement = FindUtils.findStatement(cu, node);
