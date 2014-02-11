@@ -15,6 +15,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
@@ -39,30 +40,83 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
     
     public static void addConvertToNamedArgumentsProposal(Collection<ICompletionProposal> proposals, 
             IFile file, Tree.CompilationUnit cu, CeylonEditor editor, int currentOffset) {
-        Tree.PositionalArgumentList pal = findPositionalArgumentList(currentOffset, cu);
+        Tree.PositionalArgumentList pal = 
+                findPositionalArgumentList(currentOffset, cu);
         if (canConvert(pal)) {
-            final TextChange tc = new TextFileChange("Convert To Named Arguments", file);
+            final TextChange tc = 
+                    new TextFileChange("Convert To Named Arguments", file);
             Integer start = pal.getStartIndex();
             int length = pal.getStopIndex()-start+1;
             StringBuilder result = new StringBuilder().append(" {");
             boolean sequencedArgs = false;
             List<CommonToken> tokens = editor.getParseController().getTokens();
-            for (Tree.PositionalArgument arg: pal.getPositionalArguments()) {
+            final List<Tree.PositionalArgument> args = pal.getPositionalArguments();
+            int i=0;
+            for (Tree.PositionalArgument arg: 
+                    args) {
                 Parameter param = arg.getParameter();
-                if (param==null) return;
-                if (param.isSequenced() && (arg instanceof Tree.ListedArgument)) {
+                if (param==null) {
+                    return;
+                }
+                if (param.isSequenced()) {
                     if (sequencedArgs) {
-                        result.append(",");
+                        result.append(", ");
                     }
                     else {
-                        result.append(" " + param.getName() + " = [");
+                        //TODO: if we _only_ have a single spread 
+                        //      argument we don't need to wrap it
+                        //      in a sequence, we only need to
+                        //      get rid of the * operator
+                        result.append(" ")
+                            .append(param.getName())
+                            .append(" = [");
                         sequencedArgs=true;
                     }
-                    result.append(" " + AbstractRefactoring.toString(arg, tokens));
+                    result.append(AbstractRefactoring.toString(arg, tokens));
                 }
                 else {
-                    result.append(" " + param.getName() + " = " + 
-                            AbstractRefactoring.toString(arg, tokens) + ";");
+                    if (sequencedArgs) {
+                        return;
+                    }
+                    if (arg instanceof Tree.ListedArgument) {
+                        final Expression e = ((Tree.ListedArgument) arg).getExpression();
+                        if (e!=null) {
+                            Tree.Term term = e.getTerm();
+                            if (term instanceof Tree.FunctionArgument) {
+                                Tree.FunctionArgument fa = (Tree.FunctionArgument) term;
+                                if (fa.getType() instanceof Tree.VoidModifier) {
+                                    result.append("void ");
+                                }
+                                else {
+                                    result.append("function ");
+                                }
+                                result.append(param.getName());
+                                for (Tree.ParameterList pl: fa.getParameterLists()) {
+                                    result.append(AbstractRefactoring.toString(pl, tokens));
+                                }
+                                if (fa.getBlock()!=null) {
+                                    result.append(" ")
+                                        .append(AbstractRefactoring.toString(fa.getBlock(), tokens));
+                                }
+                                else if (fa.getExpression()!=null) {
+                                    result.append(" => ")
+                                        .append(AbstractRefactoring.toString(fa.getExpression(), tokens))
+                                        .append("; ");
+                                }
+                                continue;
+                            }
+                            if (++i==args.size() && 
+                                    term instanceof Tree.SequenceEnumeration) {
+                                Tree.SequenceEnumeration se = (Tree.SequenceEnumeration) term;
+                                result.append(" ")
+                                    .append(AbstractRefactoring.toString(se.getSequencedArgument(), tokens));
+                                continue;
+                            }
+                        }
+                    }
+                    result.append(" " + param.getName() + " = ")
+                        .append(AbstractRefactoring.toString(arg, tokens))
+                        .append("; ");
                 }
             }
             if (sequencedArgs) {
