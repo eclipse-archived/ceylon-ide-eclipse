@@ -321,7 +321,7 @@ public class CodeCompletions {
             Unit unit, StringBuilder result, boolean includeDefaulted) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, 
-            		includeDefaulted, false);
+                    includeDefaulted, false);
             if (params.isEmpty()) {
                 result.append("()");
             }
@@ -332,24 +332,47 @@ public class CodeCompletions {
                         result.append("*");
                     }
                     if (p.getModel() instanceof Functional) {
-                    	if (p.isDeclaredVoid()) {
-                    		result.append("void ");
-                    	}
-                    	appendParameters(p.getModel(), 
-                    			pr.getTypedParameter(p), 
-                    			unit, result);
-                    	if (p.isDeclaredVoid()) {
-                    		result.append(" {}");
-                    	}
-                    	else {
-                    		result.append(" => ")
-                    		    .append(p.getName());
-                    	}
+                        if (p.isDeclaredVoid()) {
+                            result.append("void ");
+                        }
+                        appendParameters(p.getModel(), 
+                                pr.getTypedParameter(p), 
+                                unit, result);
+                        if (p.isDeclaredVoid()) {
+                            result.append(" {}");
+                        }
+                        else {
+                            result.append(" => ")
+                                .append("nothing");
+                        }
                     }
                     else {
-                    	result.append(p.getName());
+                        result.append(p.getName());
                     }
                     result.append(", ");
+                }
+                result.setLength(result.length()-2);
+                result.append(")");
+            }
+        }
+    }
+    
+    static void appendSuperArgs(Declaration d, ProducedReference pr, 
+            Unit unit, StringBuilder result, boolean includeDefaulted) {
+        if (d instanceof Functional) {
+            List<Parameter> params = getParameters((Functional) d, 
+            		includeDefaulted, false);
+            if (params.isEmpty()) {
+                result.append("()");
+            }
+            else {
+                result.append("(");
+                for (Parameter p: params) {
+                    if (p.isSequenced()) {
+                        result.append("*");
+                    }
+                    result.append(p.getName())
+                        .append(", ");
                 }
                 result.setLength(result.length()-2);
                 result.append(")");
@@ -631,7 +654,7 @@ public class CodeCompletions {
     		}
             if (!d.isFormal()) {
                 result.append(" => super.").append(d.getName());
-                appendPositionalArgs(d, pr, unit, result, true);
+                appendSuperArgs(d, pr, unit, result, true);
                 result.append(";");
                 
             }
