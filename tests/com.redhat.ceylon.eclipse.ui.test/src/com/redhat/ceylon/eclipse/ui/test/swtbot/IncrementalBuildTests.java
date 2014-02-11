@@ -89,7 +89,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
             buildSummary.waitForBuildEnd(30);
             
             SWTBotEclipseEditor ceylonFileEditor = Utils.showEditorByTitle(bot, "run.ceylon");
-            Position javaClassUsePosition = Utils.positionInTextEditor(javaFileEditor, "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();", 0);
+            Position javaClassUsePosition = Utils.positionInTextEditor(ceylonFileEditor, "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();", 0);
             String ceylonEditorText = ceylonFileEditor.getText();
             ceylonFileEditor.insertText(javaClassUsePosition.line + 1, 0,"v5.newMethodToTest();\n");
             
