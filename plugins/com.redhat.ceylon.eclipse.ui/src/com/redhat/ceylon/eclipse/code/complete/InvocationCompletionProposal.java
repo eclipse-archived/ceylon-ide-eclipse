@@ -172,7 +172,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 int offset = findCharCount(index, document, 
                         loc+startOfArgs, endOfLine, 
                         ",;", "", true)+1;
-                if (offset>0&&document.getChar(offset)==' ') {
+                if (offset>0 && document.getChar(offset)==' ') {
                     offset++;
                 }
                 int nextOffset = findCharCount(index+1, document, 
@@ -406,24 +406,20 @@ class InvocationCompletionProposal extends CompletionProposal {
             //no arg list
             return super.getSelection(document);
         }
-        int next, start, len;
-        try {
-            do {
-                next = getNextPosition(document, first);
-                if (next<=0) {
-                    //an empty arg list
-                    return super.getSelection(document);
-                }
-                int middle = getCompletionPosition(first, next);
-                start = offset-prefix.length()+first+middle;
-                len = next-middle;
-                first = first+next+1;
-            }
-            while (document.get(start, len).equals("{}"));
-        }
-        catch (BadLocationException e) {
+        int next = getNextPosition(document, first);
+        if (next<=0) {
+            //an empty arg list
             return super.getSelection(document);
         }
+        int middle = getCompletionPosition(first, next);
+        int start = offset-prefix.length()+first+middle;
+        int len = next-middle;
+        try {
+            if (document.get(start, len).equals("{}")) {
+                start++;
+                len=0;
+            }
+        } catch (BadLocationException e) {}
         return new Point(start, len);
     }
     
@@ -494,39 +490,45 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (first<=0) return; //no arg list
             int next = getNextPosition(document, first);
             if (next<=0) return; //empty arg list
-            final LinkedModeModel linkedModeModel = 
-                    new LinkedModeModel();
-            int i=0;
-            while (next>0 && i<paramCount) {
+            LinkedModeModel linkedModeModel = new LinkedModeModel();
+            int seq=0, param=0;
+            while (next>0 && param<paramCount) {
                 //skip void callable params
-                while (namedInvocation && 
-                        params.get(i).isDeclaredVoid()) {
-                    //no comma or semicolon
-                    i++;
-                }
-                if (proposeTypeArguments ||
-                        !params.get(i).isDeclaredVoid()) {
+                boolean voidParam = !proposeTypeArguments &&
+                        params.get(param).isDeclaredVoid();
+                if (proposeTypeArguments || positionalInvocation ||
+                        //don't create linked positions for
+                        //void callable parameters in named
+                        //argument lists
+                        !voidParam) {
                     List<ICompletionProposal> props = 
                             new ArrayList<ICompletionProposal>();
                     if (proposeTypeArguments) {
-                        addTypeArgumentProposals(typeParams, loc, first, props, i);
+                        addTypeArgumentProposals(typeParams.get(seq), loc, first, props, seq);
                     }
-                    else {
-                        addValueArgumentProposals(params, loc, first, props, i);
+                    else if (!voidParam) {
+                        addValueArgumentProposals(params.get(param), loc, first, props, seq, 
+                                param==params.size()-1);
                     }
                     int middle = getCompletionPosition(first, next);
+                    int s = loc+first+middle;
+                    int l = next-middle;
+                    if (voidParam) {
+                        s++;
+                        l=0;
+                    }
                     ProposalPosition linkedPosition = 
-                            new ProposalPosition(document, 
-                                    loc+first+middle, next-middle, i, 
+                            new ProposalPosition(document, s, l, seq, 
                                     props.toArray(NO_COMPLETIONS));
                     addLinkedPosition(linkedModeModel, linkedPosition);
+                    first = first+next+1;
+                    next = getNextPosition(document, first);
+                    seq++;
                 }
-                first = first+next+1;
-                next = getNextPosition(document, first);
-                i++;
+                param++; 
             }
             installLinkedMode(document, linkedModeModel, 
-                    i, loc+text.length());
+                    seq, loc+text.length());
 
         }
         catch (Exception e) {
@@ -534,9 +536,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
-    private void addValueArgumentProposals(List<Parameter> params, final int loc,
-            int first, List<ICompletionProposal> props, final int index) {
-        Parameter p = params.get(index);
+    private void addValueArgumentProposals(Parameter p, final int loc,
+            int first, List<ICompletionProposal> props, int index,
+            boolean last) {
         if (p.getModel().isDynamicallyTyped()) {
             return;
         }
@@ -567,8 +569,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     ((td instanceof TypeParameter) && 
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
                             vt.isSubtypeOf(type))) {
-                    boolean isIterArg = namedInvocation &&
-                            index==params.size()-1 && 
+                    boolean isIterArg = namedInvocation && last && 
                             unit.isIterableParameterType(type);
                     boolean isVarArg = p.isSequenced() && positionalInvocation;
                     props.add(new NestedCompletionProposal(d, 
@@ -589,8 +590,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
                             ct.getDeclaration().equals(type.getDeclaration()) ||
                             ct.isSubtypeOf(type))) {
-                    boolean isIterArg = namedInvocation &&
-                            index==params.size()-1 && 
+                    boolean isIterArg = namedInvocation && last && 
                             unit.isIterableParameterType(type);
                     boolean isVarArg = p.isSequenced() && positionalInvocation;
                     props.add(new NestedCompletionProposal(d, loc, index, false, 
@@ -600,10 +600,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
-    private void addTypeArgumentProposals(List<TypeParameter> typeParams, 
+    private void addTypeArgumentProposals(TypeParameter tp, 
             final int loc, int first, List<ICompletionProposal> props, 
             final int index) {
-        TypeParameter p = typeParams.get(index);
         Unit unit = cpc.getRootNode().getUnit();
         for (DeclarationWithProximity dwp: getSortedProposedValues(scope, unit)) {
             Declaration d = dwp.getDeclaration();
@@ -620,7 +619,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                             continue;
                         }
                     }
-                    if (isInBounds(p.getSatisfiedTypes(), t)) {
+                    if (isInBounds(tp.getSatisfiedTypes(), t)) {
                         props.add(new NestedCompletionProposal(d, loc, index, 
                                 true, ""));
                     }
