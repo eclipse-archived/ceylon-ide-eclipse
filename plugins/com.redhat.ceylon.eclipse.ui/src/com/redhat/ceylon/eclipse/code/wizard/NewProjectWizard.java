@@ -197,9 +197,16 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         if (ceylonOut.startsWith("./")) {
             ceylonOut = "/" + firstPage.getProjectName() + ceylonOut.substring(1);
         }
+        if (ceylonOut.endsWith("/")) {
+            ceylonOut = ceylonOut.substring(0, ceylonOut.length()-1);
+        }
         String javaOut = secondPage.getBuildPathsBlock()
                 .getJavaOutputLocation().toPortableString();
-        return !ceylonOut.equals(javaOut);
+        if (javaOut.endsWith("/")) {
+            javaOut = javaOut.substring(0, javaOut.length()-1);
+        }
+        return !ceylonOut.startsWith(javaOut) && 
+                !javaOut.startsWith(ceylonOut);
     }
 
     private void displayError(String message) {
