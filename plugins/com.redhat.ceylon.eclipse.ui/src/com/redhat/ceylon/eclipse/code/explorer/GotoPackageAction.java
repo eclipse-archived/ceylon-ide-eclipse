@@ -20,53 +20,53 @@ import org.eclipse.ui.progress.IProgressService;
 
 class GotoPackageAction extends Action {
 
-	private PackageExplorerPart fPackageExplorer;
+    private PackageExplorerPart fPackageExplorer;
 
-	GotoPackageAction(PackageExplorerPart part) {
-		super(PackagesMessages.GotoPackage_action_label);
-		setDescription(PackagesMessages.GotoPackage_action_description);
-		fPackageExplorer= part;
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.GOTO_PACKAGE_ACTION);
-	}
+    GotoPackageAction(PackageExplorerPart part) {
+        super(PackagesMessages.GotoPackage_action_label);
+        setDescription(PackagesMessages.GotoPackage_action_description);
+        fPackageExplorer= part;
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.GOTO_PACKAGE_ACTION);
+    }
 
-	@Override
-	public void run() {
-		Shell shell= JavaPlugin.getActiveWorkbenchShell();
-		SelectionDialog dialog= createAllPackagesDialog(shell);
-		dialog.setTitle(getDialogTitle());
-		dialog.setMessage(PackagesMessages.GotoPackage_dialog_message);
-		dialog.open();
-		Object[] res= dialog.getResult();
-		if (res != null && res.length == 1)
-			gotoPackage((IPackageFragment)res[0]);
-	}
+    @Override
+    public void run() {
+        Shell shell= JavaPlugin.getActiveWorkbenchShell();
+        SelectionDialog dialog= createAllPackagesDialog(shell);
+        dialog.setTitle(getDialogTitle());
+        dialog.setMessage(PackagesMessages.GotoPackage_dialog_message);
+        dialog.open();
+        Object[] res= dialog.getResult();
+        if (res != null && res.length == 1)
+            gotoPackage((IPackageFragment)res[0]);
+    }
 
-	private SelectionDialog createAllPackagesDialog(Shell shell) {
-		IProgressService progressService= PlatformUI.getWorkbench().getProgressService();
-		IJavaSearchScope scope= SearchEngine.createWorkspaceScope();
-		int flag= PackageSelectionDialog.F_HIDE_EMPTY_INNER;
-		PackageSelectionDialog dialog= new PackageSelectionDialog(shell, progressService, flag, scope);
-		dialog.setFilter(""); //$NON-NLS-1$
-		dialog.setIgnoreCase(false);
-		dialog.setMultipleSelection(false);
-		return dialog;
-	}
+    private SelectionDialog createAllPackagesDialog(Shell shell) {
+        IProgressService progressService= PlatformUI.getWorkbench().getProgressService();
+        IJavaSearchScope scope= SearchEngine.createWorkspaceScope();
+        int flag= PackageSelectionDialog.F_HIDE_EMPTY_INNER;
+        PackageSelectionDialog dialog= new PackageSelectionDialog(shell, progressService, flag, scope);
+        dialog.setFilter(""); //$NON-NLS-1$
+        dialog.setIgnoreCase(false);
+        dialog.setMultipleSelection(false);
+        return dialog;
+    }
 
-	private void gotoPackage(IPackageFragment p) {
-		fPackageExplorer.selectReveal(new StructuredSelection(p));
-		if (!p.equals(getSelectedElement())) {
-			MessageDialog.openInformation(fPackageExplorer.getSite().getShell(),
-				getDialogTitle(),
-				Messages.format(PackagesMessages.PackageExplorer_element_not_present, JavaElementLabels.getElementLabel(p, JavaElementLabels.ALL_DEFAULT)));
-		}
-	}
+    private void gotoPackage(IPackageFragment p) {
+        fPackageExplorer.selectReveal(new StructuredSelection(p));
+        if (!p.equals(getSelectedElement())) {
+            MessageDialog.openInformation(fPackageExplorer.getSite().getShell(),
+                getDialogTitle(),
+                Messages.format(PackagesMessages.PackageExplorer_element_not_present, JavaElementLabels.getElementLabel(p, JavaElementLabels.ALL_DEFAULT)));
+        }
+    }
 
-	private Object getSelectedElement() {
-		return ((IStructuredSelection)fPackageExplorer.getSite().getSelectionProvider().getSelection()).getFirstElement();
-	}
+    private Object getSelectedElement() {
+        return ((IStructuredSelection)fPackageExplorer.getSite().getSelectionProvider().getSelection()).getFirstElement();
+    }
 
-	private String getDialogTitle() {
-		return PackagesMessages.GotoPackage_dialog_title;
-	}
+    private String getDialogTitle() {
+        return PackagesMessages.GotoPackage_dialog_title;
+    }
 
 }

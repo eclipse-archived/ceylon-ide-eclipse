@@ -40,37 +40,37 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public class CompletionUtil {
 
-	public static List<Declaration> overloads(Declaration dec) {
-	    if (dec instanceof Functional && ((Functional) dec).isAbstraction()) {
-	        return ((Functional) dec).getOverloads();
-	    }
-	    else {
-	        return Collections.singletonList(dec);
-	    }
-	}
+    public static List<Declaration> overloads(Declaration dec) {
+        if (dec instanceof Functional && ((Functional) dec).isAbstraction()) {
+            return ((Functional) dec).getOverloads();
+        }
+        else {
+            return Collections.singletonList(dec);
+        }
+    }
 
-	static List<Parameter> getParameters(ParameterList pl,
-	        boolean includeDefaults, boolean namedInvocation) {
+    static List<Parameter> getParameters(ParameterList pl,
+            boolean includeDefaults, boolean namedInvocation) {
         List<Parameter> ps = pl.getParameters();
-	    if (includeDefaults) {
+        if (includeDefaults) {
             return ps;
-	    }
-	    else {
-	        List<Parameter> list = new ArrayList<Parameter>();
-	        for (Parameter p: ps) {
-	            if (!p.isDefaulted() || 
-	            		(namedInvocation && 
-	            		        p==ps.get(ps.size()-1) && 
-	            		        p.getModel() instanceof Value &&
-	            		        p.getType()!=null &&
-				                p.getDeclaration().getUnit()
-				                        .isIterableParameterType(p.getType()))) {
-	            	list.add(p);
-	            }
-	        }
-	        return list;
-	    }
-	}
+        }
+        else {
+            List<Parameter> list = new ArrayList<Parameter>();
+            for (Parameter p: ps) {
+                if (!p.isDefaulted() || 
+                        (namedInvocation && 
+                                p==ps.get(ps.size()-1) && 
+                                p.getModel() instanceof Value &&
+                                p.getType()!=null &&
+                                p.getDeclaration().getUnit()
+                                        .isIterableParameterType(p.getType()))) {
+                    list.add(p);
+                }
+            }
+            return list;
+        }
+    }
 
     static String fullPath(int offset, String prefix,
             Tree.ImportPath path) {
@@ -108,95 +108,95 @@ public class CompletionUtil {
                 cpc.getRootNode().getPackageDescriptors().isEmpty();
     }
 
-	public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
-	    if (node.getToken()==null) return null;
-	    FindOccurrenceLocationVisitor visitor = new FindOccurrenceLocationVisitor(node);
-	    cu.visit(visitor);
-	    return visitor.getOccurrenceLocation();
-	}
+    public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
+        if (node.getToken()==null) return null;
+        FindOccurrenceLocationVisitor visitor = new FindOccurrenceLocationVisitor(node);
+        cu.visit(visitor);
+        return visitor.getOccurrenceLocation();
+    }
 
-	static int nextTokenType(final CeylonParseController cpc,
-			final CommonToken token) {
-		for (int i=token.getTokenIndex()+1; i<cpc.getTokens().size(); i++) {
-			CommonToken tok = cpc.getTokens().get(i);
-			if (tok.getChannel()!=CommonToken.HIDDEN_CHANNEL) {
-				return tok.getType();
-			}
-		}
-		return -1;
-	}
+    static int nextTokenType(final CeylonParseController cpc,
+            final CommonToken token) {
+        for (int i=token.getTokenIndex()+1; i<cpc.getTokens().size(); i++) {
+            CommonToken tok = cpc.getTokens().get(i);
+            if (tok.getChannel()!=CommonToken.HIDDEN_CHANNEL) {
+                return tok.getType();
+            }
+        }
+        return -1;
+    }
 
-	/**
-	 * BaseMemberExpressions in Annotations have funny lying
-	 * scopes, but we can extract the real scope out of the
-	 * identifier! (Yick)
-	 */
-	static Scope getRealScope(final Node node, CompilationUnit cu) {
-		
-	    class FindScopeVisitor extends Visitor {
-	        Scope scope;
-	        public void visit(Tree.Declaration that) {
-	            super.visit(that);
-	            AnnotationList al = that.getAnnotationList();
-	            if (al!=null) {
-	                for (Tree.Annotation a: al.getAnnotations()) {
-	                    Integer i = a.getPrimary().getStartIndex();
-	                    Integer j = node.getStartIndex();
-	                    if (i.intValue()==j.intValue()) {
-	                        scope = that.getDeclarationModel().getScope();
-	                    }
-	                }
-	            }
-	        }
-	        
-	        public void visit(Tree.DocLink that) {
-	            super.visit(that);
-	            scope = ((Tree.DocLink)node).getPkg();
-	        }
-	    };
-	    FindScopeVisitor fsv = new FindScopeVisitor();
-	    fsv.visit(cu);
-	    return fsv.scope==null ? node.getScope() : fsv.scope;
-	}
+    /**
+     * BaseMemberExpressions in Annotations have funny lying
+     * scopes, but we can extract the real scope out of the
+     * identifier! (Yick)
+     */
+    static Scope getRealScope(final Node node, CompilationUnit cu) {
+        
+        class FindScopeVisitor extends Visitor {
+            Scope scope;
+            public void visit(Tree.Declaration that) {
+                super.visit(that);
+                AnnotationList al = that.getAnnotationList();
+                if (al!=null) {
+                    for (Tree.Annotation a: al.getAnnotations()) {
+                        Integer i = a.getPrimary().getStartIndex();
+                        Integer j = node.getStartIndex();
+                        if (i.intValue()==j.intValue()) {
+                            scope = that.getDeclarationModel().getScope();
+                        }
+                    }
+                }
+            }
+            
+            public void visit(Tree.DocLink that) {
+                super.visit(that);
+                scope = ((Tree.DocLink)node).getPkg();
+            }
+        };
+        FindScopeVisitor fsv = new FindScopeVisitor();
+        fsv.visit(cu);
+        return fsv.scope==null ? node.getScope() : fsv.scope;
+    }
 
-	static int getLine(final int offset, ITextViewer viewer) {
-	    int line=-1;
-	    try {
-	        line = viewer.getDocument().getLineOfOffset(offset);
-	    }
-	    catch (BadLocationException e) {
-	        e.printStackTrace();
-	    }
-	    return line;
-	}
+    static int getLine(final int offset, ITextViewer viewer) {
+        int line=-1;
+        try {
+            line = viewer.getDocument().getLineOfOffset(offset);
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+        return line;
+    }
 
     public static boolean isInBounds(List<ProducedType> upperBounds, ProducedType t) {
-    	boolean ok = true;
-    	for (ProducedType ub: upperBounds) {
-    		if (!t.isSubtypeOf(ub) &&
-    				!(ub.containsTypeParameters() &&
-    				        t.getDeclaration().inherits(ub.getDeclaration()))) {
-    			ok = false;
-    			break;
-    		}
-    	}
-    	return ok;
+        boolean ok = true;
+        for (ProducedType ub: upperBounds) {
+            if (!t.isSubtypeOf(ub) &&
+                    !(ub.containsTypeParameters() &&
+                            t.getDeclaration().inherits(ub.getDeclaration()))) {
+                ok = false;
+                break;
+            }
+        }
+        return ok;
     }
 
     public static List<DeclarationWithProximity> getSortedProposedValues(Scope scope, Unit unit) {
-    	List<DeclarationWithProximity> results = new ArrayList<DeclarationWithProximity>(
-    			scope.getMatchingDeclarations(unit, "", 0).values());
-    	Collections.sort(results, new Comparator<DeclarationWithProximity>() {
-    		public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
-    			if (x.getProximity()<y.getProximity()) return -1;
-    			if (x.getProximity()>y.getProximity()) return 1;
-    			int c = x.getDeclaration().getName().compareTo(y.getDeclaration().getName());
-    			if (c!=0) return c;  
-    			return x.getDeclaration().getQualifiedNameString()
-    					.compareTo(y.getDeclaration().getQualifiedNameString());
-    		}
-    	});
-    	return results;
+        List<DeclarationWithProximity> results = new ArrayList<DeclarationWithProximity>(
+                scope.getMatchingDeclarations(unit, "", 0).values());
+        Collections.sort(results, new Comparator<DeclarationWithProximity>() {
+            public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
+                if (x.getProximity()<y.getProximity()) return -1;
+                if (x.getProximity()>y.getProximity()) return 1;
+                int c = x.getDeclaration().getName().compareTo(y.getDeclaration().getName());
+                if (c!=0) return c;  
+                return x.getDeclaration().getQualifiedNameString()
+                        .compareTo(y.getDeclaration().getQualifiedNameString());
+            }
+        });
+        return results;
     }
 
     static boolean isIgnoredLanguageModuleClass(final String name) {
@@ -211,48 +211,48 @@ public class CompletionUtil {
                 name.equals("runtime") ||
                 name.equals("system") ||
                 name.equals("operatingSystem") ||
-        		name.equals("language") ||
-        		name.equals("emptyIterator") ||
-        		name.equals("infinity") ||
-        		name.endsWith("IntegerValue") ||
-        		name.equals("finished");
+                name.equals("language") ||
+                name.equals("emptyIterator") ||
+                name.equals("infinity") ||
+                name.endsWith("IntegerValue") ||
+                name.equals("finished");
     }
 
     static boolean isIgnoredLanguageModuleType(TypeDeclaration td) {
         return !td.getName().equals("Object") && 
-        		!td.getName().equals("Anything") &&
-        		!td.getName().equals("String") &&
-        		!td.getName().equals("Integer") &&
-        		!td.getName().equals("Character") &&
-        		!td.getName().equals("Float") &&
-        		!td.getName().equals("Boolean");
+                !td.getName().equals("Anything") &&
+                !td.getName().equals("String") &&
+                !td.getName().equals("Integer") &&
+                !td.getName().equals("Character") &&
+                !td.getName().equals("Float") &&
+                !td.getName().equals("Boolean");
     }
 
     public static void styleProposal(StyledString result, String string) {
-    	StringTokenizer tokens = new StringTokenizer(string, " ()<>", true);
-    	while (tokens.hasMoreTokens()) {
-    		String token = tokens.nextToken();
-    		if (isUpperCase(token.charAt(0))) {
-    			result.append(token, TYPE_ID_STYLER);
-    		}
-    		else if (isLowerCase(token.charAt(0))) {
-    			if (CeylonTokenColorer.keywords.contains(token)) {
-    				result.append(token, KW_STYLER);
-    			}
-    			else if (token.contains(".")) {
-    			    result.append(token, PACKAGE_STYLER);
-    			}
-    			else {
-    				result.append(token, ID_STYLER);
-    			}
-    		}
-    		else if (token.charAt(0)=='\"') {
-    			result.append(token, VERSION_STYLER);
-    		}
-    		else {
-    			result.append(token);
-    		}
-    	}
+        StringTokenizer tokens = new StringTokenizer(string, " ()<>", true);
+        while (tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            if (isUpperCase(token.charAt(0))) {
+                result.append(token, TYPE_ID_STYLER);
+            }
+            else if (isLowerCase(token.charAt(0))) {
+                if (CeylonTokenColorer.keywords.contains(token)) {
+                    result.append(token, KW_STYLER);
+                }
+                else if (token.contains(".")) {
+                    result.append(token, PACKAGE_STYLER);
+                }
+                else {
+                    result.append(token, ID_STYLER);
+                }
+            }
+            else if (token.charAt(0)=='\"') {
+                result.append(token, VERSION_STYLER);
+            }
+            else {
+                result.append(token);
+            }
+        }
     }
 
 }

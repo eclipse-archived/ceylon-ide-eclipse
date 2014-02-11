@@ -93,8 +93,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
         if (page==firstPage && !checkJre()) {
-        	displayError("Please select a Java 1.7 JRE");
-        	return page;
+            displayError("Please select a Java 1.7 JRE");
+            return page;
         }
         else if (page==secondPage && !checkOutputPaths()) {
             displayError("Please select a different Java output path");
@@ -105,15 +105,15 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             return page;
         }
         else {
-        	clearErrors();
+            clearErrors();
             return super.getNextPage(page);
         }
     }
 
     public boolean performFinish() {
         if (!checkJre()) {
-        	displayError("Please select a Java 1.7 JRE");
-        	return false;
+            displayError("Please select a Java 1.7 JRE");
+            return false;
         }
         if (!checkOutputPaths()) {
             displayError("Java and Ceylon output paths collide");
@@ -146,10 +146,10 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             }
 
             new CeylonNature(thirdPage.getBlock().getSystemRepo(),
-    				firstPage.isEnableJdtClassesDir(), 
-    				!firstPage.isShowCompilerWarnings(),
-    				firstPage.isCompileJava(),
-    				firstPage.isCompileJs())
+                    firstPage.isEnableJdtClassesDir(), 
+                    !firstPage.isShowCompilerWarnings(),
+                    firstPage.isCompileJava(),
+                    firstPage.isCompileJs())
                             .addToProject(getCreatedElement().getProject());
 
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
@@ -159,8 +159,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 public void run() {
                     IWorkbenchPart activePart= getActivePart();
                     if (activePart instanceof IPackagesViewPart) {
-                		PackageExplorerPart.openInActivePerspective()
-                		    .tryToReveal(getCreatedElement());
+                        PackageExplorerPart.openInActivePerspective()
+                            .tryToReveal(getCreatedElement());
                     }
                 }
             });
@@ -171,7 +171,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     }
 
     private boolean checkJre() {
-	    for (IClasspathEntry cpe: firstPage.getDefaultClasspathEntries()) {
+        for (IClasspathEntry cpe: firstPage.getDefaultClasspathEntries()) {
             if (cpe.getEntryKind()==IClasspathEntry.CPE_CONTAINER) {                
                 IPath path = cpe.getPath();
                 if (path.segment(0).equals(JRE_CONTAINER)) {
@@ -189,33 +189,33 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 }
             }
         }
-	    return true;
+        return true;
     }
-	
-	private boolean checkOutputPaths() {
-	    String ceylonOut = thirdPage.getBlock().getOutputRepo();
-	    if (ceylonOut.startsWith("./")) {
-	        ceylonOut = "/" + firstPage.getProjectName() + ceylonOut.substring(1);
-	    }
-	    String javaOut = secondPage.getBuildPathsBlock()
-	            .getJavaOutputLocation().toPortableString();
-	    return !ceylonOut.equals(javaOut);
-	}
-
-	private void displayError(String message) {
-	    for (IWizardPage page: getPages()) {
-	    	if (page instanceof WizardPage) {
-	    		((WizardPage) page).setErrorMessage(message);
-	    	}
-	    }
+    
+    private boolean checkOutputPaths() {
+        String ceylonOut = thirdPage.getBlock().getOutputRepo();
+        if (ceylonOut.startsWith("./")) {
+            ceylonOut = "/" + firstPage.getProjectName() + ceylonOut.substring(1);
+        }
+        String javaOut = secondPage.getBuildPathsBlock()
+                .getJavaOutputLocation().toPortableString();
+        return !ceylonOut.equals(javaOut);
     }
 
-	private void clearErrors() {
-	    for (IWizardPage page: getPages()) {
-	    	if (page instanceof WizardPage) {
-	    		((WizardPage)page).setErrorMessage(null);
-	    	}
-	    }
+    private void displayError(String message) {
+        for (IWizardPage page: getPages()) {
+            if (page instanceof WizardPage) {
+                ((WizardPage) page).setErrorMessage(message);
+            }
+        }
+    }
+
+    private void clearErrors() {
+        for (IWizardPage page: getPages()) {
+            if (page instanceof WizardPage) {
+                ((WizardPage)page).setErrorMessage(null);
+            }
+        }
     }
     
     private IWorkbenchPart getActivePart() {

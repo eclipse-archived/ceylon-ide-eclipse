@@ -28,12 +28,12 @@ final class ImportVisitor extends Visitor {
     ImportVisitor(String prefix, CommonToken token, int offset,
             Node node, CeylonParseController cpc,
             List<ICompletionProposal> result) {
-	    this.prefix = prefix;
-	    this.token = token;
-	    this.offset = offset;
-	    this.node = node;
-	    this.cpc = cpc;
-	    this.result = result;
+        this.prefix = prefix;
+        this.token = token;
+        this.offset = offset;
+        this.node = node;
+        this.cpc = cpc;
+        this.result = result;
     }
 
     @Override
@@ -60,8 +60,8 @@ final class ImportVisitor extends Visitor {
         super.visit(that);
         if (that.getImportPath()==node) {
             addPackageCompletions(cpc, offset, prefix, 
-            		(Tree.ImportPath) node, node, result, 
-            		nextTokenType(cpc, token)!=CeylonLexer.LBRACE);
+                    (Tree.ImportPath) node, node, result, 
+                    nextTokenType(cpc, token)!=CeylonLexer.LBRACE);
         }
     }
 
@@ -70,7 +70,7 @@ final class ImportVisitor extends Visitor {
         super.visit(that);
         if (that.getImportPath()==node) {
             addPackageCompletions(cpc, offset, prefix, 
-            		(Tree.ImportPath) node, node, result, false);
+                    (Tree.ImportPath) node, node, result, false);
         }
     }
 
@@ -79,8 +79,8 @@ final class ImportVisitor extends Visitor {
         super.visit(that);
         if (that.getImportPath()==node) {
             addModuleCompletions(cpc, offset, prefix, 
-            		(Tree.ImportPath) node, node, result, 
-            		nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL);
+                    (Tree.ImportPath) node, node, result, 
+                    nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL);
         }
     }
 
@@ -89,7 +89,7 @@ final class ImportVisitor extends Visitor {
         super.visit(that);
         if (that.getImportPath()==node) {
             addModuleCompletions(cpc, offset, prefix, 
-            		(Tree.ImportPath) node, node, result, false);
+                    (Tree.ImportPath) node, node, result, false);
         }
     }
 }

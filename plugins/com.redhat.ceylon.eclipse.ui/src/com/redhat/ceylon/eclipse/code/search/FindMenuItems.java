@@ -42,16 +42,16 @@ public class FindMenuItems extends CompoundContributionItem {
                 //new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findReferences", "Find &References",
                         editor==null ? false : new FindReferencesAction(editor).isEnabled(), 
-                        		AbstractFindAction.REFS),
+                                AbstractFindAction.REFS),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findAssignments", "Find Assignments",
-                		editor==null ? false : new FindAssignmentsAction(editor).isEnabled(), 
-                				AbstractFindAction.REFS),
+                        editor==null ? false : new FindAssignmentsAction(editor).isEnabled(), 
+                                AbstractFindAction.REFS),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findRefinements", "Find Refinements",
-                		editor==null ? false : new FindRefinementsAction(editor).isEnabled(), 
-                				AbstractFindAction.DECS),
+                        editor==null ? false : new FindRefinementsAction(editor).isEnabled(), 
+                                AbstractFindAction.DECS),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findSubtypes", "Find Subtypes",
-                		editor==null ? false : new FindSubtypesAction(editor).isEnabled(), 
-                				AbstractFindAction.DECS)
+                        editor==null ? false : new FindSubtypesAction(editor).isEnabled(), 
+                                AbstractFindAction.DECS)
                 //new Separator()
             };
     }

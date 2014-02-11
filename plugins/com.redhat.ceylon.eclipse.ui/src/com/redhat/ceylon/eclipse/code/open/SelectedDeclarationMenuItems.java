@@ -15,11 +15,11 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class SelectedDeclarationMenuItems extends CompoundContributionItem {
     
     private static final ImageDescriptor GOTO_IMAGE = CeylonPlugin.getInstance()
-    		.getImageRegistry().getDescriptor(GOTO);
+            .getImageRegistry().getDescriptor(GOTO);
     private static final ImageDescriptor HIERARCHY_IMAGE = CeylonPlugin.getInstance()
-    		.getImageRegistry().getDescriptor(HIERARCHY);
+            .getImageRegistry().getDescriptor(HIERARCHY);
 
-	public SelectedDeclarationMenuItems() {}
+    public SelectedDeclarationMenuItems() {}
     
     public SelectedDeclarationMenuItems(String id) {
         super(id);
@@ -28,7 +28,7 @@ public class SelectedDeclarationMenuItems extends CompoundContributionItem {
     @Override
     protected IContributionItem[] getContributionItems() {
         boolean enabled = new OpenSelectedDeclarationHandler().isEnabled();
-		return new IContributionItem[] {
+        return new IContributionItem[] {
                 new DynamicMenuItem(PLUGIN_ID + ".action.openSelectedDeclaration", 
                         "Go To Selected Declaration",
                         enabled, GOTO_IMAGE),

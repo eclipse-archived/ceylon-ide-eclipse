@@ -735,7 +735,7 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
                 IAction refactorAction= new Action("Apply") {
                     @Override
                     public void run() {
-                    	fRenameLinkedMode.linkedModeModel.exit(UPDATE_CARET);
+                        fRenameLinkedMode.linkedModeModel.exit(UPDATE_CARET);
 //                        fRenameLinkedMode.done();
                     }
                 };

@@ -25,69 +25,69 @@ import org.eclipse.ui.dialogs.SelectionDialog;
 
 class GotoTypeAction extends Action {
 
-	private PackageExplorerPart fPackageExplorer;
+    private PackageExplorerPart fPackageExplorer;
 
-	GotoTypeAction(PackageExplorerPart part) {
-		super();
-		setText(PackagesMessages.GotoType_action_label);
-		setDescription(PackagesMessages.GotoType_action_description);
-		fPackageExplorer= part;
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.GOTO_TYPE_ACTION);
-	}
+    GotoTypeAction(PackageExplorerPart part) {
+        super();
+        setText(PackagesMessages.GotoType_action_label);
+        setDescription(PackagesMessages.GotoType_action_description);
+        fPackageExplorer= part;
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.GOTO_TYPE_ACTION);
+    }
 
-	@Override
-	public void run() {
-		Shell shell= JavaPlugin.getActiveWorkbenchShell();
-		SelectionDialog dialog= null;
-		try {
-			dialog= JavaUI.createTypeDialog(shell, new ProgressMonitorDialog(shell),
-				SearchEngine.createWorkspaceScope(), IJavaElementSearchConstants.CONSIDER_ALL_TYPES, false);
-		} catch (JavaModelException e) {
-			String title= getDialogTitle();
-			String message= PackagesMessages.GotoType_error_message;
-			ExceptionHandler.handle(e, title, message);
-			return;
-		}
+    @Override
+    public void run() {
+        Shell shell= JavaPlugin.getActiveWorkbenchShell();
+        SelectionDialog dialog= null;
+        try {
+            dialog= JavaUI.createTypeDialog(shell, new ProgressMonitorDialog(shell),
+                SearchEngine.createWorkspaceScope(), IJavaElementSearchConstants.CONSIDER_ALL_TYPES, false);
+        } catch (JavaModelException e) {
+            String title= getDialogTitle();
+            String message= PackagesMessages.GotoType_error_message;
+            ExceptionHandler.handle(e, title, message);
+            return;
+        }
 
-		dialog.setTitle(getDialogTitle());
-		dialog.setMessage(PackagesMessages.GotoType_dialog_message);
-		if (dialog.open() == IDialogConstants.CANCEL_ID) {
-			return;
-		}
+        dialog.setTitle(getDialogTitle());
+        dialog.setMessage(PackagesMessages.GotoType_dialog_message);
+        if (dialog.open() == IDialogConstants.CANCEL_ID) {
+            return;
+        }
 
-		Object[] types= dialog.getResult();
-		if (types != null && types.length > 0) {
-			gotoType((IType) types[0]);
-		}
-	}
+        Object[] types= dialog.getResult();
+        if (types != null && types.length > 0) {
+            gotoType((IType) types[0]);
+        }
+    }
 
-	private void gotoType(IType type) {
-		ICompilationUnit cu= (ICompilationUnit) type.getAncestor(IJavaElement.COMPILATION_UNIT);
-		IJavaElement element= null;
-		if (cu != null) {
-			element= cu.getPrimary();
-		}
-		else {
-			element= type.getAncestor(IJavaElement.CLASS_FILE);
-		}
-		if (element != null) {
-			PackageExplorerPart view= PackageExplorerPart.openInActivePerspective();
-			if (view != null) {
-				view.selectReveal(new StructuredSelection(element));
-				if (!element.equals(getSelectedElement(view))) {
-					MessageDialog.openInformation(fPackageExplorer.getSite().getShell(),
-						getDialogTitle(),
-						Messages.format(PackagesMessages.PackageExplorer_element_not_present, JavaElementLabels.getElementLabel(element, JavaElementLabels.ALL_DEFAULT)));
-				}
-			}
-		}
-	}
+    private void gotoType(IType type) {
+        ICompilationUnit cu= (ICompilationUnit) type.getAncestor(IJavaElement.COMPILATION_UNIT);
+        IJavaElement element= null;
+        if (cu != null) {
+            element= cu.getPrimary();
+        }
+        else {
+            element= type.getAncestor(IJavaElement.CLASS_FILE);
+        }
+        if (element != null) {
+            PackageExplorerPart view= PackageExplorerPart.openInActivePerspective();
+            if (view != null) {
+                view.selectReveal(new StructuredSelection(element));
+                if (!element.equals(getSelectedElement(view))) {
+                    MessageDialog.openInformation(fPackageExplorer.getSite().getShell(),
+                        getDialogTitle(),
+                        Messages.format(PackagesMessages.PackageExplorer_element_not_present, JavaElementLabels.getElementLabel(element, JavaElementLabels.ALL_DEFAULT)));
+                }
+            }
+        }
+    }
 
-	private Object getSelectedElement(PackageExplorerPart view) {
-		return ((IStructuredSelection)view.getSite().getSelectionProvider().getSelection()).getFirstElement();
-	}
+    private Object getSelectedElement(PackageExplorerPart view) {
+        return ((IStructuredSelection)view.getSite().getSelectionProvider().getSelection()).getFirstElement();
+    }
 
-	private String getDialogTitle() {
-		return PackagesMessages.GotoType_dialog_title;
-	}
+    private String getDialogTitle() {
+        return PackagesMessages.GotoType_dialog_title;
+    }
 }

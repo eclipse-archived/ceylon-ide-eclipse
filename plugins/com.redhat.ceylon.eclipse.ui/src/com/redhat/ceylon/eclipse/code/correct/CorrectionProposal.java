@@ -50,7 +50,7 @@ class CorrectionProposal
         implements ICompletionProposal, ICompletionProposalExtension5, ICompletionProposalExtension6 {
 
     private static final NullChange COMPUTING_CHANGE = 
-    		new NullChange("ChangeCorrectionProposal computing...");
+            new NullChange("ChangeCorrectionProposal computing...");
     
     private Change fChange;
     private String fName;
@@ -93,7 +93,7 @@ class CorrectionProposal
     public void apply(IDocument document) {
         try {
             performChange(JavaPlugin.getActivePage().getActiveEditor(), 
-            		document, getChange(), getName());
+                    document, getChange(), getName());
         } 
         catch (CoreException e) {
             e.printStackTrace();
@@ -111,8 +111,8 @@ class CorrectionProposal
      * @throws CoreException when the invocation of the change failed
      */
     protected static void performChange(IEditorPart activeEditor, 
-    		IDocument document, Change change, String name) 
-    				throws CoreException {
+            IDocument document, Change change, String name) 
+                    throws CoreException {
         StyledText disabledStyledText= null;
         TraverseListener traverseBlocker= null;
         
@@ -292,7 +292,7 @@ class CorrectionProposal
                         Display display= Display.getCurrent();
                         if (display != null) {
                             while (!display.isDisposed() && 
-                            		display.readAndDispatch()) {
+                                    display.readAndDispatch()) {
                                 // empty the display loop
                             }
                             display.sleep();

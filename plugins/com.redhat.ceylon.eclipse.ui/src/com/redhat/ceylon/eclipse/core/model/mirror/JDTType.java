@@ -68,11 +68,11 @@ public class JDTType implements TypeMirror {
     @Override
     public String getQualifiedName() {
         if (qualifiedName == null) {
-        	// type params are not qualified
-        	if(type instanceof TypeVariableBinding)
-        		qualifiedName = new String(type.qualifiedSourceName());
-        	else
-        		qualifiedName = JDTUtils.getFullyQualifiedName(type);
+            // type params are not qualified
+            if(type instanceof TypeVariableBinding)
+                qualifiedName = new String(type.qualifiedSourceName());
+            else
+                qualifiedName = JDTUtils.getFullyQualifiedName(type);
         }
         return qualifiedName;
     }
@@ -186,10 +186,10 @@ public class JDTType implements TypeMirror {
         return lowerBound;
     }
 
-	@Override
-	public boolean isRaw() {
-		return type.isRawType();
-	}
+    @Override
+    public boolean isRaw() {
+        return type.isRawType();
+    }
 
     @Override
     public ClassMirror getDeclaredClass() {
@@ -202,8 +202,8 @@ public class JDTType implements TypeMirror {
         return declaredClass;
     }
 
-	@Override
-	public TypeParameterMirror getTypeParameter() {
+    @Override
+    public TypeParameterMirror getTypeParameter() {
         if(!typeParameterSet){
             if(type instanceof TypeVariableBinding){
                 typeParameter = new JDTTypeParameter((TypeVariableBinding) type, lookupEnvironment);
@@ -211,5 +211,5 @@ public class JDTType implements TypeMirror {
             typeParameterSet = true;
         }
         return typeParameter;
-	}
+    }
 }

@@ -112,41 +112,41 @@ public abstract class AbstractRefactoring extends Refactoring {
         }
         
         if (node instanceof Tree.MemberOrTypeExpression) {
-        	Declaration d = ((Tree.MemberOrTypeExpression) node).getDeclaration();
-        	if (d!=null) {
-        		return guessName(identifyingNode, d);
-        	}
+            Declaration d = ((Tree.MemberOrTypeExpression) node).getDeclaration();
+            if (d!=null) {
+                return guessName(identifyingNode, d);
+            }
         }
         else if (node instanceof Tree.Term) {
-        	ProducedType type = ((Tree.Term) node).getTypeModel();
-        	if (type!=null) {
-        		TypeDeclaration d = type.getDeclaration();
-				if (d instanceof ClassOrInterface || 
-					d instanceof TypeParameter) {
-					return guessName(identifyingNode, d);
-				}
+            ProducedType type = ((Tree.Term) node).getTypeModel();
+            if (type!=null) {
+                TypeDeclaration d = type.getDeclaration();
+                if (d instanceof ClassOrInterface || 
+                    d instanceof TypeParameter) {
+                    return guessName(identifyingNode, d);
+                }
             }
         }
         
         return "it";
     }
 
-	private static String guessName(Node identifyingNode, Declaration d) {
-	    String tn = d.getName();
-	    String name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
-	    if (identifyingNode instanceof Tree.BaseMemberExpression) {
-	    	Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) identifyingNode;
-			String id = bme.getIdentifier().getText();
-	    	if (name.equals(id)) {
-	    		return name + "2";
-	    	}
-	    }
-    	if (!CeylonTokenColorer.keywords.contains(name)) {
-    		return name;
-    	}
-    	else {
-    		return "it";
-    	}
+    private static String guessName(Node identifyingNode, Declaration d) {
+        String tn = d.getName();
+        String name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
+        if (identifyingNode instanceof Tree.BaseMemberExpression) {
+            Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) identifyingNode;
+            String id = bme.getIdentifier().getText();
+            if (name.equals(id)) {
+                return name + "2";
+            }
+        }
+        if (!CeylonTokenColorer.keywords.contains(name)) {
+            return name;
+        }
+        else {
+            return "it";
+        }
     }
 
     String toString(Node term) {
@@ -154,13 +154,13 @@ public abstract class AbstractRefactoring extends Refactoring {
     }
     
     Tree.Term unparenthesize(Tree.Term term) {
-    	if (term instanceof Tree.Expression) {
-    		Expression e = (Tree.Expression) term;
-    		if (!(e.getTerm() instanceof Tree.Tuple)) {
-    			return unparenthesize(e.getTerm());
-    		}
-    	}
-    	return term;
+        if (term instanceof Tree.Expression) {
+            Expression e = (Tree.Expression) term;
+            if (!(e.getTerm() instanceof Tree.Tuple)) {
+                return unparenthesize(e.getTerm());
+            }
+        }
+        return term;
     }
     
     public static String toString(Node term, List<CommonToken> theTokens) {
@@ -206,30 +206,30 @@ public abstract class AbstractRefactoring extends Refactoring {
         return tc;
     }
 
-	protected List<PhasedUnit> getAllUnits() {
-		List<PhasedUnit> units = new ArrayList<PhasedUnit>();
-		units.addAll(getUnits(project));
+    protected List<PhasedUnit> getAllUnits() {
+        List<PhasedUnit> units = new ArrayList<PhasedUnit>();
+        units.addAll(getUnits(project));
         for (IProject p: project.getReferencingProjects()) {
-        	units.addAll(getUnits(p));
+            units.addAll(getUnits(p));
         }
-		return units;
-	}
+        return units;
+    }
 
-	protected int countDeclarationOccurrences() {
-		int count = 0;
-		for (PhasedUnit pu: getAllUnits()) {
-		    if (searchInFile(pu)) {
-		        count += countReferences(pu.getCompilationUnit());
-		    }
-		}
-		if (searchInEditor()) {
-		    count += countReferences(editor.getParseController().getRootNode());
-		}
-		return count;
-	}
-	
-	int countReferences(Tree.CompilationUnit cu) {
-		return 0;
-	}
+    protected int countDeclarationOccurrences() {
+        int count = 0;
+        for (PhasedUnit pu: getAllUnits()) {
+            if (searchInFile(pu)) {
+                count += countReferences(pu.getCompilationUnit());
+            }
+        }
+        if (searchInEditor()) {
+            count += countReferences(editor.getParseController().getRootNode());
+        }
+        return count;
+    }
+    
+    int countReferences(Tree.CompilationUnit cu) {
+        return 0;
+    }
 
 }

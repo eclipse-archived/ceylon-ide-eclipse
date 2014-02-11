@@ -51,24 +51,24 @@ class RequiredTypeVisitor extends Visitor
         ProducedReference onat = namedArgTarget;
         Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
         if (pal!=null) {
-        	int pos;
-        	pos = pal.getPositionalArguments().size();
-        	for (int i=0; i<pos; i++) {
-        		Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
-        		if (token!=null) {
-        			if (pa.getStartIndex()>((CommonToken) token).getStopIndex()) {
-        				pos = i;
-        				break;
-        			}
-        		}
-        		else {
-        			if (node.getStartIndex()>=pa.getStartIndex() && 
-        					node.getStopIndex()<=pa.getStopIndex()) {
-        				pos = i;
-        				break;
-        			}
-        		}
-        	}
+            int pos;
+            pos = pal.getPositionalArguments().size();
+            for (int i=0; i<pos; i++) {
+                Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
+                if (token!=null) {
+                    if (pa.getStartIndex()>((CommonToken) token).getStopIndex()) {
+                        pos = i;
+                        break;
+                    }
+                }
+                else {
+                    if (node.getStartIndex()>=pa.getStartIndex() && 
+                            node.getStopIndex()<=pa.getStopIndex()) {
+                        pos = i;
+                        break;
+                    }
+                }
+            }
             ProducedReference pr = getTarget(that);
             if (pr!=null) {
                 List<Parameter> params = getParameters(pr);
@@ -135,8 +135,8 @@ class RequiredTypeVisitor extends Visitor
     public void visit(Tree.ForIterator that) {
         ProducedType ort = requiredType;
         requiredType = that.getUnit()
-        		.getIterableType(that.getUnit()
-        				.getAnythingDeclaration().getType());
+                .getIterableType(that.getUnit()
+                        .getAnythingDeclaration().getType());
         super.visit(that);
         requiredType = ort;
     }
@@ -154,14 +154,14 @@ class RequiredTypeVisitor extends Visitor
         ProducedType ort = requiredType;
         Tree.SwitchClause switchClause = that.getSwitchClause();
         ProducedType srt = that.getUnit().getAnythingDeclaration().getType();
-		if (switchClause!=null) {
-        	switchClause.visit(this);
-        	if (switchClause.getExpression()!=null) {
-        	    srt = switchClause.getExpression().getTypeModel();
-        	}
-        	else {
-        	    srt = null;
-        	}
+        if (switchClause!=null) {
+            switchClause.visit(this);
+            if (switchClause.getExpression()!=null) {
+                srt = switchClause.getExpression().getTypeModel();
+            }
+            else {
+                srt = null;
+            }
         }
         SwitchCaseList switchCaseList = that.getSwitchCaseList();
         if (switchCaseList!=null) {
@@ -250,7 +250,7 @@ class RequiredTypeVisitor extends Visitor
         ProducedType ort = requiredType;
         requiredType = getResultType(that.getBase());
         if (requiredType == null && that.getBase()!=null) {
-        	requiredType = that.getBase().getReference().getFullType();
+            requiredType = that.getBase().getReference().getFullType();
         }
         super.visit(that);
         requiredType = ort;

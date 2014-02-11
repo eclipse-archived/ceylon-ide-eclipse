@@ -11,26 +11,26 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class OpenTypeDialog extends OpenCeylonDeclarationDialog {
 
-	public OpenTypeDialog(Shell shell, IEditorPart editor) {
-		super(shell, editor);
-	}
-	
-	@Override
-	boolean isPresentable(Declaration d) {
-		return super.isPresentable(d) && 
-				d instanceof TypeDeclaration;
-	}
-	
-	@Override
-	boolean includeJava() {
-		return true;
-	}
-	
+    public OpenTypeDialog(Shell shell, IEditorPart editor) {
+        super(shell, editor);
+    }
+    
+    @Override
+    boolean isPresentable(Declaration d) {
+        return super.isPresentable(d) && 
+                d instanceof TypeDeclaration;
+    }
+    
+    @Override
+    boolean includeJava() {
+        return true;
+    }
+    
     @Override
     protected IDialogSettings getDialogSettings() {
         return DialogSettings.getOrCreateSection(CeylonPlugin.getInstance()
-        		.getDialogSettings(), 
-        		"openTypeDialog");
+                .getDialogSettings(), 
+                "openTypeDialog");
     }
     
 }

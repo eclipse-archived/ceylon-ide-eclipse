@@ -8,16 +8,16 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class ProblemHover extends AbstractAnnotationHover {
 
-	private final CeylonEditor editor;
+    private final CeylonEditor editor;
 
     public ProblemHover(CeylonEditor editor) {
         super(false);
         this.editor = editor;
     }
-	
-	@Override
+    
+    @Override
     protected AnnotationInfo createAnnotationInfo(Annotation annotation,
-			Position position, ITextViewer textViewer) {
-		return new ProblemInfo(editor, annotation, position, textViewer);
-	}
+            Position position, ITextViewer textViewer) {
+        return new ProblemInfo(editor, annotation, position, textViewer);
+    }
 }

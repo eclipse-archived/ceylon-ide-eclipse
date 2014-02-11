@@ -22,86 +22,86 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public final class RenameDeclarationLinkedMode extends
-			AbstractRenameLinkedMode {
-    	
-	private final RenameRefactoring refactoring;
-	
-	public RenameDeclarationLinkedMode(CeylonEditor editor) {
-		super(editor);
-		this.refactoring = new RenameRefactoring(editor);
-	}
-	
-	public static boolean useLinkedMode() {
-		return EditorsUI.getPreferenceStore()
-		        .getBoolean(LINKED_MODE_RENAME);
-	}
-	
-	@Override
-	public void start() {
-	    if (!refactoring.isEnabled()) return;
-		editor.doSave(new NullProgressMonitor());
-		saveEditorState();
-		super.start();
-	}
-
-	public void done() {
-		if (isEnabled()) {
-		    try {
-		        hideEditorActivity();
-		        refactoring.setNewName(getNewName());
-		        revertChanges();
-		        if (showPreview) {
-		            openPreview();
-		        }
-		        else {
-		            new RefactoringExecutionHelper(refactoring,
-		                    RefactoringStatus.WARNING,
-		                    RefactoringSaveHelper.SAVE_ALL,
-		                    editor.getSite().getShell(),
-		                    editor.getSite().getWorkbenchWindow())
-		                .perform(false, true);
-		        }
-		    } 
-		    catch (Exception e) {
-		        e.printStackTrace();
-		    }
-		    finally {
-		        unhideEditorActivity();
-		    }
-		    super.done();
-		}
-		else {
-		    super.cancel();
-		}
-	}
-
-	@Override
-	public String getHintTemplate() {
-		return "Enter new name for " + refactoring.getCount() + 
-		        " occurrences of '" + getName()  + "' {0}";
-	}
-
-	@Override
-    protected int getIdentifyingOffset() {
-    	return getIdentifyingNode(refactoring.getNode()).getStartIndex();
+            AbstractRenameLinkedMode {
+        
+    private final RenameRefactoring refactoring;
+    
+    public RenameDeclarationLinkedMode(CeylonEditor editor) {
+        super(editor);
+        this.refactoring = new RenameRefactoring(editor);
     }
     
-	@Override
-	protected void addLinkedPositions(IDocument document,
-			CompilationUnit rootNode, int adjust,
-			LinkedPositionGroup linkedPositionGroup) {
-		int i=1;
-		for (Node node: refactoring.getNodesToRename(rootNode)) {
-			Node identifyingNode = getIdentifyingNode(node);
-			try {
-				linkedPositionGroup.addPosition(new LinkedPosition(document, 
-						identifyingNode.getStartIndex(), 
-						identifyingNode.getText().length(), i++));
-			} 
-			catch (BadLocationException e) {
-				e.printStackTrace();
-			}
-		}
+    public static boolean useLinkedMode() {
+        return EditorsUI.getPreferenceStore()
+                .getBoolean(LINKED_MODE_RENAME);
+    }
+    
+    @Override
+    public void start() {
+        if (!refactoring.isEnabled()) return;
+        editor.doSave(new NullProgressMonitor());
+        saveEditorState();
+        super.start();
+    }
+
+    public void done() {
+        if (isEnabled()) {
+            try {
+                hideEditorActivity();
+                refactoring.setNewName(getNewName());
+                revertChanges();
+                if (showPreview) {
+                    openPreview();
+                }
+                else {
+                    new RefactoringExecutionHelper(refactoring,
+                            RefactoringStatus.WARNING,
+                            RefactoringSaveHelper.SAVE_ALL,
+                            editor.getSite().getShell(),
+                            editor.getSite().getWorkbenchWindow())
+                        .perform(false, true);
+                }
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            finally {
+                unhideEditorActivity();
+            }
+            super.done();
+        }
+        else {
+            super.cancel();
+        }
+    }
+
+    @Override
+    public String getHintTemplate() {
+        return "Enter new name for " + refactoring.getCount() + 
+                " occurrences of '" + getName()  + "' {0}";
+    }
+
+    @Override
+    protected int getIdentifyingOffset() {
+        return getIdentifyingNode(refactoring.getNode()).getStartIndex();
+    }
+    
+    @Override
+    protected void addLinkedPositions(IDocument document,
+            CompilationUnit rootNode, int adjust,
+            LinkedPositionGroup linkedPositionGroup) {
+        int i=1;
+        for (Node node: refactoring.getNodesToRename(rootNode)) {
+            Node identifyingNode = getIdentifyingNode(node);
+            try {
+                linkedPositionGroup.addPosition(new LinkedPosition(document, 
+                        identifyingNode.getStartIndex(), 
+                        identifyingNode.getText().length(), i++));
+            } 
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
         for (Region region: refactoring.getStringsToReplace(rootNode)) {
             try {
                 linkedPositionGroup.addPosition(new LinkedPosition(document, 
@@ -112,13 +112,13 @@ public final class RenameDeclarationLinkedMode extends
                 e.printStackTrace();
             }
         }
-	}
+    }
 
-	@Override
-	protected String getName() {
-		return refactoring.getDeclaration().getName();
-	}
-	
+    @Override
+    protected String getName() {
+        return refactoring.getDeclaration().getName();
+    }
+    
     void enterDialogMode() {
         refactoring.setNewName(getNewName());
         revertChanges();
@@ -163,18 +163,18 @@ public final class RenameDeclarationLinkedMode extends
 
     protected Action createPreviewAction() {
         return new Action("Preview") {
-	        @Override
-	        public void run() {
-	            enterDialogMode();
-	            openPreview();
-	        }
-	    };
+            @Override
+            public void run() {
+                enterDialogMode();
+                openPreview();
+            }
+        };
     }
-	
+    
 //  private Image image= null;
 //  private Label label= null;
-	
-	private void hideEditorActivity() {
+    
+    private void hideEditorActivity() {
 //      if (viewer instanceof SourceViewer) {
 //      final SourceViewer sourceViewer= (SourceViewer) viewer;
 //      Control viewerControl= sourceViewer.getControl();
@@ -204,13 +204,13 @@ public final class RenameDeclarationLinkedMode extends
 //          label.setBounds(0, 0, size.x, size.y);
 //          label.moveAbove(null);
 //      }
-	}
-	
-	private void unhideEditorActivity() {
-//	    if (label != null)
+    }
+    
+    private void unhideEditorActivity() {
+//        if (label != null)
 //            label.dispose();
 //        if (image != null)
 //            image.dispose();
-	}
+    }
 
 }

@@ -17,7 +17,7 @@ import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 
 public class FindSubtypesAction extends AbstractFindAction {
 
-	private static final class Query extends FindSearchQuery {
+    private static final class Query extends FindSearchQuery {
         private Query(Declaration referencedDeclaration, IProject project) {
             super(referencedDeclaration, project);
         }
@@ -38,16 +38,16 @@ public class FindSubtypesAction extends AbstractFindAction {
     }
 
     public FindSubtypesAction() {}
-	
+    
     public FindSubtypesAction(IEditorPart editor) {
-		super("Find Subtypes", editor);
-		setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");
-	}
+        super("Find Subtypes", editor);
+        setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");
+    }
     
     public FindSubtypesAction(IEditorPart editor, Declaration dec) {
-		super("Find Subtypes", editor, dec);
-		setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");
-	}
+        super("Find Subtypes", editor, dec);
+        setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");
+    }
     
     @Override
     boolean isValidSelection() {

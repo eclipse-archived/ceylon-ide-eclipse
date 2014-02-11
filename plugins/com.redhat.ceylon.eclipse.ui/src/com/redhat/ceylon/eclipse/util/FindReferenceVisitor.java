@@ -15,58 +15,58 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
-	
-	private Declaration declaration;
-	private final Set<Node> nodes = new HashSet<Node>();
-	
-	public FindReferenceVisitor(Declaration declaration) {
-	    if (declaration instanceof TypedDeclaration) {
-	        Declaration od = declaration;
-	        while (od!=null && od!=declaration) {
-	            declaration = od;
-	            od = ((TypedDeclaration) od).getOriginalDeclaration();
-	        }
-	    }
-	    if (declaration!=null && declaration.getContainer() instanceof Setter) {
-	    	Setter setter = (Setter) declaration.getContainer();
-	    	if (setter.getDirectMember(setter.getName(), null, false).equals(declaration)) {
-	    		declaration = setter;
-	    	}
-	    }
-	    if (declaration instanceof Setter) {
-	    	declaration = ((Setter) declaration).getGetter();
-	    }
-		this.declaration = declaration;
-	}
-	
-	public Declaration getDeclaration() {
+    
+    private Declaration declaration;
+    private final Set<Node> nodes = new HashSet<Node>();
+    
+    public FindReferenceVisitor(Declaration declaration) {
+        if (declaration instanceof TypedDeclaration) {
+            Declaration od = declaration;
+            while (od!=null && od!=declaration) {
+                declaration = od;
+                od = ((TypedDeclaration) od).getOriginalDeclaration();
+            }
+        }
+        if (declaration!=null && declaration.getContainer() instanceof Setter) {
+            Setter setter = (Setter) declaration.getContainer();
+            if (setter.getDirectMember(setter.getName(), null, false).equals(declaration)) {
+                declaration = setter;
+            }
+        }
+        if (declaration instanceof Setter) {
+            declaration = ((Setter) declaration).getGetter();
+        }
+        this.declaration = declaration;
+    }
+    
+    public Declaration getDeclaration() {
         return declaration;
     }
-	
-	public Set<Node> getNodes() {
-		return nodes;
-	}
-	
-	protected boolean isReference(Parameter p) {
-	    return p!=null && isReference(p.getModel());
-	}
-	
-	protected boolean isReference(Declaration ref) {
-	    return ref!=null && declaration!=null && 
-	    		(declaration.refines(ref) || 
-	    				isSetterParameterReference(ref));
-	}
+    
+    public Set<Node> getNodes() {
+        return nodes;
+    }
+    
+    protected boolean isReference(Parameter p) {
+        return p!=null && isReference(p.getModel());
+    }
+    
+    protected boolean isReference(Declaration ref) {
+        return ref!=null && declaration!=null && 
+                (declaration.refines(ref) || 
+                        isSetterParameterReference(ref));
+    }
 
-	private boolean isSetterParameterReference(Declaration ref) {
-		if (ref.getContainer() instanceof Setter) {
-			Setter setter = (Setter) ref.getContainer();
-			return setter.getDirectMember(setter.getName(), null, false).equals(ref) &&
-					isReference(setter.getGetter());
-		}
-		else {
-			return false;
-		}
-	}
+    private boolean isSetterParameterReference(Declaration ref) {
+        if (ref.getContainer() instanceof Setter) {
+            Setter setter = (Setter) ref.getContainer();
+            return setter.getDirectMember(setter.getName(), null, false).equals(ref) &&
+                    isReference(setter.getGetter());
+        }
+        else {
+            return false;
+        }
+    }
 
     protected boolean isReference(Declaration ref, String id) {
         return isReference(ref);
@@ -104,20 +104,20 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
     @Override
     public void visit(Tree.IfClause that) {
         for (Condition c: that.getConditionList().getConditions()) {
-        	Tree.Variable var = getConditionVariable(c);
-        	if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
-        		TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
-        		if (od!=null && od.equals(declaration)) {
-        			c.visit(this);
-        			Declaration d = declaration;
-        			declaration = var.getDeclarationModel();
-        			if (that.getBlock()!=null) {
-        			    that.getBlock().visit(this);
-        			}
-        			declaration = d;
-        			return;
-        		}
-        	}
+            Tree.Variable var = getConditionVariable(c);
+            if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
+                TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
+                if (od!=null && od.equals(declaration)) {
+                    c.visit(this);
+                    Declaration d = declaration;
+                    declaration = var.getDeclarationModel();
+                    if (that.getBlock()!=null) {
+                        that.getBlock().visit(this);
+                    }
+                    declaration = d;
+                    return;
+                }
+            }
         }
         super.visit(that);
     }
@@ -125,19 +125,19 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
     @Override
     public void visit(Tree.WhileClause that) {
         for (Condition c: that.getConditionList().getConditions()) {
-        	Tree.Variable var = getConditionVariable(c);
-        	if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
-        		TypedDeclaration od = var.getDeclarationModel()
-        				.getOriginalDeclaration();
-        		if (od!=null && od.equals(declaration)) {
-        			c.visit(this);
-        			Declaration d = declaration;
-        			declaration = var.getDeclarationModel();
-        			that.getBlock().visit(this);
-        			declaration = d;
-        			return;
-        		}
-        	}
+            Tree.Variable var = getConditionVariable(c);
+            if (var!=null && var.getType() instanceof Tree.SyntheticVariable) {
+                TypedDeclaration od = var.getDeclarationModel()
+                        .getOriginalDeclaration();
+                if (od!=null && od.equals(declaration)) {
+                    c.visit(this);
+                    Declaration d = declaration;
+                    declaration = var.getDeclarationModel();
+                    that.getBlock().visit(this);
+                    declaration = d;
+                    return;
+                }
+            }
         }
         super.visit(that);
     }
@@ -168,7 +168,7 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
     
     @Override
     public void visit(Tree.ExtendedTypeExpression that) {}
-    		
+            
     @Override
     public void visit(Tree.StaticMemberOrTypeExpression that) {
         if (isReference(that.getDeclaration(), 
@@ -186,32 +186,32 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
         super.visit(that);
     }
         
-	@Override
-	public void visit(Tree.NamedArgument that) {
-		if (isReference(that.getParameter())) {
-			nodes.add(that);
-		}
-		super.visit(that);
-	}
-		
-	@Override
-	public void visit(Tree.SimpleType that) {
-		ProducedType type = that.getTypeModel();
-		if (type!=null && isReference(type.getDeclaration(), 
-		        id(that.getIdentifier()))) {
-			nodes.add(that);
-		}
-		super.visit(that);
-	}
-	
-	@Override
-	public void visit(Tree.ImportMemberOrType that) {
-		if (isReference(that.getDeclarationModel())) {
-			nodes.add(that);
-		}
-		super.visit(that);
-	}
-	    
+    @Override
+    public void visit(Tree.NamedArgument that) {
+        if (isReference(that.getParameter())) {
+            nodes.add(that);
+        }
+        super.visit(that);
+    }
+        
+    @Override
+    public void visit(Tree.SimpleType that) {
+        ProducedType type = that.getTypeModel();
+        if (type!=null && isReference(type.getDeclaration(), 
+                id(that.getIdentifier()))) {
+            nodes.add(that);
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.ImportMemberOrType that) {
+        if (isReference(that.getDeclarationModel())) {
+            nodes.add(that);
+        }
+        super.visit(that);
+    }
+        
     @Override
     public void visit(Tree.InitializerParameter that) {
         if (isReference(that.getParameterModel())) {
@@ -222,8 +222,8 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
         }
     }
     
-	private String id(Tree.Identifier that) {
-	    return that==null ? null : that.getText();
-	}
-		
+    private String id(Tree.Identifier that) {
+        return that==null ? null : that.getText();
+    }
+        
 }

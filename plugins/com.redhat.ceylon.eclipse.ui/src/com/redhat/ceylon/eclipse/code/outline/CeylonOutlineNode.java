@@ -41,7 +41,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 
 public class CeylonOutlineNode implements IAdaptable {
-	
+    
     public static final int ROOT_CATEGORY = -4;
     public static final int PACKAGE_CATEGORY = -3;
     public static final int UNIT_CATEGORY = -2;
@@ -103,17 +103,17 @@ public class CeylonOutlineNode implements IAdaptable {
             name = identifier==null ? null : identifier.getText();
         }
         else if (treeNode instanceof Tree.SpecifierStatement) {
-        	Tree.Term bme = ((Tree.SpecifierStatement) treeNode).getBaseMemberExpression();
-			Tree.Identifier id;
-			if (bme instanceof Tree.BaseMemberExpression) { 
-				id = ((Tree.BaseMemberExpression) bme).getIdentifier();
-			}
-			else if (bme instanceof Tree.ParameterizedExpression) {
-				id = ((Tree.BaseMemberExpression) ((Tree.ParameterizedExpression) bme).getPrimary()).getIdentifier();
-			}
-			else {
-				 throw new RuntimeException("unexpected node type");
-			}
+            Tree.Term bme = ((Tree.SpecifierStatement) treeNode).getBaseMemberExpression();
+            Tree.Identifier id;
+            if (bme instanceof Tree.BaseMemberExpression) { 
+                id = ((Tree.BaseMemberExpression) bme).getIdentifier();
+            }
+            else if (bme instanceof Tree.ParameterizedExpression) {
+                id = ((Tree.BaseMemberExpression) ((Tree.ParameterizedExpression) bme).getPrimary()).getIdentifier();
+            }
+            else {
+                 throw new RuntimeException("unexpected node type");
+            }
             name = id==null ? null : id.getText();
             shared = false;
         }
@@ -216,8 +216,8 @@ public class CeylonOutlineNode implements IAdaptable {
     
     @Override
     public boolean equals(Object obj) {
-    	if (obj instanceof CeylonOutlineNode) {
-    	    CeylonOutlineNode that = (CeylonOutlineNode) obj;
+        if (obj instanceof CeylonOutlineNode) {
+            CeylonOutlineNode that = (CeylonOutlineNode) obj;
             return that.id.equals(id);
         }
         else {
@@ -289,16 +289,16 @@ public class CeylonOutlineNode implements IAdaptable {
                 }
                 else if (treeNode instanceof Tree.SpecifierStatement) {
                     Tree.Term bme = ((Tree.SpecifierStatement) treeNode).getBaseMemberExpression();
-					Tree.Identifier id;
-					if (bme instanceof Tree.BaseMemberExpression) { 
-						id = ((Tree.BaseMemberExpression) bme).getIdentifier();
-					}
-					else if (bme instanceof Tree.ParameterizedExpression) {
-						id = ((Tree.BaseMemberExpression) ((Tree.ParameterizedExpression) bme).getPrimary()).getIdentifier();
-					}
-					else {
-						 throw new RuntimeException("unexpected node type");
-					}
+                    Tree.Identifier id;
+                    if (bme instanceof Tree.BaseMemberExpression) { 
+                        id = ((Tree.BaseMemberExpression) bme).getIdentifier();
+                    }
+                    else if (bme instanceof Tree.ParameterizedExpression) {
+                        id = ((Tree.BaseMemberExpression) ((Tree.ParameterizedExpression) bme).getPrimary()).getIdentifier();
+                    }
+                    else {
+                         throw new RuntimeException("unexpected node type");
+                    }
                     String name = id==null ? 
                             String.valueOf(identityHashCode(treeNode)) : 
                             id.getText();

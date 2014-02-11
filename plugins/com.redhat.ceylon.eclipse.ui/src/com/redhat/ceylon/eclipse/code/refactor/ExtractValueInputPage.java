@@ -16,57 +16,57 @@ import org.eclipse.swt.widgets.Text;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public class ExtractValueInputPage extends UserInputWizardPage {
-	public ExtractValueInputPage(String name) {
-		super(name);
-	}
+    public ExtractValueInputPage(String name) {
+        super(name);
+    }
 
-	public void createControl(Composite parent) {
-		Composite result = new Composite(parent, SWT.NONE);
-		setControl(result);
-		GridLayout layout = new GridLayout();
-		layout.numColumns = 2;
-		result.setLayout(layout);
-		Label label = new Label(result, SWT.RIGHT);  
-		label.setText("Value name: ");
-		final Text text = new Text(result, SWT.SINGLE|SWT.BORDER);
-		text.setText(getExtractLocalRefactoring().getNewName());
-		text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-		text.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent event) {
+    public void createControl(Composite parent) {
+        Composite result = new Composite(parent, SWT.NONE);
+        setControl(result);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 2;
+        result.setLayout(layout);
+        Label label = new Label(result, SWT.RIGHT);  
+        label.setText("Value name: ");
+        final Text text = new Text(result, SWT.SINGLE|SWT.BORDER);
+        text.setText(getExtractLocalRefactoring().getNewName());
+        text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+        text.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent event) {
                 String name = text.getText();
-			    validateIdentifier(name);
+                validateIdentifier(name);
                 getExtractLocalRefactoring().setNewName(name);
-			}
-		});
-		final Button et = new Button(result, SWT.CHECK);
-		et.setText("Use explicit type declaration");
-		et.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent event) {
-				getExtractLocalRefactoring().setExplicitType();
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent event) {}
-		});		
-		final Button gs = new Button(result, SWT.CHECK);
-		gs.setText("Create a getter");
-		gs.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent event) {
-				getExtractLocalRefactoring().setGetter();
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent event) {}
-		});
-		text.addKeyListener(new SubwordIterator(text));
-		text.selectAll();
+            }
+        });
+        final Button et = new Button(result, SWT.CHECK);
+        et.setText("Use explicit type declaration");
+        et.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                getExtractLocalRefactoring().setExplicitType();
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });        
+        final Button gs = new Button(result, SWT.CHECK);
+        gs.setText("Create a getter");
+        gs.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                getExtractLocalRefactoring().setGetter();
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        text.addKeyListener(new SubwordIterator(text));
+        text.selectAll();
         text.setFocus();
-	}
+    }
 
-	private ExtractValueRefactoring getExtractLocalRefactoring() {
-		return (ExtractValueRefactoring) getRefactoring();
-	}
+    private ExtractValueRefactoring getExtractLocalRefactoring() {
+        return (ExtractValueRefactoring) getRefactoring();
+    }
 
     void validateIdentifier(String name) {
         if (!name.matches("^[a-z_]\\w*$")) {

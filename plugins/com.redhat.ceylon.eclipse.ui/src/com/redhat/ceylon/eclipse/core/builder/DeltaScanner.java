@@ -15,86 +15,86 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
 
 final class DeltaScanner implements IResourceDeltaVisitor {
-	private final BooleanHolder mustDoFullBuild;
-	private final IProject project;
-	private final BooleanHolder sourceModified;
-	private final BooleanHolder mustResolveClasspathContainer;
+    private final BooleanHolder mustDoFullBuild;
+    private final IProject project;
+    private final BooleanHolder sourceModified;
+    private final BooleanHolder mustResolveClasspathContainer;
 
-	DeltaScanner(BooleanHolder mustDoFullBuild, IProject project,
-			BooleanHolder sourceModified,
-			BooleanHolder mustResolveClasspathContainer) {
-		this.mustDoFullBuild = mustDoFullBuild;
-		this.project = project;
-		this.sourceModified = sourceModified;
-		this.mustResolveClasspathContainer = mustResolveClasspathContainer;
-	}
+    DeltaScanner(BooleanHolder mustDoFullBuild, IProject project,
+            BooleanHolder sourceModified,
+            BooleanHolder mustResolveClasspathContainer) {
+        this.mustDoFullBuild = mustDoFullBuild;
+        this.project = project;
+        this.sourceModified = sourceModified;
+        this.mustResolveClasspathContainer = mustResolveClasspathContainer;
+    }
 
-	@Override
-	public boolean visit(IResourceDelta resourceDelta) 
-			throws CoreException {
-	    IResource resource = resourceDelta.getResource();
-	    
-	    if (resource instanceof IFolder) {
-	    	if (resourceDelta.getKind()==IResourceDelta.REMOVED) {
-	    		IFolder folder = (IFolder) resource; 
-	    		Package pkg = retrievePackage(folder);
-	    		if (pkg!=null) {
-	    			//a package has been removed
-	    			mustDoFullBuild.value = true;
-	    		}
-	    	}
-	    }
-	    
-	    else if (resource instanceof IFile) {
-	        if (resource.getName().equals(ModuleManager.PACKAGE_FILE)) {
-	            //a package descriptor has been added, removed, or changed
-	            mustDoFullBuild.value = true;
-	        }
-	        else if (resource.getName().equals(ModuleManager.MODULE_FILE)) {
-	            //a module descriptor has been added, removed, or changed
-	            mustResolveClasspathContainer.value = true;
-	            mustDoFullBuild.value = true;
-	        }
-	        else if (resource.getName().equals(".classpath") ||
-	                resource.getName().equals("config")) {
-	            //the classpath changed
-	        	mustDoFullBuild.value = true;
-	        	mustResolveClasspathContainer.value = true;
-	        }
-	        else if (CeylonBuilder.isCeylon((IFile) resource)) {
-	        	//a Ceylon source file was modified, we can
-	        	//compile incrementally
-	            sourceModified.value = true;
-	        }
-	        else if (CeylonBuilder.isJava((IFile) resource)) {
-	        	if (!resource.getProject().equals(project)) {
-	        		//a Java source file in a project we depend
-	        		//on was modified - we must do a full build, 
-	        		//'cos we don't know what Ceylon units in 
-	        		//this project depend on it
-	        		//TODO: fix that by tracking cross-project 
-	        		//      dependencies to Java!
-	                mustDoFullBuild.value = true;
-	            }
-	            sourceModified.value = true;
-	        }
-	    }
-	    
-	    else if (resource instanceof IProject) { 
-	    	if ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION)!=0) {
-	    		//some project setting changed : don't do anything, 
-	    	    // since the possibly impacting changes have already been
-	    	    // checked by JavaProjectStateManager.hasClasspathChanges()
-	    	}
-	    	else if (!resource.equals(project)) {
-	    		//this is some kind of multi-project build,
-	    		//indicating a change in a project we
-	    		//depend upon
-	    		/*mustDoFullBuild.value = true;
-	    		mustResolveClasspathContainer.value = true;*/
-	    	}
-	    }
-	    
-	    return true;
-	}
+    @Override
+    public boolean visit(IResourceDelta resourceDelta) 
+            throws CoreException {
+        IResource resource = resourceDelta.getResource();
+        
+        if (resource instanceof IFolder) {
+            if (resourceDelta.getKind()==IResourceDelta.REMOVED) {
+                IFolder folder = (IFolder) resource; 
+                Package pkg = retrievePackage(folder);
+                if (pkg!=null) {
+                    //a package has been removed
+                    mustDoFullBuild.value = true;
+                }
+            }
+        }
+        
+        else if (resource instanceof IFile) {
+            if (resource.getName().equals(ModuleManager.PACKAGE_FILE)) {
+                //a package descriptor has been added, removed, or changed
+                mustDoFullBuild.value = true;
+            }
+            else if (resource.getName().equals(ModuleManager.MODULE_FILE)) {
+                //a module descriptor has been added, removed, or changed
+                mustResolveClasspathContainer.value = true;
+                mustDoFullBuild.value = true;
+            }
+            else if (resource.getName().equals(".classpath") ||
+                    resource.getName().equals("config")) {
+                //the classpath changed
+                mustDoFullBuild.value = true;
+                mustResolveClasspathContainer.value = true;
+            }
+            else if (CeylonBuilder.isCeylon((IFile) resource)) {
+                //a Ceylon source file was modified, we can
+                //compile incrementally
+                sourceModified.value = true;
+            }
+            else if (CeylonBuilder.isJava((IFile) resource)) {
+                if (!resource.getProject().equals(project)) {
+                    //a Java source file in a project we depend
+                    //on was modified - we must do a full build, 
+                    //'cos we don't know what Ceylon units in 
+                    //this project depend on it
+                    //TODO: fix that by tracking cross-project 
+                    //      dependencies to Java!
+                    mustDoFullBuild.value = true;
+                }
+                sourceModified.value = true;
+            }
+        }
+        
+        else if (resource instanceof IProject) { 
+            if ((resourceDelta.getFlags() & IResourceDelta.DESCRIPTION)!=0) {
+                //some project setting changed : don't do anything, 
+                // since the possibly impacting changes have already been
+                // checked by JavaProjectStateManager.hasClasspathChanges()
+            }
+            else if (!resource.equals(project)) {
+                //this is some kind of multi-project build,
+                //indicating a change in a project we
+                //depend upon
+                /*mustDoFullBuild.value = true;
+                mustResolveClasspathContainer.value = true;*/
+            }
+        }
+        
+        return true;
+    }
 }

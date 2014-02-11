@@ -25,62 +25,62 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class ShowInHierarchyAction extends Action implements IObjectActionDelegate {
-	
+    
     private IWorkbenchPartSite site;
     protected Declaration declaration;
     protected IProject project;
     private ContentOutline outlineView;
     
-	@Override
-	public void selectionChanged(IAction action, ISelection selection) {
-		if (outlineView==null) return;
-		try {
-			CeylonOutlineNode on = (CeylonOutlineNode) ((ITreeSelection) outlineView.getSelection()).getFirstElement();
-			if (on!=null) {
-			    IEditorPart currentEditor = getCurrentEditor();
-			    if (currentEditor instanceof CeylonEditor) {
-			        CeylonParseController parseController = ((CeylonEditor) currentEditor).getParseController();
+    @Override
+    public void selectionChanged(IAction action, ISelection selection) {
+        if (outlineView==null) return;
+        try {
+            CeylonOutlineNode on = (CeylonOutlineNode) ((ITreeSelection) outlineView.getSelection()).getFirstElement();
+            if (on!=null) {
+                IEditorPart currentEditor = getCurrentEditor();
+                if (currentEditor instanceof CeylonEditor) {
+                    CeylonParseController parseController = ((CeylonEditor) currentEditor).getParseController();
                     project = parseController.getProject();
-			        CompilationUnit rootNode = parseController.getRootNode();
-			        if (rootNode!=null) {
-			            Node node = findNode(rootNode, on.getStartOffset());
-			            if (node instanceof Tree.Declaration) {
-			                declaration = ((Tree.Declaration) node).getDeclarationModel();
-			                action.setEnabled(isValidSelection());
-			                return; //early exit
-			            }
-			        }
-			    }
-			}
-			project=null;
-			declaration=null;
-			action.setEnabled(false);
-		}
-		catch (Exception e) {
-			action.setEnabled(false);
-		}
-	}
+                    CompilationUnit rootNode = parseController.getRootNode();
+                    if (rootNode!=null) {
+                        Node node = findNode(rootNode, on.getStartOffset());
+                        if (node instanceof Tree.Declaration) {
+                            declaration = ((Tree.Declaration) node).getDeclarationModel();
+                            action.setEnabled(isValidSelection());
+                            return; //early exit
+                        }
+                    }
+                }
+            }
+            project=null;
+            declaration=null;
+            action.setEnabled(false);
+        }
+        catch (Exception e) {
+            action.setEnabled(false);
+        }
+    }
 
-	@Override
-	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-		outlineView = (ContentOutline) targetPart;
-		site = targetPart.getSite();
-	}
+    @Override
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+        outlineView = (ContentOutline) targetPart;
+        site = targetPart.getSite();
+    }
     
     @Override
     public void run(IAction action) {
-    	run();
+        run();
     }
     
     @Override
     public void run() {
         if (isValidSelection()) {
-        	try {
-				showHierarchyView().focusOn(project, declaration);
-			}
-        	catch (PartInitException e) {
-				e.printStackTrace();
-			}
+            try {
+                showHierarchyView().focusOn(project, declaration);
+            }
+            catch (PartInitException e) {
+                e.printStackTrace();
+            }
         }
         else {
             MessageDialog.openWarning(site.getShell(), 
@@ -90,7 +90,7 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
     }
     
     private boolean isValidSelection() {
-    	return declaration!=null;
+        return declaration!=null;
     }
     
 

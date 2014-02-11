@@ -19,11 +19,11 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
  * given region in the parse stream of a given parse controller.
  */
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
-	private CeylonParseController pc;
+    private CeylonParseController pc;
     
     public CeylonHyperlinkDetector(CeylonParseController pc) {
-		this.pc = pc;
-	}
+        this.pc = pc;
+    }
 
     private final class CeylonNodeLink implements IHyperlink {
         private final Node node;
@@ -36,8 +36,8 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public void open() {
-			gotoNode(node, pc.getProject(), 
-					pc.getTypeChecker());
+            gotoNode(node, pc.getProject(), 
+                    pc.getTypeChecker());
         }
 
         @Override
@@ -57,9 +57,9 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
         }
     }
 
-	@Override
-	public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, 
-			boolean canShowMultipleHyperlinks) {
+    @Override
+    public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, 
+            boolean canShowMultipleHyperlinks) {
         if (pc==null||pc.getRootNode()==null) {
             return null;
         }
@@ -76,9 +76,9 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                     return null;
                 }
                 else {
-                	return new IHyperlink[] { new CeylonNodeLink(r, id) };
+                    return new IHyperlink[] { new CeylonNodeLink(r, id) };
                 }
             }
         }
-	}
+    }
 }

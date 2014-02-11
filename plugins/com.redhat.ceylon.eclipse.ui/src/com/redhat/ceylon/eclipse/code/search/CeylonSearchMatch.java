@@ -8,12 +8,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 
 public class CeylonSearchMatch extends Match {
-	
-	public CeylonSearchMatch(Tree.StatementOrArgument container, 
-	        VirtualFile file, Node node) {
-		super(new CeylonElement(container, file, node.getToken().getLine()), 
-		        CeylonSourcePositionLocator.getStartOffset(node), 
-		        CeylonSourcePositionLocator.getLength(node));
-	}
-	
+    
+    public CeylonSearchMatch(Tree.StatementOrArgument container, 
+            VirtualFile file, Node node) {
+        super(new CeylonElement(container, file, node.getToken().getLine()), 
+                CeylonSourcePositionLocator.getStartOffset(node), 
+                CeylonSourcePositionLocator.getLength(node));
+    }
+    
 }

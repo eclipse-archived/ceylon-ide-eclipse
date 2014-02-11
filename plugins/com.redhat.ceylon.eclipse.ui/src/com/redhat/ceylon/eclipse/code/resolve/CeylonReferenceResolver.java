@@ -24,13 +24,13 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 public class CeylonReferenceResolver {
 
     public static Node getReferencedNode(Node node, 
-    		CeylonParseController controller) {
+            CeylonParseController controller) {
         return getReferencedNode(getReferencedModel(node), 
-        		controller);
+                controller);
     }
 
     public static Node getReferencedNode(Referenceable dec, 
-    		CeylonParseController controller) {
+            CeylonParseController controller) {
         return getReferencedNode(dec, getCompilationUnit(controller,dec));
     }
 
@@ -39,7 +39,7 @@ public class CeylonReferenceResolver {
             return ((Tree.ImportPath) node).getModel();
         }
         else {
-        	Declaration dec = getReferencedDeclaration((Node) node);
+            Declaration dec = getReferencedDeclaration((Node) node);
             if (dec instanceof MethodOrValue && 
                     ((MethodOrValue) dec).isShortcutRefinement()) {
                 dec = dec.getRefinedDeclaration();
@@ -49,21 +49,21 @@ public class CeylonReferenceResolver {
     }
 
     public static Declaration getReferencedExplicitDeclaration(Node node, Tree.CompilationUnit rn) {
-    	Declaration dec = getReferencedDeclaration(node);
-    	if (dec!=null && dec.getUnit().equals(node.getUnit())) {
-    		FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
-    		fdv.visit(rn);
-    		Node decNode = fdv.getDeclarationNode();
-        	if (decNode instanceof Tree.Variable) {
-        		Tree.Variable var = (Tree.Variable) decNode;
-        		if (var.getType() instanceof Tree.SyntheticVariable) {
-                	return getReferencedExplicitDeclaration(
-                			var.getSpecifierExpression().getExpression().getTerm(), 
-                			rn);
-        		}
-        	}
-    	}
-    	return dec;
+        Declaration dec = getReferencedDeclaration(node);
+        if (dec!=null && dec.getUnit().equals(node.getUnit())) {
+            FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
+            fdv.visit(rn);
+            Node decNode = fdv.getDeclarationNode();
+            if (decNode instanceof Tree.Variable) {
+                Tree.Variable var = (Tree.Variable) decNode;
+                if (var.getType() instanceof Tree.SyntheticVariable) {
+                    return getReferencedExplicitDeclaration(
+                            var.getSpecifierExpression().getExpression().getTerm(), 
+                            rn);
+                }
+            }
+        }
+        return dec;
     }
 
     public static Declaration getReferencedDeclaration(Node node) {

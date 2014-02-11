@@ -68,7 +68,7 @@ class AssignToLocalProposal extends CorrectionProposal {
             }
             else if (st instanceof Tree.Declaration) {
                 Declaration d = ((Tree.Declaration) st).getDeclarationModel();
-				if (d==null || d.isToplevel()) {
+                if (d==null || d.isToplevel()) {
                     return;
                 }
                 //some expressions get interpreted as annotations

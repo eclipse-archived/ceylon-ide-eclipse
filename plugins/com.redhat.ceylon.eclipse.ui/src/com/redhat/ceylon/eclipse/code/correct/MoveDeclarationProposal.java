@@ -41,27 +41,27 @@ public class MoveDeclarationProposal implements ICompletionProposal {
     
     @Override
     public Point getSelection(IDocument doc) {
-    	return null;
+        return null;
     }
 
     @Override
     public Image getImage() {
-    	return CeylonLabelProvider.MOVE;
+        return CeylonLabelProvider.MOVE;
     }
 
     @Override
     public String getDisplayString() {
-    	return "Move declaration to new unit";
+        return "Move declaration to new unit";
     }
 
     @Override
     public IContextInformation getContextInformation() {
-    	return null;
+        return null;
     }
 
     @Override
     public String getAdditionalProposalInfo() {
-    	return null;
+        return null;
     }
 
     @Override
@@ -75,85 +75,85 @@ public class MoveDeclarationProposal implements ICompletionProposal {
     }
     
     public static boolean canMoveDeclaration(CeylonEditor editor) {
-	    Node node = getSelectedNode(editor);
-	    if (node instanceof Tree.Declaration) {
-	    	Declaration d = ((Tree.Declaration) node).getDeclarationModel();
-	    	return d!=null && d.isToplevel();
-	    }
-	    else {
-	    	return false;
-	    }
-	}
+        Node node = getSelectedNode(editor);
+        if (node instanceof Tree.Declaration) {
+            Declaration d = ((Tree.Declaration) node).getDeclarationModel();
+            return d!=null && d.isToplevel();
+        }
+        else {
+            return false;
+        }
+    }
 
-	public static void moveDeclaration(CeylonEditor editor) throws ExecutionException {
-	    Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-	    if (cu==null) return;
-	    Node node = getSelectedNode(editor);
-	    if (node instanceof Tree.Declaration) {
-	        try {
-	            IDocument document = editor.getDocumentProvider()
-	                    .getDocument(editor.getEditorInput());
-	            int start = node.getStartIndex();
-	            int length = node.getStopIndex()-start+1;
-	            String contents = document.get(start, length);
-	            /*final Set<Declaration> decs = new HashSet<Declaration>();
-	            node.visit(new Visitor() {
-	            	@Override
-	            	public void visit(BaseMemberExpression that) {
-	            		super.visit(that);
-	            		if (that.getDeclaration()!=null) {
-	            			decs.add(that.getDeclaration());
-	            		}
-	            	}
-	            	@Override
-	            	public void visit(BaseTypeExpression that) {
-	            		super.visit(that);
-	            		if (that.getDeclaration()!=null) {
-	            			decs.add(that.getDeclaration());
-	            		}
-	            	}
-	            	@Override
-	            	public void visit(BaseType that) {
-	            		super.visit(that);
-	            		if (that.getDeclarationModel()!=null) {
-	            			decs.add(that.getDeclarationModel());
-	            		}
-	            	}
-	            });*/
-	            String imports = imports(node, cu.getImportList(), document);
-	            boolean success = NewUnitWizard.open(imports==null ? 
-	                        contents : imports + Indents.getDefaultLineDelimiter(document) + contents, 
-	                    getFile(editor.getEditorInput()), 
-	                    ((Tree.Declaration) node).getIdentifier().getText(), "Move to New Unit", 
-	                    "Create a new Ceylon compilation unit containing the selected declaration.");
-	            if (success) {
-	                final TextChange tc;
-	                if (editor.isDirty()) {
-	                    tc = new DocumentChange("Move to New Unit", document);
-	                }
-	                else {
-	                    tc = new TextFileChange("Move to New Unit", 
-	                            getFile(editor.getEditorInput()));
-	                }
-	                tc.setEdit(new DeleteEdit(start, length));
-	                tc.initializeValidationData(null);
-	                AbstractOperation op = new TextChangeOperation(tc);
-					IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
-					op.addContext(os.getUndoContext());
-		            os.getOperationHistory().execute(op, new NullProgressMonitor(), 
-	                        		getUIInfoAdapter(editor.getSite().getShell()));
-	            }
-	        } 
-	        catch (BadLocationException e) {
-	            e.printStackTrace();
-	        }
-	    }
-	}
+    public static void moveDeclaration(CeylonEditor editor) throws ExecutionException {
+        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
+        if (cu==null) return;
+        Node node = getSelectedNode(editor);
+        if (node instanceof Tree.Declaration) {
+            try {
+                IDocument document = editor.getDocumentProvider()
+                        .getDocument(editor.getEditorInput());
+                int start = node.getStartIndex();
+                int length = node.getStopIndex()-start+1;
+                String contents = document.get(start, length);
+                /*final Set<Declaration> decs = new HashSet<Declaration>();
+                node.visit(new Visitor() {
+                    @Override
+                    public void visit(BaseMemberExpression that) {
+                        super.visit(that);
+                        if (that.getDeclaration()!=null) {
+                            decs.add(that.getDeclaration());
+                        }
+                    }
+                    @Override
+                    public void visit(BaseTypeExpression that) {
+                        super.visit(that);
+                        if (that.getDeclaration()!=null) {
+                            decs.add(that.getDeclaration());
+                        }
+                    }
+                    @Override
+                    public void visit(BaseType that) {
+                        super.visit(that);
+                        if (that.getDeclarationModel()!=null) {
+                            decs.add(that.getDeclarationModel());
+                        }
+                    }
+                });*/
+                String imports = imports(node, cu.getImportList(), document);
+                boolean success = NewUnitWizard.open(imports==null ? 
+                            contents : imports + Indents.getDefaultLineDelimiter(document) + contents, 
+                        getFile(editor.getEditorInput()), 
+                        ((Tree.Declaration) node).getIdentifier().getText(), "Move to New Unit", 
+                        "Create a new Ceylon compilation unit containing the selected declaration.");
+                if (success) {
+                    final TextChange tc;
+                    if (editor.isDirty()) {
+                        tc = new DocumentChange("Move to New Unit", document);
+                    }
+                    else {
+                        tc = new TextFileChange("Move to New Unit", 
+                                getFile(editor.getEditorInput()));
+                    }
+                    tc.setEdit(new DeleteEdit(start, length));
+                    tc.initializeValidationData(null);
+                    AbstractOperation op = new TextChangeOperation(tc);
+                    IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
+                    op.addContext(os.getUndoContext());
+                    os.getOperationHistory().execute(op, new NullProgressMonitor(), 
+                                    getUIInfoAdapter(editor.getSite().getShell()));
+                }
+            } 
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-	public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
-    	if (canMoveDeclaration(editor)) {
-    		proposals.add(new MoveDeclarationProposal(editor));
-    	}
+    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+        if (canMoveDeclaration(editor)) {
+            proposals.add(new MoveDeclarationProposal(editor));
+        }
     }
 
 }

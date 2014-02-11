@@ -17,8 +17,8 @@ final class ProposalComparator implements
     private final ProducedType type;
 
     ProposalComparator(String prefix, ProducedType type) {
-	    this.prefix = prefix;
-	    this.type = type;
+        this.prefix = prefix;
+        this.type = type;
     }
 
     public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {

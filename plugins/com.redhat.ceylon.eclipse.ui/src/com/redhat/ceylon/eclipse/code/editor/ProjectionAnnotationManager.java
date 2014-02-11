@@ -37,7 +37,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 
 public class ProjectionAnnotationManager implements TreeLifecycleListener, IProjectionListener{
-	
+    
     private CeylonEditor editor;
 
     private boolean firstTime = true;
@@ -68,7 +68,7 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
     }
 
     public void update(CeylonParseController parseController, 
-    		IProgressMonitor monitor) {
+            IProgressMonitor monitor) {
         if (parseController.getStage().ordinal() >= getStage().ordinal()) {
             Tree.CompilationUnit rn = parseController.getRootNode();
             if (rn!=null) { // can be null if file is outside workspace

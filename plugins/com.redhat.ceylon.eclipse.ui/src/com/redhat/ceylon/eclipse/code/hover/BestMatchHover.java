@@ -29,74 +29,74 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 public class BestMatchHover 
         implements ITextHover, ITextHoverExtension, 
                    ITextHoverExtension2 {
-	
-	private CeylonEditor editor;
+    
+    private CeylonEditor editor;
 
-	private List<ITextHover> fInstantiatedTextHovers;
-	private ITextHover fBestHover;
+    private List<ITextHover> fInstantiatedTextHovers;
+    private ITextHover fBestHover;
 
-	public BestMatchHover(CeylonEditor editor) {
-		this.editor=editor;
-		installTextHovers();
-	}
+    public BestMatchHover(CeylonEditor editor) {
+        this.editor=editor;
+        installTextHovers();
+    }
 
-	/**
-	 * Installs all text hovers.
-	 */
-	private void installTextHovers() {
-		fInstantiatedTextHovers= new ArrayList<ITextHover>(2);
-		fInstantiatedTextHovers.add(new ProblemHover(editor));
-		fInstantiatedTextHovers.add(new DocumentationHover(editor));
-	}
-	
-	@Override
-	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-
-		fBestHover= null;
-
-		if (fInstantiatedTextHovers == null)
-			return null;
-
-		for (ITextHover hover: fInstantiatedTextHovers) {
-			@SuppressWarnings("deprecation")
-            String s= hover.getHoverInfo(textViewer, hoverRegion);
-			if (s!=null && !s.trim().isEmpty()) {
-				fBestHover= hover;
-				return s;
-			}
-		}
-
-		return null;
-	}
-	
+    /**
+     * Installs all text hovers.
+     */
+    private void installTextHovers() {
+        fInstantiatedTextHovers= new ArrayList<ITextHover>(2);
+        fInstantiatedTextHovers.add(new ProblemHover(editor));
+        fInstantiatedTextHovers.add(new DocumentationHover(editor));
+    }
+    
     @Override
-	public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+    public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 
-		fBestHover= null;
+        fBestHover= null;
 
-		if (fInstantiatedTextHovers == null)
-			return null;
+        if (fInstantiatedTextHovers == null)
+            return null;
 
-		for (ITextHover hover: fInstantiatedTextHovers) {
-			if (hover instanceof ITextHoverExtension2) {
-				Object info= ((ITextHoverExtension2) hover).getHoverInfo2(textViewer, hoverRegion);
-				if (info != null) {
-					fBestHover= hover;
-					return info;
-				}
-			} 
-			else {
-				@SuppressWarnings("deprecation")
+        for (ITextHover hover: fInstantiatedTextHovers) {
+            @SuppressWarnings("deprecation")
+            String s= hover.getHoverInfo(textViewer, hoverRegion);
+            if (s!=null && !s.trim().isEmpty()) {
+                fBestHover= hover;
+                return s;
+            }
+        }
+
+        return null;
+    }
+    
+    @Override
+    public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+
+        fBestHover= null;
+
+        if (fInstantiatedTextHovers == null)
+            return null;
+
+        for (ITextHover hover: fInstantiatedTextHovers) {
+            if (hover instanceof ITextHoverExtension2) {
+                Object info= ((ITextHoverExtension2) hover).getHoverInfo2(textViewer, hoverRegion);
+                if (info != null) {
+                    fBestHover= hover;
+                    return info;
+                }
+            } 
+            else {
+                @SuppressWarnings("deprecation")
                 String s= hover.getHoverInfo(textViewer, hoverRegion);
-				if (s!=null && !s.isEmpty()) {
-					fBestHover= hover;
-					return s;
-				}
-			}
-		}
+                if (s!=null && !s.isEmpty()) {
+                    fBestHover= hover;
+                    return s;
+                }
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
     @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
@@ -104,17 +104,17 @@ public class BestMatchHover
     }
     
     @Override
-	public IInformationControlCreator getHoverControlCreator() {
-		if (fBestHover instanceof ITextHoverExtension)
-			return ((ITextHoverExtension)fBestHover).getHoverControlCreator();
-		return null;
-	}
+    public IInformationControlCreator getHoverControlCreator() {
+        if (fBestHover instanceof ITextHoverExtension)
+            return ((ITextHoverExtension)fBestHover).getHoverControlCreator();
+        return null;
+    }
 
-	/*public IInformationControlCreator getInformationPresenterControlCreator() {
-		if (fBestHover instanceof IInformationProviderExtension2) // this is wrong, but left here for backwards compatibility
-			return ((IInformationProviderExtension2)fBestHover).getInformationPresenterControlCreator();
+    /*public IInformationControlCreator getInformationPresenterControlCreator() {
+        if (fBestHover instanceof IInformationProviderExtension2) // this is wrong, but left here for backwards compatibility
+            return ((IInformationProviderExtension2)fBestHover).getInformationPresenterControlCreator();
 
-		return null;
-	}*/
+        return null;
+    }*/
 }
 

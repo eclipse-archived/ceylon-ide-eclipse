@@ -184,17 +184,17 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             //search for a source file in the project
             //TODO: we can probably remove this loop
             if (projectName!=null) {
-            	for (PhasedUnit unit: getUnits( new String[] {projectName} )) {
-            		if (unit.getUnit().getFilename().equals(unitFileName)
-            				&& unit.getPackage().getQualifiedNameString().equals(packageName)) {
-            			for (Declaration dec: unit.getDeclarations()) {
-            				if (dec.getQualifiedNameString().equals(qualifiedName)) {
-            					return new DeclarationWithProject(dec, 
-            							getFile(unit).getProject(), path);
-            				}
-            			}
-            		}
-            	}
+                for (PhasedUnit unit: getUnits( new String[] {projectName} )) {
+                    if (unit.getUnit().getFilename().equals(unitFileName)
+                            && unit.getPackage().getQualifiedNameString().equals(packageName)) {
+                        for (Declaration dec: unit.getDeclarations()) {
+                            if (dec.getQualifiedNameString().equals(qualifiedName)) {
+                                return new DeclarationWithProject(dec, 
+                                        getFile(unit).getProject(), path);
+                            }
+                        }
+                    }
+                }
             }
             //if we don't find it, search all dependent modules
             //this will find declarations in src archives
@@ -276,20 +276,20 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 int dc = dwp1.getDeclaration().getName()
                         .compareTo(dwp2.getDeclaration().getName());
                 if (dc!=0) {
-                	return dc;
+                    return dc;
                 }
                 else if (dwp1.getProject()==dwp2.getProject()) {
-                	return 0;
+                    return 0;
                 }
                 else if (dwp1.getProject()==null) {
-                	return 1;
+                    return 1;
                 }
                 else if (dwp2.getProject()==null) {
-                	return -1;
+                    return -1;
                 }
                 else {
-                	return dwp1.getProject().getName()
-                			.compareTo(dwp2.getProject().getName());
+                    return dwp1.getProject().getName()
+                            .compareTo(dwp2.getProject().getName());
                 }
             }
         };
@@ -333,9 +333,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 for (Declaration dec: p.getMembers()) {
                     if (isPresentable(dec)) {
                         boolean isUnversionedModule = p.getModule().getVersion()==null;
-						DeclarationWithProject dwp = new DeclarationWithProject(dec, 
-                        		isUnversionedModule ? null : project, 
-                        				null); //TODO: figure out the full path
+                        DeclarationWithProject dwp = new DeclarationWithProject(dec, 
+                                isUnversionedModule ? null : project, 
+                                        null); //TODO: figure out the full path
                         //TODO: eliminate duplicates based on the
                         //      location of the module archive
                         if (!set.contains(dwp)) {
@@ -349,17 +349,17 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     }
     
     boolean includeJava() {
-    	return false;
+        return false;
     }
 
     private static String getLocation(DeclarationWithProject dwp) {
         IProject project = dwp.getProject();
-		if (dwp.getPath()!=null) {
-        	IResource r = project.isOpen() ? 
-        			project.findMember(dwp.getPath()) : null;
+        if (dwp.getPath()!=null) {
+            IResource r = project.isOpen() ? 
+                    project.findMember(dwp.getPath()) : null;
             //if the project is closed or for some other reason
-    		//findMember() returns null, just abbreviate to the 
-    		//project path
+            //findMember() returns null, just abbreviate to the 
+            //project path
             if (r==null) r=project;
             return r.getFullPath().toPortableString();
                     

@@ -88,39 +88,39 @@ public class AddModuleImportProposal implements ICompletionProposal,
         return CorrectionUtil.styleProposal(getDisplayString());
     }
 
-	static void addModuleImportProposals(Collection<ICompletionProposal> proposals, 
-			IProject project, TypeChecker tc, Node node) {
-		Unit unit = node.getUnit();
-		if (unit.getPackage().getModule().isDefault()) {
-			return;
-		}
-		if (node instanceof Tree.Import) {
-			node = ((Tree.Import) node).getImportPath();
-		}
-		List<Tree.Identifier> ids = ((Tree.ImportPath) node).getIdentifiers();
-		String pkg = formatPath(ids);
-		if (JDKUtils.isJDKAnyPackage(pkg)) {
-			for (String mod: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
-				if (JDKUtils.isJDKPackage(mod, pkg)) {
-					proposals.add(new AddModuleImportProposal(project, unit, mod, 
-							JDK_MODULE_VERSION));
-					return;
-				}
-			}
-		}
-		for (int i=ids.size(); i>0; i--) {
-			String pn = formatPath(ids.subList(0, i));
-			ModuleQuery query = new ModuleQuery(pn, getModuleQueryType(project));
-			query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
-			query.setCount(2l);
-			ModuleSearchResult msr = tc.getContext().getRepositoryManager()
-					.searchModules(query);
-			ModuleDetails md = msr.getResult(pn);
-			if (md!=null) {
-				proposals.add(new AddModuleImportProposal(project, unit, md));
-			}
-			if (!msr.getResults().isEmpty()) break;
-		}
-	}
+    static void addModuleImportProposals(Collection<ICompletionProposal> proposals, 
+            IProject project, TypeChecker tc, Node node) {
+        Unit unit = node.getUnit();
+        if (unit.getPackage().getModule().isDefault()) {
+            return;
+        }
+        if (node instanceof Tree.Import) {
+            node = ((Tree.Import) node).getImportPath();
+        }
+        List<Tree.Identifier> ids = ((Tree.ImportPath) node).getIdentifiers();
+        String pkg = formatPath(ids);
+        if (JDKUtils.isJDKAnyPackage(pkg)) {
+            for (String mod: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
+                if (JDKUtils.isJDKPackage(mod, pkg)) {
+                    proposals.add(new AddModuleImportProposal(project, unit, mod, 
+                            JDK_MODULE_VERSION));
+                    return;
+                }
+            }
+        }
+        for (int i=ids.size(); i>0; i--) {
+            String pn = formatPath(ids.subList(0, i));
+            ModuleQuery query = new ModuleQuery(pn, getModuleQueryType(project));
+            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+            query.setCount(2l);
+            ModuleSearchResult msr = tc.getContext().getRepositoryManager()
+                    .searchModules(query);
+            ModuleDetails md = msr.getResult(pn);
+            if (md!=null) {
+                proposals.add(new AddModuleImportProposal(project, unit, md));
+            }
+            if (!msr.getResults().isEmpty()) break;
+        }
+    }
 
 }

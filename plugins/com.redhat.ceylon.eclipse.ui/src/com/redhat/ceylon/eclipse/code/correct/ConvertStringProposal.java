@@ -17,57 +17,57 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class ConvertStringProposal extends CorrectionProposal {
 
-	private ConvertStringProposal(String name, Change change) {
-		super(name, change);
-	}
+    private ConvertStringProposal(String name, Change change) {
+        super(name, change);
+    }
 
-	static void addConvertToVerbatimProposal(Collection<ICompletionProposal> proposals,
-			IFile file, Tree.CompilationUnit cu, Node node, IDocument doc) {
-		if (node instanceof Tree.StringLiteral) {
-			Tree.StringLiteral literal = (Tree.StringLiteral) node;
-			Token token = node.getToken();
-			if (token.getType()==CeylonLexer.ASTRING_LITERAL ||
-					token.getType()==CeylonLexer.STRING_LITERAL) {
-				String text = "\"\"\"" + literal.getText() + "\"\"\"";
-				int offset = node.getStartIndex();
-				int length = node.getStopIndex() - node.getStartIndex() + 1; 
-				String reindented = getConvertedText(text, token.getCharPositionInLine()+3, doc);
-				TextFileChange change = new TextFileChange("Convert to Verbatim String", file);
-				change.setEdit(new ReplaceEdit(offset, length, reindented));
-				proposals.add(new ConvertStringProposal("Convert to verbatim string", change));
-			}
-		}
-	}
+    static void addConvertToVerbatimProposal(Collection<ICompletionProposal> proposals,
+            IFile file, Tree.CompilationUnit cu, Node node, IDocument doc) {
+        if (node instanceof Tree.StringLiteral) {
+            Tree.StringLiteral literal = (Tree.StringLiteral) node;
+            Token token = node.getToken();
+            if (token.getType()==CeylonLexer.ASTRING_LITERAL ||
+                    token.getType()==CeylonLexer.STRING_LITERAL) {
+                String text = "\"\"\"" + literal.getText() + "\"\"\"";
+                int offset = node.getStartIndex();
+                int length = node.getStopIndex() - node.getStartIndex() + 1; 
+                String reindented = getConvertedText(text, token.getCharPositionInLine()+3, doc);
+                TextFileChange change = new TextFileChange("Convert to Verbatim String", file);
+                change.setEdit(new ReplaceEdit(offset, length, reindented));
+                proposals.add(new ConvertStringProposal("Convert to verbatim string", change));
+            }
+        }
+    }
 
-	static void addConvertFromVerbatimProposal(Collection<ICompletionProposal> proposals,
-    		IFile file, Tree.CompilationUnit cu, Node node, IDocument doc) {
-    	if (node instanceof Tree.StringLiteral) {
-    		Tree.StringLiteral literal = (Tree.StringLiteral) node;
-    		Token token = node.getToken();
-    		if (token.getType()==CeylonLexer.AVERBATIM_STRING ||
-    			token.getType()==CeylonLexer.VERBATIM_STRING) {
-    			String text = "\"" +
-    					literal.getText()
-    						.replace("\\", "\\\\")
-    						.replace("\"", "\\\"")
-    						.replace("`", "\\`") +
-    					"\"";
-    	        int offset = node.getStartIndex();
-    	        int length = node.getStopIndex() - node.getStartIndex() + 1; 
-    	        String reindented = getConvertedText(text, token.getCharPositionInLine()+1, doc);
-        		TextFileChange change = new TextFileChange("Convert to Ordinary String", file);
-    			change.setEdit(new ReplaceEdit(offset, length, reindented));
-        		proposals.add(new ConvertStringProposal("Convert to ordinary string", change));
-    		}
-    	}
+    static void addConvertFromVerbatimProposal(Collection<ICompletionProposal> proposals,
+            IFile file, Tree.CompilationUnit cu, Node node, IDocument doc) {
+        if (node instanceof Tree.StringLiteral) {
+            Tree.StringLiteral literal = (Tree.StringLiteral) node;
+            Token token = node.getToken();
+            if (token.getType()==CeylonLexer.AVERBATIM_STRING ||
+                token.getType()==CeylonLexer.VERBATIM_STRING) {
+                String text = "\"" +
+                        literal.getText()
+                            .replace("\\", "\\\\")
+                            .replace("\"", "\\\"")
+                            .replace("`", "\\`") +
+                        "\"";
+                int offset = node.getStartIndex();
+                int length = node.getStopIndex() - node.getStartIndex() + 1; 
+                String reindented = getConvertedText(text, token.getCharPositionInLine()+1, doc);
+                TextFileChange change = new TextFileChange("Convert to Ordinary String", file);
+                change.setEdit(new ReplaceEdit(offset, length, reindented));
+                proposals.add(new ConvertStringProposal("Convert to ordinary string", change));
+            }
+        }
     }
 
     private static String getConvertedText(String text, int indentation,
-    		IDocument doc) {
+            IDocument doc) {
         StringBuilder result = new StringBuilder();
         for (String line: text.split("\n|\r\n?")) {
             if (result.length() == 0) {
-            	//the first line of the string
+                //the first line of the string
                 result.append(line);
             }
             else {

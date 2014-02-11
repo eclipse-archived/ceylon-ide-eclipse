@@ -22,7 +22,7 @@ class RestorePreviousSelectionAction extends Action {
     
     @Override
     public boolean isEnabled() {
-    	return super.isEnabled() && fEditor!=null;
+        return super.isEnabled() && fEditor!=null;
     }
 
     public RestorePreviousSelectionAction(CeylonEditor editor) {
@@ -36,21 +36,21 @@ class RestorePreviousSelectionAction extends Action {
             fEditor= (CeylonEditor) editor;
             fEditor.getSelectionProvider()
             .addSelectionChangedListener(new ISelectionChangedListener() {
-				@Override
-				public void selectionChanged(SelectionChangedEvent event) {
-					if (!restoring) {
-						IRegion r = fEditor.getSelection();
-						if (r.getLength()==0) {
-							previous.clear();
-						}
-						previous.add(r);//new Region(r.getOffset(), r.getLength()));
-						if (previous.size()>20) {
-							previous.remove(0);
-						}
-						setEnabled(previous.size()>1);
-					}
-				}
-			});
+                @Override
+                public void selectionChanged(SelectionChangedEvent event) {
+                    if (!restoring) {
+                        IRegion r = fEditor.getSelection();
+                        if (r.getLength()==0) {
+                            previous.clear();
+                        }
+                        previous.add(r);//new Region(r.getOffset(), r.getLength()));
+                        if (previous.size()>20) {
+                            previous.remove(0);
+                        }
+                        setEnabled(previous.size()>1);
+                    }
+                }
+            });
          } 
         else {
             fEditor= null;
@@ -60,15 +60,15 @@ class RestorePreviousSelectionAction extends Action {
 
     @Override
     public void run() {
-    	if (previous.size()>0) {
-    		previous.remove(previous.size()-1);
-    	}
-    	if (previous.size()>0) {
-    		IRegion r = previous.get(previous.size()-1);
-    		restoring=true;
-    		fEditor.selectAndReveal(r.getOffset(), r.getLength());
-    		restoring=false;
-    		setEnabled(previous.size()>1);
-    	}
+        if (previous.size()>0) {
+            previous.remove(previous.size()-1);
+        }
+        if (previous.size()>0) {
+            IRegion r = previous.get(previous.size()-1);
+            restoring=true;
+            fEditor.selectAndReveal(r.getOffset(), r.getLength());
+            restoring=false;
+            setEnabled(previous.size()>1);
+        }
     }
 }

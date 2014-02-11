@@ -383,9 +383,9 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (offset==0) return; //right at the start of file, don't expand the import list
         CompilationUnit rootNode = parseController.getRootNode();
         if (rootNode==null || rootNode.getUnit()==null) return;
-	    if (rootNode.getUnit() instanceof CeylonUnit) {
-	    	PhasedUnit phasedUnit = ((CeylonUnit) rootNode.getUnit()).getPhasedUnit();
-	    	if (phasedUnit == null || ! phasedUnit.isFullyTyped()) {
+        if (rootNode.getUnit() instanceof CeylonUnit) {
+            PhasedUnit phasedUnit = ((CeylonUnit) rootNode.getUnit()).getPhasedUnit();
+            if (phasedUnit == null || ! phasedUnit.isFullyTyped()) {
                 return;
             }
         } 
@@ -444,21 +444,21 @@ public class CeylonOutlinePage extends ContentOutlinePage
         @Override
         public void visit(Tree.SpecifierStatement that) {
             Tree.Term bme = that.getBaseMemberExpression();
-    		if (that.getRefinement() &&
-            		(bme instanceof Tree.BaseMemberExpression ||
-            		bme instanceof Tree.ParameterizedExpression &&
-            		    ((Tree.ParameterizedExpression) bme).getPrimary() 
-            		            instanceof Tree.BaseMemberExpression)) {
+            if (that.getRefinement() &&
+                    (bme instanceof Tree.BaseMemberExpression ||
+                    bme instanceof Tree.ParameterizedExpression &&
+                        ((Tree.ParameterizedExpression) bme).getPrimary() 
+                                instanceof Tree.BaseMemberExpression)) {
                 if (inBounds(that)) {
-                	if (!hideNonshared) {
-                		result.add(new CeylonOutlineNode(that, getParent()));
-                	}
-                	else {
+                    if (!hideNonshared) {
+                        result.add(new CeylonOutlineNode(that, getParent()));
+                    }
+                    else {
                         super.visit(that);
                     }
                 }
                 else {
-                	super.visitAny(that);
+                    super.visitAny(that);
                 }
             }
         }        

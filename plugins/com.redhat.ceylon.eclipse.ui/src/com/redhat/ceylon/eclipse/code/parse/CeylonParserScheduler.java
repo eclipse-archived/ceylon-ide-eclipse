@@ -29,20 +29,20 @@ public class CeylonParserScheduler extends Job {
     private final List<TreeLifecycleListener> listeners = new ArrayList<TreeLifecycleListener>();
 
     public CeylonParserScheduler(CeylonParseController parseController,
-    		CeylonEditor editor, AnnotationCreator annotationCreator) {
-    	super("Parsing and typechecking " + editor.getEditorInput().getName());
+            CeylonEditor editor, AnnotationCreator annotationCreator) {
+        super("Parsing and typechecking " + editor.getEditorInput().getName());
         setSystem(true); //do not show this job in the Progress view
         setPriority(SHORT);
-        setRule(new ISchedulingRule() {			
-			@Override
-			public boolean isConflicting(ISchedulingRule rule) {
-				return rule==this;
-			}
-			@Override
-			public boolean contains(ISchedulingRule rule) {
-				return rule==this;
-			}
-		});
+        setRule(new ISchedulingRule() {            
+            @Override
+            public boolean isConflicting(ISchedulingRule rule) {
+                return rule==this;
+            }
+            @Override
+            public boolean contains(ISchedulingRule rule) {
+                return rule==this;
+            }
+        });
         
         // Note: The parse controller is now initialized before  
         // it gets handed to us here, since some other services  
@@ -62,9 +62,9 @@ public class CeylonParserScheduler extends Job {
     }
     
     public class Stager {
-    	void afterStage(Stage stage, IProgressMonitor monitor) {
-    		notifyModelListeners(stage, monitor);
-    	}
+        void afterStage(Stage stage, IProgressMonitor monitor) {
+            notifyModelListeners(stage, monitor);
+        }
     }
 
     private boolean sourceStillExists() {
@@ -89,7 +89,7 @@ public class CeylonParserScheduler extends Job {
                 return Status.CANCEL_STATUS;
             }
             if (editor.isBackgroundParsingPaused()) {
-            	return Status.OK_STATUS;
+                return Status.OK_STATUS;
             }
 
             IProgressMonitor wrappedMonitor = new ProgressMonitorWrapper(monitor) {
@@ -105,7 +105,7 @@ public class CeylonParserScheduler extends Job {
             
             try {
                 CeylonSourceViewer csv = editor.getCeylonSourceViewer();
-				IDocument document = csv==null ? null : csv.getDocument();
+                IDocument document = csv==null ? null : csv.getDocument();
                 // If we're editing a workspace resource, check   
                 // to make sure that it still exists
                 if (document==null || !sourceStillExists()) {
@@ -120,19 +120,19 @@ public class CeylonParserScheduler extends Job {
                 // parsed
                 parseController.parse(document, wrappedMonitor, new Stager());
                 if (wrappedMonitor.isCanceled() || 
-                		editor.isBackgroundParsingPaused()) {
-                	annotationCreator.clearMessages();
+                        editor.isBackgroundParsingPaused()) {
+                    annotationCreator.clearMessages();
                 }
                 else {
-                	annotationCreator.updateAnnotations();
+                    annotationCreator.updateAnnotations();
                 }
             } 
             catch (Exception e) {
                 e.printStackTrace();
             }
             return wrappedMonitor.isCanceled() ? //&& sourceStillExists()
-            		Status.OK_STATUS : 
-            		Status.CANCEL_STATUS;
+                    Status.OK_STATUS : 
+                    Status.CANCEL_STATUS;
         }
         finally {
             canceling = false;
@@ -154,10 +154,10 @@ public class CeylonParserScheduler extends Job {
     private synchronized void notifyModelListeners(Stage stage, IProgressMonitor monitor) {
         if (parseController!=null) {
             for (TreeLifecycleListener listener: new ArrayList<TreeLifecycleListener>(listeners)) {
-            	if (editor.isBackgroundParsingPaused() || 
-            			monitor.isCanceled()) {
-            		break;
-            	}
+                if (editor.isBackgroundParsingPaused() || 
+                        monitor.isCanceled()) {
+                    break;
+                }
                 if (listener.getStage()==stage) {
                     listener.update(parseController, monitor);
                 }

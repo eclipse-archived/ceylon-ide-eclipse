@@ -54,7 +54,7 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 public class AddConstraintSatisfiesProposal extends CorrectionProposal {
 
     public static void addConstraintSatisfiesProposals(Tree.CompilationUnit cu, Node node, 
-    		Collection<ICompletionProposal> proposals, IProject project) {
+            Collection<ICompletionProposal> proposals, IProject project) {
         node = determineNode(node);
         if( node == null ) {
             return;
@@ -66,7 +66,7 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
         }
 
         List<ProducedType> missingSatisfiedTypes = 
-        		determineMissingSatisfiedTypes(cu, node, typeParam);
+                determineMissingSatisfiedTypes(cu, node, typeParam);
         if( missingSatisfiedTypes.isEmpty() ) {
             return;
         }
@@ -80,38 +80,38 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
                 if( typeParamCont instanceof Tree.ClassDefinition ) {
                     Tree.ClassDefinition classDefinition = (Tree.ClassDefinition) typeParamCont;
                     addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
-                    		classDefinition.getTypeConstraintList(), 
-                    		classDefinition.getClassBody().getStartIndex());
+                            classDefinition.getTypeConstraintList(), 
+                            classDefinition.getClassBody().getStartIndex());
                 }
                 else if( typeParamCont instanceof Tree.InterfaceDefinition ) {
                     Tree.InterfaceDefinition interfaceDefinition = (Tree.InterfaceDefinition) typeParamCont;
                     addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
-                    		interfaceDefinition.getTypeConstraintList(), 
-                    		interfaceDefinition.getInterfaceBody().getStartIndex());
+                            interfaceDefinition.getTypeConstraintList(), 
+                            interfaceDefinition.getInterfaceBody().getStartIndex());
                 }
                 else if( typeParamCont instanceof Tree.MethodDefinition ) {
                     Tree.MethodDefinition methodDefinition = (Tree.MethodDefinition)typeParamCont;
                     addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
-                    		methodDefinition.getTypeConstraintList(), 
-                    		methodDefinition.getBlock().getStartIndex());
+                            methodDefinition.getTypeConstraintList(), 
+                            methodDefinition.getBlock().getStartIndex());
                 }
                 else if( typeParamCont instanceof Tree.ClassDeclaration ) {
                     Tree.ClassDeclaration classDefinition = (Tree.ClassDeclaration) typeParamCont;
                     addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
-                    		classDefinition.getTypeConstraintList(), 
-                    		classDefinition.getClassSpecifier().getStartIndex());
+                            classDefinition.getTypeConstraintList(), 
+                            classDefinition.getClassSpecifier().getStartIndex());
                 }
                 else if( typeParamCont instanceof Tree.InterfaceDefinition ) {
                     Tree.InterfaceDeclaration interfaceDefinition = (Tree.InterfaceDeclaration) typeParamCont;
                     addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
-                    		interfaceDefinition.getTypeConstraintList(), 
-                    		interfaceDefinition.getTypeSpecifier().getStartIndex());
+                            interfaceDefinition.getTypeConstraintList(), 
+                            interfaceDefinition.getTypeSpecifier().getStartIndex());
                 }
                 else if( typeParamCont instanceof Tree.MethodDeclaration ) {
                     Tree.MethodDeclaration methodDefinition = (Tree.MethodDeclaration)typeParamCont;
                     addConstraintSatisfiesProposals(typeParam, changeText, unit, proposals, 
-                    		methodDefinition.getTypeConstraintList(), 
-                    		methodDefinition.getSpecifierExpression().getStartIndex());
+                            methodDefinition.getTypeConstraintList(), 
+                            methodDefinition.getSpecifierExpression().getStartIndex());
                 }
                 break;
             }
@@ -119,8 +119,8 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
     }
 
     private static void addConstraintSatisfiesProposals(TypeParameter typeParam, 
-    		String missingSatisfiedType, PhasedUnit unit, Collection<ICompletionProposal> proposals, 
-    		TypeConstraintList typeConstraints, Integer typeContainerBodyStartIndex) {
+            String missingSatisfiedType, PhasedUnit unit, Collection<ICompletionProposal> proposals, 
+            TypeConstraintList typeConstraints, Integer typeContainerBodyStartIndex) {
         String changeText = null;
         Integer changeIndex = null;
     
@@ -142,7 +142,7 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
             TextFileChange change = new TextFileChange("Add generic type constraints", file);
             change.setEdit(new InsertEdit(changeIndex, changeText));
             AddConstraintSatisfiesProposal p = 
-            		new AddConstraintSatisfiesProposal(typeParam, missingSatisfiedType, change);
+                    new AddConstraintSatisfiesProposal(typeParam, missingSatisfiedType, change);
             if ( !proposals.contains(p)) {
                 proposals.add(p);
             }                               
@@ -192,7 +192,7 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
     }
 
     private static List<ProducedType> determineMissingSatisfiedTypes(CompilationUnit cu, 
-    		Node node, TypeParameter typeParam) {
+            Node node, TypeParameter typeParam) {
         List<ProducedType> missingSatisfiedTypes = new ArrayList<ProducedType>();
     
         if( node instanceof Tree.Term ) {
@@ -201,7 +201,7 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
             if( fav.parameter != null ) {
                 ProducedType type = fav.parameter.getType();
                 if( type != null && type.getDeclaration() != null && 
-                		type.getDeclaration() instanceof ClassOrInterface ) {
+                        type.getDeclaration() instanceof ClassOrInterface ) {
                     missingSatisfiedTypes.add(type);
                 }
             }
@@ -250,7 +250,7 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
     }
 
     private static List<TypeParameter> determineSatisfiedTypesTypeParams(Tree.CompilationUnit cu, 
-    		Node typeParamNode, TypeParameter typeParam) {
+            Node typeParamNode, TypeParameter typeParam) {
         List<TypeParameter> stTypeParams = new ArrayList<TypeParameter>();
 
         FindContainerVisitor fcv = new FindContainerVisitor(typeParamNode);
@@ -276,16 +276,16 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
     }
 
     private static void determineSatisfiedTypesTypeParams(TypeParameter typeParam, 
-    		Tree.SimpleType st, List<TypeParameter> stTypeParams) {
+            Tree.SimpleType st, List<TypeParameter> stTypeParams) {
         if( st.getTypeArgumentList() != null ) {
             List<Tree.Type> stTypeArguments = st.getTypeArgumentList().getTypes();
             for (int i = 0; i < stTypeArguments.size(); i++) {
-            	ProducedType stTypeArgument = stTypeArguments.get(i).getTypeModel();
+                ProducedType stTypeArgument = stTypeArguments.get(i).getTypeModel();
                 if (stTypeArgument!=null && typeParam.equals(stTypeArgument.getDeclaration())) {
                     TypeDeclaration stDecl = st.getDeclarationModel();
                     if( stDecl != null ) {
                         if( stDecl.getTypeParameters() != null && 
-                        		stDecl.getTypeParameters().size() > i ) {
+                                stDecl.getTypeParameters().size() > i ) {
                             stTypeParams.add(stDecl.getTypeParameters().get(i));
                         }
                     }                            
@@ -310,9 +310,9 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
     private String missingSatisfiedTypeText;
 
     private AddConstraintSatisfiesProposal(TypeParameter typeParam, 
-    		String missingSatisfiedTypeText, TextFileChange change) {
+            String missingSatisfiedTypeText, TextFileChange change) {
         super("Add generic type constraints '" + typeParam.getName() + 
-        		" satisfies " + missingSatisfiedTypeText + "'", change);
+                " satisfies " + missingSatisfiedTypeText + "'", change);
         this.change = change;
         this.typeParam = typeParam;
         this.missingSatisfiedTypeText = missingSatisfiedTypeText;
@@ -329,7 +329,7 @@ public class AddConstraintSatisfiesProposal extends CorrectionProposal {
         if (obj instanceof AddConstraintSatisfiesProposal) {
             AddConstraintSatisfiesProposal that = (AddConstraintSatisfiesProposal) obj;
             return that.typeParam.equals(typeParam) && 
-            		that.missingSatisfiedTypeText.equals(missingSatisfiedTypeText);
+                    that.missingSatisfiedTypeText.equals(missingSatisfiedTypeText);
         }
         return false;
     }

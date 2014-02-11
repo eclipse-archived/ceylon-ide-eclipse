@@ -89,7 +89,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends CorrectionPr
         String indent;
         String bodyIndent = getIndent(body, doc);
         String delim = getDefaultLineDelimiter(doc);
-		if (statements.isEmpty()) {
+        if (statements.isEmpty()) {
             indent = delim + bodyIndent + getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
@@ -114,7 +114,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends CorrectionPr
                     ProducedReference pr = getRefinedProducedReference(ci, d);
                     result.append(indent)
                         .append(getRefinementTextFor(d, pr, node.getUnit(), 
-                        		false, ci, indent, true))
+                                false, ci, indent, true))
                         .append(indent);
                     importSignatureTypes(d, cu, already);
                 }
@@ -134,7 +134,7 @@ class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends CorrectionPr
                         ProducedReference pr = getRefinedProducedReference(ci, m);
                         result.append(indent)
                             .append(getRefinementTextFor(m, pr, node.getUnit(), 
-                            		false, null, indent, true))
+                                    false, null, indent, true))
                             .append(indent);
                         importSignatureTypes(m, cu, already);
                     }

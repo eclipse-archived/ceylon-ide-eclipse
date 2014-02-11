@@ -22,64 +22,64 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ConvertToClassRefactoring extends AbstractRefactoring {
 
-	private String newName;
-	private final Declaration declaration;
+    private String newName;
+    private final Declaration declaration;
 
-	public ConvertToClassRefactoring(ITextEditor editor) {
-	    super(editor);
-	    if (node instanceof Tree.ObjectDefinition) {
-		    declaration = ((Tree.ObjectDefinition) node).getDeclarationModel();
-    		String name = declaration.getName();
-    		newName = Character.toUpperCase(name.charAt(0))+name.substring(1);
-	    }
-		else {
-		    declaration = null;
-		}
-	}
-	
-	@Override
-	boolean isEnabled() {
-	    return node instanceof Tree.ObjectDefinition;
-	}
-	
-	public String getName() {
-		return "Convert To Class";
-	}
-	
-	public String getNewName() {
+    public ConvertToClassRefactoring(ITextEditor editor) {
+        super(editor);
+        if (node instanceof Tree.ObjectDefinition) {
+            declaration = ((Tree.ObjectDefinition) node).getDeclarationModel();
+            String name = declaration.getName();
+            newName = Character.toUpperCase(name.charAt(0))+name.substring(1);
+        }
+        else {
+            declaration = null;
+        }
+    }
+    
+    @Override
+    boolean isEnabled() {
+        return node instanceof Tree.ObjectDefinition;
+    }
+    
+    public String getName() {
+        return "Convert To Class";
+    }
+    
+    public String getNewName() {
         return newName;
     }
 
-	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
-		// Check parameters retrieved from editor context
-		return new RefactoringStatus();
-	}
+    public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
+            throws CoreException, OperationCanceledException {
+        // Check parameters retrieved from editor context
+        return new RefactoringStatus();
+    }
 
-	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
-	    Declaration existing = declaration.getContainer()
+    public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
+            throws CoreException, OperationCanceledException {
+        Declaration existing = declaration.getContainer()
                         .getMemberOrParameter(declaration.getUnit(), newName, null, false);
         if (null!=existing && !existing.equals(declaration)) {
-	        return createWarningStatus("An existing declaration named '" +
-	            newName + "' already exists in the same scope");
-	    }
-		return new RefactoringStatus();
-	}
+            return createWarningStatus("An existing declaration named '" +
+                newName + "' already exists in the same scope");
+        }
+        return new RefactoringStatus();
+    }
     
-	public Change createChange(IProgressMonitor pm) 
-	        throws CoreException, OperationCanceledException {
-	    TextChange tfc = newLocalChange();
-	    convertInFile(tfc);
-	    return tfc;
-	}
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
+        TextChange tfc = newLocalChange();
+        convertInFile(tfc);
+        return tfc;
+    }
 
-	private void convertInFile(TextChange tfc) throws CoreException {
-	    tfc.setEdit(new MultiTextEdit());
-	    IDocument doc = tfc.getCurrentDocument(null);
-	    Tree.ObjectDefinition od = (Tree.ObjectDefinition) node;
-	    int dstart = ((CommonToken) od.getMainToken()).getStartIndex();
-	    tfc.addEdit(new ReplaceEdit(dstart, 6, "class"));
+    private void convertInFile(TextChange tfc) throws CoreException {
+        tfc.setEdit(new MultiTextEdit());
+        IDocument doc = tfc.getCurrentDocument(null);
+        Tree.ObjectDefinition od = (Tree.ObjectDefinition) node;
+        int dstart = ((CommonToken) od.getMainToken()).getStartIndex();
+        tfc.addEdit(new ReplaceEdit(dstart, 6, "class"));
         int start = od.getIdentifier().getStartIndex();
         int length = od.getIdentifier().getStopIndex()-start+1;
         tfc.addEdit(new ReplaceEdit(start, length, newName + "()"));
@@ -87,16 +87,16 @@ public class ConvertToClassRefactoring extends AbstractRefactoring {
         //TODO: handle actual object declarations
         String mods = declaration.isShared() ? "shared " : "";
         tfc.addEdit(new InsertEdit(offset, 
-        		Indents.getDefaultLineDelimiter(doc) + getIndent(od, doc) + 
+                Indents.getDefaultLineDelimiter(doc) + getIndent(od, doc) + 
                 mods + newName + " " + declaration.getName() + 
                 " = " + newName + "();"));
-	}
+    }
 
-	public void setNewName(String text) {
-		newName = text;
-	}
-	
-	public Declaration getDeclaration() {
-		return declaration;
-	}
+    public void setNewName(String text) {
+        newName = text;
+    }
+    
+    public Declaration getDeclaration() {
+        return declaration;
+    }
 }

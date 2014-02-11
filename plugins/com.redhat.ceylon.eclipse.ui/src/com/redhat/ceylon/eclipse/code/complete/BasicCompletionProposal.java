@@ -24,7 +24,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class BasicCompletionProposal extends CompletionProposal {
-	
+    
     static void addImportProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration dec, Scope scope) {
@@ -114,20 +114,20 @@ class BasicCompletionProposal extends CompletionProposal {
         }
     }
 
-	private final CeylonParseController cpc;
-	private final Declaration declaration;
-	
-	private BasicCompletionProposal(int offset, String prefix, 
-			String desc, String text, Declaration dec, 
-			CeylonParseController cpc) {
-		super(offset, prefix, getImageForDeclaration(dec), 
-				desc, text);
-		this.cpc = cpc;
-		this.declaration = dec;
-	}
-	
-	public String getAdditionalProposalInfo() {
-		return getDocumentationFor(cpc, declaration);	
-	}
+    private final CeylonParseController cpc;
+    private final Declaration declaration;
+    
+    private BasicCompletionProposal(int offset, String prefix, 
+            String desc, String text, Declaration dec, 
+            CeylonParseController cpc) {
+        super(offset, prefix, getImageForDeclaration(dec), 
+                desc, text);
+        this.cpc = cpc;
+        this.declaration = dec;
+    }
+    
+    public String getAdditionalProposalInfo() {
+        return getDocumentationFor(cpc, declaration);    
+    }
 
 }

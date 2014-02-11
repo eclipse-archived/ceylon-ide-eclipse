@@ -22,29 +22,29 @@ class ConvertToClassProposal implements ICompletionProposal {
     
     @Override
     public Point getSelection(IDocument doc) {
-    	return null;
+        return null;
     }
 
     @Override
     public Image getImage() {
-    	return action.isShared() ? 
-    	        CeylonLabelProvider.CLASS : 
-    	        CeylonLabelProvider.LOCAL_CLASS;
+        return action.isShared() ? 
+                CeylonLabelProvider.CLASS : 
+                CeylonLabelProvider.LOCAL_CLASS;
     }
 
     @Override
     public String getDisplayString() {
-    	return "Convert '" + action.currentName() + "' to class";
+        return "Convert '" + action.currentName() + "' to class";
     }
 
     @Override
     public IContextInformation getContextInformation() {
-    	return null;
+        return null;
     }
 
     @Override
     public String getAdditionalProposalInfo() {
-    	return null;
+        return null;
     }
 
     @Override

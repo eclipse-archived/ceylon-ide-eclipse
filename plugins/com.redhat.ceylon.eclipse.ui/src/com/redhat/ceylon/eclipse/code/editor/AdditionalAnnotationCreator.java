@@ -44,12 +44,12 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     CeylonInitializerAnnotation initializerAnnotation;
     
     public AdditionalAnnotationCreator(CeylonEditor editor) {
-    	this.editor = editor;
+        this.editor = editor;
         ((IPostSelectionProvider) editor.getSelectionProvider())
                 .addPostSelectionChangedListener(new SelectionListener());
-	}
+    }
 
-	@Override
+    @Override
     public Stage getStage() {
         return TYPE_ANALYSIS;
     }
@@ -67,7 +67,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             final IAnnotationModel model = editor.getDocumentProvider()
                     .getAnnotationModel(editor.getEditorInput());
             if (model==null) {
-            	return;
+                return;
             }
             
             for (@SuppressWarnings("unchecked")
@@ -123,59 +123,59 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         }
         else {
             //TODO: this algorithm is a bit arbitrary
-        	//first get the superclass of the declaring class 
+            //first get the superclass of the declaring class 
             ClassOrInterface td = (ClassOrInterface) dec.getContainer();
-			ClassOrInterface etd = td.getExtendedTypeDeclaration();
+            ClassOrInterface etd = td.getExtendedTypeDeclaration();
             if (etd==null) {
                 return null;
             }
             else {
-            	//then the declaration might refine a member 
-            	//of a superclass or satisfied interface
-            	List<Declaration> allRefined = td.getInheritedMembers(dec.getName());
-            	if (allRefined.isEmpty()) {
-            		//the declaration does not refine
-            		//anything
-            		return null;
-            	}
-            	else if (allRefined.size()==1) {
-            		//the declaration refines exactly one
-            		//member of a superclass or satisfied 
-            		//interface 
-            		return allRefined.get(0);
-            	}
-            	else {
-            		//the declaration directly refines two 
-            		//different supertype members
-            		//look for a member declared or inherited by 
-            		//the superclass
-            		Declaration refined = etd.getMember(dec.getName(), null, false); //TODO: pass signature?
-            		if (refined==null) {
-            			//nothing; they are all declared by 
-            			//satisfied interfaces :-(
-            			//lets just return the topmost refined
-            			//declaration, because at least we know
-            			//it is something unique!                        	
-            			refined = dec.getRefinedDeclaration();
-            			if (refined!=null && refined.equals(dec)) {
-            				refined = null;
-            			}
-            		}
-            		return refined;
-            	}
+                //then the declaration might refine a member 
+                //of a superclass or satisfied interface
+                List<Declaration> allRefined = td.getInheritedMembers(dec.getName());
+                if (allRefined.isEmpty()) {
+                    //the declaration does not refine
+                    //anything
+                    return null;
+                }
+                else if (allRefined.size()==1) {
+                    //the declaration refines exactly one
+                    //member of a superclass or satisfied 
+                    //interface 
+                    return allRefined.get(0);
+                }
+                else {
+                    //the declaration directly refines two 
+                    //different supertype members
+                    //look for a member declared or inherited by 
+                    //the superclass
+                    Declaration refined = etd.getMember(dec.getName(), null, false); //TODO: pass signature?
+                    if (refined==null) {
+                        //nothing; they are all declared by 
+                        //satisfied interfaces :-(
+                        //lets just return the topmost refined
+                        //declaration, because at least we know
+                        //it is something unique!                            
+                        refined = dec.getRefinedDeclaration();
+                        if (refined!=null && refined.equals(dec)) {
+                            refined = null;
+                        }
+                    }
+                    return refined;
+                }
             }
         }
     }
     
     private void addRefinementAnnotation(IAnnotationModel model, 
-    		Tree.StatementOrArgument that, Node line, Declaration dec) {
+            Tree.StatementOrArgument that, Node line, Declaration dec) {
         Declaration refined = getRefinedDeclaration(dec);
         if (refined!=null) {
             RefinementAnnotation ra = new RefinementAnnotation(
                     "refines " + dec.getQualifiedNameString(), //never actually displayed 
                     refined, line.getToken().getLine());
             model.addAnnotation(ra, new Position(getStartOffset(that), 
-            		getLength(that)));
+                    getLength(that)));
         }
     }
     
@@ -187,16 +187,16 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     class SelectionListener implements ISelectionChangedListener {
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
-        	final CeylonParseController cpc = editor.getParseController();
-        	if (cpc.getRootNode()==null) return;
-        	Node node = findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
-        	if (node!=null) {
-        		editor.setHighlightRange(node.getStartIndex(), 
-        				node.getStopIndex()-node.getStartIndex()+1, false);
-        	}
-        	else {
-        		editor.resetHighlightRange();
-        	}
+            final CeylonParseController cpc = editor.getParseController();
+            if (cpc.getRootNode()==null) return;
+            Node node = findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
+            if (node!=null) {
+                editor.setHighlightRange(node.getStartIndex(), 
+                        node.getStopIndex()-node.getStartIndex()+1, false);
+            }
+            else {
+                editor.resetHighlightRange();
+            }
             IAnnotationModel model= editor.getDocumentProvider()
                     .getAnnotationModel(editor.getEditorInput());
             if (model!=null) {

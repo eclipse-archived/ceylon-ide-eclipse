@@ -17,7 +17,7 @@ import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class FindRefinementsAction extends AbstractFindAction {
 
-	private static final class Query extends FindSearchQuery {
+    private static final class Query extends FindSearchQuery {
         private Query(Declaration referencedDeclaration, IProject project) {
             super(referencedDeclaration, project);
         }
@@ -39,16 +39,16 @@ public class FindRefinementsAction extends AbstractFindAction {
     }
 
     public FindRefinementsAction() {}
-	
+    
     public FindRefinementsAction(IEditorPart editor) {
-		super("Find Refinements", editor);
-		setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
-	}
+        super("Find Refinements", editor);
+        setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
+    }
     
     public FindRefinementsAction(IEditorPart editor, Declaration dec) {
-		super("Find Refinements", editor, dec);
-		setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
-	}
+        super("Find Refinements", editor, dec);
+        setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
+    }
     
     @Override
     boolean isValidSelection() {

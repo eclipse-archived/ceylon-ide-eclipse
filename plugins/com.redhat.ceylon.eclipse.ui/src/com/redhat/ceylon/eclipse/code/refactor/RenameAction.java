@@ -14,19 +14,19 @@ public class RenameAction extends AbstractHandler {
         
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-		ITextEditor editor = (ITextEditor) getCurrentEditor();
-    	if (useLinkedMode() && editor instanceof CeylonEditor) {
-    		new RenameDeclarationLinkedMode((CeylonEditor) editor).start();
-    	}
-    	else {
-			new RenameRefactoringAction(editor).run();
-    	}
+        ITextEditor editor = (ITextEditor) getCurrentEditor();
+        if (useLinkedMode() && editor instanceof CeylonEditor) {
+            new RenameDeclarationLinkedMode((CeylonEditor) editor).start();
+        }
+        else {
+            new RenameRefactoringAction(editor).run();
+        }
         return null;
     }
 
-	@Override
-	protected boolean isEnabled(CeylonEditor editor) {
+    @Override
+    protected boolean isEnabled(CeylonEditor editor) {
         return new RenameRefactoringAction(editor).isEnabled();
-	}
+    }
             
 }

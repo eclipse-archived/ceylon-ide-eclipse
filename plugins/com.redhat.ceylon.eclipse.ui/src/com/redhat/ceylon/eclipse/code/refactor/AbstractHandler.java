@@ -32,17 +32,17 @@ public abstract class AbstractHandler extends org.eclipse.core.commands.Abstract
     
     @Override
     public void run(IAction action) {
-    	try {
-			execute(null);
-		} 
-    	catch (ExecutionException e) {
-			e.printStackTrace();
-		}
+        try {
+            execute(null);
+        } 
+        catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
     
     @Override
     public void selectionChanged(IAction action, ISelection selection) {
-    	action.setEnabled(isEnabled());
+        action.setEnabled(isEnabled());
     }
     
     @Override

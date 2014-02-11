@@ -31,13 +31,13 @@ public class CeylonRunPropertyTester extends PropertyTester {
             } else if (receiver instanceof IFileEditorInput) {
                 IFileEditorInput fileEditorInput = (IFileEditorInput) receiver;
                 return isCeylonFile(fileEditorInput.getFile()) && LaunchHelper.isBuilderEnabled(
-                		fileEditorInput.getFile().getProject(), property);
+                        fileEditorInput.getFile().getProject(), property);
             }
         }
         return false;
     }
     
-	private boolean isCeylonProject(IProject project) {
+    private boolean isCeylonProject(IProject project) {
         return project.isOpen() && CeylonNature.isEnabled(project);
     }
 

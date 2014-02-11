@@ -16,71 +16,71 @@ public class CeylonElement {
     
     private VirtualFile file;
     private int line;
-	private String imageKey;
-	private String packageLabel;
-	private StyledString label;
-	private int decorations;
-	
-	public CeylonElement(Tree.StatementOrArgument node, 
-	        VirtualFile file, int line) {
-		this.file = file;
-		this.line = line;
-		imageKey = getImageKeyForNode(node);
-		packageLabel = CeylonLabelProvider.getPackageLabel(node);
-		label = getStyledLabelForNode(node);
-		//TODO: this winds up caching error decorations,
-		//      so it's not really very good
-		decorations = getNodeDecorationAttributes(node);
-	}
-	
-	public String getImageKey() {
+    private String imageKey;
+    private String packageLabel;
+    private StyledString label;
+    private int decorations;
+    
+    public CeylonElement(Tree.StatementOrArgument node, 
+            VirtualFile file, int line) {
+        this.file = file;
+        this.line = line;
+        imageKey = getImageKeyForNode(node);
+        packageLabel = CeylonLabelProvider.getPackageLabel(node);
+        label = getStyledLabelForNode(node);
+        //TODO: this winds up caching error decorations,
+        //      so it's not really very good
+        decorations = getNodeDecorationAttributes(node);
+    }
+    
+    public String getImageKey() {
         return imageKey;
     }
-	
-	public String getPackageLabel() {
+    
+    public String getPackageLabel() {
         return packageLabel;
     }
-	
-	public StyledString getLabel() {
+    
+    public StyledString getLabel() {
         return label;
     }
-	
-	public int getDecorations() {
+    
+    public int getDecorations() {
         return decorations;
     }
-	
-	public int getLocation() {
-		return line;
-	}
-	
-	public VirtualFile getVirtualFile() {
-		return file;
-	}
-	
-	public IFile getFile() {
-		if (file instanceof IFileVirtualFile) {
-			return ((IFileVirtualFile) file).getFile();
-		}
-		else {
-			return null;
-		}
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof CeylonElement) {
-			CeylonElement that = (CeylonElement) obj;
-			return getLocation()==that.getLocation() && 
-					file.equals(that.file);
-		}
-		else {
-			return false;
-		}
-	}
-	
-	@Override
-	public int hashCode() {
-		return getLocation() ^ file.getName().hashCode();
-	}
-	
+    
+    public int getLocation() {
+        return line;
+    }
+    
+    public VirtualFile getVirtualFile() {
+        return file;
+    }
+    
+    public IFile getFile() {
+        if (file instanceof IFileVirtualFile) {
+            return ((IFileVirtualFile) file).getFile();
+        }
+        else {
+            return null;
+        }
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof CeylonElement) {
+            CeylonElement that = (CeylonElement) obj;
+            return getLocation()==that.getLocation() && 
+                    file.equals(that.file);
+        }
+        else {
+            return false;
+        }
+    }
+    
+    @Override
+    public int hashCode() {
+        return getLocation() ^ file.getName().hashCode();
+    }
+    
 }

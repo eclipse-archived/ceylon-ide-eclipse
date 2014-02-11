@@ -44,9 +44,9 @@ public class SpecifyTypeProposal extends CorrectionProposal {
         proposals.add(create(cu, node, file));
     }
 
-	public static SpecifyTypeProposal create(Tree.CompilationUnit cu,
-			Node node, IFile file) {
-		final Tree.Type type = (Tree.Type) node;
+    public static SpecifyTypeProposal create(Tree.CompilationUnit cu,
+            Node node, IFile file) {
+        final Tree.Type type = (Tree.Type) node;
         TextFileChange change = new TextFileChange("Specify Explicit Type", file);
         change.setEdit(new MultiTextEdit());
         Integer offset = node.getStartIndex();
@@ -58,15 +58,15 @@ public class SpecifyTypeProposal extends CorrectionProposal {
             il = 0;
         } 
         else {
-        	explicitType = infType.getProducedTypeName();
+            explicitType = infType.getProducedTypeName();
             HashSet<Declaration> decs = new HashSet<Declaration>();
-			importType(decs, infType, cu);
-			il = applyImports(change, decs, cu, getDocument(change));
+            importType(decs, infType, cu);
+            il = applyImports(change, decs, cu, getDocument(change));
         }
         change.addEdit(new ReplaceEdit(offset, type.getText().length(), explicitType)); 
             //Note: don't use problem.getLength() because it's wrong from the problem list
         return new SpecifyTypeProposal(offset+il, file, explicitType, change);
-	}
+    }
 
     static ProducedType inferType(Tree.CompilationUnit cu,
             final Tree.Type type) {

@@ -15,71 +15,71 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
  */
 public class AnnotationIterator implements Iterator<Annotation> {
 
-	private Iterator<Annotation> fIterator;
-	private Annotation fNext;
-	private boolean fReturnAllAnnotations;
+    private Iterator<Annotation> fIterator;
+    private Annotation fNext;
+    private boolean fReturnAllAnnotations;
 
 
-	/**
-	 * Returns a new JavaAnnotationIterator.
-	 * @param parent the parent iterator to iterate over annotations
-	 * @param returnAllAnnotations whether to return all annotations or just problem annotations
-	 */
-	public AnnotationIterator(Iterator<Annotation> parent, boolean returnAllAnnotations) {
-		fReturnAllAnnotations= returnAllAnnotations;
-		fIterator= parent;
-		skip();
-	}
+    /**
+     * Returns a new JavaAnnotationIterator.
+     * @param parent the parent iterator to iterate over annotations
+     * @param returnAllAnnotations whether to return all annotations or just problem annotations
+     */
+    public AnnotationIterator(Iterator<Annotation> parent, boolean returnAllAnnotations) {
+        fReturnAllAnnotations= returnAllAnnotations;
+        fIterator= parent;
+        skip();
+    }
 
-	private void skip() {
-		while (fIterator.hasNext()) {
-			Annotation next= (Annotation) fIterator.next();
+    private void skip() {
+        while (fIterator.hasNext()) {
+            Annotation next= (Annotation) fIterator.next();
 
-			if (next.isMarkedDeleted())
-				continue;
+            if (next.isMarkedDeleted())
+                continue;
 
-			if (fReturnAllAnnotations || next instanceof CeylonAnnotation || 
-					isProblemMarkerAnnotation(next)) {
-				fNext= next;
-				return;
-			}
-		}
-		fNext= null;
-	}
+            if (fReturnAllAnnotations || next instanceof CeylonAnnotation || 
+                    isProblemMarkerAnnotation(next)) {
+                fNext= next;
+                return;
+            }
+        }
+        fNext= null;
+    }
 
-	private static boolean isProblemMarkerAnnotation(Annotation annotation) {
-		if (!(annotation instanceof MarkerAnnotation))
-			return false;
-		try {
-			return ((MarkerAnnotation)annotation).getMarker().isSubtypeOf(IMarker.PROBLEM);
-		} 
-		catch (CoreException e) {
-			return false;
-		}
-	}
+    private static boolean isProblemMarkerAnnotation(Annotation annotation) {
+        if (!(annotation instanceof MarkerAnnotation))
+            return false;
+        try {
+            return ((MarkerAnnotation)annotation).getMarker().isSubtypeOf(IMarker.PROBLEM);
+        } 
+        catch (CoreException e) {
+            return false;
+        }
+    }
 
-	/*
-	 * @see Iterator#hasNext()
-	 */
-	public boolean hasNext() {
-		return fNext != null;
-	}
+    /*
+     * @see Iterator#hasNext()
+     */
+    public boolean hasNext() {
+        return fNext != null;
+    }
 
-	/*
-	 * @see Iterator#next()
-	 */
-	public Annotation next() {
-		try {
-			return fNext;
-		} finally {
-			skip();
-		}
-	}
+    /*
+     * @see Iterator#next()
+     */
+    public Annotation next() {
+        try {
+            return fNext;
+        } finally {
+            skip();
+        }
+    }
 
-	/*
-	 * @see Iterator#remove()
-	 */
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
+    /*
+     * @see Iterator#remove()
+     */
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
 }

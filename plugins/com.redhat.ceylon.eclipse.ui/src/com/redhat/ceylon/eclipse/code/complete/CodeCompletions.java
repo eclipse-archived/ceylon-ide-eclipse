@@ -42,7 +42,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 public class CodeCompletions {
 
     private static boolean forceExplicitTypeArgs(Declaration d, 
-    		OccurrenceLocation ol) {
+            OccurrenceLocation ol) {
         if (ol==EXTENDS) {
             return true;
         }
@@ -55,7 +55,7 @@ public class CodeCompletions {
             if (d instanceof Functional) {
                 List<ParameterList> pls = ((Functional) d).getParameterLists();
                 return pls.isEmpty() || 
-                		pls.get(0).getParameters().isEmpty();
+                        pls.get(0).getParameters().isEmpty();
             }
             else {
                 return false;
@@ -64,7 +64,7 @@ public class CodeCompletions {
     }
     
     static String getTextForDocLink(CeylonParseController cpc, 
-    		DeclarationWithProximity d) {
+            DeclarationWithProximity d) {
         
         StringBuilder result = new StringBuilder();
         
@@ -102,13 +102,13 @@ public class CodeCompletions {
     }
     
     public static String getPositionalInvocationTextFor(
-    		DeclarationWithProximity d, OccurrenceLocation ol, 
-    		ProducedReference pr, Unit unit, 
-    		boolean includeDefaulted, String typeArgs) {
+            DeclarationWithProximity d, OccurrenceLocation ol, 
+            ProducedReference pr, Unit unit, 
+            boolean includeDefaulted, String typeArgs) {
         StringBuilder result = new StringBuilder(escapeName(d));
         Declaration dd = d.getDeclaration();
         if (typeArgs!=null) {
-        	result.append(typeArgs);
+            result.append(typeArgs);
         }
         else if (forceExplicitTypeArgs(dd, ol)) {
             appendTypeParameters(dd, result);
@@ -144,56 +144,56 @@ public class CodeCompletions {
     }
     
     static String getPositionalInvocationDescriptionFor(
-    		DeclarationWithProximity d, OccurrenceLocation ol, 
-    		ProducedReference pr, Unit unit, boolean includeDefaulted, 
+            DeclarationWithProximity d, OccurrenceLocation ol, 
+            ProducedReference pr, Unit unit, boolean includeDefaulted, 
             String typeArgs) {
         StringBuilder result = new StringBuilder(d.getName());
         if (typeArgs!=null) {
-        	result.append(typeArgs);
+            result.append(typeArgs);
         }
         else if (forceExplicitTypeArgs(d.getDeclaration(), ol)) {
             appendTypeParameters(d.getDeclaration(), result);
         }
         appendPositionalArgs(d.getDeclaration(), pr, unit, result, 
-        		includeDefaulted);
+                includeDefaulted);
         return result.toString();
     }
     
     static String getNamedInvocationDescriptionFor(
-    		DeclarationWithProximity d, ProducedReference pr, 
-    		Unit unit, boolean includeDefaulted) {
+            DeclarationWithProximity d, ProducedReference pr, 
+            Unit unit, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(d.getName());
         if (forceExplicitTypeArgs(d.getDeclaration(), null))
             appendTypeParameters(d.getDeclaration(), result);
         appendNamedArgs(d.getDeclaration(), pr, unit, result, 
-        		includeDefaulted, true);
+                includeDefaulted, true);
         return result.toString();
     }
     
     public static String getRefinementTextFor(Declaration d, 
-    		ProducedReference pr, Unit unit, boolean isInterface, 
-    		ClassOrInterface ci, String indent, boolean containsNewline) {
-    	return getRefinementTextFor(d, pr, unit, isInterface, ci, 
-    			indent, containsNewline, true);
+            ProducedReference pr, Unit unit, boolean isInterface, 
+            ClassOrInterface ci, String indent, boolean containsNewline) {
+        return getRefinementTextFor(d, pr, unit, isInterface, ci, 
+                indent, containsNewline, true);
     }
     
     public static String getRefinementTextFor(Declaration d, 
-    		ProducedReference pr, Unit unit, boolean isInterface,
-    		ClassOrInterface ci, String indent, boolean containsNewline, 
-    		boolean preamble) {
-    	StringBuilder result = new StringBuilder();
-    	if (preamble) {
-    		result.append("shared actual ");
-    		if (isVariable(d) && !isInterface) {
-    			result.append("variable ");
-    		}
-    	}
+            ProducedReference pr, Unit unit, boolean isInterface,
+            ClassOrInterface ci, String indent, boolean containsNewline, 
+            boolean preamble) {
+        StringBuilder result = new StringBuilder();
+        if (preamble) {
+            result.append("shared actual ");
+            if (isVariable(d) && !isInterface) {
+                result.append("variable ");
+            }
+        }
         appendDeclarationText(d, pr, unit, result);
         appendTypeParameters(d, result);
         appendParameters(d, pr, unit, result);
         if (d instanceof Class) {
             result.append(extraIndent(extraIndent(indent, containsNewline), 
-            		containsNewline))
+                    containsNewline))
                 .append(" extends super.").append(d.getName());
             appendPositionalArgs(d, pr, unit, result, true);
         }
@@ -210,7 +210,7 @@ public class CodeCompletions {
                 List<ProducedType> sts = tp.getSatisfiedTypes();
                 if (!sts.isEmpty()) {
                     result.append(extraIndent(extraIndent(indent, containsNewline), 
-                    		containsNewline))
+                            containsNewline))
                         .append("given ").append(tp.getName())
                         .append(" satisfies ");
                     boolean first = true;
@@ -230,7 +230,7 @@ public class CodeCompletions {
     }
 
     static String getInlineFunctionTextFor(Parameter p, 
-    		ProducedReference pr, Unit unit, String indent) {
+            ProducedReference pr, Unit unit, String indent) {
         StringBuilder result = new StringBuilder();
         appendNamedArgumentText(p, pr, result);
         appendTypeParameters(p.getModel(), result);
@@ -246,11 +246,11 @@ public class CodeCompletions {
 
     private static boolean isVariable(Declaration d) {
         return d instanceof TypedDeclaration && 
-        		((TypedDeclaration) d).isVariable();
+                ((TypedDeclaration) d).isVariable();
     }
     
     static String getRefinementDescriptionFor(Declaration d, 
-    		ProducedReference pr, Unit unit) {
+            ProducedReference pr, Unit unit) {
         StringBuilder result = new StringBuilder("shared actual ");
         if (isVariable(d)) {
             result.append("variable ");
@@ -264,7 +264,7 @@ public class CodeCompletions {
     }
     
     static String getInlineFunctionDescriptionFor(Parameter p, 
-    		ProducedReference pr, Unit unit) {
+            ProducedReference pr, Unit unit) {
         StringBuilder result = new StringBuilder();
         appendNamedArgumentText(p, pr, result);
         appendTypeParameters(p.getModel(), result);
@@ -277,7 +277,7 @@ public class CodeCompletions {
     }
     
     public static String getDescriptionFor(Declaration d, 
-    		CeylonParseController cpc) {
+            CeylonParseController cpc) {
         StringBuilder result = new StringBuilder();
         if (d!=null) {
             if (d.isFormal()) result.append("formal ");
@@ -291,7 +291,7 @@ public class CodeCompletions {
     }
     
     public static String getDescriptionFor(Declaration d, 
-    		ProducedReference pr, Unit unit) {
+            ProducedReference pr, Unit unit) {
         StringBuilder result = new StringBuilder();
         if (d.isFormal()) result.append("formal ");
         if (d.isDefault()) result.append("default ");
@@ -361,7 +361,7 @@ public class CodeCompletions {
             Unit unit, StringBuilder result, boolean includeDefaulted) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, 
-            		includeDefaulted, false);
+                    includeDefaulted, false);
             if (params.isEmpty()) {
                 result.append("()");
             }
@@ -381,7 +381,7 @@ public class CodeCompletions {
     }
 
     private static List<Parameter> getParameters(Functional fd, 
-    		boolean includeDefaults, boolean namedInvocation) {
+            boolean includeDefaults, boolean namedInvocation) {
         List<ParameterList> plists = fd.getParameterLists();
         if (plists==null || plists.isEmpty()) {
             return Collections.<Parameter>emptyList();
@@ -392,12 +392,12 @@ public class CodeCompletions {
         }
     }
 
-	private static void appendNamedArgs(Declaration d, ProducedReference pr, 
+    private static void appendNamedArgs(Declaration d, ProducedReference pr, 
             Unit unit, StringBuilder result, boolean includeDefaulted, 
             boolean descriptionOnly) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, 
-            		includeDefaulted, true);
+                    includeDefaulted, true);
             if (params.isEmpty()) {
                 result.append(" {}");
             }
@@ -413,8 +413,8 @@ public class CodeCompletions {
                         }
                         result.append(p.getName());
                         appendParameters(p.getModel(), 
-                        		pr.getTypedParameter(p), 
-                        		unit, result);
+                                pr.getTypedParameter(p), 
+                                unit, result);
                         if (descriptionOnly) {
                             result.append("; ");
                         }
@@ -429,8 +429,8 @@ public class CodeCompletions {
                     }
                     else {
                         if (p==params.get(params.size()-1) && 
-                        		unit.isIterableParameterType(p.getType())) {
-//                        	result.append(" ");
+                                unit.isIterableParameterType(p.getType())) {
+//                            result.append(" ");
                         }
                         else {
                             result.append(p.getName()).append(" = ")
@@ -446,10 +446,10 @@ public class CodeCompletions {
     }
     
     private static void appendTypeParameters(Declaration d, 
-    		StringBuilder result) {
+            StringBuilder result) {
         if (d instanceof Generic) {
             List<TypeParameter> types = 
-            		((Generic) d).getTypeParameters();
+                    ((Generic) d).getTypeParameters();
             if (!types.isEmpty()) {
                 result.append("<");
                 for (TypeParameter p: types) {
@@ -462,10 +462,10 @@ public class CodeCompletions {
     }
     
     private static void appendTypeParameters(Declaration d, 
-    		StyledString result) {
+            StyledString result) {
         if (d instanceof Generic) {
             List<TypeParameter> types = 
-            		((Generic) d).getTypeParameters();
+                    ((Generic) d).getTypeParameters();
             if (!types.isEmpty()) {
                 result.append("<");
                 int len = types.size(), i = 0;
@@ -479,13 +479,13 @@ public class CodeCompletions {
     }
     
     private static void appendDeclarationText(Declaration d, 
-    		Unit unit, StringBuilder result) {
+            Unit unit, StringBuilder result) {
         appendDeclarationText(d, null, unit, result);
     }
     
     static void appendDeclarationText(Declaration d, 
-    		ProducedReference pr, Unit unit, 
-    		StringBuilder result) {
+            ProducedReference pr, Unit unit, 
+            StringBuilder result) {
         if (d instanceof Class) {
             if (d.isAnonymous()) {
                 result.append("object");
@@ -539,7 +539,7 @@ public class CodeCompletions {
             }
             if (isSequenced) {
                 if (((MethodOrValue) d).getInitializerParameter()
-                		.isAtLeastOne()) {
+                        .isAtLeastOne()) {
                     result.append("+");
                 }
                 else {
@@ -551,7 +551,7 @@ public class CodeCompletions {
     }
     
     private static void appendNamedArgumentText(Parameter p, 
-    		ProducedReference pr, StringBuilder result) {
+            ProducedReference pr, StringBuilder result) {
         if (p.getModel() instanceof Functional) {
             Functional fp = (Functional) p.getModel();
             result.append(fp.isDeclaredVoid() ? "void" : "function");
@@ -563,7 +563,7 @@ public class CodeCompletions {
     }
     
     private static void appendDeclarationText(Declaration d, 
-    		StyledString result) {
+            StyledString result) {
         if (d instanceof Class) {
             if (d.isAnonymous()) {
                 result.append("object", KW_STYLER);
@@ -637,21 +637,21 @@ public class CodeCompletions {
   }*/
     
     private static void appendImpl(Declaration d, ProducedReference pr, 
-    		boolean isInterface, Unit unit, String indent, StringBuilder result,
-    		ClassOrInterface ci) {
-    	if (d instanceof Method) {
-    		if (ci!=null && !ci.isAnonymous()) {
-    			if (d.getName().equals("equals")) {
-    				List<ParameterList> pl = ((Method) d).getParameterLists();
-    				if (!pl.isEmpty()) {
-    					List<Parameter> ps = pl.get(0).getParameters();
-    					if (!ps.isEmpty()) {
-    						appendEqualsImpl(unit, indent, result, ci, ps);
-    						return;
-    					}
-    				}
-    			}
-    		}
+            boolean isInterface, Unit unit, String indent, StringBuilder result,
+            ClassOrInterface ci) {
+        if (d instanceof Method) {
+            if (ci!=null && !ci.isAnonymous()) {
+                if (d.getName().equals("equals")) {
+                    List<ParameterList> pl = ((Method) d).getParameterLists();
+                    if (!pl.isEmpty()) {
+                        List<Parameter> ps = pl.get(0).getParameters();
+                        if (!ps.isEmpty()) {
+                            appendEqualsImpl(unit, indent, result, ci, ps);
+                            return;
+                        }
+                    }
+                }
+            }
             if (!d.isFormal()) {
                 result.append(" => super.").append(d.getName());
                 appendSuperArgs(d, pr, unit, result, true);
@@ -668,12 +668,12 @@ public class CodeCompletions {
             }
         }
         else if (d instanceof MethodOrValue) {
-        	if (ci!=null && !ci.isAnonymous()) {
-        		if (d.getName().equals("hash")) {
-					appendHashImpl(unit, indent, result, ci);
-					return;
-        		}
-        	}
+            if (ci!=null && !ci.isAnonymous()) {
+                if (d.getName().equals("hash")) {
+                    appendHashImpl(unit, indent, result, ci);
+                    return;
+                }
+            }
             if (isInterface||d.isParameter()) {
                 if (d.isFormal()) {
                     result.append(" => nothing;");
@@ -684,7 +684,7 @@ public class CodeCompletions {
                 }
                 if (isVariable(d)) {
                     result.append(indent + "assign " +
-                    		d.getName() + " {}");
+                            d.getName() + " {}");
                 }
             }
             else {
@@ -703,39 +703,39 @@ public class CodeCompletions {
         }
     }
 
-	private static void appendHashImpl(Unit unit, String indent, 
-			StringBuilder result, ClassOrInterface ci) {
-		result.append(" {")
-			.append(indent).append(getDefaultIndent())
-			.append("variable value hash = 1;")
-			.append(indent).append(getDefaultIndent());
-		String ind = indent+getDefaultIndent();
-	    appendMembersToHash(unit, ind, result, ci);
-	    result.append("return hash;")
-			.append(indent)
-			.append("}");
+    private static void appendHashImpl(Unit unit, String indent, 
+            StringBuilder result, ClassOrInterface ci) {
+        result.append(" {")
+            .append(indent).append(getDefaultIndent())
+            .append("variable value hash = 1;")
+            .append(indent).append(getDefaultIndent());
+        String ind = indent+getDefaultIndent();
+        appendMembersToHash(unit, ind, result, ci);
+        result.append("return hash;")
+            .append(indent)
+            .append("}");
     }
 
-	private static void appendEqualsImpl(Unit unit, String indent,
+    private static void appendEqualsImpl(Unit unit, String indent,
             StringBuilder result, ClassOrInterface ci, List<Parameter> ps) {
-	    Parameter p = ps.get(0);
-	    result.append(" {")
-	    	.append(indent).append(getDefaultIndent())
-	    	.append("if (is ").append(ci.getName()).append(" ").append(p.getName()).append(") {")
-	    	.append(indent).append(getDefaultIndent()).append(getDefaultIndent())
-	    	.append("return ");
-	    String ind = indent+getDefaultIndent()+getDefaultIndent()+getDefaultIndent();
-	    appendMembersToEquals(unit, ind, result, ci, p);
-	    result.append(indent).append(getDefaultIndent())
-	    	.append("}")
-	    	.append(indent).append(getDefaultIndent())
-	    	.append("else {")
-	    	.append(indent).append(getDefaultIndent()).append(getDefaultIndent())
-	    	.append("return false;")
-	    	.append(indent).append(getDefaultIndent())
-	    	.append("}")
-	    	.append(indent)
-	    	.append("}");
+        Parameter p = ps.get(0);
+        result.append(" {")
+            .append(indent).append(getDefaultIndent())
+            .append("if (is ").append(ci.getName()).append(" ").append(p.getName()).append(") {")
+            .append(indent).append(getDefaultIndent()).append(getDefaultIndent())
+            .append("return ");
+        String ind = indent+getDefaultIndent()+getDefaultIndent()+getDefaultIndent();
+        appendMembersToEquals(unit, ind, result, ci, p);
+        result.append(indent).append(getDefaultIndent())
+            .append("}")
+            .append(indent).append(getDefaultIndent())
+            .append("else {")
+            .append(indent).append(getDefaultIndent()).append(getDefaultIndent())
+            .append("return false;")
+            .append(indent).append(getDefaultIndent())
+            .append("}")
+            .append(indent)
+            .append("}");
     }
 
     private static boolean isObjectField(Declaration m) {
@@ -743,54 +743,54 @@ public class CodeCompletions {
                 m.getName().equals("string");
     }
 
-	private static void appendMembersToEquals(Unit unit, String indent,
+    private static void appendMembersToEquals(Unit unit, String indent,
             StringBuilder result, ClassOrInterface ci, Parameter p) {
-	    boolean found = false;
-	    for (Declaration m: ci.getMembers()) {
-	    	if (m instanceof Value && 
-	    	        !isObjectField(m)) {
-	    		Value value = (Value) m;
-	    		if (!value.isTransient()) {
-	    			if (!unit.getNullValueDeclaration().getType()
-	    					.isSubtypeOf(value.getType())) {
-	    				result.append(value.getName())
-	    					.append("==")
-	    					.append(p.getName())
-	    					.append(".")
-	    					.append(value.getName())
-	    					.append(" && ")
-	    					.append(indent);
-	    				found = true;
-	    			}
-	    		}
-	    	}
-	    }
-		if (found) {
-			result.setLength(result.length()-4-indent.length());
-			result.append(";");
-		}
-		else {
-			result.append("true;");
-		}
+        boolean found = false;
+        for (Declaration m: ci.getMembers()) {
+            if (m instanceof Value && 
+                    !isObjectField(m)) {
+                Value value = (Value) m;
+                if (!value.isTransient()) {
+                    if (!unit.getNullValueDeclaration().getType()
+                            .isSubtypeOf(value.getType())) {
+                        result.append(value.getName())
+                            .append("==")
+                            .append(p.getName())
+                            .append(".")
+                            .append(value.getName())
+                            .append(" && ")
+                            .append(indent);
+                        found = true;
+                    }
+                }
+            }
+        }
+        if (found) {
+            result.setLength(result.length()-4-indent.length());
+            result.append(";");
+        }
+        else {
+            result.append("true;");
+        }
     }
 
-	private static void appendMembersToHash(Unit unit, String indent,
+    private static void appendMembersToHash(Unit unit, String indent,
             StringBuilder result, ClassOrInterface ci) {
-	    for (Declaration m: ci.getMembers()) {
-	    	if (m instanceof Value && 
+        for (Declaration m: ci.getMembers()) {
+            if (m instanceof Value && 
                     !isObjectField(m)) {
-	    		Value value = (Value) m;
-	    		if (!value.isTransient()) {
-	    			if (!unit.getNullValueDeclaration().getType()
-	    					.isSubtypeOf(value.getType())) {
-	    				result.append("hash = 31*hash + ")
-	    					.append(value.getName())
-	    					.append(".hash;")
-	    					.append(indent);
-	    			}
-	    		}
-	    	}
-	    }
+                Value value = (Value) m;
+                if (!value.isTransient()) {
+                    if (!unit.getNullValueDeclaration().getType()
+                            .isSubtypeOf(value.getType())) {
+                        result.append("hash = 31*hash + ")
+                            .append(value.getName())
+                            .append(".hash;")
+                            .append(indent);
+                    }
+                }
+            }
+        }
     }
 
     private static String extraIndent(String indent, boolean containsNewline) {
@@ -850,17 +850,17 @@ public class CodeCompletions {
         }
     }
 
-	public static void appendParameter(StringBuilder result,
+    public static void appendParameter(StringBuilder result,
             ProducedReference pr, Parameter p, Unit unit) {
-	    if (p.getModel() == null) {
-	        result.append(p.getName());
-	    }
-	    else {
-	        ProducedTypedReference ppr = pr==null ? 
-	                null : pr.getTypedParameter(p);
-	        appendDeclarationText(p.getModel(), ppr, unit, result);
-	        appendParameters(p.getModel(), ppr, unit, result);
-	    }
+        if (p.getModel() == null) {
+            result.append(p.getName());
+        }
+        else {
+            ProducedTypedReference ppr = pr==null ? 
+                    null : pr.getTypedParameter(p);
+            appendDeclarationText(p.getModel(), ppr, unit, result);
+            appendParameters(p.getModel(), ppr, unit, result);
+        }
     }
     
     public static void appendParameterContextInfo(StringBuilder result,

@@ -14,7 +14,7 @@ import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
 
 public class FindReferencesAction extends AbstractFindAction {
 
-	private static final class Query extends FindSearchQuery {
+    private static final class Query extends FindSearchQuery {
         private Query(Declaration referencedDeclaration, IProject project) {
             super(referencedDeclaration, project);
         }
@@ -34,25 +34,25 @@ public class FindReferencesAction extends AbstractFindAction {
     }
 
     public FindReferencesAction() {}
-	
+    
     public FindReferencesAction(IEditorPart editor) {
-		super("Find References", editor);
-		setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
-	}
-	
+        super("Find References", editor);
+        setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
+    }
+    
     public FindReferencesAction(IEditorPart editor, Declaration dec) {
-		super("Find References", editor, dec);
-		setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
-	}
-	
+        super("Find References", editor, dec);
+        setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
+    }
+    
     @Override
     boolean isValidSelection() {
         return declaration!=null;
     }
 
-	@Override
-	public FindSearchQuery createSearchQuery() {
-	    return new Query(declaration, project);
-	}
+    @Override
+    public FindSearchQuery createSearchQuery() {
+        return new Query(declaration, project);
+    }
 
 }

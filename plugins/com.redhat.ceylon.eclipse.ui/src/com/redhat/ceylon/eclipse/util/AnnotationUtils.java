@@ -49,13 +49,13 @@ import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 public class AnnotationUtils {
     
     public static final String SEARCH_ANNOTATION_TYPE = 
-    		NewSearchUI.PLUGIN_ID + ".results";
+            NewSearchUI.PLUGIN_ID + ".results";
 
     private static Set<String> sAnnotationTypesToFilter = 
-    		new HashSet<String>();
+            new HashSet<String>();
 
     static {
-    	String prefix = "org.eclipse.ui.workbench.texteditor.";
+        String prefix = "org.eclipse.ui.workbench.texteditor.";
         sAnnotationTypesToFilter.add(prefix + "quickdiffUnchanged");
         sAnnotationTypesToFilter.add(prefix + "quickdiffChange");
         sAnnotationTypesToFilter.add(prefix + "quickdiffAddition");
@@ -71,7 +71,7 @@ public class AnnotationUtils {
      */
     public static String formatAnnotationList(List<Annotation> annotations) {
         if (annotations == null || annotations.isEmpty()) {
-        	return null;
+            return null;
         }
         else {
             if (annotations.size()==1) {
@@ -88,7 +88,7 @@ public class AnnotationUtils {
      * given the annotation information in the given Map
      */
     public static boolean addAndCheckDuplicateAnnotation(Map<Integer, 
-    		List<Object>> map, Annotation annotation, Position position) {
+            List<Object>> map, Annotation annotation, Position position) {
         List<Object> annotationsAtPosition;
         if (!map.containsKey(position.offset)) {
             annotationsAtPosition = new ArrayList<Object>();
@@ -131,9 +131,9 @@ public class AnnotationUtils {
      * line for the given ISourceViewer
      */
     public static List<Annotation> getAnnotationsForLine(final ISourceViewer viewer, 
-    		final int line) {
+            final int line) {
         return getAnnotations(viewer, new IPositionPredicate() {
-        	IDocument document = viewer.getDocument();
+            IDocument document = viewer.getDocument();
             public boolean matchPosition(Position p) {
                 return positionIsAtLine(p, document, line);
             }
@@ -145,11 +145,11 @@ public class AnnotationUtils {
      * offset for the given ISourceViewer
      */
     public static List<Annotation> getAnnotationsForOffset(ISourceViewer viewer, 
-    		final int offset) {
+            final int offset) {
         return getAnnotations(viewer, new IPositionPredicate() {
             public boolean matchPosition(Position p) {
                 return offset >= p.offset && 
-                		offset < p.offset + p.length;
+                        offset < p.offset + p.length;
             }
         });
     }
@@ -159,10 +159,10 @@ public class AnnotationUtils {
      * line of the given IDocument
      */
     public static boolean positionIsAtLine(Position position, 
-    		IDocument document, int line) {
+            IDocument document, int line) {
         int offset = position.getOffset();
-		int length = position.getLength();
-		if (offset > -1 && length > -1) {
+        int length = position.getLength();
+        if (offset > -1 && length > -1) {
             try {
                 int startLine= document.getLineOfOffset(offset);
                 int endLine = document.getLineOfOffset(offset+length);
@@ -180,7 +180,7 @@ public class AnnotationUtils {
      * annotations and source folding annotations)
      */
     public static List<Annotation> getAnnotations(ISourceViewer viewer, 
-    		IPositionPredicate posPred) {
+            IPositionPredicate posPred) {
         IAnnotationModel model = viewer.getAnnotationModel();
         if (model == null) {
             return null;
@@ -207,7 +207,7 @@ public class AnnotationUtils {
                 }
             }
             if (position == null || 
-            		!posPred.matchPosition(position)) {
+                    !posPred.matchPosition(position)) {
                 continue;
             }
             if (annotation instanceof AnnotationBag) {
@@ -216,15 +216,15 @@ public class AnnotationUtils {
                     Annotation bagAnnotation = (Annotation) e.next();
                     position = model.getPosition(bagAnnotation);
                     if (position != null && 
-                    		includeAnnotation(bagAnnotation, position) && 
-                    		!addAndCheckDuplicateAnnotation(map, bagAnnotation, position))
+                            includeAnnotation(bagAnnotation, position) && 
+                            !addAndCheckDuplicateAnnotation(map, bagAnnotation, position))
                         annotations.add(bagAnnotation);
 
                 }
             }
             else {
                 if (includeAnnotation(annotation, position) && 
-                		!addAndCheckDuplicateAnnotation(map, annotation, position)) {
+                        !addAndCheckDuplicateAnnotation(map, annotation, position)) {
                     annotations.add(annotation);
                 }
             }
@@ -238,7 +238,7 @@ public class AnnotationUtils {
      * hover for a non-visible annotation.)
      */
     private static boolean includeAnnotation(Annotation annotation, 
-    		Position position) {
+            Position position) {
         return !sAnnotationTypesToFilter.contains(annotation.getType());
     }
     
@@ -261,11 +261,11 @@ public class AnnotationUtils {
         else if (message instanceof RefinementAnnotation) {
             Declaration dec = ((RefinementAnnotation) message).getDeclaration();
             icon = dec.isFormal() ? 
-            		fileUrl("implm_co.gif") : fileUrl("over_co.gif");
+                    fileUrl("implm_co.gif") : fileUrl("over_co.gif");
             text = "refines&nbsp;&nbsp;<tt>" + 
-            		convertToHTMLContent(getDescriptionFor(dec)) + 
-            		"</tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt><b>" + 
-            		((TypeDeclaration) dec.getContainer()).getName() + 
+                    convertToHTMLContent(getDescriptionFor(dec)) + 
+                    "</tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt><b>" + 
+                    ((TypeDeclaration) dec.getContainer()).getName() + 
                     "</b></tt>";
         }
         else if (message instanceof MarkerAnnotation) {
@@ -283,18 +283,18 @@ public class AnnotationUtils {
             }
         }
         else if (message!=null) {
-        	if (SEARCH_ANNOTATION_TYPE.equals(message.getType())) {
-        		text = "<b>Search result</b>";
-        		icon = fileUrl("find_obj.gif");
-        	}
-        	else if (TODO_ANNOTATION_TYPE.equals(message.getType())) {
-        		text = "<b>Task</b><p>" + message.getText() + "</p>";
-        		icon = fileUrl("tasks_tsk.gif");
-        	}
+            if (SEARCH_ANNOTATION_TYPE.equals(message.getType())) {
+                text = "<b>Search result</b>";
+                icon = fileUrl("find_obj.gif");
+            }
+            else if (TODO_ANNOTATION_TYPE.equals(message.getType())) {
+                text = "<b>Task</b><p>" + message.getText() + "</p>";
+                icon = fileUrl("tasks_tsk.gif");
+            }
         }
         if (icon!=null) {
             addImageAndLabel(buffer, null, icon.toExternalForm(), 
-            		16, 16, text, 20, 2);
+                    16, 16, text, 20, 2);
         }
     }
 
@@ -331,7 +331,7 @@ public class AnnotationUtils {
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, getStyleSheet());
         addImageAndLabel(buffer, null, 
-        		fileUrl("errorwarning_tab.gif").toExternalForm(),
+                fileUrl("errorwarning_tab.gif").toExternalForm(),
                 16, 16, "Multiple messages at this line:", 20, 2);
         buffer.append("<hr/>");
         for (Annotation message: messages) {

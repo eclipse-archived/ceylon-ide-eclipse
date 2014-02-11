@@ -13,7 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 
 
 public class SourceCodeVirtualFile implements VirtualFile {
-	
+    
     public static final List<VirtualFile> EMPTY_CHILDREN = unmodifiableList( new ArrayList<VirtualFile>(0) );
     
     private InputStream stream;

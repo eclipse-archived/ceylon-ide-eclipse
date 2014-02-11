@@ -90,44 +90,44 @@ public class ImportProposals {
     }
     
     private static ICompletionProposal createImportProposal(Tree.CompilationUnit cu, 
-    		IFile file, Declaration declaration) {
+            IFile file, Declaration declaration) {
         TextFileChange change = new TextFileChange("Add Import", file);
         IDocument doc = CreateProposal.getDocument(change);
         List<InsertEdit> ies = importEdit(cu, Collections.singleton(declaration), 
-        		null, null, doc);
+                null, null, doc);
         if (ies.isEmpty()) return null;
-		change.setEdit(new MultiTextEdit());
-		for (InsertEdit ie: ies) change.addEdit(ie);
+        change.setEdit(new MultiTextEdit());
+        for (InsertEdit ie: ies) change.addEdit(ie);
         String proposedName = declaration.getName();
-		/*String brokenName = id.getText();
+        /*String brokenName = id.getText();
         if (!brokenName.equals(proposedName)) {
-		    change.addEdit(new ReplaceEdit(id.getStartIndex(), brokenName.length(), 
-		            proposedName));
-		}*/
+            change.addEdit(new ReplaceEdit(id.getStartIndex(), brokenName.length(), 
+                    proposedName));
+        }*/
         return new CorrectionProposal("Add import of '" + proposedName + "'" + 
                 " in package " + declaration.getUnit().getPackage().getNameAsString(), 
                 change, CeylonLabelProvider.IMPORT);
     }
 
-	public static List<InsertEdit> importEdit(Tree.CompilationUnit cu,
-			Iterable<Declaration> declarations, Iterable<String> aliases,
-			Declaration declarationBeingDeleted, IDocument doc) {
-		List<InsertEdit> result = new ArrayList<InsertEdit>();
-		Set<Package> packages = new HashSet<Package>();
-		for (Declaration declaration: declarations) {
-			packages.add(declaration.getUnit().getPackage());
-		}
-		for (Package p: packages) {
-			StringBuilder text = new StringBuilder();
-			if (aliases==null) {
-			    for (Declaration d: declarations) {
-			        if (d.getUnit().getPackage().equals(p)) {
-			            text.append(", ").append(escapeName(d));
-			        }
-			    }
-			}
-			else {
-		        Iterator<String> aliasIter = aliases.iterator();
+    public static List<InsertEdit> importEdit(Tree.CompilationUnit cu,
+            Iterable<Declaration> declarations, Iterable<String> aliases,
+            Declaration declarationBeingDeleted, IDocument doc) {
+        List<InsertEdit> result = new ArrayList<InsertEdit>();
+        Set<Package> packages = new HashSet<Package>();
+        for (Declaration declaration: declarations) {
+            packages.add(declaration.getUnit().getPackage());
+        }
+        for (Package p: packages) {
+            StringBuilder text = new StringBuilder();
+            if (aliases==null) {
+                for (Declaration d: declarations) {
+                    if (d.getUnit().getPackage().equals(p)) {
+                        text.append(", ").append(escapeName(d));
+                    }
+                }
+            }
+            else {
+                Iterator<String> aliasIter = aliases.iterator();
                 for (Declaration d: declarations) {
                     String alias = aliasIter.next();
                     if (d.getUnit().getPackage().equals(p)) {
@@ -138,50 +138,50 @@ public class ImportProposals {
                         text.append(escapeName(d));
                     }
                 }
-			}
-			Tree.Import importNode = findImportNode(cu, p.getNameAsString());
-			if (importNode!=null) {
-				Tree.ImportMemberOrTypeList imtl = 
-						importNode.getImportMemberOrTypeList();
-				if (imtl.getImportWildcard()!=null) {
-					//Do nothing
-				}
-				else {
-					int insertPosition = 
-							getBestImportMemberInsertPosition(importNode);
-					if (declarationBeingDeleted!=null &&
-						imtl.getImportMemberOrTypes().size()==1 &&
-						imtl.getImportMemberOrTypes().get(0).getDeclarationModel()
-							.equals(declarationBeingDeleted)) {
-						text.delete(0, 2);
-					}
-					result.add(new InsertEdit(insertPosition, 
-							text.toString()));
-				}
-			} 
-			else {
-				int insertPosition = getBestImportInsertPosition(cu);
-				text.delete(0, 2);
-				text.insert(0, "import " + escapePackageName(p) + " { ")
-				    .append(" }"); 
-				String delim = Indents.getDefaultLineDelimiter(doc);
-				if (insertPosition==0) {
-					text.append(delim);
-				}
-				else {
-					text.insert(0, delim);
-				}
-				result.add(new InsertEdit(insertPosition, 
-						text.toString()));
-			}
-		}
-		return result;
-	}
+            }
+            Tree.Import importNode = findImportNode(cu, p.getNameAsString());
+            if (importNode!=null) {
+                Tree.ImportMemberOrTypeList imtl = 
+                        importNode.getImportMemberOrTypeList();
+                if (imtl.getImportWildcard()!=null) {
+                    //Do nothing
+                }
+                else {
+                    int insertPosition = 
+                            getBestImportMemberInsertPosition(importNode);
+                    if (declarationBeingDeleted!=null &&
+                        imtl.getImportMemberOrTypes().size()==1 &&
+                        imtl.getImportMemberOrTypes().get(0).getDeclarationModel()
+                            .equals(declarationBeingDeleted)) {
+                        text.delete(0, 2);
+                    }
+                    result.add(new InsertEdit(insertPosition, 
+                            text.toString()));
+                }
+            } 
+            else {
+                int insertPosition = getBestImportInsertPosition(cu);
+                text.delete(0, 2);
+                text.insert(0, "import " + escapePackageName(p) + " { ")
+                    .append(" }"); 
+                String delim = Indents.getDefaultLineDelimiter(doc);
+                if (insertPosition==0) {
+                    text.append(delim);
+                }
+                else {
+                    text.insert(0, delim);
+                }
+                result.add(new InsertEdit(insertPosition, 
+                        text.toString()));
+            }
+        }
+        return result;
+    }
     
     public static List<TextEdit> importEditForMove(Tree.CompilationUnit cu,
             Iterable<Declaration> declarations, Iterable<String> aliases,
             String newPackageName, String oldPackageName, IDocument doc) {
-    	String delim = Indents.getDefaultLineDelimiter(doc);
+        String delim = Indents.getDefaultLineDelimiter(doc);
         List<TextEdit> result = new ArrayList<TextEdit>();
         Set<Declaration> set = new HashSet<Declaration>();
         for (Declaration d: declarations) {
@@ -207,11 +207,11 @@ public class ImportProposals {
         Tree.Import oldImportNode = findImportNode(cu, oldPackageName);
         if (oldImportNode!=null) {
             Tree.ImportMemberOrTypeList imtl = 
-            		oldImportNode.getImportMemberOrTypeList();
+                    oldImportNode.getImportMemberOrTypeList();
             if (imtl!=null) {
                 int remaining = 0;
                 for (Tree.ImportMemberOrType imt: 
-                	    imtl.getImportMemberOrTypes()) {
+                        imtl.getImportMemberOrTypes()) {
                     if (!set.contains(imt.getDeclarationModel())) {
                         remaining++;
                     }
@@ -224,7 +224,7 @@ public class ImportProposals {
                     //TODO: format it better!!!!
                     StringBuilder sb = new StringBuilder("{").append(delim);
                     for (Tree.ImportMemberOrType imt: 
-                    	    imtl.getImportMemberOrTypes()) {
+                            imtl.getImportMemberOrTypes()) {
                         if (!set.contains(imt.getDeclarationModel())) {
                             sb.append(getDefaultIndent());
                             if (imt.getAlias()!=null) {
@@ -249,13 +249,13 @@ public class ImportProposals {
             Tree.Import importNode = findImportNode(cu, newPackageName);
             if (importNode!=null) {
                 Tree.ImportMemberOrTypeList imtl = 
-                		importNode.getImportMemberOrTypeList();
+                        importNode.getImportMemberOrTypeList();
                 if (imtl.getImportWildcard()!=null) {
                     //Do nothing
                 }
                 else {
                     int insertPosition = 
-                    		getBestImportMemberInsertPosition(importNode);
+                            getBestImportMemberInsertPosition(importNode);
                     result.add(new InsertEdit(insertPosition, text.toString()));
                 }
             } 
@@ -282,22 +282,22 @@ public class ImportProposals {
     }
 
     public static Tree.Import findImportNode(Tree.CompilationUnit cu, 
-    		String packageName) {
+            String packageName) {
         FindImportNodeVisitor visitor = 
-        		new FindImportNodeVisitor(packageName);
+                new FindImportNodeVisitor(packageName);
         cu.visit(visitor);
         return visitor.getResult();
     }
 
     private static int getBestImportMemberInsertPosition(Tree.Import importNode) {
-    	Tree.ImportMemberOrTypeList imtl = 
-    			importNode.getImportMemberOrTypeList();
+        Tree.ImportMemberOrTypeList imtl = 
+                importNode.getImportMemberOrTypeList();
         if (imtl.getImportWildcard()!=null) {
             return imtl.getImportWildcard().getStartIndex();
         }
         else {
             List<Tree.ImportMemberOrType> imts = 
-            		imtl.getImportMemberOrTypes();
+                    imtl.getImportMemberOrTypes();
             if (imts.isEmpty()) {
                 return imtl.getStartIndex()+1;
             }
@@ -307,96 +307,96 @@ public class ImportProposals {
         }
     }
 
-	public static int applyImports(TextChange change,
-			Set<Declaration> alreadyImported, 
-			Tree.CompilationUnit cu, IDocument doc) {
-		return applyImports(change, alreadyImported, null, cu, doc);
-	}
-	
-	public static int applyImports(TextChange change,
-			Set<Declaration> alreadyImported, 
-			Declaration declarationBeingDeleted,
-			Tree.CompilationUnit cu, IDocument doc) {
-		int il=0;
-		for (InsertEdit ie: importEdit(cu, alreadyImported, 
-				null, declarationBeingDeleted, doc)) {
-			il+=ie.getText().length();
-			change.addEdit(ie);
-		}
-		return il;
-	}
+    public static int applyImports(TextChange change,
+            Set<Declaration> alreadyImported, 
+            Tree.CompilationUnit cu, IDocument doc) {
+        return applyImports(change, alreadyImported, null, cu, doc);
+    }
+    
+    public static int applyImports(TextChange change,
+            Set<Declaration> alreadyImported, 
+            Declaration declarationBeingDeleted,
+            Tree.CompilationUnit cu, IDocument doc) {
+        int il=0;
+        for (InsertEdit ie: importEdit(cu, alreadyImported, 
+                null, declarationBeingDeleted, doc)) {
+            il+=ie.getText().length();
+            change.addEdit(ie);
+        }
+        return il;
+    }
 
-	public static void importSignatureTypes(Declaration declaration, 
-			Tree.CompilationUnit rootNode, Set<Declaration> declarations) {
-		if (declaration instanceof TypedDeclaration) {
-			importType(declarations, ((TypedDeclaration) declaration).getType(), 
-					rootNode);
-		}
-		if (declaration instanceof Functional) {
-			for (ParameterList pl: 
-				    ((Functional) declaration).getParameterLists()) {
-				for (Parameter p: pl.getParameters()) {
-				    importSignatureTypes(p.getModel(), rootNode, declarations);
-				}
-			}
-		}
-	}
-	
-	public static void importTypes(Set<Declaration> declarations, 
-			Collection<ProducedType> types, 
-			Tree.CompilationUnit rootNode) {
-		if (types==null) return;
-		for (ProducedType type: types) {
-			importType(declarations, type, rootNode);
-		}
-	}
-	
-	public static void importType(Set<Declaration> declarations, 
-			ProducedType type, 
-			Tree.CompilationUnit rootNode) {
-		if (type==null) return;
-		if (type.getDeclaration() instanceof UnionType) {
-			for (ProducedType t: 
-			    type.getDeclaration().getCaseTypes()) {
-				importType(declarations, t, rootNode);
-			}
-		}
-		else if (type.getDeclaration() instanceof IntersectionType) {
-			for (ProducedType t: 
-			    type.getDeclaration().getSatisfiedTypes()) {
-				importType(declarations, t, rootNode);
-			}
-		}
-		else {
-			TypeDeclaration td = type.getDeclaration();
-			if (td instanceof ClassOrInterface && 
-					td.isToplevel()) {
-				importDeclaration(declarations, td, rootNode);
-				for (ProducedType arg: type.getTypeArgumentList()) {
-					importType(declarations, arg, rootNode);
-				}
-			}
-		}
-	}
+    public static void importSignatureTypes(Declaration declaration, 
+            Tree.CompilationUnit rootNode, Set<Declaration> declarations) {
+        if (declaration instanceof TypedDeclaration) {
+            importType(declarations, ((TypedDeclaration) declaration).getType(), 
+                    rootNode);
+        }
+        if (declaration instanceof Functional) {
+            for (ParameterList pl: 
+                    ((Functional) declaration).getParameterLists()) {
+                for (Parameter p: pl.getParameters()) {
+                    importSignatureTypes(p.getModel(), rootNode, declarations);
+                }
+            }
+        }
+    }
+    
+    public static void importTypes(Set<Declaration> declarations, 
+            Collection<ProducedType> types, 
+            Tree.CompilationUnit rootNode) {
+        if (types==null) return;
+        for (ProducedType type: types) {
+            importType(declarations, type, rootNode);
+        }
+    }
+    
+    public static void importType(Set<Declaration> declarations, 
+            ProducedType type, 
+            Tree.CompilationUnit rootNode) {
+        if (type==null) return;
+        if (type.getDeclaration() instanceof UnionType) {
+            for (ProducedType t: 
+                type.getDeclaration().getCaseTypes()) {
+                importType(declarations, t, rootNode);
+            }
+        }
+        else if (type.getDeclaration() instanceof IntersectionType) {
+            for (ProducedType t: 
+                type.getDeclaration().getSatisfiedTypes()) {
+                importType(declarations, t, rootNode);
+            }
+        }
+        else {
+            TypeDeclaration td = type.getDeclaration();
+            if (td instanceof ClassOrInterface && 
+                    td.isToplevel()) {
+                importDeclaration(declarations, td, rootNode);
+                for (ProducedType arg: type.getTypeArgumentList()) {
+                    importType(declarations, arg, rootNode);
+                }
+            }
+        }
+    }
 
-	public static void importDeclaration(Set<Declaration> declarations,
-			Declaration declaration, Tree.CompilationUnit rootNode) {
-		Package p = declaration.getUnit().getPackage();
-		if (!p.getNameAsString().isEmpty() && 
-			!p.equals(rootNode.getUnit().getPackage()) &&
-			!p.getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
-			if (!isImported(declaration, rootNode)) {
-				declarations.add(declaration);
-			}
-		}
-	}
+    public static void importDeclaration(Set<Declaration> declarations,
+            Declaration declaration, Tree.CompilationUnit rootNode) {
+        Package p = declaration.getUnit().getPackage();
+        if (!p.getNameAsString().isEmpty() && 
+            !p.equals(rootNode.getUnit().getPackage()) &&
+            !p.getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
+            if (!isImported(declaration, rootNode)) {
+                declarations.add(declaration);
+            }
+        }
+    }
 
     public static boolean isImported(Declaration declaration,
             Tree.CompilationUnit rootNode) {
         for (Import i: rootNode.getUnit().getImports()) {
-        	if (i.getDeclaration().equals(getAbstraction(declaration))) {
-        		return true;
-        	}
+            if (i.getDeclaration().equals(getAbstraction(declaration))) {
+                return true;
+            }
         }
         return false;
     }

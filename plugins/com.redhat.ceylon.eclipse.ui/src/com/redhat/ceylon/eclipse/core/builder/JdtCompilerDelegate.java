@@ -50,32 +50,32 @@ import com.sun.tools.javac.util.Position;
 import com.sun.tools.javac.util.Position.LineMap;
 
 final class JdtCompilerDelegate implements CompilerDelegate {
-	private final JDTModelLoader modelLoader;
-	private final IProject project;
-	private final TypeChecker typeChecker;
-	private final WeakReference<com.sun.tools.javac.util.Context> contextRef;
+    private final JDTModelLoader modelLoader;
+    private final IProject project;
+    private final TypeChecker typeChecker;
+    private final WeakReference<com.sun.tools.javac.util.Context> contextRef;
 
-	JdtCompilerDelegate(JDTModelLoader modelLoader,
-			IProject project, TypeChecker typeChecker,
-			com.sun.tools.javac.util.Context context) {
-		this.modelLoader = modelLoader;
-		this.project = project;
-		this.typeChecker = typeChecker;
-		contextRef = new WeakReference<Context>(context);
-	}
+    JdtCompilerDelegate(JDTModelLoader modelLoader,
+            IProject project, TypeChecker typeChecker,
+            com.sun.tools.javac.util.Context context) {
+        this.modelLoader = modelLoader;
+        this.project = project;
+        this.typeChecker = typeChecker;
+        contextRef = new WeakReference<Context>(context);
+    }
 
-	@Override
-	public ModuleManager getModuleManager() {
-	    return typeChecker.getPhasedUnits().getModuleManager();
-	}
+    @Override
+    public ModuleManager getModuleManager() {
+        return typeChecker.getPhasedUnits().getModuleManager();
+    }
 
-	@Override
-	public PhasedUnit getExternalSourcePhasedUnit(
-	        VirtualFile srcDir, VirtualFile file) {
-	    return typeChecker.getPhasedUnits()
-	    		.getPhasedUnitFromRelativePath(computeRelativePath(file, srcDir));
-	}
-	
+    @Override
+    public PhasedUnit getExternalSourcePhasedUnit(
+            VirtualFile srcDir, VirtualFile file) {
+        return typeChecker.getPhasedUnits()
+                .getPhasedUnitFromRelativePath(computeRelativePath(file, srcDir));
+    }
+    
     @Override
     public void typeCheck(java.util.List<PhasedUnit> listOfUnits) {
         Context context = contextRef.get();

@@ -255,9 +255,9 @@ class FindOccurrenceLocationVisitor extends Visitor
     }
    
     public void visit(Tree.DocLink that) {
-    	if (this.node instanceof Tree.DocLink) {
+        if (this.node instanceof Tree.DocLink) {
             occurrence = DOCLINK;
-    	}
+        }
     }
     
     private boolean inBounds(Node that) {

@@ -32,54 +32,54 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 
 class PresentationDamageRepairer implements IPresentationDamager, 
         IPresentationRepairer {
-	
+    
     private volatile List<CommonToken> tokens;
     private final CeylonEditor editor;
     private IDocument document;
     
-	PresentationDamageRepairer(ISourceViewer sourceViewer, CeylonEditor editor) {
-		this.editor = editor;
-	}
-	
-	public IRegion getDamageRegion(ITypedRegion partition, 
-			DocumentEvent event, boolean documentPartitioningChanged) {
+    PresentationDamageRepairer(ISourceViewer sourceViewer, CeylonEditor editor) {
+        this.editor = editor;
+    }
+    
+    public IRegion getDamageRegion(ITypedRegion partition, 
+            DocumentEvent event, boolean documentPartitioningChanged) {
 
-		if (tokens==null) {
-			//parse and color the whole document the first time!
-			return partition;
-		}
-		
-		if (noTextChange(event)) {
-			//it was a change to annotations - don't reparse
-			return new Region(event.getOffset(), 
-					event.getLength());
-		}
-		
-		int i = getTokenIndexAtCharacter(tokens, event.getOffset()-1);
-		if (i<0) i=-i;
-		CommonToken t = tokens.get(i);
-		if (isWithinExistingToken(event, t)) {
-			if (isWithinTokenChange(event, t)) {
-				//the edit just changes the text inside
-				//a token, leaving the rest of the
-				//document structure unchanged
-				return new Region(event.getOffset(), 
-						event.getText().length());
-			}
-		}
-		return partition;
-	}
+        if (tokens==null) {
+            //parse and color the whole document the first time!
+            return partition;
+        }
+        
+        if (noTextChange(event)) {
+            //it was a change to annotations - don't reparse
+            return new Region(event.getOffset(), 
+                    event.getLength());
+        }
+        
+        int i = getTokenIndexAtCharacter(tokens, event.getOffset()-1);
+        if (i<0) i=-i;
+        CommonToken t = tokens.get(i);
+        if (isWithinExistingToken(event, t)) {
+            if (isWithinTokenChange(event, t)) {
+                //the edit just changes the text inside
+                //a token, leaving the rest of the
+                //document structure unchanged
+                return new Region(event.getOffset(), 
+                        event.getText().length());
+            }
+        }
+        return partition;
+    }
 
-	public boolean isWithinExistingToken(DocumentEvent event, 
-			CommonToken t) {
-	    int eventStart = event.getOffset();
-	    int eventStop = event.getOffset()+event.getLength();
-	    int tokenStart = t.getStartIndex();
-	    int tokenStop = t.getStopIndex()+1;
-	    switch (t.getType()) {
-	    case CeylonLexer.MULTI_COMMENT:
-	        return tokenStart<=eventStart-2 && 
-	                tokenStop>=eventStop+2;
+    public boolean isWithinExistingToken(DocumentEvent event, 
+            CommonToken t) {
+        int eventStart = event.getOffset();
+        int eventStop = event.getOffset()+event.getLength();
+        int tokenStart = t.getStartIndex();
+        int tokenStop = t.getStopIndex()+1;
+        switch (t.getType()) {
+        case CeylonLexer.MULTI_COMMENT:
+            return tokenStart<=eventStart-2 && 
+                    tokenStop>=eventStop+2;
         case CeylonLexer.VERBATIM_STRING:
         case CeylonLexer.AVERBATIM_STRING:
             return tokenStart<=eventStart-3 && 
@@ -98,28 +98,28 @@ class PresentationDamageRepairer implements IPresentationDamager,
         default:
             return tokenStart<=eventStart && 
                     tokenStop>=eventStop;
-	    }
-	}
+        }
+    }
 
-	public boolean isWithinTokenChange(DocumentEvent event,
-			CommonToken t) {
-		switch (t.getType()) {
-		case CeylonLexer.WS:
-			for (char c: event.getText().toCharArray()) {
-				if (!Character.isWhitespace(c)) {
-					return false;
-				}
-			}
-			break;
-		case CeylonLexer.UIDENTIFIER:
-		case CeylonLexer.LIDENTIFIER:
-			for (char c: event.getText().toCharArray()) {
-				if (!Character.isJavaIdentifierPart(c)) {
-					return false;
-				}
-			}
-			break;
-		case CeylonLexer.STRING_LITERAL:
+    public boolean isWithinTokenChange(DocumentEvent event,
+            CommonToken t) {
+        switch (t.getType()) {
+        case CeylonLexer.WS:
+            for (char c: event.getText().toCharArray()) {
+                if (!Character.isWhitespace(c)) {
+                    return false;
+                }
+            }
+            break;
+        case CeylonLexer.UIDENTIFIER:
+        case CeylonLexer.LIDENTIFIER:
+            for (char c: event.getText().toCharArray()) {
+                if (!Character.isJavaIdentifierPart(c)) {
+                    return false;
+                }
+            }
+            break;
+        case CeylonLexer.STRING_LITERAL:
         case CeylonLexer.ASTRING_LITERAL:
         case CeylonLexer.VERBATIM_STRING:
         case CeylonLexer.AVERBATIM_STRING:
@@ -133,88 +133,88 @@ class PresentationDamageRepairer implements IPresentationDamager,
             }
             break;
         case CeylonLexer.CHAR_LITERAL:
-			for (char c: event.getText().toCharArray()) {
-				if (c=='\'') {
-					return false;
-				}
-			}
-			break;
-		case CeylonLexer.MULTI_COMMENT:
-			for (char c: event.getText().toCharArray()) {
-				if (c=='/'||c=='*') {
-					return false;
-				}
-			}
-			break;
-		case CeylonLexer.LINE_COMMENT:
-			for (char c: event.getText().toCharArray()) {
-				if (c=='\n'||c=='\f'||c=='\r') {
-					return false;
-				}
-			}
-			break;
-		default:
-			return false;
-		}
-		return true;
-	}
-	
-	public void createPresentation(TextPresentation presentation, 
-			ITypedRegion damage) {
-		ANTLRStringStream input = new ANTLRStringStream(document.get());
-		CeylonLexer lexer = new CeylonLexer(input);
-		CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-		
-		CeylonParser parser = new CeylonParser(tokenStream);
-		try {
-		    parser.compilationUnit();
-		}
-		catch (RecognitionException e) {
-		    throw new RuntimeException(e);
-		}
-		
-		//it sounds strange, but it's better to parse
-		//and cache here than in getDamageRegion(),
-		//because these methods get called in strange
-		//orders
-		tokens = tokenStream.getTokens();
-		
-		highlightTokens(presentation, damage);
-	}
+            for (char c: event.getText().toCharArray()) {
+                if (c=='\'') {
+                    return false;
+                }
+            }
+            break;
+        case CeylonLexer.MULTI_COMMENT:
+            for (char c: event.getText().toCharArray()) {
+                if (c=='/'||c=='*') {
+                    return false;
+                }
+            }
+            break;
+        case CeylonLexer.LINE_COMMENT:
+            for (char c: event.getText().toCharArray()) {
+                if (c=='\n'||c=='\f'||c=='\r') {
+                    return false;
+                }
+            }
+            break;
+        default:
+            return false;
+        }
+        return true;
+    }
+    
+    public void createPresentation(TextPresentation presentation, 
+            ITypedRegion damage) {
+        ANTLRStringStream input = new ANTLRStringStream(document.get());
+        CeylonLexer lexer = new CeylonLexer(input);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        
+        CeylonParser parser = new CeylonParser(tokenStream);
+        try {
+            parser.compilationUnit();
+        }
+        catch (RecognitionException e) {
+            throw new RuntimeException(e);
+        }
+        
+        //it sounds strange, but it's better to parse
+        //and cache here than in getDamageRegion(),
+        //because these methods get called in strange
+        //orders
+        tokens = tokenStream.getTokens();
+        
+        highlightTokens(presentation, damage);
+    }
 
-	private void highlightTokens(TextPresentation presentation,
-			ITypedRegion damage) {
-		//int prevStartOffset= -1;
-		//int prevEndOffset= -1;
-		boolean inMetaLiteral=false;
-		int inInterpolated=0;
-		boolean afterMemberOp = false;
-		//start iterating tokens
-		Iterator<CommonToken> iter = tokens.iterator();
-		if (iter!=null) {
-			while (iter.hasNext()) {
-				CommonToken token= iter.next();
-				int tt = token.getType();
+    private void highlightTokens(TextPresentation presentation,
+            ITypedRegion damage) {
+        //int prevStartOffset= -1;
+        //int prevEndOffset= -1;
+        boolean inMetaLiteral=false;
+        int inInterpolated=0;
+        boolean afterMemberOp = false;
+        //start iterating tokens
+        Iterator<CommonToken> iter = tokens.iterator();
+        if (iter!=null) {
+            while (iter.hasNext()) {
+                CommonToken token= iter.next();
+                int tt = token.getType();
                 if (tt==CeylonLexer.EOF) {
-					break;
-				}
+                    break;
+                }
                 switch (tt) {
                 case CeylonParser.BACKTICK:
-				    inMetaLiteral = !inMetaLiteral;
-				    break;
+                    inMetaLiteral = !inMetaLiteral;
+                    break;
                 case CeylonParser.STRING_START:
                     inInterpolated++;
                     break;
                 case CeylonParser.STRING_END:
                     inInterpolated--;
                     break;
-				}
-				
-				int startOffset= token.getStartIndex();
-				int endOffset= token.getStopIndex()+1;
-				if (endOffset<damage.getOffset()) continue;
-				if (startOffset>damage.getOffset()+damage.getLength()) break;
-				
+                }
+                
+                int startOffset= token.getStartIndex();
+                int endOffset= token.getStopIndex()+1;
+                if (endOffset<damage.getOffset()) continue;
+                if (startOffset>damage.getOffset()+damage.getLength()) break;
+                
                 switch (tt) {
                 case CeylonParser.STRING_MID:
                     endOffset-=2; startOffset+=2; 
@@ -226,30 +226,30 @@ class PresentationDamageRepairer implements IPresentationDamager,
                     startOffset+=2; 
                     break;
                 }
-				/*if (startOffset <= prevEndOffset && 
-						endOffset >= prevStartOffset) {
-					//this case occurs when applying a
-					//quick fix, and causes an error
-					//from SWT if we let it through
-					continue;
-				}*/
-				if (tt==CeylonParser.STRING_MID ||
-				    tt==CeylonParser.STRING_END) {
+                /*if (startOffset <= prevEndOffset && 
+                        endOffset >= prevStartOffset) {
+                    //this case occurs when applying a
+                    //quick fix, and causes an error
+                    //from SWT if we let it through
+                    continue;
+                }*/
+                if (tt==CeylonParser.STRING_MID ||
+                    tt==CeylonParser.STRING_END) {
                     changeTokenPresentation(presentation,
                             getInterpolationColoring(),
                             startOffset-2,startOffset-1,
                             inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
-				}
-				changeTokenPresentation(presentation, 
-						afterMemberOp && tt==CeylonLexer.LIDENTIFIER ?
-						        getMemberColoring() : getColoring(token), 
-						startOffset, endOffset,
-						inMetaLiteral || inInterpolated>1 ||
-						    inInterpolated>0
-						        && tt!=CeylonParser.STRING_START
-						        && tt!=CeylonParser.STRING_MID
-						        && tt!=CeylonParser.STRING_END? 
-						            SWT.ITALIC : SWT.NORMAL);
+                }
+                changeTokenPresentation(presentation, 
+                        afterMemberOp && tt==CeylonLexer.LIDENTIFIER ?
+                                getMemberColoring() : getColoring(token), 
+                        startOffset, endOffset,
+                        inMetaLiteral || inInterpolated>1 ||
+                            inInterpolated>0
+                                && tt!=CeylonParser.STRING_START
+                                && tt!=CeylonParser.STRING_MID
+                                && tt!=CeylonParser.STRING_END? 
+                                    SWT.ITALIC : SWT.NORMAL);
                 if (tt==CeylonParser.STRING_MID ||
                     tt==CeylonParser.STRING_START) {
                     changeTokenPresentation(presentation, 
@@ -257,50 +257,50 @@ class PresentationDamageRepairer implements IPresentationDamager,
                             endOffset+1,endOffset+2,
                             inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
                 }
-				//prevStartOffset= startOffset;
-				//prevEndOffset= endOffset;
+                //prevStartOffset= startOffset;
+                //prevEndOffset= endOffset;
                 afterMemberOp = tt==CeylonLexer.MEMBER_OP ||
-                		        tt==CeylonLexer.SAFE_MEMBER_OP||
-                		        tt==CeylonLexer.SPREAD_OP;
-			}
-		}
-	}
-	
+                                tt==CeylonLexer.SAFE_MEMBER_OP||
+                                tt==CeylonLexer.SPREAD_OP;
+            }
+        }
+    }
+    
     private void changeTokenPresentation(TextPresentation presentation, 
-    		TextAttribute attribute, int startOffset, int endOffset,
-    		int extraStyle) {
-    	
-		StyleRange styleRange= new StyleRange(startOffset, 
-        		endOffset-startOffset,
+            TextAttribute attribute, int startOffset, int endOffset,
+            int extraStyle) {
+        
+        StyleRange styleRange= new StyleRange(startOffset, 
+                endOffset-startOffset,
                 attribute==null ? null : attribute.getForeground(),
                 attribute==null ? null : attribute.getBackground(),
                 attribute==null ? extraStyle : attribute.getStyle()|extraStyle);
-		
-		if (editor!=null) {
-		    LinkedModeModel linkedMode = editor.getLinkedMode();
-		    if (linkedMode!=null &&
-		            (linkedMode.anyPositionContains(startOffset) ||
-		                    linkedMode.anyPositionContains(endOffset))) {
-		        return;
-		    }
-		}
-		
-		presentation.addStyleRange(styleRange);
+        
+        if (editor!=null) {
+            LinkedModeModel linkedMode = editor.getLinkedMode();
+            if (linkedMode!=null &&
+                    (linkedMode.anyPositionContains(startOffset) ||
+                            linkedMode.anyPositionContains(endOffset))) {
+                return;
+            }
+        }
+        
+        presentation.addStyleRange(styleRange);
         
     }
 
     private boolean noTextChange(DocumentEvent event) {
-		try {
-			return document.get(event.getOffset(), event.getLength())
-					.equals(event.getText());
-		} 
-		catch (BadLocationException e) {
-			return false;
-		}
-	}
-	
-	public void setDocument(IDocument document) {
-	    this.document = document;
-	}
-	
+        try {
+            return document.get(event.getOffset(), event.getLength())
+                    .equals(event.getText());
+        } 
+        catch (BadLocationException e) {
+            return false;
+        }
+    }
+    
+    public void setDocument(IDocument document) {
+        this.document = document;
+    }
+    
 }

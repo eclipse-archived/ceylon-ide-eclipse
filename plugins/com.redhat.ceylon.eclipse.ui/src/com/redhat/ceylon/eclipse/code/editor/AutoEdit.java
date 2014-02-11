@@ -37,32 +37,32 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class AutoEdit extends Indents {
-	
-	public AutoEdit(IDocument document, List<CommonToken> tokens,
-			DocumentCommand command) {
-		this.document = document;
-		this.tokens = tokens;
-		this.command = command;
-	}
+    
+    public AutoEdit(IDocument document, List<CommonToken> tokens,
+            DocumentCommand command) {
+        this.document = document;
+        this.tokens = tokens;
+        this.command = command;
+    }
 
-	private IDocument document;
-	private List<CommonToken> tokens;
-	private DocumentCommand command;
-	
+    private IDocument document;
+    private List<CommonToken> tokens;
+    private DocumentCommand command;
+    
     //TODO: when pasting inside an existing string literal, should
     //      we automagically escape unescaped quotes in the pasted
     //      text?
     
     public void customizeDocumentCommand() {
-    	
+        
         //Note that IMP's Correct Indentation sends us a tab
-    	//character at the start of each line of selected
-    	//text. This is amazingly sucky because it's very
-    	//difficult to distinguish Correct Indentation from
-    	//an actual typed tab.
-    	//Note also that typed tabs are replaced with spaces
-    	//before this method is called if the spacesfortabs 
-    	//setting is enabled.
+        //character at the start of each line of selected
+        //text. This is amazingly sucky because it's very
+        //difficult to distinguish Correct Indentation from
+        //an actual typed tab.
+        //Note also that typed tabs are replaced with spaces
+        //before this method is called if the spacesfortabs 
+        //setting is enabled.
         if (command.doit == false) {
             return;
         }
@@ -79,13 +79,13 @@ class AutoEdit extends Indents {
                     command.text = getDefaultIndent().substring(overhang);
                 }
                 else {
-                	command.text = "\t";
+                    command.text = "\t";
                 }
                 smartIndentOnKeypress();
             }
             else if (isLineEnding(command.text)) {
-            	//a typed newline (might have length 1 or 2, 
-            	//depending on the platform)
+                //a typed newline (might have length 1 or 2, 
+                //depending on the platform)
                 smartIndentAfterNewline();
             }
             else if (command.text.length()==1 || 
@@ -94,7 +94,7 @@ class AutoEdit extends Indents {
                     //number of spaces to take us to the next
                     //tab stop
                     getIndentWithSpaces() && isIndent(getPrefix())) {
-            	//anything that might represent a single 
+                //anything that might represent a single 
                 //keypress or a Correct Indentation
                 smartIndentOnKeypress();
             }
@@ -103,78 +103,78 @@ class AutoEdit extends Indents {
         closeOpening();
     }
 
-	private static String[][] FENCES = {
-			{ "'", "'", CLOSE_QUOTES },
-			{ "\"", "\"", CLOSE_QUOTES },
-			{ "`", "`", CLOSE_BACKTICKS },
-			{ "<", ">", CLOSE_ANGLES },
-			{ "(", ")", CLOSE_PARENS },
-			{ "[", "]", CLOSE_BRACKETS }};
+    private static String[][] FENCES = {
+            { "'", "'", CLOSE_QUOTES },
+            { "\"", "\"", CLOSE_QUOTES },
+            { "`", "`", CLOSE_BACKTICKS },
+            { "<", ">", CLOSE_ANGLES },
+            { "(", ")", CLOSE_PARENS },
+            { "[", "]", CLOSE_BRACKETS }};
 
-	private void closeOpening() {
-		
-		try {
-			// TODO: improve this, check the surrounding token type!
-			if (command.offset>0 &&
-				document.getChar(command.offset - 1) == '\\') {
-				return;
-			}
-		} 
-		catch (BadLocationException e) {}
+    private void closeOpening() {
+        
+        try {
+            // TODO: improve this, check the surrounding token type!
+            if (command.offset>0 &&
+                document.getChar(command.offset - 1) == '\\') {
+                return;
+            }
+        } 
+        catch (BadLocationException e) {}
 
-		String current = command.text;
-		String opening = null;
-		String closing = null;
-		
-		boolean found=false;
-		IPreferenceStore store = getPreferences();
-		for (String[] type : FENCES) {
-			if (type[0].equals(current) || 
-					type[1].equals(current)) {
-			    if (store==null || store.getBoolean(type[2])) {
-			        opening = type[0];
-			        closing = type[1];
-			        found = true;
-			        break;
-			    }
-			}
-		}
-		
-		if (found) {
-		
-			if (current.equals(closing)) {
-				//typed character is a closing fence
-				try {
-					// skip one ahead if next char is already a closing fence
-					if (skipClosingFence(closing)) {
-						command.text = "";
-						command.shiftsCaret = false;
-						command.caretOffset = command.offset + 1;
-						return;
-					}
-				} 
-				catch (BadLocationException e) {}
-			}
+        String current = command.text;
+        String opening = null;
+        String closing = null;
+        
+        boolean found=false;
+        IPreferenceStore store = getPreferences();
+        for (String[] type : FENCES) {
+            if (type[0].equals(current) || 
+                    type[1].equals(current)) {
+                if (store==null || store.getBoolean(type[2])) {
+                    opening = type[0];
+                    closing = type[1];
+                    found = true;
+                    break;
+                }
+            }
+        }
+        
+        if (found) {
+        
+            if (current.equals(closing)) {
+                //typed character is a closing fence
+                try {
+                    // skip one ahead if next char is already a closing fence
+                    if (skipClosingFence(closing)) {
+                        command.text = "";
+                        command.shiftsCaret = false;
+                        command.caretOffset = command.offset + 1;
+                        return;
+                    }
+                } 
+                catch (BadLocationException e) {}
+            }
 
             if (current.equals(opening) && (!isQuotedOrCommented(command.offset) || 
-            		isGraveAccentCharacterInStringLiteral(command.offset, opening) ||
-            		isOpeningBracketInAnnotationStringLiteral(command.offset, opening))) {
-				//typed character is an opening fence
-				if (closeOpeningFence(opening, closing)) {
-					//add a closing fence
-					command.shiftsCaret = false;
-					command.caretOffset = command.offset + 1;
-				    if (isGraveAccentCharacterInStringLiteral(command.offset, opening)) {
-				        try {
-				            if (command.offset>1 &&
-				                    document.get(command.offset-1,1).equals("`") &&
-				                    !document.get(command.offset-2,1).equals("`")) {
-				            	command.text += "``";
-				            }
-				        } 
-				        catch (BadLocationException e) {}
-				    }
-				    else if (isOpeningBracketInAnnotationStringLiteral(command.offset, opening)) {
+                    isGraveAccentCharacterInStringLiteral(command.offset, opening) ||
+                    isOpeningBracketInAnnotationStringLiteral(command.offset, opening))) {
+                //typed character is an opening fence
+                if (closeOpeningFence(opening, closing)) {
+                    //add a closing fence
+                    command.shiftsCaret = false;
+                    command.caretOffset = command.offset + 1;
+                    if (isGraveAccentCharacterInStringLiteral(command.offset, opening)) {
+                        try {
+                            if (command.offset>1 &&
+                                    document.get(command.offset-1,1).equals("`") &&
+                                    !document.get(command.offset-2,1).equals("`")) {
+                                command.text += "``";
+                            }
+                        } 
+                        catch (BadLocationException e) {}
+                    }
+                    else if (isOpeningBracketInAnnotationStringLiteral(command.offset, opening)) {
                         try {
                             if (command.offset>1 &&
                                     document.get(command.offset-1,1).equals("[") &&
@@ -183,82 +183,82 @@ class AutoEdit extends Indents {
                             }
                         } 
                         catch (BadLocationException e) {}
-				    }
-				    else if (opening.equals("\"")) {
-				        try {
-				            if (command.offset<=1 ||
-				                    !document.get(command.offset-2,1).equals("\"")) {
+                    }
+                    else if (opening.equals("\"")) {
+                        try {
+                            if (command.offset<=1 ||
+                                    !document.get(command.offset-2,1).equals("\"")) {
                                 command.text += closing;
                             }
-				            else if (command.offset>1 &&
-				                    document.get(command.offset-2,2).equals("\"\"") &&
-				                    !(command.offset>2 && document.get(command.offset-3,1).equals("\""))) {
-				                command.text += "\"\"\"";
-				            }
-				        } 
-				        catch (BadLocationException e) {}
-				    }
-				    else {
-				        command.text += closing;
-				    }
-				}
-			}
+                            else if (command.offset>1 &&
+                                    document.get(command.offset-2,2).equals("\"\"") &&
+                                    !(command.offset>2 && document.get(command.offset-3,1).equals("\""))) {
+                                command.text += "\"\"\"";
+                            }
+                        } 
+                        catch (BadLocationException e) {}
+                    }
+                    else {
+                        command.text += closing;
+                    }
+                }
+            }
 
-		}
-	}
-
-    private boolean skipClosingFence(String closing) 
-    		throws BadLocationException {
-        return String.valueOf(document.getChar(command.offset))
-        		.equals(closing);
+        }
     }
 
-	private boolean closeOpeningFence(String opening, String closing) {
-		boolean closeOpening;
-		if (opening.equals(closing)) { 
-			closeOpening = count(opening)%2==0;
-		}
-		else { 
-			closeOpening = count(opening)>=count(closing);
-		}
+    private boolean skipClosingFence(String closing) 
+            throws BadLocationException {
+        return String.valueOf(document.getChar(command.offset))
+                .equals(closing);
+    }
 
-		if (opening.equals("<")) {
-			// only close angle brackets if it's after a UIdentifier
-			// if(a< -> don't close
-			// if(Some< -> close
-			// A< -> close
-			int currOfset = command.offset - 1;
-			char currChar;
-			try {
-				while (Character.isAlphabetic(currChar = 
-						document.getChar(currOfset))) {
-					currOfset--;
-				}
-				currChar = document.getChar(currOfset + 1);
-				if (!Character.isUpperCase(currChar)) {
-					closeOpening = false;
-				}
-			} catch (BadLocationException e) {
-			}
-		}
-		return closeOpening;
-	}
+    private boolean closeOpeningFence(String opening, String closing) {
+        boolean closeOpening;
+        if (opening.equals(closing)) { 
+            closeOpening = count(opening)%2==0;
+        }
+        else { 
+            closeOpening = count(opening)>=count(closing);
+        }
 
-	private String getPrefix() {
-		try {
-			int lineOffset = getStartOfCurrentLine();
-			return document.get(lineOffset, 
-					command.offset-lineOffset) + 
-					command.text;
-		} 
-		catch (BadLocationException e) {
-			return command.text;
-		}
-	}
+        if (opening.equals("<")) {
+            // only close angle brackets if it's after a UIdentifier
+            // if(a< -> don't close
+            // if(Some< -> close
+            // A< -> close
+            int currOfset = command.offset - 1;
+            char currChar;
+            try {
+                while (Character.isAlphabetic(currChar = 
+                        document.getChar(currOfset))) {
+                    currOfset--;
+                }
+                currChar = document.getChar(currOfset + 1);
+                if (!Character.isUpperCase(currChar)) {
+                    closeOpening = false;
+                }
+            } catch (BadLocationException e) {
+            }
+        }
+        return closeOpening;
+    }
+
+    private String getPrefix() {
+        try {
+            int lineOffset = getStartOfCurrentLine();
+            return document.get(lineOffset, 
+                    command.offset-lineOffset) + 
+                    command.text;
+        } 
+        catch (BadLocationException e) {
+            return command.text;
+        }
+    }
     
     private boolean isIndent(String text) {
         if (!text.isEmpty() && 
-        		text.length() % getIndentSpaces()==0) {
+                text.length() % getIndentSpaces()==0) {
             for (char c: text.toCharArray()) {
                 if (c!=' ') return false;
             }
@@ -304,31 +304,31 @@ class AutoEdit extends Indents {
 
     private boolean isStringToken(int type) {
         return type==STRING_LITERAL || 
-        		type==STRING_MID ||
-        		type==STRING_START ||
-        		type==STRING_END ||
-        		type==VERBATIM_STRING ||
-        		type==ASTRING_LITERAL ||
-        		type==AVERBATIM_STRING ||
-        		type==MULTI_COMMENT ||
-        		type==CHAR_LITERAL; //doesn't really belong here
+                type==STRING_MID ||
+                type==STRING_START ||
+                type==STRING_END ||
+                type==VERBATIM_STRING ||
+                type==ASTRING_LITERAL ||
+                type==AVERBATIM_STRING ||
+                type==MULTI_COMMENT ||
+                type==CHAR_LITERAL; //doesn't really belong here
     }
 
     private boolean isQuotedOrCommented(int offset) {
-    	return isQuoteOrCommentToken(getTokenTypeStrictlyContainingOffset(offset));
+        return isQuoteOrCommentToken(getTokenTypeStrictlyContainingOffset(offset));
     }
 
     private boolean isQuoteOrCommentToken(int type) {
         return type==STRING_LITERAL ||
-    			type==STRING_MID ||
-    			type==STRING_START ||
-    			type==STRING_END ||
-    			type==VERBATIM_STRING ||
-    			type==ASTRING_LITERAL ||
-    			type==AVERBATIM_STRING ||
-    			type==CHAR_LITERAL || 
-    			type==LINE_COMMENT ||
-    			type==MULTI_COMMENT;
+                type==STRING_MID ||
+                type==STRING_START ||
+                type==STRING_END ||
+                type==VERBATIM_STRING ||
+                type==ASTRING_LITERAL ||
+                type==AVERBATIM_STRING ||
+                type==CHAR_LITERAL || 
+                type==LINE_COMMENT ||
+                type==MULTI_COMMENT;
     }
     
     private boolean isCommentToken(int type) {
@@ -337,7 +337,7 @@ class AutoEdit extends Indents {
     }
     
     private boolean isGraveAccentCharacterInStringLiteral(int offset, 
-    		String fence) {
+            String fence) {
         if ("`".equals(fence)) {
             int type = getTokenTypeStrictlyContainingOffset(offset);
             return type == STRING_LITERAL ||
@@ -351,7 +351,7 @@ class AutoEdit extends Indents {
     }
 
     private boolean isOpeningBracketInAnnotationStringLiteral(int offset, 
-    		String fence) {
+            String fence) {
         if ("[".equals(fence)) {
             int type = getTokenTypeStrictlyContainingOffset(offset);
             //damn, AutoEdit can now no longer 
@@ -365,127 +365,127 @@ class AutoEdit extends Indents {
     }
     
     private boolean isInUnterminatedMultilineComment(int offset, 
-    		IDocument d) {
-    	CommonToken token = getTokenStrictlyContainingOffset(offset);
-    	if (token==null) return false;
+            IDocument d) {
+        CommonToken token = getTokenStrictlyContainingOffset(offset);
+        if (token==null) return false;
         try {
-			return token.getType()==MULTI_COMMENT && 
-					!token.getText().endsWith("*/") &&
-					d.getLineOfOffset(offset)+1==token.getLine();
-		} 
+            return token.getType()==MULTI_COMMENT && 
+                    !token.getText().endsWith("*/") &&
+                    d.getLineOfOffset(offset)+1==token.getLine();
+        } 
         catch (BadLocationException e) {
-			return false;
-		}
+            return false;
+        }
     }
     
     private String getRelativeIndent(int offset) {
-    	int indent = getStringOrCommentIndent(offset);
+        int indent = getStringOrCommentIndent(offset);
         try {
-        	IRegion li = document.getLineInformationOfOffset(offset);
-	        StringBuilder result = new StringBuilder();
-        	for (int i = li.getOffset()+indent;
-	        	document.getChar(i++)==' ';) {
-	        	result.append(' ');
-	        }
-	        return result.toString();
+            IRegion li = document.getLineInformationOfOffset(offset);
+            StringBuilder result = new StringBuilder();
+            for (int i = li.getOffset()+indent;
+                document.getChar(i++)==' ';) {
+                result.append(' ');
+            }
+            return result.toString();
         }
         catch (BadLocationException e) {
-	        e.printStackTrace();
-	        return "";
+            e.printStackTrace();
+            return "";
         }
     }
 
     private int getTokenTypeStrictlyContainingOffset(int offset) {
-    	CommonToken token = getTokenStrictlyContainingOffset(offset);
-		return token==null ? -1 : token.getType();
+        CommonToken token = getTokenStrictlyContainingOffset(offset);
+        return token==null ? -1 : token.getType();
     }
     
     private int getTokenTypeOfCharacterAtOffset(int offset) {
-		int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
-		if (tokenIndex>=0) {
-			CommonToken token = tokens.get(tokenIndex);
-			return token.getType();
-		}
-		return -1;
+        int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
+        if (tokenIndex>=0) {
+            CommonToken token = tokens.get(tokenIndex);
+            return token.getType();
+        }
+        return -1;
     }
     
-	private CommonToken getTokenStrictlyContainingOffset(int offset) {
+    private CommonToken getTokenStrictlyContainingOffset(int offset) {
         List<CommonToken> tokens = getTokens();
-		if (tokens!=null) {
-    		if (tokens.size()>1) {
-    			if (tokens.get(tokens.size()-1).getStartIndex()==offset) { //at very end of file
-    				//check to see if last token is an
-    				//unterminated string or comment
-    			    //Note: ANTLR sometimes sends me 2 EOFs, 
-    			    //      so do this:
-    			    CommonToken token = null;
-    			    for (int i=1; 
-    			    		token==null || token.getType()==EOF; 
-    			    		i++) {
-    			        token = tokens.get(tokens.size()-i);
-    			    }
-    				int type = token==null ? -1 : token.getType();
-    				if ((type==STRING_LITERAL ||
-    						type==STRING_END ||
-    						type==ASTRING_LITERAL) && 
-    						(!token.getText().endsWith("\"") ||
-    						token.getText().length()==1) ||
-    						(type==VERBATIM_STRING || type==AVERBATIM_STRING) && 
-    						(!token.getText().endsWith("\"\"\"")||
-    						token.getText().length()==3) ||
-    						(type==MULTI_COMMENT) && 
-    						(!token.getText().endsWith("*/")||
-    						token.getText().length()==2) ||
-    						type==LINE_COMMENT) {
-    					return token;
-    				}
-    			}
-    			else {
-    				int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
-    				if (tokenIndex>=0) {
-    					CommonToken token = tokens.get(tokenIndex);
-    					if (token.getStartIndex()<offset) {
-    						return token;
-    					}
-    				}
-    			}
-    		}
+        if (tokens!=null) {
+            if (tokens.size()>1) {
+                if (tokens.get(tokens.size()-1).getStartIndex()==offset) { //at very end of file
+                    //check to see if last token is an
+                    //unterminated string or comment
+                    //Note: ANTLR sometimes sends me 2 EOFs, 
+                    //      so do this:
+                    CommonToken token = null;
+                    for (int i=1; 
+                            token==null || token.getType()==EOF; 
+                            i++) {
+                        token = tokens.get(tokens.size()-i);
+                    }
+                    int type = token==null ? -1 : token.getType();
+                    if ((type==STRING_LITERAL ||
+                            type==STRING_END ||
+                            type==ASTRING_LITERAL) && 
+                            (!token.getText().endsWith("\"") ||
+                            token.getText().length()==1) ||
+                            (type==VERBATIM_STRING || type==AVERBATIM_STRING) && 
+                            (!token.getText().endsWith("\"\"\"")||
+                            token.getText().length()==3) ||
+                            (type==MULTI_COMMENT) && 
+                            (!token.getText().endsWith("*/")||
+                            token.getText().length()==2) ||
+                            type==LINE_COMMENT) {
+                        return token;
+                    }
+                }
+                else {
+                    int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
+                    if (tokenIndex>=0) {
+                        CommonToken token = tokens.get(tokenIndex);
+                        if (token.getStartIndex()<offset) {
+                            return token;
+                        }
+                    }
+                }
+            }
         }
-		return null;
-	}
+        return null;
+    }
 
-	private int getStringOrCommentIndent(int offset) {
-		CommonToken token = getTokenStrictlyContainingOffset(offset);
-		if (token!=null) {
-			int type = token.getType();
-			int start = token.getCharPositionInLine();
-			if (token.getStartIndex()<offset) {
-			    switch (type) {
-			    case STRING_LITERAL:
-			    case STRING_START:
-			    case ASTRING_LITERAL:
-			        return start+1;
-			    case STRING_MID:
-			    case STRING_END:
-			    case MULTI_COMMENT:
+    private int getStringOrCommentIndent(int offset) {
+        CommonToken token = getTokenStrictlyContainingOffset(offset);
+        if (token!=null) {
+            int type = token.getType();
+            int start = token.getCharPositionInLine();
+            if (token.getStartIndex()<offset) {
+                switch (type) {
+                case STRING_LITERAL:
+                case STRING_START:
+                case ASTRING_LITERAL:
+                    return start+1;
+                case STRING_MID:
+                case STRING_END:
+                case MULTI_COMMENT:
                     return start+1;
                     //uncomment to get a bigger indent
-//			        return start+3;
-			    case VERBATIM_STRING: 
-			    case AVERBATIM_STRING:
-			        return start+3;
-			    }
-			}
-		}
-		return -1;
-	}
-	
+//                    return start+3;
+                case VERBATIM_STRING: 
+                case AVERBATIM_STRING:
+                    return start+3;
+                }
+            }
+        }
+        return -1;
+    }
+    
     private void adjustIndentOfCurrentLine()
             throws BadLocationException {
         char ch = command.text.charAt(0);
         if (isQuotedOrCommented(command.offset)) {
             if (ch=='\t' || 
-            		getIndentWithSpaces() && isIndent(getPrefix())) {
+                    getIndentWithSpaces() && isIndent(getPrefix())) {
                 fixIndentOfStringOrCommentContinuation();
             }
         }
@@ -570,8 +570,8 @@ class AutoEdit extends Indents {
                 sb.append(ws);
             }
             command.text = command.text + 
-            		sb.toString() + 
-            		getRelativeIndent(command.offset);
+                    sb.toString() + 
+                    getRelativeIndent(command.offset);
         }
         else {
             char endOfLastLineChar = getPreviousNonHiddenCharacterInLine(command.offset);
@@ -583,7 +583,7 @@ class AutoEdit extends Indents {
                     store.getBoolean(CLOSE_BRACES) && 
                             count("{")>count("}");
             int end = getEndOfCurrentLine();
-			appendIndent(command.offset, end, start, command.offset, 
+            appendIndent(command.offset, end, start, command.offset, 
                     startOfNewLineChar, endOfLastLineChar, closeBrace, buf);
             if (buf.length()>2) {
                 char ch = buf.charAt(buf.length()-1);
@@ -601,8 +601,8 @@ class AutoEdit extends Indents {
 
     private void closeUnterminatedMultlineComment() {
         if (isInUnterminatedMultilineComment(command.offset, document)) {
-        	command.shiftsCaret=false;
-        	String text = command.text;
+            command.shiftsCaret=false;
+            String text = command.text;
             command.caretOffset=command.offset+text.length();
             command.text = text +
                     text +
@@ -613,19 +613,19 @@ class AutoEdit extends Indents {
     }
     
     private int count(String token) {
-    	int count = 0;
-    	List<CommonToken> tokens = getTokens();
-		for (CommonToken tok: tokens) {
-			if (tok.getText().equals(token)) {
-				count++;
-			}
-		}
-    	return count;
+        int count = 0;
+        List<CommonToken> tokens = getTokens();
+        for (CommonToken tok: tokens) {
+            if (tok.getText().equals(token)) {
+                count++;
+            }
+        }
+        return count;
     }
 
-	private List<CommonToken> getTokens() {
-		return tokens;
-	}
+    private List<CommonToken> getTokens() {
+        return tokens;
+    }
     
     private void fixIndentOfCurrentLine()
             throws BadLocationException {
@@ -659,7 +659,7 @@ class AutoEdit extends Indents {
             
             StringBuilder buf = new StringBuilder();
             appendIndent(start, end, startOfPrev, endOfPrev, 
-            		startOfCurrentLineChar, endOfLastLineChar,
+                    startOfCurrentLineChar, endOfLastLineChar,
                     false, buf);
             
             if (opening) {
@@ -675,16 +675,16 @@ class AutoEdit extends Indents {
             int startOfPrev, int endOfPrev,
             char startOfCurrentLineChar, char endOfLastLineChar, 
             boolean closeBraces, StringBuilder buf)
-            		throws BadLocationException {
-    	CommonToken prevEnding = getPreviousNonHiddenToken(endOfPrev);
-    	CommonToken currStarting = getNextNonHiddenToken(startOfCurrent, endOfCurrent);
-    	boolean terminatedCleanly = endOfLastLineChar==';' || endOfLastLineChar==',';
-    	boolean isContinuation = !terminatedCleanly &&
-    	        //note: unfortunately we can't treat a line after a closing paren  
-    	        //      as a continuation because it might be an annotation
-    	        (isBinaryOperator(prevEnding) || isBinaryOperator(currStarting) ||
-    			        isInheritanceClause(currStarting) || 
-    			        isOperatorChar(startOfCurrentLineChar)); //to account for a previously line-commented character
+                    throws BadLocationException {
+        CommonToken prevEnding = getPreviousNonHiddenToken(endOfPrev);
+        CommonToken currStarting = getNextNonHiddenToken(startOfCurrent, endOfCurrent);
+        boolean terminatedCleanly = endOfLastLineChar==';' || endOfLastLineChar==',';
+        boolean isContinuation = !terminatedCleanly &&
+                //note: unfortunately we can't treat a line after a closing paren  
+                //      as a continuation because it might be an annotation
+                (isBinaryOperator(prevEnding) || isBinaryOperator(currStarting) ||
+                        isInheritanceClause(currStarting) || 
+                        isOperatorChar(startOfCurrentLineChar)); //to account for a previously line-commented character
         boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}' ||
                 endOfLastLineChar=='(' && startOfCurrentLineChar!=')';
         boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{' ||
@@ -696,10 +696,10 @@ class AutoEdit extends Indents {
     private boolean isInheritanceClause(CommonToken t) {
         if (t==null) return false;
         int tt = t.getType(); 
-    	return tt==CeylonLexer.EXTENDS||
-    			tt==CeylonLexer.CASE_TYPES||
-    			tt==CeylonLexer.TYPE_CONSTRAINT||
-    			tt==CeylonLexer.SATISFIES;
+        return tt==CeylonLexer.EXTENDS||
+                tt==CeylonLexer.CASE_TYPES||
+                tt==CeylonLexer.TYPE_CONSTRAINT||
+                tt==CeylonLexer.SATISFIES;
     }
     
     private boolean isOperatorChar(char ch) {
@@ -723,43 +723,43 @@ class AutoEdit extends Indents {
     private boolean isBinaryOperator(CommonToken t) {
         if (t==null) return false;
         int tt = t.getType(); 
-    	return tt==CeylonLexer.SPECIFY||
-    			tt==CeylonLexer.COMPUTE||
-    			tt==CeylonLexer.NOT_EQUAL_OP||
-    			tt==CeylonLexer.EQUAL_OP||
-    			tt==CeylonLexer.IDENTICAL_OP||
-    			tt==CeylonLexer.ADD_SPECIFY||
-    			tt==CeylonLexer.SUBTRACT_SPECIFY||
-    			tt==CeylonLexer.DIVIDE_SPECIFY||
-    			tt==CeylonLexer.MULTIPLY_SPECIFY||
-    			tt==CeylonLexer.OR_SPECIFY||
-    			tt==CeylonLexer.AND_SPECIFY||
-    			tt==CeylonLexer.COMPLEMENT_SPECIFY||
-    			tt==CeylonLexer.UNION_SPECIFY||
-    			tt==CeylonLexer.INTERSECT_SPECIFY||
-    			tt==CeylonLexer.MEMBER_OP||
-    			tt==CeylonLexer.SPREAD_OP||
-    			tt==CeylonLexer.SAFE_MEMBER_OP||
-    			tt==CeylonLexer.SUM_OP||
-    			tt==CeylonLexer.COMPLEMENT_OP||
-    			tt==CeylonLexer.DIFFERENCE_OP||
-    			tt==CeylonLexer.QUOTIENT_OP||
-    			tt==CeylonLexer.PRODUCT_OP||
-    			tt==CeylonLexer.REMAINDER_OP||
-    			tt==CeylonLexer.RANGE_OP||
-    			tt==CeylonLexer.SEGMENT_OP||
-    			tt==CeylonLexer.ENTRY_OP||
-    			tt==CeylonLexer.UNION_OP||
-    			tt==CeylonLexer.INTERSECTION_OP||
-    			tt==CeylonLexer.AND_OP||
-    			tt==CeylonLexer.OR_OP||
-    			tt==CeylonLexer.POWER_OP||
-    			tt==CeylonLexer.COMPARE_OP||
-    			tt==CeylonLexer.LARGE_AS_OP||
-    			tt==CeylonLexer.LARGER_OP||
-    			tt==CeylonLexer.SMALL_AS_OP||
-    			tt==CeylonLexer.SMALLER_OP||
-    			tt==CeylonLexer.SCALE_OP;
+        return tt==CeylonLexer.SPECIFY||
+                tt==CeylonLexer.COMPUTE||
+                tt==CeylonLexer.NOT_EQUAL_OP||
+                tt==CeylonLexer.EQUAL_OP||
+                tt==CeylonLexer.IDENTICAL_OP||
+                tt==CeylonLexer.ADD_SPECIFY||
+                tt==CeylonLexer.SUBTRACT_SPECIFY||
+                tt==CeylonLexer.DIVIDE_SPECIFY||
+                tt==CeylonLexer.MULTIPLY_SPECIFY||
+                tt==CeylonLexer.OR_SPECIFY||
+                tt==CeylonLexer.AND_SPECIFY||
+                tt==CeylonLexer.COMPLEMENT_SPECIFY||
+                tt==CeylonLexer.UNION_SPECIFY||
+                tt==CeylonLexer.INTERSECT_SPECIFY||
+                tt==CeylonLexer.MEMBER_OP||
+                tt==CeylonLexer.SPREAD_OP||
+                tt==CeylonLexer.SAFE_MEMBER_OP||
+                tt==CeylonLexer.SUM_OP||
+                tt==CeylonLexer.COMPLEMENT_OP||
+                tt==CeylonLexer.DIFFERENCE_OP||
+                tt==CeylonLexer.QUOTIENT_OP||
+                tt==CeylonLexer.PRODUCT_OP||
+                tt==CeylonLexer.REMAINDER_OP||
+                tt==CeylonLexer.RANGE_OP||
+                tt==CeylonLexer.SEGMENT_OP||
+                tt==CeylonLexer.ENTRY_OP||
+                tt==CeylonLexer.UNION_OP||
+                tt==CeylonLexer.INTERSECTION_OP||
+                tt==CeylonLexer.AND_OP||
+                tt==CeylonLexer.OR_OP||
+                tt==CeylonLexer.POWER_OP||
+                tt==CeylonLexer.COMPARE_OP||
+                tt==CeylonLexer.LARGE_AS_OP||
+                tt==CeylonLexer.LARGER_OP||
+                tt==CeylonLexer.SMALL_AS_OP||
+                tt==CeylonLexer.SMALLER_OP||
+                tt==CeylonLexer.SCALE_OP;
     }
 
 //    private void reduceIndent(DocumentCommand command) {
@@ -804,19 +804,19 @@ class AutoEdit extends Indents {
     private void appendIndent(boolean isContinuation, boolean isBeginning,
             boolean isEnding, int start, int end, boolean closeBraces, 
             StringBuilder buf) 
-            		throws BadLocationException {
+                    throws BadLocationException {
         String indent = getIndent(start, end);
         buf.append(indent);
         if (isBeginning) {
             //increment the indent level
             incrementIndent(buf, indent);
             if (closeBraces) {
-            	command.shiftsCaret=false;
-            	command.caretOffset=command.offset+buf.length();
-            	int line = document.getLineOfOffset(start);
-            	buf.append(getLineDelimiter(document, line))
-            		.append(indent)
-            		.append('}');
+                command.shiftsCaret=false;
+                command.caretOffset=command.offset+buf.length();
+                int line = document.getLineOfOffset(start);
+                buf.append(getLineDelimiter(document, line))
+                    .append(indent)
+                    .append('}');
             }
         }
         else if (isContinuation) {
@@ -833,14 +833,14 @@ class AutoEdit extends Indents {
             throws BadLocationException {
         String newlineChar = document.getLineDelimiter(line);
         if (newlineChar==null && line>0) {
-        	return document.getLineDelimiter(line-1);
+            return document.getLineDelimiter(line-1);
         }
         else {
-        	return Indents.getDefaultLineDelimiter(document);
+            return Indents.getDefaultLineDelimiter(document);
         }
     }
 
-	private String getIndent(int start, int end) 
+    private String getIndent(int start, int end) 
             throws BadLocationException {
         if (start<0||end<0) return "";
         int nestingLevel = 0;
@@ -908,7 +908,7 @@ class AutoEdit extends Indents {
             buf.append('\t');
         }
         else {
-        	initialIndent(buf);
+            initialIndent(buf);
         }
     }
 
@@ -951,20 +951,20 @@ class AutoEdit extends Indents {
      * Is the given offset in the document a line ending?
      */
     private boolean isLineEnding(int offset) {
-    	int len = document.getLength();
+        int len = document.getLength();
         String[] delimiters = document.getLegalLineDelimiters();
         for (String delim: delimiters) {
-        	if (offset+delim.length()<=len) {
-        		try {
-	                if (document.get(offset,
-	                		delim.length()).equals(delim)) {
-	                	return true;
-	                }
+            if (offset+delim.length()<=len) {
+                try {
+                    if (document.get(offset,
+                            delim.length()).equals(delim)) {
+                        return true;
+                    }
                 }
-        		catch (BadLocationException e) {
-	                e.printStackTrace();
+                catch (BadLocationException e) {
+                    e.printStackTrace();
                 }
-        	}
+            }
         }
         return false;
     }
@@ -973,9 +973,9 @@ class AutoEdit extends Indents {
             throws BadLocationException {
         offset--;
         for (;offset>=0; offset--) {
-        	char ch = document.getChar(offset);
+            char ch = document.getChar(offset);
             if (!isWhitespace(ch) && 
-            	!isCommentToken(getTokenTypeOfCharacterAtOffset(offset)) ||
+                !isCommentToken(getTokenTypeOfCharacterAtOffset(offset)) ||
                     isLineEnding(offset)) {
                 return ch;
             }
@@ -999,7 +999,7 @@ class AutoEdit extends Indents {
     private char getNextNonHiddenCharacterInNewline(int offset)
             throws BadLocationException {
         for (;offset<document.getLength(); offset++) {
-        	char ch = document.getChar(offset);
+            char ch = document.getChar(offset);
             if (!isWhitespace(ch) && 
                 getTokenTypeOfCharacterAtOffset(offset)!=MULTI_COMMENT ||
                     isLineEnding(offset)) {
@@ -1035,10 +1035,10 @@ class AutoEdit extends Indents {
         IRegion lineInfo;
         do {
             if (line==0) return 0;
-        	lineInfo = document.getLineInformation(--line);
+            lineInfo = document.getLineInformation(--line);
         }
         while (lineInfo.getLength()==0 || 
-        		isQuoted(lineInfo.getOffset()));
+                isQuoted(lineInfo.getOffset()));
         return lineInfo.getOffset();
     }
     
@@ -1050,15 +1050,15 @@ class AutoEdit extends Indents {
     private int getEndOfPreviousLine(int offset) 
             throws BadLocationException {
         if (offset == document.getLength() && offset>0) {
-        	offset--;
+            offset--;
         }
         int line = document.getLineOfOffset(offset);
-		IRegion lineInfo;
-		do {
-			if (line==0) return 0;
-			lineInfo = document.getLineInformation(--line);
-		}
-		while (lineInfo.getLength()==0);
+        IRegion lineInfo;
+        do {
+            if (line==0) return 0;
+            lineInfo = document.getLineInformation(--line);
+        }
+        while (lineInfo.getLength()==0);
         return lineInfo.getOffset() + lineInfo.getLength();
     }
     
@@ -1105,9 +1105,9 @@ class AutoEdit extends Indents {
     private boolean isLineEnding(String text) {
         String[] delimiters = document.getLegalLineDelimiters();
         for (String delim: delimiters) {
-        	if (delim.equals(text)) {
-        		return true;
-        	}
+            if (delim.equals(text)) {
+                return true;
+            }
         }
         return false;
     }

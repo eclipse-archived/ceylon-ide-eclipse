@@ -32,9 +32,9 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
     private static final String DEFAULT_VERSION = "1.0.0";
     
     //private IStructuredSelection selection;
-	private String moduleName;
-	private String version = "";
-	private String jarPath;
+    private String moduleName;
+    private String version = "";
+    private String jarPath;
     private String repositoryPath;
     private IJavaProject project;
 //    private IJavaElement selection;
@@ -42,7 +42,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
     private Text nameField;
     
     ExportJarWizardPage(String defaultRepositoryPath, 
-    		IJavaProject project, IJavaElement selection) {
+            IJavaProject project, IJavaElement selection) {
         super("Export Java Archive", "Export Java Archive", CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(CEYLON_EXPORT_CAR));
         setDescription("Export a Java archive to a module repository.");
@@ -68,7 +68,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         
         addSelectArchive(composite);
         addSpecifyModule(composite);
-		addSelectRepo(composite);
+        addSelectRepo(composite);
         
         setControl(composite);
 
@@ -79,12 +79,12 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 
     boolean moduleNameIsLegal(String packageName) {
         return moduleName.isEmpty() || 
-        		moduleName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$");
+                moduleName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$");
     }
     
     private boolean packageNameIsLegal() {
         return moduleName!=null &&
-        		moduleNameIsLegal(moduleName);
+                moduleNameIsLegal(moduleName);
     }
 
     private void updateModuleInfoFromJar() {
@@ -129,16 +129,16 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
             setErrorMessage("Please select an existing Java archive");
         }
         else if (!packageNameIsLegal()) {
-    		setErrorMessage("Please enter a legal module name");
-    	}
-    	else if (version.isEmpty()) {
-    		setErrorMessage("Please enter a version");
-    	}
+            setErrorMessage("Please enter a legal module name");
+        }
+        else if (version.isEmpty()) {
+            setErrorMessage("Please enter a version");
+        }
         else if (!isValidRepo()) {
             setErrorMessage("Please select an existing local repository");
         }
 //        else if (modules.getSelection().length==0) {
-//        	setErrorMessage("Please select a module to export");
+//            setErrorMessage("Please select a module to export");
 //        }
         else {
             setErrorMessage(null);
@@ -146,7 +146,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
     }
 
     void addSelectRepo(Composite composite) {
-		Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         folderLabel.setText("Target module repository: ");
         GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         flgd.horizontalSpan = 1;
@@ -163,18 +163,18 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
             public void modifyText(ModifyEvent e) {
                 repositoryPath = folder.getText();
                 updateMessage();
-        		setPageComplete(isComplete());
+                setPageComplete(isComplete());
             }
         });
         
         folder.setText(repositoryPath);
         if (project!=null) {
             folder.add(repositoryPath);
-        	for (String path: getCeylonRepositories(project.getProject())) {
-        	    if (!path.startsWith("http://") && !path.equals(repositoryPath)) {
-        	        folder.add(path);
-        	    }
-        	}
+            for (String path: getCeylonRepositories(project.getProject())) {
+                if (!path.startsWith("http://") && !path.equals(repositoryPath)) {
+                    folder.add(path);
+                }
+            }
         }
         
         Button selectFolder = new Button(composite, SWT.PUSH);
@@ -185,34 +185,34 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         selectFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	String dir = new DirectoryDialog(getShell(), SWT.SHEET).open();
-            	if (dir!=null) {
-            		repositoryPath = dir;
-            		folder.setText(repositoryPath);
-            	}
-            	updateMessage();
-            	setPageComplete(isComplete());
+                String dir = new DirectoryDialog(getShell(), SWT.SHEET).open();
+                if (dir!=null) {
+                    repositoryPath = dir;
+                    folder.setText(repositoryPath);
+                }
+                updateMessage();
+                setPageComplete(isComplete());
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
 //        modules.addSelectionListener(new SelectionListener() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				updateMessage();
-//				setPageComplete(isComplete());
-//			}
-//			@Override
-//			public void widgetDefaultSelected(SelectionEvent e) {}
-//		});
-	
-	}
-	
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                updateMessage();
+//                setPageComplete(isComplete());
+//            }
+//            @Override
+//            public void widgetDefaultSelected(SelectionEvent e) {}
+//        });
+    
+    }
+    
 //    Table modules;
     
     void addSpecifyModule(Composite composite) {
-    	
+        
         Label nameLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         nameLabel.setText("Module name and version: ");
         GridData jlgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -225,13 +225,13 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         ngd.grabExcessHorizontalSpace = true;
         nameField.setLayoutData(ngd);
         nameField.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				moduleName = nameField.getText();
-            	updateMessage();
-            	setPageComplete(isComplete());
-			}
-		});
+            @Override
+            public void modifyText(ModifyEvent e) {
+                moduleName = nameField.getText();
+                updateMessage();
+                setPageComplete(isComplete());
+            }
+        });
         
         versionField = new Text(composite, SWT.SINGLE | SWT.BORDER);
         versionField.setText(version);
@@ -240,13 +240,13 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         vgd.grabExcessHorizontalSpace = true;
         versionField.setLayoutData(vgd);
         versionField.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				version = versionField.getText();
-            	updateMessage();
-            	setPageComplete(isComplete());
-			}
-		});
+            @Override
+            public void modifyText(ModifyEvent e) {
+                version = versionField.getText();
+                updateMessage();
+                setPageComplete(isComplete());
+            }
+        });
         
         new Label(composite, SWT.NONE).setLayoutData(jlgd);
     }
@@ -265,13 +265,13 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         pgd.grabExcessHorizontalSpace = true;
         jarField.setLayoutData(pgd);
         jarField.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				jarPath = jarField.getText();
-            	updateMessage();
-            	setPageComplete(isComplete());
-			}
-		});
+            @Override
+            public void modifyText(ModifyEvent e) {
+                jarPath = jarField.getText();
+                updateMessage();
+                setPageComplete(isComplete());
+            }
+        });
 
         Button selectJar = new Button(composite, SWT.PUSH);
         selectJar.setText("Browse...");
@@ -284,13 +284,13 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
                 FileDialog fd = new FileDialog(getShell(), SWT.SHEET);
                 fd.setFilterExtensions(new String[]{"*.jar"});
                 fd.setText("Select Java Archive");
-				String dir = fd.open();
+                String dir = fd.open();
                 if (dir != null) {
-                	jarField.setText(dir);
-                	jarPath = dir;
-                	updateModuleInfoFromJar();
-                	updateMessage();
-                	setPageComplete(isComplete());
+                    jarField.setText(dir);
+                    jarPath = dir;
+                    updateModuleInfoFromJar();
+                    updateMessage();
+                    setPageComplete(isComplete());
                 }
             }
             @Override
@@ -329,20 +329,20 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 //        mgd.heightHint = 50;
 //        modules.setLayoutData(mgd);
 //        if (project!=null) {
-//			projectField.setText(project.getElementName());
-//        	updateModuleList();
+//            projectField.setText(project.getElementName());
+//            updateModuleList();
 //        }
 //        if (selection!=null) {
-//        	String selectionName = selection.getElementName();
-//        	TableItem[] items = modules.getItems();
-//			for (int i=0; i<items.length; i++) {
-//        		String itemText = items[i].getText();
-//        		int j = itemText.indexOf('/');
-//				if (itemText.substring(0,j).equals(selectionName)) {
-//					modules.deselectAll();
-//        			modules.select(i);
-//        		}
-//        	}
+//            String selectionName = selection.getElementName();
+//            TableItem[] items = modules.getItems();
+//            for (int i=0; i<items.length; i++) {
+//                String itemText = items[i].getText();
+//                int j = itemText.indexOf('/');
+//                if (itemText.substring(0,j).equals(selectionName)) {
+//                    modules.deselectAll();
+//                    modules.select(i);
+//                }
+//            }
 //        }
 //        
 //        new Label(composite, SWT.NONE);
@@ -358,7 +358,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 //                Object result = dialog.getFirstResult();
 //                if (result!=null) {
 //                    project = (IJavaProject) result;
-//        			projectField.setText(project.getElementName());
+//                    projectField.setText(project.getElementName());
 //                    updateModuleList();
 //                }
 //                updateMessage();
@@ -386,8 +386,8 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 //                    for (IJavaProject jp: JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
 //                            .getJavaProjects()) {
 //                        if (jp.getElementName().equals(projectName)) {
-//                        	project = jp;
-//                        	return;
+//                            project = jp;
+//                            return;
 //                        }
 //                    }
 //                }
@@ -398,71 +398,71 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 //        });
     }
 
-//	private void updateModuleList() {
-//		if (project!=null) {
-//			modules.removeAll();
-//			for (Module m: getProjectModules(project.getProject()).getListOfModules()) {
-//				if (!m.isDefault() && !m.isJava()) {
-//					try {
-//						for (IPackageFragment pkg: project.getPackageFragments()) {
-//							if (!pkg.isReadOnly() &&
-//									pkg.getElementName().equals(m.getNameAsString())) {
-//								TableItem item = new TableItem(modules, SWT.NONE);
-//								item.setText(m.getNameAsString() + "/" + m.getVersion());
-//								item.setImage(CeylonLabelProvider.ARCHIVE);
-//							}
-//						}
-//					} 
-//					catch (JavaModelException e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-//			modules.selectAll();
-//		}
-//	}
-//	
-//	public Table getModules() {
-//		return modules;
-//	}
+//    private void updateModuleList() {
+//        if (project!=null) {
+//            modules.removeAll();
+//            for (Module m: getProjectModules(project.getProject()).getListOfModules()) {
+//                if (!m.isDefault() && !m.isJava()) {
+//                    try {
+//                        for (IPackageFragment pkg: project.getPackageFragments()) {
+//                            if (!pkg.isReadOnly() &&
+//                                    pkg.getElementName().equals(m.getNameAsString())) {
+//                                TableItem item = new TableItem(modules, SWT.NONE);
+//                                item.setText(m.getNameAsString() + "/" + m.getVersion());
+//                                item.setImage(CeylonLabelProvider.ARCHIVE);
+//                            }
+//                        }
+//                    } 
+//                    catch (JavaModelException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//            modules.selectAll();
+//        }
+//    }
+//    
+//    public Table getModules() {
+//        return modules;
+//    }
 
-	private boolean isComplete() {
-		return packageNameIsLegal() && 
-				!version.isEmpty() && 
-				isValidRepo() && 
-				isValidJar();
-	}
-	
-	private boolean isValidRepo() {
-	    return repositoryPath!=null &&
+    private boolean isComplete() {
+        return packageNameIsLegal() && 
+                !version.isEmpty() && 
+                isValidRepo() && 
+                isValidJar();
+    }
+    
+    private boolean isValidRepo() {
+        return repositoryPath!=null &&
                 !repositoryPath.isEmpty() &&
                 !repositoryPath.startsWith("http://");
-	}
-	
-	private boolean isValidJar() {
-	    return jarPath!=null &&
+    }
+    
+    private boolean isValidJar() {
+        return jarPath!=null &&
                 !jarPath.isEmpty() &&
                 new File(jarPath).exists();
-	}
-	
-	public String getRepositoryPath() {
-		return repositoryPath;
-	}
+    }
     
-	public String getJarPath() {
-		return jarPath;
-	}
-	
-	public String getModuleName() {
-		return moduleName;
-	}
+    public String getRepositoryPath() {
+        return repositoryPath;
+    }
     
-	public String getVersion() {
-		return version;
-	}
-	
-	public IJavaProject getProject() {
-		return project;
-	}
-	
+    public String getJarPath() {
+        return jarPath;
+    }
+    
+    public String getModuleName() {
+        return moduleName;
+    }
+    
+    public String getVersion() {
+        return version;
+    }
+    
+    public IJavaProject getProject() {
+        return project;
+    }
+    
 }

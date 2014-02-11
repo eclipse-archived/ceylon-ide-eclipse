@@ -38,7 +38,7 @@ class EditDialog extends Dialog {
         Composite composite = (Composite) super.createDialogArea(parent);
         final Text text = new Text(composite, SWT.MULTI | SWT.BORDER| SWT.WRAP | SWT.V_SCROLL);
         FontData fd = PreferenceConverter.getFontData(getInstance().getPreferenceStore(),
-        		"sourceFont");
+                "sourceFont");
         text.setFont(new Font(getShell().getDisplay(), fd));
         text.setText(this.text);
         GridData gd = new GridData(GridData.FILL_BOTH);

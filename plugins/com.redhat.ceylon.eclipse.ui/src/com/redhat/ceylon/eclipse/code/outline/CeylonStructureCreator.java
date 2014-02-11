@@ -49,9 +49,9 @@ public class CeylonStructureCreator extends StructureCreator {
 
     @Override
     protected IStructureComparator createStructureComparator(Object input, 
-    		IDocument document, ISharedDocumentAdapter sharedDocumentAdapter, 
-    		IProgressMonitor monitor) 
-    				throws CoreException {
+            IDocument document, ISharedDocumentAdapter sharedDocumentAdapter, 
+            IProgressMonitor monitor) 
+                    throws CoreException {
         
         if (input instanceof CeylonDocumentRangeNode) {
             return (CeylonDocumentRangeNode) input;
@@ -68,31 +68,31 @@ public class CeylonStructureCreator extends StructureCreator {
             }
         };
         
-    	CeylonParseController pc = new CeylonParseController();
-    	if (input instanceof ResourceNode) {
-    	    IResource file = ((ResourceNode) input).getResource();
-    	    pc.initialize(file.getProjectRelativePath(), file.getProject(), null);
-    	}
-    	else {
-    	    pc.initialize(null, null, null);
-    	}
-    	
-    	pc.parse(document, monitor, null);
-    	
-    	Node rootNode = pc.getRootNode();
-    	
-    	if (rootNode!=null) {
-    		// now visit the model, creating TreeCompareNodes for each ModelTreeNode
-    		buildCompareTree(new CeylonOutlineBuilder().buildTree(pc), 
-    		        structureRootNode, document);
-    	}
-    	
+        CeylonParseController pc = new CeylonParseController();
+        if (input instanceof ResourceNode) {
+            IResource file = ((ResourceNode) input).getResource();
+            pc.initialize(file.getProjectRelativePath(), file.getProject(), null);
+        }
+        else {
+            pc.initialize(null, null, null);
+        }
+        
+        pc.parse(document, monitor, null);
+        
+        Node rootNode = pc.getRootNode();
+        
+        if (rootNode!=null) {
+            // now visit the model, creating TreeCompareNodes for each ModelTreeNode
+            buildCompareTree(new CeylonOutlineBuilder().buildTree(pc), 
+                    structureRootNode, document);
+        }
+        
         return structureRootNode;
 
     }
 
     private void buildCompareTree(CeylonOutlineNode outlineNode, 
-    		DocumentRangeNode parent, IDocument document) {
+            DocumentRangeNode parent, IDocument document) {
         CeylonDocumentRangeNode compareNode;
         switch (outlineNode.getCategory()) {
         case ROOT_CATEGORY: //attach children of the unit node directly to our root

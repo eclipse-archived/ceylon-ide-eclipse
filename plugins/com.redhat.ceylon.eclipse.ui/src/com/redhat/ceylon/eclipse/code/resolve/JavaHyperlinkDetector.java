@@ -141,30 +141,30 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
     }
 
     public static void gotoJavaNode(Declaration dec, CeylonParseController cpc) {
-    	gotoJavaNode(dec, cpc.getProject());
+        gotoJavaNode(dec, cpc.getProject());
     }
     
     public static void gotoJavaNode(Declaration dec, IProject project) {
-    	gotoJavaNode(dec, null, project);
+        gotoJavaNode(dec, null, project);
     }
     
     public static void gotoJavaNode(Declaration dec, Node node, IProject project) {
-		IJavaProject jp = JavaCore.create(project);
-		if (jp!=null) {
-		    try {
-		        IJavaElement element = getJavaElement(dec, jp, node);
-		        if (element!=null) {
-		            IEditorPart part = openInEditor(element, true);
-		            if (part!=null) {
-		                revealInEditor(part, element);
-		            }
-		        }
-		    }
-		    catch (Exception e) {
-		        e.printStackTrace();
-		    }
-		}
-	}
+        IJavaProject jp = JavaCore.create(project);
+        if (jp!=null) {
+            try {
+                IJavaElement element = getJavaElement(dec, jp, node);
+                if (element!=null) {
+                    IEditorPart part = openInEditor(element, true);
+                    if (part!=null) {
+                        revealInEditor(part, element);
+                    }
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public static IJavaElement getJavaElement(final Declaration dec, IJavaProject jp, Node node)
             throws JavaModelException {

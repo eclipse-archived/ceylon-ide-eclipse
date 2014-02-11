@@ -23,9 +23,9 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
  * the given file at the computed line.
  */
 public class MarkerCreator extends ErrorVisitor {
-	
+    
     protected IFile file;
-	public static final String ERROR_CODE_KEY= "errorCode";
+    public static final String ERROR_CODE_KEY= "errorCode";
 
     public MarkerCreator(IFile file) {
         this.file = file;
@@ -33,42 +33,42 @@ public class MarkerCreator extends ErrorVisitor {
 
     @Override
     public void handleMessage(int startOffset, int endOffset,
-			int startCol, int startLine, Message message) {
-    	
-    	String[] attributeNames= new String[] {
-		        IMarker.LINE_NUMBER, 
-		        IMarker.CHAR_START, IMarker.CHAR_END, 
-		        IMarker.MESSAGE, 
-		        IMarker.PRIORITY, 
-		        IMarker.SEVERITY,
-		        ERROR_CODE_KEY,
-		        IMarker.SOURCE_ID
-			};
-		Object[] values= new Object[] {
-		        startLine, 
-		        startOffset, endOffset+1, 
-		        message.getMessage(), 
-		        IMarker.PRIORITY_HIGH, 
-		        getSeverity(message, warnForErrors),
-		        message.getCode(),
-		        CeylonBuilder.SOURCE
-			};
-		try {
-		    file.createMarker(isCompilerError(message.getMessage())?
-		    		BUILDPATH_PROBLEM_MARKER:PROBLEM_MARKER_ID)
-		        .setAttributes(attributeNames, values);
-		} 
-		catch (Exception e) {
-		    e.printStackTrace();
-		}
-	}
+            int startCol, int startLine, Message message) {
+        
+        String[] attributeNames= new String[] {
+                IMarker.LINE_NUMBER, 
+                IMarker.CHAR_START, IMarker.CHAR_END, 
+                IMarker.MESSAGE, 
+                IMarker.PRIORITY, 
+                IMarker.SEVERITY,
+                ERROR_CODE_KEY,
+                IMarker.SOURCE_ID
+            };
+        Object[] values= new Object[] {
+                startLine, 
+                startOffset, endOffset+1, 
+                message.getMessage(), 
+                IMarker.PRIORITY_HIGH, 
+                getSeverity(message, warnForErrors),
+                message.getCode(),
+                CeylonBuilder.SOURCE
+            };
+        try {
+            file.createMarker(isCompilerError(message.getMessage())?
+                    BUILDPATH_PROBLEM_MARKER:PROBLEM_MARKER_ID)
+                .setAttributes(attributeNames, values);
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	private static boolean isCompilerError(String msg) {
+    private static boolean isCompilerError(String msg) {
         //TODO: we need a MUCH better way to distinguish 
         //      compiler errors from typechecker errors
-		return msg.startsWith("cannot find module") || 
-				msg.startsWith("unable to read source artifact for") ||
-				msg.startsWith("invalid JDK module");
-	}
-	
+        return msg.startsWith("cannot find module") || 
+                msg.startsWith("unable to read source artifact for") ||
+                msg.startsWith("invalid JDK module");
+    }
+    
 }

@@ -29,6 +29,6 @@ public interface TreeLifecycleListener  {
      *        cancel when monitor.isCanceled() is true
      */
     public void update(CeylonParseController parseController, 
-    		IProgressMonitor monitor);
+            IProgressMonitor monitor);
     
 }

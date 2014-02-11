@@ -27,47 +27,47 @@ import org.eclipse.ui.part.FileEditorInput;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class CeylonPatternMatchListenerDelegate implements
-		IPatternMatchListenerDelegate {
+        IPatternMatchListenerDelegate {
 
-	private TextConsole console;
-	
-	@Override
-	public void connect(TextConsole console) {
-		this.console = console;
-	}
+    private TextConsole console;
+    
+    @Override
+    public void connect(TextConsole console) {
+        this.console = console;
+    }
 
-	@Override
-	public void disconnect() {
-		console = null; 
-	}
+    @Override
+    public void disconnect() {
+        console = null; 
+    }
 
-	@Override
-	public void matchFound(PatternMatchEvent event) {
-		try {
-			String text = console.getDocument()
-					.get(event.getOffset()+3, event.getLength()-4);
-			int j = text.indexOf("(");
-			int i = text.indexOf(":");
-			final String[] elems = text.substring(0,j).split("\\.");
-			final String file = text.substring(j+1, i);
-			final String line = text.substring(i+1);
-			console.addHyperlink(new IHyperlink() {
-				@Override
-				public void linkExited() {}
-				@Override
-				public void linkEntered() {}
-				
-				@Override
-				public void linkActivated() {
-		            gotoFileAndLine(file, line, elems);
-				}
-			}, event.getOffset()+4+j, event.getLength()-5-j);
-		} 
-		catch (BadLocationException e) {
-			e.printStackTrace();
-		}
-	}
-	
+    @Override
+    public void matchFound(PatternMatchEvent event) {
+        try {
+            String text = console.getDocument()
+                    .get(event.getOffset()+3, event.getLength()-4);
+            int j = text.indexOf("(");
+            int i = text.indexOf(":");
+            final String[] elems = text.substring(0,j).split("\\.");
+            final String file = text.substring(j+1, i);
+            final String line = text.substring(i+1);
+            console.addHyperlink(new IHyperlink() {
+                @Override
+                public void linkExited() {}
+                @Override
+                public void linkEntered() {}
+                
+                @Override
+                public void linkActivated() {
+                    gotoFileAndLine(file, line, elems);
+                }
+            }, event.getOffset()+4+j, event.getLength()-5-j);
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public static void gotoFileAndLine(String fileName, String line, String[] elems) {
         IPath path = new Path(fileName);
         IWorkspaceRoot root = getWorkspace().getRoot();
@@ -111,6 +111,6 @@ public class CeylonPatternMatchListenerDelegate implements
                 e.printStackTrace();
             }
         }
-    }	
+    }    
 
 }

@@ -64,28 +64,28 @@ class CreateInNewUnitProposal implements ICompletionProposal,
     @Override
     public void apply(IDocument doc) {
         String delim = Indents.getDefaultLineDelimiter(doc);
-    	String def = dg.generate("", delim);
+        String def = dg.generate("", delim);
         List<Declaration> imports = new ArrayList<Declaration>();
         resolveImports(imports, dg.returnType);
         if (dg.parameters!=null) {
-        	resolveImports(imports, dg.parameters.values());
+            resolveImports(imports, dg.parameters.values());
         }
         String imps = imports(imports, doc);
         if (!imps.isEmpty()) {
-        	def = imps + delim + delim + def;
+            def = imps + delim + delim + def;
         }
-		NewUnitWizard.open(def, file, dg.brokenName, 
+        NewUnitWizard.open(def, file, dg.brokenName, 
                 "Create Missing Declaration in New Unit",
                 "Create a new Ceylon compilation unit with the missing declaration.");
     }
 
     static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, 
             DefinitionGenerator dg, IFile file) {        
-    	proposals.add(new CreateInNewUnitProposal(file, dg));
+        proposals.add(new CreateInNewUnitProposal(file, dg));
     }
     
     private static void resolveImports(List<Declaration> imports, 
-    		Collection<ProducedType> producedTypes) {
+            Collection<ProducedType> producedTypes) {
         if (producedTypes!=null) {
             for (ProducedType pt : producedTypes) {
                 resolveImports(imports, pt);

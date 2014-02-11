@@ -170,8 +170,8 @@ public class FindNodeVisitor extends Visitor
     @Override
     public void visit(Tree.ImportMemberOrType that) {
         if (inBounds(that.getIdentifier())||
-        		that.getAlias()!=null &&
-        		inBounds(that.getAlias())) {
+                that.getAlias()!=null &&
+                inBounds(that.getAlias())) {
             node = that;
         }
         else {
@@ -228,7 +228,7 @@ public class FindNodeVisitor extends Visitor
             node = that;
         }
         else {
-        	super.visit(that);
+            super.visit(that);
         }
     }
     

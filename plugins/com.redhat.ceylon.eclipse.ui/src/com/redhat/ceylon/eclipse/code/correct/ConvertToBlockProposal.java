@@ -62,17 +62,17 @@ class ConvertToBlockProposal extends CorrectionProposal {
         }
         else if (decNode instanceof Tree.MethodArgument) {
             Tree.MethodArgument ma = (Tree.MethodArgument) decNode;
-			isVoid = ma.getDeclarationModel().isDeclaredVoid();
-			if (ma.getType().getToken()==null) {
-				addedKeyword = "function ";
-			}
+            isVoid = ma.getDeclarationModel().isDeclaredVoid();
+            if (ma.getType().getToken()==null) {
+                addedKeyword = "function ";
+            }
         }
         else if (decNode instanceof Tree.AttributeArgument) {
             Tree.AttributeArgument aa = (Tree.AttributeArgument) decNode;
             isVoid = false;            
-			if (aa.getType().getToken()==null) {
-				addedKeyword = "value ";
-			}
+            if (aa.getType().getToken()==null) {
+                addedKeyword = "value ";
+            }
         }
         else if (decNode instanceof Tree.FunctionArgument) {
             isVoid = ((Tree.FunctionArgument) decNode).getDeclarationModel().isDeclaredVoid();
@@ -81,7 +81,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
             return;
         }
         if (addedKeyword!=null) {
-        	change.addEdit(new InsertEdit(decNode.getStartIndex(), addedKeyword));
+            change.addEdit(new InsertEdit(decNode.getStartIndex(), addedKeyword));
         }
         change.addEdit(new ReplaceEdit(offset, 2, space + (isVoid?"{":"{ return") + spaceAfter));
         change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));

@@ -75,15 +75,15 @@ public class NewUnitWizardPage extends WizardPage {
         declaration = declarationButtonDisabled;
     }
 
-	//TODO: fix copy/paste to ExportModuleWizard
+    //TODO: fix copy/paste to ExportModuleWizard
     private IJavaElement getSelectedElement() {
         if (selection!=null && selection.size()==1) {
             Object element = selection.getFirstElement();
             if (element instanceof IFile) {
-            	return JavaCore.create(((IFile) element).getParent());
+                return JavaCore.create(((IFile) element).getParent());
             }
             else {
-			    return (IJavaElement) ((IAdaptable) element)
+                return (IJavaElement) ((IAdaptable) element)
                         .getAdapter(IJavaElement.class);
             }
         }
@@ -642,8 +642,8 @@ public class NewUnitWizardPage extends WizardPage {
     }
     
     public boolean isDeclaration() {
-		return declaration;
-	}
+        return declaration;
+    }
     
     private String readHeader() {
         //TODO: use IRunnableWithProgress
@@ -654,7 +654,7 @@ public class NewUnitWizardPage extends WizardPage {
             try {
                 stream = file.getContents();
                 BufferedReader reader = 
-                		new BufferedReader(new InputStreamReader(stream));
+                        new BufferedReader(new InputStreamReader(stream));
                 String line;
                 while ((line = reader.readLine())!=null) {
                     sb.append(line)
@@ -724,12 +724,12 @@ public class NewUnitWizardPage extends WizardPage {
     
     private static final String KEYWORDS;
     static {
-    	StringBuilder sb = new StringBuilder();
-    	for (String kw: CeylonTokenColorer.keywords) {
-    		sb.append(kw).append('|');
-    	}
-    	sb.setLength(sb.length()-1);
-    	KEYWORDS = sb.toString();
+        StringBuilder sb = new StringBuilder();
+        for (String kw: CeylonTokenColorer.keywords) {
+            sb.append(kw).append('|');
+        }
+        sb.setLength(sb.length()-1);
+        KEYWORDS = sb.toString();
     }
 
     boolean packageNameIsLegal(String packageName) {

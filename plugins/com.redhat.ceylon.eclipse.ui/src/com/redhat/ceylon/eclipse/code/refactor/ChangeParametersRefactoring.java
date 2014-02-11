@@ -74,128 +74,128 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         public void visit(Tree.MethodArgument that) {
             super.visit(that);
             Parameter p = that.getParameter();
-			if (p!=null && p.getModel().equals(declaration)) {
-            	results.add(that);
+            if (p!=null && p.getModel().equals(declaration)) {
+                results.add(that);
             }
         }
     }
 
     private List<Integer> order = new ArrayList<Integer>();
     
-	private final Declaration declaration;
-	private final List<Parameter> parameters;
-	
-	public Node getNode() {
-		return node;
-	}
-	
-	public List<Integer> getOrder() {
+    private final Declaration declaration;
+    private final List<Parameter> parameters;
+    
+    public Node getNode() {
+        return node;
+    }
+    
+    public List<Integer> getOrder() {
         return order;
     }
 
-	public ChangeParametersRefactoring(ITextEditor editor) {
-	    super(editor);
-	    if (rootNode!=null) {
-	    	Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);
-	    	if (refDec instanceof Functional) {
-	    	    refDec = refDec.getRefinedDeclaration();
-	    		List<ParameterList> pls = ((Functional) refDec).getParameterLists();
-	    		if (pls.isEmpty()) {
-	    		    declaration = null;
-	    		    parameters = null;
-	    		}
-	    		else {
-	    		    declaration = refDec;
-	    		    parameters = pls.get(0).getParameters();
-	    		    for (int i=0; i<parameters.size(); i++) {
-	    		        order.add(i);
-	    		    }
-	    		}
-	    	}
-	    	else {
-	    		declaration = null;
-	    		parameters = null;
-	    	}
-	    }
-	    else {
-    		declaration = null;
-    		parameters = null;
-	    }
-	}
-	
-	@Override
-	public boolean isEnabled() {
-	    return declaration instanceof Functional &&
+    public ChangeParametersRefactoring(ITextEditor editor) {
+        super(editor);
+        if (rootNode!=null) {
+            Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);
+            if (refDec instanceof Functional) {
+                refDec = refDec.getRefinedDeclaration();
+                List<ParameterList> pls = ((Functional) refDec).getParameterLists();
+                if (pls.isEmpty()) {
+                    declaration = null;
+                    parameters = null;
+                }
+                else {
+                    declaration = refDec;
+                    parameters = pls.get(0).getParameters();
+                    for (int i=0; i<parameters.size(); i++) {
+                        order.add(i);
+                    }
+                }
+            }
+            else {
+                declaration = null;
+                parameters = null;
+            }
+        }
+        else {
+            declaration = null;
+            parameters = null;
+        }
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return declaration instanceof Functional &&
                 project != null &&
                 inSameProject(declaration);
-	}
+    }
 
-	public int getCount() {
-	    return declaration==null ? 
-	    		0 : countDeclarationOccurrences();
-	}
-	
-	@Override
-	int countReferences(Tree.CompilationUnit cu) {
-	    FindInvocationsVisitor frv = new FindInvocationsVisitor(declaration);
+    public int getCount() {
+        return declaration==null ? 
+                0 : countDeclarationOccurrences();
+    }
+    
+    @Override
+    int countReferences(Tree.CompilationUnit cu) {
+        FindInvocationsVisitor frv = new FindInvocationsVisitor(declaration);
         FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
         FindArgumentsVisitor fav = new FindArgumentsVisitor(declaration);
         cu.visit(frv);
         cu.visit(fdv);
         cu.visit(fav);
         return frv.getResults().size() + 
-        		fdv.getDeclarationNodes().size() + 
-        		fav.getResults().size();
-	}
+                fdv.getDeclarationNodes().size() + 
+                fav.getResults().size();
+    }
 
-	public String getName() {
-		return "Change Parameters";
-	}
+    public String getName() {
+        return "Change Parameters";
+    }
 
-	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
-		// Check parameters retrieved from editor context
-		return new RefactoringStatus();
-	}
+    public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
+            throws CoreException, OperationCanceledException {
+        // Check parameters retrieved from editor context
+        return new RefactoringStatus();
+    }
 
-	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
-		boolean foundDefaulted = false;
-		for (int index: order) {
-			Parameter parameter = parameters.get(index);
-			if (parameter.isDefaulted()) {
-				foundDefaulted = true;
-			}
-			else {
-				if (foundDefaulted) {
-					return createWarningStatus("defaulted parameters occur before required parameters");
-				}
-			}
-		}
-		return new RefactoringStatus();
-	}
+    public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
+            throws CoreException, OperationCanceledException {
+        boolean foundDefaulted = false;
+        for (int index: order) {
+            Parameter parameter = parameters.get(index);
+            if (parameter.isDefaulted()) {
+                foundDefaulted = true;
+            }
+            else {
+                if (foundDefaulted) {
+                    return createWarningStatus("defaulted parameters occur before required parameters");
+                }
+            }
+        }
+        return new RefactoringStatus();
+    }
 
-	public CompositeChange createChange(IProgressMonitor pm) throws CoreException,
-			OperationCanceledException {
+    public CompositeChange createChange(IProgressMonitor pm) throws CoreException,
+            OperationCanceledException {
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
         CompositeChange cc = new CompositeChange(getName());
         int i=0;
         for (PhasedUnit pu: units) {
-        	if (searchInFile(pu)) {
-        		TextFileChange tfc = newTextFileChange(pu);
-        		refactorInFile(tfc, cc, pu.getCompilationUnit());
-        		pm.worked(i++);
-        	}
+            if (searchInFile(pu)) {
+                TextFileChange tfc = newTextFileChange(pu);
+                refactorInFile(tfc, cc, pu.getCompilationUnit());
+                pm.worked(i++);
+            }
         }
         if (searchInEditor()) {
-        	DocumentChange dc = newDocumentChange();
-        	refactorInFile(dc, cc, editor.getParseController().getRootNode());
-        	pm.worked(i++);
+            DocumentChange dc = newDocumentChange();
+            refactorInFile(dc, cc, editor.getParseController().getRootNode());
+            pm.worked(i++);
         }
         pm.done();
         return cc;
-	}
+    }
 
     private void refactorInFile(TextChange tfc, CompositeChange cc, Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
@@ -262,8 +262,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 sb.toString());
     }
     
-	public Declaration getDeclaration() {
-		return declaration;
-	}
-	
+    public Declaration getDeclaration() {
+        return declaration;
+    }
+    
 }

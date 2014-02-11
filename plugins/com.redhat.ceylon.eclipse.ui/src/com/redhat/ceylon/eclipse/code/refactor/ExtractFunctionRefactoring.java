@@ -371,7 +371,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         
         String indent = Indents.getDefaultLineDelimiter(doc) + 
-        		getIndent(decNode, doc);
+                getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 
         String typeParams = "";
@@ -425,7 +425,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }
 
     private Scope getContainingScope(Tree.Declaration decNode) {
-    	return decNode.getDeclarationModel().getContainer().getScope();
+        return decNode.getDeclarationModel().getContainer().getScope();
     }
 
     private void extractStatementsInFile(TextChange tfc) throws CoreException {
@@ -512,7 +512,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         
         String indent = Indents.getDefaultLineDelimiter(doc) + 
-        		getIndent(decNode, doc);
+                getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 
         String typeParams = "";
@@ -569,30 +569,30 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         content += " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " {";
         Statement last = statements.isEmpty() ?
-        		null : statements.get(statements.size()-1);
+                null : statements.get(statements.size()-1);
         for (Statement s: statements) {
             content += extraIndent + toString(s);
             int i = s.getEndToken().getTokenIndex();
             CommonToken tok;
             while ((tok=tokens.get(++i)).getChannel()==HIDDEN_CHANNEL) {
-            	String text = tok.getText();
-				if (tok.getType()==LINE_COMMENT) {
-            		content += " " + text.substring(0, text.length()-1);
-            		if (s==last) {
-            			length += text.length();
-            		}
-            	}
-            	if (tok.getType()==MULTI_COMMENT) {
-            		content += " " + text;
-            		if (s==last) {
-            			length += text.length()+1;
-            		}
-            	}
+                String text = tok.getText();
+                if (tok.getType()==LINE_COMMENT) {
+                    content += " " + text.substring(0, text.length()-1);
+                    if (s==last) {
+                        length += text.length();
+                    }
+                }
+                if (tok.getType()==MULTI_COMMENT) {
+                    content += " " + text;
+                    if (s==last) {
+                        length += text.length()+1;
+                    }
+                }
             }
         }
         if (result!=null) {
             content += extraIndent + "return " + 
-            		result.getDeclarationModel().getName() + ";";
+                    result.getDeclarationModel().getName() + ";";
         }
         content += indent + "}" + indent + indent;
         

@@ -10,37 +10,37 @@ import org.eclipse.ui.actions.ActionGroup;
 
 class LayoutActionGroup extends ActionGroup {
 
-	public static final String VIEWMENU_LAYOUT_GROUP= "layout"; //$NON-NLS-1$
+    public static final String VIEWMENU_LAYOUT_GROUP= "layout"; //$NON-NLS-1$
 
-	private IAction fFlatLayoutAction;
-	private IAction fHierarchicalLayoutAction;
-	private IAction fShowLibrariesNode;
+    private IAction fFlatLayoutAction;
+    private IAction fHierarchicalLayoutAction;
+    private IAction fShowLibrariesNode;
 
-	LayoutActionGroup(PackageExplorerPart packageExplorer) {
-		fFlatLayoutAction= new LayoutAction(packageExplorer, true);
-		fHierarchicalLayoutAction= new LayoutAction(packageExplorer, false);
-		fShowLibrariesNode= new ShowLibrariesNodeAction(packageExplorer);
-	}
+    LayoutActionGroup(PackageExplorerPart packageExplorer) {
+        fFlatLayoutAction= new LayoutAction(packageExplorer, true);
+        fHierarchicalLayoutAction= new LayoutAction(packageExplorer, false);
+        fShowLibrariesNode= new ShowLibrariesNodeAction(packageExplorer);
+    }
 
-	/* (non-Javadoc)
-	 * @see ActionGroup#fillActionBars(IActionBars)
-	 */
-	@Override
-	public void fillActionBars(IActionBars actionBars) {
-		super.fillActionBars(actionBars);
-		contributeToViewMenu(actionBars.getMenuManager());
-	}
+    /* (non-Javadoc)
+     * @see ActionGroup#fillActionBars(IActionBars)
+     */
+    @Override
+    public void fillActionBars(IActionBars actionBars) {
+        super.fillActionBars(actionBars);
+        contributeToViewMenu(actionBars.getMenuManager());
+    }
 
-	private void contributeToViewMenu(IMenuManager viewMenu) {
-		viewMenu.add(new Separator(VIEWMENU_LAYOUT_GROUP));
+    private void contributeToViewMenu(IMenuManager viewMenu) {
+        viewMenu.add(new Separator(VIEWMENU_LAYOUT_GROUP));
 
-		// Create layout sub menu
+        // Create layout sub menu
 
-		IMenuManager layoutSubMenu= new MenuManager(PackagesMessages.LayoutActionGroup_label);
-		layoutSubMenu.add(fFlatLayoutAction);
-		layoutSubMenu.add(fHierarchicalLayoutAction);
+        IMenuManager layoutSubMenu= new MenuManager(PackagesMessages.LayoutActionGroup_label);
+        layoutSubMenu.add(fFlatLayoutAction);
+        layoutSubMenu.add(fHierarchicalLayoutAction);
 
-		viewMenu.add(layoutSubMenu);
-		viewMenu.add(fShowLibrariesNode);
-	}
+        viewMenu.add(layoutSubMenu);
+        viewMenu.add(fShowLibrariesNode);
+    }
 }

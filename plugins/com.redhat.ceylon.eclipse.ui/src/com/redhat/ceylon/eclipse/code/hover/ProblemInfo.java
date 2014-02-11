@@ -23,62 +23,62 @@ class ProblemInfo extends AnnotationInfo {
     private final CeylonEditor editor;
 
     ProblemInfo(CeylonEditor editor, Annotation annotation, Position position,
-			ITextViewer textViewer) {
-		super(annotation, position, textViewer);
+            ITextViewer textViewer) {
+        super(annotation, position, textViewer);
         this.editor = editor;
-	}
+    }
 
-	ICompletionProposal[] getCompletionProposals() {
-		if (annotation instanceof CeylonAnnotation) {
-			ICompletionProposal[] result = getAnnotationFixes((CeylonAnnotation) annotation);
-			if (result.length > 0) {
-				return result;
-			}
-		}
-		if (annotation instanceof MarkerAnnotation) {
-			return getMarkerAnnotationFixes((MarkerAnnotation) annotation);
-		}
-		return NO_PROPOSALS;
-	}
+    ICompletionProposal[] getCompletionProposals() {
+        if (annotation instanceof CeylonAnnotation) {
+            ICompletionProposal[] result = getAnnotationFixes((CeylonAnnotation) annotation);
+            if (result.length > 0) {
+                return result;
+            }
+        }
+        if (annotation instanceof MarkerAnnotation) {
+            return getMarkerAnnotationFixes((MarkerAnnotation) annotation);
+        }
+        return NO_PROPOSALS;
+    }
 
-	private ICompletionProposal[] getAnnotationFixes(CeylonAnnotation annotation) {
-		final ProblemLocation location = new ProblemLocation(position.getOffset(), 
-				position.getLength(), annotation);
-		
-		IQuickAssistInvocationContext quickAssistContext = new IQuickAssistInvocationContext() {
-			public ISourceViewer getSourceViewer() {
-				if (viewer instanceof ISourceViewer)
-					return (ISourceViewer) viewer;
-				return null;
-			}
+    private ICompletionProposal[] getAnnotationFixes(CeylonAnnotation annotation) {
+        final ProblemLocation location = new ProblemLocation(position.getOffset(), 
+                position.getLength(), annotation);
+        
+        IQuickAssistInvocationContext quickAssistContext = new IQuickAssistInvocationContext() {
+            public ISourceViewer getSourceViewer() {
+                if (viewer instanceof ISourceViewer)
+                    return (ISourceViewer) viewer;
+                return null;
+            }
 
-			public int getOffset() {
-				return location.getOffset();
-			}
+            public int getOffset() {
+                return location.getOffset();
+            }
 
-			public int getLength() {
-				return location.getLength();
-			}
-		};
-		
-		ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-		new CeylonCorrectionProcessor(editor).collectCorrections(quickAssistContext, location, proposals);
-		
-		return (ICompletionProposal[]) proposals.toArray(new ICompletionProposal[proposals.size()]);
-	}
+            public int getLength() {
+                return location.getLength();
+            }
+        };
+        
+        ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
+        new CeylonCorrectionProcessor(editor).collectCorrections(quickAssistContext, location, proposals);
+        
+        return (ICompletionProposal[]) proposals.toArray(new ICompletionProposal[proposals.size()]);
+    }
 
-	private ICompletionProposal[] getMarkerAnnotationFixes(MarkerAnnotation markerAnnotation) {
-		if (markerAnnotation.isQuickFixableStateSet() && 
-				!markerAnnotation.isQuickFixable()) {
-			return NO_PROPOSALS;
-		}
+    private ICompletionProposal[] getMarkerAnnotationFixes(MarkerAnnotation markerAnnotation) {
+        if (markerAnnotation.isQuickFixableStateSet() && 
+                !markerAnnotation.isQuickFixable()) {
+            return NO_PROPOSALS;
+        }
 
-		TextInvocationContext context = new TextInvocationContext(
-				((ISourceViewer) this.viewer), 
-				position.getOffset(),
-				position.getLength());
-		return new CeylonCorrectionProcessor(markerAnnotation.getMarker())
-		        .computeQuickAssistProposals(context);
-	}
+        TextInvocationContext context = new TextInvocationContext(
+                ((ISourceViewer) this.viewer), 
+                position.getOffset(),
+                position.getLength());
+        return new CeylonCorrectionProcessor(markerAnnotation.getMarker())
+                .computeQuickAssistProposals(context);
+    }
 
 }

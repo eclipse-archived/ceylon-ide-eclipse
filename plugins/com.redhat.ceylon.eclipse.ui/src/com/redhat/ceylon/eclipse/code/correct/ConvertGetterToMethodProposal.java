@@ -69,13 +69,13 @@ public class ConvertGetterToMethodProposal extends CorrectionProposal {
             if (type instanceof Tree.ValueModifier) {
                 TextFileChange tfc = new TextFileChange("Convert Getter to Method", file);
                 tfc.setEdit(new ReplaceEdit(type.getStartIndex(), 
-                		type.getStopIndex() - type.getStartIndex() + 1, 
-                		"function"));
+                        type.getStopIndex() - type.getStartIndex() + 1, 
+                        "function"));
                 change.add(tfc);
             }
             
             ConvertGetterToMethodProposal proposal = 
-            		new ConvertGetterToMethodProposal(change, getter);
+                    new ConvertGetterToMethodProposal(change, getter);
             if (!proposals.contains(proposal)) {
                 proposals.add(proposal);
             }

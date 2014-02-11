@@ -30,23 +30,23 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 class CeylonSearchResultTreeContentProvider implements
     CeylonStructuredContentProvider, ITreeContentProvider {
-	
-	static final int LEVEL_FILE=0;
-	static final int LEVEL_PACKAGE=1;
-	static final int LEVEL_FOLDER=2;
-	static final int LEVEL_PROJECT=3;
-	
-	private final TreeViewer viewer;
-	private CeylonSearchResult result;
-	private CeylonSearchResultPage page;
-	private Map<Object, Set<Object>> childrenMap;
-	private int level;
+    
+    static final int LEVEL_FILE=0;
+    static final int LEVEL_PACKAGE=1;
+    static final int LEVEL_FOLDER=2;
+    static final int LEVEL_PROJECT=3;
+    
+    private final TreeViewer viewer;
+    private CeylonSearchResult result;
+    private CeylonSearchResultPage page;
+    private Map<Object, Set<Object>> childrenMap;
+    private int level;
 
-	CeylonSearchResultTreeContentProvider(TreeViewer viewer, 
+    CeylonSearchResultTreeContentProvider(TreeViewer viewer, 
             CeylonSearchResultPage page) {
-		this.viewer = viewer;
-		this.page = page;
-	}
+        this.viewer = viewer;
+        this.page = page;
+    }
 
     public Object[] getElements(Object inputElement) {
         Object[] children = getChildren(inputElement);
@@ -181,9 +181,9 @@ class CeylonSearchResultTreeContentProvider implements
             return null;
         }
         if (element instanceof IPackageFragment) {
-        	if (level==LEVEL_PACKAGE) {
-        		return null;
-        	}
+            if (level==LEVEL_PACKAGE) {
+                return null;
+            }
             IJavaElement container=((IPackageFragment)element).getParent();
             while (container instanceof IPackageFragment) {
                 container = container.getParent();
@@ -191,15 +191,15 @@ class CeylonSearchResultTreeContentProvider implements
             return container; //the IPackageFragmentRoot
         }
         if (element instanceof IPackageFragmentRoot) {
-        	if (level==LEVEL_FOLDER) {
-        		return null;
-        	}
+            if (level==LEVEL_FOLDER) {
+                return null;
+            }
             return ((IPackageFragmentRoot)element).getJavaProject().getProject();
         }
         if (element instanceof IResource) {
-        	if (level==LEVEL_FILE) {
-        		return null;
-        	}
+            if (level==LEVEL_FILE) {
+                return null;
+            }
             IContainer parent = ((IResource) element).getParent();
             IJavaElement javaElement = JavaCore.create(parent);
             if (javaElement instanceof IPackageFragment ||
@@ -211,21 +211,21 @@ class CeylonSearchResultTreeContentProvider implements
             }
         }
         if (element instanceof Unit) {
-        	if (level==LEVEL_FILE) {
-        		return null;
-        	}
+            if (level==LEVEL_FILE) {
+                return null;
+            }
             return ((Unit) element).getPackage();
         }
         if (element instanceof Package) {
-        	if (level==LEVEL_PACKAGE) {
-        		return null;
-        	}
+            if (level==LEVEL_PACKAGE) {
+                return null;
+            }
             return ((Package) element).getModule();
         }
         if (element instanceof Module) {
-        	if (level==LEVEL_PACKAGE) {
-        		return null;
-        	}
+            if (level==LEVEL_PACKAGE) {
+                return null;
+            }
             return null;
         }
         if (element instanceof CeylonElement) {
@@ -255,7 +255,7 @@ class CeylonSearchResultTreeContentProvider implements
             return null;
         }
         return null;
-	}
+    }
     
     @Override
     public void clear() {
@@ -265,9 +265,9 @@ class CeylonSearchResultTreeContentProvider implements
     
     @Override
     public void setLevel(int grouping) {
-    	this.level = grouping;
-		initialize(result);
-		viewer.refresh();
+        this.level = grouping;
+        initialize(result);
+        viewer.refresh();
     }
     
 }

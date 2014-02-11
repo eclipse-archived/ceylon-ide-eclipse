@@ -52,9 +52,9 @@ import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
-	public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
-	public static final String LANGUAGE_ID = "ceylon";
-	public static final String EDITOR_ID = PLUGIN_ID + ".editor";
+    public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
+    public static final String LANGUAGE_ID = "ceylon";
+    public static final String EDITOR_ID = PLUGIN_ID + ".editor";
     private static final String[] RUNTIME_LIBRARIES = new String[]{
         "com.redhat.ceylon.compiler.java-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
@@ -65,35 +65,35 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     private static final String[] COMPILETIME_LIBRARIES = new String[]{
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
     };
-	
-	private FontRegistry fontRegistry;
+    
+    private FontRegistry fontRegistry;
 
-	/**
-	 * The unique instance of this plugin class
-	 */
-	protected static CeylonPlugin pluginInstance;
-	
-	private File ceylonRepository = null;
+    /**
+     * The unique instance of this plugin class
+     */
+    protected static CeylonPlugin pluginInstance;
+    
+    private File ceylonRepository = null;
 
     private BundleContext bundleContext;
 
-	/**
+    /**
      * - If the 'ceylon.repo' property exist, returns the corresponding file
      * <br>
      * - Else return the internal defaultRepository folder
-	 * 
-	 * @return
-	 */
-	public File getCeylonRepository() {
+     * 
+     * @return
+     */
+    public File getCeylonRepository() {
         return ceylonRepository;
     }
 
     public static CeylonPlugin getInstance() {
-		if (pluginInstance==null) new CeylonPlugin();
-		return pluginInstance;
-	}
+        if (pluginInstance==null) new CeylonPlugin();
+        return pluginInstance;
+    }
 
-	public CeylonPlugin() {
+    public CeylonPlugin() {
         final String version = System.getProperty("java.version");
         if (!version.startsWith("1.7") && !version.startsWith("1.8")) {
             Display.getDefault().asyncExec(new Runnable() {
@@ -107,26 +107,26 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                                     null));
                 }});
         }
-		pluginInstance = this;
-	}
+        pluginInstance = this;
+    }
 
-	@Override
-	public void start(BundleContext context) throws Exception {
+    @Override
+    public void start(BundleContext context) throws Exception {
         String ceylonRepositoryProperty = System.getProperty("ceylon.repo", "");
         ceylonRepository = getCeylonPluginRepository(ceylonRepositoryProperty);
-	    super.start(context);
+        super.start(context);
         this.bundleContext = context;
         addResourceFilterPreference();
         registerProjectOpenCloseListener();
         CeylonEncodingSynchronizer.getInstance().install();
-	}
-	
-	@Override
-	public void stop(BundleContext context) throws Exception {
-	    super.stop(context);
-	    unregisterProjectOpenCloseListener();
-	    CeylonEncodingSynchronizer.getInstance().uninstall();
-	}
+    }
+    
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        super.stop(context);
+        unregisterProjectOpenCloseListener();
+        CeylonEncodingSynchronizer.getInstance().uninstall();
+    }
 
     private void addResourceFilterPreference() throws BackingStoreException {
         new Job("Add Resource Filter for Ceylon projects") {
@@ -249,13 +249,13 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
             + "/" + jarName.substring(lastDash + 1, lastDot);
     }
     
-	public String getID() {
-		return PLUGIN_ID;
-	}
+    public String getID() {
+        return PLUGIN_ID;
+    }
 
-	public String getLanguageID() {
-		return LANGUAGE_ID;
-	}
+    public String getLanguageID() {
+        return LANGUAGE_ID;
+    }
 
     private static IPath iconsPath = new Path("icons/");
 
@@ -263,38 +263,38 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         URL url = FileLocator.find(getBundle(), 
                 iconsPath.append(file), null);
         if (url!=null) {
-        	return ImageDescriptor.createFromURL(url);
+            return ImageDescriptor.createFromURL(url);
         }
         else {
-        	return null;
+            return null;
         }
-	}
-	    
-	@Override
-	protected void initializeImageRegistry(ImageRegistry reg) {
+    }
+        
+    @Override
+    protected void initializeImageRegistry(ImageRegistry reg) {
         reg.put(CEYLON_PROJECT, image("prj_obj.gif"));
         reg.put(CEYLON_FILE, image("unit.gif"));
         reg.put(CEYLON_MODULE_DESC, image("m_desc.gif"));
         reg.put(CEYLON_PACKAGE_DESC, image("p_desc.gif"));
         reg.put(CEYLON_FOLDER, image("fldr_obj.gif"));
         reg.put(CEYLON_SOURCE_FOLDER, image("packagefolder_obj.gif"));
-		reg.put(CEYLON_ARCHIVE, image("jar_l_obj.gif"));
-		reg.put(CEYLON_PACKAGE, image("package_obj.gif"));
-		reg.put(CEYLON_IMPORT_LIST, image("impc_obj.gif"));
-		reg.put(CEYLON_IMPORT, image("imp_obj.gif"));
-		reg.put(CEYLON_ALIAS, image("types.gif"));
-		reg.put(CEYLON_CLASS, image("class_obj.gif"));
-		reg.put(CEYLON_INTERFACE, image("int_obj.gif"));
-		reg.put(CEYLON_LOCAL_CLASS, image("innerclass_private_obj.gif"));
-		reg.put(CEYLON_LOCAL_INTERFACE, image("innerinterface_private_obj.gif"));
-		reg.put(CEYLON_METHOD, image("public_co.gif"));
-		reg.put(CEYLON_ATTRIBUTE, image("field_public_obj.gif"));
-		reg.put(CEYLON_LOCAL_METHOD, image("private_co.gif"));
-		reg.put(CEYLON_LOCAL_ATTRIBUTE, image("field_private_obj.gif"));
+        reg.put(CEYLON_ARCHIVE, image("jar_l_obj.gif"));
+        reg.put(CEYLON_PACKAGE, image("package_obj.gif"));
+        reg.put(CEYLON_IMPORT_LIST, image("impc_obj.gif"));
+        reg.put(CEYLON_IMPORT, image("imp_obj.gif"));
+        reg.put(CEYLON_ALIAS, image("types.gif"));
+        reg.put(CEYLON_CLASS, image("class_obj.gif"));
+        reg.put(CEYLON_INTERFACE, image("int_obj.gif"));
+        reg.put(CEYLON_LOCAL_CLASS, image("innerclass_private_obj.gif"));
+        reg.put(CEYLON_LOCAL_INTERFACE, image("innerinterface_private_obj.gif"));
+        reg.put(CEYLON_METHOD, image("public_co.gif"));
+        reg.put(CEYLON_ATTRIBUTE, image("field_public_obj.gif"));
+        reg.put(CEYLON_LOCAL_METHOD, image("private_co.gif"));
+        reg.put(CEYLON_LOCAL_ATTRIBUTE, image("field_private_obj.gif"));
         reg.put(CEYLON_PARAMETER_METHOD, image("methpro_obj.gif"));
         reg.put(CEYLON_PARAMETER, image("field_protected_obj.gif"));
         reg.put(CEYLON_TYPE_PARAMETER, image("typevariable_obj.gif"));
-	    reg.put(CEYLON_DEFAULT_REFINEMENT, image("over_co.gif"));
+        reg.put(CEYLON_DEFAULT_REFINEMENT, image("over_co.gif"));
         reg.put(CEYLON_FORMAL_REFINEMENT, image("implm_co.gif"));
         reg.put(CEYLON_OPEN_DECLARATION, image("opentype.gif"));
         reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.gif"));
@@ -322,25 +322,25 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(CEYLON_OUTLINE, image("outline_co.gif"));
         reg.put(CEYLON_SOURCE, image("source.gif"));
         reg.put(ELE32, image("ceylon_icon_32px.png"));
-		reg.put(CEYLON_ERR, image("error_co.gif"));
-		reg.put(CEYLON_WARN, image("warning_co.gif"));
-		reg.put(GOTO, image("goto_obj.gif"));
-		reg.put(HIERARCHY, image("class_hi_view.gif"));
-		reg.put(SHIFT_LEFT, image("shift_l_edit.gif"));
-		reg.put(SHIFT_RIGHT, image("shift_r_edit.gif"));
-		reg.put(QUICK_ASSIST, image("quickassist_obj.gif"));
-		reg.put(BUILDER, image("builder.gif"));
-		reg.put(CONFIG_ANN, image("configure_annotations.gif"));
-		reg.put(CONFIG_ANN_DIS, image("configure_annotations_disabled.gif"));
-		reg.put(MODULE_VERSION, image("module_version.gif"));
-		reg.put(EXPAND_ALL, image("expandall.gif"));
-	    reg.put(PAGING, image("paging.gif"));
-	    reg.put(SHOW_DOC, image("show_doc.gif"));
-	    reg.put(REPOSITORIES, image("repositories.gif"));
-	    reg.put(RUNTIME_OBJ, image("runtime_obj.gif"));
-	    reg.put(CEYLON_LOCAL_NAME, image("localvariable_obj.gif"));
+        reg.put(CEYLON_ERR, image("error_co.gif"));
+        reg.put(CEYLON_WARN, image("warning_co.gif"));
+        reg.put(GOTO, image("goto_obj.gif"));
+        reg.put(HIERARCHY, image("class_hi_view.gif"));
+        reg.put(SHIFT_LEFT, image("shift_l_edit.gif"));
+        reg.put(SHIFT_RIGHT, image("shift_r_edit.gif"));
+        reg.put(QUICK_ASSIST, image("quickassist_obj.gif"));
+        reg.put(BUILDER, image("builder.gif"));
+        reg.put(CONFIG_ANN, image("configure_annotations.gif"));
+        reg.put(CONFIG_ANN_DIS, image("configure_annotations_disabled.gif"));
+        reg.put(MODULE_VERSION, image("module_version.gif"));
+        reg.put(EXPAND_ALL, image("expandall.gif"));
+        reg.put(PAGING, image("paging.gif"));
+        reg.put(SHOW_DOC, image("show_doc.gif"));
+        reg.put(REPOSITORIES, image("repositories.gif"));
+        reg.put(RUNTIME_OBJ, image("runtime_obj.gif"));
+        reg.put(CEYLON_LOCAL_NAME, image("localvariable_obj.gif"));
         reg.put(MULTIPLE_TYPES, image("types.gif"));
-	    reg.put(ERROR, image("error_obj.gif"));
+        reg.put(ERROR, image("error_obj.gif"));
         reg.put(WARNING, image("warning_obj.gif"));
         
         reg.put(WARNING_IMAGE, image(WARNING_IMAGE));
@@ -368,8 +368,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(ADD_COMMENT, image("comment_edit.gif"));
         reg.put(TOGGLE_COMMENT, image("url.gif"));
         reg.put(CORRECT_INDENT, image("correctindent.gif"));
-	}
-	
+    }
+    
     private void registerProjectOpenCloseListener() {
          getWorkspace().addResourceChangeListener(projectOpenCloseListener, 
                 IResourceChangeEvent.POST_CHANGE);

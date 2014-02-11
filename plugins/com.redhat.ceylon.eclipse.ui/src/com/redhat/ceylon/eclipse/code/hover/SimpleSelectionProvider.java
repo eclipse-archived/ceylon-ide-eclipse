@@ -32,38 +32,38 @@ import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
  */
 public class SimpleSelectionProvider implements ISelectionProvider {
 
-	private final ListenerList fSelectionChangedListeners;
-	private ISelection fSelection;
+    private final ListenerList fSelectionChangedListeners;
+    private ISelection fSelection;
 
-	/**
-	 * Create a new SimpleSelectionProvider
-	 */
-	public SimpleSelectionProvider() {
-		fSelectionChangedListeners= new ListenerList();
-	}
-
-	@Override
-	public ISelection getSelection() {
-		return fSelection;
-	}
+    /**
+     * Create a new SimpleSelectionProvider
+     */
+    public SimpleSelectionProvider() {
+        fSelectionChangedListeners= new ListenerList();
+    }
 
     @Override
-	public void setSelection(ISelection selection) {
-		fSelection= selection;
-
-		Object[] listeners= fSelectionChangedListeners.getListeners();
-		for (int i= 0; i < listeners.length; i++) {
-			((ISelectionChangedListener) listeners[i]).selectionChanged(new SelectionChangedEvent(this, selection));
-		}
-	}
+    public ISelection getSelection() {
+        return fSelection;
+    }
 
     @Override
-	public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-		fSelectionChangedListeners.remove(listener);
-	}
+    public void setSelection(ISelection selection) {
+        fSelection= selection;
+
+        Object[] listeners= fSelectionChangedListeners.getListeners();
+        for (int i= 0; i < listeners.length; i++) {
+            ((ISelectionChangedListener) listeners[i]).selectionChanged(new SelectionChangedEvent(this, selection));
+        }
+    }
 
     @Override
-	public void addSelectionChangedListener(ISelectionChangedListener listener) {
-		fSelectionChangedListeners.add(listener);
-	}
+    public void removeSelectionChangedListener(ISelectionChangedListener listener) {
+        fSelectionChangedListeners.remove(listener);
+    }
+
+    @Override
+    public void addSelectionChangedListener(ISelectionChangedListener listener) {
+        fSelectionChangedListeners.add(listener);
+    }
 }

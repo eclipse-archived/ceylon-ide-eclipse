@@ -10,11 +10,11 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class MoveDeclarationHandler extends AbstractHandler {
     
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         MoveDeclarationProposal.moveDeclaration((CeylonEditor) getCurrentEditor());        
-		return null;
-	}
+        return null;
+    }
 
     @Override
     protected boolean isEnabled(CeylonEditor editor) {

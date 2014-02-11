@@ -24,12 +24,12 @@ public class InitDependenciesJob extends Job {
     }
 
     @Override 
-    protected IStatus run(IProgressMonitor monitor) {			
-    	try {
-    	    final IJavaProject javaProject = container.getJavaProject();
+    protected IStatus run(IProgressMonitor monitor) {            
+        try {
+            final IJavaProject javaProject = container.getJavaProject();
             final IProject project = javaProject.getProject();
             
-    	    boolean languageModuleContainerFound = false;
+            boolean languageModuleContainerFound = false;
             IClasspathEntry[] entries = javaProject.getRawClasspath();
             for (int i = 0; i < entries.length; i++) {
                 IClasspathEntry entry = entries[i];
@@ -48,12 +48,12 @@ public class InitDependenciesJob extends Job {
                 return Status.OK_STATUS;
             }
             
-    		boolean changed = container.resolveClasspath(monitor, true);
-    		if(changed) {
-        		container.refreshClasspathContainer(monitor);
-        	}
+            boolean changed = container.resolveClasspath(monitor, true);
+            if(changed) {
+                container.refreshClasspathContainer(monitor);
+            }
 
-        	// Schedule a build of the project :
+            // Schedule a build of the project :
             //   - with referenced projects
             //   - with referencing projects (TODO : not sure it's really useful
             //        in the context of the project initialization, 
@@ -104,14 +104,14 @@ public class InitDependenciesJob extends Job {
             buildWhenAllContainersAreInitialized.schedule();
 
             CeylonBuilder.setContainerInitialized(project);
-    		return Status.OK_STATUS;
-    		
-    	} 
-    	catch (JavaModelException ex) {
-    		// unless there are issues with the JDT, this should never happen
-    		return new Status(IStatus.ERROR, PLUGIN_ID,
-    				"could not get container", ex);
-    	}
+            return Status.OK_STATUS;
+            
+        } 
+        catch (JavaModelException ex) {
+            // unless there are issues with the JDT, this should never happen
+            return new Status(IStatus.ERROR, PLUGIN_ID,
+                    "could not get container", ex);
+        }
     }
 
     @Override

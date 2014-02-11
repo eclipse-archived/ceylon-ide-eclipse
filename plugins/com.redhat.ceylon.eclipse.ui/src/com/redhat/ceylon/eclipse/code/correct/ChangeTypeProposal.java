@@ -75,15 +75,15 @@ class ChangeTypeProposal extends CorrectionProposal {
         change.addEdit(new ReplaceEdit(offset, length, typeName));
         String name;
         if (dec.isParameter()) {
-        	name = "parameter '" + dec.getName() + "' of '" + ((Declaration) dec.getContainer()).getName() + "'";
+            name = "parameter '" + dec.getName() + "' of '" + ((Declaration) dec.getContainer()).getName() + "'";
         }
         else if (dec.isClassOrInterfaceMember()) {
-        	name = "member '" +  dec.getName() + "' of '" + ((ClassOrInterface) dec.getContainer()).getName() + "'";
+            name = "member '" +  dec.getName() + "' of '" + ((ClassOrInterface) dec.getContainer()).getName() + "'";
         }
         else {
-        	name = "'" + dec.getName() + "'";
+            name = "'" + dec.getName() + "'";
         }
-		proposals.add(new ChangeTypeProposal(problem, file, name, 
+        proposals.add(new ChangeTypeProposal(problem, file, name, 
                 typeName, offset+il, change));
     }
     
@@ -93,7 +93,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         if (node instanceof Tree.SimpleType) {
             TypeDeclaration decl = ((Tree.SimpleType)node).getDeclarationModel();
             if (decl instanceof TypeParameter) {
-            	Tree.Statement statement = findStatement(cu, node);
+                Tree.Statement statement = findStatement(cu, node);
                 if (statement instanceof Tree.AttributeDeclaration) {
                     Tree.AttributeDeclaration ad = (Tree.AttributeDeclaration) statement;
                     Tree.SimpleType st = (Tree.SimpleType) ad.getType();
@@ -101,16 +101,16 @@ class ChangeTypeProposal extends CorrectionProposal {
                     TypeParameter stTypeParam = null;
                     if (st.getTypeArgumentList() != null) {
                         List<Tree.Type> stTypeArguments = 
-                        		st.getTypeArgumentList().getTypes();
+                                st.getTypeArgumentList().getTypes();
                         for (int i = 0; i < stTypeArguments.size(); i++) {
                             Tree.SimpleType stTypeArgument = 
-                            		(Tree.SimpleType)stTypeArguments.get(i);
+                                    (Tree.SimpleType)stTypeArguments.get(i);
                             if (decl.getName().equals(
                                     stTypeArgument.getDeclarationModel().getName())) {
                                 TypeDeclaration stDecl = st.getDeclarationModel();
                                 if (stDecl != null) {
                                     if (stDecl.getTypeParameters()!=null && 
-                                    		stDecl.getTypeParameters().size() > i) {
+                                            stDecl.getTypeParameters().size() > i) {
                                         stTypeParam = stDecl.getTypeParameters().get(i);
                                         break;
                                     }
@@ -120,17 +120,17 @@ class ChangeTypeProposal extends CorrectionProposal {
                     }
 
                     if (stTypeParam != null && 
-                    		!stTypeParam.getSatisfiedTypes().isEmpty()) {
+                            !stTypeParam.getSatisfiedTypes().isEmpty()) {
                         IntersectionType it = new IntersectionType(cu.getUnit());
                         it.setSatisfiedTypes(stTypeParam.getSatisfiedTypes());
                         addChangeTypeProposals(proposals, problem, project, node, 
-                        		it.canonicalize().getType(), decl, true);
+                                it.canonicalize().getType(), decl, true);
                     }
                 }
             }
         }
         if (node instanceof Tree.SpecifierExpression) {
-        	Tree.Expression e = ((Tree.SpecifierExpression) node).getExpression();
+            Tree.Expression e = ((Tree.SpecifierExpression) node).getExpression();
             if (e!=null) {
                 node = e.getTerm();
             }
@@ -146,20 +146,20 @@ class ChangeTypeProposal extends CorrectionProposal {
             fav.visit(cu);
             TypedDeclaration td = fav.parameter;
             if (td!=null) {
-            	if (node instanceof Tree.BaseMemberExpression){
-            		TypedDeclaration d = (TypedDeclaration) 
-            				((Tree.BaseMemberExpression) node).getDeclaration();
-					addChangeTypeProposals(proposals, problem, project, node, 
-							td.getType(), d, true);
-            	}
-            	if (node instanceof Tree.QualifiedMemberExpression){
-            		TypedDeclaration d = (TypedDeclaration) 
-            				((Tree.QualifiedMemberExpression) node).getDeclaration();
-					addChangeTypeProposals(proposals, problem, project, node, 
-							td.getType(), d, true);
-            	}
-            	addChangeTypeProposals(proposals, problem, project, 
-            			node, type, td, false);
+                if (node instanceof Tree.BaseMemberExpression){
+                    TypedDeclaration d = (TypedDeclaration) 
+                            ((Tree.BaseMemberExpression) node).getDeclaration();
+                    addChangeTypeProposals(proposals, problem, project, node, 
+                            td.getType(), d, true);
+                }
+                if (node instanceof Tree.QualifiedMemberExpression){
+                    TypedDeclaration d = (TypedDeclaration) 
+                            ((Tree.QualifiedMemberExpression) node).getDeclaration();
+                    addChangeTypeProposals(proposals, problem, project, node, 
+                            td.getType(), d, true);
+                }
+                addChangeTypeProposals(proposals, problem, project, 
+                        node, type, td, false);
             }
         }
     }
@@ -181,10 +181,10 @@ class ChangeTypeProposal extends CorrectionProposal {
                     if (dec instanceof TypedDeclaration) {
                         TypedDeclaration typedDec = (TypedDeclaration)dec;
                         FindDeclarationNodeVisitor fdv = 
-                        		new FindDeclarationNodeVisitor(typedDec);
+                                new FindDeclarationNodeVisitor(typedDec);
                         getRootNode(unit).visit(fdv);
                         Tree.TypedDeclaration decNode = 
-                        		(Tree.TypedDeclaration) fdv.getDeclarationNode();
+                                (Tree.TypedDeclaration) fdv.getDeclarationNode();
                         if (decNode!=null) {
                             typeNode = decNode.getType();
                             if (typeNode!=null) {
@@ -194,18 +194,18 @@ class ChangeTypeProposal extends CorrectionProposal {
                     }
                     
                     if (typeNode != null) {
-                    	addChangeTypeProposal(typeNode, problem, proposals, dec, 
-                    			type, getFile(unit), unit.getCompilationUnit());
-                    	if (t != null) {
-                    		ProducedType newType = intersect ? 
-                    				intersectionType(t, type, unit.getUnit()) : 
-                    				unionType(t, type, unit.getUnit());
-                    		if (!newType.isExactly(t)) {
-                    			addChangeTypeProposal(typeNode, problem, 
-                    					proposals, dec, newType, getFile(unit), 
-                    					unit.getCompilationUnit());
-                    		}
-                    	}
+                        addChangeTypeProposal(typeNode, problem, proposals, dec, 
+                                type, getFile(unit), unit.getCompilationUnit());
+                        if (t != null) {
+                            ProducedType newType = intersect ? 
+                                    intersectionType(t, type, unit.getUnit()) : 
+                                    unionType(t, type, unit.getUnit());
+                            if (!newType.isExactly(t)) {
+                                addChangeTypeProposal(typeNode, problem, 
+                                        proposals, dec, newType, getFile(unit), 
+                                        unit.getCompilationUnit());
+                            }
+                        }
                     }
                 }
             }

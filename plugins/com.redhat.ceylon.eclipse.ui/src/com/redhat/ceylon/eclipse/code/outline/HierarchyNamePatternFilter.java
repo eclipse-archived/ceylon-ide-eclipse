@@ -21,33 +21,33 @@ class HierarchyNamePatternFilter extends ViewerFilter {
     }
 
     @Override
-	public boolean select(Viewer viewer, Object parentElement, Object element) {
-		/*JavaElementPrefixPatternMatcher matcher= getMatcher();
-		if (matcher == null || !(viewer instanceof TreeViewer))
-			return true;
-		TreeViewer treeViewer= (TreeViewer) viewer;
+    public boolean select(Viewer viewer, Object parentElement, Object element) {
+        /*JavaElementPrefixPatternMatcher matcher= getMatcher();
+        if (matcher == null || !(viewer instanceof TreeViewer))
+            return true;
+        TreeViewer treeViewer= (TreeViewer) viewer;
 
-		String matchName= ((ILabelProvider) treeViewer.getLabelProvider()).getText(element);
-		matchName= TextProcessor.deprocess(matchName);
-		if (matchName != null && matcher.matches(matchName))
-			return true;
+        String matchName= ((ILabelProvider) treeViewer.getLabelProvider()).getText(element);
+        matchName= TextProcessor.deprocess(matchName);
+        if (matchName != null && matcher.matches(matchName))
+            return true;
 
-		return hasUnfilteredChild(treeViewer, element);*/
-		TreeViewer treeViewer= (TreeViewer) viewer;
-		if (element instanceof CeylonHierarchyNode) {
-		    String name = ((CeylonHierarchyNode) element).getName();
-			return name!=null && name.toLowerCase()
-					.startsWith(filterText.getText().toLowerCase()) ||
-					hasUnfilteredChild(treeViewer, element);
-		}
-		return true;
-	}
+        return hasUnfilteredChild(treeViewer, element);*/
+        TreeViewer treeViewer= (TreeViewer) viewer;
+        if (element instanceof CeylonHierarchyNode) {
+            String name = ((CeylonHierarchyNode) element).getName();
+            return name!=null && name.toLowerCase()
+                    .startsWith(filterText.getText().toLowerCase()) ||
+                    hasUnfilteredChild(treeViewer, element);
+        }
+        return true;
+    }
 
-	private boolean hasUnfilteredChild(TreeViewer viewer, Object element) {
-		Object[] children=  ((ITreeContentProvider) viewer.getContentProvider()).getChildren(element);
-		for (int i= 0; i < children.length; i++)
-			if (select(viewer, element, children[i]))
-				return true;
-		return false;
-	}
+    private boolean hasUnfilteredChild(TreeViewer viewer, Object element) {
+        Object[] children=  ((ITreeContentProvider) viewer.getContentProvider()).getChildren(element);
+        for (int i= 0; i < children.length; i++)
+            if (select(viewer, element, children[i]))
+                return true;
+        return false;
+    }
 }

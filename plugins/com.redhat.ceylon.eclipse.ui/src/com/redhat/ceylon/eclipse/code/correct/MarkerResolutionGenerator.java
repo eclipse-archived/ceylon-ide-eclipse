@@ -20,94 +20,94 @@ import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
-		IMarkerResolutionGenerator2 {
+        IMarkerResolutionGenerator2 {
 
-	private static final IMarkerResolution[] NO_RESOLUTIONS = new IMarkerResolution[0];
+    private static final IMarkerResolution[] NO_RESOLUTIONS = new IMarkerResolution[0];
 
-	private static class CorrectionMarkerResolution implements
-			IMarkerResolution, IMarkerResolution2 {
+    private static class CorrectionMarkerResolution implements
+            IMarkerResolution, IMarkerResolution2 {
 
-		private int fOffset;
-		private int fLength;
-		private ICompletionProposal fProposal;
-		private final IDocument fDocument;
+        private int fOffset;
+        private int fLength;
+        private ICompletionProposal fProposal;
+        private final IDocument fDocument;
 
-		public CorrectionMarkerResolution(int offset, int length, 
-				ICompletionProposal proposal, IMarker marker,
-				IDocument document) {
-			fOffset = offset;
-			fLength = length;
-			fProposal = proposal;
-			fDocument = document;
-		}
+        public CorrectionMarkerResolution(int offset, int length, 
+                ICompletionProposal proposal, IMarker marker,
+                IDocument document) {
+            fOffset = offset;
+            fLength = length;
+            fProposal = proposal;
+            fDocument = document;
+        }
 
-		public String getLabel() {
-			return fProposal.getDisplayString();
-		}
+        public String getLabel() {
+            return fProposal.getDisplayString();
+        }
 
-		public void run(IMarker marker) {
-			try {
-				IEditorPart part = openInEditor(marker.getResource());
-				if (part instanceof ITextEditor) {
-					((ITextEditor) part).selectAndReveal(fOffset, fLength);
-				}
-				if (fDocument != null) {
-					fProposal.apply(fDocument);
-				}
-			} catch (CoreException e) {
-				// JavaPlugin.log(e);
-			}
-		}
+        public void run(IMarker marker) {
+            try {
+                IEditorPart part = openInEditor(marker.getResource());
+                if (part instanceof ITextEditor) {
+                    ((ITextEditor) part).selectAndReveal(fOffset, fLength);
+                }
+                if (fDocument != null) {
+                    fProposal.apply(fDocument);
+                }
+            } catch (CoreException e) {
+                // JavaPlugin.log(e);
+            }
+        }
 
-		public String getDescription() {
-			return fProposal.getAdditionalProposalInfo();
-		}
+        public String getDescription() {
+            return fProposal.getAdditionalProposalInfo();
+        }
 
-		public Image getImage() {
-			return fProposal.getImage();
-		}
-	}
+        public Image getImage() {
+            return fProposal.getImage();
+        }
+    }
 
-	public IMarkerResolution[] getResolutions(final IMarker marker) {
-		if (!hasResolutions(marker)) {
-			return NO_RESOLUTIONS;
-		}
+    public IMarkerResolution[] getResolutions(final IMarker marker) {
+        if (!hasResolutions(marker)) {
+            return NO_RESOLUTIONS;
+        }
 
-		try {
-			IQuickAssistInvocationContext quickAssistContext = 
-					new IQuickAssistInvocationContext() {
-				public ISourceViewer getSourceViewer() { return null; }
-				public int getOffset() {
-					return marker.getAttribute(IMarker.CHAR_START, 0);
-				}
-				public int getLength() {
-					return marker.getAttribute(IMarker.CHAR_END, 0) 
-							- getOffset();
-				}
-			};
+        try {
+            IQuickAssistInvocationContext quickAssistContext = 
+                    new IQuickAssistInvocationContext() {
+                public ISourceViewer getSourceViewer() { return null; }
+                public int getOffset() {
+                    return marker.getAttribute(IMarker.CHAR_START, 0);
+                }
+                public int getLength() {
+                    return marker.getAttribute(IMarker.CHAR_END, 0) 
+                            - getOffset();
+                }
+            };
 
-			ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-			IDocument doc = getDocument(marker.getResource());
-			new CeylonCorrectionProcessor(marker).collectCorrections(quickAssistContext, 
-					new ProblemLocation(marker), proposals);
+            ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
+            IDocument doc = getDocument(marker.getResource());
+            new CeylonCorrectionProcessor(marker).collectCorrections(quickAssistContext, 
+                    new ProblemLocation(marker), proposals);
 
-			IMarkerResolution[] resolutions = new IMarkerResolution[proposals.size()];
-			int i = 0;
-			for (ICompletionProposal proposal: proposals) {
-				resolutions[i++] = new CorrectionMarkerResolution(
-						quickAssistContext.getOffset(), quickAssistContext.getLength(), 
-						proposal, marker, doc);
-			}
-			return resolutions;
+            IMarkerResolution[] resolutions = new IMarkerResolution[proposals.size()];
+            int i = 0;
+            for (ICompletionProposal proposal: proposals) {
+                resolutions[i++] = new CorrectionMarkerResolution(
+                        quickAssistContext.getOffset(), quickAssistContext.getLength(), 
+                        proposal, marker, doc);
+            }
+            return resolutions;
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-		return NO_RESOLUTIONS;
-	}
+        return NO_RESOLUTIONS;
+    }
 
-	public boolean hasResolutions(IMarker marker) {
-		return CeylonCorrectionProcessor.canFix(marker);
-	}
+    public boolean hasResolutions(IMarker marker) {
+        return CeylonCorrectionProcessor.canFix(marker);
+    }
 }

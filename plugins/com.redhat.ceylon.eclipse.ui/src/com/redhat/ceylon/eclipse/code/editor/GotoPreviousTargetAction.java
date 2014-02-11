@@ -13,7 +13,7 @@ class GotoPreviousTargetAction extends TargetNavigationAction {
 
     @Override
     protected Object getNavTarget(Object o, Object astRoot) {
-    	return null;
+        return null;
         //return fNavTargetFinder.getPreviousTarget(o, astRoot);
     }
 }

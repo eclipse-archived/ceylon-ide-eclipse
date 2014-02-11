@@ -50,21 +50,21 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         return DebugPlugin.getDefault().getLaunchManager();
     }
  
-	protected abstract ILaunchConfigurationType getConfigurationType();
+    protected abstract ILaunchConfigurationType getConfigurationType();
  
     private String getLaunchConfigurationName(String projectName, String moduleName, Declaration declarationToRun) {
         String topLevelDisplayName = LaunchHelper.getTopLevelDisplayName(declarationToRun);
         
         String configurationName = projectName.trim() + " - " 
-        		+ moduleName.trim() + " ("  
-        		+ topLevelDisplayName.trim() + ")";
-		
+                + moduleName.trim() + " ("  
+                + topLevelDisplayName.trim() + ")";
+        
         configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
         
         return getLaunchManager().generateLaunchConfigurationName(configurationName);
     }
     
-	/**
+    /**
      * Creates a <b>new</b> configuration if none was found or chosen.
      * 
      * @return the configuration created.
@@ -81,14 +81,14 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
             }
 
             wc = getConfigurationType().newInstance(null, getLaunchConfigurationName(
-            				resource.getProject().getName(), moduleName, declarationToRun));
+                            resource.getProject().getName(), moduleName, declarationToRun));
             
             wc.setAttribute(ATTR_PROJECT_NAME, resource.getProject().getName());
             wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, moduleName);
             
             // save the runnable display name, which may be exact name or 'run - default'
             wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, 
-            		LaunchHelper.getTopLevelDisplayName(declarationToRun));
+                    LaunchHelper.getTopLevelDisplayName(declarationToRun));
             
             wc.setMappedResources(new IResource[] {resource});
             config = wc.doSave();
@@ -107,7 +107,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      */
     protected ILaunchConfiguration findLaunchConfiguration(Declaration declaration, IResource resource, 
             ILaunchConfigurationType configType) {
-    	
+        
         List<ILaunchConfiguration> candidateConfigs = Collections.<ILaunchConfiguration>emptyList();
         String projectName = resource.getProject().getName();
         
@@ -181,22 +181,22 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
             if (object instanceof IAdaptable) {
                 IResource resource = (IResource) ((IAdaptable)object).getAdapter(IResource.class);
                 if (resource != null) {
-                	if (resource instanceof IProject) {
-                		Module mod = LaunchHelper.chooseModule((IProject)resource, true);
-                		if (mod != null) {
-                			launchModule(mod, resource, mode);
-                			return; // do not look at other parts of the selection
-                		} else {
-                			return;
-                		}
-                	}
-                	else if (resource instanceof IFolder 
-                			&& LaunchHelper.getModule((IFolder)resource) != null) { //check for module
-                		launchModule(LaunchHelper.getModule((IFolder)resource), resource, mode);
-                		return;
-                	} else {
-                		LaunchHelper.addFiles(files, resource);
-                	}
+                    if (resource instanceof IProject) {
+                        Module mod = LaunchHelper.chooseModule((IProject)resource, true);
+                        if (mod != null) {
+                            launchModule(mod, resource, mode);
+                            return; // do not look at other parts of the selection
+                        } else {
+                            return;
+                        }
+                    }
+                    else if (resource instanceof IFolder 
+                            && LaunchHelper.getModule((IFolder)resource) != null) { //check for module
+                        launchModule(LaunchHelper.getModule((IFolder)resource), resource, mode);
+                        return;
+                    } else {
+                        LaunchHelper.addFiles(files, resource);
+                    }
                 }
             }
         }
@@ -250,8 +250,8 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      */
     private void searchAndLaunch(List<IFile> files, String mode) {
 
-    	Object[] ret = LaunchHelper.findDeclarationFromFiles(files);
-    	if (ret != null && ret[0] != null && ret[1] != null) {
+        Object[] ret = LaunchHelper.findDeclarationFromFiles(files);
+        if (ret != null && ret[0] != null && ret[1] != null) {
             launch((Declaration)ret[0], (IFile)ret[1], mode);
         }
     }
@@ -263,22 +263,22 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      * @param mode
      */
     private void launchModule(Module mod, IResource resource, String mode) {
-    	
-    	Declaration declarationToRun = LaunchHelper.getDefaultRunnableForModule(mod);
+        
+        Declaration declarationToRun = LaunchHelper.getDefaultRunnableForModule(mod);
 
-    	List<Declaration> decls = new LinkedList<Declaration>();
-    	
-    	if (declarationToRun != null) {
-    		decls.add(declarationToRun); // top
-    	}
-    	
-    	decls.addAll(LaunchHelper.getDeclarationsForModule(
-    			resource.getProject().getName(), LaunchHelper.getFullModuleName(mod)));
-    	
-    	declarationToRun = LaunchHelper.chooseDeclaration(decls);
-    	if (declarationToRun != null) {
-    		launch(declarationToRun, resource, mode);
-    	}
+        List<Declaration> decls = new LinkedList<Declaration>();
+        
+        if (declarationToRun != null) {
+            decls.add(declarationToRun); // top
+        }
+        
+        decls.addAll(LaunchHelper.getDeclarationsForModule(
+                resource.getProject().getName(), LaunchHelper.getFullModuleName(mod)));
+        
+        declarationToRun = LaunchHelper.chooseDeclaration(decls);
+        if (declarationToRun != null) {
+            launch(declarationToRun, resource, mode);
+        }
     }
     
     /**

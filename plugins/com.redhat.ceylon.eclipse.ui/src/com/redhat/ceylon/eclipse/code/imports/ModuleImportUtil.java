@@ -37,7 +37,7 @@ import com.redhat.ceylon.eclipse.util.Indents;
 public class ModuleImportUtil {
 
     public static void exportModuleImports(IProject project, 
-    		Module target, String moduleName) {
+            Module target, String moduleName) {
         PhasedUnit unit = findPhasedUnit(project, target);
         exportModuleImports(getFile(unit), 
                 unit.getCompilationUnit(), 
@@ -45,7 +45,7 @@ public class ModuleImportUtil {
     }
 
     public static void removeModuleImports(IProject project, 
-    		Module target, List<String> moduleNames) {
+            Module target, List<String> moduleNames) {
         if (moduleNames.isEmpty()) return;
         PhasedUnit unit = findPhasedUnit(project, target);
         removeModuleImports(getFile(unit), 
@@ -56,11 +56,11 @@ public class ModuleImportUtil {
     public static void exportModuleImports(IFile file, CompilationUnit cu, 
             String moduleName) {
         TextFileChange textFileChange = 
-        		new TextFileChange("Export Module Imports", file);
+                new TextFileChange("Export Module Imports", file);
         textFileChange.setEdit(new MultiTextEdit());
         InsertEdit edit = createExportEdit(cu, moduleName);
         if (edit!=null) {
-        	textFileChange.addEdit(edit);
+            textFileChange.addEdit(edit);
         }
         try {
             textFileChange.perform(new NullProgressMonitor());
@@ -73,7 +73,7 @@ public class ModuleImportUtil {
     public static void removeModuleImports(IFile file, CompilationUnit cu, 
             List<String> moduleNames) {
         TextFileChange textFileChange = 
-        		new TextFileChange("Remove Module Imports", file);
+                new TextFileChange("Remove Module Imports", file);
         textFileChange.setEdit(new MultiTextEdit());
         for (String moduleName: moduleNames) {
             DeleteEdit edit = createRemoveEdit(cu, moduleName);
@@ -95,7 +95,7 @@ public class ModuleImportUtil {
                 singletonMap(moduleName, moduleVersion));
         gotoLocation(getNodePath(
                 findPhasedUnit(project, target).getCompilationUnit(), 
-                		project, getProjectTypeChecker(project)), 
+                        project, getProjectTypeChecker(project)), 
                 offset + moduleName.length() + 
                         getDefaultIndent().length() + 10, 
                 moduleVersion.length());
@@ -113,18 +113,18 @@ public class ModuleImportUtil {
     public static int addModuleImports(IFile file, CompilationUnit cu, 
             Map<String, String> moduleNamesAndVersions) {
         TextFileChange textFileChange = 
-        		new TextFileChange("Add Module Imports", file);
+                new TextFileChange("Add Module Imports", file);
         textFileChange.setEdit(new MultiTextEdit());
         try {
-        	for (Map.Entry<String, String> entry: 
-        		moduleNamesAndVersions.entrySet()) {
-        		InsertEdit edit = createAddEdit(cu, entry.getKey(), 
-        				entry.getValue(), 
-        				textFileChange.getCurrentDocument(null));
-        		if (edit!=null) {
-        			textFileChange.addEdit(edit);
-        		}
-        	}
+            for (Map.Entry<String, String> entry: 
+                moduleNamesAndVersions.entrySet()) {
+                InsertEdit edit = createAddEdit(cu, entry.getKey(), 
+                        entry.getValue(), 
+                        textFileChange.getCurrentDocument(null));
+                if (edit!=null) {
+                    textFileChange.addEdit(edit);
+                }
+            }
             textFileChange.perform(new NullProgressMonitor());
         }
         catch (CoreException e) {
@@ -134,12 +134,12 @@ public class ModuleImportUtil {
     }
 
     private static PhasedUnit findPhasedUnit(IProject project, 
-    		Module module) {
+            Module module) {
         String moduleFullPath = module.getUnit().getFullPath();
         List<PhasedUnit> phasedUnits = getUnits(project);
         for (PhasedUnit phasedUnit: phasedUnits) {
             if (phasedUnit.getUnit().getFullPath()
-            		.equals(moduleFullPath)) {
+                    .equals(moduleFullPath)) {
                 return phasedUnit;
             }
         }
@@ -172,23 +172,23 @@ public class ModuleImportUtil {
     public static void appendImportStatement(StringBuilder importModule,
             String moduleName, String moduleVersion, String newline) {
         importModule.append(newline)
-		        .append(getDefaultIndent())
-		        .append("import ")
-		        .append(moduleName)
-		        .append(" \"")
-		        .append(moduleVersion)
-		        .append("\";");
+                .append(getDefaultIndent())
+                .append("import ")
+                .append(moduleName)
+                .append(" \"")
+                .append(moduleVersion)
+                .append("\";");
     }
 
     private static DeleteEdit createRemoveEdit(CompilationUnit unit, 
-    		String moduleName) {
+            String moduleName) {
         ImportModuleList iml = getImportList(unit);    
         if (iml==null) return null;
         ImportModule prev = null;
         for (ImportModule im: iml.getImportModules()) {
             ImportPath ip = im.getImportPath();
             if (ip!=null && 
-            		formatPath(ip.getIdentifiers()).equals(moduleName)) {
+                    formatPath(ip.getIdentifiers()).equals(moduleName)) {
                 int startOffset = getNodeStartOffset(im);
                 int length = getNodeLength(im);
                 //TODO: handle whitespace for first import in list
@@ -205,13 +205,13 @@ public class ModuleImportUtil {
     }
 
     private static InsertEdit createExportEdit(CompilationUnit unit, 
-    		String moduleName) {
+            String moduleName) {
         ImportModuleList iml = getImportList(unit);    
         if (iml==null) return null;
         for (ImportModule im: iml.getImportModules()) {
             ImportPath ip = im.getImportPath();
             if (ip!=null && 
-            		formatPath(ip.getIdentifiers()).equals(moduleName)) {
+                    formatPath(ip.getIdentifiers()).equals(moduleName)) {
                 int startOffset = getNodeStartOffset(im);
                 return new InsertEdit(startOffset, "shared ");
             }

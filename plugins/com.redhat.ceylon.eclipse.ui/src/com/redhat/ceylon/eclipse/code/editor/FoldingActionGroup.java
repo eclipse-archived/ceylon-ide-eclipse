@@ -135,7 +135,7 @@ public class FoldingActionGroup extends ActionGroup {
         /*fRestoreDefaults= new FoldingAction(getResourceBundle(), "Projection.Restore.") { //$NON-NLS-1$
             public void run() {
                 if (editor instanceof CeylonEditor) {
-                	CeylonEditor univEditor= (CeylonEditor) editor;
+                    CeylonEditor univEditor= (CeylonEditor) editor;
 //                  javaEditor.resetProjection();
                 }
             }
@@ -146,19 +146,19 @@ public class FoldingActionGroup extends ActionGroup {
         fCollapseComments= new FoldingAction(getResourceBundle(), "Projection.CollapseComments.") {
             public void run() {
                 if (editor instanceof CeylonEditor) {
-                	ProjectionAnnotationModel pam = ((CeylonEditor) editor).getCeylonSourceViewer()
-                	        .getProjectionAnnotationModel();
-                	for (@SuppressWarnings("unchecked")
+                    ProjectionAnnotationModel pam = ((CeylonEditor) editor).getCeylonSourceViewer()
+                            .getProjectionAnnotationModel();
+                    for (@SuppressWarnings("unchecked")
                     Iterator<ProjectionAnnotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
-                	    ProjectionAnnotation pa = iter.next();
-                	    if (pa instanceof CeylonProjectionAnnotation) {
-                	        int tt = ((CeylonProjectionAnnotation) pa).getTokenType();
-                	        if (tt==CeylonLexer.MULTI_COMMENT || 
-                	            tt==CeylonLexer.LINE_COMMENT) {
-                	            pam.collapse(pa);
-                	        }
-                	    }
-                	}
+                        ProjectionAnnotation pa = iter.next();
+                        if (pa instanceof CeylonProjectionAnnotation) {
+                            int tt = ((CeylonProjectionAnnotation) pa).getTokenType();
+                            if (tt==CeylonLexer.MULTI_COMMENT || 
+                                tt==CeylonLexer.LINE_COMMENT) {
+                                pam.collapse(pa);
+                            }
+                        }
+                    }
                 }
             }
         };

@@ -16,7 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class InferTypeVisitor extends Visitor {
-	
+    
     Unit unit;
     Declaration dec;
     ProducedType inferredType;
@@ -52,7 +52,7 @@ class InferTypeVisitor extends Visitor {
                 null : that.getSpecifierOrInitializerExpression().getExpression().getTerm();
         if (term instanceof Tree.BaseMemberExpression) {
             Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
-			if (d!=null && d.equals(dec)) {
+            if (d!=null && d.equals(dec)) {
                 intersect(that.getType().getTypeModel());
             }
         }
@@ -65,13 +65,13 @@ class InferTypeVisitor extends Visitor {
                 null : that.getSpecifierExpression().getExpression().getTerm();
         if (bme instanceof Tree.BaseMemberExpression) {
             Declaration d = ((Tree.BaseMemberExpression) bme).getDeclaration();
-			if (d!=null && d.equals(dec)) {
+            if (d!=null && d.equals(dec)) {
                 if (term!=null) union(term.getTypeModel());
             }
         } 
         if (term instanceof Tree.BaseMemberExpression) {
             Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
-			if (d!=null && d.equals(dec)) {
+            if (d!=null && d.equals(dec)) {
                 if (bme!=null) intersect(bme.getTypeModel());
             }
         }
@@ -113,7 +113,7 @@ class InferTypeVisitor extends Visitor {
         if (t instanceof Tree.BaseMemberExpression) {
             Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
             Declaration d = bme.getDeclaration();
-			if (d!=null && d.equals(dec)) {
+            if (d!=null && d.equals(dec)) {
                 Parameter p = that.getParameter();
                 if (p!=null && pr!=null) {
                     ProducedType ft = pr.getTypedParameter(p)
@@ -121,7 +121,7 @@ class InferTypeVisitor extends Visitor {
                     if (p.isSequenced()) {
                         ft = unit.getIteratedType(ft);
                     }
-                	intersect(ft);
+                    intersect(ft);
                 }
             }
         }
@@ -133,13 +133,13 @@ class InferTypeVisitor extends Visitor {
         if (t instanceof Tree.BaseMemberExpression) {
             Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
             Declaration d = bme.getDeclaration();
-			if (d!=null && d.equals(dec)) {
+            if (d!=null && d.equals(dec)) {
                 Parameter p = that.getParameter();
                 if (p!=null && pr!=null) {
-                	//TODO: is this correct?
+                    //TODO: is this correct?
                     ProducedType ft = pr.getTypedParameter(p)
                             .getFullType();
-                	intersect(unit.getIterableType(unit.getIteratedType(ft)));
+                    intersect(unit.getIterableType(unit.getIteratedType(ft)));
                 }
             }
         }
@@ -151,12 +151,12 @@ class InferTypeVisitor extends Visitor {
         if (t instanceof Tree.BaseMemberExpression) {
             Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
             Declaration d = bme.getDeclaration();
-			if (d!=null && d.equals(dec)) {
+            if (d!=null && d.equals(dec)) {
                 Parameter p = that.getParameter();
                 if (p!=null && pr!=null) {
                     ProducedType ft = pr.getTypedParameter(p)
                             .getFullType();
-                	intersect(ft);
+                    intersect(ft);
                 }
             }
         }
@@ -167,7 +167,7 @@ class InferTypeVisitor extends Visitor {
         Tree.Term bme = that.getExpression().getTerm();
         if (bme instanceof Tree.BaseMemberExpression) {
             Declaration bmed = ((Tree.BaseMemberExpression) bme).getDeclaration();
-			if (bmed!=null && bmed.equals(dec)) {
+            if (bmed!=null && bmed.equals(dec)) {
                 Declaration d = that.getDeclaration();
                 if (d instanceof TypedDeclaration) {
                     intersect(((TypedDeclaration) d).getType());

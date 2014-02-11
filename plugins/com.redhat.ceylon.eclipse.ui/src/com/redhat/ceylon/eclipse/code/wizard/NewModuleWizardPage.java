@@ -87,7 +87,7 @@ final class NewModuleWizardPage extends NewUnitWizardPage {
         versionName.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-            	version = versionName.getText();
+                version = versionName.getText();
                 setPageComplete(isComplete());
             }
         });

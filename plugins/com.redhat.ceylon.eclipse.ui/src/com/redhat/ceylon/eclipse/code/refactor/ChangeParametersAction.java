@@ -12,14 +12,14 @@ public class ChangeParametersAction extends AbstractHandler {
         
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-		ITextEditor editor = (ITextEditor) getCurrentEditor();
-		new ChangeParametersRefactoringAction(editor).run();
+        ITextEditor editor = (ITextEditor) getCurrentEditor();
+        new ChangeParametersRefactoringAction(editor).run();
         return null;
     }
 
-	@Override
-	protected boolean isEnabled(CeylonEditor editor) {
+    @Override
+    protected boolean isEnabled(CeylonEditor editor) {
         return new ChangeParametersRefactoringAction(editor).isEnabled();
-	}
+    }
             
 }

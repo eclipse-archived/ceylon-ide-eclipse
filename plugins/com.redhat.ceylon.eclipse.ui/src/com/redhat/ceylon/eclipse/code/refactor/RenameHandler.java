@@ -15,25 +15,25 @@ public class RenameHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ITextEditor editor = (ITextEditor) getCurrentEditor();
-    	if (useLinkedMode() && editor instanceof CeylonEditor) {
-    	    CeylonEditor ce = (CeylonEditor)editor;
+        if (useLinkedMode() && editor instanceof CeylonEditor) {
+            CeylonEditor ce = (CeylonEditor)editor;
             if (ce.isInLinkedMode()) {
-    	        if (ce.getLinkedModeOwner() instanceof RenameDeclarationLinkedMode) {
-    	            RenameDeclarationLinkedMode current = (RenameDeclarationLinkedMode) ce.getLinkedModeOwner();
+                if (ce.getLinkedModeOwner() instanceof RenameDeclarationLinkedMode) {
+                    RenameDeclarationLinkedMode current = (RenameDeclarationLinkedMode) ce.getLinkedModeOwner();
                     current.enterDialogMode();
                     current.openDialog();
-    	        }
-    	        else {
-    	            new RenameRefactoringAction(editor).run();
-    	        }
-    	    }
-    	    else {
-    	        new RenameDeclarationLinkedMode(ce).start();
-    	    }
-    	}
-    	else {
-    		new RenameRefactoringAction(editor).run();
-    	}
+                }
+                else {
+                    new RenameRefactoringAction(editor).run();
+                }
+            }
+            else {
+                new RenameDeclarationLinkedMode(ce).start();
+            }
+        }
+        else {
+            new RenameRefactoringAction(editor).run();
+        }
         return null;
     }
             

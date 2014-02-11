@@ -46,11 +46,11 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
     private ExportJarWizardPage page;
     private ImportModulesWizardPage importsPage;
     
-	@Override
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
-	}
-	
+    }
+    
     @Override
     public void addPages() {
         super.addPages();
@@ -71,7 +71,7 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
                     }
                 }*/
             }
-			if (repoPath==null) repoPath = getDefaultRepositoryPath();
+            if (repoPath==null) repoPath = getDefaultRepositoryPath();
             page = new ExportJarWizardPage(repoPath, project, selectedElement);
             //page.init(selection);
         }
@@ -96,24 +96,24 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
         addPage(importsPage);
     }
     
-	public static String getDefaultRepositoryPath() {
-		String repositoryPath = CeylonPlugin.getInstance().getDialogSettings()
-        		.get("repositoryPath");
+    public static String getDefaultRepositoryPath() {
+        String repositoryPath = CeylonPlugin.getInstance().getDialogSettings()
+                .get("repositoryPath");
         if (repositoryPath==null || repositoryPath.startsWith("http://")) {
-        	repositoryPath = System.getProperty("user.home") + "/.ceylon/repo";
+            repositoryPath = System.getProperty("user.home") + "/.ceylon/repo";
         }
         return repositoryPath;
-	}
-	
-	//TODO: fix copy/paste from NewUnitWizardPage
+    }
+    
+    //TODO: fix copy/paste from NewUnitWizardPage
     private IJavaElement getSelectedElement() {
         if (selection!=null && selection.size()==1) {
             Object element = selection.getFirstElement();
             if (element instanceof IFile) {
-            	return JavaCore.create(((IFile) element).getParent());
+                return JavaCore.create(((IFile) element).getParent());
             }
             else {
-			    return (IJavaElement) ((IAdaptable) element)
+                return (IJavaElement) ((IAdaptable) element)
                         .getAdapter(IJavaElement.class);
             }
         }
@@ -124,194 +124,194 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
     
     private Exception ex;
     
-	@Override
-	public boolean performFinish() {
+    @Override
+    public boolean performFinish() {
         final String name = page.getModuleName();
         final String version = page.getVersion();
         final String dir = name.replace('.', File.separatorChar) + File.separatorChar + version;
         final String fileName = name + "-" + version + ".jar";
-	    final String xml = renderModuleDescriptor(name, version, fileName);
-		final String repositoryPath = page.getRepositoryPath();
-//		final IJavaProject project = page.getProject();
-//		if (project==null) {
-//			MessageDialog.openError(getShell(), "Export Java Archive Error", 
-//					"No Java project selected.");
-//			return false;
-//		}
-//		else {
-			/*IProject project = javaProject.getProject();
-			List<PhasedUnit> list = CeylonBuilder.getProjectTypeChecker(project)
-				.getPhasedUnits().getPhasedUnits();
-			Set<String> moduleNames = new HashSet<String>();
-			for (PhasedUnit phasedUnit: list) {
-				Module module = phasedUnit.getUnit().getPackage().getModule();
-				moduleNames.add(module.getNameAsString());
-			}*/
-			ex = null;
-//			TableItem[] selectedItems = page.getModules().getSelection();
-//			final String[] selectedModules = new String[selectedItems.length];
-//			for (int i=0; i<selectedItems.length; i++) {
-//				selectedModules[i] = selectedItems[i].getText();
-//			}
-			try {
-				Job job = new Job("Exporting Java archive") {
-					@Override
-					protected IStatus run(IProgressMonitor monitor) {
-						Path jarPath = Paths.get(page.getJarPath());
-						Path repoPath = Paths.get(repositoryPath);
-						if (!Files.exists(repoPath)) {
-						    try {
+        final String xml = renderModuleDescriptor(name, version, fileName);
+        final String repositoryPath = page.getRepositoryPath();
+//        final IJavaProject project = page.getProject();
+//        if (project==null) {
+//            MessageDialog.openError(getShell(), "Export Java Archive Error", 
+//                    "No Java project selected.");
+//            return false;
+//        }
+//        else {
+            /*IProject project = javaProject.getProject();
+            List<PhasedUnit> list = CeylonBuilder.getProjectTypeChecker(project)
+                .getPhasedUnits().getPhasedUnits();
+            Set<String> moduleNames = new HashSet<String>();
+            for (PhasedUnit phasedUnit: list) {
+                Module module = phasedUnit.getUnit().getPackage().getModule();
+                moduleNames.add(module.getNameAsString());
+            }*/
+            ex = null;
+//            TableItem[] selectedItems = page.getModules().getSelection();
+//            final String[] selectedModules = new String[selectedItems.length];
+//            for (int i=0; i<selectedItems.length; i++) {
+//                selectedModules[i] = selectedItems[i].getText();
+//            }
+            try {
+                Job job = new Job("Exporting Java archive") {
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        Path jarPath = Paths.get(page.getJarPath());
+                        Path repoPath = Paths.get(repositoryPath);
+                        if (!Files.exists(repoPath)) {
+                            try {
                                 Files.createDirectories(repoPath);
                             } catch (IOException e) {
                                 MessageDialog.openError(getShell(), "Export Java Archive Error", 
                                         "No repository at location: " + repositoryPath);
                                 return Status.CANCEL_STATUS;
                             }
-						}
-						Path repoModulePath = repoPath.resolve(dir);
-						try {
-							Files.createDirectories(repoModulePath);
-							Path targetPath = repoModulePath.resolve(fileName);
-							Files.copy(jarPath, targetPath, REPLACE_EXISTING);
-							Logger log = new Logger() {
-								@Override
-								public void warning(String str) {
-									// TODO Auto-generated method stub
-								}
-								@Override
-								public void info(String str) {
-									// TODO Auto-generated method stub
-								}
-								@Override
-								public void error(String str) {
-									// TODO Auto-generated method stub
-								}
-								@Override
-								public void debug(String str) {
-									// TODO Auto-generated method stub
-								}
-							};
-							ShaSigner.sign(targetPath.toFile(), log, false);
+                        }
+                        Path repoModulePath = repoPath.resolve(dir);
+                        try {
+                            Files.createDirectories(repoModulePath);
+                            Path targetPath = repoModulePath.resolve(fileName);
+                            Files.copy(jarPath, targetPath, REPLACE_EXISTING);
+                            Logger log = new Logger() {
+                                @Override
+                                public void warning(String str) {
+                                    // TODO Auto-generated method stub
+                                }
+                                @Override
+                                public void info(String str) {
+                                    // TODO Auto-generated method stub
+                                }
+                                @Override
+                                public void error(String str) {
+                                    // TODO Auto-generated method stub
+                                }
+                                @Override
+                                public void debug(String str) {
+                                    // TODO Auto-generated method stub
+                                }
+                            };
+                            ShaSigner.sign(targetPath.toFile(), log, false);
                             Path descriptorPath = repoModulePath.resolve("module.xml");
-							OutputStream stream = Files.newOutputStream(descriptorPath);
-							try {
-							    OutputStreamWriter writer = new OutputStreamWriter(stream);
+                            OutputStream stream = Files.newOutputStream(descriptorPath);
+                            try {
+                                OutputStreamWriter writer = new OutputStreamWriter(stream);
                                 writer.append(xml);
                                 writer.flush();
-							}
-							finally {
-							    stream.close();
-							}
-							
-						}
-						catch (Exception e) {
-							ex = e;
-							return Status.CANCEL_STATUS;
-						}
-						return Status.OK_STATUS;
-					}
-				};
-				PlatformUI.getWorkbench().getProgressService().showInDialog(getShell(), job);
-				job.setUser(true);
-				job.schedule();
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-			if (ex!=null) {
-				ex.printStackTrace();
-				MessageDialog.openError(getShell(), "Export Java Archive Error", 
-						"Error occurred exporting Java archive: " + ex.getMessage());
-			}
-			persistDefaultRepositoryPath(repositoryPath);
-//		}
-		return true;
-	}
+                            }
+                            finally {
+                                stream.close();
+                            }
+                            
+                        }
+                        catch (Exception e) {
+                            ex = e;
+                            return Status.CANCEL_STATUS;
+                        }
+                        return Status.OK_STATUS;
+                    }
+                };
+                PlatformUI.getWorkbench().getProgressService().showInDialog(getShell(), job);
+                job.setUser(true);
+                job.schedule();
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (ex!=null) {
+                ex.printStackTrace();
+                MessageDialog.openError(getShell(), "Export Java Archive Error", 
+                        "Error occurred exporting Java archive: " + ex.getMessage());
+            }
+            persistDefaultRepositoryPath(repositoryPath);
+//        }
+        return true;
+    }
 
     public String renderModuleDescriptor(final String name,
             final String version, final String fileName) {
         StringBuilder builder = new StringBuilder();
-	    String newline = System.lineSeparator();
+        String newline = System.lineSeparator();
         builder.append("<module xmlns=\"urn:jboss:module:1.1\" name=\"")
-	            .append(name)
-	            .append("\" slot=\"")
-	            .append(version)
-	            .append("\">")
-	            .append(newline)
-	            .append("    ")
-	            .append("<resources>")
-	            .append(newline)
-	            .append("        ")
-	            .append("<resource-root path=\"")
-	            .append(fileName)
-	            .append("\"/>")
-	            .append(newline)
-	            .append("    ")
-	            .append("</resources>")
-	            .append(newline)
-	            .append("    ")
-	            .append("<dependencies>")
-	            .append(newline);
-	    for (Map.Entry<String, String> entry: 
-	        importsPage.getImports().entrySet()) {
-	        if (name.equals(Module.LANGUAGE_MODULE_NAME)) continue;
-	        builder.append("        ")
-	                .append("<module name=\"")
-	                .append(entry.getKey())
-	                .append("\" slot=\"")
-	                .append(entry.getValue())
-	                .append("\"/>")
-	                .append(newline);
-	    }
-	    builder.append("     ")
-	            .append("</dependencies>")
-	            .append(newline)
-	            .append("</module>");
-	    return builder.toString();
+                .append(name)
+                .append("\" slot=\"")
+                .append(version)
+                .append("\">")
+                .append(newline)
+                .append("    ")
+                .append("<resources>")
+                .append(newline)
+                .append("        ")
+                .append("<resource-root path=\"")
+                .append(fileName)
+                .append("\"/>")
+                .append(newline)
+                .append("    ")
+                .append("</resources>")
+                .append(newline)
+                .append("    ")
+                .append("<dependencies>")
+                .append(newline);
+        for (Map.Entry<String, String> entry: 
+            importsPage.getImports().entrySet()) {
+            if (name.equals(Module.LANGUAGE_MODULE_NAME)) continue;
+            builder.append("        ")
+                    .append("<module name=\"")
+                    .append(entry.getKey())
+                    .append("\" slot=\"")
+                    .append(entry.getValue())
+                    .append("\"/>")
+                    .append(newline);
+        }
+        builder.append("     ")
+                .append("</dependencies>")
+                .append(newline)
+                .append("</module>");
+        return builder.toString();
     }
-	
-	public static void persistDefaultRepositoryPath(String repositoryPath) {
-		if (repositoryPath!=null && !repositoryPath.isEmpty()) {
-		    CeylonPlugin.getInstance().getDialogSettings()
-		            .put("repositoryPath", repositoryPath);
-		}
-	}
-	
-	/*public static void copyFolder(File src, File dest)
-			throws IOException{
-    	if (src.isDirectory()) {
-    		if ( !dest.exists() ) dest.mkdir();
-    		for (String file: src.list()) {
-    		   File srcFile = new File(src, file);
-    		   File destFile = new File(dest, file);
-    		   copyFolder(srcFile, destFile);
-    		}
-    	}
-    	else if (src.getName().endsWith(".car") ||
-    			src.getName().endsWith(".src") ||
-    			src.getName().endsWith(".sha1")) {
-    	    FileChannel source = null;
-    	    FileChannel destination = null;
-    	    try {
-    	        source = new FileInputStream(src).getChannel();
-    	        destination = new FileOutputStream(dest).getChannel();
-    	        destination.transferFrom(source, 0, source.size());
-    	    }
-    	    finally {
-    	        if (source != null) {
-    	            source.close();
-    	        }
-    	        if (destination != null) {
-    	            destination.close();
-    	        }
-    	    }
-	    	System.out.println("Archive exported from " + src + " to " + dest);
-    	}
+    
+    public static void persistDefaultRepositoryPath(String repositoryPath) {
+        if (repositoryPath!=null && !repositoryPath.isEmpty()) {
+            CeylonPlugin.getInstance().getDialogSettings()
+                    .put("repositoryPath", repositoryPath);
+        }
+    }
+    
+    /*public static void copyFolder(File src, File dest)
+            throws IOException{
+        if (src.isDirectory()) {
+            if ( !dest.exists() ) dest.mkdir();
+            for (String file: src.list()) {
+               File srcFile = new File(src, file);
+               File destFile = new File(dest, file);
+               copyFolder(srcFile, destFile);
+            }
+        }
+        else if (src.getName().endsWith(".car") ||
+                src.getName().endsWith(".src") ||
+                src.getName().endsWith(".sha1")) {
+            FileChannel source = null;
+            FileChannel destination = null;
+            try {
+                source = new FileInputStream(src).getChannel();
+                destination = new FileOutputStream(dest).getChannel();
+                destination.transferFrom(source, 0, source.size());
+            }
+            finally {
+                if (source != null) {
+                    source.close();
+                }
+                if (destination != null) {
+                    destination.close();
+                }
+            }
+            System.out.println("Archive exported from " + src + " to " + dest);
+        }
     }*/
-	
-	@Override
-	public boolean canFinish() {
-		return page.isPageComplete();
-	}
+    
+    @Override
+    public boolean canFinish() {
+        return page.isPageComplete();
+    }
     
 }

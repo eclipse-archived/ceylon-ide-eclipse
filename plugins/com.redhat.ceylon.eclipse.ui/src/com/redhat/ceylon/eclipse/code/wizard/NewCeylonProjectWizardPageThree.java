@@ -18,17 +18,17 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoPreferencesBlock;
 
 public class NewCeylonProjectWizardPageThree extends WizardPage {
 
-	private static final String PAGE_NAME= "NewJavaProjectWizardPageThree"; //$NON-NLS-1$
-	
+    private static final String PAGE_NAME= "NewJavaProjectWizardPageThree"; //$NON-NLS-1$
+    
     private NewCeylonProjectWizardPageTwo pageTwo;
     private CeylonRepoPreferencesBlock block;
     private IProject provisonalProject;
-	
-	public NewCeylonProjectWizardPageThree(NewCeylonProjectWizardPageTwo pageTwo) {
-		super(PAGE_NAME);
-		this.pageTwo = pageTwo;
-	}
-	
+    
+    public NewCeylonProjectWizardPageThree(NewCeylonProjectWizardPageTwo pageTwo) {
+        super(PAGE_NAME);
+        this.pageTwo = pageTwo;
+    }
+    
     @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
@@ -49,7 +49,7 @@ public class NewCeylonProjectWizardPageThree extends WizardPage {
 
         setControl(composite);
     }
-	
+    
     @Override
     public void setVisible(boolean visible) {
         if (visible == true && provisonalProject != pageTwo.getProvisonalProject()) {

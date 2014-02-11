@@ -138,7 +138,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         case SHOW_CODE:
             return codePresenter!=null;
         case SHOW_IN_HIERARCHY_VIEW:
-        	return true;
+            return true;
         case ADD_BLOCK_COMMENT: //TODO: check if something is selected! 
         case REMOVE_BLOCK_COMMENT: //TODO: check if there is a block comment in the selection!
         case TOGGLE_COMMENT:
@@ -175,13 +175,13 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 codePresenter.showInformation();
             return;
         case SHOW_IN_HIERARCHY_VIEW:
-        	try {
-				showHierarchy();
-			}
-        	catch (Exception e) {
-				e.printStackTrace();
-			}
-        	return;
+            try {
+                showHierarchy();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
         case TOGGLE_COMMENT:
             doToggleComment();
             return;
@@ -712,7 +712,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
     
     void pasteImports(Map<Declaration,String> map, MultiTextEdit edit, 
-    		String pastedText, IDocument doc) {
+            String pastedText, IDocument doc) {
         if (!map.isEmpty()) {
             CeylonParseController pc = editor.getParseController();
             if (pc==null || pc.getRootNode()==null) return;
@@ -720,7 +720,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             Unit unit = cu.getUnit();
             //copy them, so as to not affect the clipboard
             Map<Declaration,String> imports = 
-            		new LinkedHashMap<Declaration,String>(); 
+                    new LinkedHashMap<Declaration,String>(); 
             imports.putAll(map);
             for (Iterator<Map.Entry<Declaration,String>> i=imports.entrySet().iterator(); 
                     i.hasNext();) {
@@ -730,7 +730,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 Pattern pattern = Pattern.compile("\\bimport\\s+" + 
                         declarationPackage.getNameAsString().replace(".", "\\.") + 
                         "\\b[^.]");
-				if (unit.getPackage().equals(declarationPackage)) {
+                if (unit.getPackage().equals(declarationPackage)) {
                     //the declaration belongs to this package
                     i.remove();
                 }
@@ -740,10 +740,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 }
                 else {
                     for (Import ip: unit.getImports()) {
-                    	//compare qualified names, treating
-                    	//overloaded versions as identical
+                        //compare qualified names, treating
+                        //overloaded versions as identical
                         if (ip.getDeclaration().getQualifiedNameString()
-                        		.equals(declaration.getQualifiedNameString())) {
+                                .equals(declaration.getQualifiedNameString())) {
                             i.remove();
                             break;
                         }
@@ -752,8 +752,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
             }
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = 
-                		importEdit(cu, imports.keySet(), imports.values(), 
-                				null, doc);
+                        importEdit(cu, imports.keySet(), imports.values(), 
+                                null, doc);
                 for (InsertEdit importEdit: edits) {
                     edit.addChild(importEdit);                    
                 }

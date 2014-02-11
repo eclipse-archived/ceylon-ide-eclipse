@@ -15,7 +15,7 @@ import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 
 public class FindAssignmentsAction extends AbstractFindAction {
 
-	private static final class Query extends FindSearchQuery {
+    private static final class Query extends FindSearchQuery {
         private Query(Declaration referencedDeclaration, IProject project) {
             super(referencedDeclaration, project);
         }
@@ -35,26 +35,26 @@ public class FindAssignmentsAction extends AbstractFindAction {
     }
 
     public FindAssignmentsAction() {}
-	
+    
     public FindAssignmentsAction(IEditorPart editor) {
-		super("Find Assignments", editor);
-		setActionDefinitionId(PLUGIN_ID + ".action.findAssignments");
-	}
-	
+        super("Find Assignments", editor);
+        setActionDefinitionId(PLUGIN_ID + ".action.findAssignments");
+    }
+    
     public FindAssignmentsAction(IEditorPart editor, Declaration dec) {
-		super("Find Assignments", editor, dec);
-		setActionDefinitionId(PLUGIN_ID + ".action.findAssignments");
-	}
-	
+        super("Find Assignments", editor, dec);
+        setActionDefinitionId(PLUGIN_ID + ".action.findAssignments");
+    }
+    
     @Override
     boolean isValidSelection() {
         //TODO: invalid for getters with no matching setter
         return declaration instanceof Value;
     }
 
-	@Override
-	public FindSearchQuery createSearchQuery() {
-	    return new Query(declaration, project);
-	}
+    @Override
+    public FindSearchQuery createSearchQuery() {
+        return new Query(declaration, project);
+    }
 
 }

@@ -47,8 +47,8 @@ class CreateParameterProposal extends CorrectionProposal {
     final int length;
     
     CreateParameterProposal(String def, String desc, 
-    		Image image, int offset, IFile file, 
-    		TextFileChange change) {
+            Image image, int offset, IFile file, 
+            TextFileChange change) {
         super(desc, change, image);
         int loc = def.indexOf("= nothing");
         if (loc<0) {
@@ -95,9 +95,9 @@ class CreateParameterProposal extends CorrectionProposal {
         IDocument doc = getDocument(change);
         int offset = paramList.getStopIndex();
         HashSet<Declaration> decs = new HashSet<Declaration>();
-		CompilationUnit cu = unit.getCompilationUnit();
-		importType(decs, returnType, cu);
-		int il = applyImports(change, decs, cu, doc);
+        CompilationUnit cu = unit.getCompilationUnit();
+        importType(decs, returnType, cu);
+        int il = applyImports(change, decs, cu, doc);
         change.addEdit(new InsertEdit(offset, def));
         proposals.add(new CreateParameterProposal(def, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
@@ -129,9 +129,9 @@ class CreateParameterProposal extends CorrectionProposal {
             indentAfter = "";
         }
         HashSet<Declaration> decs = new HashSet<Declaration>();
-		Tree.CompilationUnit cu = unit.getCompilationUnit();
-		importType(decs, returnType, cu);
-		int il = applyImports(change, decs, cu, doc);
+        Tree.CompilationUnit cu = unit.getCompilationUnit();
+        importType(decs, returnType, cu);
+        int il = applyImports(change, decs, cu, doc);
         change.addEdit(new InsertEdit(offset, pdef));
         change.addEdit(new InsertEdit(offset2, indent+adef+indentAfter));
         proposals.add(new CreateParameterProposal(pdef, 
@@ -140,8 +140,8 @@ class CreateParameterProposal extends CorrectionProposal {
     }
 
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
-    		IProject project, DefinitionGenerator dg) {
-    	FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(dg.node);
+            IProject project, DefinitionGenerator dg) {
+        FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(dg.node);
         fcv.visit(dg.rootNode);
         Tree.Declaration decl = fcv.getDeclaration();
         if (decl == null || 
@@ -152,18 +152,18 @@ class CreateParameterProposal extends CorrectionProposal {
         
         Tree.ParameterList paramList = getParameters(decl);
         if (paramList != null) {
-        	String def = dg.generate("", "");
-        	//TODO: really ugly and fragile way to strip off the trailing ;
-    		String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + 
-    				def.substring(0, def.length() - 1);
-    		String paramDesc = "parameter '" + dg.brokenName + "'";
-    		for (PhasedUnit unit : getUnits(project)) {
-    			if (unit.getUnit().equals(dg.rootNode.getUnit())) {
-    				addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, 
-    						decl.getDeclarationModel(), unit, decl, paramList, dg.returnType);
-    				break;
-    			}
-    		}
+            String def = dg.generate("", "");
+            //TODO: really ugly and fragile way to strip off the trailing ;
+            String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + 
+                    def.substring(0, def.length() - 1);
+            String paramDesc = "parameter '" + dg.brokenName + "'";
+            for (PhasedUnit unit : getUnits(project)) {
+                if (unit.getUnit().equals(dg.rootNode.getUnit())) {
+                    addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, 
+                            decl.getDeclarationModel(), unit, decl, paramList, dg.returnType);
+                    break;
+                }
+            }
         }
     }
 
@@ -192,15 +192,15 @@ class CreateParameterProposal extends CorrectionProposal {
                     }
                 }
                 else if (node instanceof Tree.SpecifiedArgument) {
-                	Tree.SpecifiedArgument sa = (Tree.SpecifiedArgument) node;
-                	Tree.SpecifierExpression se = sa.getSpecifierExpression();
+                    Tree.SpecifiedArgument sa = (Tree.SpecifiedArgument) node;
+                    Tree.SpecifierExpression se = sa.getSpecifierExpression();
                     if (se!=null && se.getExpression()!=null) {
                         t = se.getExpression().getTypeModel();
                     }
                     n = sa.getIdentifier().getText();
                 }
                 else if (node instanceof Tree.TypedArgument) {
-                	Tree.TypedArgument ta = (Tree.TypedArgument) node;
+                    Tree.TypedArgument ta = (Tree.TypedArgument) node;
                     t = ta.getType().getTypeModel();
                     n = ta.getIdentifier().getText();
                 }
@@ -271,7 +271,7 @@ class CreateParameterProposal extends CorrectionProposal {
                             def = ", " + def;
                         }
                         addCreateParameterProposal(proposals, def, desc, 
-                        		ADD, typeDec, unit, decNode, paramList, t);
+                                ADD, typeDec, unit, decNode, paramList, t);
                         break;
                     }
                 }

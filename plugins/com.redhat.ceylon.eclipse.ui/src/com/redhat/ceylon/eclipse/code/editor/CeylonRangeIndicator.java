@@ -48,7 +48,7 @@ public class CeylonRangeIndicator extends Annotation implements IAnnotationPrese
         }
 
         Color color = getCurrentThemeColor("rangeIndicatorAnnotation");
-		gc.setBackground(color);
+        gc.setBackground(color);
         
         Image patternImage = getPatternImage(canvas, color);
         gc.drawImage(patternImage, 0, 0, w, h, x, y, w, h);

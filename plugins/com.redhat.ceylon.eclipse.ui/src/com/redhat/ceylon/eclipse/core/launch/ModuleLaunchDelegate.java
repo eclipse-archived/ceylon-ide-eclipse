@@ -58,8 +58,8 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                     List<String> newArgs = new ArrayList<String>();
                     
                     boolean runAsJs = DebugPlugin.getDefault().getLaunchManager()
-                    		.getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE)
-                    			.equals(launch.getLaunchConfiguration().getType());
+                            .getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE)
+                                .equals(launch.getLaunchConfiguration().getType());
                     
                     prepareArguments(newArgs, workingRepos, project, launch, runAsJs);
 
@@ -79,8 +79,8 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
 
                     runner.run(config, launch, monitor);
                 } catch (Exception e) {
-                	e.printStackTrace();
-                	MessageDialog.openError(EditorUtil.getShell(), "Ceylon Module Launcher Error", 
+                    e.printStackTrace();
+                    MessageDialog.openError(EditorUtil.getShell(), "Ceylon Module Launcher Error", 
                             "Internal Error");
                 }
             }

@@ -5,7 +5,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 
 public class CeylonPerspectiveFactory implements IPerspectiveFactory {
 
-	@Override
-	public void createInitialLayout(IPageLayout layout) {}
+    @Override
+    public void createInitialLayout(IPageLayout layout) {}
 
 }
