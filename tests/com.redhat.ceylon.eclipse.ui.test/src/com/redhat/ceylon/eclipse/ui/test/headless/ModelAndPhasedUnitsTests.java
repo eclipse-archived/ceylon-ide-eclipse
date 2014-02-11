@@ -11,11 +11,15 @@
 package com.redhat.ceylon.eclipse.ui.test.headless;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -31,9 +35,14 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.CrossProjectBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ICrossProjectReference;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
@@ -46,7 +55,7 @@ import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
 public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
 
     @SuppressWarnings("unchecked")
-    private <T extends PhasedUnit> T checkPhasedUnitClass(String phasedUnitPath, Class<T> phasedUnitClass) {
+    private <T extends PhasedUnit> T checkProjectPhasedUnitClass(String phasedUnitPath, Class<T> phasedUnitClass) {
         PhasedUnit pu = null;
         
         pu = typeChecker.getPhasedUnitFromRelativePath(phasedUnitPath);
@@ -55,7 +64,19 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
         
         return (T) pu;
     }
-    
+
+    @SuppressWarnings("unchecked")
+    private <T extends PhasedUnit> T checkExternalPhasedUnitClass(String moduleName, String phasedUnitPath, Class<T> phasedUnitClass) {
+        PhasedUnit pu = null;
+        
+        JDTModule module = (JDTModule) modelLoader.getLoadedModule(moduleName);
+        pu = module.getPhasedUnitFromRelativePath(phasedUnitPath);
+        Assert.assertNotNull("No phased unit for path : " + phasedUnitPath, pu);
+        Assert.assertEquals(pu.getUnitFile().getName(), phasedUnitClass, pu.getClass());
+        
+        return (T) pu;
+    }
+
     @SuppressWarnings("unchecked")
     private <T extends Unit> T checkDeclarationUnit(Module module, String declarationName, 
             Class<T> unitClass, 
@@ -80,7 +101,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
             throw compilationError;
         }
         
-        checkPhasedUnitClass("usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+        checkProjectPhasedUnitClass("usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
                 ProjectPhasedUnit.class);
     }
     
@@ -90,7 +111,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
             throw compilationError;
         }
         
-        checkPhasedUnitClass("source_and_binary_external_module/CeylonDeclarations_External_Source_Binary.ceylon", 
+        checkExternalPhasedUnitClass("source_and_binary_external_module", "source_and_binary_external_module/CeylonDeclarations_External_Source_Binary.ceylon", 
                 ExternalPhasedUnit.class);
     }
     
@@ -103,13 +124,55 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
         CrossProjectPhasedUnit pu;
         ProjectPhasedUnit opu;
 
-        pu = checkPhasedUnitClass("referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+        pu = checkExternalPhasedUnitClass("referencedCeylonProject", "referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                 CrossProjectPhasedUnit.class);
         opu = pu.getOriginalProjectPhasedUnit();
         Assert.assertEquals("referenced-ceylon-project", opu.getProjectResource().getName());
     }
     
 
+    public <T extends CeylonBinaryUnit> List<T> checkCeylonBinaryUnits(Class<T> unitClass,
+            String root,
+            String moduleName, 
+            String declarationSuffix) throws CoreException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        if (compilationError != null) {
+            throw compilationError;
+        }
+        
+        List<T> result = new LinkedList<>();
+        
+        Module module = modelLoader.findModule(moduleName, "1.0.0");
+        
+        result.add(checkDeclarationUnit(module, moduleName + ".CeylonTopLevelClass_" + declarationSuffix, 
+                unitClass, 
+                root + "/" + moduleName + "/CeylonTopLevelClass_" + declarationSuffix + ".class",  
+                moduleName + "/CeylonTopLevelClass_" + declarationSuffix + ".class", 
+                "CeylonTopLevelClass_" + declarationSuffix + ".class"));
+
+        result.add(checkDeclarationUnit(module, moduleName + ".ceylonTopLevelObject_" + declarationSuffix, 
+                unitClass, 
+                root + "/" + moduleName + "/ceylonTopLevelObject_" + declarationSuffix + "_.class", 
+                moduleName + "/ceylonTopLevelObject_" + declarationSuffix + "_.class", 
+                "ceylonTopLevelObject_" + declarationSuffix + "_.class"));
+
+        result.add(checkDeclarationUnit(module, moduleName + ".ceylonTopLevelMethod_" + declarationSuffix, 
+                unitClass, 
+                root + "/" + moduleName + "/ceylonTopLevelMethod_" + declarationSuffix + "_.class", 
+                moduleName + "/ceylonTopLevelMethod_" + declarationSuffix + "_.class", 
+                "ceylonTopLevelMethod_" + declarationSuffix + "_.class"));
+        
+        String ceylonFileName = "CeylonDeclarations_" + declarationSuffix + ".ceylon";
+        String ceylonSourceRelativePath = moduleName + "/CeylonDeclarations_" + declarationSuffix + ".ceylon"; 
+
+        for (CeylonBinaryUnit unit : result) {
+            Assert.assertEquals(ceylonSourceRelativePath, unit.getCeylonSourceRelativePath());
+            Assert.assertEquals(ceylonFileName, unit.getCeylonFileName());
+        }
+        
+        return result;
+    }
+
+    
     @SuppressWarnings("unchecked")
     public <T extends CeylonUnit> T checkCeylonSourceUnits(Class<T> unitClass,
             String root,
@@ -155,13 +218,27 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
         if (compilationError != null) {
             throw compilationError;
         }
+        
+        if (CeylonBuilder.loadDependenciesFromModelLoaderFirst(mainProject)) {
+            IFile archiveFile = mainProject.getFile("imported_modules/source_and_binary_external_module/1.0.0/source_and_binary_external_module-1.0.0.car");
+            Assert.assertNotNull(archiveFile);
+            List<CeylonBinaryUnit> binaryUnits = checkCeylonBinaryUnits(CeylonBinaryUnit.class,
+                    archiveFile.getLocation().toString() + "!",
+                    "source_and_binary_external_module", 
+                    "External_Source_Binary");
 
-        IFile archiveFile = mainProject.getFile("imported_modules/source_and_binary_external_module/1.0.0/source_and_binary_external_module-1.0.0.src");
-        Assert.assertNotNull(archiveFile);
-        checkCeylonSourceUnits(ExternalSourceFile.class,
-                archiveFile.getLocation().toString() + "!",
-                "source_and_binary_external_module", 
-                "External_Source_Binary");
+            for (CeylonBinaryUnit unit : binaryUnits) {
+                Assert.assertEquals(unit.getProject(), mainProject);
+                Assert.assertEquals(unit.getTypeRoot(), mainProjectJDT.findElement(Path.fromPortableString(unit.getRelativePath())));
+            }
+        } else {
+            IFile archiveFile = mainProject.getFile("imported_modules/source_and_binary_external_module/1.0.0/source_and_binary_external_module-1.0.0.src");
+            Assert.assertNotNull(archiveFile);
+            checkCeylonSourceUnits(ExternalSourceFile.class,
+                    archiveFile.getLocation().toString() + "!",
+                    "source_and_binary_external_module", 
+                    "External_Source_Binary");
+        }
     }
     
     @Test
@@ -190,26 +267,47 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
         if (compilationError != null) {
             throw compilationError;
         }
-        
-        IFile archiveFile = referencedCeylonProject.getFile("modules/referencedCeylonProject/1.0.0/referencedCeylonProject-1.0.0.src");
-        Assert.assertNotNull(archiveFile);
 
-        CrossProjectSourceFile unit = checkCeylonSourceUnits(CrossProjectSourceFile.class,
-                archiveFile.getLocation().toString() + "!",
-                "referencedCeylonProject",
-                "Referenced_Ceylon_Project");
-        Assert.assertEquals("Eclipse Project Resource for Unit : " + unit.getFullPath(),
-                referencedCeylonProject,
-                unit.getProjectResource());
-        Assert.assertEquals("Eclipse Root Folder Resource for Unit : " + unit.getFullPath(),
-                referencedCeylonProject.getFolder("src"),
-                unit.getRootFolderResource());
-        Assert.assertEquals("Eclipse File Resource for Unit : " + unit.getFullPath(),
-                referencedCeylonProject.getFile("src/" + unit.getRelativePath()),
-                unit.getFileResource());
+        Map<String, ICrossProjectReference> crossProjectReferences = new HashMap<>();
+        
+        if (CeylonBuilder.loadDependenciesFromModelLoaderFirst(mainProject)) {
+            IFile archiveFile = referencedCeylonProject.getFile("modules/referencedCeylonProject/1.0.0/referencedCeylonProject-1.0.0.car");
+            Assert.assertNotNull(archiveFile);
+            List<CrossProjectBinaryUnit> binaryUnits = checkCeylonBinaryUnits(CrossProjectBinaryUnit.class,
+                    archiveFile.getLocation().toString() + "!",
+                    "referencedCeylonProject", 
+                    "Referenced_Ceylon_Project");
+
+            for (CrossProjectBinaryUnit unit : binaryUnits) {
+                Assert.assertEquals(unit.getProject(), mainProject);
+                Assert.assertEquals(unit.getTypeRoot(), mainProjectJDT.findElement(Path.fromPortableString(unit.getRelativePath())));
+                crossProjectReferences.put(unit.getFullPath(), unit);
+            }
+            
+        } else {
+            IFile archiveFile = referencedCeylonProject.getFile("modules/referencedCeylonProject/1.0.0/referencedCeylonProject-1.0.0.src");
+            Assert.assertNotNull(archiveFile);
+
+            CrossProjectSourceFile unit = checkCeylonSourceUnits(CrossProjectSourceFile.class,
+                    archiveFile.getLocation().toString() + "!",
+                    "referencedCeylonProject",
+                    "Referenced_Ceylon_Project");
+            crossProjectReferences.put(unit.getFullPath(), unit);
+        }
+
+        for (Map.Entry<String, ICrossProjectReference> reference : crossProjectReferences.entrySet()) {
+            Assert.assertEquals("Eclipse Project Resource for Unit : " + reference.getKey(),
+                    referencedCeylonProject,
+                    reference.getValue().getProjectResource());
+            Assert.assertEquals("Eclipse Root Folder Resource for Unit : " + reference.getKey(),
+                    referencedCeylonProject.getFolder("src"),
+                    reference.getValue().getRootFolderResource());
+            Assert.assertEquals("Eclipse File Resource for Unit : " + reference.getKey(),
+                    referencedCeylonProject.getFile("src/" + reference.getValue().getOriginalPhasedUnit().getPathRelativeToSrcDir()),
+                    reference.getValue().getFileResource());
+        }
     }
     
-    @SuppressWarnings("restriction")
     @Test 
     public void checkJavaLibrayrUnits() throws CoreException {
         if (compilationError != null) {
