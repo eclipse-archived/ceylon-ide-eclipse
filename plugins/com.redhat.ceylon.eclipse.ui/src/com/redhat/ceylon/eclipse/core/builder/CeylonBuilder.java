@@ -424,6 +424,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         protected void beforeGeneratingBinaries() {}
         protected void afterGeneratingBinaries() {}
         protected void scheduleReentrantBuild() {}
+        protected void afterReentrantBuild() {}
         protected void endBuild() {}
     };
     
@@ -522,6 +523,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         protected void scheduleReentrantBuild() {
             for (CeylonBuildHook hook : contributedHooks) {
                 hook.beforeGeneratingBinaries();
+            }
+        }
+        protected void afterReentrantBuild() {
+            for (CeylonBuildHook hook : contributedHooks) {
+                hook.afterReentrantBuild();
             }
         }
         protected void endBuild() {
@@ -950,6 +956,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }//monitor);
         if (args==null || !args.containsKey(BUILDER_ID + ".reentrant")) {
             buildHook.scheduleReentrantBuild();
+            final CeylonBuildHook currentBuildHook = buildHook;
             Job job = new Job("Rebuild with Ceylon classes") {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
@@ -962,6 +969,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         Map<String,String> map = new HashMap<String,String>();
                         map.put(BUILDER_ID + ".reentrant", "true");
                         project.build(INCREMENTAL_BUILD, BUILDER_ID, map, monitor);
+                        currentBuildHook.afterReentrantBuild();
                     } 
                     catch (CoreException e) {
                         e.printStackTrace();
