@@ -15,7 +15,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class RenameDescriptorProposal {
     
-	static void addRenameDescriptorProposal(Tree.CompilationUnit cu,
+    static void addRenameDescriptorProposal(Tree.CompilationUnit cu,
             IQuickAssistInvocationContext context, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file) {
         String pn = escapePackageName(cu.getUnit().getPackage());
@@ -25,5 +25,5 @@ class RenameDescriptorProposal {
         change.setEdit(new ReplaceEdit(problem.getOffset(), problem.getLength(), pn));
         proposals.add(new CorrectionProposal("Rename to '" + pn + "'", change, CHANGE));
     }
-	
+    
 }

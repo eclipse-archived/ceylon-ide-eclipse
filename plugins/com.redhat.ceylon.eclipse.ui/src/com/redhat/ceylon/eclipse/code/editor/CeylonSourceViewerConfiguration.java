@@ -61,7 +61,7 @@ import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
-	
+    
     public static final String AUTO_INSERT = "autoInsert";
     public static final String AUTO_ACTIVATION = "autoActivation";
     public static final String AUTO_ACTIVATION_CHARS = "autoActivationChars";
@@ -95,32 +95,32 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         //otherwise it breaks syntax highlighting in Code popup
         PresentationDamageRepairer damageRepairer = new PresentationDamageRepairer(sourceViewer, editor);
         reconciler.setRepairer(damageRepairer, DEFAULT_CONTENT_TYPE);
-		reconciler.setDamager(damageRepairer, DEFAULT_CONTENT_TYPE);
+        reconciler.setDamager(damageRepairer, DEFAULT_CONTENT_TYPE);
         return reconciler;
     }
 
     /*private final class Warmup implements IRunnableWithProgress {
-		@Override
-		public void run(IProgressMonitor monitor) throws InvocationTargetException,
-				InterruptedException {
-			
-			monitor.beginTask("Warming up completion processor", 100000);
-			
-	        List<Package> packages = editor.getParseController()
-	        		.getRootNode().getUnit().getPackage()
-	        		.getModule().getAllPackages();
-	        
-			monitor.worked(10000);
-			
-			for (Package p: packages) {
-				p.getMembers();
-				monitor.worked(90000/packages.size());
-				if (monitor.isCanceled()) return;
-			}
+        @Override
+        public void run(IProgressMonitor monitor) throws InvocationTargetException,
+                InterruptedException {
+            
+            monitor.beginTask("Warming up completion processor", 100000);
+            
+            List<Package> packages = editor.getParseController()
+                    .getRootNode().getUnit().getPackage()
+                    .getModule().getAllPackages();
+            
+            monitor.worked(10000);
+            
+            for (Package p: packages) {
+                p.getMembers();
+                monitor.worked(90000/packages.size());
+                if (monitor.isCanceled()) return;
+            }
 
-			monitor.done();
-		}
-	}*/
+            monitor.done();
+        }
+    }*/
     
     static void setPreferenceDefaults() {
         IPreferenceStore preferenceStore = EditorsUI.getPreferenceStore();
@@ -148,11 +148,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         CeylonCompletionProcessor completionProcessor = new CeylonCompletionProcessor(editor);
         contentAssistant.addCompletionListener(new CompletionListener(editor, completionProcessor));
         contentAssistant.setContentAssistProcessor(completionProcessor, DEFAULT_CONTENT_TYPE);
-		configCompletionPopup(contentAssistant);
+        configCompletionPopup(contentAssistant);
         contentAssistant.enableColoredLabels(true);
         contentAssistant.setRepeatedInvocationMode(true);
         KeyStroke key = KeyStroke.getInstance(SWT.CTRL, SWT.SPACE);
-		contentAssistant.setRepeatedInvocationTrigger(KeySequence.getInstance(key));
+        contentAssistant.setRepeatedInvocationTrigger(KeySequence.getInstance(key));
         contentAssistant.setStatusMessage(key.format() + " to toggle filter by type");
         contentAssistant.setStatusLineVisible(true);
         contentAssistant.setInformationControlCreator(new DocumentationHover(editor).getHoverControlCreator("Click for focus"));
@@ -170,8 +170,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         }
         @Override
         public IInformationControl createInformationControl(Shell parent) {
-        	return new HierarchyPopup(editor, parent, 
-        			SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+            return new HierarchyPopup(editor, parent, 
+                    SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
         }
     }
 
@@ -202,7 +202,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         if (editor==null) return null;
         CeylonCorrectionProcessor quickAssist = new CeylonCorrectionProcessor(editor);
         quickAssist.enableColoredLabels(true);
-		return quickAssist;
+        return quickAssist;
     }
 
     public CeylonAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
@@ -222,31 +222,31 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
-    	CeylonParseController pc = getParseController();
-    	if (pc==null) {
-    	    return new IHyperlinkDetector[0];
-    	}
-    	else {
-    	    return new IHyperlinkDetector[] { 
-    	            new CeylonHyperlinkDetector(pc), 
-    	            new JavaHyperlinkDetector(pc) 
-    	        };
-    	}
+        CeylonParseController pc = getParseController();
+        if (pc==null) {
+            return new IHyperlinkDetector[0];
+        }
+        else {
+            return new IHyperlinkDetector[] { 
+                    new CeylonHyperlinkDetector(pc), 
+                    new JavaHyperlinkDetector(pc) 
+                };
+        }
     }
     
     //TODO: We need a CeylonParseControllerProvider 
     //      which CeylonEditor implements - since
     //      having to extend this class and override
     //      is just sucky.
-	protected CeylonParseController getParseController() {
-	    if (editor==null) {
-	        return null;
-	    }
-	    else {
-	        return editor.getParseController();
-	    }
-	}
-	
+    protected CeylonParseController getParseController() {
+        if (editor==null) {
+            return null;
+        }
+        else {
+            return editor.getParseController();
+        }
+    }
+    
     /**
      * Used to present hover help (anything else?)
      */
@@ -274,49 +274,49 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     private final class HoverInformationProvider implements IInformationProvider {
-		private IAnnotationModel annotationModel= editor.getDocumentProvider()
-				.getAnnotationModel(editor.getEditorInput());
+        private IAnnotationModel annotationModel= editor.getDocumentProvider()
+                .getAnnotationModel(editor.getEditorInput());
 
-		private List<Annotation> getParserAnnotationsAtOffset(int offset) {
-		    List<Annotation> result= new LinkedList<Annotation>();
-		    if (annotationModel != null) {
-		        for(Iterator<Annotation> iter= annotationModel.getAnnotationIterator(); 
-		        		iter.hasNext(); ) {
-		            Annotation ann= iter.next();
-		            if (annotationModel.getPosition(ann).includes(offset) && 
-		            		isParseAnnotation(ann)) {
-		                result.add(ann);
-		            }
-		        }
-		    }
-		    return result;
-		}
+        private List<Annotation> getParserAnnotationsAtOffset(int offset) {
+            List<Annotation> result= new LinkedList<Annotation>();
+            if (annotationModel != null) {
+                for(Iterator<Annotation> iter= annotationModel.getAnnotationIterator(); 
+                        iter.hasNext(); ) {
+                    Annotation ann= iter.next();
+                    if (annotationModel.getPosition(ann).includes(offset) && 
+                            isParseAnnotation(ann)) {
+                        result.add(ann);
+                    }
+                }
+            }
+            return result;
+        }
 
-		public IRegion getSubject(ITextViewer textViewer, int offset) {
-			List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(offset);
-			if (!parserAnnsAtOffset.isEmpty()) {
-				Annotation ann= parserAnnsAtOffset.get(0);
-				Position pos= annotationModel.getPosition(ann);
-				return new Region(pos.offset, pos.length);
-			}
-			Node selNode= findNode(editor.getParseController().getRootNode(), offset);
-		    return new Region(getStartOffset(selNode), getLength(selNode));
-		}
+        public IRegion getSubject(ITextViewer textViewer, int offset) {
+            List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(offset);
+            if (!parserAnnsAtOffset.isEmpty()) {
+                Annotation ann= parserAnnsAtOffset.get(0);
+                Position pos= annotationModel.getPosition(ann);
+                return new Region(pos.offset, pos.length);
+            }
+            Node selNode= findNode(editor.getParseController().getRootNode(), offset);
+            return new Region(getStartOffset(selNode), getLength(selNode));
+        }
 
-		public String getInformation(ITextViewer textViewer, IRegion subject) {
-			List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(subject.getOffset());
-			if (!parserAnnsAtOffset.isEmpty()) {
-				return parserAnnsAtOffset.get(0).getText();
-			}
+        public String getInformation(ITextViewer textViewer, IRegion subject) {
+            List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(subject.getOffset());
+            if (!parserAnnsAtOffset.isEmpty()) {
+                return parserAnnsAtOffset.get(0).getText();
+            }
 
-			CeylonParseController pc = editor.getParseController();
-			Node selNode= findNode(pc.getRootNode(), subject.getOffset());
-		    return new CeylonDocumentationProvider().getDocumentation(selNode, pc);
-			return null;
-		}
-	}*/
+            CeylonParseController pc = editor.getParseController();
+            Node selNode= findNode(pc.getRootNode(), subject.getOffset());
+            return new CeylonDocumentationProvider().getDocumentation(selNode, pc);
+            return null;
+        }
+    }*/
 
-	private IDialogSettings getSettings() { return CeylonPlugin.getInstance().getDialogSettings(); }
+    private IDialogSettings getSettings() { return CeylonPlugin.getInstance().getDialogSettings(); }
     
     public IInformationPresenter getCodePresenter(ISourceViewer sourceViewer) {
         if (editor==null) return null;
@@ -326,21 +326,21 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setInformationProvider(new OutlineInformationProvider(getParseController()), 
                 DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(40, 10, true, false);
-		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
-		        "code_presenter_bounds"), true, true);
+        presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
+                "code_presenter_bounds"), true, true);
         return presenter;
     }
     
-	private static final class OutlinePresenterControlCreator implements
+    private static final class OutlinePresenterControlCreator implements
             IInformationControlCreator {
-	    private CeylonEditor editor;
+        private CeylonEditor editor;
         OutlinePresenterControlCreator(CeylonEditor editor) {
             this.editor = editor;
-	    }
+        }
         @Override
         public IInformationControl createInformationControl(Shell parent) {
-        	return new OutlinePopup(editor, parent, 
-        			SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+            return new OutlinePopup(editor, parent, 
+                    SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
         }
     }
 
@@ -364,40 +364,40 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         private CeylonEditor editor;
         CodePresenterControlCreator(CeylonEditor editor) {
             this.editor = editor;
-	    }
+        }
         @Override
         public IInformationControl createInformationControl(Shell parent) {
-        	final CodePopup pop = new CodePopup(parent, SWT.RESIZE, editor);
-        	pop.viewer.configure(new CodePopupSourceViewerConfiguration(editor, pop));
-        	return pop;
+            final CodePopup pop = new CodePopup(parent, SWT.RESIZE, editor);
+            pop.viewer.configure(new CodePopupSourceViewerConfiguration(editor, pop));
+            return pop;
         }
     }
     
     private static final class CompletionListener 
             implements ICompletionListener {
-	    private CeylonEditor editor;
+        private CeylonEditor editor;
         private CeylonCompletionProcessor processor;
 
         private CompletionListener(CeylonEditor editor,
                 CeylonCompletionProcessor processor) {
             this.editor = editor;
             this.processor = processor;
-	        
-	    }
+            
+        }
         @Override
         public void selectionChanged(ICompletionProposal proposal,
-        		boolean smartToggle) {}
+                boolean smartToggle) {}
 
         @Override
         public void assistSessionStarted(ContentAssistEvent event) {
-        	if (editor!=null) {
-        	    editor.pauseBackgroundParsing();
-        	}
-        	processor.sessionStarted();
-        	/*try {
-        		editor.getSite().getWorkbenchWindow().run(true, true, new Warmup());
-        	} 
-        	catch (Exception e) {}*/
+            if (editor!=null) {
+                editor.pauseBackgroundParsing();
+            }
+            processor.sessionStarted();
+            /*try {
+                editor.getSite().getWorkbenchWindow().run(true, true, new Warmup());
+            } 
+            catch (Exception e) {}*/
         }
 
         @Override
@@ -415,21 +415,21 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         OutlineInformationProvider(CeylonParseController parseController) {
             this.parseController = parseController;
         }
-		@Override
-    	public IRegion getSubject(ITextViewer textViewer, int offset) {
-    		return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
-    	}
-		@Override
-    	public String getInformation(ITextViewer textViewer, IRegion subject) {
-    		// shouldn't be called, given IInformationProviderExtension???
-    		throw new UnsupportedOperationException();
-    	}
-		@Override
-    	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		return new CeylonOutlineBuilder().buildTree(parseController);
-    	}
+        @Override
+        public IRegion getSubject(ITextViewer textViewer, int offset) {
+            return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
+        }
+        @Override
+        public String getInformation(ITextViewer textViewer, IRegion subject) {
+            // shouldn't be called, given IInformationProviderExtension???
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public Object getInformation2(ITextViewer textViewer, IRegion subject) {
+            return new CeylonOutlineBuilder().buildTree(parseController);
+        }
     }
-	
+    
     public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer) {
         if (editor==null) return null;
         InformationPresenter presenter = new InformationPresenter(new OutlinePresenterControlCreator(editor));
@@ -438,44 +438,44 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setInformationProvider(new OutlineInformationProvider(getParseController()), 
                 DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(40, 10, true, false);
-		presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
-		        "outline_presenter_bounds"), true, true);
+        presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
+                "outline_presenter_bounds"), true, true);
         return presenter;
     }
     
     private class HierarchyInformationProvider 
             implements IInformationProvider, IInformationProviderExtension {
-		@Override
-    	public IRegion getSubject(ITextViewer textViewer, int offset) {
-    		return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
-    	}
-		@Override
-    	public String getInformation(ITextViewer textViewer, IRegion subject) {
-    		// shouldn't be called, given IInformationProviderExtension???
-    		throw new UnsupportedOperationException();
-    	}
-		@Override
-    	public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-    		Node selectedNode = getSelectedNode();
-    		Declaration declaration = getReferencedDeclaration(selectedNode);
-    		if (declaration==null) {
-    			FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
-    			fcv.visit(getParseController().getRootNode());
-    			Tree.StatementOrArgument node = fcv.getStatementOrArgument();
-    			if (node instanceof Tree.Declaration) {
-    				declaration = ((Tree.Declaration) node).getDeclarationModel();
-    			}
-    		}
-    		return new HierarchyInput(declaration, 
-    				getParseController().getProject());
-    	}
-    	//TODO: this is a copy/paste from AbstractFindAction
-    	private Node getSelectedNode() {
-    		CeylonParseController cpc = getParseController();
-    		return cpc.getRootNode()==null ? null : 
-    			findNode(cpc.getRootNode(), 
-    					(ITextSelection) editor.getSelectionProvider().getSelection());
-    	}
+        @Override
+        public IRegion getSubject(ITextViewer textViewer, int offset) {
+            return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...
+        }
+        @Override
+        public String getInformation(ITextViewer textViewer, IRegion subject) {
+            // shouldn't be called, given IInformationProviderExtension???
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public Object getInformation2(ITextViewer textViewer, IRegion subject) {
+            Node selectedNode = getSelectedNode();
+            Declaration declaration = getReferencedDeclaration(selectedNode);
+            if (declaration==null) {
+                FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
+                fcv.visit(getParseController().getRootNode());
+                Tree.StatementOrArgument node = fcv.getStatementOrArgument();
+                if (node instanceof Tree.Declaration) {
+                    declaration = ((Tree.Declaration) node).getDeclarationModel();
+                }
+            }
+            return new HierarchyInput(declaration, 
+                    getParseController().getProject());
+        }
+        //TODO: this is a copy/paste from AbstractFindAction
+        private Node getSelectedNode() {
+            CeylonParseController cpc = getParseController();
+            return cpc.getRootNode()==null ? null : 
+                findNode(cpc.getRootNode(), 
+                        (ITextSelection) editor.getSelectionProvider().getSelection());
+        }
     }
 
     public IInformationPresenter getHierarchyPresenter(ISourceViewer sourceViewer) {

@@ -63,7 +63,7 @@ public abstract class SubstitutionTextReader
      * @throws IOException in case reading the character fails
      */
     protected int nextChar() 
-    		throws IOException {
+            throws IOException {
         fReadFromBuffer= (fBuffer.length() > 0);
         if (fReadFromBuffer) {
             char ch= fBuffer.charAt(fIndex++);
@@ -79,7 +79,7 @@ public abstract class SubstitutionTextReader
             ch= fReader.read();
         }
         if (fSkipWhiteSpace && 
-        		Character.isWhitespace((char)ch)) {
+                Character.isWhitespace((char)ch)) {
             do {
                 ch= fReader.read();
             }
@@ -96,7 +96,7 @@ public abstract class SubstitutionTextReader
     }
 
     public int read() 
-    		throws IOException {
+            throws IOException {
         int c;
         do {
 
@@ -117,17 +117,17 @@ public abstract class SubstitutionTextReader
     }
 
     public boolean ready() 
-    		throws IOException {
+            throws IOException {
         return fReader.ready();
     }
 
     public void close() 
-    		throws IOException {
+            throws IOException {
         fReader.close();
     }
 
     public void reset() 
-    		throws IOException {
+            throws IOException {
         fReader.reset();
         fWasWhiteSpace = true;
         fCharAfterWhiteSpace = -1;

@@ -34,7 +34,7 @@ public class RulerEnableDisableBreakpointAction extends RulerBreakpointAction im
                 fBreakpoint.setEnabled(!fBreakpoint.isEnabled());
             } catch (CoreException e) {
                 ErrorDialog.openError(getEditor().getSite().getShell(), "Error", 
-                		"Failed to toggle breakpoint enablement", e.getStatus());
+                        "Failed to toggle breakpoint enablement", e.getStatus());
             }
         }
     }

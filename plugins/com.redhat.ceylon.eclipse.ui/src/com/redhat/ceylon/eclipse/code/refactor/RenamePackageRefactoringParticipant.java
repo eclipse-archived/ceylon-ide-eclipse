@@ -33,51 +33,51 @@ import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 
 public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
-	private IPackageFragment javaPackageFragment;
-	
-	private static Map<IPackageFragment,String> allPackagesMoving = new HashMap<IPackageFragment,String>();
+    private IPackageFragment javaPackageFragment;
+    
+    private static Map<IPackageFragment,String> allPackagesMoving = new HashMap<IPackageFragment,String>();
 
     @Override
-	protected boolean initialize(Object element) {
-		javaPackageFragment= (IPackageFragment) element;
-		final String newName = getArguments().getNewName();
-		RefactoringProcessor processor = getProcessor();
-		if (processor instanceof RenamePackageProcessor) {
-			RenamePackageProcessor renamePackageProcessor = (RenamePackageProcessor) processor;
-			if (renamePackageProcessor.getUpdateQualifiedNames() &&
-					(renamePackageProcessor.getFilePatterns().equals("*") ||
-					renamePackageProcessor.getFilePatterns().contains("*.ceylon"))) {
-				return false;
-			}
-		}
-		else {
-			return false;
-		}
-		allPackagesMoving.put(javaPackageFragment, newName);
-		return getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
-	}
+    protected boolean initialize(Object element) {
+        javaPackageFragment= (IPackageFragment) element;
+        final String newName = getArguments().getNewName();
+        RefactoringProcessor processor = getProcessor();
+        if (processor instanceof RenamePackageProcessor) {
+            RenamePackageProcessor renamePackageProcessor = (RenamePackageProcessor) processor;
+            if (renamePackageProcessor.getUpdateQualifiedNames() &&
+                    (renamePackageProcessor.getFilePatterns().equals("*") ||
+                    renamePackageProcessor.getFilePatterns().contains("*.ceylon"))) {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+        allPackagesMoving.put(javaPackageFragment, newName);
+        return getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
+    }
 
     @Override
-	public String getName() {
-		return "Rename participant for Ceylon source";
-	}
-	
+    public String getName() {
+        return "Rename participant for Ceylon source";
+    }
+    
     @Override
-	public RefactoringStatus checkConditions(IProgressMonitor pm, CheckConditionsContext context) {
-		return new RefactoringStatus();
-	}
+    public RefactoringStatus checkConditions(IProgressMonitor pm, CheckConditionsContext context) {
+        return new RefactoringStatus();
+    }
 
-	@Override
-	public Change createChange(IProgressMonitor pm) throws CoreException {
-		
-		final String newName = getArguments().getNewName();
-		final String oldName = javaPackageFragment.getElementName();
+    @Override
+    public Change createChange(IProgressMonitor pm) throws CoreException {
+        
+        final String newName = getArguments().getNewName();
+        final String oldName = javaPackageFragment.getElementName();
         final IProject project = javaPackageFragment.getJavaProject().getProject();
-		
+        
         final List<Change> changes = new ArrayList<Change>();
         TypeChecker tc = getProjectTypeChecker(project);
         if (tc==null) return null;
-		for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
+        for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
             
             final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
@@ -109,38 +109,38 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
             
         }
                 
-		if (changes.isEmpty()) {
-			return null;
-		}
-		else {
-		    CompositeChange result = new CompositeChange("Ceylon source changes") {
-		        @Override
-		        public Change perform(IProgressMonitor pm) throws CoreException {
-		            allPackagesMoving.clear();
-		            return super.perform(pm);
-		        }
-		    };
-		    for (Change change: changes) {
-		        result.add(change);
-		    }
-		    return result;
-		}
-	}
-	
-	private static IFile getMovedFile(IFile file) {
-	    for (Map.Entry<IPackageFragment,String> e: allPackagesMoving.entrySet()) {
-	        IPackageFragment javaPackageFragment = e.getKey();
-	        String newName = e.getValue();
-	        String oldPath = javaPackageFragment.getElementName().replace('.', '/');
-	        String newPath = newName.replace('.', '/');
-	        IPath pathInSourceFolder = file.getParent().getProjectRelativePath()
-	                .removeFirstSegments(1); //TODO: lame, it assumes a the source folder belongs directly to the project
-	        if (pathInSourceFolder.toPortableString().equals(oldPath)) {
-	            return file.getProject().getFile(file.getParent().getProjectRelativePath()
-	                    .removeLastSegments(pathInSourceFolder.segmentCount())
-	                    .append(newPath).append(file.getName()));
-	        }
-	    }
-	    return file;
-	}
+        if (changes.isEmpty()) {
+            return null;
+        }
+        else {
+            CompositeChange result = new CompositeChange("Ceylon source changes") {
+                @Override
+                public Change perform(IProgressMonitor pm) throws CoreException {
+                    allPackagesMoving.clear();
+                    return super.perform(pm);
+                }
+            };
+            for (Change change: changes) {
+                result.add(change);
+            }
+            return result;
+        }
+    }
+    
+    private static IFile getMovedFile(IFile file) {
+        for (Map.Entry<IPackageFragment,String> e: allPackagesMoving.entrySet()) {
+            IPackageFragment javaPackageFragment = e.getKey();
+            String newName = e.getValue();
+            String oldPath = javaPackageFragment.getElementName().replace('.', '/');
+            String newPath = newName.replace('.', '/');
+            IPath pathInSourceFolder = file.getParent().getProjectRelativePath()
+                    .removeFirstSegments(1); //TODO: lame, it assumes a the source folder belongs directly to the project
+            if (pathInSourceFolder.toPortableString().equals(oldPath)) {
+                return file.getProject().getFile(file.getParent().getProjectRelativePath()
+                        .removeLastSegments(pathInSourceFolder.segmentCount())
+                        .append(newPath).append(file.getName()));
+            }
+        }
+        return file;
+    }
 }

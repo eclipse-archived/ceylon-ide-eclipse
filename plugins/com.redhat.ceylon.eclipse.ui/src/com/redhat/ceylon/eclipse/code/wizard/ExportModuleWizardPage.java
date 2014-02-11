@@ -43,7 +43,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     private IJavaElement selection;
     
     ExportModuleWizardPage(String defaultRepositoryPath, 
-    		IJavaProject project, IJavaElement selection) {
+            IJavaProject project, IJavaElement selection) {
         super("Export Ceylon Module", "Export Ceylon Module", CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(CEYLON_EXPORT_CAR));
         setDescription("Export a Ceylon module to a module repository.");
@@ -70,7 +70,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         //TODO: let you select a module descriptor to
         //      export just that module!
         addSelectProject(composite);
-		addSelectRepo(composite);
+        addSelectRepo(composite);
         
         setControl(composite);
 
@@ -87,7 +87,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             setErrorMessage("Please select an existing local repository");
         }
         else if (modules.getSelection().length==0) {
-        	setErrorMessage("Please select a module to export");
+            setErrorMessage("Please select a module to export");
         }
         else {
             setErrorMessage(null);
@@ -95,7 +95,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     }
 
     void addSelectRepo(Composite composite) {
-		Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         folderLabel.setText("Target module repository: ");
         GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         flgd.horizontalSpan = 1;
@@ -112,18 +112,18 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             public void modifyText(ModifyEvent e) {
                 repositoryPath = folder.getText();
                 updateMessage();
-        		setPageComplete(isComplete());
+                setPageComplete(isComplete());
             }
         });
         
         folder.setText(repositoryPath);
         if (project!=null) {
             folder.add(repositoryPath);
-        	for (String path: getCeylonRepositories(project.getProject())) {
-        		if (!path.startsWith("http://") && !path.equals(repositoryPath)) {
-        		    folder.add(path);
-        		}
-        	}
+            for (String path: getCeylonRepositories(project.getProject())) {
+                if (!path.startsWith("http://") && !path.equals(repositoryPath)) {
+                    folder.add(path);
+                }
+            }
         }
         
         Button selectFolder = new Button(composite, SWT.PUSH);
@@ -134,30 +134,30 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         selectFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	String dir = new DirectoryDialog(getShell(), SWT.SHEET).open();
-            	if (dir!=null) {
-            		repositoryPath = dir;
-            		folder.setText(repositoryPath);
-            	}
-            	updateMessage();
-            	setPageComplete(isComplete());
+                String dir = new DirectoryDialog(getShell(), SWT.SHEET).open();
+                if (dir!=null) {
+                    repositoryPath = dir;
+                    folder.setText(repositoryPath);
+                }
+                updateMessage();
+                setPageComplete(isComplete());
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
         modules.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				updateMessage();
-				setPageComplete(isComplete());
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {}
-		});
-	
-	}
-	
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updateMessage();
+                setPageComplete(isComplete());
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+    
+    }
+    
     Table modules;
     
     void addSelectProject(Composite composite) {
@@ -194,20 +194,20 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         mgd.heightHint = 50;
         modules.setLayoutData(mgd);
         if (project!=null) {
-			projectField.setText(project.getElementName());
-        	updateModuleList();
+            projectField.setText(project.getElementName());
+            updateModuleList();
         }
         if (selection!=null) {
-        	String selectionName = selection.getElementName();
-        	TableItem[] items = modules.getItems();
-			for (int i=0; i<items.length; i++) {
-        		String itemText = items[i].getText();
-        		int j = itemText.indexOf('/');
-				if (itemText.substring(0,j).equals(selectionName)) {
-					modules.deselectAll();
-        			modules.select(i);
-        		}
-        	}
+            String selectionName = selection.getElementName();
+            TableItem[] items = modules.getItems();
+            for (int i=0; i<items.length; i++) {
+                String itemText = items[i].getText();
+                int j = itemText.indexOf('/');
+                if (itemText.substring(0,j).equals(selectionName)) {
+                    modules.deselectAll();
+                    modules.select(i);
+                }
+            }
         }
         
         new Label(composite, SWT.NONE);
@@ -223,7 +223,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
                 Object result = dialog.getFirstResult();
                 if (result!=null) {
                     project = (IJavaProject) result;
-        			projectField.setText(project.getElementName());
+                    projectField.setText(project.getElementName());
                     updateModuleList();
                 }
                 updateMessage();
@@ -251,8 +251,8 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
                     for (IJavaProject jp: JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
                             .getJavaProjects()) {
                         if (jp.getElementName().equals(projectName)) {
-                        	project = jp;
-                        	return;
+                            project = jp;
+                            return;
                         }
                     }
                 }
@@ -263,43 +263,43 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         });
     }
 
-	private void updateModuleList() {
-		if (project!=null) {
-			modules.removeAll();
-			
+    private void updateModuleList() {
+        if (project!=null) {
+            modules.removeAll();
+            
             List<Module> moduleList = getModulesInProject(project.getProject());
             for (Module module : moduleList) {
                 TableItem item = new TableItem(modules, SWT.NONE);
                 item.setText(module.getNameAsString() + "/" + module.getVersion());
                 item.setImage(CeylonLabelProvider.ARCHIVE);
             }
-			
-			modules.selectAll();
-		}
-	}
-	
-	public Table getModules() {
-		return modules;
-	}
+            
+            modules.selectAll();
+        }
+    }
+    
+    public Table getModules() {
+        return modules;
+    }
 
-	private boolean isComplete() {
-		return project!=null &&
-		        isValidRepo() &&
-		        modules.getSelection().length>0;
-	}
-	
-	private boolean isValidRepo() {
-	    return repositoryPath!=null &&
+    private boolean isComplete() {
+        return project!=null &&
+                isValidRepo() &&
+                modules.getSelection().length>0;
+    }
+    
+    private boolean isValidRepo() {
+        return repositoryPath!=null &&
                 !repositoryPath.isEmpty() &&
                 new File(repositoryPath).exists();
-	}
-	
-	public String getRepositoryPath() {
-		return repositoryPath;
-	}
+    }
     
-	public IJavaProject getProject() {
-		return project;
-	}
-	
+    public String getRepositoryPath() {
+        return repositoryPath;
+    }
+    
+    public IJavaProject getProject() {
+        return project;
+    }
+    
 }

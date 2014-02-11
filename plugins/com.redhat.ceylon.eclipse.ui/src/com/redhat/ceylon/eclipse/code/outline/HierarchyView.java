@@ -72,37 +72,37 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyView extends ViewPart {
 
-	private static final Image GOTO_IMAGE = CeylonPlugin.getInstance()
-			.getImageRegistry().get(GOTO);
+    private static final Image GOTO_IMAGE = CeylonPlugin.getInstance()
+            .getImageRegistry().get(GOTO);
     private static final Image INHERITED_IMAGE = CeylonPlugin.getInstance()
             .getImageRegistry().get(CEYLON_INHERITED);
     private static final Image SORT_IMAGE = CeylonPlugin.getInstance()
             .getImageRegistry().get(TYPE_MODE);
-	
-	private CeylonHierarchyLabelProvider labelProvider;
-	private CeylonHierarchyContentProvider contentProvider;
-	private MembersLabelProvider membersLabelProvider;
-	private MembersContentProvider membersContentProvider;
-	
-	private TreeViewer treeViewer;
-	private TableViewer tableViewer;
-	
-	private ModeAction hierarchyAction;
-	private ModeAction supertypesAction;
-	private ModeAction subtypesAction;
-	
-	private IProject project;
-	
-	private CLabel title;
-	
+    
+    private CeylonHierarchyLabelProvider labelProvider;
+    private CeylonHierarchyContentProvider contentProvider;
+    private MembersLabelProvider membersLabelProvider;
+    private MembersContentProvider membersContentProvider;
+    
+    private TreeViewer treeViewer;
+    private TableViewer tableViewer;
+    
+    private ModeAction hierarchyAction;
+    private ModeAction supertypesAction;
+    private ModeAction subtypesAction;
+    
+    private IProject project;
+    
+    private CLabel title;
+    
     private boolean showInherited;
     
     void toggle() {
         showInherited=!showInherited;
     }
     
-	private final class MemberSorter extends ViewerSorter {
-	    private boolean sortByType;
+    private final class MemberSorter extends ViewerSorter {
+        private boolean sortByType;
         @Override
         public int compare(Viewer viewer, Object x, Object y) {
             if (sortByType) {
@@ -119,70 +119,70 @@ public class HierarchyView extends ViewPart {
     }
 
     private final class MembersContentProvider implements IStructuredContentProvider {
-	    
-		@Override
-		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+        
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 
-		@Override
-		public void dispose() {}
+        @Override
+        public void dispose() {}
 
-		@Override
-		public Object[] getElements(Object inputElement) {
-			if (inputElement instanceof TypeDeclaration) {
-			    TypeDeclaration declaration = (TypeDeclaration) inputElement;
+        @Override
+        public Object[] getElements(Object inputElement) {
+            if (inputElement instanceof TypeDeclaration) {
+                TypeDeclaration declaration = (TypeDeclaration) inputElement;
                 if (showInherited) {
                     ArrayList<Declaration> list = new ArrayList<Declaration>();
                     for (DeclarationWithProximity dwp: declaration.getMatchingMemberDeclarations(declaration, "", 0).values()) {
                         list.add(dwp.getDeclaration());
                     }
                     //TODO: sort by declaring type?
-			        return list.toArray();
-			    }
-			    else {
-			        return declaration.getMembers().toArray();
-			    }
-			}
-			else {
-				return new Object[0];
-			}
-		}
+                    return list.toArray();
+                }
+                else {
+                    return declaration.getMembers().toArray();
+                }
+            }
+            else {
+                return new Object[0];
+            }
+        }
 
-	}
+    }
 
-	class MembersLabelProvider extends StyledCellLabelProvider 
-	        implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
+    class MembersLabelProvider extends StyledCellLabelProvider 
+            implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
 
-		@Override
-		public void addListener(ILabelProviderListener listener) {}
+        @Override
+        public void addListener(ILabelProviderListener listener) {}
 
-		@Override
-		public void dispose() {}
+        @Override
+        public void dispose() {}
 
-		@Override
-		public boolean isLabelProperty(Object element, String property) {
-			return false;
-		}
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
 
-		@Override
-		public void removeListener(ILabelProviderListener listener) {}
+        @Override
+        public void removeListener(ILabelProviderListener listener) {}
 
-		@Override
-		public Image getImage(Object element) {
-			return getImageForDeclaration((Declaration) element);
-		}
+        @Override
+        public Image getImage(Object element) {
+            return getImageForDeclaration((Declaration) element);
+        }
 
-		@Override
-		public String getText(Object element) {
-			Declaration dec = (Declaration) element;
+        @Override
+        public String getText(Object element) {
+            Declaration dec = (Declaration) element;
             String desc = getDescriptionFor(dec);
-			if (showInherited && dec.getContainer() instanceof Declaration) {
-			    desc += " - " + ((Declaration)dec.getContainer()).getName();
-			}
+            if (showInherited && dec.getContainer() instanceof Declaration) {
+                desc += " - " + ((Declaration)dec.getContainer()).getName();
+            }
             return desc;
-		}
+        }
 
-		@Override
-		public StyledString getStyledText(Object element) {
+        @Override
+        public StyledString getStyledText(Object element) {
             Declaration dec = (Declaration) element;
             StyledString desc = getStyledDescriptionFor((Declaration) element);
             if (showInherited && dec.getContainer() instanceof Declaration) {
@@ -190,40 +190,40 @@ public class HierarchyView extends ViewPart {
                     .append(((Declaration)dec.getContainer()).getName(), 
                             TYPE_STYLER);
             }
-			return desc;
-		}
+            return desc;
+        }
 
-		@Override
-		public void update(ViewerCell cell) {
-			Object element = cell.getElement();
-			if (element!=null) {
-				StyledString styledText = getStyledText(element);
-				cell.setText(styledText.toString());
-				cell.setStyleRanges(styledText.getStyleRanges());
-				cell.setImage(getImage(element));
-				super.update(cell);
-			}
-		}
+        @Override
+        public void update(ViewerCell cell) {
+            Object element = cell.getElement();
+            if (element!=null) {
+                StyledString styledText = getStyledText(element);
+                cell.setText(styledText.toString());
+                cell.setStyleRanges(styledText.getStyleRanges());
+                cell.setImage(getImage(element));
+                super.update(cell);
+            }
+        }
 
-	}
-	
-	private void gotoCeylonOrJavaDeclaration(Declaration dec) {
-		if (dec.getUnit() instanceof JavaClassFile) { //TODO: is this right?!
-			gotoJavaNode(dec, project);
-		}
-		else {
-			gotoDeclaration(dec, project);
-		}
-	}
-	
-	@Override
-	public void createPartControl(Composite parent) {
-		setContentDescription("");
-		SashForm sash = new SashForm(parent, SWT.VERTICAL);
+    }
+    
+    private void gotoCeylonOrJavaDeclaration(Declaration dec) {
+        if (dec.getUnit() instanceof JavaClassFile) { //TODO: is this right?!
+            gotoJavaNode(dec, project);
+        }
+        else {
+            gotoDeclaration(dec, project);
+        }
+    }
+    
+    @Override
+    public void createPartControl(Composite parent) {
+        setContentDescription("");
+        SashForm sash = new SashForm(parent, SWT.VERTICAL);
         createMainToolBar();
-		createTreeMenu(createTree(sash));
+        createTreeMenu(createTree(sash));
         createTableMenu(createTable(sash));
-	}
+    }
 
     public Tree createTree(SashForm sash) {
         final Tree tree = new Tree(sash, SWT.SINGLE);
@@ -246,43 +246,43 @@ public class HierarchyView extends ViewPart {
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.setAutoExpandLevel(getDefaultLevel());
         treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				TreeSelection selection = (TreeSelection) event.getSelection();
-				CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
-				if (firstElement!=null) {
-					Declaration dec = firstElement.getDeclaration(project);
-					if (dec!=null) {
-						title.setImage(getImageForDeclaration(dec));
-						title.setText(dec.getName());
-						tableViewer.setInput(dec);
-					}
-				}
-			}
-		});
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                TreeSelection selection = (TreeSelection) event.getSelection();
+                CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
+                if (firstElement!=null) {
+                    Declaration dec = firstElement.getDeclaration(project);
+                    if (dec!=null) {
+                        title.setImage(getImageForDeclaration(dec));
+                        title.setText(dec.getName());
+                        tableViewer.setInput(dec);
+                    }
+                }
+            }
+        });
         treeViewer.addDoubleClickListener(new IDoubleClickListener() {
-			@Override
-			public void doubleClick(DoubleClickEvent event) {
-				TreeSelection selection = (TreeSelection) event.getSelection();
-				CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
-				Declaration dec = firstElement.getDeclaration(project);
-				gotoCeylonOrJavaDeclaration(dec);
-			}
-		});
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                TreeSelection selection = (TreeSelection) event.getSelection();
+                CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
+                Declaration dec = firstElement.getDeclaration(project);
+                gotoCeylonOrJavaDeclaration(dec);
+            }
+        });
         return tree;
     }
 
     public Table createTable(SashForm sash) {
         ViewForm viewForm = new ViewForm(sash, SWT.FLAT);
-		GridData vfgd = new GridData(GridData.FILL_BOTH);
+        GridData vfgd = new GridData(GridData.FILL_BOTH);
         tableViewer = new TableViewer(viewForm);
-		viewForm.setContent(tableViewer.getTable());
-		title = new CLabel(viewForm, SWT.NONE);
-		ToolBar toolBar = new ToolBar(viewForm, SWT.NONE);
-		ToolItem toolItem = new ToolItem(toolBar, SWT.CHECK);
-		toolItem.setImage(INHERITED_IMAGE);
-		toolItem.setToolTipText("Show inherited members");
-		toolItem.addSelectionListener(new SelectionListener() {
+        viewForm.setContent(tableViewer.getTable());
+        title = new CLabel(viewForm, SWT.NONE);
+        ToolBar toolBar = new ToolBar(viewForm, SWT.NONE);
+        ToolItem toolItem = new ToolItem(toolBar, SWT.CHECK);
+        toolItem.setImage(INHERITED_IMAGE);
+        toolItem.setToolTipText("Show inherited members");
+        toolItem.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 toggle();
@@ -291,7 +291,7 @@ public class HierarchyView extends ViewPart {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-		toolItem = new ToolItem(toolBar, SWT.CHECK);
+        toolItem = new ToolItem(toolBar, SWT.CHECK);
         toolItem.setImage(SORT_IMAGE);
         toolItem.setToolTipText("Sort members by declaring type");
         final MemberSorter sorter = new MemberSorter();
@@ -306,73 +306,73 @@ public class HierarchyView extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         viewForm.setTopRight(toolBar);
-		viewForm.setTopLeft(title);
-		viewForm.setTopCenter(title);
+        viewForm.setTopLeft(title);
+        viewForm.setTopCenter(title);
         tableViewer.getTable().setLayoutData(vfgd);
         membersLabelProvider=new MembersLabelProvider();
         membersContentProvider=new MembersContentProvider();
         tableViewer.setLabelProvider(membersLabelProvider);
         tableViewer.setContentProvider(membersContentProvider);
         tableViewer.addDoubleClickListener(new IDoubleClickListener() {
-			@Override
-			public void doubleClick(DoubleClickEvent event) {
-				StructuredSelection selection = (StructuredSelection) event.getSelection();
-				Declaration firstElement = (Declaration) selection.getFirstElement();
-				gotoCeylonOrJavaDeclaration(firstElement);
-			}
-		});
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                StructuredSelection selection = (StructuredSelection) event.getSelection();
+                Declaration firstElement = (Declaration) selection.getFirstElement();
+                gotoCeylonOrJavaDeclaration(firstElement);
+            }
+        });
         return tableViewer.getTable();
     }
 
     public void createMainToolBar() {
         IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
         tbm.add(hierarchyAction=new ModeAction("Hierarchy", 
-        		"Switch to hierarchy mode", 
-        				CEYLON_HIER, HIERARCHY));
+                "Switch to hierarchy mode", 
+                        CEYLON_HIER, HIERARCHY));
         tbm.add(supertypesAction=new ModeAction("Supertypes", 
-        		"Switch to supertypes mode", 
-        				CEYLON_SUP, SUPERTYPES));
+                "Switch to supertypes mode", 
+                        CEYLON_SUP, SUPERTYPES));
         tbm.add(subtypesAction=new ModeAction("Subtypes", 
-        		"Switch to subtypes mode", 
-        				CEYLON_SUB, SUBTYPES));
+                "Switch to subtypes mode", 
+                        CEYLON_SUB, SUBTYPES));
         updateActions(HIERARCHY);
     }
 
     public void createTreeMenu(final Tree tree) {
         Menu menu = new Menu(tree);
-    	MenuItem item = new MenuItem(menu, SWT.PUSH);
-    	item.setText("Focus on Selection");
-    	item.setImage(getTitleImage());
-		tree.setMenu(menu);
-		item.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-        		Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
-        		if (firstElement instanceof CeylonHierarchyNode) {
-        			Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration(project);
-					treeViewer.setInput(new HierarchyInput(declaration, project));
-					setDescription(declaration);
-        		}
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {}
-		});
-		item = new MenuItem(menu, SWT.PUSH);
-    	item.setText("Go To Selection");
-		item.setImage(GOTO_IMAGE);
-		tree.setMenu(menu);
-		item.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-        		Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
-        		if (firstElement instanceof CeylonHierarchyNode) {
-        			Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration(project);
-					gotoCeylonOrJavaDeclaration(declaration);
-        		}
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {}
-		});
+        MenuItem item = new MenuItem(menu, SWT.PUSH);
+        item.setText("Focus on Selection");
+        item.setImage(getTitleImage());
+        tree.setMenu(menu);
+        item.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
+                if (firstElement instanceof CeylonHierarchyNode) {
+                    Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration(project);
+                    treeViewer.setInput(new HierarchyInput(declaration, project));
+                    setDescription(declaration);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        item = new MenuItem(menu, SWT.PUSH);
+        item.setText("Go To Selection");
+        item.setImage(GOTO_IMAGE);
+        tree.setMenu(menu);
+        item.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
+                if (firstElement instanceof CeylonHierarchyNode) {
+                    Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration(project);
+                    gotoCeylonOrJavaDeclaration(declaration);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
     }
 
     public void createTableMenu(final Table table) {
@@ -411,18 +411,18 @@ public class HierarchyView extends ViewPart {
         });
     }
 
-	private int getDefaultLevel() {
-		return 4;
-	}
-	
-	private void updateActions(HierarchyMode mode) {
-		hierarchyAction.setChecked(mode==HIERARCHY);
-		supertypesAction.setChecked(mode==SUPERTYPES);
-		subtypesAction.setChecked(mode==SUBTYPES);
-	}
+    private int getDefaultLevel() {
+        return 4;
+    }
+    
+    private void updateActions(HierarchyMode mode) {
+        hierarchyAction.setChecked(mode==HIERARCHY);
+        supertypesAction.setChecked(mode==SUPERTYPES);
+        subtypesAction.setChecked(mode==SUBTYPES);
+    }
 
     protected void update() {
-    	setDescription((Declaration) tableViewer.getInput());
+        setDescription((Declaration) tableViewer.getInput());
         treeViewer.getControl().setRedraw(false);
         // refresh viewer to re-filter
         treeViewer.refresh();
@@ -432,79 +432,79 @@ public class HierarchyView extends ViewPart {
         treeViewer.getControl().setRedraw(true);
     }
     
-	private void reveal() {
+    private void reveal() {
         treeViewer.expandToLevel(getDefaultLevel());
     }
 
-	@Override
-	public void setFocus() {}
+    @Override
+    public void setFocus() {}
 
-	public void focusOnSelection(CeylonEditor editor) {
-		CeylonParseController cpc = editor.getParseController();
-		Node node = findNode(cpc.getRootNode(), editor.getSelection().getOffset());
-		Declaration dec = getReferencedDeclaration(node);
-		focusOn(cpc.getProject(), dec);
-	}
+    public void focusOnSelection(CeylonEditor editor) {
+        CeylonParseController cpc = editor.getParseController();
+        Node node = findNode(cpc.getRootNode(), editor.getSelection().getOffset());
+        Declaration dec = getReferencedDeclaration(node);
+        focusOn(cpc.getProject(), dec);
+    }
 
-	public void focusOn(IProject project, Declaration dec) {
+    public void focusOn(IProject project, Declaration dec) {
         this.project = project;
-		if (dec!=null) {
-			title.setImage(getImageForDeclaration(dec));
-			title.setText(dec.getName());
-			tableViewer.setInput(dec);
-			treeViewer.setInput(new HierarchyInput(dec, project));
+        if (dec!=null) {
+            title.setImage(getImageForDeclaration(dec));
+            title.setText(dec.getName());
+            tableViewer.setInput(dec);
+            treeViewer.setInput(new HierarchyInput(dec, project));
             setDescription(dec);
-		}
-	}
+        }
+    }
 
-	private void setDescription(Declaration dec) {
-//		setContentDescription("Displaying " +
-//				contentProvider.getMode().name().toLowerCase() + 
-//				" of '" + dec.getName() + "'");
-	    setContentDescription(contentProvider.getDescription());
-	}
+    private void setDescription(Declaration dec) {
+//        setContentDescription("Displaying " +
+//                contentProvider.getMode().name().toLowerCase() + 
+//                " of '" + dec.getName() + "'");
+        setContentDescription(contentProvider.getDescription());
+    }
 
-	public static HierarchyView showHierarchyView() throws PartInitException {
-		return (HierarchyView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-		        .showView(PLUGIN_ID + ".view.HierarchyView");
-	}
-	
-	/*private class MembersAction extends Action {
-	    MembersAction() {
-	        super("Show Inherited Members");
-	        setToolTipText("Show inherited members");
-	        setImageDescriptor(CeylonPlugin.getInstance()
+    public static HierarchyView showHierarchyView() throws PartInitException {
+        return (HierarchyView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                .showView(PLUGIN_ID + ".view.HierarchyView");
+    }
+    
+    /*private class MembersAction extends Action {
+        MembersAction() {
+            super("Show Inherited Members");
+            setToolTipText("Show inherited members");
+            setImageDescriptor(CeylonPlugin.getInstance()
                     .getImageRegistry()
                     .getDescriptor(CEYLON_INHERITED));
-	    }
-	    @Override
-	    public void run() {
-	        membersContentProvider.toggle();
-	        update();
-	        setChecked(!isChecked());
-	    }
-	}*/
+        }
+        @Override
+        public void run() {
+            membersContentProvider.toggle();
+            update();
+            setChecked(!isChecked());
+        }
+    }*/
 
-	private class ModeAction extends Action {
-		HierarchyMode mode;
+    private class ModeAction extends Action {
+        HierarchyMode mode;
 
-		ModeAction(String label, String tooltip, 
-				String imageKey, HierarchyMode mode) {
-			super(label);
-			setToolTipText(tooltip);
-			setImageDescriptor(CeylonPlugin.getInstance()
-					.getImageRegistry()
-					.getDescriptor(imageKey));
-			this.mode = mode;
-		}
+        ModeAction(String label, String tooltip, 
+                String imageKey, HierarchyMode mode) {
+            super(label);
+            setToolTipText(tooltip);
+            setImageDescriptor(CeylonPlugin.getInstance()
+                    .getImageRegistry()
+                    .getDescriptor(imageKey));
+            this.mode = mode;
+        }
 
-		@Override
-		public void run() {
-			contentProvider.setMode(mode);
-			update();
-			updateActions(mode);
-		}
+        @Override
+        public void run() {
+            contentProvider.setMode(mode);
+            update();
+            updateActions(mode);
+        }
 
-	}
+    }
 
 }

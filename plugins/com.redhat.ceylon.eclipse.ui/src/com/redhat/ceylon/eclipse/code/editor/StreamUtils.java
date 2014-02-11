@@ -73,14 +73,14 @@ class StreamUtils {
      * Returns null if an error occurred.
      */
     public static String readStreamContents(InputStream is, String encoding) {
-    	try {
-			return readReaderContents(new InputStreamReader(is, encoding));
-		} catch (UnsupportedEncodingException e) {
-			return null;
-		}
+        try {
+            return readReaderContents(new InputStreamReader(is, encoding));
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
     }
 
     public static String readStreamContents(InputStream is) {
-    	return readStreamContents(is, ResourcesPlugin.getEncoding());
+        return readStreamContents(is, ResourcesPlugin.getEncoding());
     }
 }

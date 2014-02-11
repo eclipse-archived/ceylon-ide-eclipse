@@ -48,7 +48,7 @@ class CreateLocalSubtypeProposal extends CorrectionProposal {
 
     static void addCreateLocalSubtypeProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file, Node node) {
-    	Tree.Statement statement = FindUtils.findToplevelStatement(cu, node);
+        Tree.Statement statement = FindUtils.findToplevelStatement(cu, node);
         if (statement!=null) {
             ProducedType type = CreateSubtypeInNewUnitProposal.getType(cu, node);
             if (type!=null && CreateSubtypeInNewUnitProposal.proposeSubtype(type)) {
@@ -57,18 +57,18 @@ class CreateLocalSubtypeProposal extends CorrectionProposal {
                 change.setEdit(new MultiTextEdit());
                 Integer offset = statement.getStartIndex();
                 String name = type.getDeclaration().getName()
-                		.replace("&", "").replace("<", "").replace(">", "");
+                        .replace("&", "").replace("<", "").replace(">", "");
                 CreateSubtype cs = subtypeDeclaration(type, 
-                		cu.getUnit().getPackage(), cu.getUnit(), 
-                		false, doc);
-            	HashSet<Declaration> already = new HashSet<Declaration>();
+                        cu.getUnit().getPackage(), cu.getUnit(), 
+                        false, doc);
+                HashSet<Declaration> already = new HashSet<Declaration>();
                 for (ProducedType pt: cs.getImportedTypes()) {
-                	importType(already, pt, cu);
+                    importType(already, pt, cu);
                 }
                 int il = applyImports(change, already, cu, doc);
                 String delim = Indents.getDefaultLineDelimiter(doc);
-				String dec = cs.getDefinition().replace("$className", "My" + name) + 
-						delim + delim;
+                String dec = cs.getDefinition().replace("$className", "My" + name) + 
+                        delim + delim;
                 change.addEdit(new InsertEdit(offset,dec));
                 proposals.add(new CreateLocalSubtypeProposal(type, 
                         offset+6+il, name.length()+2, file, change));

@@ -156,7 +156,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             final String newName, final String oldName,
             final List<Change> changes, PhasedUnit movedPhasedUnit, 
             final List<Declaration> declarations) {
-    	if (!getArguments().getUpdateReferences()) return;
+        if (!getArguments().getUpdateReferences()) return;
         for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
                 .getPhasedUnits().getPhasedUnits()) {
             if (phasedUnit==movedPhasedUnit) {
@@ -202,12 +202,12 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     protected void updateRefsToMovedJavaFile(final IProject project,
             final String newName, final String oldName,
             final List<Change> changes) throws JavaModelException {
-    	if (!getArguments().getUpdateReferences()) return;
+        if (!getArguments().getUpdateReferences()) return;
         ICompilationUnit jcu = (ICompilationUnit) JavaCore.create(file);
         final IType[] types = jcu.getTypes();
         TypeChecker tc = getProjectTypeChecker(project);
         if (tc==null) return;
-		for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
+        for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
             final Map<Declaration,String> imports = new HashMap<Declaration,String>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
                 @Override

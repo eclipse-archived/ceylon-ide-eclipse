@@ -22,37 +22,37 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 //TODO: fix all the copy/paste from FindReferenceVisitor
 public class FindAssignmentsVisitor extends Visitor implements NaturalVisitor {
-	
-	private Declaration declaration;
-	private final Set<Node> nodes = new HashSet<Node>();
-	
-	public FindAssignmentsVisitor(Declaration declaration) {
-	    if (declaration instanceof TypedDeclaration) {
-	        Declaration od = declaration;
-	        while (od!=null) {
-	            declaration = od;
-	            od = ((TypedDeclaration) od).getOriginalDeclaration();
-	        }
-	    }
-		this.declaration = declaration;
-	}
-	
-	public Declaration getDeclaration() {
+    
+    private Declaration declaration;
+    private final Set<Node> nodes = new HashSet<Node>();
+    
+    public FindAssignmentsVisitor(Declaration declaration) {
+        if (declaration instanceof TypedDeclaration) {
+            Declaration od = declaration;
+            while (od!=null) {
+                declaration = od;
+                od = ((TypedDeclaration) od).getOriginalDeclaration();
+            }
+        }
+        this.declaration = declaration;
+    }
+    
+    public Declaration getDeclaration() {
         return declaration;
     }
-	
-	public Set<Node> getNodes() {
-		return nodes;
-	}
-	
+    
+    public Set<Node> getNodes() {
+        return nodes;
+    }
+    
     protected boolean isReference(Parameter p) {
         return p!=null && isReference(p.getModel());
     }
     
-	protected boolean isReference(Declaration ref) {
-	    return ref!=null && declaration.refines(ref);
-	}
-	
+    protected boolean isReference(Declaration ref) {
+        return ref!=null && declaration.refines(ref);
+    }
+    
     private boolean isReference(Term lhs) {
         return lhs instanceof MemberOrTypeExpression && 
                 isReference(((MemberOrTypeExpression)lhs).getDeclaration());

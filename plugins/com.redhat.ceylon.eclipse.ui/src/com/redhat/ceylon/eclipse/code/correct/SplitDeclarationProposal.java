@@ -75,28 +75,28 @@ class SplitDeclarationProposal extends CorrectionProposal {
         change.setEdit(new MultiTextEdit());
         Integer offset = id.getStopIndex()+1;
         change.addEdit(new InsertEdit(offset, params+";" + 
-        		Indents.getDefaultLineDelimiter(doc) + getIndent(decNode, doc) + 
-        		dec.getName()));
+                Indents.getDefaultLineDelimiter(doc) + getIndent(decNode, doc) + 
+                dec.getName()));
         Type type = decNode.getType();
-		int il;
+        int il;
         if (type instanceof Tree.LocalModifier) {
             Integer typeOffset = type.getStartIndex();
             ProducedType infType = inferType(cu, type);
-			String explicitType;
-			if (infType==null) {
-				explicitType = "Object";
-				il=0;
-			}
-			else {
-				explicitType = infType.getProducedTypeName();
-				HashSet<Declaration> decs = new HashSet<Declaration>();
-				importType(decs, infType, cu);
-				il=applyImports(change, decs, cu, doc);
-			}
+            String explicitType;
+            if (infType==null) {
+                explicitType = "Object";
+                il=0;
+            }
+            else {
+                explicitType = infType.getProducedTypeName();
+                HashSet<Declaration> decs = new HashSet<Declaration>();
+                importType(decs, infType, cu);
+                il=applyImports(change, decs, cu, doc);
+            }
             change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
         }
         else {
-        	il=0;
+            il=0;
         }
         proposals.add(new SplitDeclarationProposal(dec, offset+il, file, change));
     }

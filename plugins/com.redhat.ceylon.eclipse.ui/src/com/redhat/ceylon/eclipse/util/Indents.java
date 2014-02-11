@@ -14,27 +14,27 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 
 public class Indents {
 
-	public static String getIndent(Node node, IDocument doc) {
-	    if (node==null||node.getEndToken()==null||
-	            node.getEndToken().getLine()==0) {
-	        return "";
-	    }
-	    try {
-	        IRegion region = doc.getLineInformation(node.getEndToken().getLine()-1);
-	        String line = doc.get(region.getOffset(), region.getLength());
-	        char[] chars = line.toCharArray();
-	        for (int i=0; i<chars.length; i++) {
-	            if (chars[i]!='\t' && chars[i]!=' ') {
-	                return line.substring(0,i);
-	            }
-	        }
-	        return line;
-	    }
-	    catch (BadLocationException ble) {
-	        return "";
-	    }
-	}
-	
+    public static String getIndent(Node node, IDocument doc) {
+        if (node==null||node.getEndToken()==null||
+                node.getEndToken().getLine()==0) {
+            return "";
+        }
+        try {
+            IRegion region = doc.getLineInformation(node.getEndToken().getLine()-1);
+            String line = doc.get(region.getOffset(), region.getLength());
+            char[] chars = line.toCharArray();
+            for (int i=0; i<chars.length; i++) {
+                if (chars[i]!='\t' && chars[i]!=' ') {
+                    return line.substring(0,i);
+                }
+            }
+            return line;
+        }
+        catch (BadLocationException ble) {
+            return "";
+        }
+    }
+    
     public static String getDefaultIndent() {
         StringBuilder result = new StringBuilder();
         initialIndent(result);
@@ -64,13 +64,13 @@ public class Indents {
         }
     }
 
-	public static String getDefaultLineDelimiter(IDocument document) {
-	    if (document instanceof IDocumentExtension4) {
-	    	return ((IDocumentExtension4) document).getDefaultLineDelimiter();
-	    }
-	    else {
-	    	return System.lineSeparator();
-	    }
-	}
+    public static String getDefaultLineDelimiter(IDocument document) {
+        if (document instanceof IDocumentExtension4) {
+            return ((IDocumentExtension4) document).getDefaultLineDelimiter();
+        }
+        else {
+            return System.lineSeparator();
+        }
+    }
     
 }

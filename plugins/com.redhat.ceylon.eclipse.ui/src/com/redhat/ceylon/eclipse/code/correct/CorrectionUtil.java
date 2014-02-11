@@ -64,45 +64,45 @@ class CorrectionUtil {
         return p[n];
     }
 
-	//TODO: copy/pasted from AbstractFindAction
-	static Node getSelectedNode(CeylonEditor editor) {
-	    CeylonParseController cpc = editor==null ? null : editor.getParseController();
-	    return cpc==null || cpc.getRootNode()==null ? null : 
-	        findNode(cpc.getRootNode(), 
-	            (ITextSelection) editor.getSelectionProvider().getSelection());
-	}
+    //TODO: copy/pasted from AbstractFindAction
+    static Node getSelectedNode(CeylonEditor editor) {
+        CeylonParseController cpc = editor==null ? null : editor.getParseController();
+        return cpc==null || cpc.getRootNode()==null ? null : 
+            findNode(cpc.getRootNode(), 
+                (ITextSelection) editor.getSelectionProvider().getSelection());
+    }
 
     static Tree.Body getClassOrInterfaceBody(Tree.Declaration decNode) {
-	    if (decNode instanceof Tree.ClassDefinition) {
-	        return ((Tree.ClassDefinition) decNode).getClassBody();
-	    }
-	    else if (decNode instanceof Tree.InterfaceDefinition){
-	        return ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
-	    }
-	    else if (decNode instanceof Tree.ObjectDefinition){
-	        return ((Tree.ObjectDefinition) decNode).getClassBody();
-	    }
-	    else {
-	    	return null;
-	    }
-	}
+        if (decNode instanceof Tree.ClassDefinition) {
+            return ((Tree.ClassDefinition) decNode).getClassBody();
+        }
+        else if (decNode instanceof Tree.InterfaceDefinition){
+            return ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
+        }
+        else if (decNode instanceof Tree.ObjectDefinition){
+            return ((Tree.ObjectDefinition) decNode).getClassBody();
+        }
+        else {
+            return null;
+        }
+    }
 
-	static Tree.CompilationUnit getRootNode(PhasedUnit unit) {
-	    IEditorPart ce = getCurrentEditor();
-	    if (ce instanceof CeylonEditor) {
-	        CeylonParseController cpc = ((CeylonEditor) ce).getParseController();
-	        if (cpc!=null) {
-	        	Tree.CompilationUnit rn = cpc.getRootNode();
-	            if (rn!=null) {
-	                Unit u = rn.getUnit();
-	                if (u.equals(unit.getUnit())) {
-	                    return rn;
-	                }
-	            }
-	        }
-	    }       
-	    return unit.getCompilationUnit();
-	}
+    static Tree.CompilationUnit getRootNode(PhasedUnit unit) {
+        IEditorPart ce = getCurrentEditor();
+        if (ce instanceof CeylonEditor) {
+            CeylonParseController cpc = ((CeylonEditor) ce).getParseController();
+            if (cpc!=null) {
+                Tree.CompilationUnit rn = cpc.getRootNode();
+                if (rn!=null) {
+                    Unit u = rn.getUnit();
+                    if (u.equals(unit.getUnit())) {
+                        return rn;
+                    }
+                }
+            }
+        }       
+        return unit.getCompilationUnit();
+    }
 
     static StyledString styleProposal(String name) {
         StyledString result = new StyledString();

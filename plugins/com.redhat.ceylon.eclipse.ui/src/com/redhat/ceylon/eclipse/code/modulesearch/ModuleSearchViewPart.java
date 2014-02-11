@@ -278,7 +278,7 @@ public class ModuleSearchViewPart extends ViewPart {
                     
                     if( containsImport ) {
                         MessageDialog.openInformation(parent.getShell(), "Information", "Can not add module import, because module '" + 
-                        		target.getNameAsString() + "' contains it already.");
+                                target.getNameAsString() + "' contains it already.");
                     } else {
                         ModuleImportUtil.addModuleImport(moduleMap.get(target), target, moduleName, moduleVersion);
                     }
@@ -461,7 +461,7 @@ public class ModuleSearchViewPart extends ViewPart {
         searchCombo = new Combo(parent, SWT.SINGLE | SWT.BORDER);
         searchCombo.setVisibleItemCount(10);
         GridData gd = GridDataFactory.swtDefaults().span(1, 1).hint(250, SWT.DEFAULT).create();
-		searchCombo.setLayoutData(gd);
+        searchCombo.setLayoutData(gd);
         searchCombo.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
                 if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
@@ -478,13 +478,13 @@ public class ModuleSearchViewPart extends ViewPart {
         searchButton.setLayoutData(GridDataFactory.swtDefaults().hint(120, SWT.DEFAULT).create());
         searchButton.setAlignment(SWT.CENTER);
         searchButton.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
                 updateBeforeSearch(true);
                 moduleSearchManager.searchModules(searchCombo.getText());
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {}
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
         });
     }
 
@@ -492,7 +492,7 @@ public class ModuleSearchViewPart extends ViewPart {
         Label projectLabel = new Label(parent, SWT.RIGHT | SWT.WRAP);
         projectLabel.setText("Search in repositories of project");
         GridData gd = GridDataFactory.swtDefaults().align(SWT.END, SWT.CENTER).create();
-		projectLabel.setLayoutData(gd);
+        projectLabel.setLayoutData(gd);
         
         projectCombo = new Combo(parent, SWT.SINGLE | SWT.BORDER | SWT.READ_ONLY);
         projectCombo.setLayoutData(GridDataFactory.swtDefaults().hint(120, SWT.DEFAULT).create());
@@ -719,9 +719,9 @@ public class ModuleSearchViewPart extends ViewPart {
         HTMLPrinter.insertPageProlog(docBuilder, 0, docForegroundColor, docBackgroundColor, docStyleSheet);
         
         if (versionNode != null) {
-        	addImageAndLabel(docBuilder, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
-    				16, 16, "<b><tt>" + DocumentationHover.highlightLine(description(versionNode)) +"</tt></b>", 20, 4);
-        	docBuilder.append("<hr/>");
+            addImageAndLabel(docBuilder, null, fileUrl("jar_l_obj.gif").toExternalForm(), 
+                    16, 16, "<b><tt>" + DocumentationHover.highlightLine(description(versionNode)) +"</tt></b>", 20, 4);
+            docBuilder.append("<hr/>");
             
             if (versionNode.isFilled()) {
                 

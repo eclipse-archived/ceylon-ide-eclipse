@@ -16,8 +16,8 @@ import org.eclipse.jdt.core.JavaCore;
 
 
 public class ProjectChangeListener implements IResourceChangeListener {
-	
-	@Override
+    
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
         try {
             event.getDelta().accept(new IResourceDeltaVisitor() {                    
@@ -29,7 +29,7 @@ public class ProjectChangeListener implements IResourceChangeListener {
                         return true;
                     }
                     if (resource instanceof IProject && delta.getKind()==IResourceDelta.REMOVED) {
-                    	CeylonBuilder.removeProject((IProject) resource);
+                        CeylonBuilder.removeProject((IProject) resource);
                     }
                     else if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
                         final IProject project = (IProject) resource;
@@ -60,5 +60,5 @@ public class ProjectChangeListener implements IResourceChangeListener {
             e.printStackTrace();
         }
     }
-	
+    
 }

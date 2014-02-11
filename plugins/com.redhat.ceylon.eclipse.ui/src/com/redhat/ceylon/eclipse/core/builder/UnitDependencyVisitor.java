@@ -66,35 +66,35 @@ public class UnitDependencyVisitor extends Visitor {
             }
             Unit declarationUnit = d.getUnit();
             if (declarationUnit != null && ! (declarationUnit instanceof TypeFactory)) {
-            	String moduleName = declarationUnit.getPackage().getModule().getNameAsString();
-            	if (!moduleName.equals(Module.LANGUAGE_MODULE_NAME) && 
-            			!JDKUtils.isJDKModule(moduleName)
-            			&& !JDKUtils.isOracleJDKModule(moduleName)) { 
-            		Unit currentUnit = phasedUnit.getUnit();
-            		String currentUnitPath = phasedUnit.getUnitFile().getPath();
-            		String currentUnitName = currentUnit.getFilename();
-            		String dependedOnUnitName = declarationUnit.getFilename();
-            		String currentUnitPackage = currentUnit.getPackage().getNameAsString();
-            		String dependedOnPackage = declarationUnit.getPackage().getNameAsString();
-            		if (!dependedOnUnitName.equals(currentUnitName) ||
-            				!dependedOnPackage.equals(currentUnitPackage)) {
-            		    
-            		    // WOW : Ceylon Abstract Data types and swith case would be cool here ;) 
-        			    if (declarationUnit instanceof ProjectSourceFile) {
+                String moduleName = declarationUnit.getPackage().getModule().getNameAsString();
+                if (!moduleName.equals(Module.LANGUAGE_MODULE_NAME) && 
+                        !JDKUtils.isJDKModule(moduleName)
+                        && !JDKUtils.isOracleJDKModule(moduleName)) { 
+                    Unit currentUnit = phasedUnit.getUnit();
+                    String currentUnitPath = phasedUnit.getUnitFile().getPath();
+                    String currentUnitName = currentUnit.getFilename();
+                    String dependedOnUnitName = declarationUnit.getFilename();
+                    String currentUnitPackage = currentUnit.getPackage().getNameAsString();
+                    String dependedOnPackage = declarationUnit.getPackage().getNameAsString();
+                    if (!dependedOnUnitName.equals(currentUnitName) ||
+                            !dependedOnPackage.equals(currentUnitPackage)) {
+                        
+                        // WOW : Ceylon Abstract Data types and swith case would be cool here ;) 
+                        if (declarationUnit instanceof ProjectSourceFile) {
                             declarationUnit.getDependentsOf().add(currentUnitPath);
-        			    }
-        			    else if (declarationUnit instanceof ICrossProjectReference) {
-        			        ProjectSourceFile originalProjectSourceFile = ((ICrossProjectReference) declarationUnit).getOriginalSourceFile();
-        			        if (originalProjectSourceFile != null) {
-        			            originalProjectSourceFile.getDependentsOf().add(currentUnitPath);
-        			        }
-        			    }
-        			    else if (declarationUnit instanceof ExternalSourceFile) {
-        			        // Don't manage them : they cannot change ... Well they might if we were using these dependencies to manage module 
-        			        // removal. But since module removal triggers a classpath container update and so a full build, it's not necessary.
-        			        // Might change in the future 
-        			    }
-        			    else if (declarationUnit instanceof CeylonBinaryUnit) {
+                        }
+                        else if (declarationUnit instanceof ICrossProjectReference) {
+                            ProjectSourceFile originalProjectSourceFile = ((ICrossProjectReference) declarationUnit).getOriginalSourceFile();
+                            if (originalProjectSourceFile != null) {
+                                originalProjectSourceFile.getDependentsOf().add(currentUnitPath);
+                            }
+                        }
+                        else if (declarationUnit instanceof ExternalSourceFile) {
+                            // Don't manage them : they cannot change ... Well they might if we were using these dependencies to manage module 
+                            // removal. But since module removal triggers a classpath container update and so a full build, it's not necessary.
+                            // Might change in the future 
+                        }
+                        else if (declarationUnit instanceof CeylonBinaryUnit) {
                             declarationUnit.getDependentsOf().add(currentUnitPath);
                         } 
                         else if (declarationUnit instanceof JavaCompilationUnit) {
@@ -109,11 +109,11 @@ public class UnitDependencyVisitor extends Visitor {
                             // but not sure it is also used not in the case of jar-located classes
                             declarationUnit.getDependentsOf().add(currentUnitPath);
                         } 
-        			    else {
+                        else {
                             assert(false);
-        			    }
-            		}
-            	}
+                        }
+                    }
+                }
             }
         }
     }

@@ -111,7 +111,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
 
             // fill the field, else leave blank
             if (topLevel != null) {
-            	this.fTopLevelText.setText(LaunchHelper.getTopLevelDisplayName(topLevel));
+                this.fTopLevelText.setText(LaunchHelper.getTopLevelDisplayName(topLevel));
             }
         }
     }
@@ -121,9 +121,9 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
      * Show a dialog that lists all runnable types
      */
     protected void handleSearchButtonSelected() {
-    	
-    	Declaration d = LaunchHelper.chooseDeclaration(LaunchHelper.getDeclarationsForModule(
-    			fProjText.getText(), fModuleText.getText()));
+        
+        Declaration d = LaunchHelper.chooseDeclaration(LaunchHelper.getDeclarationsForModule(
+                fProjText.getText(), fModuleText.getText()));
         
         if (d != null) {
             fTopLevelText.setText(LaunchHelper.getTopLevelDisplayName(d));
@@ -131,7 +131,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             // unique situation in which default module was selected but that the type belongs to a module
             Module mod = LaunchHelper.getModule(d);
             if (mod != null && !mod.isDefault()) {
-            	fModuleText.setText(LaunchHelper.getModuleFullName(d));
+                fModuleText.setText(LaunchHelper.getModuleFullName(d));
             }
         }
     }   
@@ -180,30 +180,30 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             }
             
             try {
-            	ILaunchConfigurationType launchType = getCurrentLaunchConfiguration().getType();
-            	
-            	boolean javaEnabled = LaunchHelper.isBuilderEnabled(project,
-            			ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVA_MODULE);
-            	
-            	boolean jsEnabled = LaunchHelper.isBuilderEnabled(project,
-            			ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE);
-            	
-            	if (launchType.equals(DebugPlugin.getDefault().getLaunchManager()
-							.getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVA_MODULE))
-            			&& !javaEnabled) {
-            		setErrorMessage("The project " + projectName + " is not enabled to run as a Java module"); 
-            		return false;
-            	}
-            	
-            	if (launchType.equals(DebugPlugin.getDefault().getLaunchManager()
-							.getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE))
-            			&& !jsEnabled) {
-            		setErrorMessage("The project " + projectName + " is not enabled to run as a JavaScript module"); 
-            		return false;
-            	}
-			} catch (CoreException e) {
-				e.printStackTrace(); // TODO logger
-			}
+                ILaunchConfigurationType launchType = getCurrentLaunchConfiguration().getType();
+                
+                boolean javaEnabled = LaunchHelper.isBuilderEnabled(project,
+                        ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVA_MODULE);
+                
+                boolean jsEnabled = LaunchHelper.isBuilderEnabled(project,
+                        ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE);
+                
+                if (launchType.equals(DebugPlugin.getDefault().getLaunchManager()
+                            .getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVA_MODULE))
+                        && !javaEnabled) {
+                    setErrorMessage("The project " + projectName + " is not enabled to run as a Java module"); 
+                    return false;
+                }
+                
+                if (launchType.equals(DebugPlugin.getDefault().getLaunchManager()
+                            .getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE))
+                        && !jsEnabled) {
+                    setErrorMessage("The project " + projectName + " is not enabled to run as a JavaScript module"); 
+                    return false;
+                }
+            } catch (CoreException e) {
+                e.printStackTrace(); // TODO logger
+            }
             
         } else {
             return false;
@@ -227,7 +227,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         }
         
         if (!LaunchHelper.isModuleContainsTopLevel(project, moduleName, 
-        		LaunchHelper.getTopLevelNormalName(moduleName, topLevelName))) {
+                LaunchHelper.getTopLevelNormalName(moduleName, topLevelName))) {
             setErrorMessage("The top level class not found in module or is not runnable");
             return false;
         }
@@ -265,17 +265,17 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         String topLevelName = null;
         
         if (javaElement == null) {
-        	return;
+            return;
         }
         
         Module module = null;
         if (getContext().getJavaProject().exists()) {
-        	module = LaunchHelper.getDefaultOrOnlyModule(getContext().getJavaProject().getProject(), true);
-        	projectName = getContext().getJavaProject().getProject().getName();
+            module = LaunchHelper.getDefaultOrOnlyModule(getContext().getJavaProject().getProject(), true);
+            projectName = getContext().getJavaProject().getProject().getName();
         }
         
         if (module != null) {
-        	moduleName = LaunchHelper.getFullModuleName(module);
+            moduleName = LaunchHelper.getFullModuleName(module);
         }
 
         if (moduleName == null) {
@@ -289,10 +289,10 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
 
         Declaration topLevel = null;
         if (module != null) {
-        	topLevel = LaunchHelper.getDefaultRunnableForModule(module);
+            topLevel = LaunchHelper.getDefaultRunnableForModule(module);
         }
         if (topLevel != null) {
-        	topLevelName = LaunchHelper.getRunnableName(topLevel);
+            topLevelName = LaunchHelper.getRunnableName(topLevel);
         }
 
         if (topLevelName == null) {

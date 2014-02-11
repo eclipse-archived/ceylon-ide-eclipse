@@ -7,13 +7,13 @@ import java.util.List;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 
 public class TemporaryFile implements VirtualFile {
-	private String path;
-	public TemporaryFile() {
-		this("");
-	}
-	public TemporaryFile(String path) {
-		this.path = path;
-	}
+    private String path;
+    public TemporaryFile() {
+        this("");
+    }
+    public TemporaryFile(String path) {
+        this.path = path;
+    }
     @Override
     public boolean isFolder() {
         return true;

@@ -63,7 +63,7 @@ public class CleanImportsHandler extends AbstractHandler {
             String imports = imports(cu, doc);
             if (imports!=null && !imports.trim().isEmpty()) {
                 TextFileChange tfc = 
-                		new TextFileChange("Clean Imports", file);
+                        new TextFileChange("Clean Imports", file);
                 tfc.setEdit(new MultiTextEdit());
                 ImportList il = cu.getImportList();
                 int start;
@@ -95,7 +95,7 @@ public class CleanImportsHandler extends AbstractHandler {
     }
 
     public static String imports(Node node, ImportList til,
-    		IDocument doc) {
+            IDocument doc) {
         final List<Declaration> unused = 
                 new ArrayList<Declaration>();
         DetectUnusedImportsVisitor duiv = 
@@ -107,7 +107,7 @@ public class CleanImportsHandler extends AbstractHandler {
     }
     
     private static String imports(final Tree.CompilationUnit cu, 
-    		IDocument doc) {
+            IDocument doc) {
         final List<Declaration> proposals = new ArrayList<Declaration>();
         final List<Declaration> unused = new ArrayList<Declaration>();
         new ImportProposalsVisitor(cu, proposals).visit(cu);
@@ -116,15 +116,15 @@ public class CleanImportsHandler extends AbstractHandler {
     }
     
     public static String imports(List<Declaration> proposed,
-    		IDocument doc) {
+            IDocument doc) {
         return reorganizeImports(null, 
-        		Collections.<Declaration>emptyList(), 
-        		proposed, doc);
+                Collections.<Declaration>emptyList(), 
+                proposed, doc);
     }
     
     public static String reorganizeImports(ImportList til, 
-    		List<Declaration> unused, List<Declaration> proposed,
-    		IDocument doc) {
+            List<Declaration> unused, List<Declaration> proposed,
+            IDocument doc) {
         Map<String,List<Tree.Import>> packages = 
                 new TreeMap<String,List<Tree.Import>>();
         if (til!=null) {
@@ -150,17 +150,17 @@ public class CleanImportsHandler extends AbstractHandler {
         StringBuilder builder = new StringBuilder();
         String lastToplevel=null;
         for (Map.Entry<String, List<Tree.Import>> pack: 
-        	    packages.entrySet()) {
+                packages.entrySet()) {
             String packageName = pack.getKey();
             List<Tree.Import> imports = pack.getValue();
             boolean hasWildcard = hasWildcard(imports);
             List<Tree.ImportMemberOrType> list = 
                     getUsedImportElements(imports, unused, 
-                    		hasWildcard, packages);
+                            hasWildcard, packages);
             if (hasWildcard || !list.isEmpty() || 
                     imports.isEmpty()) { //in this last case there is no existing import, but imports are proposed
                 lastToplevel = appendBreakIfNecessary(lastToplevel, 
-                		packageName, builder, doc);
+                        packageName, builder, doc);
                 Referenceable packageModel = imports.isEmpty() ?
                         null : //TODO: what to do in this case? look up the Package where?
                         imports.get(0).getImportPath().getModel();
@@ -171,7 +171,7 @@ public class CleanImportsHandler extends AbstractHandler {
                         .append(escapedPackageName)
                         .append(" {");
                 appendImportElements(packageName, list, unused, 
-                		proposed, hasWildcard, builder, doc);
+                        proposed, hasWildcard, builder, doc);
                 builder.append(getDefaultLineDelimiter(doc))
                         .append("}")
                         .append(getDefaultLineDelimiter(doc));
@@ -250,7 +250,7 @@ public class CleanImportsHandler extends AbstractHandler {
             builder.append(" {");
             boolean found=false;
             for (Tree.ImportMemberOrType nimt: 
-            	    imt.getImportMemberOrTypeList()
+                    imt.getImportMemberOrTypeList()
                             .getImportMemberOrTypes()) {
                 if (nimt.getDeclarationModel()!=null && 
                         nimt.getIdentifier().getErrors().isEmpty() &&
@@ -270,7 +270,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 }
             }
             if (imt.getImportMemberOrTypeList()
-            		.getImportWildcard()!=null) {
+                    .getImportWildcard()!=null) {
                 found=true;
                 builder.append(getDefaultLineDelimiter(doc))
                         .append(indent).append(indent)
@@ -306,7 +306,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 new ArrayList<Tree.ImportMemberOrType>();
         for (Tree.Import ti: imports) {
             for (Tree.ImportMemberOrType imt: 
-            	    ti.getImportMemberOrTypeList()
+                    ti.getImportMemberOrTypeList()
                             .getImportMemberOrTypes()) {
                 Declaration dm = imt.getDeclarationModel();
                 if (dm!=null && 
@@ -353,18 +353,18 @@ public class CleanImportsHandler extends AbstractHandler {
             String packageName = importEntry.getKey();
             List<Tree.Import> importList = importEntry.getValue();
             if (!packageName.equals(containerName) &&
-            		hasWildcard(importList)) {
-            	Package p2 = module.getPackage(packageName);
-            	if (p2 != null) {
-            		Declaration d2 = p2.getMember(d.getName(), null, false);
-            		if (d2!=null && 
-            				d2.isToplevel() && 
-            				d2.isShared() && 
-            				!d2.isAnonymous() && 
-            				!isImportedWithAlias(d2, importList)) {
-            			return true;
-            		}
-            	}
+                    hasWildcard(importList)) {
+                Package p2 = module.getPackage(packageName);
+                if (p2 != null) {
+                    Declaration d2 = p2.getMember(d.getName(), null, false);
+                    if (d2!=null && 
+                            d2.isToplevel() && 
+                            d2.isShared() && 
+                            !d2.isAnonymous() && 
+                            !isImportedWithAlias(d2, importList)) {
+                        return true;
+                    }
+                }
             }
         }
         
@@ -405,7 +405,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 //!cpc.getRootNode().getImportList().getImports().isEmpty();
         }
         else {
-        	return false;
+            return false;
         }
     }
     
@@ -418,7 +418,7 @@ public class CleanImportsHandler extends AbstractHandler {
             return (Declaration) fid.getFirstResult();
         }
         else {
-        	return null;
+            return null;
         }
     }
 

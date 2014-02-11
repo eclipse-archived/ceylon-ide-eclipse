@@ -1400,18 +1400,18 @@ public class CeylonEditor extends TextEditor {
         CeylonSourceViewer viewer = getCeylonSourceViewer();
         IDocument doc = viewer.getDocument();
         IPreferenceStore prefs = EditorsUI.getPreferenceStore();
-		boolean normalizeWs = prefs.getBoolean(NORMALIZE_WS) &&
-        		prefs.getBoolean(EDITOR_SPACES_FOR_TABS);
-		boolean normalizeNl = prefs.getBoolean(NORMALIZE_NL);
-		boolean cleanImports = prefs.getBoolean(CLEAN_IMPORTS);
-		if (cleanImports) {
-		    try {
+        boolean normalizeWs = prefs.getBoolean(NORMALIZE_WS) &&
+                prefs.getBoolean(EDITOR_SPACES_FOR_TABS);
+        boolean normalizeNl = prefs.getBoolean(NORMALIZE_NL);
+        boolean cleanImports = prefs.getBoolean(CLEAN_IMPORTS);
+        if (cleanImports) {
+            try {
                 CleanImportsHandler.cleanImports(this, doc);
             }
-		    catch (ExecutionException e) {
+            catch (ExecutionException e) {
                 e.printStackTrace();
             }
-		}
+        }
         if (normalizeWs || normalizeNl) {
             normalize(viewer, doc, normalizeWs, normalizeNl);
         }
@@ -1429,7 +1429,7 @@ public class CeylonEditor extends TextEditor {
         int modelOffset = range.x;
         int modelLength = range.y;
         try {
-        	String text = doc.get();
+            String text = doc.get();
             String normalized = normalize(text, doc, normalizeWs, normalizeNl);
             if (!normalized.equals(text)) {
                 StyledText widget = viewer.getTextWidget();
@@ -1445,7 +1445,7 @@ public class CeylonEditor extends TextEditor {
             }
         }
         catch (Exception e) {
-        	e.printStackTrace();
+            e.printStackTrace();
         }
         finally {
             if (doc instanceof IDocumentExtension4) {

@@ -26,7 +26,7 @@ import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 public class ConvertMethodToGetterProposal extends CorrectionProposal {
 
     public static void addConvertMethodToGetterProposal(Collection<ICompletionProposal> proposals, 
-    		CeylonEditor editor, IFile file, Node node) {
+            CeylonEditor editor, IFile file, Node node) {
         Method method = null;
         Tree.Type type = null;
 
@@ -50,7 +50,7 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
     }
 
     private static void addConvertMethodToGetterProposal(Collection<ICompletionProposal> proposals, 
-    		CeylonEditor editor, IFile file, Method method, Tree.Type type) {
+            CeylonEditor editor, IFile file, Method method, Tree.Type type) {
         try {
             RenameRefactoring refactoring = new RenameRefactoring(editor) {
                 @Override
@@ -96,13 +96,13 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
             if (type instanceof Tree.FunctionModifier) {
                 TextFileChange tfc = new TextFileChange("Convert method to getter", file);
                 tfc.setEdit(new ReplaceEdit(type.getStartIndex(), 
-                		type.getStopIndex() - type.getStartIndex() + 1, 
-                		"value"));
+                        type.getStopIndex() - type.getStartIndex() + 1, 
+                        "value"));
                 change.add(tfc);
             }
             
             ConvertMethodToGetterProposal proposal = 
-            		new ConvertMethodToGetterProposal(change, method);
+                    new ConvertMethodToGetterProposal(change, method);
             if (!proposals.contains(proposal)) {
                 proposals.add(proposal);
             }

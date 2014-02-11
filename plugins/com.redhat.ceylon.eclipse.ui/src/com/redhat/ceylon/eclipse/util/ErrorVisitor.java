@@ -20,7 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public abstract class ErrorVisitor extends Visitor {
-	
+    
     protected boolean warnForErrors = false;
     
     protected int getSeverity(Message error, boolean expected) {
@@ -32,8 +32,8 @@ public abstract class ErrorVisitor extends Visitor {
     public void visitAny(Node node) {
         super.visitAny(node);
         for (Message error: node.getErrors()) {
-        	if (!include(error)) continue;
-        	
+            if (!include(error)) continue;
+            
             int startOffset = 0;
             int endOffset = 0;
             int startCol = 0;
@@ -46,10 +46,10 @@ public abstract class ErrorVisitor extends Visitor {
                 if (error instanceof LexError) {
                     startLine = re.line;
                     startCol = re.charPositionInLine;
-                	startOffset = re.index;
-                	endOffset = startOffset;
+                    startOffset = re.index;
+                    endOffset = startOffset;
                 }
-				CommonToken token = (CommonToken) re.token;
+                CommonToken token = (CommonToken) re.token;
                 if (token!=null) {
                     startOffset = token.getStartIndex();
                     endOffset = token.getStopIndex();
@@ -87,10 +87,10 @@ public abstract class ErrorVisitor extends Visitor {
     }
     
     protected abstract void handleMessage(int startOffset, int endOffset, 
-    		int startCol, int startLine, Message error);
+            int startCol, int startLine, Message error);
 
-	protected boolean include(Message msg) {
-    	return true;
+    protected boolean include(Message msg) {
+        return true;
     }
     
     protected int adjust(int stopIndex) {

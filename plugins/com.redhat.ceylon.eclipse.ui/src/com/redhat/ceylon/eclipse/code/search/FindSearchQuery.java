@@ -29,49 +29,49 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 abstract class FindSearchQuery implements ISearchQuery {
-	
-	private Declaration referencedDeclaration;
-	//private final IProject project;
-	private AbstractTextSearchResult result = new CeylonSearchResult(this);
-	private int count = 0;
-	private IWorkbenchPage page;
-	private String name;
-	
-	FindSearchQuery(Declaration referencedDeclaration, IProject project) {
-		this.referencedDeclaration = referencedDeclaration;
-		//this.project = project;
-		this.page = EditorUtil.getActivePage();
-		name = referencedDeclaration.getName();
-	}
-	
-	@Override
-	public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
-	    //List<PhasedUnit> units = Ceylon Builder.getUnits(project);
-		//if (units==null) units = CeylonBuilder.getUnits();
-		//List<PhasedUnit> units = getUnits();
-		Set<String> searchedArchives = new HashSet<String>();
-	    for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
-			findInUnits(tc.getPhasedUnits());
-			for (Module m : tc.getContext().getModules().getListOfModules()) {
-			    if (m instanceof JDTModule) {
-			        JDTModule module = (JDTModule) m;
-			        String archivePath = null;
-			        if (module.isCeylonArchive() && module.getArtifact() != null && 
-			                !searchedArchives.contains(archivePath = module.getArtifact().getAbsolutePath())) {
-	                    findInUnits(module.getPhasedUnits());
-	                    searchedArchives.add(archivePath);
-			        }
-			    }
-			}
+    
+    private Declaration referencedDeclaration;
+    //private final IProject project;
+    private AbstractTextSearchResult result = new CeylonSearchResult(this);
+    private int count = 0;
+    private IWorkbenchPage page;
+    private String name;
+    
+    FindSearchQuery(Declaration referencedDeclaration, IProject project) {
+        this.referencedDeclaration = referencedDeclaration;
+        //this.project = project;
+        this.page = EditorUtil.getActivePage();
+        name = referencedDeclaration.getName();
+    }
+    
+    @Override
+    public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
+        //List<PhasedUnit> units = Ceylon Builder.getUnits(project);
+        //if (units==null) units = CeylonBuilder.getUnits();
+        //List<PhasedUnit> units = getUnits();
+        Set<String> searchedArchives = new HashSet<String>();
+        for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
+            findInUnits(tc.getPhasedUnits());
+            for (Module m : tc.getContext().getModules().getListOfModules()) {
+                if (m instanceof JDTModule) {
+                    JDTModule module = (JDTModule) m;
+                    String archivePath = null;
+                    if (module.isCeylonArchive() && module.getArtifact() != null && 
+                            !searchedArchives.contains(archivePath = module.getArtifact().getAbsolutePath())) {
+                        findInUnits(module.getPhasedUnits());
+                        searchedArchives.add(archivePath);
+                    }
+                }
+            }
         }
-		referencedDeclaration = null;
-		return Status.OK_STATUS;
-	}
-	
-	public void findInUnits(PhasedUnits units) {
-	    findInUnits(units.getPhasedUnits());
-	}
-	
+        referencedDeclaration = null;
+        return Status.OK_STATUS;
+    }
+    
+    public void findInUnits(PhasedUnits units) {
+        findInUnits(units.getPhasedUnits());
+    }
+    
     public void findInUnits(Iterable<? extends PhasedUnit> units) {
         for (PhasedUnit pu: units) {
             CompilationUnit cu = getRootNode(pu);
@@ -94,7 +94,7 @@ abstract class FindSearchQuery implements ISearchQuery {
         }
     }
 
-	Tree.CompilationUnit getRootNode(PhasedUnit pu) {
+    Tree.CompilationUnit getRootNode(PhasedUnit pu) {
         for (IEditorPart editor: page.getDirtyEditors()) {
             if (editor instanceof CeylonEditor) {
                 CeylonParseController cpc = ((CeylonEditor)editor).getParseController();
@@ -112,24 +112,24 @@ abstract class FindSearchQuery implements ISearchQuery {
     
     protected abstract String labelString();
 
-	@Override
-	public ISearchResult getSearchResult() {
-		return result;
-	}
-	
-	@Override
-	public String getLabel() {
-		return "Displaying " + count + " " + labelString() + 
+    @Override
+    public ISearchResult getSearchResult() {
+        return result;
+    }
+    
+    @Override
+    public String getLabel() {
+        return "Displaying " + count + " " + labelString() + 
                 " '" + name + "'";
-	}
-	
-	@Override
-	public boolean canRunInBackground() {
-		return true;
-	}
-	
-	@Override
-	public boolean canRerun() {
-		return false;
-	}
+    }
+    
+    @Override
+    public boolean canRunInBackground() {
+        return true;
+    }
+    
+    @Override
+    public boolean canRerun() {
+        return false;
+    }
 }

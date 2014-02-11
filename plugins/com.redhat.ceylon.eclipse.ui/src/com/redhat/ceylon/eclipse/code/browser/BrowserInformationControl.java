@@ -76,539 +76,539 @@ import org.eclipse.swt.widgets.Slider;
 public class BrowserInformationControl extends AbstractInformationControl 
         implements IInformationControlExtension2, IDelayedInputChangeProvider {
     
-	/**
-	 * Tells whether the SWT Browser widget and hence this information
-	 * control is available.
-	 * 
-	 * @param parent the parent component used for checking or <code>null</code> if none
-	 * @return <code>true</code> if this control is available
-	 */
-	public static boolean isAvailable(Composite parent) {
-		if (!fgAvailabilityChecked) {
-			try {
-				Browser browser= new Browser(parent, SWT.NONE);
-				browser.dispose();
-				fgIsAvailable= true;
+    /**
+     * Tells whether the SWT Browser widget and hence this information
+     * control is available.
+     * 
+     * @param parent the parent component used for checking or <code>null</code> if none
+     * @return <code>true</code> if this control is available
+     */
+    public static boolean isAvailable(Composite parent) {
+        if (!fgAvailabilityChecked) {
+            try {
+                Browser browser= new Browser(parent, SWT.NONE);
+                browser.dispose();
+                fgIsAvailable= true;
 
-				Slider sliderV= new Slider(parent, SWT.VERTICAL);
-				Slider sliderH= new Slider(parent, SWT.HORIZONTAL);
-				int width= sliderV.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-				int height= sliderH.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-				fgScrollBarSize= new Point(width, height);
-				sliderV.dispose();
-				sliderH.dispose();
-			} catch (SWTError er) {
-				fgIsAvailable= false;
-			} finally {
-				fgAvailabilityChecked= true;
-			}
-		}
+                Slider sliderV= new Slider(parent, SWT.VERTICAL);
+                Slider sliderH= new Slider(parent, SWT.HORIZONTAL);
+                int width= sliderV.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+                int height= sliderH.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+                fgScrollBarSize= new Point(width, height);
+                sliderV.dispose();
+                sliderH.dispose();
+            } catch (SWTError er) {
+                fgIsAvailable= false;
+            } finally {
+                fgAvailabilityChecked= true;
+            }
+        }
 
-		return fgIsAvailable;
-	}
-
-
-	/**
-	 * Minimal size constraints.
-	 * @since 3.2
-	 */
-	private static final int MIN_WIDTH= 80;
-
-	private static final int MIN_HEIGHT= 50;
+        return fgIsAvailable;
+    }
 
 
-	/**
-	 * Availability checking cache.
-	 */
-	private static boolean fgIsAvailable= false;
+    /**
+     * Minimal size constraints.
+     * @since 3.2
+     */
+    private static final int MIN_WIDTH= 80;
 
-	private static boolean fgAvailabilityChecked= false;
-
-	/**
-	 * Cached scroll bar width and height
-	 * @since 3.4
-	 */
-	private static Point fgScrollBarSize;
-
-	/** The control's browser widget */
-	private Browser fBrowser;
-
-	/** Tells whether the browser has content */
-	private boolean fBrowserHasContent;
-
-	/** Text layout used to approximate size of content when rendered in browser */
-	private TextLayout fTextLayout;
-
-	/** Bold text style */
-	private TextStyle fBoldStyle;
-
-	private BrowserInput fInput;
-
-	/**
-	 * <code>true</code> iff the browser has completed loading of the last
-	 * input set via {@link #setInformation(String)}.
-	 * @since 3.4
-	 */
-	private boolean fCompleted= false;
-
-	/**
-	 * The listener to be notified when a delayed location changing event happened.
-	 * @since 3.4
-	 */
-	private IInputChangedListener fDelayedInputChangeListener;
-
-	/**
-	 * The listeners to be notified when the input changed.
-	 * @since 3.4
-	 */
-	private ListenerList/*<IInputChangedListener>*/fInputChangeListeners= new ListenerList(ListenerList.IDENTITY);
-
-	/**
-	 * The symbolic name of the font used for size computations, or <code>null</code> to use dialog font.
-	 * @since 3.4
-	 */
-	private final String fSymbolicFontName;
+    private static final int MIN_HEIGHT= 50;
 
 
-	/**
-	 * Creates a browser information control with the given shell as parent.
-	 * 
-	 * @param parent the parent shell
-	 * @param symbolicFontName the symbolic name of the font used for size computations
-	 * @param resizable <code>true</code> if the control should be resizable
-	 * @since 3.4
-	 */
-	public BrowserInformationControl(Shell parent, String symbolicFontName, 
-			boolean resizable) {
-		super(parent, resizable);
-		fSymbolicFontName= symbolicFontName;
-		create();
-	}
+    /**
+     * Availability checking cache.
+     */
+    private static boolean fgIsAvailable= false;
 
-	/**
-	 * Creates a browser information control with the given shell as parent.
-	 * 
-	 * @param parent the parent shell
-	 * @param symbolicFontName the symbolic name of the font used for size computations
-	 * @param statusFieldText the text to be used in the optional status field
-	 *            or <code>null</code> if the status field should be hidden
-	 * @since 3.4
-	 */
-	public BrowserInformationControl(Shell parent, String symbolicFontName, 
-			String statusFieldText) {
-		super(parent, statusFieldText);
-		fSymbolicFontName= symbolicFontName;
-		create();
-	}
+    private static boolean fgAvailabilityChecked= false;
 
-	/**
-	 * Creates a browser information control with the given shell as parent.
-	 * 
-	 * @param parent the parent shell
-	 * @param symbolicFontName the symbolic name of the font used for size computations
-	 * @param toolBarManager the manager or <code>null</code> if toolbar is not desired
-	 * @since 3.4
-	 */
-	public BrowserInformationControl(Shell parent, String symbolicFontName, 
-			ToolBarManager toolBarManager) {
-		super(parent, toolBarManager);
-		fSymbolicFontName= symbolicFontName;
-		create();
-	}
+    /**
+     * Cached scroll bar width and height
+     * @since 3.4
+     */
+    private static Point fgScrollBarSize;
+
+    /** The control's browser widget */
+    private Browser fBrowser;
+
+    /** Tells whether the browser has content */
+    private boolean fBrowserHasContent;
+
+    /** Text layout used to approximate size of content when rendered in browser */
+    private TextLayout fTextLayout;
+
+    /** Bold text style */
+    private TextStyle fBoldStyle;
+
+    private BrowserInput fInput;
+
+    /**
+     * <code>true</code> iff the browser has completed loading of the last
+     * input set via {@link #setInformation(String)}.
+     * @since 3.4
+     */
+    private boolean fCompleted= false;
+
+    /**
+     * The listener to be notified when a delayed location changing event happened.
+     * @since 3.4
+     */
+    private IInputChangedListener fDelayedInputChangeListener;
+
+    /**
+     * The listeners to be notified when the input changed.
+     * @since 3.4
+     */
+    private ListenerList/*<IInputChangedListener>*/fInputChangeListeners= new ListenerList(ListenerList.IDENTITY);
+
+    /**
+     * The symbolic name of the font used for size computations, or <code>null</code> to use dialog font.
+     * @since 3.4
+     */
+    private final String fSymbolicFontName;
+
+
+    /**
+     * Creates a browser information control with the given shell as parent.
+     * 
+     * @param parent the parent shell
+     * @param symbolicFontName the symbolic name of the font used for size computations
+     * @param resizable <code>true</code> if the control should be resizable
+     * @since 3.4
+     */
+    public BrowserInformationControl(Shell parent, String symbolicFontName, 
+            boolean resizable) {
+        super(parent, resizable);
+        fSymbolicFontName= symbolicFontName;
+        create();
+    }
+
+    /**
+     * Creates a browser information control with the given shell as parent.
+     * 
+     * @param parent the parent shell
+     * @param symbolicFontName the symbolic name of the font used for size computations
+     * @param statusFieldText the text to be used in the optional status field
+     *            or <code>null</code> if the status field should be hidden
+     * @since 3.4
+     */
+    public BrowserInformationControl(Shell parent, String symbolicFontName, 
+            String statusFieldText) {
+        super(parent, statusFieldText);
+        fSymbolicFontName= symbolicFontName;
+        create();
+    }
+
+    /**
+     * Creates a browser information control with the given shell as parent.
+     * 
+     * @param parent the parent shell
+     * @param symbolicFontName the symbolic name of the font used for size computations
+     * @param toolBarManager the manager or <code>null</code> if toolbar is not desired
+     * @since 3.4
+     */
+    public BrowserInformationControl(Shell parent, String symbolicFontName, 
+            ToolBarManager toolBarManager) {
+        super(parent, toolBarManager);
+        fSymbolicFontName= symbolicFontName;
+        create();
+    }
 
     @Override
-	protected void createContent(Composite parent) {
-		fBrowser= new Browser(parent, SWT.NONE);
-		fBrowser.setJavascriptEnabled(false);
+    protected void createContent(Composite parent) {
+        fBrowser= new Browser(parent, SWT.NONE);
+        fBrowser.setJavascriptEnabled(false);
 
-		Display display= getShell().getDisplay();
-		fBrowser.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-		fBrowser.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-		//fBrowser.setBackground(color);
+        Display display= getShell().getDisplay();
+        fBrowser.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+        fBrowser.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+        //fBrowser.setBackground(color);
 
-		fBrowser.addProgressListener(new ProgressAdapter() {
+        fBrowser.addProgressListener(new ProgressAdapter() {
             @Override
-			public void completed(ProgressEvent event) {
-				fCompleted= true;
-			}
-		});
+            public void completed(ProgressEvent event) {
+                fCompleted= true;
+            }
+        });
 
-		fBrowser.addOpenWindowListener(new OpenWindowListener() {
+        fBrowser.addOpenWindowListener(new OpenWindowListener() {
             @Override
-			public void open(WindowEvent event) {
-				event.required= true; // Cancel opening of new windows
-			}
-		});
+            public void open(WindowEvent event) {
+                event.required= true; // Cancel opening of new windows
+            }
+        });
 
-		// Replace browser's built-in context menu with none
-		fBrowser.setMenu(new Menu(getShell(), SWT.NONE));
+        // Replace browser's built-in context menu with none
+        fBrowser.setMenu(new Menu(getShell(), SWT.NONE));
 
-		createTextLayout();
-	}
+        createTextLayout();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * @deprecated use {@link #setInput(Object)}
-	 */
+    /**
+     * {@inheritDoc}
+     * @deprecated use {@link #setInput(Object)}
+     */
     @Override
-	public void setInformation(final String content) {
-		setInput(new BrowserInput(null) {
-		    @Override
-			public String getHtml() {
-				return content;
-			}
+    public void setInformation(final String content) {
+        setInput(new BrowserInput(null) {
             @Override
-			public String getInputName() {
-				return "";
-			}
-		});
-	}
-
-	/**
-	 * {@inheritDoc} This control can handle {@link String} and
-	 * {@link BrowserInformationControlInput}.
-	 */
-    @Override
-	public void setInput(Object input) {
-		Assert.isLegal(input == null || 
-		        input instanceof String || 
-		        input instanceof BrowserInput);
-
-		if (input instanceof String) {
-			setInformation((String)input);
-			return;
-		}
-
-		fInput= (BrowserInput) input;
-
-		String content= null;
-		if (fInput != null)
-			content= fInput.getHtml();
-
-		fBrowserHasContent= content != null && content.length() > 0;
-
-		if (!fBrowserHasContent)
-			content= "<html><body ></html>"; //$NON-NLS-1$
-
-		boolean RTL= (getShell().getStyle() & SWT.RIGHT_TO_LEFT) != 0;
-		boolean resizable= isResizable();
-
-		// The default "overflow:auto" would not result in a predictable width for the client area
-		// and the re-wrapping would cause visual noise
-		String[] styles= null;
-		if (RTL && resizable)
-			styles= new String[] { "direction:rtl;", "overflow:scroll;", "word-wrap:break-word;" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		else if (RTL && !resizable)
-			styles= new String[] { "direction:rtl;", "overflow:hidden;", "word-wrap:break-word;" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		else if (!resizable)
-			//XXX: In IE, "word-wrap: break-word;" causes bogus wrapping even in non-broken words :-(see e.g. Javadoc of String).
-			// Re-check whether we really still need this now that the Javadoc Hover header already sets this style.
-			styles= new String[] { "overflow:hidden;"/*, "word-wrap: break-word;"*/}; //$NON-NLS-1$
-		else
-			styles= new String[] { "overflow:scroll;" }; //$NON-NLS-1$
-
-		StringBuilder buffer= new StringBuilder(content);
-		HTMLPrinter.insertStyles(buffer, styles);
-		content= buffer.toString();
-
-		/*
-		 * XXX: Should add some JavaScript here that shows something like
-		 * "(continued...)" or "..." at the end of the visible area when the page overflowed
-		 * with "overflow:hidden;".
-		 */
-
-		fCompleted= false;
-		fBrowser.setText(content);
-
-		Object[] listeners= fInputChangeListeners.getListeners();
-		for (int i= 0; i < listeners.length; i++)
-			((IInputChangedListener)listeners[i]).inputChanged(fInput);
-	}
-
-    @Override
-	public void setVisible(boolean visible) {
-		Shell shell= getShell();
-		if (shell.isVisible() == visible)
-			return;
-
-		if (!visible) {
-			super.setVisible(false);
-			setInput(null);
-			return;
-		}
-
-		/*
-		 * The Browser widget flickers when made visible while it is not completely loaded.
-		 * The fix is to delay the call to setVisible until either loading is completed
-		 * (see ProgressListener in constructor), or a timeout has been reached.
-		 */
-		final Display display= shell.getDisplay();
-
-		// Make sure the display wakes from sleep after timeout:
-		display.timerExec(100, new Runnable() {
+            public String getHtml() {
+                return content;
+            }
             @Override
-			public void run() {
-				fCompleted= true;
-			}
-		});
+            public String getInputName() {
+                return "";
+            }
+        });
+    }
 
-		while (!fCompleted) {
-			// Drive the event loop to process the events required to load the browser widget's contents:
-			if (!display.readAndDispatch()) {
-				display.sleep();
-			}
-		}
+    /**
+     * {@inheritDoc} This control can handle {@link String} and
+     * {@link BrowserInformationControlInput}.
+     */
+    @Override
+    public void setInput(Object input) {
+        Assert.isLegal(input == null || 
+                input instanceof String || 
+                input instanceof BrowserInput);
 
-		shell= getShell();
-		if (shell == null || shell.isDisposed())
-			return;
+        if (input instanceof String) {
+            setInformation((String)input);
+            return;
+        }
 
-		/*
-		 * Avoids flickering when replacing hovers, especially on Vista in ON_CLICK mode.
-		 * Causes flickering on GTK. Carbon does not care.
-		 */
-		if ("win32".equals(SWT.getPlatform())) //$NON-NLS-1$
-			shell.moveAbove(null);
+        fInput= (BrowserInput) input;
 
-		super.setVisible(true);
-	}
+        String content= null;
+        if (fInput != null)
+            content= fInput.getHtml();
+
+        fBrowserHasContent= content != null && content.length() > 0;
+
+        if (!fBrowserHasContent)
+            content= "<html><body ></html>"; //$NON-NLS-1$
+
+        boolean RTL= (getShell().getStyle() & SWT.RIGHT_TO_LEFT) != 0;
+        boolean resizable= isResizable();
+
+        // The default "overflow:auto" would not result in a predictable width for the client area
+        // and the re-wrapping would cause visual noise
+        String[] styles= null;
+        if (RTL && resizable)
+            styles= new String[] { "direction:rtl;", "overflow:scroll;", "word-wrap:break-word;" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        else if (RTL && !resizable)
+            styles= new String[] { "direction:rtl;", "overflow:hidden;", "word-wrap:break-word;" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        else if (!resizable)
+            //XXX: In IE, "word-wrap: break-word;" causes bogus wrapping even in non-broken words :-(see e.g. Javadoc of String).
+            // Re-check whether we really still need this now that the Javadoc Hover header already sets this style.
+            styles= new String[] { "overflow:hidden;"/*, "word-wrap: break-word;"*/}; //$NON-NLS-1$
+        else
+            styles= new String[] { "overflow:scroll;" }; //$NON-NLS-1$
+
+        StringBuilder buffer= new StringBuilder(content);
+        HTMLPrinter.insertStyles(buffer, styles);
+        content= buffer.toString();
+
+        /*
+         * XXX: Should add some JavaScript here that shows something like
+         * "(continued...)" or "..." at the end of the visible area when the page overflowed
+         * with "overflow:hidden;".
+         */
+
+        fCompleted= false;
+        fBrowser.setText(content);
+
+        Object[] listeners= fInputChangeListeners.getListeners();
+        for (int i= 0; i < listeners.length; i++)
+            ((IInputChangedListener)listeners[i]).inputChanged(fInput);
+    }
 
     @Override
-	public void setSize(int width, int height) {
-		fBrowser.setRedraw(false); // avoid flickering
-		try {
-			super.setSize(width, height);
-		} finally {
-			fBrowser.setRedraw(true);
-		}
-	}
+    public void setVisible(boolean visible) {
+        Shell shell= getShell();
+        if (shell.isVisible() == visible)
+            return;
 
-	/**
-	 * Creates and initializes the text layout used
-	 * to compute the size hint.
-	 * 
-	 * @since 3.2
-	 */
-	private void createTextLayout() {
-		fTextLayout= new TextLayout(fBrowser.getDisplay());
+        if (!visible) {
+            super.setVisible(false);
+            setInput(null);
+            return;
+        }
 
-		// Initialize fonts
-		String symbolicFontName= fSymbolicFontName == null ? JFaceResources.DIALOG_FONT : fSymbolicFontName;
-		Font font= JFaceResources.getFont(symbolicFontName);
-		fTextLayout.setFont(font);
-		fTextLayout.setWidth(-1);
-		font= JFaceResources.getFontRegistry().getBold(symbolicFontName);
-		fBoldStyle= new TextStyle(font, null, null);
+        /*
+         * The Browser widget flickers when made visible while it is not completely loaded.
+         * The fix is to delay the call to setVisible until either loading is completed
+         * (see ProgressListener in constructor), or a timeout has been reached.
+         */
+        final Display display= shell.getDisplay();
 
-		// Compute and set tab width
-		fTextLayout.setText("    "); //$NON-NLS-1$
-		int tabWidth= fTextLayout.getBounds().width;
-		fTextLayout.setTabs(new int[] { tabWidth });
-		fTextLayout.setText(""); //$NON-NLS-1$
-	}
+        // Make sure the display wakes from sleep after timeout:
+        display.timerExec(100, new Runnable() {
+            @Override
+            public void run() {
+                fCompleted= true;
+            }
+        });
+
+        while (!fCompleted) {
+            // Drive the event loop to process the events required to load the browser widget's contents:
+            if (!display.readAndDispatch()) {
+                display.sleep();
+            }
+        }
+
+        shell= getShell();
+        if (shell == null || shell.isDisposed())
+            return;
+
+        /*
+         * Avoids flickering when replacing hovers, especially on Vista in ON_CLICK mode.
+         * Causes flickering on GTK. Carbon does not care.
+         */
+        if ("win32".equals(SWT.getPlatform())) //$NON-NLS-1$
+            shell.moveAbove(null);
+
+        super.setVisible(true);
+    }
 
     @Override
-	protected void handleDispose() {
-		if (fTextLayout != null) {
-			fTextLayout.dispose();
-			fTextLayout= null;
-		}
-		fBrowser= null;
+    public void setSize(int width, int height) {
+        fBrowser.setRedraw(false); // avoid flickering
+        try {
+            super.setSize(width, height);
+        } finally {
+            fBrowser.setRedraw(true);
+        }
+    }
 
-		super.handleDispose();
-	}
+    /**
+     * Creates and initializes the text layout used
+     * to compute the size hint.
+     * 
+     * @since 3.2
+     */
+    private void createTextLayout() {
+        fTextLayout= new TextLayout(fBrowser.getDisplay());
+
+        // Initialize fonts
+        String symbolicFontName= fSymbolicFontName == null ? JFaceResources.DIALOG_FONT : fSymbolicFontName;
+        Font font= JFaceResources.getFont(symbolicFontName);
+        fTextLayout.setFont(font);
+        fTextLayout.setWidth(-1);
+        font= JFaceResources.getFontRegistry().getBold(symbolicFontName);
+        fBoldStyle= new TextStyle(font, null, null);
+
+        // Compute and set tab width
+        fTextLayout.setText("    "); //$NON-NLS-1$
+        int tabWidth= fTextLayout.getBounds().width;
+        fTextLayout.setTabs(new int[] { tabWidth });
+        fTextLayout.setText(""); //$NON-NLS-1$
+    }
 
     @Override
-	public Point computeSizeHint() {
-		Point sizeConstraints= getSizeConstraints();
-		Rectangle trim= computeTrim();
-		int trimHeight= trim.height;
-		int trimWidth = trim.width;
+    protected void handleDispose() {
+        if (fTextLayout != null) {
+            fTextLayout.dispose();
+            fTextLayout= null;
+        }
+        fBrowser= null;
 
-		//FIXME: The HTML2TextReader does not render <p> like a browser.
-		// Instead of inserting an empty line, it just adds a single line break.
-		// Furthermore, the indentation of <dl><dd> elements is too small (e.g with a long @see line)
-		TextPresentation presentation= new TextPresentation();
-		HTML2TextReader reader= new HTML2TextReader(new StringReader(fInput.getHtml().replace("div", "p").replace("<hr/>", "<br/>")), presentation);
-		String text;
-		try {
-			text= reader.getString();
-		} catch (IOException e) {
-			text= ""; //$NON-NLS-1$
-		}
-		finally {
-		    try {
+        super.handleDispose();
+    }
+
+    @Override
+    public Point computeSizeHint() {
+        Point sizeConstraints= getSizeConstraints();
+        Rectangle trim= computeTrim();
+        int trimHeight= trim.height;
+        int trimWidth = trim.width;
+
+        //FIXME: The HTML2TextReader does not render <p> like a browser.
+        // Instead of inserting an empty line, it just adds a single line break.
+        // Furthermore, the indentation of <dl><dd> elements is too small (e.g with a long @see line)
+        TextPresentation presentation= new TextPresentation();
+        HTML2TextReader reader= new HTML2TextReader(new StringReader(fInput.getHtml().replace("div", "p").replace("<hr/>", "<br/>")), presentation);
+        String text;
+        try {
+            text= reader.getString();
+        } catch (IOException e) {
+            text= ""; //$NON-NLS-1$
+        }
+        finally {
+            try {
                 reader.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-		}
+        }
 
-		fTextLayout.setText(text);
-		fTextLayout.setWidth(sizeConstraints==null ? SWT.DEFAULT : sizeConstraints.x-trimWidth);
-		@SuppressWarnings("unchecked")
+        fTextLayout.setText(text);
+        fTextLayout.setWidth(sizeConstraints==null ? SWT.DEFAULT : sizeConstraints.x-trimWidth);
+        @SuppressWarnings("unchecked")
         Iterator<StyleRange> iter= presentation.getAllStyleRangeIterator();
-		while (iter.hasNext()) {
-			StyleRange sr = iter.next();
-			if (sr.fontStyle == SWT.BOLD)
-				fTextLayout.setStyle(fBoldStyle, sr.start, sr.start + sr.length);
-		}
+        while (iter.hasNext()) {
+            StyleRange sr = iter.next();
+            if (sr.fontStyle == SWT.BOLD)
+                fTextLayout.setStyle(fBoldStyle, sr.start, sr.start + sr.length);
+        }
 
-		Rectangle bounds= fTextLayout.getBounds(); // does not return minimum width, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=217446
-		int lineCount= fTextLayout.getLineCount();
-		int textWidth= 0;
-		fTextLayout.getLineOffsets();
-		for (int i=0; i<lineCount; i++) {
-			Rectangle rect= fTextLayout.getLineBounds(i);
-			int lineWidth= rect.x + rect.width;
-			if (i==0) {
-				lineWidth*=1.25; //to accommodate it is not only bold but also monospace
-				lineWidth+= 20;
-			}
-			textWidth= Math.max(textWidth, lineWidth);
-		}
-		bounds.width= textWidth;
+        Rectangle bounds= fTextLayout.getBounds(); // does not return minimum width, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=217446
+        int lineCount= fTextLayout.getLineCount();
+        int textWidth= 0;
+        fTextLayout.getLineOffsets();
+        for (int i=0; i<lineCount; i++) {
+            Rectangle rect= fTextLayout.getLineBounds(i);
+            int lineWidth= rect.x + rect.width;
+            if (i==0) {
+                lineWidth*=1.25; //to accommodate it is not only bold but also monospace
+                lineWidth+= 20;
+            }
+            textWidth= Math.max(textWidth, lineWidth);
+        }
+        bounds.width= textWidth;
 
-		int minWidth= textWidth;
-		int minHeight= trimHeight + bounds.height;
+        int minWidth= textWidth;
+        int minHeight= trimHeight + bounds.height;
 
-		// Add some air to accommodate for different browser renderings
-		minWidth+= 30;
-		minHeight+= 15;
+        // Add some air to accommodate for different browser renderings
+        minWidth+= 30;
+        minHeight+= 15;
 
-		// Apply max size constraints
-		if (sizeConstraints!=null) {
-			if (sizeConstraints.x!=SWT.DEFAULT)
-				minWidth= Math.min(sizeConstraints.x, minWidth + trimWidth);
-			if (sizeConstraints.y!=SWT.DEFAULT)
-				minHeight= Math.min(sizeConstraints.y, minHeight);
-		}
+        // Apply max size constraints
+        if (sizeConstraints!=null) {
+            if (sizeConstraints.x!=SWT.DEFAULT)
+                minWidth= Math.min(sizeConstraints.x, minWidth + trimWidth);
+            if (sizeConstraints.y!=SWT.DEFAULT)
+                minHeight= Math.min(sizeConstraints.y, minHeight);
+        }
 
-		// Ensure minimal size
-		int width= Math.max(MIN_WIDTH, minWidth);
-		int height= Math.max(MIN_HEIGHT, minHeight);
+        // Ensure minimal size
+        int width= Math.max(MIN_WIDTH, minWidth);
+        int height= Math.max(MIN_HEIGHT, minHeight);
 
-		return new Point(width, height);
-	}
-
-    @Override
-	public Rectangle computeTrim() {
-		Rectangle trim= super.computeTrim();
-		if (isResizable() && fgScrollBarSize!=null) {
-			boolean RTL= (getShell().getStyle() & SWT.RIGHT_TO_LEFT) != 0;
-			if (RTL) {
-				trim.x-= fgScrollBarSize.x;
-			}
-			trim.width+= fgScrollBarSize.x;
-			trim.height+= fgScrollBarSize.y;
-		}
-		return trim;
-	}
-
-	/**
-	 * Adds the listener to the collection of listeners who will be
-	 * notified when the current location has changed or is about to change.
-	 * 
-	 * @param listener the location listener
-	 * @since 3.4
-	 */
-	public void addLocationListener(LocationListener listener) {
-		fBrowser.addLocationListener(listener);
-	}
+        return new Point(width, height);
+    }
 
     @Override
-	public void setForegroundColor(Color foreground) {
-		super.setForegroundColor(foreground);
-		fBrowser.setForeground(foreground);
-	}
+    public Rectangle computeTrim() {
+        Rectangle trim= super.computeTrim();
+        if (isResizable() && fgScrollBarSize!=null) {
+            boolean RTL= (getShell().getStyle() & SWT.RIGHT_TO_LEFT) != 0;
+            if (RTL) {
+                trim.x-= fgScrollBarSize.x;
+            }
+            trim.width+= fgScrollBarSize.x;
+            trim.height+= fgScrollBarSize.y;
+        }
+        return trim;
+    }
+
+    /**
+     * Adds the listener to the collection of listeners who will be
+     * notified when the current location has changed or is about to change.
+     * 
+     * @param listener the location listener
+     * @since 3.4
+     */
+    public void addLocationListener(LocationListener listener) {
+        fBrowser.addLocationListener(listener);
+    }
 
     @Override
-	public void setBackgroundColor(Color background) {
-		super.setBackgroundColor(background);
-		fBrowser.setBackground(background);
-	}
+    public void setForegroundColor(Color foreground) {
+        super.setForegroundColor(foreground);
+        fBrowser.setForeground(foreground);
+    }
 
     @Override
-	public boolean hasContents() {
-		return fBrowserHasContent;
-	}
-
-	/**
-	 * Adds a listener for input changes to this input change provider.
-	 * Has no effect if an identical listener is already registered.
-	 * 
-	 * @param inputChangeListener the listener to add
-	 * @since 3.4
-	 */
-	public void addInputChangeListener(IInputChangedListener inputChangeListener) {
-		Assert.isNotNull(inputChangeListener);
-		fInputChangeListeners.add(inputChangeListener);
-	}
-
-	/**
-	 * Removes the given input change listener from this input change provider.
-	 * Has no effect if an identical listener is not registered.
-	 * 
-	 * @param inputChangeListener the listener to remove
-	 * @since 3.4
-	 */
-	public void removeInputChangeListener(IInputChangedListener inputChangeListener) {
-		fInputChangeListeners.remove(inputChangeListener);
-	}
+    public void setBackgroundColor(Color background) {
+        super.setBackgroundColor(background);
+        fBrowser.setBackground(background);
+    }
 
     @Override
-	public void setDelayedInputChangeListener(IInputChangedListener inputChangeListener) {
-		fDelayedInputChangeListener= inputChangeListener;
-	}
+    public boolean hasContents() {
+        return fBrowserHasContent;
+    }
 
-	/**
-	 * Tells whether a delayed input change listener is registered.
-	 * 
-	 * @return <code>true</code> iff a delayed input change
-	 *         listener is currently registered
-	 * @since 3.4
-	 */
-	public boolean hasDelayedInputChangeListener() {
-		return fDelayedInputChangeListener != null;
-	}
+    /**
+     * Adds a listener for input changes to this input change provider.
+     * Has no effect if an identical listener is already registered.
+     * 
+     * @param inputChangeListener the listener to add
+     * @since 3.4
+     */
+    public void addInputChangeListener(IInputChangedListener inputChangeListener) {
+        Assert.isNotNull(inputChangeListener);
+        fInputChangeListeners.add(inputChangeListener);
+    }
 
-	/**
-	 * Notifies listeners of a delayed input change.
-	 * 
-	 * @param newInput the new input, or <code>null</code> to request cancellation
-	 * @since 3.4
-	 */
-	public void notifyDelayedInputChange(Object newInput) {
-		if (fDelayedInputChangeListener != null)
-			fDelayedInputChangeListener.inputChanged(newInput);
-	}
-
-    @Override
-	public String toString() {
-		String style= (getShell().getStyle() & SWT.RESIZE) == 0 ? "fixed" : "resizeable"; //$NON-NLS-1$ //$NON-NLS-2$
-		return super.toString() + " -  style: " + style; //$NON-NLS-1$
-	}
-
-	/**
-	 * @return the current browser input or <code>null</code>
-	 */
-	public BrowserInput getInput() {
-		return fInput;
-	}
+    /**
+     * Removes the given input change listener from this input change provider.
+     * Has no effect if an identical listener is not registered.
+     * 
+     * @param inputChangeListener the listener to remove
+     * @since 3.4
+     */
+    public void removeInputChangeListener(IInputChangedListener inputChangeListener) {
+        fInputChangeListeners.remove(inputChangeListener);
+    }
 
     @Override
-	public Point computeSizeConstraints(int widthInChars, int heightInChars) {
-		if (fSymbolicFontName == null)
-			return null;
+    public void setDelayedInputChangeListener(IInputChangedListener inputChangeListener) {
+        fDelayedInputChangeListener= inputChangeListener;
+    }
 
-		GC gc= new GC(fBrowser);
-		Font font= fSymbolicFontName == null ? JFaceResources.getDialogFont() : JFaceResources.getFont(fSymbolicFontName);
-		gc.setFont(font);
-		int width= gc.getFontMetrics().getAverageCharWidth();
-		int height= gc.getFontMetrics().getHeight();
-		gc.dispose();
+    /**
+     * Tells whether a delayed input change listener is registered.
+     * 
+     * @return <code>true</code> iff a delayed input change
+     *         listener is currently registered
+     * @since 3.4
+     */
+    public boolean hasDelayedInputChangeListener() {
+        return fDelayedInputChangeListener != null;
+    }
 
-		return new Point(widthInChars * width, heightInChars * height);
-	}
+    /**
+     * Notifies listeners of a delayed input change.
+     * 
+     * @param newInput the new input, or <code>null</code> to request cancellation
+     * @since 3.4
+     */
+    public void notifyDelayedInputChange(Object newInput) {
+        if (fDelayedInputChangeListener != null)
+            fDelayedInputChangeListener.inputChanged(newInput);
+    }
+
+    @Override
+    public String toString() {
+        String style= (getShell().getStyle() & SWT.RESIZE) == 0 ? "fixed" : "resizeable"; //$NON-NLS-1$ //$NON-NLS-2$
+        return super.toString() + " -  style: " + style; //$NON-NLS-1$
+    }
+
+    /**
+     * @return the current browser input or <code>null</code>
+     */
+    public BrowserInput getInput() {
+        return fInput;
+    }
+
+    @Override
+    public Point computeSizeConstraints(int widthInChars, int heightInChars) {
+        if (fSymbolicFontName == null)
+            return null;
+
+        GC gc= new GC(fBrowser);
+        Font font= fSymbolicFontName == null ? JFaceResources.getDialogFont() : JFaceResources.getFont(fSymbolicFontName);
+        gc.setFont(font);
+        int width= gc.getFontMetrics().getAverageCharWidth();
+        int height= gc.getFontMetrics().getHeight();
+        gc.dispose();
+
+        return new Point(widthInChars * width, heightInChars * height);
+    }
 
 }

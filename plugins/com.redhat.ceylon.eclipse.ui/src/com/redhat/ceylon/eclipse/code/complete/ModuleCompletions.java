@@ -70,11 +70,11 @@ public class ModuleCompletions {
         public Point getSelection(IDocument document) {
             final int off = offset+versioned.length()-prefix.length()-len;
             if (withBody) {
-            	final int verlen = version.getVersion().length();
+                final int verlen = version.getVersion().length();
                 return new Point(off-verlen-2, verlen);
             }
             else {
-            	return new Point(off, 0);
+                return new Point(off, 0);
             }
         }
 
@@ -114,11 +114,11 @@ public class ModuleCompletions {
             List<ICompletionProposal> result, boolean withBody) {
         String fullPath = fullPath(offset, prefix, path);
         addModuleCompletions(offset, prefix, node, result, fullPath.length(), 
-        		fullPath+prefix, cpc, withBody);
+                fullPath+prefix, cpc, withBody);
     }
 
     private static void addModuleCompletions(int offset, String prefix, Node node, 
-    		List<ICompletionProposal> result, final int len, String pfp,
+            List<ICompletionProposal> result, final int len, String pfp,
             final CeylonParseController cpc, final boolean withBody) {
         if (pfp.startsWith("java.")) {
             for (final String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
@@ -156,17 +156,17 @@ public class ModuleCompletions {
             return true;
         }
         List<Tree.ModuleDescriptor> md = cpc.getRootNode().getModuleDescriptors();
-		if (!md.isEmpty()) {
-			Tree.ImportModuleList iml = md.get(0).getImportModuleList();
-			if (iml!=null) {
-				for (Tree.ImportModule im: iml.getImportModules()) {
-					if (im.getImportPath()!=null) {
-						if (formatPath(im.getImportPath().getIdentifiers()).equals(mod)) {
-							return true;
-						}
-					}
-				}
-			}
+        if (!md.isEmpty()) {
+            Tree.ImportModuleList iml = md.get(0).getImportModuleList();
+            if (iml!=null) {
+                for (Tree.ImportModule im: iml.getImportModules()) {
+                    if (im.getImportPath()!=null) {
+                        if (formatPath(im.getImportPath().getIdentifiers()).equals(mod)) {
+                            return true;
+                        }
+                    }
+                }
+            }
         }
         //Disabled, because once the module is imported, it hangs around!
 //        for (ModuleImport mi: node.getUnit().getPackage().getModule().getImports()) {

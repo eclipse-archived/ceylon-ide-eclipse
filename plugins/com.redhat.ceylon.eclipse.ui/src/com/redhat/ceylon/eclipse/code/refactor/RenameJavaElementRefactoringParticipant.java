@@ -38,33 +38,33 @@ import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 
 public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 
-	private IMember javaDeclaration;
+    private IMember javaDeclaration;
 
-	protected boolean initialize(Object element) {
-		javaDeclaration= (IMember) element;
-		return getArguments().getUpdateReferences() && 
-				getProjectTypeChecker(javaDeclaration.getJavaProject().getProject())!=null;
-	}
+    protected boolean initialize(Object element) {
+        javaDeclaration= (IMember) element;
+        return getArguments().getUpdateReferences() && 
+                getProjectTypeChecker(javaDeclaration.getJavaProject().getProject())!=null;
+    }
 
-	public String getName() {
-		return "Rename participant for Ceylon source";
-	}
-	
-	public RefactoringStatus checkConditions(IProgressMonitor pm, 
-	        CheckConditionsContext context) {
-		return new RefactoringStatus();
-	}
+    public String getName() {
+        return "Rename participant for Ceylon source";
+    }
+    
+    public RefactoringStatus checkConditions(IProgressMonitor pm, 
+            CheckConditionsContext context) {
+        return new RefactoringStatus();
+    }
 
-	public Change createChange(IProgressMonitor pm) throws CoreException {
-		
+    public Change createChange(IProgressMonitor pm) throws CoreException {
+        
         final IProject project = javaDeclaration.getJavaProject().getProject();
-		final String newName = getArguments().getNewName();
+        final String newName = getArguments().getNewName();
         final String oldName = javaDeclaration.getElementName();
-		
+        
         final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
         TypeChecker tc = getProjectTypeChecker(project);
         if (tc==null) return null;
-		for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
+        for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
             final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
             Tree.CompilationUnit cu = phasedUnit.getCompilationUnit();
             cu.visit(new Visitor() {
@@ -162,15 +162,15 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                     e.printStackTrace(); 
                 }
             }
-		}
-		
-		if (changes.isEmpty())
-			return null;
-		
-		CompositeChange result= new CompositeChange("Ceylon source changes");
-		for (Iterator<Change> iter= changes.values().iterator(); iter.hasNext();) {
-			result.add((Change) iter.next());
-		}
-		return result;
-	}
+        }
+        
+        if (changes.isEmpty())
+            return null;
+        
+        CompositeChange result= new CompositeChange("Ceylon source changes");
+        for (Iterator<Change> iter= changes.values().iterator(); iter.hasNext();) {
+            result.add((Change) iter.next());
+        }
+        return result;
+    }
 }

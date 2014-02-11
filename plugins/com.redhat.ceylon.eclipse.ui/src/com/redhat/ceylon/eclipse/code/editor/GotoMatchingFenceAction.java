@@ -13,19 +13,19 @@ import org.eclipse.jface.text.source.ISourceViewer;
 
 class GotoMatchingFenceAction extends Action {
     
-	private final CeylonEditor fEditor;
+    private final CeylonEditor fEditor;
 
-	public GotoMatchingFenceAction(CeylonEditor editor) {
-		super("Go to Matching Fence");
-		Assert.isNotNull(editor);
-		fEditor= editor;
-		setEnabled(true);
-		//PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.GOTO_MATCHING_BRACKET_ACTION);
-	}
+    public GotoMatchingFenceAction(CeylonEditor editor) {
+        super("Go to Matching Fence");
+        Assert.isNotNull(editor);
+        fEditor= editor;
+        setEnabled(true);
+        //PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.GOTO_MATCHING_BRACKET_ACTION);
+    }
 
-	public void run() {
-		gotoMatchingFence();
-	}
+    public void run() {
+        gotoMatchingFence();
+    }
 
     /**
      * Jumps to the matching bracket.

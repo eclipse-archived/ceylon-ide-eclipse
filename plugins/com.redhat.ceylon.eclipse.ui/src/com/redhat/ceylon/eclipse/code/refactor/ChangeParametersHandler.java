@@ -12,7 +12,7 @@ public class ChangeParametersHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ITextEditor editor = (ITextEditor) getCurrentEditor();
-    	new ChangeParametersRefactoringAction(editor).run();
+        new ChangeParametersRefactoringAction(editor).run();
         return null;
     }
             

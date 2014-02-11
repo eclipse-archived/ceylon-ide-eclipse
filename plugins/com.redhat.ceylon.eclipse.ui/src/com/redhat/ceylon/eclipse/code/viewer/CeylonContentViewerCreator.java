@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class CeylonContentViewerCreator implements IViewerCreator {
 
-	public Viewer createViewer(Composite parent, CompareConfiguration mp) {
-		return new CeylonMergeViewer(parent, SWT.NULL, mp);
-	}
+    public Viewer createViewer(Composite parent, CompareConfiguration mp) {
+        return new CeylonMergeViewer(parent, SWT.NULL, mp);
+    }
 }

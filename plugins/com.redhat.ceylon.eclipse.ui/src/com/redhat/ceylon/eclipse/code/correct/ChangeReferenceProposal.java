@@ -67,7 +67,7 @@ class ChangeReferenceProposal extends CorrectionProposal implements ICompletionP
             if (!pn.isEmpty() && !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                 if (getOccurrenceLocation(cu, findNode(cu, problem.getOffset()))!=IMPORT) {
                     List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), 
-                    		null, null, doc);
+                            null, null, doc);
                     for (InsertEdit ie: ies) {
                         change.addEdit(ie);
                     }
@@ -86,25 +86,25 @@ class ChangeReferenceProposal extends CorrectionProposal implements ICompletionP
                 .equals(cu.getUnit().getPackage());
     }
 
-	@Override
-	public void apply(IDocument document, char trigger, int offset) {
-		apply(document);
-	}
+    @Override
+    public void apply(IDocument document, char trigger, int offset) {
+        apply(document);
+    }
 
-	@Override
-	public boolean isValidFor(IDocument document, int offset) {
-		return true;
-	}
+    @Override
+    public boolean isValidFor(IDocument document, int offset) {
+        return true;
+    }
 
-	@Override
-	public char[] getTriggerCharacters() {
-		return "r".toCharArray();
-	}
+    @Override
+    public char[] getTriggerCharacters() {
+        return "r".toCharArray();
+    }
 
-	@Override
-	public int getContextInformationPosition() {
-		return -1;
-	}
+    @Override
+    public int getContextInformationPosition() {
+        return -1;
+    }
     
     static void addRenameProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file) {

@@ -17,7 +17,7 @@ public class ChangeInitialCaseOfIdentifierInDeclaration
         extends CorrectionProposal {
 
     public static void addChangeIdentifierCaseProposal(Node node, 
-    		Collection<ICompletionProposal> proposals, IFile file) {
+            Collection<ICompletionProposal> proposals, IFile file) {
         Tree.Identifier identifier = null;
         
         if (node instanceof Tree.TypeDeclaration) {
@@ -47,7 +47,7 @@ public class ChangeInitialCaseOfIdentifierInDeclaration
     }
     
     private static void addProposal(Identifier identifier, 
-    		Collection<ICompletionProposal> proposals, IFile file) {
+            Collection<ICompletionProposal> proposals, IFile file) {
         String newIdentifier;
         String newFirstLetter;
         
@@ -64,7 +64,7 @@ public class ChangeInitialCaseOfIdentifierInDeclaration
         change.setEdit(new ReplaceEdit(identifier.getStartIndex(), 1, newFirstLetter));
 
         ChangeInitialCaseOfIdentifierInDeclaration proposal = 
-        		new ChangeInitialCaseOfIdentifierInDeclaration(newIdentifier, change);
+                new ChangeInitialCaseOfIdentifierInDeclaration(newIdentifier, change);
         if (!proposals.contains(proposal)) {
             proposals.add(proposal);
         }

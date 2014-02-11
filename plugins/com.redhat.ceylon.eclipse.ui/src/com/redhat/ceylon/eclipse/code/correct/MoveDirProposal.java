@@ -32,11 +32,11 @@ final class MoveDirProposal implements ICompletionProposal {
 
     MoveDirProposal(Shell shell, String pn, String cpn,
             IPath sourceDir, IProject project) {
-	    this.shell = shell;
-	    this.pn = pn;
-	    this.cpn = cpn;
-	    this.sourceDir = sourceDir;
-	    this.project = project;
+        this.shell = shell;
+        this.pn = pn;
+        this.cpn = cpn;
+        this.sourceDir = sourceDir;
+        this.project = project;
     }
 
     @Override
@@ -89,7 +89,7 @@ final class MoveDirProposal implements ICompletionProposal {
         final String pn = formatPath(importPath.getIdentifiers());
         final String cpn = cu.getUnit().getPackage().getNameAsString();
         final IPath sourceDir = file.getProjectRelativePath()
-        		.removeLastSegments(file.getProjectRelativePath().segmentCount()-1);
+                .removeLastSegments(file.getProjectRelativePath().segmentCount()-1);
 //          final IPath relPath = sourceDir.append(pn.replace('.', '/'));
 //          final IPath newPath = project.getFullPath().append(relPath);
 //          if (!project.exists(newPath)) {

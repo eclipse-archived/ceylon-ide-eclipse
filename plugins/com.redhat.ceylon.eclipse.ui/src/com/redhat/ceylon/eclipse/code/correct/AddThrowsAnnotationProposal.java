@@ -22,7 +22,7 @@ import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 public class AddThrowsAnnotationProposal extends CorrectionProposal {
     
     public static void addThrowsAnnotationProposal(Collection<ICompletionProposal> proposals, 
-    		Tree.Statement statement, Tree.CompilationUnit cu, IFile file, IDocument doc) {
+            Tree.Statement statement, Tree.CompilationUnit cu, IFile file, IDocument doc) {
         ProducedType exceptionType = determineExceptionType(statement);
         if (exceptionType == null) {
             return;
@@ -73,38 +73,38 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
     }
 
     private static Tree.Declaration determineThrowContainer(Tree.Statement statement, 
-    		Tree.CompilationUnit cu) {
+            Tree.CompilationUnit cu) {
         FindContainerVisitor fcv = new FindContainerVisitor(statement);
         fcv.visit(cu);
         return fcv.getDeclaration();
     }
 
     private static boolean isAlreadyPresent(Tree.Declaration throwContainer, ProducedType exceptionType) {
-    	Tree.AnnotationList annotationList = throwContainer.getAnnotationList();
+        Tree.AnnotationList annotationList = throwContainer.getAnnotationList();
         if (annotationList != null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 String annotationIdentifier = getAnnotationIdentifier(annotation);
                 if ("throws".equals(annotationIdentifier)) {
-                	Tree.PositionalArgumentList positionalArgumentList = annotation.getPositionalArgumentList();
+                    Tree.PositionalArgumentList positionalArgumentList = annotation.getPositionalArgumentList();
                     if (positionalArgumentList != null && 
                             positionalArgumentList.getPositionalArguments() != null &&
                             positionalArgumentList.getPositionalArguments().size() > 0) {
-                    	Tree.PositionalArgument throwsArg = positionalArgumentList.getPositionalArguments().get(0);
-                    	if (throwsArg instanceof Tree.ListedArgument) {
-                    		Tree.Expression throwsArgExp = ((Tree.ListedArgument) throwsArg).getExpression();
-                    		if (throwsArgExp != null) {
-                    			Tree.Term term = throwsArgExp.getTerm();
-                    			if (term instanceof Tree.MemberOrTypeExpression) {
-                    				Declaration declaration = ((Tree.MemberOrTypeExpression) term).getDeclaration();
-                    				if (declaration instanceof TypeDeclaration) {
-                    					ProducedType type = ((TypeDeclaration) declaration).getType();
-                    					if (exceptionType.isExactly(type)) {
-                    						return true;
-                    					}
-                    				}
-                    			}
-                    		}
-                    	}
+                        Tree.PositionalArgument throwsArg = positionalArgumentList.getPositionalArguments().get(0);
+                        if (throwsArg instanceof Tree.ListedArgument) {
+                            Tree.Expression throwsArgExp = ((Tree.ListedArgument) throwsArg).getExpression();
+                            if (throwsArgExp != null) {
+                                Tree.Term term = throwsArgExp.getTerm();
+                                if (term instanceof Tree.MemberOrTypeExpression) {
+                                    Declaration declaration = ((Tree.MemberOrTypeExpression) term).getDeclaration();
+                                    if (declaration instanceof TypeDeclaration) {
+                                        ProducedType type = ((TypeDeclaration) declaration).getType();
+                                        if (exceptionType.isExactly(type)) {
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

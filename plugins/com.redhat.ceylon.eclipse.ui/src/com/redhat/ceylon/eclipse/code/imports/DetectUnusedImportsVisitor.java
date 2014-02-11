@@ -15,7 +15,7 @@ class DetectUnusedImportsVisitor extends Visitor {
     private final List<Declaration> result;
     
     DetectUnusedImportsVisitor(List<Declaration> result) {
-    	this.result = result;
+        this.result = result;
     }
     
     @Override

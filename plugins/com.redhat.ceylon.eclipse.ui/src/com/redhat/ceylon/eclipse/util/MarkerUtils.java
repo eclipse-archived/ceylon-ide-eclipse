@@ -38,21 +38,21 @@ public class MarkerUtils {
             int priority= m.getAttribute(IMarker.SEVERITY, -1);
     
             if (priority == IMarker.SEVERITY_WARNING) {
-        	hasWarnings= true;
+            hasWarnings= true;
             } else if (priority == IMarker.SEVERITY_ERROR) {
-        	return IMarker.SEVERITY_ERROR;
+            return IMarker.SEVERITY_ERROR;
             }
         }
         return hasWarnings ? IMarker.SEVERITY_WARNING : 0;
     }
 
-	public static IFileEditorInput getInput(IMarker marker) {
-		IResource res = marker.getResource();
-		if (res instanceof IFile && res.isAccessible()) {
-			IFile file = (IFile) res;
-			return new FileEditorInput(file);
-		}
+    public static IFileEditorInput getInput(IMarker marker) {
+        IResource res = marker.getResource();
+        if (res instanceof IFile && res.isAccessible()) {
+            IFile file = (IFile) res;
+            return new FileEditorInput(file);
+        }
 
-		return null;
-	}
+        return null;
+    }
 }

@@ -230,9 +230,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     
     @Override
     public ClassMirror getEnclosingClass() {
-    	//TODO: is this correct?
-    	ReferenceBinding enclosingType = klass.enclosingType();
-		return enclosingType==null ? null : new JDTClass(enclosingType, lookupEnvironment);
+        //TODO: is this correct?
+        ReferenceBinding enclosingType = klass.enclosingType();
+        return enclosingType==null ? null : new JDTClass(enclosingType, lookupEnvironment);
     }
 
     @Override
@@ -281,10 +281,10 @@ public class JDTClass implements ClassMirror, IBindingProvider {
         return false;
     }
 
-	@Override
-	public boolean isAnonymous() {
-		return klass.isAnonymousType();
-	}
+    @Override
+    public boolean isAnonymous() {
+        return klass.isAnonymousType();
+    }
 
     @Override
     public boolean isJavaSource() {

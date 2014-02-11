@@ -27,7 +27,7 @@ public class DecorationDescriptor {
     private String imageKey;
 
     public DecorationDescriptor(int mask, String imageKey, 
-    		int quadrant) {
+            int quadrant) {
         this.mask= mask;
         this.imageKey = imageKey;
         this.quadrant= quadrant;

@@ -13,33 +13,33 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class MemberNameCompletions {
-	
-	static void addMemberNameProposals(final int offset,
-			final CeylonParseController cpc, final Node node,
-			final List<ICompletionProposal> result) {
-		final Integer startIndex2 = node.getStartIndex();
-		new Visitor() {
-			@Override
-			public void visit(Tree.StaticMemberOrTypeExpression that) {
-				Integer startIndex = that.getTypeArguments().getStartIndex();
-				if (startIndex!=null && startIndex2!=null &&
-					startIndex.intValue()==startIndex2.intValue()) {
-					addMemberNameProposal(offset, "", that, result);
-				}
-				super.visit(that);
-			}
-			public void visit(Tree.SimpleType that) {
-				Integer startIndex = that.getTypeArgumentList().getStartIndex();
-				if (startIndex!=null && startIndex2!=null &&
-					startIndex.intValue()==startIndex2.intValue()) {
-					addMemberNameProposal(offset, "", that, result);
-				}
-				super.visit(that);
-			}
-		}.visit(cpc.getRootNode());
-	}
-	
-	static void addMemberNameProposal(int offset, String prefix,
+    
+    static void addMemberNameProposals(final int offset,
+            final CeylonParseController cpc, final Node node,
+            final List<ICompletionProposal> result) {
+        final Integer startIndex2 = node.getStartIndex();
+        new Visitor() {
+            @Override
+            public void visit(Tree.StaticMemberOrTypeExpression that) {
+                Integer startIndex = that.getTypeArguments().getStartIndex();
+                if (startIndex!=null && startIndex2!=null &&
+                    startIndex.intValue()==startIndex2.intValue()) {
+                    addMemberNameProposal(offset, "", that, result);
+                }
+                super.visit(that);
+            }
+            public void visit(Tree.SimpleType that) {
+                Integer startIndex = that.getTypeArgumentList().getStartIndex();
+                if (startIndex!=null && startIndex2!=null &&
+                    startIndex.intValue()==startIndex2.intValue()) {
+                    addMemberNameProposal(offset, "", that, result);
+                }
+                super.visit(that);
+            }
+        }.visit(cpc.getRootNode());
+    }
+    
+    static void addMemberNameProposal(int offset, String prefix,
             Node node, List<ICompletionProposal> result) {
         String suggestedName = null;
         if (node instanceof Tree.TypeDeclaration) {
@@ -53,10 +53,10 @@ public class MemberNameCompletions {
         else if (node instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
             if (td.getType() instanceof Tree.SimpleType) {
-            	Tree.Identifier id = td.getIdentifier();
-            	if (id==null || offset>=id.getStartIndex() && offset<=id.getStopIndex()+1) {
-            		suggestedName = ((Tree.SimpleType) td.getType()).getIdentifier().getText();
-            	}
+                Tree.Identifier id = td.getIdentifier();
+                if (id==null || offset>=id.getStartIndex() && offset<=id.getStopIndex()+1) {
+                    suggestedName = ((Tree.SimpleType) td.getType()).getIdentifier().getText();
+                }
             }
         }
         else if (node instanceof Tree.SimpleType) {
@@ -69,12 +69,12 @@ public class MemberNameCompletions {
             suggestedName = ((Tree.QualifiedTypeExpression) node).getIdentifier().getText();
         }
         if (suggestedName!=null) {
-        	suggestedName = lower(suggestedName);
-        	if (!suggestedName.startsWith(prefix)) {
-        		suggestedName = prefix + upper(suggestedName);
-        	}
-    		result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
-    				suggestedName, escape(suggestedName)));
+            suggestedName = lower(suggestedName);
+            if (!suggestedName.startsWith(prefix)) {
+                suggestedName = prefix + upper(suggestedName);
+            }
+            result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
+                    suggestedName, escape(suggestedName)));
         }
     }
 

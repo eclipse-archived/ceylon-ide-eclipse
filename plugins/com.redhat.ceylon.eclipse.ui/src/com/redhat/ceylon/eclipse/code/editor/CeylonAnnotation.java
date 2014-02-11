@@ -8,7 +8,7 @@ import org.eclipse.jface.text.source.Annotation;
 
 public class CeylonAnnotation extends Annotation 
         implements IQuickFixableAnnotation {
-	
+    
     /** 
      * Parent annotation ID
      */
@@ -40,49 +40,49 @@ public class CeylonAnnotation extends Annotation
             ".info";
 
     private static int counter = 0;
-	
-	private Boolean fixable;
-	private final int count;
-	private final int code;
-	private final int severity;
+    
+    private Boolean fixable;
+    private final int count;
+    private final int code;
+    private final int severity;
 
     public static boolean isParseAnnotation(Annotation a) {
         return a.getType().startsWith(PARSE_ANNOTATION_TYPE);
     }
 
-	public CeylonAnnotation(String type, String text, 
-	        int code, int severity) {
-		super(type, false, text);
-		this.code = code;
-		this.severity = severity;
-		count = counter++;
-	}
+    public CeylonAnnotation(String type, String text, 
+            int code, int severity) {
+        super(type, false, text);
+        this.code = code;
+        this.severity = severity;
+        count = counter++;
+    }
 
-	public int getId() {
-		return code;
-	}
+    public int getId() {
+        return code;
+    }
 
-	public int getSeverity() {
-		return severity;
-	}
+    public int getSeverity() {
+        return severity;
+    }
 
-	@Override
-	public boolean isQuickFixable() throws AssertionFailedException {
-		return fixable;
-	}
-	
-	@Override
-	public boolean isQuickFixableStateSet() {
-		return fixable!=null;
-	}
-	
-	@Override
-	public void setQuickFixable(boolean state) {
-		fixable = state;
-	}
-	
-	@Override
-	public String toString() {
-		return "{" + count + "}"; //"[" + getId() + "] " + getText();
-	}
+    @Override
+    public boolean isQuickFixable() throws AssertionFailedException {
+        return fixable;
+    }
+    
+    @Override
+    public boolean isQuickFixableStateSet() {
+        return fixable!=null;
+    }
+    
+    @Override
+    public void setQuickFixable(boolean state) {
+        fixable = state;
+    }
+    
+    @Override
+    public String toString() {
+        return "{" + count + "}"; //"[" + getId() + "] " + getText();
+    }
 }

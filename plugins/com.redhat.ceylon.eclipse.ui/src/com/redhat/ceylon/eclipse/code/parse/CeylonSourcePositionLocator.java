@@ -102,44 +102,44 @@ public class CeylonSourcePositionLocator {
     }
     
     public static Node getIdentifyingNode(Node node) {
-	    if (node instanceof Tree.Declaration) {
-	        return ((Tree.Declaration) node).getIdentifier();
-	    }
-	    else if (node instanceof Tree.ModuleDescriptor) {
-	        return ((Tree.ModuleDescriptor) node).getImportPath();
-	    }
-	    else if (node instanceof Tree.PackageDescriptor) {
-	        return ((Tree.PackageDescriptor) node).getImportPath();
-	    }
+        if (node instanceof Tree.Declaration) {
+            return ((Tree.Declaration) node).getIdentifier();
+        }
+        else if (node instanceof Tree.ModuleDescriptor) {
+            return ((Tree.ModuleDescriptor) node).getImportPath();
+        }
+        else if (node instanceof Tree.PackageDescriptor) {
+            return ((Tree.PackageDescriptor) node).getImportPath();
+        }
         else if (node instanceof Tree.Import) {
             return ((Tree.Import) node).getImportPath();
         }
         else if (node instanceof Tree.ImportModule) {
             return ((Tree.ImportModule) node).getImportPath();
         }
-	    else if (node instanceof Tree.NamedArgument) {
-	        Identifier id = ((Tree.NamedArgument) node).getIdentifier();
-	        if (id==null || id.getToken()==null) {
-	            return node;
-	        }
-	        else {
-	            return id;
-	        }
-	    }
-	    else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-	        return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
-	    }
-	    else if (node instanceof Tree.ExtendedTypeExpression) {
-	        //TODO: whoah! this is really ugly!
-	        return ((Tree.SimpleType) ((Tree.ExtendedTypeExpression) node).getChildren().get(0))
-	                .getIdentifier();
-	    }
-	    else if (node instanceof Tree.SimpleType) {
-	        return ((Tree.SimpleType) node).getIdentifier();
-	    }
-	    else if (node instanceof Tree.ImportMemberOrType) {
-	        return ((Tree.ImportMemberOrType) node).getIdentifier();
-	    }
+        else if (node instanceof Tree.NamedArgument) {
+            Identifier id = ((Tree.NamedArgument) node).getIdentifier();
+            if (id==null || id.getToken()==null) {
+                return node;
+            }
+            else {
+                return id;
+            }
+        }
+        else if (node instanceof Tree.StaticMemberOrTypeExpression) {
+            return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
+        }
+        else if (node instanceof Tree.ExtendedTypeExpression) {
+            //TODO: whoah! this is really ugly!
+            return ((Tree.SimpleType) ((Tree.ExtendedTypeExpression) node).getChildren().get(0))
+                    .getIdentifier();
+        }
+        else if (node instanceof Tree.SimpleType) {
+            return ((Tree.SimpleType) node).getIdentifier();
+        }
+        else if (node instanceof Tree.ImportMemberOrType) {
+            return ((Tree.ImportMemberOrType) node).getIdentifier();
+        }
         else if (node instanceof Tree.InitializerParameter) {
             return ((Tree.InitializerParameter) node).getIdentifier();
         }
@@ -149,10 +149,10 @@ public class CeylonSourcePositionLocator {
         else if (node instanceof Tree.TypeLiteral) {
             return getIdentifyingNode(((Tree.TypeLiteral) node).getType());
         }
-	    else {    
-	        return node;
-	    }
-	}
+        else {    
+            return node;
+        }
+    }
     
     public static void gotoDeclaration(Declaration d, IProject project) {
         gotoDeclaration(d, project, EditorUtil.getCurrentEditor());
@@ -179,14 +179,14 @@ public class CeylonSourcePositionLocator {
             }
         }
     }
-	
-	public static void gotoNode(Node node, IProject project, TypeChecker tc) {
+    
+    public static void gotoNode(Node node, IProject project, TypeChecker tc) {
         gotoLocation(getNodePath(node, project, tc), 
                 getStartOffset(node));
     }
 
     public static void gotoLocation(IPath path, int offset) {
-    	gotoLocation(path, offset, 0);
+        gotoLocation(path, offset, 0);
     }
     
     public static void gotoLocation(IPath path, int offset, int length) {
@@ -194,7 +194,7 @@ public class CeylonSourcePositionLocator {
         IEditorInput editorInput = getEditorInput(path);
         try {
             CeylonEditor editor = (CeylonEditor) getActivePage()
-            		.openEditor(editorInput, EDITOR_ID);
+                    .openEditor(editorInput, EDITOR_ID);
             editor.selectAndReveal(offset, length);
         }
         catch (PartInitException pie) {
@@ -236,27 +236,27 @@ public class CeylonSourcePositionLocator {
             return false;
         }
         
-    	return (unit instanceof IResourceAware) &&
-    	        project.equals(((IResourceAware)unit).getProjectResource());
+        return (unit instanceof IResourceAware) &&
+                project.equals(((IResourceAware)unit).getProjectResource());
     }
 
     public static IPath getNodePath(Node node, IProject project, TypeChecker tc) {
         Unit unit = node.getUnit();
         
         if (unit instanceof IResourceAware) {
-    	    IFile fileResource = ((IResourceAware) unit).getFileResource();
-    	    if (fileResource != null) {
+            IFile fileResource = ((IResourceAware) unit).getFileResource();
+            if (fileResource != null) {
                 return fileResource.getLocation();
-    	    }
-    	}
-    	
-    	if ((unit instanceof ExternalSourceFile ) ||
-	            (unit instanceof CeylonBinaryUnit )) {
-	        IdePhasedUnit externalPhasedUnit = ((CeylonUnit) unit).getPhasedUnit();
-	        return new Path(externalPhasedUnit.getUnitFile().getPath());
-	    }
-    	
-    	return null;
+            }
+        }
+        
+        if ((unit instanceof ExternalSourceFile ) ||
+                (unit instanceof CeylonBinaryUnit )) {
+            IdePhasedUnit externalPhasedUnit = ((CeylonUnit) unit).getPhasedUnit();
+            return new Path(externalPhasedUnit.getUnitFile().getPath());
+        }
+        
+        return null;
     }
 
     public static Iterator<CommonToken> getTokenIterator(List<CommonToken> tokens, IRegion region) {

@@ -31,86 +31,86 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 final class ImportSelectionDialog extends
-		FilteredItemsSelectionDialog {
-	private List<Declaration> proposals;
+        FilteredItemsSelectionDialog {
+    private List<Declaration> proposals;
 
-	ImportSelectionDialog(Shell shell, List<Declaration> proposals) {
-		super(shell);
-		this.proposals = proposals;
-		setTitle("Clean Imports");
-		setMessage("Select declaration to import:");
-		setListLabelProvider(new LabelProvider());
-		setDetailsLabelProvider(new DetailsLabelProvider());
-	}
+    ImportSelectionDialog(Shell shell, List<Declaration> proposals) {
+        super(shell);
+        this.proposals = proposals;
+        setTitle("Clean Imports");
+        setMessage("Select declaration to import:");
+        setListLabelProvider(new LabelProvider());
+        setDetailsLabelProvider(new DetailsLabelProvider());
+    }
 
-	protected void createButtonsForButtonBar(Composite parent) {
-		createButton(parent, IDialogConstants.OK_ID, 
-				IDialogConstants.PROCEED_LABEL, true);
-		createButton(parent, IDialogConstants.CANCEL_ID,
-				IDialogConstants.SKIP_LABEL, false);
-	}
+    protected void createButtonsForButtonBar(Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, 
+                IDialogConstants.PROCEED_LABEL, true);
+        createButton(parent, IDialogConstants.CANCEL_ID,
+                IDialogConstants.SKIP_LABEL, false);
+    }
 
-	@Override
-	protected Control createExtendedContentArea(Composite parent) {
-		return null;
-	}
+    @Override
+    protected Control createExtendedContentArea(Composite parent) {
+        return null;
+    }
 
-	@Override
-	protected IDialogSettings getDialogSettings() {
-		return CeylonPlugin.getInstance().getDialogSettings();
-	}
+    @Override
+    protected IDialogSettings getDialogSettings() {
+        return CeylonPlugin.getInstance().getDialogSettings();
+    }
 
-	@Override
-	protected IStatus validateItem(Object item) {
-		return Status.OK_STATUS;
-	}
+    @Override
+    protected IStatus validateItem(Object item) {
+        return Status.OK_STATUS;
+    }
 
-	@Override
-	protected ItemsFilter createFilter() {
-		return new ItemsFilter() {
-			@Override
-			public boolean matchItem(Object item) {
-				return matches(getElementName(item));
-			}
-			@Override
-			public boolean isConsistentItem(Object item) {
-				return true;
-			}
-			@Override
-			public String getPattern() {
-				String pattern = super.getPattern(); 
-				return pattern.isEmpty() ? "**" : pattern;
-			}
-		};
-	}
+    @Override
+    protected ItemsFilter createFilter() {
+        return new ItemsFilter() {
+            @Override
+            public boolean matchItem(Object item) {
+                return matches(getElementName(item));
+            }
+            @Override
+            public boolean isConsistentItem(Object item) {
+                return true;
+            }
+            @Override
+            public String getPattern() {
+                String pattern = super.getPattern(); 
+                return pattern.isEmpty() ? "**" : pattern;
+            }
+        };
+    }
 
-	@Override
-	protected Comparator<Object> getItemsComparator() {
-		return new Comparator<Object>() {
-			@Override
-			public int compare(Object o1, Object o2) {
-				Declaration d1 = (Declaration) o1;
-				Declaration d2 = (Declaration) o2;
-				return d1.getQualifiedNameString()
-						.compareTo(d2.getQualifiedNameString());
-			}
-		};
-	}
+    @Override
+    protected Comparator<Object> getItemsComparator() {
+        return new Comparator<Object>() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                Declaration d1 = (Declaration) o1;
+                Declaration d2 = (Declaration) o2;
+                return d1.getQualifiedNameString()
+                        .compareTo(d2.getQualifiedNameString());
+            }
+        };
+    }
 
-	@Override
-	protected void fillContentProvider(
-			AbstractContentProvider contentProvider,
-			ItemsFilter itemsFilter, IProgressMonitor progressMonitor)
-					throws CoreException {
-		for (Declaration d: proposals) {
-			contentProvider.add(d, itemsFilter);
-		}
-	}
+    @Override
+    protected void fillContentProvider(
+            AbstractContentProvider contentProvider,
+            ItemsFilter itemsFilter, IProgressMonitor progressMonitor)
+                    throws CoreException {
+        for (Declaration d: proposals) {
+            contentProvider.add(d, itemsFilter);
+        }
+    }
 
-	@Override
-	public String getElementName(Object item) {
-		return ((Declaration) item).getQualifiedNameString();
-	}
+    @Override
+    public String getElementName(Object item) {
+        return ((Declaration) item).getQualifiedNameString();
+    }
 
 }
 
@@ -144,56 +144,56 @@ class DetailsLabelProvider implements ILabelProvider {
 class LabelProvider extends StyledCellLabelProvider 
         implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
 
-	@Override
-	public void addListener(ILabelProviderListener listener) {}
+    @Override
+    public void addListener(ILabelProviderListener listener) {}
 
-	@Override
-	public void dispose() {}
+    @Override
+    public void dispose() {}
 
-	@Override
-	public boolean isLabelProperty(Object element, String property) {
-		return false;
-	}
+    @Override
+    public boolean isLabelProperty(Object element, String property) {
+        return false;
+    }
 
-	@Override
-	public void removeListener(ILabelProviderListener listener) {}
+    @Override
+    public void removeListener(ILabelProviderListener listener) {}
 
-	@Override
-	public Image getImage(Object element) {
-		Declaration d = (Declaration) element;
-		return d==null ? null : CeylonLabelProvider.getImageForDeclaration(d);
-	}
+    @Override
+    public Image getImage(Object element) {
+        Declaration d = (Declaration) element;
+        return d==null ? null : CeylonLabelProvider.getImageForDeclaration(d);
+    }
 
-	@Override
-	public String getText(Object element) {
-		Declaration d = (Declaration) element;
-		return d==null ? null : getDescriptionFor(d);
-	}
+    @Override
+    public String getText(Object element) {
+        Declaration d = (Declaration) element;
+        return d==null ? null : getDescriptionFor(d);
+    }
 
-	@Override
-	public StyledString getStyledText(Object element) {
-		if (element==null) {
-			return new StyledString();
-		}
-		else {
-			Declaration d = (Declaration) element;
-			StyledString label = getStyledDescriptionFor(d);
-			label.append(" - ", QUALIFIER_STYLER)
-				.append(getPackageLabel(d), QUALIFIER_STYLER);
-			return label;
-		}
-	}
+    @Override
+    public StyledString getStyledText(Object element) {
+        if (element==null) {
+            return new StyledString();
+        }
+        else {
+            Declaration d = (Declaration) element;
+            StyledString label = getStyledDescriptionFor(d);
+            label.append(" - ", QUALIFIER_STYLER)
+                .append(getPackageLabel(d), QUALIFIER_STYLER);
+            return label;
+        }
+    }
 
-	@Override
-	public void update(ViewerCell cell) {
-		Object element = cell.getElement();
-		if (element!=null) {
-			StyledString styledText = getStyledText(element);
-			cell.setText(styledText.toString());
-			cell.setStyleRanges(styledText.getStyleRanges());
-			cell.setImage(getImage(element));
-			super.update(cell);
-		}
-	}
+    @Override
+    public void update(ViewerCell cell) {
+        Object element = cell.getElement();
+        if (element!=null) {
+            StyledString styledText = getStyledText(element);
+            cell.setText(styledText.toString());
+            cell.setStyleRanges(styledText.getStyleRanges());
+            cell.setImage(getImage(element));
+            super.update(cell);
+        }
+    }
 
 }

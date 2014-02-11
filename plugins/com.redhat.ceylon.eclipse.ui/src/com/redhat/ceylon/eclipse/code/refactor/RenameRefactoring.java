@@ -48,132 +48,132 @@ public class RenameRefactoring extends AbstractRefactoring {
         }
     }
 
-	private String newName;
-	private final Declaration declaration;
-	
-	public Node getNode() {
-		return node;
-	}
+    private String newName;
+    private final Declaration declaration;
+    
+    public Node getNode() {
+        return node;
+    }
 
-	public RenameRefactoring(ITextEditor editor) {
-	    super(editor);
-	    if (rootNode!=null) {
-	    	Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);
-	    	if (refDec!=null) {
-	    		declaration = refDec.getRefinedDeclaration();
-	    		newName = declaration.getName();
-	    	}
-	    	else {
-	    		declaration = null;
-	    	}
-	    }
-	    else {
-    		declaration = null;
-	    }
-	}
-	
-	@Override
-	public boolean isEnabled() {
-	    return declaration!=null &&
+    public RenameRefactoring(ITextEditor editor) {
+        super(editor);
+        if (rootNode!=null) {
+            Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);
+            if (refDec!=null) {
+                declaration = refDec.getRefinedDeclaration();
+                newName = declaration.getName();
+            }
+            else {
+                declaration = null;
+            }
+        }
+        else {
+            declaration = null;
+        }
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return declaration!=null &&
                 project != null &&
                 inSameProject(declaration);
-	}
+    }
 
-	public int getCount() {
-	    return declaration==null ? 0 : countDeclarationOccurrences();
-	}
-	
-	class FindDocLinkReferencesVisitor extends Visitor {
-	    private Declaration declaration;
+    public int getCount() {
+        return declaration==null ? 0 : countDeclarationOccurrences();
+    }
+    
+    class FindDocLinkReferencesVisitor extends Visitor {
+        private Declaration declaration;
         int count;
         FindDocLinkReferencesVisitor(Declaration declaration) {
             this.declaration = declaration;
-	    }
-	    @Override
-	    public void visit(DocLink that) {
-	        if (that.getBase()!=null) {
-	            if (that.getBase().equals(declaration)) {
-	                count++;
-	            }
-	            else if (that.getQualified()!=null) {
-	                if (that.getQualified().contains(declaration)) {
-	                    count++;
-	                }
-	            }
-	        }
-	    }
-	}
+        }
+        @Override
+        public void visit(DocLink that) {
+            if (that.getBase()!=null) {
+                if (that.getBase().equals(declaration)) {
+                    count++;
+                }
+                else if (that.getQualified()!=null) {
+                    if (that.getQualified().contains(declaration)) {
+                        count++;
+                    }
+                }
+            }
+        }
+    }
 
-	@Override
-	int countReferences(Tree.CompilationUnit cu) {
+    @Override
+    int countReferences(Tree.CompilationUnit cu) {
         FindReferencesVisitor frv = 
-        		new FindReferencesVisitor(declaration);
+                new FindReferencesVisitor(declaration);
         FindRefinementsVisitor fdv = 
-        		new FindRefinementsVisitor(frv.getDeclaration());
+                new FindRefinementsVisitor(frv.getDeclaration());
         FindDocLinkReferencesVisitor fdlrv = 
-        		new FindDocLinkReferencesVisitor(frv.getDeclaration());
+                new FindDocLinkReferencesVisitor(frv.getDeclaration());
         cu.visit(frv);
         cu.visit(fdv);
         cu.visit(fdlrv);
         return frv.getNodes().size() + 
-        		fdv.getDeclarationNodes().size() + 
-        		fdlrv.count;
-	}
+                fdv.getDeclarationNodes().size() + 
+                fdlrv.count;
+    }
 
-	public String getName() {
-		return "Rename";
-	}
+    public String getName() {
+        return "Rename";
+    }
 
-	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
-		// Check parameters retrieved from editor context
-		return new RefactoringStatus();
-	}
+    public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
+            throws CoreException, OperationCanceledException {
+        // Check parameters retrieved from editor context
+        return new RefactoringStatus();
+    }
 
-	public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
-			throws CoreException, OperationCanceledException {
-	    Declaration existing = declaration.getContainer()
+    public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
+            throws CoreException, OperationCanceledException {
+        Declaration existing = declaration.getContainer()
                         .getMemberOrParameter(declaration.getUnit(), 
-                        		newName, null, false);
+                                newName, null, false);
         if (null!=existing && !existing.equals(declaration)) {
-	        return createWarningStatus("An existing declaration named '" +
-	            newName + "' already exists in the same scope");
-	    }
-		return new RefactoringStatus();
-	}
+            return createWarningStatus("An existing declaration named '" +
+                newName + "' already exists in the same scope");
+        }
+        return new RefactoringStatus();
+    }
 
-	public CompositeChange createChange(IProgressMonitor pm) 
-			throws CoreException, OperationCanceledException {
+    public CompositeChange createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
         CompositeChange cc = new CompositeChange(getName());
         int i=0;
         for (PhasedUnit pu: units) {
-        	if (searchInFile(pu)) {
-        		TextFileChange tfc = newTextFileChange(pu);
-        		renameInFile(tfc, cc, pu.getCompilationUnit());
-        		pm.worked(i++);
-        	}
+            if (searchInFile(pu)) {
+                TextFileChange tfc = newTextFileChange(pu);
+                renameInFile(tfc, cc, pu.getCompilationUnit());
+                pm.worked(i++);
+            }
         }
         if (searchInEditor()) {
-        	DocumentChange dc = newDocumentChange();
-        	renameInFile(dc, cc, editor.getParseController().getRootNode());
-        	pm.worked(i++);
+            DocumentChange dc = newDocumentChange();
+            renameInFile(dc, cc, editor.getParseController().getRootNode());
+            pm.worked(i++);
         }
         pm.done();
         return cc;
-	}
+    }
 
     private void renameInFile(TextChange tfc, CompositeChange cc, 
-    		Tree.CompilationUnit root) {
+            Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
         if (declaration!=null) {
-        	for (Node node: getNodesToRename(root)) {
+            for (Node node: getNodesToRename(root)) {
                 renameNode(tfc, node, root);
-        	}
-        	for (Region region: getStringsToReplace(root)) {
-        	    renameRegion(tfc, region, root);
-        	}
+            }
+            for (Region region: getStringsToReplace(root)) {
+                renameRegion(tfc, region, root);
+            }
         }
         if (tfc.getEdit().hasChildren()) {
             cc.add(tfc);
@@ -181,14 +181,14 @@ public class RenameRefactoring extends AbstractRefactoring {
     }
     
     public List<Node> getNodesToRename(Tree.CompilationUnit root) {
-    	ArrayList<Node> list = new ArrayList<Node>();
-    	FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-    	root.visit(frv);
-    	list.addAll(frv.getNodes());
-    	FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
-    	root.visit(fdv);
-    	list.addAll(fdv.getDeclarationNodes());
-    	return list;
+        ArrayList<Node> list = new ArrayList<Node>();
+        FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+        root.visit(frv);
+        list.addAll(frv.getNodes());
+        FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
+        root.visit(fdv);
+        list.addAll(fdv.getDeclarationNodes());
+        return list;
     }
     
     public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
@@ -239,25 +239,25 @@ public class RenameRefactoring extends AbstractRefactoring {
     }
 
     protected void renameRegion(TextChange tfc, Region region, 
-    		Tree.CompilationUnit root) {
+            Tree.CompilationUnit root) {
         tfc.addEdit(new ReplaceEdit(region.getOffset(), 
                 region.getLength(), newName));
     }
 
-	protected void renameNode(TextChange tfc, Node node, 
-			Tree.CompilationUnit root) {
-	    Node identifyingNode = getIdentifyingNode(node);
-		tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex(), 
-		        identifyingNode.getText().length(), newName));
-	}
+    protected void renameNode(TextChange tfc, Node node, 
+            Tree.CompilationUnit root) {
+        Node identifyingNode = getIdentifyingNode(node);
+        tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex(), 
+                identifyingNode.getText().length(), newName));
+    }
 
-	public void setNewName(String text) {
-		newName = text;
-	}
-	
-	public Declaration getDeclaration() {
-		return declaration;
-	}
+    public void setNewName(String text) {
+        newName = text;
+    }
+    
+    public Declaration getDeclaration() {
+        return declaration;
+    }
 
     public String getNewName() {
         return newName;

@@ -55,7 +55,7 @@ import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
  * "mark occurrences" service.
  */
 public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, 
-		CaretListener, TreeLifecycleListener {
+        CaretListener, TreeLifecycleListener {
     /**
      * The ID for the kind of annotations created for "mark occurrences"
      */
@@ -97,14 +97,14 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         @Override
         public void partActivated(IWorkbenchPart part) {
             if (part instanceof CeylonEditor) {
-            	setUpActiveEditor((CeylonEditor) part);
-            	if (documentProvider!=null) {
-            		retrieveOccurrenceAnnotations();
-            		if (!markingEnabled) {
-            			unregisterListeners();
-            			removeExistingOccurrenceAnnotations();
-            		}
-            	}
+                setUpActiveEditor((CeylonEditor) part);
+                if (documentProvider!=null) {
+                    retrieveOccurrenceAnnotations();
+                    if (!markingEnabled) {
+                        unregisterListeners();
+                        removeExistingOccurrenceAnnotations();
+                    }
+                }
             }
         }
         @Override
@@ -132,19 +132,19 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 
     @Override
     public void caretMoved(CaretEvent event) {
-    	if (!activeEditor.isBackgroundParsingPaused() &&
-    	        !activeEditor.isBlockSelectionModeEnabled() &&
-    	        !activeEditor.isInLinkedMode()) {
-    		int offset = activeEditor.getCeylonSourceViewer()
-    		        .widgetOffset2ModelOffset(event.caretOffset);
-    		int length = 0;
-    		IRegion selection = activeEditor.getSelection();
-    		if (selection.getLength()>0) {
-    			offset = selection.getOffset();
-    			length = selection.getLength();
-    		}
-    		recomputeAnnotationsForSelection(offset, length, document);
-    	}
+        if (!activeEditor.isBackgroundParsingPaused() &&
+                !activeEditor.isBlockSelectionModeEnabled() &&
+                !activeEditor.isInLinkedMode()) {
+            int offset = activeEditor.getCeylonSourceViewer()
+                    .widgetOffset2ModelOffset(event.caretOffset);
+            int length = 0;
+            IRegion selection = activeEditor.getSelection();
+            if (selection.getLength()>0) {
+                offset = selection.getOffset();
+                length = selection.getLength();
+            }
+            recomputeAnnotationsForSelection(offset, length, document);
+        }
     }
 
     @Override
@@ -152,7 +152,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         markingEnabled = action.isChecked();
         if (markingEnabled) {
             setUpActiveEditor((CeylonEditor) PlatformUI.getWorkbench()
-            		.getActiveWorkbenchWindow().getActivePage().getActiveEditor());
+                    .getActiveWorkbenchWindow().getActivePage().getActiveEditor());
         } 
         else {
             unregisterListeners();
@@ -174,16 +174,16 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 
     private void unregisterListeners() {
         if (activeEditor!=null) {
-        	activeEditor.getCeylonSourceViewer().getTextWidget()
+            activeEditor.getCeylonSourceViewer().getTextWidget()
                     .removeCaretListener(this);
-        	activeEditor.removeModelListener(this);
+            activeEditor.removeModelListener(this);
         }
     }
 
     private IDocument getDocumentFromEditor() {
         IDocumentProvider provider = getDocumentProvider();
         return provider==null ? 
-        		null : provider.getDocument(getEditorInput());
+                null : provider.getDocument(getEditorInput());
     }
 
     private void recomputeAnnotationsForSelection(int offset, int length, IDocument document) {
@@ -236,7 +236,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         if (annotationModel==null) return;
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-            	((IAnnotationModelExtension) annotationModel).replaceAnnotations(occurrenceAnnotations, annotationMap);
+                ((IAnnotationModelExtension) annotationModel).replaceAnnotations(occurrenceAnnotations, annotationMap);
             } 
             else {
                 removeExistingOccurrenceAnnotations();
@@ -250,25 +250,25 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         }
     }
 
-	private void retrieveOccurrenceAnnotations() {
-		IAnnotationModel annotationModel= documentProvider.getAnnotationModel(getEditorInput());
-		// Need to initialize the set of pre-existing annotations in order
-		// for them to be removed properly when new occurrences are marked
-		if (annotationModel != null) {
-		    @SuppressWarnings("unchecked")
-		    Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
-		    List<Annotation> annotationList = new ArrayList<Annotation>();
-		    while (annotationIterator.hasNext()) {
-		        // SMS 23 Jul 2008:  added test for annotation type
-		        Annotation ann = (Annotation) annotationIterator.next();
-		        if (ann.getType().startsWith(OCCURRENCE_ANNOTATION) ||
-		            ann.getType().startsWith(ASSIGNMENT_ANNOTATION)) {
-		            annotationList.add(ann);
-		        }
-		    }
-		    occurrenceAnnotations = annotationList.toArray(new Annotation[annotationList.size()]);
-		}
-	}
+    private void retrieveOccurrenceAnnotations() {
+        IAnnotationModel annotationModel= documentProvider.getAnnotationModel(getEditorInput());
+        // Need to initialize the set of pre-existing annotations in order
+        // for them to be removed properly when new occurrences are marked
+        if (annotationModel != null) {
+            @SuppressWarnings("unchecked")
+            Iterator<Annotation> annotationIterator = annotationModel.getAnnotationIterator();
+            List<Annotation> annotationList = new ArrayList<Annotation>();
+            while (annotationIterator.hasNext()) {
+                // SMS 23 Jul 2008:  added test for annotation type
+                Annotation ann = (Annotation) annotationIterator.next();
+                if (ann.getType().startsWith(OCCURRENCE_ANNOTATION) ||
+                    ann.getType().startsWith(ASSIGNMENT_ANNOTATION)) {
+                    annotationList.add(ann);
+                }
+            }
+            occurrenceAnnotations = annotationList.toArray(new Annotation[annotationList.size()]);
+        }
+    }
 
     void removeExistingOccurrenceAnnotations() {
         // RMF 6/27/2008 - If we've come up in an empty workspace, there won't be an active editor
@@ -286,11 +286,11 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-            	((IAnnotationModelExtension) annotationModel).replaceAnnotations(occurrenceAnnotations, null);
+                ((IAnnotationModelExtension) annotationModel).replaceAnnotations(occurrenceAnnotations, null);
             } 
             else {
                 for (int i=0, length= occurrenceAnnotations.length; i<length; i++) {
-                	annotationModel.removeAnnotation(occurrenceAnnotations[i]);
+                    annotationModel.removeAnnotation(occurrenceAnnotations[i]);
                 }
             }
             occurrenceAnnotations= null;
@@ -355,7 +355,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             return ((ISynchronizable) annotationModel).getLockObject();
         }
         else {
-        	return annotationModel;
+            return annotationModel;
         }
     }
 
@@ -364,46 +364,46 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 
     @Override
     public void dispose() {
-    	unregisterListeners();
+        unregisterListeners();
     }
 
     @Override
     public void init(IWorkbenchWindow window) {
-    	window.getActivePage().addPartListener(new EditorPartListener());
+        window.getActivePage().addPartListener(new EditorPartListener());
     }
 
     @Override
     public void update(CeylonParseController parseController,
-    		IProgressMonitor monitor) {
-    	if (activeEditor==null) {
-    		synchronized (activeEditor) {
-    			if (!activeEditor.isBackgroundParsingPaused()) {
-    				try {
-    					getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
-    							new IRunnableWithProgress() {
-    						@Override
-    						public void run(IProgressMonitor monitor) 
-    								throws InvocationTargetException, InterruptedException {
-    							IRegion selection = activeEditor.getSelection();
-    							int offset = selection.getOffset();
-    							int length = selection.getLength();
-    							recomputeAnnotationsForSelection(offset, length, document);
-    						}
-    					}, null);
-    				} 
-    				catch (Exception e) {
-    					e.printStackTrace();
-    				}
-    			}
-    		}
-    	}
+            IProgressMonitor monitor) {
+        if (activeEditor==null) {
+            synchronized (activeEditor) {
+                if (!activeEditor.isBackgroundParsingPaused()) {
+                    try {
+                        getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
+                                new IRunnableWithProgress() {
+                            @Override
+                            public void run(IProgressMonitor monitor) 
+                                    throws InvocationTargetException, InterruptedException {
+                                IRegion selection = activeEditor.getSelection();
+                                int offset = selection.getOffset();
+                                int length = selection.getLength();
+                                recomputeAnnotationsForSelection(offset, length, document);
+                            }
+                        }, null);
+                    } 
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
-	@Override
-	public Stage getStage() {
-		return Stage.TYPE_ANALYSIS;
-	}
-	
+    @Override
+    public Stage getStage() {
+        return Stage.TYPE_ANALYSIS;
+    }
+    
     private List<Node> getOccurrencesOf(CeylonParseController parseController, Node node) {
         if (parseController.getStage().ordinal() >= getStage().ordinal()) {
             // Check whether we even have an AST in which to find occurrences

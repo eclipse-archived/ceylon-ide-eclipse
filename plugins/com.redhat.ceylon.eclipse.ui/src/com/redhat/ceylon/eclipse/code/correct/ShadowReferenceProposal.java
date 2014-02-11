@@ -48,37 +48,37 @@ class ShadowReferenceProposal extends CorrectionProposal {
     static void addShadowSwitchReferenceProposal(IFile file, Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals, Node node) {
         if (node instanceof Tree.Term) {
-        	Tree.Statement statement = FindUtils.findStatement(cu, node);
-        	if (statement instanceof Tree.SwitchStatement) {
-        		String name = guessName(node);
-        		TextFileChange change = new TextFileChange("Shadow Reference", file);
-        		change.setEdit(new MultiTextEdit());
-        		Integer offset = statement.getStartIndex();
-				change.addEdit(new ReplaceEdit(offset, 
-        				node.getStartIndex()-offset,
-        				"value " + name + " = "));
-				IDocument doc = getDocument(change);
-				change.addEdit(new InsertEdit(node.getStopIndex()+1, ";" + 
-						Indents.getDefaultLineDelimiter(doc) + getIndent(statement, doc) +
-        				"switch (" + name));
-        		if (node instanceof BaseMemberExpression) {
-        			Declaration d = ((BaseMemberExpression) node).getDeclaration();
-        			if (d!=null) {
-        				FindReferenceVisitor frv = new FindReferenceVisitor(d);
-        				frv.visit(((Tree.SwitchStatement) statement).getSwitchCaseList());
-        				for (Node n: frv.getNodes()) {
-        					Node identifyingNode = getIdentifyingNode(n);
-        					Integer start = identifyingNode.getStartIndex();
-        					if (start!=node.getStartIndex()) {
-        						change.addEdit(new ReplaceEdit(start, 
-        								identifyingNode.getText().length(), name));
-        					}
-        				}
-        			}
-        		}
-        		proposals.add(new ShadowReferenceProposal(offset+6, name.length(), 
-        				file, change));
-        	}
+            Tree.Statement statement = FindUtils.findStatement(cu, node);
+            if (statement instanceof Tree.SwitchStatement) {
+                String name = guessName(node);
+                TextFileChange change = new TextFileChange("Shadow Reference", file);
+                change.setEdit(new MultiTextEdit());
+                Integer offset = statement.getStartIndex();
+                change.addEdit(new ReplaceEdit(offset, 
+                        node.getStartIndex()-offset,
+                        "value " + name + " = "));
+                IDocument doc = getDocument(change);
+                change.addEdit(new InsertEdit(node.getStopIndex()+1, ";" + 
+                        Indents.getDefaultLineDelimiter(doc) + getIndent(statement, doc) +
+                        "switch (" + name));
+                if (node instanceof BaseMemberExpression) {
+                    Declaration d = ((BaseMemberExpression) node).getDeclaration();
+                    if (d!=null) {
+                        FindReferenceVisitor frv = new FindReferenceVisitor(d);
+                        frv.visit(((Tree.SwitchStatement) statement).getSwitchCaseList());
+                        for (Node n: frv.getNodes()) {
+                            Node identifyingNode = getIdentifyingNode(n);
+                            Integer start = identifyingNode.getStartIndex();
+                            if (start!=node.getStartIndex()) {
+                                change.addEdit(new ReplaceEdit(start, 
+                                        identifyingNode.getText().length(), name));
+                            }
+                        }
+                    }
+                }
+                proposals.add(new ShadowReferenceProposal(offset+6, name.length(), 
+                        file, change));
+            }
         }
     }
     

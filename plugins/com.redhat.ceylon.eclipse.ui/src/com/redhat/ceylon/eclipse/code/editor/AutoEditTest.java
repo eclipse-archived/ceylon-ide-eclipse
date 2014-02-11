@@ -8,8 +8,8 @@ import org.eclipse.swt.graphics.Point;
 
 class AutoEditTest extends CeylonAutoEditStrategy {
     
-	AutoEditTest() { super(); }
-	
+    AutoEditTest() { super(); }
+    
     public static void main(String[] args) {
         AutoEditTest instance = new AutoEditTest();
         
@@ -441,10 +441,10 @@ class AutoEditTest extends CeylonAutoEditStrategy {
     static int count=0;
     
     private static void assertResult(Document doc, String expected) {
-    	count++;
+        count++;
         String actual = doc.get();
-		if (!actual.equals(expected)) {
-        	System.out.println("assertion failed: " + count);
+        if (!actual.equals(expected)) {
+            System.out.println("assertion failed: " + count);
             System.out.println(actual);
             System.out.println("expected:");
             System.out.println(expected);

@@ -37,9 +37,9 @@ class AddParameterProposal extends CorrectionProposal {
     final IFile file;
     
     AddParameterProposal(Declaration dec, int offset, IFile file, 
-    		TextChange change) {
+            TextChange change) {
         super("Add to parameter list of '" + dec.getName() + "'", 
-        		change, ADD);
+                change, ADD);
         this.offset=offset;
         this.file=file;
     }
@@ -61,7 +61,7 @@ class AddParameterProposal extends CorrectionProposal {
             String params = null;
             if (decNode instanceof Tree.MethodDeclaration) {
                 List<ParameterList> pls = 
-                		((Tree.MethodDeclaration) decNode).getParameterLists();
+                        ((Tree.MethodDeclaration) decNode).getParameterLists();
                 if (pls.isEmpty()) {
                     return;
                 } 
@@ -85,7 +85,7 @@ class AddParameterProposal extends CorrectionProposal {
             Tree.Declaration container = fcv.getDeclaration();
             if (container instanceof Tree.ClassDefinition) {
                 ParameterList pl = 
-                		((Tree.ClassDefinition) container).getParameterList();
+                        ((Tree.ClassDefinition) container).getParameterList();
                 String def;
                 if (sie==null) {
                     def = " = nothing";
@@ -107,7 +107,7 @@ class AddParameterProposal extends CorrectionProposal {
                     change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
                 }
                 String param = (pl.getParameters().isEmpty() ? "" : ", ") + 
-                		dec.getName() + def;
+                        dec.getName() + def;
                 Integer offset = pl.getStopIndex();
                 change.addEdit(new InsertEdit(offset, param));
                 Type type = decNode.getType();
@@ -115,18 +115,18 @@ class AddParameterProposal extends CorrectionProposal {
                 if (type instanceof Tree.LocalModifier) {
                     Integer typeOffset = type.getStartIndex();
                     ProducedType infType = inferType(cu, type);
-					String explicitType;
-					if (infType==null) {
-						explicitType = "Object";
-					}
-					else {
-						explicitType = infType.getProducedTypeName();
-						HashSet<Declaration> decs = new HashSet<Declaration>();
-						importType(decs, infType, cu);
-						shift = applyImports(change, decs, cu, doc);
-					}
+                    String explicitType;
+                    if (infType==null) {
+                        explicitType = "Object";
+                    }
+                    else {
+                        explicitType = infType.getProducedTypeName();
+                        HashSet<Declaration> decs = new HashSet<Declaration>();
+                        importType(decs, infType, cu);
+                        shift = applyImports(change, decs, cu, doc);
+                    }
                     change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), 
-                    		explicitType));
+                            explicitType));
                 }
                 proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
                         offset+param.length()+shift, file, change));

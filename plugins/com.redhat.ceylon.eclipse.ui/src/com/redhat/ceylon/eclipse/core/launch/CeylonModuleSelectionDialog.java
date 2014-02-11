@@ -48,11 +48,11 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
         @Override
         public String getText(Object mod) {
             if (mod instanceof Module) {
-            	if (((Module) mod).isDefault()) {
-            		return Module.DEFAULT_MODULE_NAME;
-            	} else {
-            		return LaunchHelper.getFullModuleName((Module) mod);
-            	}
+                if (((Module) mod).isDefault()) {
+                    return Module.DEFAULT_MODULE_NAME;
+                } else {
+                    return LaunchHelper.getFullModuleName((Module) mod);
+                }
             }
             return null;
         }

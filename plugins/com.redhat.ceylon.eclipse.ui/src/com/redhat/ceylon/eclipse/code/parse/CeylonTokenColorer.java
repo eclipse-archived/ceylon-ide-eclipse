@@ -72,13 +72,13 @@ public class CeylonTokenColorer  {
         });
     }
 
-	public static ITheme getCurrentTheme() {
-		return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-	}
-	
-	public static Color getCurrentThemeColor(String key) {
-		return color(getCurrentTheme().getColorRegistry(), key);
-	}
+    public static ITheme getCurrentTheme() {
+        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+    }
+    
+    public static Color getCurrentThemeColor(String key) {
+        return color(getCurrentTheme().getColorRegistry(), key);
+    }
 
     private static void initColors(ColorRegistry colorRegistry) {
         identifierAttribute = text(colorRegistry, IDENTIFIERS, SWT.NORMAL);

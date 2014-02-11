@@ -10,7 +10,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 
 public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
-	
+    
     protected final IdentifierDetector fWordDetector;
     protected final DefaultCharacterPairMatcher fPairMatcher;
 
@@ -19,8 +19,8 @@ public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
         StringBuilder sb= new StringBuilder();
         String[][] fences= getFences();
         for(int i= 0; i < fences.length; i++) {
-        	sb.append(fences[i][0]);
-        	sb.append(fences[i][1]);
+            sb.append(fences[i][0]);
+            sb.append(fences[i][1]);
         }
         fPairMatcher= new DefaultCharacterPairMatcher(sb.toString().toCharArray());
     }
@@ -120,14 +120,14 @@ public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
                         return true;
                     }
                     return false;
-				case UNKNOWN:
-					if (c == '.') {
-						fEnd= offset - 1;
-						fState= IDS;
-						fAnchorState= fState;
-						return true;
-					}
-					return false;
+                case UNKNOWN:
+                    if (c == '.') {
+                        fEnd= offset - 1;
+                        fState= IDS;
+                        fAnchorState= fState;
+                        return true;
+                    }
+                    return false;
                 default:
                     return false;
             }

@@ -22,27 +22,27 @@ class InlineDeclarationProposal implements ICompletionProposal {
     
     @Override
     public Point getSelection(IDocument doc) {
-    	return null;
+        return null;
     }
 
     @Override
     public Image getImage() {
-    	return CeylonLabelProvider.COMPOSITE_CHANGE;
+        return CeylonLabelProvider.COMPOSITE_CHANGE;
     }
 
     @Override
     public String getDisplayString() {
-    	return "Inline '" + action.currentName() + "'";
+        return "Inline '" + action.currentName() + "'";
     }
 
     @Override
     public IContextInformation getContextInformation() {
-    	return null;
+        return null;
     }
 
     @Override
     public String getAdditionalProposalInfo() {
-    	return null;
+        return null;
     }
 
     @Override

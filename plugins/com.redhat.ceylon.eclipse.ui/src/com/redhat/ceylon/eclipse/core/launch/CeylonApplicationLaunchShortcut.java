@@ -202,7 +202,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         IFile fileToRun = null; 
         if (topLevelDeclarations.size() == 0) {
             MessageDialog.openError(EditorUtil.getShell(), "Ceylon Launcher", 
-            		"No ceylon runnable element"); 
+                    "No ceylon runnable element"); 
         } 
         else if (topLevelDeclarations.size() > 1) {
             declarationToRun = chooseDeclaration(topLevelDeclarations);
@@ -275,15 +275,15 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                 Comparator<Object> comp = new Comparator<Object>() {
                     public int compare(Object o1, Object o2) {
                         if(o1 instanceof Declaration && o2 instanceof Declaration) {
-                        	if (o1 instanceof TypedDeclaration && o2 instanceof TypeDeclaration) {
-                        		return -1;
-                        	}
-                        	else if (o2 instanceof TypedDeclaration && o1 instanceof TypeDeclaration) {
-                        		return 1;
-                        	}
-                        	else {
-                        		return ((Declaration)o1).getName().compareTo(((Declaration)o2).getName());
-                        	}
+                            if (o1 instanceof TypedDeclaration && o2 instanceof TypeDeclaration) {
+                                return -1;
+                            }
+                            else if (o2 instanceof TypedDeclaration && o1 instanceof TypeDeclaration) {
+                                return 1;
+                            }
+                            else {
+                                return ((Declaration)o1).getName().compareTo(((Declaration)o2).getName());
+                            }
                         }
                         return 0;
                     }
@@ -552,11 +552,11 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         return config;
     }
 
-	private String getJavaClassName(Declaration declaration) {
-	    
-		String name = declClassName(declaration.getQualifiedNameString());
-		if(declaration instanceof Method)
-			name += "_";
-		return name;
-	}
+    private String getJavaClassName(Declaration declaration) {
+        
+        String name = declClassName(declaration.getQualifiedNameString());
+        if(declaration instanceof Method)
+            name += "_";
+        return name;
+    }
 }

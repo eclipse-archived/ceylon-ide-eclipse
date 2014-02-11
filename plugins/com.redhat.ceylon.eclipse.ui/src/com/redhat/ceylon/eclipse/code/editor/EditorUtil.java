@@ -64,7 +64,7 @@ public class EditorUtil {
 
     public static ITextSelection getSelection(ITextEditor textEditor) {
         ISelectionProvider sp = textEditor.getSelectionProvider();
-		return sp==null ? null : (ITextSelection) sp.getSelection();
+        return sp==null ? null : (ITextSelection) sp.getSelection();
     }
     
     public static String getSelectionText(ITextEditor textEditor) {
@@ -126,15 +126,15 @@ public class EditorUtil {
     }
     
     public static Shell getShell() {
-    	return getWorkbench().getActiveWorkbenchWindow().getShell();
+        return getWorkbench().getActiveWorkbenchWindow().getShell();
     }
 
-	public static IPreferenceStore getPreferences() {
-	    try {
-	        return EditorsUI.getPreferenceStore();
-	    }
-	    catch (Exception e) {
-	        return null;
-	    }
-	}
+    public static IPreferenceStore getPreferences() {
+        try {
+            return EditorsUI.getPreferenceStore();
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
 }

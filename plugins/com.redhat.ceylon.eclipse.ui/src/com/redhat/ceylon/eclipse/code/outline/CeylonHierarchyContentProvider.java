@@ -31,11 +31,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 public final class CeylonHierarchyContentProvider 
         implements ITreeContentProvider {
-	
-	private final IWorkbenchPartSite site;
-	
-	private HierarchyMode mode = HIERARCHY;
-	
+    
+    private final IWorkbenchPartSite site;
+    
+    private HierarchyMode mode = HIERARCHY;
+    
     private CeylonHierarchyNode hierarchyRoot;
     private CeylonHierarchyNode supertypesRoot;
     private CeylonHierarchyNode subtypesRoot;
@@ -48,103 +48,103 @@ public final class CeylonHierarchyContentProvider
     
     private String description;
     
-	CeylonHierarchyContentProvider(IWorkbenchPartSite site) {
-		this.site = site;
-	}
+    CeylonHierarchyContentProvider(IWorkbenchPartSite site) {
+        this.site = site;
+    }
 
     @Override
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		if (newInput!=null && newInput!=oldInput) {
-			HierarchyInput rootNode = (HierarchyInput) newInput;
-			Declaration declaration = rootNode.declaration;
-			showingRefinements = !(declaration instanceof TypeDeclaration);
-			empty = declaration==null;
-			if (!empty) {
-			    String name = declaration.getQualifiedNameString();
-			    veryAbstractType = 
-			            name.equals("ceylon.language::Object") ||
-			            name.equals("ceylon.language::Anything") ||
-		                name.equals("ceylon.language::Basic") ||
-		                name.equals("ceylon.language::Identifiable");
-	            description = declaration.getName();//getDescriptionFor(declaration);
-	            if (isShowingRefinements() && declaration.isClassOrInterfaceMember()) {
-	                description = ((ClassOrInterface) declaration.getContainer()).getName() + '.' + description;
-	            }
-			    try {
-			        site.getWorkbenchWindow().run(true, true, 
-			                new Runnable(rootNode.project, declaration));
-			    } 
-			    catch (Exception e) {
-			        e.printStackTrace();
-			    }
-			    rootNode.declaration=null;//don't hang onto hard ref
-			}
-		}
-	}
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        if (newInput!=null && newInput!=oldInput) {
+            HierarchyInput rootNode = (HierarchyInput) newInput;
+            Declaration declaration = rootNode.declaration;
+            showingRefinements = !(declaration instanceof TypeDeclaration);
+            empty = declaration==null;
+            if (!empty) {
+                String name = declaration.getQualifiedNameString();
+                veryAbstractType = 
+                        name.equals("ceylon.language::Object") ||
+                        name.equals("ceylon.language::Anything") ||
+                        name.equals("ceylon.language::Basic") ||
+                        name.equals("ceylon.language::Identifiable");
+                description = declaration.getName();//getDescriptionFor(declaration);
+                if (isShowingRefinements() && declaration.isClassOrInterfaceMember()) {
+                    description = ((ClassOrInterface) declaration.getContainer()).getName() + '.' + description;
+                }
+                try {
+                    site.getWorkbenchWindow().run(true, true, 
+                            new Runnable(rootNode.project, declaration));
+                } 
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+                rootNode.declaration=null;//don't hang onto hard ref
+            }
+        }
+    }
     
     boolean isVeryAbstractType() {
         return veryAbstractType;
     }
 
-	boolean isShowingRefinements() {
-		return showingRefinements;
-	}
-	
-	public boolean isEmpty() {
+    boolean isShowingRefinements() {
+        return showingRefinements;
+    }
+    
+    public boolean isEmpty() {
         return empty;
     }
     
-	@Override
-	public void dispose() {}
+    @Override
+    public void dispose() {}
 
-	@Override
-	public boolean hasChildren(Object element) {
-	    return getChildren(element).length>0;
-	}
+    @Override
+    public boolean hasChildren(Object element) {
+        return getChildren(element).length>0;
+    }
 
-	@Override
-	public Object getParent(Object element) {
-	    return null;
-	}
+    @Override
+    public Object getParent(Object element) {
+        return null;
+    }
 
-	@Override
-	public Object[] getElements(Object inputElement) {
-	    return getChildren(inputElement);
-	}
+    @Override
+    public Object[] getElements(Object inputElement) {
+        return getChildren(inputElement);
+    }
 
-	@Override
-	public CeylonHierarchyNode[] getChildren(Object parentElement) {
-	    if (parentElement instanceof HierarchyInput) {
-	    	switch (mode) {
-	    	case HIERARCHY:
-		        return new CeylonHierarchyNode[] { hierarchyRoot };		    		
-	    	case SUPERTYPES:
-	    		return new CeylonHierarchyNode[] { supertypesRoot };
-	    	case SUBTYPES:
-	    		return new CeylonHierarchyNode[] { subtypesRoot };
-	    	default:
-	    		throw new RuntimeException();
-	    	}
-	    }
-	    else if (parentElement instanceof CeylonHierarchyNode) {
-	    	List<CeylonHierarchyNode> children = ((CeylonHierarchyNode) parentElement).getChildren();
-			CeylonHierarchyNode[] array = children.toArray(new CeylonHierarchyNode[children.size()]);
-			Arrays.sort(array);
+    @Override
+    public CeylonHierarchyNode[] getChildren(Object parentElement) {
+        if (parentElement instanceof HierarchyInput) {
+            switch (mode) {
+            case HIERARCHY:
+                return new CeylonHierarchyNode[] { hierarchyRoot };                    
+            case SUPERTYPES:
+                return new CeylonHierarchyNode[] { supertypesRoot };
+            case SUBTYPES:
+                return new CeylonHierarchyNode[] { subtypesRoot };
+            default:
+                throw new RuntimeException();
+            }
+        }
+        else if (parentElement instanceof CeylonHierarchyNode) {
+            List<CeylonHierarchyNode> children = ((CeylonHierarchyNode) parentElement).getChildren();
+            CeylonHierarchyNode[] array = children.toArray(new CeylonHierarchyNode[children.size()]);
+            Arrays.sort(array);
             return array;
-	    }
-	    else {
-	    	return null;
-	    }
-	}
+        }
+        else {
+            return null;
+        }
+    }
 
-	HierarchyMode getMode() {
-		return mode;
-	}
+    HierarchyMode getMode() {
+        return mode;
+    }
 
-	void setMode(HierarchyMode mode) {
-		this.mode = mode;
-	}
-	
+    void setMode(HierarchyMode mode) {
+        this.mode = mode;
+    }
+    
     int getDepthInHierarchy() {
         return depthInHierarchy;
     }

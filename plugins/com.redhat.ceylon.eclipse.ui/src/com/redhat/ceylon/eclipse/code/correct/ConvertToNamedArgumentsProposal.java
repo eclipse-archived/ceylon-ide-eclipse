@@ -21,24 +21,24 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
 class ConvertToNamedArgumentsProposal extends CorrectionProposal {
-	
+    
     final int offset; 
     final IFile file;
     
     public ConvertToNamedArgumentsProposal(int offset, IFile file, Change change) {
-	    super("Convert to named arguments", change);
+        super("Convert to named arguments", change);
         this.offset=offset;
         this.file=file;
     }
 
-	@Override
+    @Override
     public void apply(IDocument document) {
-		 super.apply(document);
-		 EditorUtil.gotoLocation(file, offset);
+         super.apply(document);
+         EditorUtil.gotoLocation(file, offset);
     }
     
     public static void addConvertToNamedArgumentsProposal(Collection<ICompletionProposal> proposals, 
-    		IFile file, Tree.CompilationUnit cu, CeylonEditor editor, int currentOffset) {
+            IFile file, Tree.CompilationUnit cu, CeylonEditor editor, int currentOffset) {
         Tree.PositionalArgumentList pal = findPositionalArgumentList(currentOffset, cu);
         if (canConvert(pal)) {
             final TextChange tc = new TextFileChange("Convert To Named Arguments", file);
@@ -50,13 +50,13 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
             for (Tree.PositionalArgument arg: pal.getPositionalArguments()) {
                 Parameter param = arg.getParameter();
                 if (param==null) return;
-				if (param.isSequenced() && (arg instanceof Tree.ListedArgument)) {
+                if (param.isSequenced() && (arg instanceof Tree.ListedArgument)) {
                     if (sequencedArgs) {
-                    	result.append(",");
+                        result.append(",");
                     }
                     else {
-                    	result.append(" " + param.getName() + " = [");
-                    	sequencedArgs=true;
+                        result.append(" " + param.getName() + " = [");
+                        sequencedArgs=true;
                     }
                     result.append(" " + AbstractRefactoring.toString(arg, tokens));
                 }
@@ -66,12 +66,12 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                 }
             }
             if (sequencedArgs) {
-            	result.append("];");
+                result.append("];");
             }
             result.append(" }");
             tc.setEdit(new ReplaceEdit(start, length, result.toString()));
             int offset = start+result.toString().length();
-			proposals.add(new ConvertToNamedArgumentsProposal(offset, file, tc));
+            proposals.add(new ConvertToNamedArgumentsProposal(offset, file, tc));
         }
     }
 
@@ -92,10 +92,10 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
         }
     }
     
-	private static Tree.PositionalArgumentList findPositionalArgumentList(
+    private static Tree.PositionalArgumentList findPositionalArgumentList(
             int currentOffset, Tree.CompilationUnit cu) {
-	    FindPositionalArgumentsVisitor fpav = 
-	    		new FindPositionalArgumentsVisitor(currentOffset);
+        FindPositionalArgumentsVisitor fpav = 
+                new FindPositionalArgumentsVisitor(currentOffset);
         fpav.visit(cu);
         return fpav.getArgumentList();
     }
@@ -103,26 +103,26 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
     private static class FindPositionalArgumentsVisitor 
         extends Visitor 
         implements NaturalVisitor {
-    	
-    	Tree.PositionalArgumentList argumentList;
-    	int offset;
-    	
-    	private Tree.PositionalArgumentList getArgumentList() {
-	        return argumentList;
+        
+        Tree.PositionalArgumentList argumentList;
+        int offset;
+        
+        private Tree.PositionalArgumentList getArgumentList() {
+            return argumentList;
         }
 
-		private FindPositionalArgumentsVisitor(int offset) {
-	        this.offset = offset;
+        private FindPositionalArgumentsVisitor(int offset) {
+            this.offset = offset;
         }
-		
-		@Override
-		public void visit(Tree.PositionalArgumentList that) {
-			if (offset>=that.getStartIndex() && 
-					offset<=that.getStopIndex()+1) {
-				argumentList = that;
-			}
-		    super.visit(that); 
-		}
+        
+        @Override
+        public void visit(Tree.PositionalArgumentList that) {
+            if (offset>=that.getStartIndex() && 
+                    offset<=that.getStopIndex()+1) {
+                argumentList = that;
+            }
+            super.visit(that); 
+        }
     }
     
 }

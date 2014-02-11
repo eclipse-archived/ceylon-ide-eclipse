@@ -32,36 +32,36 @@ import com.redhat.ceylon.eclipse.code.refactor.AbstractRenameLinkedMode;
 //TODO: implement preview, like for other linked modes
 class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
 
-	private final ImportMemberOrType element;
-	private final Declaration dec;
+    private final ImportMemberOrType element;
+    private final Declaration dec;
 
-	private final class LinkedPositionsVisitor 
-	        extends Visitor implements NaturalVisitor {
-		private final int adjust;
-		private final IDocument document;
-		private final LinkedPositionGroup linkedPositionGroup;
-		int i=1;
+    private final class LinkedPositionsVisitor 
+            extends Visitor implements NaturalVisitor {
+        private final int adjust;
+        private final IDocument document;
+        private final LinkedPositionGroup linkedPositionGroup;
+        int i=1;
 
-		private LinkedPositionsVisitor(int adjust, IDocument document,
-				LinkedPositionGroup linkedPositionGroup) {
-			this.adjust = adjust;
-			this.document = document;
-			this.linkedPositionGroup = linkedPositionGroup;
-		}
+        private LinkedPositionsVisitor(int adjust, IDocument document,
+                LinkedPositionGroup linkedPositionGroup) {
+            this.adjust = adjust;
+            this.document = document;
+            this.linkedPositionGroup = linkedPositionGroup;
+        }
 
-		@Override
-		public void visit(Tree.StaticMemberOrTypeExpression that) {
-		    super.visit(that);
-		    addLinkedPosition(document, that.getIdentifier(), 
-		            that.getDeclaration());
-		}
-		
-		@Override
-		public void visit(Tree.SimpleType that) {
-		    super.visit(that);
-		    addLinkedPosition(document, that.getIdentifier(), 
-		            that.getDeclarationModel());
-		}
+        @Override
+        public void visit(Tree.StaticMemberOrTypeExpression that) {
+            super.visit(that);
+            addLinkedPosition(document, that.getIdentifier(), 
+                    that.getDeclaration());
+        }
+        
+        @Override
+        public void visit(Tree.SimpleType that) {
+            super.visit(that);
+            addLinkedPosition(document, that.getIdentifier(), 
+                    that.getDeclarationModel());
+        }
 
         @Override
         public void visit(Tree.MemberLiteral that) {
@@ -70,81 +70,81 @@ class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
                     that.getDeclaration());
         }
         
-		protected void addLinkedPosition(final IDocument document,
-		        Identifier id, Declaration d) {
-		    if (id!=null && d!=null && dec.equals(getAbstraction(d))) {
-		        try {
-		            int pos = id.getStartIndex()+adjust;
-					int len = id.getText().length();
-					linkedPositionGroup.addPosition(new LinkedPosition(document, 
-		                    pos, len, i++));
-		        }
-		        catch (BadLocationException e) {
-		            e.printStackTrace();
-		        }
-		    }
-		}
-	}
+        protected void addLinkedPosition(final IDocument document,
+                Identifier id, Declaration d) {
+            if (id!=null && d!=null && dec.equals(getAbstraction(d))) {
+                try {
+                    int pos = id.getStartIndex()+adjust;
+                    int len = id.getText().length();
+                    linkedPositionGroup.addPosition(new LinkedPosition(document, 
+                            pos, len, i++));
+                }
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
-	public EnterAliasLinkedMode(ImportMemberOrType element, 
-			Declaration dec, CeylonEditor editor) {
-		super(editor);
-		this.element = element;
-		this.dec = dec;
-	}
+    public EnterAliasLinkedMode(ImportMemberOrType element, 
+            Declaration dec, CeylonEditor editor) {
+        super(editor);
+        this.element = element;
+        this.dec = dec;
+    }
 
-	@Override
-	protected String getName() {
-		Tree.Alias alias = element.getAlias();
-		if (alias==null) {
-			return dec.getName();
-		}
-		else {
-			return alias.getIdentifier().getText();
-		}
-	}
+    @Override
+    protected String getName() {
+        Tree.Alias alias = element.getAlias();
+        if (alias==null) {
+            return dec.getName();
+        }
+        else {
+            return alias.getIdentifier().getText();
+        }
+    }
 
-	@Override
-	public String getHintTemplate() {
-		return "Enter alias for " + linkedPositionGroup.getPositions().length + 
-		        " occurrences of '" + dec.getName() + "' {0}";
-	}
+    @Override
+    public String getHintTemplate() {
+        return "Enter alias for " + linkedPositionGroup.getPositions().length + 
+                " occurrences of '" + dec.getName() + "' {0}";
+    }
 
-	@Override
-	protected int init(IDocument document) {
-		Tree.Alias alias = ((Tree.ImportMemberOrType) element).getAlias();
-		if (alias==null) {
-			try {
-		        int start = element.getStartIndex();
-				document.set(document.get(0,start) + dec.getName() + "=" + 
-						document.get(start, document.getLength()-start));
-				return dec.getName().length()+1;
-			}
-			catch (BadLocationException e) {
-				e.printStackTrace();
-				return -1;
-			}
-		}
-		else {
-			return 0;
-		}
-	}
-	
-	@Override
-	protected int getIdentifyingOffset() {
-		Tree.Alias alias = element.getAlias();
-		if (alias!=null) {
-			return alias.getStartIndex();
-		}
-		else {
-			return getIdentifyingNode(element).getStartIndex();
-		}
-	}
-	
-	@Override
-	public void addLinkedPositions(final IDocument document, Tree.CompilationUnit rootNode, 
-			final int adjust, final LinkedPositionGroup linkedPositionGroup) {
-		rootNode.visit(new LinkedPositionsVisitor(adjust, document, linkedPositionGroup));
-	}
-	
+    @Override
+    protected int init(IDocument document) {
+        Tree.Alias alias = ((Tree.ImportMemberOrType) element).getAlias();
+        if (alias==null) {
+            try {
+                int start = element.getStartIndex();
+                document.set(document.get(0,start) + dec.getName() + "=" + 
+                        document.get(start, document.getLength()-start));
+                return dec.getName().length()+1;
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+                return -1;
+            }
+        }
+        else {
+            return 0;
+        }
+    }
+    
+    @Override
+    protected int getIdentifyingOffset() {
+        Tree.Alias alias = element.getAlias();
+        if (alias!=null) {
+            return alias.getStartIndex();
+        }
+        else {
+            return getIdentifyingNode(element).getStartIndex();
+        }
+    }
+    
+    @Override
+    public void addLinkedPositions(final IDocument document, Tree.CompilationUnit rootNode, 
+            final int adjust, final LinkedPositionGroup linkedPositionGroup) {
+        rootNode.visit(new LinkedPositionsVisitor(adjust, document, linkedPositionGroup));
+    }
+    
 }

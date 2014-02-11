@@ -69,14 +69,14 @@ public class ExportModuleImportProposal implements ICompletionProposal,
         return CorrectionUtil.styleProposal(getDisplayString());
     }
 
-	static void addExportModuleImportProposal(
-	        Collection<ICompletionProposal> proposals, IProject project,
-	        Node node) {
-	    if (node instanceof Tree.SimpleType) {
-	    	Declaration dec = ((Tree.SimpleType) node).getDeclarationModel();
-		    proposals.add(new ExportModuleImportProposal(project, node.getUnit(), 
-		    		dec.getUnit().getPackage().getModule().getNameAsString()));
-	    }
-	}
+    static void addExportModuleImportProposal(
+            Collection<ICompletionProposal> proposals, IProject project,
+            Node node) {
+        if (node instanceof Tree.SimpleType) {
+            Declaration dec = ((Tree.SimpleType) node).getDeclarationModel();
+            proposals.add(new ExportModuleImportProposal(project, node.getUnit(), 
+                    dec.getUnit().getPackage().getModule().getNameAsString()));
+        }
+    }
 
 }

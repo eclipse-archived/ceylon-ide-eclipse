@@ -106,7 +106,7 @@ class RemoveAnnotionProposal extends CorrectionProposal {
             }
         }
         RemoveAnnotionProposal p = 
-        		new RemoveAnnotionProposal(dec, annotation, offset, file, change);
+                new RemoveAnnotionProposal(dec, annotation, offset, file, change);
         if (!proposals.contains(p)) {
             proposals.add(p);
         }
@@ -114,11 +114,11 @@ class RemoveAnnotionProposal extends CorrectionProposal {
     
     static void addRemoveAnnotationDecProposal(Collection<ICompletionProposal> proposals, 
             String annotation, IProject project, Node node) {
-    	if (node instanceof Tree.Declaration) {
-    		addRemoveAnnotationProposal(node, annotation, "Make Non" + annotation,  
-    				((Tree.Declaration) node).getDeclarationModel(), 
-    				proposals, project);
-    	}
+        if (node instanceof Tree.Declaration) {
+            addRemoveAnnotationProposal(node, annotation, "Make Non" + annotation,  
+                    ((Tree.Declaration) node).getDeclarationModel(), 
+                    proposals, project);
+        }
     }
     
 }

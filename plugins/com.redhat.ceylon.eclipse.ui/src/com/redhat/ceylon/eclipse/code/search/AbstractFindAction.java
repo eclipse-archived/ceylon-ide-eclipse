@@ -43,38 +43,38 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     
     AbstractFindAction() {}
     
-	@Override
-	public void selectionChanged(IAction action, ISelection selection) {
-		if (outlineView==null) return;
-		try {
-			CeylonOutlineNode on = (CeylonOutlineNode) ((ITreeSelection) outlineView.getSelection()).getFirstElement();
-			if (on!=null) {
-			    IEditorPart currentEditor = getCurrentEditor();
-			    if (currentEditor instanceof CeylonEditor) {
-			        CompilationUnit rootNode = ((CeylonEditor) currentEditor).getParseController().getRootNode();
-			        if (rootNode!=null) {
-			            Node node = findNode(rootNode, on.getStartOffset());
-			            if (node instanceof Tree.Declaration) {
-			                declaration = ((Tree.Declaration) node).getDeclarationModel();
-			                project =  getProject(currentEditor);
-			                action.setEnabled(isValidSelection());
-			                return; //early exit
-			            }
-			        }
-			    }
-			}
-			action.setEnabled(false);
-		}
-		catch (Exception e) {
-			action.setEnabled(false);
-		}
-	}
+    @Override
+    public void selectionChanged(IAction action, ISelection selection) {
+        if (outlineView==null) return;
+        try {
+            CeylonOutlineNode on = (CeylonOutlineNode) ((ITreeSelection) outlineView.getSelection()).getFirstElement();
+            if (on!=null) {
+                IEditorPart currentEditor = getCurrentEditor();
+                if (currentEditor instanceof CeylonEditor) {
+                    CompilationUnit rootNode = ((CeylonEditor) currentEditor).getParseController().getRootNode();
+                    if (rootNode!=null) {
+                        Node node = findNode(rootNode, on.getStartOffset());
+                        if (node instanceof Tree.Declaration) {
+                            declaration = ((Tree.Declaration) node).getDeclarationModel();
+                            project =  getProject(currentEditor);
+                            action.setEnabled(isValidSelection());
+                            return; //early exit
+                        }
+                    }
+                }
+            }
+            action.setEnabled(false);
+        }
+        catch (Exception e) {
+            action.setEnabled(false);
+        }
+    }
 
-	@Override
-	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-		outlineView = (ContentOutline) targetPart;
-		site = targetPart.getSite();
-	}
+    @Override
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+        outlineView = (ContentOutline) targetPart;
+        site = targetPart.getSite();
+    }
     
     AbstractFindAction(String text, IEditorPart editor) {
         super(text);
@@ -82,8 +82,8 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
         project = editor==null ? null : getProject(editor);
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-			declaration = getReferencedExplicitDeclaration(getSelectedNode(ce), 
-					ce.getParseController().getRootNode());
+            declaration = getReferencedExplicitDeclaration(getSelectedNode(ce), 
+                    ce.getParseController().getRootNode());
             setEnabled(isValidSelection());
         }
         else {
@@ -101,7 +101,7 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     
     @Override
     public void run(IAction action) {
-    	run();
+        run();
     }
     
     @Override

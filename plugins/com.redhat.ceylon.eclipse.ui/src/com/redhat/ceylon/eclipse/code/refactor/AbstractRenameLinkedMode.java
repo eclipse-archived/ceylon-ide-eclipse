@@ -63,32 +63,32 @@ public abstract class AbstractRenameLinkedMode {
     }
 
     private final class LinkedModeListener implements
-			ILinkedModeListener {
-		@Override
-		public void left(LinkedModeModel model, int flags) {
-		    if ((flags&UPDATE_CARET)!=0) {
-		        done();
-		    }
-		    else {
+            ILinkedModeListener {
+        @Override
+        public void left(LinkedModeModel model, int flags) {
+            if ((flags&UPDATE_CARET)!=0) {
+                done();
+            }
+            else {
                 if ((flags&EXTERNAL_MODIFICATION)==0) {
-                	editor.getCeylonSourceViewer().invalidateTextPresentation();
+                    editor.getCeylonSourceViewer().invalidateTextPresentation();
                 }
-		    	cancel();
-		    }
-		}
+                cancel();
+            }
+        }
 
-		@Override
-		public void suspend(LinkedModeModel model) {
-		    editor.clearLinkedMode();
-		}
+        @Override
+        public void suspend(LinkedModeModel model) {
+            editor.clearLinkedMode();
+        }
 
-		@Override
-		public void resume(LinkedModeModel model, int flags) {
-		    editor.setLinkedMode(linkedModeModel, AbstractRenameLinkedMode.this);
-		}
-	}
+        @Override
+        public void resume(LinkedModeModel model, int flags) {
+            editor.setLinkedMode(linkedModeModel, AbstractRenameLinkedMode.this);
+        }
+    }
 
-	private final class FocusEditingSupport implements IEditingSupport {
+    private final class FocusEditingSupport implements IEditingSupport {
         public boolean ownsFocusShell() {
             if (infoPopup == null) {
                 return false;
@@ -132,7 +132,7 @@ public abstract class AbstractRenameLinkedMode {
     protected abstract String getName();
     
     protected int init(IDocument document) {
-    	return 0;
+        return 0;
     }
     
     protected abstract int getIdentifyingOffset();
@@ -150,11 +150,11 @@ public abstract class AbstractRenameLinkedMode {
             
             linkedPositionGroup = new LinkedPositionGroup();
             namePosition = new LinkedPosition(document, getIdentifyingOffset(), 
-            		originalName.length(), 0);
+                    originalName.length(), 0);
             linkedPositionGroup.addPosition(namePosition);
             
             addLinkedPositions(document, editor.getParseController().getRootNode(), 
-            		adjust, linkedPositionGroup);
+                    adjust, linkedPositionGroup);
 
             linkedModeModel = new LinkedModeModel();
             linkedModeModel.addGroup(linkedPositionGroup);
@@ -177,7 +177,7 @@ public abstract class AbstractRenameLinkedMode {
             // Must cache here, since editor context is not available in menu from popup shell:
             openDialogKeyBinding = getOpenDialogBinding();
             infoPopup = new RenameInformationPopup(editor, this);
-			infoPopup.open();
+            infoPopup.open();
 
         } catch (BadLocationException e) {
             e.printStackTrace();
@@ -185,8 +185,8 @@ public abstract class AbstractRenameLinkedMode {
     }
 
     protected abstract void addLinkedPositions(IDocument document, 
-			Tree.CompilationUnit rootNode, int adjust, 
-			LinkedPositionGroup linkedPositionGroup);
+            Tree.CompilationUnit rootNode, int adjust, 
+            LinkedPositionGroup linkedPositionGroup);
 
     public void cancel() {
         linkedModeLeft();
@@ -212,7 +212,7 @@ public abstract class AbstractRenameLinkedMode {
     }*/
 
     private void linkedModeLeft() {
-    	CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
+        CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
         editor.clearLinkedMode();
 
 //        if (linkedModeModel != null) {
@@ -251,12 +251,12 @@ public abstract class AbstractRenameLinkedMode {
     }
     
     protected String getOriginalName() {
-		return originalName;
-	}
+        return originalName;
+    }
     
     protected String getNewName() {
         try {
-        	return namePosition.getContent();
+            return namePosition.getContent();
         }
         catch (BadLocationException e) {
             return originalName;
@@ -264,17 +264,17 @@ public abstract class AbstractRenameLinkedMode {
     }
 
     public boolean isEnabled() {
-    	String newName = getNewName();
-    	return !originalName.equals(newName) &&
-    			newName.matches("^\\w(\\w|\\d)*$") &&
-    			!CeylonTokenColorer.keywords.contains(newName);
+        String newName = getNewName();
+        return !originalName.equals(newName) &&
+                newName.matches("^\\w(\\w|\\d)*$") &&
+                !CeylonTokenColorer.keywords.contains(newName);
     }
     
     public boolean isOriginalName() {
-    	return originalName.equals(getNewName());
+        return originalName.equals(getNewName());
     }
 
-	public abstract String getHintTemplate();
+    public abstract String getHintTemplate();
 
     /**
      * WARNING: only works in workbench window context!

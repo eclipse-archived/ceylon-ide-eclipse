@@ -26,27 +26,27 @@ public class ExtractFunctionProposal implements ICompletionProposal {
     
     @Override
     public Point getSelection(IDocument doc) {
-    	return null;
+        return null;
     }
 
     @Override
     public Image getImage() {
-    	return CHANGE;
+        return CHANGE;
     }
 
     @Override
     public String getDisplayString() {
-    	return "Extract function";
+        return "Extract function";
     }
 
     @Override
     public IContextInformation getContextInformation() {
-    	return null;
+        return null;
     }
 
     @Override
     public String getAdditionalProposalInfo() {
-    	return null;
+        return null;
     }
 
     @Override

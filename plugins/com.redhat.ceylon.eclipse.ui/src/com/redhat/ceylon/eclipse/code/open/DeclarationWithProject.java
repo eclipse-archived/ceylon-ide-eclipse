@@ -33,9 +33,9 @@ public class DeclarationWithProject {
         if (obj instanceof DeclarationWithProject) {
             DeclarationWithProject that = (DeclarationWithProject) obj;
             return (that.project==project || 
-            			that.project!=null && project!=null && 
-            			that.project.equals(project)) && 
-            		that.dec.equals(dec) /*&& 
+                        that.project!=null && project!=null && 
+                        that.project.equals(project)) && 
+                    that.dec.equals(dec) /*&& 
                     that.path.equals(path)*/;
         }
         else {

@@ -72,7 +72,7 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
                 final List<Change> changes= new ArrayList<Change>();
                 TypeChecker tc = getProjectTypeChecker(project);
                 if (tc==null) return null;
-				for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {                    
+                for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {                    
                     if (phasedUnit.getPackage().getNameAsString().equals(oldName)) {
                         updateRefsInCopiedFile(newName, oldName, changes, phasedUnit);
                     }

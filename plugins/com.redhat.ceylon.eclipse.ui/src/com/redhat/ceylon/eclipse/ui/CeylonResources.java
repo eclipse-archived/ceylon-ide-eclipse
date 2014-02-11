@@ -75,22 +75,22 @@ public interface CeylonResources {
     
     public static final String ELE32="ceylon_ele32";
     
-	public static final String SHIFT_LEFT = "shift_l";
-	public static final String SHIFT_RIGHT = "shift_r";
-	public static final String QUICK_ASSIST = "quickfix";
-	
-	public static final String BUILDER = "builder";
-	public static final String MODULE_VERSION = "module_version";
-	public static final String EXPAND_ALL = "expandall";
-	public static final String PAGING = "paging";
-	public static final String SHOW_DOC = "show_doc";
-	public static final String REPOSITORIES = "repositories";
-	public static final String RUNTIME_OBJ = "runtime_obj";
+    public static final String SHIFT_LEFT = "shift_l";
+    public static final String SHIFT_RIGHT = "shift_r";
+    public static final String QUICK_ASSIST = "quickfix";
+    
+    public static final String BUILDER = "builder";
+    public static final String MODULE_VERSION = "module_version";
+    public static final String EXPAND_ALL = "expandall";
+    public static final String PAGING = "paging";
+    public static final String SHOW_DOC = "show_doc";
+    public static final String REPOSITORIES = "repositories";
+    public static final String RUNTIME_OBJ = "runtime_obj";
     public static final String MULTIPLE_TYPES = "ceylon_types";
-	
-	public static final String CEYLON_LOCAL_NAME = "local_name";
-	
-	public static final String ERROR = "ceylon_error";
+    
+    public static final String CEYLON_LOCAL_NAME = "local_name";
+    
+    public static final String ERROR = "ceylon_error";
     public static final String WARNING = "ceylon_warning";
     
     public static final String PROJECT_MODE = "project_mode";

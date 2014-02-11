@@ -14,51 +14,51 @@ import org.eclipse.jface.text.DefaultInformationControl;
  */
 public abstract class BrowserInput {
 
-	private final BrowserInput fPrevious;
-	private BrowserInput fNext;
+    private final BrowserInput fPrevious;
+    private BrowserInput fNext;
 
-	/**
-	 * Create a new Browser input.
-	 *
-	 * @param previous the input previous to this or <code>null</code> if this is the first
-	 */
-	public BrowserInput(BrowserInput previous) {
-		fPrevious= previous;
-		if (previous != null)
-			previous.fNext= this;
-	}
+    /**
+     * Create a new Browser input.
+     *
+     * @param previous the input previous to this or <code>null</code> if this is the first
+     */
+    public BrowserInput(BrowserInput previous) {
+        fPrevious= previous;
+        if (previous != null)
+            previous.fNext= this;
+    }
 
-	/**
-	 * The previous input or <code>null</code> if this
-	 * is the first.
-	 *
-	 * @return the previous input or <code>null</code>
-	 */
-	public BrowserInput getPrevious() {
-		return fPrevious;
-	}
+    /**
+     * The previous input or <code>null</code> if this
+     * is the first.
+     *
+     * @return the previous input or <code>null</code>
+     */
+    public BrowserInput getPrevious() {
+        return fPrevious;
+    }
 
-	/**
-	 * The next input or <code>null</code> if this
-	 * is the last.
-	 *
-	 * @return the next input or <code>null</code>
-	 */
-	public BrowserInput getNext() {
-		return fNext;
-	}
+    /**
+     * The next input or <code>null</code> if this
+     * is the last.
+     *
+     * @return the next input or <code>null</code>
+     */
+    public BrowserInput getNext() {
+        return fNext;
+    }
 
     /**
      * @return the HTML contents
      */
     public abstract String getHtml();
     
-	/**
-	 * A human readable name for the input.
-	 *
-	 * @return the input name
-	 */
-	public abstract String getInputName();
+    /**
+     * A human readable name for the input.
+     *
+     * @return the input name
+     */
+    public abstract String getInputName();
 
     /**
      * Returns the HTML from {@link #getHtml()}.

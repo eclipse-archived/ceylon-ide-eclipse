@@ -17,118 +17,118 @@ import javax.tools.JavaFileObject;
 import com.sun.tools.javac.file.RelativePath.RelativeFile;
 
 final class ExplodingJavaFileObject implements
-		JavaFileObject {
-	private final File classFile;
-	private final RelativeFile fileName;
-	private final JavaFileObject javaFileObject;
+        JavaFileObject {
+    private final File classFile;
+    private final RelativeFile fileName;
+    private final JavaFileObject javaFileObject;
 
-	ExplodingJavaFileObject(File classFile, RelativeFile fileName,
-			JavaFileObject javaFileObject) {
-		this.classFile = classFile;
-		this.fileName = fileName;
-		this.javaFileObject = javaFileObject;
-	}
+    ExplodingJavaFileObject(File classFile, RelativeFile fileName,
+            JavaFileObject javaFileObject) {
+        this.classFile = classFile;
+        this.fileName = fileName;
+        this.javaFileObject = javaFileObject;
+    }
 
-	@Override
-	public OutputStream openOutputStream()
-	        throws IOException {
-	    return new OutputStream() {
-	        final OutputStream jarStream = javaFileObject.openOutputStream();
-	    	final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
-	    	@Override
-	    	public void write(int b) throws IOException {
-	    		jarStream.write(b);
-	    		classFileStream.write(b);
-	    	}
-	    	@Override
-	    	public void write(byte[] b, int off, int len)
-	    			throws IOException {
-	    		jarStream.write(b, off, len);
-	    		classFileStream.write(b, off, len);
-	    	}
-	    	@Override
-	    	public void write(byte[] b) throws IOException {
-	    		jarStream.write(b);
-	    		classFileStream.write(b);
-	    	}
-	    	@Override
-	    	public void close() throws IOException {
-	    		classFileStream.close();
-	    		jarStream.close();
-	    	}
-	    	@Override
-	    	public void flush() throws IOException {
-	    		classFileStream.flush();
-	    		jarStream.flush();
-	    	}
-	    };
-	}
+    @Override
+    public OutputStream openOutputStream()
+            throws IOException {
+        return new OutputStream() {
+            final OutputStream jarStream = javaFileObject.openOutputStream();
+            final OutputStream classFileStream = new BufferedOutputStream(new FileOutputStream(classFile));
+            @Override
+            public void write(int b) throws IOException {
+                jarStream.write(b);
+                classFileStream.write(b);
+            }
+            @Override
+            public void write(byte[] b, int off, int len)
+                    throws IOException {
+                jarStream.write(b, off, len);
+                classFileStream.write(b, off, len);
+            }
+            @Override
+            public void write(byte[] b) throws IOException {
+                jarStream.write(b);
+                classFileStream.write(b);
+            }
+            @Override
+            public void close() throws IOException {
+                classFileStream.close();
+                jarStream.close();
+            }
+            @Override
+            public void flush() throws IOException {
+                classFileStream.flush();
+                jarStream.flush();
+            }
+        };
+    }
 
-	@Override
-	public String toString() {
-		return fileName.getPath();
-	}
+    @Override
+    public String toString() {
+        return fileName.getPath();
+    }
 
-	@Override
-	public boolean delete() {
-	    return javaFileObject.delete();
-	}
+    @Override
+    public boolean delete() {
+        return javaFileObject.delete();
+    }
 
-	@Override
-	public CharSequence getCharContent(boolean b)
-	        throws IOException {
-	    return javaFileObject.getCharContent(b);
-	}
+    @Override
+    public CharSequence getCharContent(boolean b)
+            throws IOException {
+        return javaFileObject.getCharContent(b);
+    }
 
-	@Override
-	public long getLastModified() {
-	    return javaFileObject.getLastModified();
-	}
+    @Override
+    public long getLastModified() {
+        return javaFileObject.getLastModified();
+    }
 
-	@Override
-	public String getName() {
-	    return javaFileObject.getName();
-	}
+    @Override
+    public String getName() {
+        return javaFileObject.getName();
+    }
 
-	@Override
-	public InputStream openInputStream() throws IOException {
-	    return javaFileObject.openInputStream();
-	}
+    @Override
+    public InputStream openInputStream() throws IOException {
+        return javaFileObject.openInputStream();
+    }
 
-	@Override
-	public Reader openReader(boolean b)
-	        throws IOException {
-	    return javaFileObject.openReader(b);
-	}
+    @Override
+    public Reader openReader(boolean b)
+            throws IOException {
+        return javaFileObject.openReader(b);
+    }
 
-	@Override
-	public Writer openWriter() throws IOException {
-	    return javaFileObject.openWriter();
-	}
+    @Override
+    public Writer openWriter() throws IOException {
+        return javaFileObject.openWriter();
+    }
 
-	@Override
-	public URI toUri() {
-	    return javaFileObject.toUri();
-	}
+    @Override
+    public URI toUri() {
+        return javaFileObject.toUri();
+    }
 
-	@Override
-	public Modifier getAccessLevel() {
-	    return javaFileObject.getAccessLevel();
-	}
+    @Override
+    public Modifier getAccessLevel() {
+        return javaFileObject.getAccessLevel();
+    }
 
-	@Override
-	public Kind getKind() {
-	    return javaFileObject.getKind();
-	}
+    @Override
+    public Kind getKind() {
+        return javaFileObject.getKind();
+    }
 
-	@Override
-	public NestingKind getNestingKind() {
-	    return javaFileObject.getNestingKind();
-	}
+    @Override
+    public NestingKind getNestingKind() {
+        return javaFileObject.getNestingKind();
+    }
 
-	@Override
-	public boolean isNameCompatible(String simpleName,
-	        Kind kind) {
-	    return javaFileObject.isNameCompatible(simpleName, kind);
-	}
+    @Override
+    public boolean isNameCompatible(String simpleName,
+            Kind kind) {
+        return javaFileObject.isNameCompatible(simpleName, kind);
+    }
 }

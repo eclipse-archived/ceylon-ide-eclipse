@@ -97,8 +97,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     public void addPages() {
         super.addPages();
         if (page == null) {
-    		boolean shared = CeylonPlugin.getInstance().getDialogSettings()
-            		.getBoolean("sharedPackage");
+            boolean shared = CeylonPlugin.getInstance().getDialogSettings()
+                    .getBoolean("sharedPackage");
             page= new NewPackageWizardPage(shared);
             page.init(workbench, selection);
         }

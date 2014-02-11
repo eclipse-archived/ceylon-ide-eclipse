@@ -43,7 +43,7 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
  * @author rmfuhrer
  */
 public class AnnotationCreator extends ErrorVisitor {
-	
+    
     private static class PositionedMessage {
         public final String message;
         public final Position pos;
@@ -53,8 +53,8 @@ public class AnnotationCreator extends ErrorVisitor {
         public final int line;
         
         private PositionedMessage(String msg, Position pos, 
-        		int severity, int code, boolean syntaxError,
-        		int line) {
+                int severity, int code, boolean syntaxError,
+                int line) {
             this.message = msg;
             this.pos = pos;
             this.code = code;
@@ -65,7 +65,7 @@ public class AnnotationCreator extends ErrorVisitor {
 
         @Override
         public String toString() {
-        	return pos.toString() + " - "+ message;
+            return pos.toString() + " - "+ message;
         }
     }
     
@@ -81,14 +81,14 @@ public class AnnotationCreator extends ErrorVisitor {
     public void handleMessage(int startOffset, int endOffset,
             int startCol, int startLine, Message error) {
         messages.add(new PositionedMessage(error.getMessage(), 
-        		new Position(startOffset, endOffset-startOffset+1), 
-        		getSeverity(error, warnForErrors), 
-        		error.getCode(), error instanceof RecognitionError,
-        		error.getLine()));
+                new Position(startOffset, endOffset-startOffset+1), 
+                getSeverity(error, warnForErrors), 
+                error.getCode(), error instanceof RecognitionError,
+                error.getLine()));
     }
         
     public void clearMessages() {
-    	messages.clear();
+        messages.clear();
     }
 
     public void updateAnnotations() {
@@ -100,11 +100,11 @@ public class AnnotationCreator extends ErrorVisitor {
                 Annotation[] oldAnnotations = annotations.toArray(new Annotation[annotations.size()]);
                 Map<Annotation,Position> newAnnotations = new HashMap<Annotation,Position>(messages.size());
                 for (PositionedMessage pm: messages) {
-                	if (!suppressAnnotation(pm)) {
-                		Annotation a = createAnnotation(pm);
-                		newAnnotations.put(a, pm.pos);
-                		annotations.add(a);
-                	}
+                    if (!suppressAnnotation(pm)) {
+                        Annotation a = createAnnotation(pm);
+                        newAnnotations.put(a, pm.pos);
+                        annotations.add(a);
+                    }
                 }
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
             } 
@@ -118,46 +118,46 @@ public class AnnotationCreator extends ErrorVisitor {
                     }
                 }
                 for (PositionedMessage pm: messages) {
-                	if (!suppressAnnotation(pm)) {
-                		Annotation a= createAnnotation(pm);
-                		model.addAnnotation(a, pm.pos);
-                		annotations.add(a);
-                	}
+                    if (!suppressAnnotation(pm)) {
+                        Annotation a= createAnnotation(pm);
+                        model.addAnnotation(a, pm.pos);
+                        annotations.add(a);
+                    }
                 }
             }
         }
         messages.clear();
     }
 
-	public boolean suppressAnnotation(PositionedMessage pm) {
-		boolean suppress = false;
-		if (!pm.syntaxError && pm.line>=0) {
-			for (PositionedMessage m: messages) {
-				if (m.syntaxError && m.line==pm.line) {
-					suppress = true;
-					break;
-				}
-			}
-		}
-		return suppress;
-	}
+    public boolean suppressAnnotation(PositionedMessage pm) {
+        boolean suppress = false;
+        if (!pm.syntaxError && pm.line>=0) {
+            for (PositionedMessage m: messages) {
+                if (m.syntaxError && m.line==pm.line) {
+                    suppress = true;
+                    break;
+                }
+            }
+        }
+        return suppress;
+    }
 
-	private Annotation createAnnotation(PositionedMessage pm) {
+    private Annotation createAnnotation(PositionedMessage pm) {
         return new CeylonAnnotation(getAnnotationType(pm), 
-        		pm.message, pm.code, pm.severity);
+                pm.message, pm.code, pm.severity);
     }
 
     private String getAnnotationType(PositionedMessage pm) {
-    	switch (pm.severity) {
-    	case SEVERITY_ERROR:
-    		return PARSE_ANNOTATION_TYPE_ERROR;
-    	case SEVERITY_WARNING:
-    		return PARSE_ANNOTATION_TYPE_WARNING;
-    	case SEVERITY_INFO:
-    		return PARSE_ANNOTATION_TYPE_INFO;
-    	default:
-    		return PARSE_ANNOTATION_TYPE;            	
-    	}
+        switch (pm.severity) {
+        case SEVERITY_ERROR:
+            return PARSE_ANNOTATION_TYPE_ERROR;
+        case SEVERITY_WARNING:
+            return PARSE_ANNOTATION_TYPE_WARNING;
+        case SEVERITY_INFO:
+            return PARSE_ANNOTATION_TYPE_INFO;
+        default:
+            return PARSE_ANNOTATION_TYPE;                
+        }
     }
     
 }

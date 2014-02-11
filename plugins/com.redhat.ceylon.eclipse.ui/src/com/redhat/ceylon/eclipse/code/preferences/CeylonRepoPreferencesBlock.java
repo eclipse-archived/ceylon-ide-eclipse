@@ -289,7 +289,7 @@ public class CeylonRepoPreferencesBlock {
                 AetherRepositoryDialog dlg = new AetherRepositoryDialog(buttons.getShell());
                 int result = dlg.open();
                 if (result == InputDialog.OK) {
-                	int index = projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size();
+                    int index = projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size();
                     String value = dlg.getValue();
                     if (value.isEmpty()) {
                         addProjectRepo("aether", index, false);
@@ -327,7 +327,7 @@ public class CeylonRepoPreferencesBlock {
                         "Enter URI of remote module repository", "http://", inputValidator);
                 int result = input.open();
                 if (result == InputDialog.OK) {
-                	int index = projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size();
+                    int index = projectLocalRepos.size() + globalLookupRepos.size() + projectRemoteRepos.size();
                     addProjectRepo(input.getValue(), index, false);
                 }
             }
@@ -345,7 +345,7 @@ public class CeylonRepoPreferencesBlock {
                 int[] selection = lookupRepoTable.getSelectionIndices();
                 Arrays.sort(selection);
                 for (int i = selection.length - 1; i >= 0; i--) {
-                	int index = selection[i];
+                    int index = selection[i];
                     if (!isFixedRepoIndex(index)) {
                         String repo = lookupRepoTable.getItem(index).getText();
                         lookupRepoTable.remove(index);

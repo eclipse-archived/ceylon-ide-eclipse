@@ -12,28 +12,28 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 public class Types {
 
-	public static ProducedType getResultType(Declaration d) {
-	    if (d instanceof TypeDeclaration) {
-	        if (d instanceof Class) {
-	            if (!((Class) d).isAbstract()) {
-	                return ((TypeDeclaration) d).getType();
-	            }
-	        }
-	        return null;
-	    }
-	    else if (d instanceof TypedDeclaration) {
-	        return ((TypedDeclaration) d).getType();
-	    }
-	    else {
-	        return null;//impossible
-	    }
-	}
+    public static ProducedType getResultType(Declaration d) {
+        if (d instanceof TypeDeclaration) {
+            if (d instanceof Class) {
+                if (!((Class) d).isAbstract()) {
+                    return ((TypeDeclaration) d).getType();
+                }
+            }
+            return null;
+        }
+        else if (d instanceof TypedDeclaration) {
+            return ((TypedDeclaration) d).getType();
+        }
+        else {
+            return null;//impossible
+        }
+    }
 
-	public static ProducedType getRequiredType(Tree.CompilationUnit rootNode,
-	        Node node, CommonToken token) {
-	    RequiredTypeVisitor rtv = new RequiredTypeVisitor(node, token);
-	    rtv.visit(rootNode);
-	    return rtv.getType();
-	}
+    public static ProducedType getRequiredType(Tree.CompilationUnit rootNode,
+            Node node, CommonToken token) {
+        RequiredTypeVisitor rtv = new RequiredTypeVisitor(node, token);
+        rtv.visit(rootNode);
+        return rtv.getType();
+    }
 
 }

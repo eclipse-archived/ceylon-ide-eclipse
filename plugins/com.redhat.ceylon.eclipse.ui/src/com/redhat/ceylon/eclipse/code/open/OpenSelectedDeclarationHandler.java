@@ -29,23 +29,23 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         CeylonParseController pc= editor.getParseController();
         if (pc==null) {
-        	return null;
+            return null;
         }
         else {
-        	Tree.CompilationUnit ast= pc.getRootNode();
-        	if (ast == null) {
-        		return null;
-        	}
-        	else {
-        		return findNode(ast, textSel.getOffset());
-        	}
+            Tree.CompilationUnit ast= pc.getRootNode();
+            if (ast == null) {
+                return null;
+            }
+            else {
+                return findNode(ast, textSel.getOffset());
+            }
         }
     }
     
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
         return super.isEnabled() && editor instanceof CeylonEditor &&
-        		getReferencedModel(getSelectedNode(getSelection((ITextEditor) editor)))!=null;
+                getReferencedModel(getSelectedNode(getSelection((ITextEditor) editor)))!=null;
     }
     
     @Override
@@ -53,18 +53,18 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             Node node = getSelectedNode(getSelection((ITextEditor) editor));
-			Referenceable r = getReferencedModel(node);
-			if (r!=null) {
-			    CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
-				Node refNode = getReferencedNode(r, cpc);
-			    IProject project = cpc.getProject();
-				if (refNode!=null) {
-			    	gotoNode(refNode, project, cpc.getTypeChecker());
-			    }
-			    else if (r instanceof Declaration) {
-			    	gotoJavaNode(((Declaration)r), node, project);
-			    }
-			}
+            Referenceable r = getReferencedModel(node);
+            if (r!=null) {
+                CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
+                Node refNode = getReferencedNode(r, cpc);
+                IProject project = cpc.getProject();
+                if (refNode!=null) {
+                    gotoNode(refNode, project, cpc.getTypeChecker());
+                }
+                else if (r instanceof Declaration) {
+                    gotoJavaNode(((Declaration)r), node, project);
+                }
+            }
         }
         return null;
     }

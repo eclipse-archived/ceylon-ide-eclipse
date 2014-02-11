@@ -58,25 +58,25 @@ public class OpenTypeAction extends Action {
     }
 
     public void gotoDeclaration(DeclarationWithProject dwp) {
-    	Declaration dec = dwp.getDeclaration();
+        Declaration dec = dwp.getDeclaration();
         IProject project = dwp.getProject();
         if (project!=null) {
-        	//TODO: lots of copy/paste from OpenDeclarationAction
-        	if (editor instanceof CeylonEditor) {
-        		CeylonEditor ce = (CeylonEditor) editor;
-        		IProject ep = ce.getParseController().getProject();
-        		if (ep!=null && ep.equals(project)) {
-        			CeylonParseController cpc = ce.getParseController();
-        			Tree.Declaration node = (Tree.Declaration) getReferencedNode(dec, 
-        			        getCompilationUnit(cpc, dec));
-        			if (node!=null) {
-        				gotoNode(node, project, cpc.getTypeChecker());
-        				return;
-        			}
-        		}
-        	}
+            //TODO: lots of copy/paste from OpenDeclarationAction
+            if (editor instanceof CeylonEditor) {
+                CeylonEditor ce = (CeylonEditor) editor;
+                IProject ep = ce.getParseController().getProject();
+                if (ep!=null && ep.equals(project)) {
+                    CeylonParseController cpc = ce.getParseController();
+                    Tree.Declaration node = (Tree.Declaration) getReferencedNode(dec, 
+                            getCompilationUnit(cpc, dec));
+                    if (node!=null) {
+                        gotoNode(node, project, cpc.getTypeChecker());
+                        return;
+                    }
+                }
+            }
 
-        	if (dec.getUnit() instanceof CeylonUnit) {
+            if (dec.getUnit() instanceof CeylonUnit) {
                 CeylonUnit ceylonUnit = (CeylonUnit) dec.getUnit();
                 Tree.Declaration node = (Tree.Declaration) getReferencedNode(dec, 
                         ceylonUnit.getCompilationUnit());
@@ -90,16 +90,16 @@ public class OpenTypeAction extends Action {
                         }
                     }
                 }
-        	}
-        	else {
-        		gotoJavaNode(dec, null, project);
-        	}
+            }
+            else {
+                gotoJavaNode(dec, null, project);
+            }
         }
         else {
-        	//it's coming from the "unversioned" JDK module, which
-        	//we don't display multiple choices for, so just pick
-        	//the first available project
-        	gotoJavaNode(dec, null, getProjects().iterator().next());
+            //it's coming from the "unversioned" JDK module, which
+            //we don't display multiple choices for, so just pick
+            //the first available project
+            gotoJavaNode(dec, null, getProjects().iterator().next());
         }
     }
 

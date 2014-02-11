@@ -19,66 +19,66 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class TypeArgumentListCompletions {
-	
-	public static void addTypeArgumentListProposal(final int offset,
-			final CeylonParseController cpc, final Node node,
-			final Scope scope, final IDocument document,
-			final List<ICompletionProposal> result) {
-		final Integer startIndex2 = node.getStartIndex();
-		final Integer stopIndex2 = node.getStopIndex();
-		final String typeArgText;
-		try {
-			typeArgText = document.get(startIndex2, stopIndex2-startIndex2+1);
-		} 
-		catch (BadLocationException e) {
-			e.printStackTrace();
-			return;
-		}
-		new Visitor() {
-			@Override
-			public void visit(Tree.StaticMemberOrTypeExpression that) {
-				Integer startIndex = that.getTypeArguments().getStartIndex();
-				if (startIndex!=null && startIndex2!=null &&
-					startIndex.intValue()==startIndex2.intValue()) {
-					ProducedReference pr = that.getTarget();
-					Declaration d = that.getDeclaration();
-					if (d instanceof Functional && pr!=null) {
-						try {
-							String pref = document.get(that.getStartIndex(), 
-									that.getStopIndex()-that.getStartIndex()+1);
-				        	addInvocationProposals(offset, pref, cpc, result, 
-				        			new DeclarationWithProximity(d, 0), pr, 
-				        			scope, null, typeArgText, false);
-						} 
-						catch (BadLocationException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				super.visit(that);
-			}
-			public void visit(Tree.SimpleType that) {
-				Integer startIndex = that.getTypeArgumentList().getStartIndex();
-				if (startIndex!=null && startIndex2!=null &&
-					startIndex.intValue()==startIndex2.intValue()) {
-					Declaration d = that.getDeclarationModel();
-					if (d instanceof Functional) {
-						try {
-							String pref = document.get(that.getStartIndex(), 
-									that.getStopIndex()-that.getStartIndex()+1);
-				        	addInvocationProposals(offset, pref, cpc, result, 
-				        			new DeclarationWithProximity(d, 0), 
-				        			    that.getTypeModel(), scope, 
-				        			    null, typeArgText, false);
-						}
-						catch (BadLocationException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				super.visit(that);
-			}
-		}.visit(cpc.getRootNode());
-	}
+    
+    public static void addTypeArgumentListProposal(final int offset,
+            final CeylonParseController cpc, final Node node,
+            final Scope scope, final IDocument document,
+            final List<ICompletionProposal> result) {
+        final Integer startIndex2 = node.getStartIndex();
+        final Integer stopIndex2 = node.getStopIndex();
+        final String typeArgText;
+        try {
+            typeArgText = document.get(startIndex2, stopIndex2-startIndex2+1);
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
+            return;
+        }
+        new Visitor() {
+            @Override
+            public void visit(Tree.StaticMemberOrTypeExpression that) {
+                Integer startIndex = that.getTypeArguments().getStartIndex();
+                if (startIndex!=null && startIndex2!=null &&
+                    startIndex.intValue()==startIndex2.intValue()) {
+                    ProducedReference pr = that.getTarget();
+                    Declaration d = that.getDeclaration();
+                    if (d instanceof Functional && pr!=null) {
+                        try {
+                            String pref = document.get(that.getStartIndex(), 
+                                    that.getStopIndex()-that.getStartIndex()+1);
+                            addInvocationProposals(offset, pref, cpc, result, 
+                                    new DeclarationWithProximity(d, 0), pr, 
+                                    scope, null, typeArgText, false);
+                        } 
+                        catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                super.visit(that);
+            }
+            public void visit(Tree.SimpleType that) {
+                Integer startIndex = that.getTypeArgumentList().getStartIndex();
+                if (startIndex!=null && startIndex2!=null &&
+                    startIndex.intValue()==startIndex2.intValue()) {
+                    Declaration d = that.getDeclarationModel();
+                    if (d instanceof Functional) {
+                        try {
+                            String pref = document.get(that.getStartIndex(), 
+                                    that.getStopIndex()-that.getStartIndex()+1);
+                            addInvocationProposals(offset, pref, cpc, result, 
+                                    new DeclarationWithProximity(d, 0), 
+                                        that.getTypeModel(), scope, 
+                                        null, typeArgText, false);
+                        }
+                        catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                super.visit(that);
+            }
+        }.visit(cpc.getRootNode());
+    }
 
 }

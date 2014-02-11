@@ -62,7 +62,7 @@ class CreateEnumProposal extends CorrectionProposal {
             IProject project, TypeChecker tc, IFile file) {
             Node idn = getIdentifyingNode(node);
             if (idn==null) return;
-    		String brokenName = idn.getText();
+            String brokenName = idn.getText();
             if (brokenName.isEmpty()) return;
             Tree.Declaration dec = findDeclaration(cu, node);
             if (dec instanceof Tree.ClassDefinition) {
@@ -114,8 +114,8 @@ class CreateEnumProposal extends CorrectionProposal {
         }
         
     private static void addCreateEnumProposal(Collection<ICompletionProposal> proposals, 
-    		String def, String desc, Image image, PhasedUnit unit, 
-    		Tree.Statement statement) {
+            String def, String desc, Image image, PhasedUnit unit, 
+            Tree.Statement statement) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Create Enumerated", file);
         IDocument doc = getDocument(change);
@@ -128,7 +128,7 @@ class CreateEnumProposal extends CorrectionProposal {
         }
         change.setEdit(new InsertEdit(offset, s));
         proposals.add(new CreateEnumProposal(def, 
-        		"Create enumerated " + desc, 
+                "Create enumerated " + desc, 
                 image, offset, file, change));
     }
 
@@ -156,7 +156,7 @@ class CreateEnumProposal extends CorrectionProposal {
                     if (p!=null) {
                         if (p instanceof Tree.ParameterDeclaration) {
                             Tree.TypedDeclaration td = 
-                            		((Tree.ParameterDeclaration) p).getTypedDeclaration();
+                                    ((Tree.ParameterDeclaration) p).getTypedDeclaration();
                             result.append(td.getType().getTypeModel().getProducedTypeName()) 
                                     .append(" ")
                                     .append(td.getIdentifier().getText());

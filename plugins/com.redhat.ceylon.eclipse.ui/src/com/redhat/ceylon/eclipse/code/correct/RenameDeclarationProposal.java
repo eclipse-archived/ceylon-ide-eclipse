@@ -22,7 +22,7 @@ import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoringAction;
 
 class RenameDeclarationProposal implements ICompletionProposal,
-		ICompletionProposalExtension6 {
+        ICompletionProposalExtension6 {
 
     Node node;
     Declaration dec;
@@ -39,51 +39,51 @@ class RenameDeclarationProposal implements ICompletionProposal,
     
     @Override
     public Point getSelection(IDocument doc) {
-    	return null;
+        return null;
     }
 
     @Override
     public Image getImage() {
-    	return RENAME;
+        return RENAME;
     }
 
     @Override
     public String getDisplayString() {
-    	return "Rename '" + dec.getName() + "'";
+        return "Rename '" + dec.getName() + "'";
     }
 
     @Override
     public IContextInformation getContextInformation() {
-    	return null;
+        return null;
     }
 
     @Override
     public String getAdditionalProposalInfo() {
-    	return null;
+        return null;
     }
 
     @Override
     public void apply(IDocument doc) {
-    	if (useLinkedMode()) {
-    		new RenameDeclarationLinkedMode(editor).start();
-    	}
-    	else {
-    		new RenameRefactoringAction(editor).run();
-    	}
+        if (useLinkedMode()) {
+            new RenameDeclarationLinkedMode(editor).start();
+        }
+        else {
+            new RenameRefactoringAction(editor).run();
+        }
     }
     
     @Override
-	public StyledString getStyledDisplayString() {
-		return CorrectionUtil.styleProposal(getDisplayString());
-	}
+    public StyledString getStyledDisplayString() {
+        return CorrectionUtil.styleProposal(getDisplayString());
+    }
 
-	public static void add(Collection<ICompletionProposal> proposals,
-			IFile file, CeylonEditor editor) {
-		RenameRefactoring rr = new RenameRefactoring(editor);
-		if (rr.isEnabled()) {
-			proposals.add(new RenameDeclarationProposal(file, 
-					rr.getNode(), rr.getDeclaration(), editor));
-		}
-	}
+    public static void add(Collection<ICompletionProposal> proposals,
+            IFile file, CeylonEditor editor) {
+        RenameRefactoring rr = new RenameRefactoring(editor);
+        if (rr.isEnabled()) {
+            proposals.add(new RenameDeclarationProposal(file, 
+                    rr.getNode(), rr.getDeclaration(), editor));
+        }
+    }
 
 }

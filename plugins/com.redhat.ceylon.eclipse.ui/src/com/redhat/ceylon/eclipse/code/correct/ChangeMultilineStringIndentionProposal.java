@@ -23,47 +23,47 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class FixMultilineStringIndentationProposal 
         extends CorrectionProposal {
-	
+    
     public static void addFixMultilineStringIndentation(
-    		Collection<ICompletionProposal> proposals, 
-    		IFile file, Tree.CompilationUnit cu, Node node) {
-    	if (node instanceof Tree.StringLiteral) {
-			TextFileChange change = 
-					new TextFileChange("Fix Multiline String", file);
-			IDocument doc = CreateProposal.getDocument(change);
-    		Tree.StringLiteral literal = (Tree.StringLiteral) node;
-    		int offset = literal.getStartIndex();
-    		int length = literal.getStopIndex() - 
-    				literal.getStartIndex() + 1; 
-    		Token token = literal.getToken();
-			int indentation = token.getCharPositionInLine() + 
-					getStartQuoteLength(token.getType());
-			String text = getFixedText(token.getText(), indentation, doc);
-    		if (text!=null) {
-    			change.setEdit(new ReplaceEdit(offset, length, text));
-    			FixMultilineStringIndentationProposal proposal = 
-    					new FixMultilineStringIndentationProposal(change);
-    			if (!proposals.contains(proposal)) {
-    				proposals.add(proposal);
-    			}
-    		}
-    	}
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Tree.CompilationUnit cu, Node node) {
+        if (node instanceof Tree.StringLiteral) {
+            TextFileChange change = 
+                    new TextFileChange("Fix Multiline String", file);
+            IDocument doc = CreateProposal.getDocument(change);
+            Tree.StringLiteral literal = (Tree.StringLiteral) node;
+            int offset = literal.getStartIndex();
+            int length = literal.getStopIndex() - 
+                    literal.getStartIndex() + 1; 
+            Token token = literal.getToken();
+            int indentation = token.getCharPositionInLine() + 
+                    getStartQuoteLength(token.getType());
+            String text = getFixedText(token.getText(), indentation, doc);
+            if (text!=null) {
+                change.setEdit(new ReplaceEdit(offset, length, text));
+                FixMultilineStringIndentationProposal proposal = 
+                        new FixMultilineStringIndentationProposal(change);
+                if (!proposals.contains(proposal)) {
+                    proposals.add(proposal);
+                }
+            }
+        }
     }
     
     private static String getFixedText(String text, 
-    		int indentation, IDocument doc) {
+            int indentation, IDocument doc) {
         StringBuilder result = new StringBuilder();
         for (String line: text.split("\n|\r\n?")) {
             if (result.length() == 0) {
-            	//the first line of the string
+                //the first line of the string
                 result.append(line);
             }
             else {
                 for (int i = 0; i<indentation; i++) {
-                	//fix the indentation
+                    //fix the indentation
                     result.append(" ");
                     if (line.startsWith(" ")) {
-                    	line = line.substring(1);
+                        line = line.substring(1);
                     }
                 }
                 //the non-whitespace content
@@ -75,19 +75,19 @@ class FixMultilineStringIndentationProposal
         return result.toString();
     }
 
-	private static int getStartQuoteLength(int type) {
+    private static int getStartQuoteLength(int type) {
         int startQuoteLength = -1;
         if (type == STRING_LITERAL || 
-        	type== ASTRING_LITERAL || 
-        	type == STRING_START) {
+            type== ASTRING_LITERAL || 
+            type == STRING_START) {
             startQuoteLength = 1;
         } 
         else if (type == STRING_MID || 
-        		type == STRING_END) {
+                type == STRING_END) {
             startQuoteLength = 2;
         } 
         else if (type == VERBATIM_STRING || 
-        		type == AVERBATIM_STRING) {
+                type == AVERBATIM_STRING) {
             startQuoteLength = 3;
         }
         return startQuoteLength;

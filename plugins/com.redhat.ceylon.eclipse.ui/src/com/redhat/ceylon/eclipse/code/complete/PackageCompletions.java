@@ -54,12 +54,12 @@ public class PackageCompletions {
 
         @Override
         public Point getSelection(IDocument document) {
-        	if (withBody) {
-        		return new Point(offset+completed.length()-prefix.length()-len-5, 3);
-        	}
-        	else {
-        		return new Point(offset+completed.length()-prefix.length()-len, 0);
-        	}
+            if (withBody) {
+                return new Point(offset+completed.length()-prefix.length()-len-5, 3);
+            }
+            else {
+                return new Point(offset+completed.length()-prefix.length()-len, 0);
+            }
         }
 
         @Override
@@ -73,7 +73,7 @@ public class PackageCompletions {
             List<ICompletionProposal> result, boolean withBody) {
         String fullPath = fullPath(offset, prefix, path);
         addPackageCompletions(offset, prefix, node, result, fullPath.length(), 
-        		fullPath+prefix, cpc, withBody);
+                fullPath+prefix, cpc, withBody);
     }
 
     private static void addPackageCompletions(final int offset, final String prefix,
@@ -106,7 +106,7 @@ public class PackageCompletions {
                             }
                         }
                         if (!already) {
-                        	result.add(new PackageProposal(offset, prefix, withBody, 
+                            result.add(new PackageProposal(offset, prefix, withBody, 
                                     len, p, pkg + (withBody ? " { ... }" : ""), cpc));
                         }
                     }

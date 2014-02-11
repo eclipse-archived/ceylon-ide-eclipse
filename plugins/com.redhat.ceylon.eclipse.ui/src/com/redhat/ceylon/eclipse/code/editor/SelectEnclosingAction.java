@@ -48,30 +48,30 @@ class SelectEnclosingAction extends Action {
     }
     
     private static class EnclosingVisitor extends Visitor {
-    	private Node node;
-    	private Node current;
-    	private Node result;
-    	private int startOffset; 
-    	private int endOffset;
-    	private EnclosingVisitor(Node node, 
-    			int startOffset, int endOffset) {
-    		this.node = node;
-    		this.startOffset = startOffset;
-    		this.endOffset = endOffset;
-    	}
-		private boolean expandsSelection(Node that) {
-			return that.getStartIndex()<startOffset ||
-					that.getStopIndex()>endOffset;
-		}
-    	@Override
-    	public void visitAny(Node that) {
-    		if (that==node) {
-    			result = current;
-    		}
-    		else {
-    			super.visitAny(that);
-    		}
-    	}
+        private Node node;
+        private Node current;
+        private Node result;
+        private int startOffset; 
+        private int endOffset;
+        private EnclosingVisitor(Node node, 
+                int startOffset, int endOffset) {
+            this.node = node;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+        }
+        private boolean expandsSelection(Node that) {
+            return that.getStartIndex()<startOffset ||
+                    that.getStopIndex()>endOffset;
+        }
+        @Override
+        public void visitAny(Node that) {
+            if (that==node) {
+                result = current;
+            }
+            else {
+                super.visitAny(that);
+            }
+        }
         @Override
         public void visit(CompilationUnit that) {
             Node oc = current;
@@ -149,20 +149,20 @@ class SelectEnclosingAction extends Action {
             super.visit(that);
             current = oc;
         }
-    	@Override
-    	public void visit(Expression that) {
-    		Node oc = current;
-    		if (expandsSelection(that)) current = that;
-    		super.visit(that);
-    		current = oc;
-    	}
-    	@Override
-    	public void visit(StatementOrArgument that) {
-    		Node oc = current;
-    		if (expandsSelection(that)) current = that;
-    		super.visit(that);
-    		current = oc;
-    	}
+        @Override
+        public void visit(Expression that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
+        @Override
+        public void visit(StatementOrArgument that) {
+            Node oc = current;
+            if (expandsSelection(that)) current = that;
+            super.visit(that);
+            current = oc;
+        }
     }
 
     @Override
@@ -170,18 +170,18 @@ class SelectEnclosingAction extends Action {
         IRegion selection= fEditor.getSelection();
         CeylonParseController pc= fEditor.getParseController();
         int startOffset = selection.getOffset();
-		int endOffset = startOffset + selection.getLength() - 1;
-		CompilationUnit rootNode = pc.getRootNode();
-		Node curNode= findNode(rootNode, startOffset, endOffset);
+        int endOffset = startOffset + selection.getLength() - 1;
+        CompilationUnit rootNode = pc.getRootNode();
+        Node curNode= findNode(rootNode, startOffset, endOffset);
         if (curNode!=null) {
-        	EnclosingVisitor ev = new EnclosingVisitor(curNode, 
-        			startOffset, endOffset);
-        	ev.visit(rootNode);
-        	Node result = ev.result;
-        	if (result!=null) {
-        		fEditor.selectAndReveal(result.getStartIndex(), 
-        				result.getStopIndex()-result.getStartIndex()+1);
-        	}
+            EnclosingVisitor ev = new EnclosingVisitor(curNode, 
+                    startOffset, endOffset);
+            ev.visit(rootNode);
+            Node result = ev.result;
+            if (result!=null) {
+                fEditor.selectAndReveal(result.getStartIndex(), 
+                        result.getStopIndex()-result.getStartIndex()+1);
+            }
         }
     }
 }

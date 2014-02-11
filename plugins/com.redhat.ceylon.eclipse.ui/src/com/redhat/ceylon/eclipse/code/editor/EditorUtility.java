@@ -38,8 +38,8 @@ import org.eclipse.ui.texteditor.TextEditorAction;
  * With 'getWorkingCopy' you get the working copy (element in the editor) of an element.
  */
 public class EditorUtility {
-	
-//	private static boolean isEditorInput(Object element, IEditorPart editor) {
+    
+//    private static boolean isEditorInput(Object element, IEditorPart editor) {
 //        if (editor!=null) {
 //            return editor.getEditorInput().equals(getEditorInput(element));
 //        }
@@ -113,8 +113,8 @@ public class EditorUtility {
 //                        IMarker marker= null;
 //                        try {
 //                            marker = ((IFileEditorInput) input).getFile().createMarker(IMarker.TEXT);
-//                        	String[] attributeNames = new String[] {IMarker.CHAR_START, IMarker.CHAR_END};
-//                        	Object[] values = new Object[] {offset, offset + length};
+//                            String[] attributeNames = new String[] {IMarker.CHAR_START, IMarker.CHAR_END};
+//                            Object[] values = new Object[] {offset, offset + length};
 //                            marker.setAttributes(attributeNames, values);
 //                            gotoMarkerTarget.gotoMarker(marker);
 //                        } finally {
@@ -174,7 +174,7 @@ public class EditorUtility {
     private static void initializeHighlightRange(IEditorPart editorPart) {
         if (editorPart instanceof ITextEditor) {
             IAction toggleAction= editorPart.getEditorSite().getActionBars()
-            		.getGlobalActionHandler(TOGGLE_SHOW_SELECTED_ELEMENT_ONLY);
+                    .getGlobalActionHandler(TOGGLE_SHOW_SELECTED_ELEMENT_ONLY);
             boolean enable= toggleAction!=null;
             if (enable && editorPart instanceof CeylonEditor)
                 // TODO Maybe support show segments?
@@ -243,63 +243,63 @@ public class EditorUtility {
         return null;
     }
 
-	/**
-	 * Create the Editor Input appropriate for the given <code>IFileStore</code>.
-	 * The result is a normal file editor input if the file exists in the
-	 * workspace and, if not, we create a wrapper capable of managing an
-	 * 'external' file using its <code>IFileStore</code>.
-	 * 
-	 * @param fileStore
-	 *            The file store to provide the editor input for
-	 * @return The editor input associated with the given file store
-	 */
+    /**
+     * Create the Editor Input appropriate for the given <code>IFileStore</code>.
+     * The result is a normal file editor input if the file exists in the
+     * workspace and, if not, we create a wrapper capable of managing an
+     * 'external' file using its <code>IFileStore</code>.
+     * 
+     * @param fileStore
+     *            The file store to provide the editor input for
+     * @return The editor input associated with the given file store
+     */
     private static IEditorInput getEditorInput(IFileStore fileStore) {
-		IFile workspaceFile = getWorkspaceFile(fileStore);
-		if (workspaceFile!=null)
-			return new FileEditorInput(workspaceFile);
-		return new FileStoreEditorInput(fileStore);
-	}
+        IFile workspaceFile = getWorkspaceFile(fileStore);
+        if (workspaceFile!=null)
+            return new FileEditorInput(workspaceFile);
+        return new FileStoreEditorInput(fileStore);
+    }
 
-	/**
-	 * Determine whether or not the <code>IFileStore</code> represents a file
-	 * currently in the workspace.
-	 * 
-	 * @param fileStore
-	 *            The <code>IFileStore</code> to test
-	 * @return The workspace's <code>IFile</code> if it exists or
-	 *         <code>null</code> if not
-	 */
-	private static IFile getWorkspaceFile(IFileStore fileStore) {
-		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		IFile[] files = root.findFilesForLocationURI(fileStore.toURI());
-		files = filterNonExistentFiles(files);
-		if (files == null || files.length == 0)
-			return null;
+    /**
+     * Determine whether or not the <code>IFileStore</code> represents a file
+     * currently in the workspace.
+     * 
+     * @param fileStore
+     *            The <code>IFileStore</code> to test
+     * @return The workspace's <code>IFile</code> if it exists or
+     *         <code>null</code> if not
+     */
+    private static IFile getWorkspaceFile(IFileStore fileStore) {
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        IFile[] files = root.findFilesForLocationURI(fileStore.toURI());
+        files = filterNonExistentFiles(files);
+        if (files == null || files.length == 0)
+            return null;
 
-		// for now only return the first file
-		return files[0];
-	}
+        // for now only return the first file
+        return files[0];
+    }
 
-	/**
-	 * Filter the incoming array of <code>IFile</code> elements by removing
-	 * any that do not currently exist in the workspace.
-	 * 
-	 * @param files
-	 *            The array of <code>IFile</code> elements
-	 * @return The filtered array
-	 */
-	private static IFile[] filterNonExistentFiles(IFile[] files) {
-		if (files == null)
-			return null;
+    /**
+     * Filter the incoming array of <code>IFile</code> elements by removing
+     * any that do not currently exist in the workspace.
+     * 
+     * @param files
+     *            The array of <code>IFile</code> elements
+     * @return The filtered array
+     */
+    private static IFile[] filterNonExistentFiles(IFile[] files) {
+        if (files == null)
+            return null;
 
-		int length = files.length;
-		ArrayList<IFile> existentFiles = new ArrayList<IFile>(length);
-		for (int i = 0; i < length; i++) {
-			if (files[i].exists())
-				existentFiles.add(files[i]);
-		}
-		return (IFile[]) existentFiles.toArray(new IFile[existentFiles.size()]);
-	}
+        int length = files.length;
+        ArrayList<IFile> existentFiles = new ArrayList<IFile>(length);
+        for (int i = 0; i < length; i++) {
+            if (files[i].exists())
+                existentFiles.add(files[i]);
+        }
+        return (IFile[]) existentFiles.toArray(new IFile[existentFiles.size()]);
+    }
 
     /**
      * Maps the localized modifier name to a code in the same manner as #findModifier.
@@ -392,19 +392,19 @@ public class EditorUtility {
 //        return result.toArray(new IEditorPart[result.size()]);
 //    }
     
-	public static IDocument getDocument(Object input) {
-		IEditorInput ei = getEditorInput(input);
-		try {
-			if (ei!=null) {
-				IDocumentProvider docProvider = DocumentProviderRegistry
-						.getDefault().getDocumentProvider(ei);
-				docProvider.connect(ei);
-				return docProvider.getDocument(ei);
-			}
-		}
-		catch (CoreException e) {
-			// fall through
-		}
-		return null;
-	}
+    public static IDocument getDocument(Object input) {
+        IEditorInput ei = getEditorInput(input);
+        try {
+            if (ei!=null) {
+                IDocumentProvider docProvider = DocumentProviderRegistry
+                        .getDefault().getDocumentProvider(ei);
+                docProvider.connect(ei);
+                return docProvider.getDocument(ei);
+            }
+        }
+        catch (CoreException e) {
+            // fall through
+        }
+        return null;
+    }
 }

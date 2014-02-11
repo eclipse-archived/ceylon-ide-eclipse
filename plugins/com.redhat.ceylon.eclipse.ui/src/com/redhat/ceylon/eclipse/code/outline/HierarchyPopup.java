@@ -31,34 +31,34 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends TreeViewPopup {
-	
+    
     private static final String KEY = KeyStroke.getInstance(SWT.MOD1, 'T').format();
     private static final String VIEW_INTERFACES = " (" + KEY + " to view)";
     
-	private final class ChangeViewListener implements KeyListener {
-		@Override
-		public void keyReleased(KeyEvent e) {}
-		@Override
-		public void keyPressed(KeyEvent e) {
-			if (e.character == 't' && (e.stateMask&SWT.MOD1)!=0) {
-				contentProvider.setMode(contentProvider.getMode().next());
-				updateStatusFieldText();
-				updateTitle();
-				updateIcon();
-				update();
-				e.doit=false;
-			}
-		}
-	}
-	
-	private CeylonHierarchyLabelProvider labelProvider;
-	private CeylonHierarchyContentProvider contentProvider;
-	private Label iconLabel;
-	
+    private final class ChangeViewListener implements KeyListener {
+        @Override
+        public void keyReleased(KeyEvent e) {}
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.character == 't' && (e.stateMask&SWT.MOD1)!=0) {
+                contentProvider.setMode(contentProvider.getMode().next());
+                updateStatusFieldText();
+                updateTitle();
+                updateIcon();
+                update();
+                e.doit=false;
+            }
+        }
+    }
+    
+    private CeylonHierarchyLabelProvider labelProvider;
+    private CeylonHierarchyContentProvider contentProvider;
+    private Label iconLabel;
+    
     public HierarchyPopup(CeylonEditor editor, Shell parent, int shellStyle, 
-    		int treeStyle) {
+            int treeStyle) {
         super(parent, shellStyle, treeStyle, editor,
-        		CeylonTokenColorer.getCurrentThemeColor("hierarchy"));
+                CeylonTokenColorer.getCurrentThemeColor("hierarchy"));
     }
     
     /*@Override
@@ -72,8 +72,8 @@ public class HierarchyPopup extends TreeViewPopup {
         }
     }*/
     
-	@Override
-	protected TreeViewer createTreeViewer(Composite parent, int style) {
+    @Override
+    protected TreeViewer createTreeViewer(Composite parent, int style) {
         final Tree tree = new Tree(parent, SWT.SINGLE | (style & ~SWT.MULTI));
         GridData gd= new GridData(GridData.FILL_BOTH);
         gd.heightHint= tree.getItemHeight() * 12;
@@ -100,64 +100,64 @@ public class HierarchyPopup extends TreeViewPopup {
         treeViewer.setAutoExpandLevel(getDefaultLevel());
         tree.addKeyListener(new ChangeViewListener());
 //        treeViewer.setUseHashlookup(false);
- 		return treeViewer;
-	}
+         return treeViewer;
+    }
 
-	@Override
-	protected Text createFilterText(Composite parent) {
-		Text result = super.createFilterText(parent);
-		result.addKeyListener(new ChangeViewListener());
-		return result;
-	}
-	
-	@Override
-	protected String getStatusFieldText() {
-		switch (contentProvider.getMode()) {
-		case SUBTYPES:
-			return KEY + " to show hierarchy";
-		case SUPERTYPES:
-			return KEY + " to show subtypes";
-		case HIERARCHY:
-			return KEY + " to show supertypes";
-		default:
-			throw new RuntimeException();
-		}
-	}
-	
-	private String getTitleText() {
-		return contentProvider.getDescription();
-	}
+    @Override
+    protected Text createFilterText(Composite parent) {
+        Text result = super.createFilterText(parent);
+        result.addKeyListener(new ChangeViewListener());
+        return result;
+    }
+    
+    @Override
+    protected String getStatusFieldText() {
+        switch (contentProvider.getMode()) {
+        case SUBTYPES:
+            return KEY + " to show hierarchy";
+        case SUPERTYPES:
+            return KEY + " to show subtypes";
+        case HIERARCHY:
+            return KEY + " to show supertypes";
+        default:
+            throw new RuntimeException();
+        }
+    }
+    
+    private String getTitleText() {
+        return contentProvider.getDescription();
+    }
 
-	
-	@Override
-	protected Control createTitleControl(Composite parent) {
-		getPopupLayout().copy().numColumns(3).applyTo(parent);
-		iconLabel = new Label(parent, SWT.NONE);
-		//label.setImage(CeylonPlugin.getInstance().image("class_hi.gif").createImage());
-		updateIcon();
-		return super.createTitleControl(parent);
-	}
+    
+    @Override
+    protected Control createTitleControl(Composite parent) {
+        getPopupLayout().copy().numColumns(3).applyTo(parent);
+        iconLabel = new Label(parent, SWT.NONE);
+        //label.setImage(CeylonPlugin.getInstance().image("class_hi.gif").createImage());
+        updateIcon();
+        return super.createTitleControl(parent);
+    }
 
-	public void updateTitle() {
-		setTitleText(getTitleText());
-	}
-	public void updateIcon() {
-		iconLabel.setImage(getIcon());
-	}
-	
-	private Image getIcon() {
-		String img = contentProvider==null ? 
-				CEYLON_HIER : contentProvider.getMode().image();
-		return CeylonPlugin.getInstance().getImageRegistry().get(img);
-	}
-	
-	@Override
-	protected String getId() {
-		return "org.eclipse.jdt.internal.ui.typehierarchy.QuickHierarchy";
-	}
+    public void updateTitle() {
+        setTitleText(getTitleText());
+    }
+    public void updateIcon() {
+        iconLabel.setImage(getIcon());
+    }
+    
+    private Image getIcon() {
+        String img = contentProvider==null ? 
+                CEYLON_HIER : contentProvider.getMode().image();
+        return CeylonPlugin.getInstance().getImageRegistry().get(img);
+    }
+    
+    @Override
+    protected String getId() {
+        return "org.eclipse.jdt.internal.ui.typehierarchy.QuickHierarchy";
+    }
 
-	@Override
-	public void setInput(Object information) {
+    @Override
+    public void setInput(Object information) {
         if (!(information instanceof HierarchyInput)) {
             inputChanged(null, null);
         }
@@ -171,44 +171,44 @@ public class HierarchyPopup extends TreeViewPopup {
                 updateTitle();
             }
         }
-	}
-	
-	@Override
-    protected void gotoSelectedElement() {
-    	CeylonParseController cpc = editor.getParseController();
-		if (cpc!=null) {
-	        Object object = getSelectedElement();
-	        if (object instanceof CeylonHierarchyNode) {
-	        	dispose();
-	        	CeylonHierarchyNode hn = (CeylonHierarchyNode) object;
-	        	Declaration dec = hn.getDeclaration(cpc.getProject());
-	        	if (dec!=null) {
-	        		//TODO: this is broken for Java declarations
-	        		CompilationUnit cu = getCompilationUnit(cpc, dec);
-	        		if (cu!=null) {
-	        			Node refNode = getReferencedNode(dec, cu);
-	        			if (refNode!=null) {
-	        				gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
-	        			}
-	        		}
-	        		else {
-	        			gotoJavaNode(dec, cpc);
-	        		}
-	        	}
-	        }
-    	}
     }
-	
-	@Override
-	protected void reveal() {
-	    if (contentProvider.isEmpty()) return;
-	    int depth;
-	    if (contentProvider.getMode()==HIERARCHY) {
-	        depth = contentProvider.getDepthInHierarchy();
-	    }
-	    else {
-	        depth = 1;
-	    }
+    
+    @Override
+    protected void gotoSelectedElement() {
+        CeylonParseController cpc = editor.getParseController();
+        if (cpc!=null) {
+            Object object = getSelectedElement();
+            if (object instanceof CeylonHierarchyNode) {
+                dispose();
+                CeylonHierarchyNode hn = (CeylonHierarchyNode) object;
+                Declaration dec = hn.getDeclaration(cpc.getProject());
+                if (dec!=null) {
+                    //TODO: this is broken for Java declarations
+                    CompilationUnit cu = getCompilationUnit(cpc, dec);
+                    if (cu!=null) {
+                        Node refNode = getReferencedNode(dec, cu);
+                        if (refNode!=null) {
+                            gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
+                        }
+                    }
+                    else {
+                        gotoJavaNode(dec, cpc);
+                    }
+                }
+            }
+        }
+    }
+    
+    @Override
+    protected void reveal() {
+        if (contentProvider.isEmpty()) return;
+        int depth;
+        if (contentProvider.getMode()==HIERARCHY) {
+            depth = contentProvider.getDepthInHierarchy();
+        }
+        else {
+            depth = 1;
+        }
         if (contentProvider.isVeryAbstractType()) {
             depth+=1;
         }
@@ -216,11 +216,11 @@ public class HierarchyPopup extends TreeViewPopup {
             depth+=3;
         }
         getTreeViewer().expandToLevel(depth);
-	}
-	
-	@Override
-	protected int getDefaultLevel() {
-	    return 1;
-	}
+    }
+    
+    @Override
+    protected int getDefaultLevel() {
+        return 1;
+    }
 
 }

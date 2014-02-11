@@ -51,8 +51,8 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     
     @Override
     public boolean performOk() {
-    	store();
-    	return true;
+        store();
+        return true;
     }
     
     @Override
@@ -182,14 +182,14 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         enableExplodeModules.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	explodeModules = !explodeModules;
+                explodeModules = !explodeModules;
             }
         });
         
         showWarnings.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	showCompilerWarnings = !showCompilerWarnings;
+                showCompilerWarnings = !showCompilerWarnings;
             }
         });
 
@@ -260,7 +260,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             e.printStackTrace();
         }
     }
-	
+    
     @Override
     protected Control createContents(Composite composite) {
         IProject project = getSelectedProject();

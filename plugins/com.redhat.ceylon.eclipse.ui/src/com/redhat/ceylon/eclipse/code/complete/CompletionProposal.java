@@ -83,21 +83,21 @@ public class CompletionProposal implements ICompletionProposal,
 
     @Override
     public boolean isAutoInsertable() {
-    	return true;
+        return true;
     }
 
-	@Override
-	public StyledString getStyledDisplayString() {
-		StyledString result = new StyledString();
-		styleProposal(result, getDisplayString());
-		return result;
-	}
+    @Override
+    public StyledString getStyledDisplayString() {
+        StyledString result = new StyledString();
+        styleProposal(result, getDisplayString());
+        return result;
+    }
 
-	@Override
-	public IContextInformation getContextInformation() {
-		return null;
-	}
-	
+    @Override
+    public IContextInformation getContextInformation() {
+        return null;
+    }
+    
     private final class ProposalLinkedModeListener implements
             ILinkedModeListener {
         private final CeylonEditor editor;

@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Display;
  */
 public class ProblemMarkerManager implements IResourceChangeListener, 
         IAnnotationModelListener, IAnnotationModelListenerExtension {
-	
+    
     private ListenerList fListeners;
 
     public ProblemMarkerManager() {
@@ -62,7 +62,7 @@ public class ProblemMarkerManager implements IResourceChangeListener,
         private void checkInvalidate(IResourceDelta delta, IResource resource) {
             int kind= delta.getKind();
             if (kind==IResourceDelta.REMOVED || kind==IResourceDelta.ADDED || 
-            		(kind==IResourceDelta.CHANGED && isErrorDelta(delta))) {
+                    (kind==IResourceDelta.CHANGED && isErrorDelta(delta))) {
                 // invalidate the resource and all parents
                 while (resource.getType()!=IResource.ROOT && fChangedElements.add(resource)) {
                     resource= resource.getParent();

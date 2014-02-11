@@ -19,14 +19,14 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 public class KeywordCompletionProposal extends CompletionProposal {
     
     static void addKeywordProposals(CeylonParseController cpc, int offset, 
-    		String prefix, List<ICompletionProposal> result, Node node,
-    		OccurrenceLocation ol) {
+            String prefix, List<ICompletionProposal> result, Node node,
+            OccurrenceLocation ol) {
         if (isModuleDescriptor(cpc) && 
                 ol!=META && (ol==null||!ol.reference)) {
             if (prefix.isEmpty() || "import".startsWith(prefix)) {
                 if (node instanceof Tree.CompilationUnit) {
                     List<Tree.ModuleDescriptor> moduleDescriptors = 
-                    		cpc.getRootNode().getModuleDescriptors();
+                            cpc.getRootNode().getModuleDescriptors();
                     if (!moduleDescriptors.isEmpty()) {
                         Tree.ModuleDescriptor moduleDescriptor = moduleDescriptors.get(0);
                         if (moduleDescriptor.getImportModuleList() != null && 

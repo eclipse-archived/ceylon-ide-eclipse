@@ -19,21 +19,21 @@ import org.eclipse.ui.editors.text.FileDocumentProvider;
 
 public class SourceArchiveDocumentProvider extends FileDocumentProvider {
 
-	public static boolean isSrcArchive(IEditorInput editorInput) {
-		if (editorInput instanceof IURIEditorInput) {
-			IURIEditorInput uriEditorInput = (IURIEditorInput) editorInput;
-			URI uri= uriEditorInput.getURI();
-			if (uri == null) {
-				return false;
-			}
-			else {
-				return uri.getPath().contains(".src!");
-			}
-		}
-		else {
-			return false;
-		}
-	}
+    public static boolean isSrcArchive(IEditorInput editorInput) {
+        if (editorInput instanceof IURIEditorInput) {
+            IURIEditorInput uriEditorInput = (IURIEditorInput) editorInput;
+            URI uri= uriEditorInput.getURI();
+            if (uri == null) {
+                return false;
+            }
+            else {
+                return uri.getPath().contains(".src!");
+            }
+        }
+        else {
+            return false;
+        }
+    }
     
     @Override
     protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
@@ -43,45 +43,45 @@ public class SourceArchiveDocumentProvider extends FileDocumentProvider {
     
     @Override
     protected boolean setDocumentContent(IDocument document, IEditorInput editorInput, 
-    		String encoding) throws CoreException {
+            String encoding) throws CoreException {
         if (isSrcArchive(editorInput)) {
             IURIEditorInput uriEditorInput = (IURIEditorInput) editorInput;
             String contents = getZipEntryContents(uriEditorInput, encoding);
             if (contents!=null) {
-            	document.set(contents);
-            	return true;
+                document.set(contents);
+                return true;
             }
             else {
-            	return false;
+                return false;
             }
         } 
         else {
-        	return super.setDocumentContent(document, editorInput, encoding);
+            return super.setDocumentContent(document, editorInput, encoding);
         }
     }
     
     private String getZipEntryContents(IURIEditorInput uriEditorInput, 
-    		String encoding) {
-    	String path = uriEditorInput.getURI().getPath();
-    	int lastColonIdx = path.lastIndexOf('!');
-    	if (lastColonIdx<0) return null;
-    	String jarPath= path.substring(0, lastColonIdx);
-    	String entryPath= path.substring(lastColonIdx + 2);
-    	try {
-    		ZipFile zipFile = new ZipFile(new File(jarPath));
-    		try {
-    			ZipEntry entry= zipFile.getEntry(entryPath);
-    			return encoding==null ?
-    					readStreamContents(zipFile.getInputStream(entry)) :
-    					readStreamContents(zipFile.getInputStream(entry), encoding);
-    		}
-    		finally {
-    			zipFile.close();
-    		}
-    	}
-    	catch (IOException e) {				
-			e.printStackTrace();
-			return null;
-		}
+            String encoding) {
+        String path = uriEditorInput.getURI().getPath();
+        int lastColonIdx = path.lastIndexOf('!');
+        if (lastColonIdx<0) return null;
+        String jarPath= path.substring(0, lastColonIdx);
+        String entryPath= path.substring(lastColonIdx + 2);
+        try {
+            ZipFile zipFile = new ZipFile(new File(jarPath));
+            try {
+                ZipEntry entry= zipFile.getEntry(entryPath);
+                return encoding==null ?
+                        readStreamContents(zipFile.getInputStream(entry)) :
+                        readStreamContents(zipFile.getInputStream(entry), encoding);
+            }
+            finally {
+                zipFile.close();
+            }
+        }
+        catch (IOException e) {                
+            e.printStackTrace();
+            return null;
+        }
     }
 }

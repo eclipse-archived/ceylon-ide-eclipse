@@ -14,7 +14,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonDocumentRangeNode extends DocumentRangeNode 
         implements ITypedElement {
-	
+    
     private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
             .getImageRegistry();
     
@@ -22,7 +22,7 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
     
     public CeylonDocumentRangeNode(DocumentRangeNode parent, 
             CeylonOutlineNode outlineNode, 
-    		IDocument document) {
+            IDocument document) {
         super(parent, 1, 
                 outlineNode.getCategory()==ROOT_CATEGORY ?
                         "@root" :

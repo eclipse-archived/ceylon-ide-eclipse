@@ -40,7 +40,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class OutlinePopup extends TreeViewPopup {
-	
+    
     private CeylonOutlineContentProvider outlineContentProvider;
     private OutlineSorter outlineSorter;
     private ILabelProvider labelProvider;
@@ -75,8 +75,8 @@ public class OutlinePopup extends TreeViewPopup {
                 int cat = ((CeylonOutlineNode) i.getData()).getCategory();
                 //TODO: leave unshared declarations collapsed?
                 if (cat==CeylonOutlineNode.IMPORT_LIST_CATEGORY) {
-                	setExpanded(i, false);
-                	return;
+                    setExpanded(i, false);
+                    return;
                 }
             }
             super.internalExpandToLevel(w, level);
@@ -146,14 +146,14 @@ public class OutlinePopup extends TreeViewPopup {
     }
 
     public OutlinePopup(CeylonEditor editor, Shell parent, 
-    		int shellStyle, int treeStyle) {
+            int shellStyle, int treeStyle) {
         super(parent, shellStyle, treeStyle, editor,
-        		CeylonTokenColorer.getCurrentThemeColor("outline"));
+                CeylonTokenColorer.getCurrentThemeColor("outline"));
         setTitleText("Outline of " + editor.getEditorInput().getName());
     }
 
     @Override
-	protected TreeViewer createTreeViewer(Composite parent, int style) {
+    protected TreeViewer createTreeViewer(Composite parent, int style) {
         Tree tree= new Tree(parent, SWT.SINGLE | (style & ~SWT.MULTI));
         GridData gd= new GridData(GridData.FILL_BOTH);
         gd.heightHint= tree.getItemHeight() * 12;
@@ -164,8 +164,8 @@ public class OutlinePopup extends TreeViewPopup {
         labelProvider= new CeylonLabelProvider(true);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new OutlineNamePatternFilter(filterText));
-        //	fSortByDefiningTypeAction= new SortByDefiningTypeAction(treeViewer);
-        //	fShowOnlyMainTypeAction= new ShowOnlyMainTypeAction(treeViewer);
+        //    fSortByDefiningTypeAction= new SortByDefiningTypeAction(treeViewer);
+        //    fShowOnlyMainTypeAction= new ShowOnlyMainTypeAction(treeViewer);
         treeViewer.setContentProvider(outlineContentProvider);
         outlineSorter= new OutlineSorter();
         treeViewer.setSorter(outlineSorter);
@@ -174,50 +174,50 @@ public class OutlinePopup extends TreeViewPopup {
         return treeViewer;
     }
     
-	@Override
+    @Override
     protected String getId() {
         return "org.eclipse.jdt.internal.ui.text.QuickOutline";
     }
 
-	@Override
-	protected Control createTitleControl(Composite parent) {
-		getPopupLayout().copy().numColumns(3).applyTo(parent);
-		Label label = new Label(parent, SWT.NONE);
-		label.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_OUTLINE));
-		return super.createTitleControl(parent);
-	}
-	
+    @Override
+    protected Control createTitleControl(Composite parent) {
+        getPopupLayout().copy().numColumns(3).applyTo(parent);
+        Label label = new Label(parent, SWT.NONE);
+        label.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_OUTLINE));
+        return super.createTitleControl(parent);
+    }
+    
     @Override
     public void setInput(Object information) {
         if (information == null || information instanceof String) {
             inputChanged(null, null);
         }
         else {
-        	inputChanged(information, information);
+            inputChanged(information, information);
         }
     }
 
     @Override
     protected void fillViewMenu(IMenuManager viewMenu) {
         super.fillViewMenu(viewMenu);
-        //	viewMenu.add(fShowOnlyMainTypeAction);
+        //    viewMenu.add(fShowOnlyMainTypeAction);
         viewMenu.add(new Separator("Sorters"));
         if (lexicalSortingAction != null)
             viewMenu.add(lexicalSortingAction);
-        //	viewMenu.add(fSortByDefiningTypeAction);
+        //    viewMenu.add(fSortByDefiningTypeAction);
     }
 
     @Override
     protected void gotoSelectedElement() {
-    	CeylonParseController cpc = editor.getParseController();
-		if (cpc!=null) {
-	        Object object = getSelectedElement();
-			if (object instanceof CeylonOutlineNode) {
-	        	dispose();
-	        	CeylonOutlineNode on = (CeylonOutlineNode) object;
-	        	editor.selectAndReveal(on.getStartOffset(), 0);
-	        }
-    	}
+        CeylonParseController cpc = editor.getParseController();
+        if (cpc!=null) {
+            Object object = getSelectedElement();
+            if (object instanceof CeylonOutlineNode) {
+                dispose();
+                CeylonOutlineNode on = (CeylonOutlineNode) object;
+                editor.selectAndReveal(on.getStartOffset(), 0);
+            }
+        }
     }
 
 }

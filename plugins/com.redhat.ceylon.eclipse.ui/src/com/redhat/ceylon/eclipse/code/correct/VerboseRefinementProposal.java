@@ -15,28 +15,28 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class VerboseRefinementProposal extends CorrectionProposal {
 
-	private VerboseRefinementProposal(Change change) {
-		super("Convert to verbose refinement", change);
-	}
+    private VerboseRefinementProposal(Change change) {
+        super("Convert to verbose refinement", change);
+    }
 
-	static void addVerboseRefinementProposal(
-			Collection<ICompletionProposal> proposals, IFile file,
-			Tree.Statement statement) {
-		if (statement instanceof Tree.SpecifierStatement) {
-			Tree.SpecifierStatement ss = (Tree.SpecifierStatement) statement;
-			if (ss.getRefinement()) {
-				TextFileChange change = new TextFileChange("Convert to Verbose Refinement", file);
-				Tree.Expression e = ss.getSpecifierExpression().getExpression();
-				if (e!=null && !isTypeUnknown(e.getTypeModel())) {
-					Unit unit = ss.getUnit();
-					String type = unit.denotableType(e.getTypeModel())
-							.getProducedTypeName(unit);
-					change.setEdit(new InsertEdit(statement.getStartIndex(), 
-							"shared actual " + type + " "));
-					proposals.add(new VerboseRefinementProposal(change));
-				}
-			}
-		}
-	}
+    static void addVerboseRefinementProposal(
+            Collection<ICompletionProposal> proposals, IFile file,
+            Tree.Statement statement) {
+        if (statement instanceof Tree.SpecifierStatement) {
+            Tree.SpecifierStatement ss = (Tree.SpecifierStatement) statement;
+            if (ss.getRefinement()) {
+                TextFileChange change = new TextFileChange("Convert to Verbose Refinement", file);
+                Tree.Expression e = ss.getSpecifierExpression().getExpression();
+                if (e!=null && !isTypeUnknown(e.getTypeModel())) {
+                    Unit unit = ss.getUnit();
+                    String type = unit.denotableType(e.getTypeModel())
+                            .getProducedTypeName(unit);
+                    change.setEdit(new InsertEdit(statement.getStartIndex(), 
+                            "shared actual " + type + " "));
+                    proposals.add(new VerboseRefinementProposal(change));
+                }
+            }
+        }
+    }
 
 }

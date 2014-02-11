@@ -17,13 +17,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 
 final class CompileErrorReporter implements
-		DiagnosticListener<JavaFileObject> {
+        DiagnosticListener<JavaFileObject> {
     
-	private IProject project;
-	private boolean errorReported;
+    private IProject project;
+    private boolean errorReported;
 
     public CompileErrorReporter(IProject project) {
-	    this.project = project;
+        this.project = project;
     }
     
     public void failed() {
@@ -33,38 +33,38 @@ final class CompileErrorReporter implements
     }
 
     @Override
-	public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
+    public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
         errorReported = true;
-		JavaFileObject source = diagnostic.getSource();
-		if (source == null) {
-		    // no source file
-		    if (!diagnostic.toString().startsWith("Note: Created module")) {
-		        setupMarker(project, diagnostic);
-		    }
-		} 
-		else {
-		    IFile file = getWorkspace().getRoot()
-		            .getFileForLocation(new Path(source.getName()));
-		    if(file != null) {
-		        if (CeylonBuilder.isCeylon(file)){
-    		        try {
-    		            for (IMarker m: file.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, false, DEPTH_ZERO)) {
-    		                int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
-    		                if (sev==IMarker.SEVERITY_ERROR) {
-    		                    return;
-    		                }
-    		            }
-    		        } 
-    		        catch (CoreException e) {
-    		            e.printStackTrace();
-    		        }
-    		        setupMarker(file, diagnostic);
-		        }
-		    }else{
-		        setupMarker(project, diagnostic);
-		    }
-		}
-	}
+        JavaFileObject source = diagnostic.getSource();
+        if (source == null) {
+            // no source file
+            if (!diagnostic.toString().startsWith("Note: Created module")) {
+                setupMarker(project, diagnostic);
+            }
+        } 
+        else {
+            IFile file = getWorkspace().getRoot()
+                    .getFileForLocation(new Path(source.getName()));
+            if(file != null) {
+                if (CeylonBuilder.isCeylon(file)){
+                    try {
+                        for (IMarker m: file.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, false, DEPTH_ZERO)) {
+                            int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
+                            if (sev==IMarker.SEVERITY_ERROR) {
+                                return;
+                            }
+                        }
+                    } 
+                    catch (CoreException e) {
+                        e.printStackTrace();
+                    }
+                    setupMarker(file, diagnostic);
+                }
+            }else{
+                setupMarker(project, diagnostic);
+            }
+        }
+    }
 
     private void setupMarker(IResource r, Diagnostic<? extends JavaFileObject> diagnostic) {
         try {

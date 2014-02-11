@@ -16,47 +16,47 @@ import org.eclipse.swt.widgets.Text;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public class ExtractFunctionInputPage extends UserInputWizardPage {
-	public ExtractFunctionInputPage(String name) {
-		super(name);
-	}
+    public ExtractFunctionInputPage(String name) {
+        super(name);
+    }
 
-	public void createControl(Composite parent) {
-		Composite result = new Composite(parent, SWT.NONE);
-		setControl(result);
-		GridLayout layout = new GridLayout();
-		layout.numColumns = 2;
-		result.setLayout(layout);
-		Label label = new Label(result, SWT.RIGHT);  
-		label.setText("Function name: ");
-		final Text text = new Text(result, SWT.SINGLE|SWT.BORDER);
-		text.setText(getExtractFunctionRefactoring().getNewName());
-		text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-		text.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent event) {
-				String name = text.getText();
-				validateIdentifier(name);
+    public void createControl(Composite parent) {
+        Composite result = new Composite(parent, SWT.NONE);
+        setControl(result);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 2;
+        result.setLayout(layout);
+        Label label = new Label(result, SWT.RIGHT);  
+        label.setText("Function name: ");
+        final Text text = new Text(result, SWT.SINGLE|SWT.BORDER);
+        text.setText(getExtractFunctionRefactoring().getNewName());
+        text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+        text.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent event) {
+                String name = text.getText();
+                validateIdentifier(name);
                 getExtractFunctionRefactoring().setNewName(name);
-			}
-		});
-		final Button checkbox = new Button(result, SWT.CHECK);
-		checkbox.setText("Use explicit type declaration");
-		checkbox.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent event) {
-				getExtractFunctionRefactoring().setExplicitType();
-			}
-			@Override
-			public void widgetDefaultSelected(SelectionEvent event) {}
-		});
-		text.addKeyListener(new SubwordIterator(text));
-		text.selectAll();
+            }
+        });
+        final Button checkbox = new Button(result, SWT.CHECK);
+        checkbox.setText("Use explicit type declaration");
+        checkbox.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                getExtractFunctionRefactoring().setExplicitType();
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        text.addKeyListener(new SubwordIterator(text));
+        text.selectAll();
         text.setFocus();
-	}
+    }
 
-	private ExtractFunctionRefactoring getExtractFunctionRefactoring() {
-		return (ExtractFunctionRefactoring) getRefactoring();
-	}
+    private ExtractFunctionRefactoring getExtractFunctionRefactoring() {
+        return (ExtractFunctionRefactoring) getRefactoring();
+    }
 
     void validateIdentifier(String name) {
         if (!name.matches("^[a-z_]\\w*$")) {

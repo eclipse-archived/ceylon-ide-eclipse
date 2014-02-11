@@ -63,13 +63,13 @@ public class RevealInferredTypeHandler extends AbstractHandler {
 
         if( !localModifiers.isEmpty() || !valueIterators.isEmpty() ) {
             TextChange tfc = new TextFileChange("Reveal Inferred Types", 
-            		((IFileEditorInput) editor.getEditorInput()).getFile());
+                    ((IFileEditorInput) editor.getEditorInput()).getFile());
             tfc.setEdit(new MultiTextEdit());
             tfc.initializeValidationData(null);
 
             for (Tree.LocalModifier localModifier : localModifiers) {
                 if( localModifier.getStartIndex() != null && 
-                		localModifier.getTypeModel() != null ) {
+                        localModifier.getTypeModel() != null ) {
                     ProducedType pt = localModifier.getTypeModel();
                     tfc.addEdit(new ReplaceEdit(
                             localModifier.getStartIndex(), 
@@ -95,7 +95,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
             
             try {
                 IDocument doc = tfc.getCurrentDocument(null);
-    			applyImports(tfc, imports, rootNode, doc);
+                applyImports(tfc, imports, rootNode, doc);
 
                 PerformChangeOperation changeOperation = new PerformChangeOperation(tfc);
                 changeOperation.setUndoManager(getUndoManager(), "Reveal Inferred Types");
@@ -110,8 +110,8 @@ public class RevealInferredTypeHandler extends AbstractHandler {
     }
 
     private void findCandidatesForRevelation(CeylonEditor editor, 
-    		final List<Tree.LocalModifier> localModifiers, 
-    		final List<Tree.ValueIterator> valueIterators) {
+            final List<Tree.LocalModifier> localModifiers, 
+            final List<Tree.ValueIterator> valueIterators) {
         if (editor != null && 
                 editor.getParseController() != null && 
                 editor.getParseController().getRootNode() != null && 

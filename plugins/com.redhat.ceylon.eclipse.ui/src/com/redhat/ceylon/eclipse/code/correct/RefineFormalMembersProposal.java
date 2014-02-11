@@ -52,27 +52,27 @@ class RefineFormalMembersProposal implements ICompletionProposal {
     
     @Override
     public Point getSelection(IDocument doc) {
-    	return null;
+        return null;
     }
 
     @Override
     public Image getImage() {
-    	return FORMAL_REFINEMENT;
+        return FORMAL_REFINEMENT;
     }
 
     @Override
     public String getDisplayString() {
-    	return "Refine formal members";
+        return "Refine formal members";
     }
 
     @Override
     public IContextInformation getContextInformation() {
-    	return null;
+        return null;
     }
 
     @Override
     public String getAdditionalProposalInfo() {
-    	return null;
+        return null;
     }
 
     @Override
@@ -178,14 +178,14 @@ class RefineFormalMembersProposal implements ICompletionProposal {
     }
 
     public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
-    	if (canRefine(editor)) {
-    	    for (ICompletionProposal cp: proposals) {
-    	        if (cp instanceof ImplementFormalAndAmbiguouslyInheritedMembersProposal) {
-    	            return;
-    	        }
-    	    }
-    		proposals.add(new RefineFormalMembersProposal(editor));
-    	}
+        if (canRefine(editor)) {
+            for (ICompletionProposal cp: proposals) {
+                if (cp instanceof ImplementFormalAndAmbiguouslyInheritedMembersProposal) {
+                    return;
+                }
+            }
+            proposals.add(new RefineFormalMembersProposal(editor));
+        }
     }
 
 }
