@@ -16,8 +16,8 @@ import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_A
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importCallableParameterParamTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -50,8 +50,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
-import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -349,7 +347,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         if (!qualified) {
             importDeclaration(decs, declaration, cu);
         }
-        importCallableParameterParamTypes(decs, cu);
+        if (positionalInvocation||namedInvocation) {
+            importCallableParameterParamTypes(declaration, decs, cu);
+        }
         int il=applyImports(change, decs, cu, document);
         change.addEdit(new ReplaceEdit(offset-prefix.length(), 
                     prefix.length(), text));
@@ -357,26 +357,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         return change;
     }
 
-    private void importCallableParameterParamTypes(HashSet<Declaration> decs,
-            Tree.CompilationUnit cu) {
-        if (declaration instanceof Functional) {
-            List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-            if (!pls.isEmpty()) {
-                for (Parameter p: pls.get(0).getParameters()) {
-                    MethodOrValue pm = p.getModel();
-                    if (pm instanceof Method) {
-                        for (ParameterList ppl: ((Method) pm).getParameterLists()) {
-                            for (Parameter pp: ppl.getParameters()) {
-                                importSignatureTypes(pp.getModel(), cu, decs);
-                            }
-                        }
-                    }
-                }
-            }            
-        }
-    }
-
-	@Override
+    @Override
 	public void apply(IDocument document) {
         try {
             createChange(document).perform(new NullProgressMonitor());
