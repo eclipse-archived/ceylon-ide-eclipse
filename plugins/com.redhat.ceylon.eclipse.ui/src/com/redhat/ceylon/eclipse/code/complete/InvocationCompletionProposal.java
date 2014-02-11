@@ -406,16 +406,45 @@ class InvocationCompletionProposal extends CompletionProposal {
 	        //no arg list
 	        return super.getSelection(document);
 	    }
-	    int next = getNextPosition(document, first);
-	    if (next<=0) {
-	        //an empty arg list
+	    int next, start, len;
+	    try {
+            do {
+                next = getNextPosition(document, first);
+                if (next<=0) {
+                    //an empty arg list
+                    return super.getSelection(document);
+                }
+                int middle = getCompletionPosition(first, next);
+                start = offset-prefix.length()+first+middle;
+                len = next-middle;
+                first = first+next+1;
+            }
+            while (document.get(start, len).equals("{}"));
+        }
+	    catch (BadLocationException e) {
 	        return super.getSelection(document);
-	    }
-	    int middle = getCompletionPosition(first, next);
-	    return new Point(offset-prefix.length()+first+middle, 
-	            next-middle);
+        }
+	    return new Point(start, len);
 	}
 	
+    protected int getCompletionPosition(int first, int next) {
+        return text.substring(first, first+next-1).lastIndexOf(' ')+1;
+    }
+
+    protected int getFirstPosition() {
+        int index;
+        if (namedInvocation) {
+            index = text.indexOf('{');
+        }
+        else if (positionalInvocation) {
+            index = text.indexOf('(');
+        }
+        else {
+            index = text.indexOf('<');
+        }
+        return index+1;
+    }
+    
 	public int getNextPosition(IDocument document, 
 	        int lastOffset) {
 		int loc = offset-prefix.length();
@@ -469,20 +498,29 @@ class InvocationCompletionProposal extends CompletionProposal {
                     new LinkedModeModel();
 	        int i=0;
 	        while (next>0 && i<paramCount) {
-	        	List<ICompletionProposal> props = 
-	        	        new ArrayList<ICompletionProposal>();
-	        	if (proposeTypeArguments) {
-	        		addTypeArgumentProposals(typeParams, loc, first, props, i);
-	        	}
-	        	else {
-	        		addValueArgumentProposals(params, loc, first, props, i);
-	        	}
-		        int middle = getCompletionPosition(first, next);
-		        ProposalPosition linkedPosition = 
-		                new ProposalPosition(document, 
-		                        loc+first+middle, next-middle, i, 
-		                        props.toArray(NO_COMPLETIONS));
-                addLinkedPosition(linkedModeModel, linkedPosition);
+	            //skip void callable params
+	            while (namedInvocation && 
+	                    params.get(i).isDeclaredVoid()) {
+	                //no comma or semicolon
+	                i++;
+	            }
+	            if (proposeTypeArguments ||
+	                    !params.get(i).isDeclaredVoid()) {
+    	        	List<ICompletionProposal> props = 
+    	        	        new ArrayList<ICompletionProposal>();
+    	        	if (proposeTypeArguments) {
+    	        		addTypeArgumentProposals(typeParams, loc, first, props, i);
+    	        	}
+    	        	else {
+    	        		addValueArgumentProposals(params, loc, first, props, i);
+    	        	}
+    		        int middle = getCompletionPosition(first, next);
+    		        ProposalPosition linkedPosition = 
+    		                new ProposalPosition(document, 
+    		                        loc+first+middle, next-middle, i, 
+    		                        props.toArray(NO_COMPLETIONS));
+                    addLinkedPosition(linkedModeModel, linkedPosition);
+	            }
 		        first = first+next+1;
 		        next = getNextPosition(document, first);
 	            i++;
@@ -496,24 +534,6 @@ class InvocationCompletionProposal extends CompletionProposal {
 	    }
 	}
 
-	protected int getCompletionPosition(int first, int next) {
-		return text.substring(first, first+next-1).lastIndexOf(' ')+1;
-	}
-
-	protected int getFirstPosition() {
-	    int index;
-	    if (namedInvocation) {
-	        index = text.indexOf('{');
-	    }
-	    else if (positionalInvocation) {
-	        index = text.indexOf('(');
-	    }
-	    else {
-	        index = text.indexOf('<');
-	    }
-        return index+1;
-	}
-	
 	private void addValueArgumentProposals(List<Parameter> params, final int loc,
 			int first, List<ICompletionProposal> props, final int index) {
 		Parameter p = params.get(index);
