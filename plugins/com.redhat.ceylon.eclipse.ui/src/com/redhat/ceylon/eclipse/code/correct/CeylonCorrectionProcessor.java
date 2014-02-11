@@ -621,6 +621,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             }
             Declaration d = decNode.getDeclarationModel();
             if (d!=null) {
+                if (decNode instanceof Tree.AttributeDeclaration) {
+                    addMakeVariableDecProposal(proposals, project, decNode);
+                }
                 if ((d.isClassOrInterfaceMember()||d.isToplevel()) && 
                         !d.isShared()) {
                     addMakeSharedDecProposal(proposals, project, decNode);

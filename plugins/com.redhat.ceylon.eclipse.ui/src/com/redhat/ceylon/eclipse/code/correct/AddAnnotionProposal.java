@@ -408,6 +408,17 @@ class AddAnnotionProposal extends CorrectionProposal {
     }
     
     static void addMakeVariableDecProposal(Collection<ICompletionProposal> proposals,
+            IProject project, Tree.Declaration node) {
+        final Declaration dec = node.getDeclarationModel();
+        if (dec instanceof Value && node instanceof Tree.AttributeDeclaration) {
+            final Value v = (Value) dec;
+            if (!v.isVariable() && !v.isTransient()) {
+                addAddAnnotationProposal(node, "variable", "Make Variable",
+                        dec, proposals, project);
+            }
+        }
+    }
+    static void addMakeVariableDecProposal(Collection<ICompletionProposal> proposals,
             IProject project, Tree.CompilationUnit cu, Node node) {
         final Tree.SpecifierOrInitializerExpression sie = 
                 (Tree.SpecifierOrInitializerExpression) node;
