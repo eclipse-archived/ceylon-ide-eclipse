@@ -30,6 +30,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -325,53 +327,53 @@ public class ImportProposals {
 	}
 
 	public static void importSignatureTypes(Declaration declaration, 
-			Tree.CompilationUnit rootNode, Set<Declaration> tc) {
+			Tree.CompilationUnit rootNode, Set<Declaration> declarations) {
 		if (declaration instanceof TypedDeclaration) {
-			importType(tc, ((TypedDeclaration) declaration).getType(), 
+			importType(declarations, ((TypedDeclaration) declaration).getType(), 
 					rootNode);
 		}
 		if (declaration instanceof Functional) {
 			for (ParameterList pl: 
 				    ((Functional) declaration).getParameterLists()) {
 				for (Parameter p: pl.getParameters()) {
-					importType(tc, p.getType(), rootNode);
+				    importSignatureTypes(p.getModel(), rootNode, declarations);
 				}
 			}
 		}
 	}
 	
-	public static void importTypes(Set<Declaration> tfc, 
+	public static void importTypes(Set<Declaration> declarations, 
 			Collection<ProducedType> types, 
 			Tree.CompilationUnit rootNode) {
 		if (types==null) return;
 		for (ProducedType type: types) {
-			importType(tfc, type, rootNode);
+			importType(declarations, type, rootNode);
 		}
 	}
 	
-	public static void importType(Set<Declaration> tfc, 
+	public static void importType(Set<Declaration> declarations, 
 			ProducedType type, 
 			Tree.CompilationUnit rootNode) {
 		if (type==null) return;
 		if (type.getDeclaration() instanceof UnionType) {
 			for (ProducedType t: 
 			    type.getDeclaration().getCaseTypes()) {
-				importType(tfc, t, rootNode);
+				importType(declarations, t, rootNode);
 			}
 		}
 		else if (type.getDeclaration() instanceof IntersectionType) {
 			for (ProducedType t: 
 			    type.getDeclaration().getSatisfiedTypes()) {
-				importType(tfc, t, rootNode);
+				importType(declarations, t, rootNode);
 			}
 		}
 		else {
 			TypeDeclaration td = type.getDeclaration();
 			if (td instanceof ClassOrInterface && 
 					td.isToplevel()) {
-				importDeclaration(tfc, td, rootNode);
+				importDeclaration(declarations, td, rootNode);
 				for (ProducedType arg: type.getTypeArgumentList()) {
-					importType(tfc, arg, rootNode);
+					importType(declarations, arg, rootNode);
 				}
 			}
 		}
@@ -397,6 +399,30 @@ public class ImportProposals {
         	}
         }
         return false;
+    }
+
+    public static void importCallableParameterParamTypes(Declaration declaration, 
+            HashSet<Declaration> decs, Tree.CompilationUnit cu) {
+        if (declaration instanceof Functional) {
+            List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+            if (!pls.isEmpty()) {
+                for (Parameter p: pls.get(0).getParameters()) {
+                    MethodOrValue pm = p.getModel();
+                    importParameterTypes(pm, cu, decs);
+                }
+            }            
+        }
+    }
+
+    public static void importParameterTypes(Declaration pm,
+            Tree.CompilationUnit cu, HashSet<Declaration> decs) {
+        if (pm instanceof Method) {
+            for (ParameterList ppl: ((Method) pm).getParameterLists()) {
+                for (Parameter pp: ppl.getParameters()) {
+                    importSignatureTypes(pp.getModel(), cu, decs);
+                }
+            }
+        }
     }
     
     }

@@ -14,6 +14,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.styleProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importParameterTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
@@ -64,7 +65,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -111,7 +112,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 getRefinementTextFor(dec, pr, unit, isInterface, ci, 
                         getDefaultLineDelimiter(doc) + getIndent(node, doc), 
                         true, preamble), 
-                cpc, dec, scope, false));
+                cpc, dec, scope, false, true));
     }
     
     static void addNamedArgumentProposal(int offset, String prefix, 
@@ -122,7 +123,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 dec.getReference(), //TODO: this needs to do type arg substitution
                 getDescriptionFor(dwp), 
                 getTextFor(dwp) + " = nothing;", 
-                cpc, dec, scope, true));
+                cpc, dec, scope, true, false));
     }
 
     static void addInlineFunctionProposal(int offset, Declaration dec, 
@@ -137,7 +138,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     getInlineFunctionDescriptionFor(p, null, unit),
                     getInlineFunctionTextFor(p, null, unit, 
                             getDefaultLineDelimiter(doc) + getIndent(node, doc)),
-                    cpc, dec, scope, false));
+                    cpc, dec, scope, false, false));
         }
     }
 
@@ -181,11 +182,12 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     private final ProducedReference pr;
     private final boolean fullType;
     private final Scope scope;
+    private boolean explicitReturnType;
 
     private RefinementCompletionProposal(int offset, String prefix, 
             ProducedReference pr, String desc, String text, 
             CeylonParseController cpc, Declaration dec, Scope scope,
-            boolean fullType) {
+            boolean fullType, boolean explicitReturnType) {
         super(offset, prefix, getIcon(dec), 
                 desc, text);
         this.cpc = cpc;
@@ -193,6 +195,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         this.pr = pr;
         this.fullType = fullType;
         this.scope = scope;
+        this.explicitReturnType = explicitReturnType;
     }
 
     private static Image getIcon(Declaration dec) {
@@ -253,10 +256,13 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         DocumentChange change = new DocumentChange("Complete Refinement", document);
         change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs = new HashSet<Declaration>();
-        CompilationUnit cu = cpc.getRootNode();
-        //TODO for an inline function completion, we don't
-        //     need to import the return type
-        importSignatureTypes(declaration, cu, decs);
+        Tree.CompilationUnit cu = cpc.getRootNode();
+        if (explicitReturnType) {
+            importSignatureTypes(declaration, cu, decs);
+        }
+        else {
+            importParameterTypes(declaration, cu, decs);
+        }
         int il=applyImports(change, decs, cu, document);
         change.addEdit(new ReplaceEdit(offset-prefix.length(), 
                 prefix.length(), text));
