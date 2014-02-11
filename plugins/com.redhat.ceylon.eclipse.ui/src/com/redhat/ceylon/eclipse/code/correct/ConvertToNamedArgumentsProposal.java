@@ -52,8 +52,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
             List<CommonToken> tokens = editor.getParseController().getTokens();
             final List<Tree.PositionalArgument> args = pal.getPositionalArguments();
             int i=0;
-            for (Tree.PositionalArgument arg: 
-                    args) {
+            for (Tree.PositionalArgument arg: args) {
                 Parameter param = arg.getParameter();
                 if (param==null) {
                     return;
@@ -96,7 +95,8 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                                 }
                                 if (fa.getBlock()!=null) {
                                     result.append(" ")
-                                        .append(AbstractRefactoring.toString(fa.getBlock(), tokens));
+                                        .append(AbstractRefactoring.toString(fa.getBlock(), tokens))
+                                        .append(" ");
                                 }
                                 else if (fa.getExpression()!=null) {
                                     result.append(" => ")
@@ -108,8 +108,8 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                             if (++i==args.size() && 
                                     term instanceof Tree.SequenceEnumeration) {
                                 Tree.SequenceEnumeration se = (Tree.SequenceEnumeration) term;
-                                result.append(" ")
-                                    .append(AbstractRefactoring.toString(se.getSequencedArgument(), tokens));
+                                result.append(AbstractRefactoring.toString(se.getSequencedArgument(), tokens))
+                                    .append(" ");
                                 continue;
                             }
                         }
@@ -120,9 +120,9 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                 }
             }
             if (sequencedArgs) {
-                result.append("];");
+                result.append("]; ");
             }
-            result.append(" }");
+            result.append("}");
             tc.setEdit(new ReplaceEdit(start, length, result.toString()));
             int offset = start+result.toString().length();
             proposals.add(new ConvertToNamedArgumentsProposal(offset, file, tc));
