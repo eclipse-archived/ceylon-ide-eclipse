@@ -511,14 +511,14 @@ class InvocationCompletionProposal extends CompletionProposal {
                                 param==params.size()-1);
                     }
                     int middle = getCompletionPosition(first, next);
-                    int s = loc+first+middle;
-                    int l = next-middle;
+                    int start = loc+first+middle;
+                    int len = next-middle;
                     if (voidParam) {
-                        s++;
-                        l=0;
+                        start++;
+                        len=0;
                     }
                     ProposalPosition linkedPosition = 
-                            new ProposalPosition(document, s, l, seq, 
+                            new ProposalPosition(document, start, len, seq, 
                                     props.toArray(NO_COMPLETIONS));
                     addLinkedPosition(linkedModeModel, linkedPosition);
                     first = first+next+1;
