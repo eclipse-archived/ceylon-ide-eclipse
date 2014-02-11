@@ -493,7 +493,6 @@ class InvocationCompletionProposal extends CompletionProposal {
             LinkedModeModel linkedModeModel = new LinkedModeModel();
             int seq=0, param=0;
             while (next>0 && param<paramCount) {
-                //skip void callable params
                 boolean voidParam = !proposeTypeArguments &&
                         params.get(param).isDeclaredVoid();
                 if (proposeTypeArguments || positionalInvocation ||
@@ -504,10 +503,12 @@ class InvocationCompletionProposal extends CompletionProposal {
                     List<ICompletionProposal> props = 
                             new ArrayList<ICompletionProposal>();
                     if (proposeTypeArguments) {
-                        addTypeArgumentProposals(typeParams.get(seq), loc, first, props, seq);
+                        addTypeArgumentProposals(typeParams.get(seq), 
+                                loc, first, props, seq);
                     }
                     else if (!voidParam) {
-                        addValueArgumentProposals(params.get(param), loc, first, props, seq, 
+                        addValueArgumentProposals(params.get(param), 
+                                loc, first, props, seq, 
                                 param==params.size()-1);
                     }
                     int middle = getCompletionPosition(first, next);
