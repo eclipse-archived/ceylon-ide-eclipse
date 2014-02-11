@@ -76,9 +76,9 @@ public class MainUITests extends AbstractMultiProjectTest {
 
     public void navigationTest(IFile initialFile, NavigationStep... navigationSteps) {
         Utils.openInEditor(initialFile);
-        
         SWTBotEclipseEditor editor = Utils.showEditorByTitle(bot, initialFile.getName());
         for (NavigationStep step : navigationSteps) {
+            bot.sleep(500);
             editor.navigateTo(Utils.positionInTextEditor(editor, step.pattern, step.offset));
             bot.sleep(500);
             step.navigateToCurrentDeclaration(editor);
@@ -100,7 +100,7 @@ public class MainUITests extends AbstractMultiProjectTest {
     public void ctrlClickDeclarationFromLanguageModuleSource() {
         navigationTest(mainProject.getFile("src/mainModule/run.ceylon"),
                 new CtrlClick("doc ", 1, "annotations.ceylon"),
-                new CtrlClick("\\bClassDeclaration\\b", 5, "ClassDeclaration.ceylon")
+                new CtrlClick(Pattern.compile("\\bClassDeclaration\\b"), 5, "ClassDeclaration.ceylon")
         );
     }
     
