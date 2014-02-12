@@ -164,7 +164,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         }
     }
     
-    static void addChangeTypeProposals(Collection<ICompletionProposal> proposals,
+    private static void addChangeTypeProposals(Collection<ICompletionProposal> proposals,
             ProblemLocation problem, IProject project, Node node, ProducedType type, 
             Declaration dec, boolean intersect) {
         if (dec!=null) {

@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.eclipse.jface.text.ITextSelection;
@@ -10,6 +11,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -117,6 +119,17 @@ class CorrectionUtil {
             }
         }
         return result;
+    }
+
+    static String asIntersectionTypeString(List<ProducedType> types) {
+        StringBuffer missingSatisfiedTypesText = new StringBuffer();
+        for( ProducedType missingSatisfiedType: types ) {
+            if( missingSatisfiedTypesText.length() != 0 ) {
+                missingSatisfiedTypesText.append(" & ");
+            }
+            missingSatisfiedTypesText.append(missingSatisfiedType.getProducedTypeName());   
+        }
+        return missingSatisfiedTypesText.toString();
     }
     
 }

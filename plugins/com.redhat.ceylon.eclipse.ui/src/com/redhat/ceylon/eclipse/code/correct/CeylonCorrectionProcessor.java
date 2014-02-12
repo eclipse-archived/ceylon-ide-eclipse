@@ -23,7 +23,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddConstraintSatisfiesProposal.addConstraintSatisfiesProposals;
+import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddParenthesesProposal.addAddParenthesesProposal;
@@ -495,7 +495,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 2100:
         case 2102:
             addChangeTypeProposals(cu, node, problem, proposals, project);
-            addConstraintSatisfiesProposals(cu, node, proposals, project);
+            addSatisfiesProposals(cu, node, proposals, project);
             break;
         case 2101:
             addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            

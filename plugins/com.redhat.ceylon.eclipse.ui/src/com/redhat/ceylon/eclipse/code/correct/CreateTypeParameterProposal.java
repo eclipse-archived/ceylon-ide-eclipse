@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.AddConstraintSatisfiesProposal.createMissingBoundsText;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
@@ -184,7 +183,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
             constraints = null;
         }
         else {
-            String bounds = createMissingBoundsText(ftpcv.result);
+            String bounds = CorrectionUtil.asIntersectionTypeString(ftpcv.result);
             if (bounds.isEmpty()) {
                 constraints = null;
             }
