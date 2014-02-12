@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.launch;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
+import static com.redhat.ceylon.eclipse.core.launch.LaunchHelper.getTopLevelDisplayName;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
-import org.eclipse.debug.ui.ILaunchShortcut;
+import org.eclipse.debug.ui.ILaunchShortcut2;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
@@ -44,7 +45,7 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 
-public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
+public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
 
     protected ILaunchManager getLaunchManager() {
         return DebugPlugin.getDefault().getLaunchManager();
@@ -52,16 +53,20 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
  
     protected abstract ILaunchConfigurationType getConfigurationType();
  
-    private String getLaunchConfigurationName(String projectName, String moduleName, Declaration declarationToRun) {
-        String topLevelDisplayName = LaunchHelper.getTopLevelDisplayName(declarationToRun);
+    private String getLaunchConfigurationName(String projectName, 
+            String moduleName, Declaration declarationToRun) {
+        String topLevelDisplayName = 
+                LaunchHelper.getTopLevelDisplayName(declarationToRun);
         
         String configurationName = projectName.trim() + " - " 
                 + moduleName.trim() + " ("  
                 + topLevelDisplayName.trim() + ")";
         
-        configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
+        configurationName = configurationName
+                .replaceAll("[\u00c0-\ufffe]", "_");
         
-        return getLaunchManager().generateLaunchConfigurationName(configurationName);
+        return getLaunchManager()
+                .generateLaunchConfigurationName(configurationName);
     }
     
     /**
@@ -69,7 +74,8 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      * 
      * @return the configuration created.
      */
-    protected ILaunchConfiguration createConfiguration(Declaration declarationToRun, IResource resource) {
+    protected ILaunchConfiguration createConfiguration(Declaration declarationToRun, 
+            IResource resource) {
         ILaunchConfiguration config = null;
         ILaunchConfigurationWorkingCopy wc = null;
         try {
@@ -80,14 +86,15 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
                 moduleName = mod.getNameAsString();
             }
 
-            wc = getConfigurationType().newInstance(null, getLaunchConfigurationName(
-                            resource.getProject().getName(), moduleName, declarationToRun));
+            wc = getConfigurationType().newInstance(null, 
+                    getLaunchConfigurationName(resource.getProject().getName(), 
+                            moduleName, declarationToRun));
             
             wc.setAttribute(ATTR_PROJECT_NAME, resource.getProject().getName());
-            wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, moduleName);
+            wc.setAttribute(ATTR_MODULE_NAME, moduleName);
             
             // save the runnable display name, which may be exact name or 'run - default'
-            wc.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, 
+            wc.setAttribute(ATTR_TOPLEVEL_NAME, 
                     LaunchHelper.getTopLevelDisplayName(declarationToRun));
             
             wc.setMappedResources(new IResource[] {resource});
@@ -105,35 +112,11 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      * 
      * @return a configuration to use for launching the given type or <code>null</code> if none
      */
-    protected ILaunchConfiguration findLaunchConfiguration(Declaration declaration, IResource resource, 
-            ILaunchConfigurationType configType) {
+    protected ILaunchConfiguration findLaunchConfiguration(Declaration declaration, 
+            IResource resource, ILaunchConfigurationType configType) {
         
-        List<ILaunchConfiguration> candidateConfigs = Collections.<ILaunchConfiguration>emptyList();
-        String projectName = resource.getProject().getName();
-        
-        try {
-            ILaunchConfiguration[] configs = getLaunchManager().getLaunchConfigurations(configType);
-            candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
- 
-            Module mod = LaunchHelper.getModule(declaration);
-            String moduleName = LaunchHelper.getFullModuleName(mod);
-            if (mod.isDefault()) {
-                moduleName = mod.getNameAsString();
-            }
-            
-            String topLevelDisplayName =LaunchHelper.getTopLevelDisplayName(declaration);
-            
-            for (int i = 0; i < configs.length; i++) {
-                ILaunchConfiguration config = configs[i];
-                if (config.getAttribute(ATTR_TOPLEVEL_NAME, "").equals(topLevelDisplayName) && 
-                        config.getAttribute(ATTR_PROJECT_NAME, "").equals(projectName) &&
-                        config.getAttribute(ATTR_MODULE_NAME, "").equals(moduleName)) {
-                    candidateConfigs.add(config);
-                }
-            }
-        } catch (CoreException e) {
-            e.printStackTrace(); // TODO : Use a logger
-        }
+        List<ILaunchConfiguration> candidateConfigs = 
+                getLaunchConfigurations(declaration, resource, configType);
         
         int candidateCount = candidateConfigs.size();
         if (candidateCount == 1) {
@@ -144,6 +127,40 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         }
         return null;
     }
+
+    private List<ILaunchConfiguration> getLaunchConfigurations(Declaration declaration, 
+            IResource resource, ILaunchConfigurationType configType) {
+        List<ILaunchConfiguration> candidateConfigs = 
+                Collections.<ILaunchConfiguration>emptyList();
+        String projectName = resource.getProject().getName();
+        
+        try {
+            ILaunchConfiguration[] configs = getLaunchManager()
+                    .getLaunchConfigurations(configType);
+            candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
+ 
+            Module mod = LaunchHelper.getModule(declaration);
+            String moduleName = LaunchHelper.getFullModuleName(mod);
+            if (mod.isDefault()) {
+                moduleName = mod.getNameAsString();
+            }
+            
+            String topLevelDisplayName = getTopLevelDisplayName(declaration);
+            
+            for (int i = 0; i < configs.length; i++) {
+                ILaunchConfiguration config = configs[i];
+                if (config.getAttribute(ATTR_TOPLEVEL_NAME, "").equals(topLevelDisplayName) && 
+                        config.getAttribute(ATTR_PROJECT_NAME, "").equals(projectName) &&
+                        config.getAttribute(ATTR_MODULE_NAME, "").equals(moduleName)) {
+                    candidateConfigs.add(config);
+                }
+            }
+        }
+        catch (CoreException e) {
+            e.printStackTrace(); // TODO : Use a logger
+        }
+        return candidateConfigs;
+    }
     
     /**
      * Choose a pre-defined configuration if there is more than one defined configuration
@@ -152,8 +169,10 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      * @return the chosen configuration
      */
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList) {
-        IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
-        ElementListSelectionDialog dialog= new ElementListSelectionDialog(EditorUtil.getShell(), labelProvider);
+        IDebugModelPresentation labelProvider = 
+                DebugUITools.newDebugModelPresentation();
+        ElementListSelectionDialog dialog = 
+                new ElementListSelectionDialog(EditorUtil.getShell(), labelProvider);
         dialog.setElements(configList.toArray());
         dialog.setTitle("Ceylon Launcher");  
         dialog.setMessage("Please choose a configuration to start the Ceylon application");
@@ -179,10 +198,12 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         List<IFile> files = new LinkedList<IFile>(); 
         for (Object object : structuredSelection.toList()) {
             if (object instanceof IAdaptable) {
-                IResource resource = (IResource) ((IAdaptable)object).getAdapter(IResource.class);
+                IResource resource = (IResource) 
+                        ((IAdaptable)object).getAdapter(IResource.class);
                 if (resource != null) {
                     if (resource instanceof IProject) {
-                        Module mod = LaunchHelper.chooseModule((IProject)resource, true);
+                        Module mod = 
+                                LaunchHelper.chooseModule((IProject)resource, true);
                         if (mod != null) {
                             launchModule(mod, resource, mode);
                             return; // do not look at other parts of the selection
@@ -217,10 +238,13 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
                 if (cu!=null) {
                     ISelection selection = ce.getSelectionProvider().getSelection();
                     if (selection instanceof ITextSelection) {
-                        Node node = FindUtils.findToplevelStatement(cu, findNode(cu, (ITextSelection) selection));
+                        Node node = FindUtils.findToplevelStatement(cu, 
+                                findNode(cu, (ITextSelection) selection));
                         if (node instanceof Tree.AnyMethod) {
-                            Method method = ((Tree.AnyMethod) node).getDeclarationModel();
-                            if (method!=null && method.isToplevel() && 
+                            Method method = 
+                                    ((Tree.AnyMethod) node).getDeclarationModel();
+                            if (method!=null && 
+                                    method.isToplevel() && 
                                     !method.getParameterLists().isEmpty() &&
                                     method.getParameterLists().get(0).getParameters().isEmpty()) {
                                 launch(method, file, mode);
@@ -228,8 +252,11 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
                             }
                         }
                         if (node instanceof Tree.AnyClass) {
-                            Class clazz = ((Tree.AnyClass) node).getDeclarationModel();
-                            if (clazz!=null && clazz.isToplevel() && !clazz.isAbstract() &&
+                            Class clazz = 
+                                    ((Tree.AnyClass) node).getDeclarationModel();
+                            if (clazz!=null && 
+                                    clazz.isToplevel() && 
+                                    !clazz.isAbstract() &&
                                     clazz.getParameterList()!=null &&
                                     clazz.getParameterList().getParameters().isEmpty()) {
                                 launch(clazz, file, mode);
@@ -249,7 +276,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      * @param mode
      */
     private void searchAndLaunch(List<IFile> files, String mode) {
-
+        
         Object[] ret = LaunchHelper.findDeclarationFromFiles(files);
         if (ret != null && ret[0] != null && ret[1] != null) {
             launch((Declaration)ret[0], (IFile)ret[1], mode);
@@ -264,7 +291,8 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      */
     private void launchModule(Module mod, IResource resource, String mode) {
         
-        Declaration declarationToRun = LaunchHelper.getDefaultRunnableForModule(mod);
+        Declaration declarationToRun = 
+                LaunchHelper.getDefaultRunnableForModule(mod);
 
         List<Declaration> decls = new LinkedList<Declaration>();
         
@@ -273,7 +301,8 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
         }
         
         decls.addAll(LaunchHelper.getDeclarationsForModule(
-                resource.getProject().getName(), LaunchHelper.getFullModuleName(mod)));
+                resource.getProject().getName(), 
+                LaunchHelper.getFullModuleName(mod)));
         
         declarationToRun = LaunchHelper.chooseDeclaration(decls);
         if (declarationToRun != null) {
@@ -287,15 +316,78 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut {
      * @param resource - the associated Eclipse resource
      * @param mode
      */
-    private void launch(Declaration declarationToRun, IResource resource, String mode) {
+    private void launch(Declaration declarationToRun, 
+            IResource resource, String mode) {
 
-        ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, resource, getConfigurationType());
+        ILaunchConfiguration config = 
+                findLaunchConfiguration(declarationToRun, 
+                        resource, getConfigurationType());
         if (config == null) {
-            config = createConfiguration(declarationToRun, resource);
+            config = createConfiguration(declarationToRun, 
+                            resource);
         }
         if (config != null) {
             DebugUITools.launch(config, mode);
         }           
     }
 
+    @Override
+    public ILaunchConfiguration[] getLaunchConfigurations(IEditorPart editor) {
+        IFile file = EditorUtil.getFile(editor.getEditorInput());
+        ArrayList<ILaunchConfiguration> list = 
+                new ArrayList<ILaunchConfiguration>();
+        if (editor instanceof CeylonEditor) {
+            CeylonEditor ce = (CeylonEditor) editor;
+            CeylonParseController cpc = ce.getParseController();
+            if (cpc!=null) {
+                Tree.CompilationUnit cu = cpc.getRootNode();
+                if (cu!=null) {
+                    ITextSelection selection = EditorUtil.getSelection(ce);
+                    Node node = FindUtils.findToplevelStatement(cu, 
+                            findNode(cu,selection));
+                    if (node instanceof Tree.AnyMethod) {
+                        Method method = 
+                                ((Tree.AnyMethod) node).getDeclarationModel();
+                        if (method!=null && 
+                                method.isToplevel() && 
+                                !method.getParameterLists().isEmpty() &&
+                                method.getParameterLists().get(0).getParameters().isEmpty()) {
+                            list.addAll(getLaunchConfigurations(method, file, 
+                                    getConfigurationType()));
+                        }
+                    }
+                    if (node instanceof Tree.AnyClass) {
+                        Class clazz = 
+                                ((Tree.AnyClass) node).getDeclarationModel();
+                        if (clazz!=null && 
+                                clazz.isToplevel() && 
+                                !clazz.isAbstract() &&
+                                clazz.getParameterList()!=null &&
+                                clazz.getParameterList().getParameters().isEmpty()) {
+                            list.addAll(getLaunchConfigurations(clazz, file, 
+                                    getConfigurationType()));
+                        }
+                    }
+                }
+            }
+        }
+        return list.toArray(new ILaunchConfiguration[0]);
+    }
+
+    @Override
+    public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public IResource getLaunchableResource(ISelection selection) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public IResource getLaunchableResource(IEditorPart editor) {
+        return EditorUtil.getFile(editor.getEditorInput());
+    }
 }
