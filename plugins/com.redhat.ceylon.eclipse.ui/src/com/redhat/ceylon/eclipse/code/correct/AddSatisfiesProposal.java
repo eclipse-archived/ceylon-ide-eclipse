@@ -25,6 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -169,6 +170,13 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                                 classDefinition.getClassBody().getStartIndex() :
                                 classDefinition.getTypeConstraintList().getStartIndex());
             }
+            else if( declaration instanceof Tree.ObjectDefinition ) {
+                Tree.ObjectDefinition objectDefinition = 
+                        (Tree.ObjectDefinition) declaration;
+                addSatisfiesProposals(typeDec, changeText, unit, proposals, 
+                        objectDefinition.getSatisfiedTypes(), 
+                        objectDefinition.getClassBody().getStartIndex());
+            }
             else if( declaration instanceof Tree.InterfaceDefinition ) {
                 Tree.InterfaceDefinition interfaceDefinition = 
                         (Tree.InterfaceDefinition) declaration;
@@ -272,6 +280,11 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 typeDec = (TypeDeclaration) declaration;
             }
         }
+        else if (node instanceof Tree.ObjectDefinition) {
+            Value val = 
+                    ((Tree.ObjectDefinition) node).getDeclarationModel();
+            return val.getType().getDeclaration();
+        }
         else if (node instanceof Tree.BaseType) {
             TypeDeclaration baseTypeDecl = 
                     ((Tree.BaseType) node).getDeclarationModel();
@@ -280,22 +293,30 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             }
         }
         else if (node instanceof Tree.Term) {
-            ProducedType type = node.getUnit()
-                    .denotableType(((Tree.Term)node).getTypeModel());
-            if (type != null && 
-                    type.getDeclaration() instanceof TypeDeclaration) {
-                typeDec =  type.getDeclaration();
+//            ProducedType type = node.getUnit()
+//                    .denotableType(((Tree.Term)node).getTypeModel());
+            ProducedType type = ((Tree.Term)node).getTypeModel();
+            if (type != null) {
+                typeDec = type.getDeclaration();
             }
         }
         return typeDec;
     }
 
-    private static Node determineContainer(CompilationUnit cu, TypeDeclaration typeParam) {
-        FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeParam);
+    private static Node determineContainer(CompilationUnit cu, final TypeDeclaration typeDec) {
+        FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeDec) {
+            @Override
+            public void visit(Tree.ObjectDefinition that) {
+                if (that.getDeclarationModel().getType().getDeclaration().equals(typeDec)) {
+                    declarationNode = that;
+                }
+                super.visit(that);
+            }
+        };
         fdv.visit(cu);
-        Tree.Declaration typeParamDecl = fdv.getDeclarationNode();
-        if (typeParamDecl != null) {
-            FindContainerVisitor fcv = new FindContainerVisitor(typeParamDecl);
+        Tree.Declaration dec = fdv.getDeclarationNode();
+        if (dec != null) {
+            FindContainerVisitor fcv = new FindContainerVisitor(dec);
             fcv.visit(cu);
             return fcv.getStatementOrArgument();
         }
