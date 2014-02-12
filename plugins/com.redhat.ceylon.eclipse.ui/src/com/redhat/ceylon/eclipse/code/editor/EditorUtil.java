@@ -15,6 +15,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -136,5 +137,20 @@ public class EditorUtil {
         catch (Exception e) {
             return null;
         }
+    }
+
+    public static ITextSelection getSelection(final CeylonEditor editor) {
+        final class GetSelection implements Runnable {
+            ITextSelection selection;
+            @Override
+            public void run() {
+                selection = (ITextSelection) editor.getSelectionProvider().getSelection();
+            }
+            ITextSelection getSelection() {
+                Display.getDefault().syncExec(this);
+                return selection;
+            }
+        }
+        return new GetSelection().getSelection();
     }
 }

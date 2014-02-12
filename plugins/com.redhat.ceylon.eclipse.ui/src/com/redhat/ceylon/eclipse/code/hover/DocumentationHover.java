@@ -95,7 +95,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -550,7 +549,7 @@ public class DocumentationHover
         Tree.CompilationUnit rn = parseController.getRootNode();
         if (rn!=null) {
             int hoffset = hoverRegion.getOffset();
-            ITextSelection selection = getSelection(editor);
+            ITextSelection selection = EditorUtil.getSelection(editor);
             if (selection!=null && 
                 selection.getOffset()<=hoffset &&
                 selection.getOffset()+selection.getLength()>=hoffset) {
@@ -588,21 +587,6 @@ public class DocumentationHover
             }
         }
         return null;
-    }
-
-    private static ITextSelection getSelection(final CeylonEditor editor) {
-        final class GetSelection implements Runnable {
-            ITextSelection selection;
-            @Override
-            public void run() {
-                selection = (ITextSelection) editor.getSelectionProvider().getSelection();
-            }
-            ITextSelection getSelection() {
-                Display.getDefault().syncExec(this);
-                return selection;
-            }
-        }
-        return new GetSelection().getSelection();
     }
 
     private static CeylonBrowserInput getInferredTypeHoverInfo(Node node, IProject project) {

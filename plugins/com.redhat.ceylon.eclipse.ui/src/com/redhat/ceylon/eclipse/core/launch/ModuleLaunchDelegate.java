@@ -2,7 +2,10 @@ package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,12 +56,13 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         return new IVMRunner(){
 
             @Override
-            public void run(VMRunnerConfiguration config, ILaunch launch, IProgressMonitor monitor) throws CoreException {
+            public void run(VMRunnerConfiguration config, ILaunch launch, IProgressMonitor monitor) 
+                    throws CoreException {
                 try {
                     List<String> newArgs = new ArrayList<String>();
                     
                     boolean runAsJs = DebugPlugin.getDefault().getLaunchManager()
-                            .getLaunchConfigurationType(ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE)
+                            .getLaunchConfigurationType(ID_CEYLON_JAVASCRIPT_MODULE)
                                 .equals(launch.getLaunchConfiguration().getType());
                     
                     prepareArguments(newArgs, workingRepos, project, launch, runAsJs);
@@ -98,7 +102,8 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         prepareOfflineArgument(args, project);
         prepareDebugArgument(args, launch, runAsJs);
         
-        String topLevel = launch.getLaunchConfiguration().getAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, "");
+        String topLevel = launch.getLaunchConfiguration()
+                .getAttribute(ATTR_TOPLEVEL_NAME, "");
         int def = topLevel.indexOf(DEFAULT_RUN_MARKER);
         if (def != -1) {
             topLevel = topLevel.substring(0, def);
@@ -109,28 +114,33 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         }
         
         args.add("--");
-        args.add(launch.getLaunchConfiguration().getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, ""));
+        args.add(launch.getLaunchConfiguration()
+                .getAttribute(ATTR_MODULE_NAME, ""));
     }
 
-    protected void prepareRepositoryArguments(List<String> args, IProject project, List<IPath> workingRepos) {
+    protected void prepareRepositoryArguments(List<String> args, 
+            IProject project, List<IPath> workingRepos) {
         for (IPath repo : workingRepos) {
             args.add("--rep");
             args.add(repo.toOSString());
         }
         
-        for (String repo: CeylonProjectConfig.get(project).getProjectLocalRepos()) {
+        for (String repo: CeylonProjectConfig.get(project)
+                .getProjectLocalRepos()) {
             args.add("--rep");
             args.add(repo);                      
         }
     }
 
-    protected void prepareOfflineArgument(List<String> args, IProject project) {
+    protected void prepareOfflineArgument(List<String> args, 
+            IProject project) {
         if (CeylonProjectConfig.get(project).isOffline()) {
             args.add("--offline");
         }
     }
 
-    protected void prepareDebugArgument(List<String> args, ILaunch launch, boolean runAsJs) {
+    protected void prepareDebugArgument(List<String> args, 
+            ILaunch launch, boolean runAsJs) {
         if (launch.getLaunchMode().equals("debug")) {
             if (runAsJs) {
                 args.add("--debug");
