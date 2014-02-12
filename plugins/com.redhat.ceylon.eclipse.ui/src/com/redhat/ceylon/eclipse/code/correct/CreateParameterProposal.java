@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -141,27 +141,29 @@ class CreateParameterProposal extends CorrectionProposal {
 
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
             IProject project, DefinitionGenerator dg) {
-        FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(dg.node);
-        fcv.visit(dg.rootNode);
-        Tree.Declaration decl = fcv.getDeclaration();
-        if (decl == null || 
-                decl.getDeclarationModel() == null || 
-                decl.getDeclarationModel().isActual()) {
-            return;
-        }
-        
-        Tree.ParameterList paramList = getParameters(decl);
-        if (paramList != null) {
-            String def = dg.generate("", "");
-            //TODO: really ugly and fragile way to strip off the trailing ;
-            String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + 
-                    def.substring(0, def.length() - 1);
-            String paramDesc = "parameter '" + dg.brokenName + "'";
-            for (PhasedUnit unit : getUnits(project)) {
-                if (unit.getUnit().equals(dg.rootNode.getUnit())) {
-                    addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, 
-                            decl.getDeclarationModel(), unit, decl, paramList, dg.returnType);
-                    break;
+        if (Character.isLowerCase(dg.brokenName.charAt(0))) {
+            FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(dg.node);
+            fcv.visit(dg.rootNode);
+            Tree.Declaration decl = fcv.getDeclaration();
+            if (decl == null || 
+                    decl.getDeclarationModel() == null || 
+                    decl.getDeclarationModel().isActual()) {
+                return;
+            }
+
+            Tree.ParameterList paramList = getParameters(decl);
+            if (paramList != null) {
+                String def = dg.generate("", "");
+                //TODO: really ugly and fragile way to strip off the trailing ;
+                String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + 
+                        def.substring(0, def.length() - 1);
+                String paramDesc = "parameter '" + dg.brokenName + "'";
+                for (PhasedUnit unit : getUnits(project)) {
+                    if (unit.getUnit().equals(dg.rootNode.getUnit())) {
+                        addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, 
+                                decl.getDeclarationModel(), unit, decl, paramList, dg.returnType);
+                        break;
+                    }
                 }
             }
         }
