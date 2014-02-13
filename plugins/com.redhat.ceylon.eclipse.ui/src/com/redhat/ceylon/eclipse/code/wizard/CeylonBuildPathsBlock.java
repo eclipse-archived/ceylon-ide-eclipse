@@ -104,8 +104,9 @@ import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 
-public class BuildPathsBlock {
+public class CeylonBuildPathsBlock {
 
     public static interface IRemoveOldBinariesQuery {
 
@@ -165,7 +166,7 @@ public class BuildPathsBlock {
     private final static int IDX_SELECT_ALL= 6;
     private final static int IDX_UNSELECT_ALL= 7;
 
-    public BuildPathsBlock(/*IRunnableContext runnableContext,*/ 
+    public CeylonBuildPathsBlock(/*IRunnableContext runnableContext,*/ 
             IStatusChangeListener context, int pageToShow, /*boolean useNewPage,*/ 
             IWorkbenchPreferenceContainer pageContainer) {
         fPageContainer= pageContainer;
@@ -833,22 +834,22 @@ public class BuildPathsBlock {
             }
 
             if (oldOutputLocation.equals(projPath) && !javaOutputLocation.equals(projPath)) {
-                if (BuildPathsBlock.hasClassfiles(project)) {
-                    if (BuildPathsBlock.getRemoveOldBinariesQuery(JavaPlugin.getActiveWorkbenchShell())
+                if (CeylonBuildPathsBlock.hasClassfiles(project)) {
+                    if (CeylonBuildPathsBlock.getRemoveOldBinariesQuery(JavaPlugin.getActiveWorkbenchShell())
                             .doQuery(false, projPath)) {
-                        BuildPathsBlock.removeOldClassfiles(project);
+                        CeylonBuildPathsBlock.removeOldClassfiles(project);
                     }
                 }
             } else if (!javaOutputLocation.equals(oldOutputLocation)) {
                 IFolder folder= ResourcesPlugin.getWorkspace().getRoot().getFolder(oldOutputLocation);
                 if (folder.exists()) {
                     if (folder.members().length==0) {
-                        BuildPathsBlock.removeOldClassfiles(folder);
+                        CeylonBuildPathsBlock.removeOldClassfiles(folder);
                     } 
                     else {
-                        if (BuildPathsBlock.getRemoveOldBinariesQuery(JavaPlugin.getActiveWorkbenchShell())
+                        if (CeylonBuildPathsBlock.getRemoveOldBinariesQuery(JavaPlugin.getActiveWorkbenchShell())
                                 .doQuery(folder.isDerived(), oldOutputLocation)) {
-                            BuildPathsBlock.removeOldClassfiles(folder);
+                            CeylonBuildPathsBlock.removeOldClassfiles(folder);
                         }
                     }
                 }
@@ -993,9 +994,25 @@ public class BuildPathsBlock {
 
             javaProject.setRawClasspath(classpath, javaOutputLocation, 
                     new SubProgressMonitor(monitor, 2));
+            
+            CeylonProjectConfig config = CeylonProjectConfig.get(project);
+            List<String> srcDirs = new ArrayList<String>();
+            for (CPListElement cpe: classPathEntries) {
+                if (cpe.getEntryKind()==IClasspathEntry.CPE_SOURCE) {
+                    srcDirs.add(cpe.getPath().toOSString());
+                }
+            }
+            config.setProjectSourceDirectories(srcDirs);
+            List<String> rsrcDirs = new ArrayList<String>();
+            for (CPListElement cpe: resourcePathEntries) {
+                rsrcDirs.add(cpe.getPath().toOSString());
+            }
+            config.setProjectResourceDirectories(rsrcDirs);
+            
         } finally {
             monitor.done();
         }
+        
     }
     
     private static void setOptionsFromJavaProject(IJavaProject javaProject,
