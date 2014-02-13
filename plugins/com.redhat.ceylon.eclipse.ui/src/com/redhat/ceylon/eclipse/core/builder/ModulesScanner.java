@@ -20,6 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
@@ -114,7 +115,8 @@ final class ModulesScanner implements IResourceVisitor {
                         module = moduleManager.getOrCreateModule(moduleName, null);
                     }
                     
-                    assert(module != null);
+                    assert(module instanceof JDTModule);
+                    ((JDTModule) module).setProjectModule();
                 }
             }
             
