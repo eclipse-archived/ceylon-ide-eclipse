@@ -1085,10 +1085,11 @@ public class DocumentationHover
 
     private static void addModuleDocumentation(CeylonParseController cpc,
             Module mod, StringBuilder buffer) {
-        //TODO: temp solution ... we should be able to use CeylonReferenceResolver for this
-        String moduleFileName = mod.getNameAsString().replace('.', '/') + 
-                "/module.ceylon";
-        PhasedUnit pu = ((JDTModule) mod).getPhasedUnitFromRelativePath(moduleFileName);
+        Unit unit = mod.getUnit();
+        PhasedUnit pu = null;
+        if (unit instanceof CeylonUnit) {
+            pu = ((CeylonUnit)unit).getPhasedUnit();
+        }
         if (pu!=null) {
             List<Tree.ModuleDescriptor> moduleDescriptors = 
                     pu.getCompilationUnit().getModuleDescriptors();
