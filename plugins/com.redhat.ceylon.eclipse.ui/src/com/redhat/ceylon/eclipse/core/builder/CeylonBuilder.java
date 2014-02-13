@@ -1811,11 +1811,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                 validatorProgress.setWorkRemaining(0);
 
-                typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());                
+                typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
                 
                 for (PhasedUnits dependencyPhasedUnits: typeChecker.getPhasedUnitsOfDependencies()) {
                     modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
                 }
+                
+                modelLoader.setModuleAndPackageUnits();
                 
                 if (compileToJs(project)) {
                     for (Module module : typeChecker.getContext().getModules().getListOfModules()) {
