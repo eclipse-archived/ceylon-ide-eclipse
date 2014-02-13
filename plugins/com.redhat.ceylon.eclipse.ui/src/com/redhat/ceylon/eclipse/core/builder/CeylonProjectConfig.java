@@ -195,7 +195,7 @@ public class CeylonProjectConfig {
         return getConfigValuesAsList(config, DefaultToolOptions.COMPILER_RESOURCE, Constants.DEFAULT_RESOURCE_DIR);
     }
 
-    public void setProjectReourceDirectories(List<String> dirs) {
+    public void setProjectResourceDirectories(List<String> dirs) {
         transientResourceDirectories = dirs;
     }
     
