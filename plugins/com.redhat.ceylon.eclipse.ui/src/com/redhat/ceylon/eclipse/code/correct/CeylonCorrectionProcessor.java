@@ -23,10 +23,10 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddParenthesesProposal.addAddParenthesesProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
@@ -571,7 +571,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.Declaration declaration = findDeclaration(cu, node);
             Tree.NamedArgument argument = findArgument(cu, node);
             
-            addVerboseRefinementProposal(proposals, file, statement);
+            addVerboseRefinementProposal(proposals, file, statement, cu);
             
             addAnnotationProposals(proposals, project, declaration,
                     doc, currentOffset);
