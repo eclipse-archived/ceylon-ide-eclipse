@@ -256,18 +256,10 @@ public class CeylonProjectConfig {
                     projectRepositories.setRepositoriesByType(Repositories.REPO_TYPE_REMOTE_LOOKUP, newRemoteRepos);
                 }
                 if (isOfflineChanged) {
-                    if (transientOffline != null) {
-                        projectConfig.setBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, transientOffline);
-                    } else {
-                        projectConfig.removeOption(DefaultToolOptions.DEFAULTS_OFFLINE);
-                    }
+                    projectConfig.setBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, transientOffline);
                 }
                 if (isEncodingChanged) {
-                    if (transientEncoding != null) {
-                        projectConfig.setOption(DefaultToolOptions.DEFAULTS_ENCODING, transientEncoding);
-                    } else {
-                        projectConfig.removeOption(DefaultToolOptions.DEFAULTS_ENCODING);
-                    }
+                    projectConfig.setOption(DefaultToolOptions.DEFAULTS_ENCODING, transientEncoding);
                 }
                 if (isSourceDirsChanged) {
                 	setConfigValuesAsList(projectConfig, DefaultToolOptions.COMPILER_SOURCE, transientSourceDirectories);
