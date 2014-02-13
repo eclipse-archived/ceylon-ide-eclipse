@@ -103,6 +103,8 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+
 public class BuildPathsBlock {
 
     public static interface IRemoveOldBinariesQuery {
@@ -124,6 +126,7 @@ public class BuildPathsBlock {
     private IWorkspaceRoot fWorkspaceRoot;
 
     private CheckedListDialogField<CPListElement> fClassPathList;
+    private CheckedListDialogField<CPListElement> fResourcePathList;
     private StringButtonDialogField fJavaBuildPathDialogField;
 
     private StatusInfo fClassPathStatus;
@@ -141,6 +144,7 @@ public class BuildPathsBlock {
     private int fPageIndex;
 
     private SourceContainerWorkbookPage fSourceContainerPage;
+    private ResourceContainerWorkbookPage fResourceContainerPage;
     private ProjectsWorkbookPage fProjectsPage;
 //    private LibrariesWorkbookPage fLibrariesPage;
 
@@ -172,6 +176,7 @@ public class BuildPathsBlock {
         fPageIndex= pageToShow;
 
         fSourceContainerPage= null;
+        fResourceContainerPage=null;
 //        fLibrariesPage= null;
         fProjectsPage= null;
         fCurrPage= null;
@@ -199,6 +204,15 @@ public class BuildPathsBlock {
         fClassPathList.setDownButtonIndex(IDX_DOWN);
         fClassPathList.setCheckAllButtonIndex(IDX_SELECT_ALL);
         fClassPathList.setUncheckAllButtonIndex(IDX_UNSELECT_ALL);
+
+        fResourcePathList= new CheckedListDialogField<CPListElement>(jadapter, buttonLabels, 
+                new ResourceListLabelProvider());
+        fResourcePathList.setDialogFieldListener(jadapter);
+        fResourcePathList.setLabelText("Build &resource path order");
+        fResourcePathList.setUpButtonIndex(IDX_UP);
+        fResourcePathList.setDownButtonIndex(IDX_DOWN);
+        fResourcePathList.setCheckAllButtonIndex(IDX_SELECT_ALL);
+        fResourcePathList.setUncheckAllButtonIndex(IDX_UNSELECT_ALL);
 
         fJavaBuildPathDialogField= new StringButtonDialogField(jadapter);
         fJavaBuildPathDialogField.setButtonLabel(NewWizardMessages.BuildPathsBlock_buildpath_button);
@@ -243,6 +257,13 @@ public class BuildPathsBlock {
         //}
         item.setData(fSourceContainerPage);
         item.setControl(fSourceContainerPage.getControl(folder));
+
+        item= new TabItem(folder, SWT.NONE);
+        item.setText("Resources");
+        item.setImage(CeylonLabelProvider.FOLDER);
+        fResourceContainerPage = new ResourceContainerWorkbookPage(fResourcePathList, fJavaBuildPathDialogField);
+        item.setData(fResourceContainerPage);
+        item.setControl(fResourceContainerPage.getControl(folder));
 
         IWorkbench workbench= JavaPlugin.getDefault().getWorkbench();
         Image projectImage= workbench.getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
@@ -315,6 +336,7 @@ public class BuildPathsBlock {
         fCurrJProject= jproject;
         boolean projectExists= false;
         List<CPListElement> newClassPath= null;
+        List<CPListElement> newResourcePath= null;
         IProject project= fCurrJProject.getProject();
         projectExists= (project.exists() && project.getFile(".classpath").exists()); //$NON-NLS-1$
         IClasspathEntry[] existingEntries= null;
@@ -338,7 +360,14 @@ public class BuildPathsBlock {
         if (newClassPath == null) {
             newClassPath= getDefaultClassPath(jproject);
         }
-
+        
+        newResourcePath = new ArrayList<CPListElement>();
+        IFolder defaultResourceFolder = fCurrJProject.getProject().getFolder("/resources");
+        newResourcePath.add(new CPListElement(fCurrJProject, 
+                IClasspathEntry.CPE_SOURCE, 
+                defaultResourceFolder.getFullPath(), 
+                defaultResourceFolder));
+        
         List<CPListElement> exportedEntries = new ArrayList<CPListElement>();
         for (int i= 0; i < newClassPath.size(); i++) {
             CPListElement curr= newClassPath.get(i);
@@ -357,8 +386,14 @@ public class BuildPathsBlock {
 
         fClassPathList.selectFirstElement();
 
+        fResourcePathList.setElements(newResourcePath);
+//        fResourcePathList.setCheckedElements(exportedEntries);
+
+        fResourcePathList.selectFirstElement();
+
         if (fSourceContainerPage != null) {
             fSourceContainerPage.init(fCurrJProject);
+            fResourceContainerPage.init(fCurrJProject);
             fProjectsPage.init(fCurrJProject);
 //            fLibrariesPage.init(fCurrJProject);
         }
@@ -389,7 +424,8 @@ public class BuildPathsBlock {
     protected void doUpdateUI() {
         fJavaBuildPathDialogField.refresh();
         fClassPathList.refresh();
-
+        fResourcePathList.refresh();
+        
         doStatusLineUpdate();
     }
 
@@ -752,8 +788,9 @@ public class BuildPathsBlock {
     
     public void configureJavaProject(String newProjectCompliance, IProgressMonitor monitor) 
             throws CoreException, OperationCanceledException {
-        flush(fClassPathList.getElements(), getJavaOutputLocation(),
-                getJavaProject(), newProjectCompliance, monitor);
+        flush(fClassPathList.getElements(), fResourcePathList.getElements(), 
+                getJavaOutputLocation(), getJavaProject(), newProjectCompliance, 
+                monitor);
         initializeTimeStamps();
 
         updateUI();
@@ -774,8 +811,8 @@ public class BuildPathsBlock {
      * @throws CoreException if flushing failed
      * @throws OperationCanceledException if flushing has been cancelled
      */
-    public static void flush(List<CPListElement> classPathEntries, IPath javaOutputLocation, 
-            IJavaProject javaProject, String newProjectCompliance, 
+    public static void flush(List<CPListElement> classPathEntries, List<CPListElement> resourcePathEntries,
+            IPath javaOutputLocation, IJavaProject javaProject, String newProjectCompliance, 
             IProgressMonitor monitor) 
                     throws CoreException, OperationCanceledException {
         if (monitor == null) {
@@ -834,6 +871,18 @@ public class BuildPathsBlock {
                 throw new OperationCanceledException();
             }
 
+            for (Iterator<CPListElement> iter= resourcePathEntries.iterator(); iter.hasNext();) {
+                CPListElement entry= iter.next();
+                IResource res= entry.getResource();
+                //1 tick
+                if (res instanceof IFolder && entry.getLinkTarget() == null && !res.exists()) {
+                    CoreUtility.createFolder((IFolder)res, true, true, 
+                            new SubProgressMonitor(monitor, 1));
+                } else {
+                    monitor.worked(1);
+                }
+            }
+            
             int nEntries= classPathEntries.size();
             IClasspathEntry[] classpath= new IClasspathEntry[nEntries];
             int i= 0;
