@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.classpath;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelTypeChecked;
+import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.INCREMENTAL_BUILD;
 
 import java.util.ArrayList;
@@ -54,8 +55,9 @@ public class BuildProjectAfterClasspathChangeJob extends Job {
                 for (IProject p : projectsToTouch) {
                     p.touch(monitor);
                 }
+                int kind = project.getWorkspace().isAutoBuilding() ? AUTO_BUILD : INCREMENTAL_BUILD;
                 project.getWorkspace().build(configs.toArray(new IBuildConfiguration[1]), 
-                        INCREMENTAL_BUILD, buildReferencedProjects, monitor);                                
+                        kind, buildReferencedProjects, monitor);                                
             }
             catch (CoreException e) {
                 e.printStackTrace();
