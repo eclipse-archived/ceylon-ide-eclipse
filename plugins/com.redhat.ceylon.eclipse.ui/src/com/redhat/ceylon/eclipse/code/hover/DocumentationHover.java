@@ -155,6 +155,7 @@ import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 
@@ -1084,10 +1085,10 @@ public class DocumentationHover
 
     private static void addModuleDocumentation(CeylonParseController cpc,
             Module mod, StringBuilder buffer) {
+        //TODO: temp solution ... we should be able to use CeylonReferenceResolver for this
         String moduleFileName = mod.getNameAsString().replace('.', '/') + 
                 "/module.ceylon";
-        PhasedUnit pu = cpc.getTypeChecker()
-                .getPhasedUnitFromRelativePath(moduleFileName);
+        PhasedUnit pu = ((JDTModule) mod).getPhasedUnitFromRelativePath(moduleFileName);
         if (pu!=null) {
             List<Tree.ModuleDescriptor> moduleDescriptors = 
                     pu.getCompilationUnit().getModuleDescriptors();
