@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.core.builder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import org.eclipse.jdt.internal.ui.util.CoreUtility;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
 
+import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.ConfigParser;
 import com.redhat.ceylon.common.config.ConfigWriter;
@@ -55,6 +58,9 @@ public class CeylonProjectConfig {
     private boolean isEncodingChanged = false;
     private Boolean transientOffline;
     private String transientEncoding;
+
+	private List<String> transientSourceDirectories;
+	private List<String> transientResourceDirectories;
 
     private CeylonProjectConfig(IProject project) {
         this.project = project;
@@ -160,6 +166,38 @@ public class CeylonProjectConfig {
         this.isOfflineChanged = true;
         this.transientOffline = offline;
     }
+
+    public List<String> getSourceDirectories() {
+        return getConfigSourceDirectories(mergedConfig);
+    }
+
+    public List<String> getProjectSourceDirectories() {
+        return getConfigSourceDirectories(projectConfig);
+    }
+
+    private List<String> getConfigSourceDirectories(CeylonConfig config) {
+        return getConfigValuesAsList(config, DefaultToolOptions.COMPILER_SOURCE, Constants.DEFAULT_SOURCE_DIR);
+    }
+
+    public void setProjectSourceDirectories(List<String> dirs) {
+        transientSourceDirectories = dirs;
+    }
+
+    public List<String> getReourceDirectories() {
+        return getConfigResourceDirectories(mergedConfig);
+    }
+
+    public List<String> getProjectResourceDirectories() {
+        return getConfigResourceDirectories(projectConfig);
+    }
+
+    private List<String> getConfigResourceDirectories(CeylonConfig config) {
+        return getConfigValuesAsList(config, DefaultToolOptions.COMPILER_RESOURCE, Constants.DEFAULT_RESOURCE_DIR);
+    }
+
+    public void setProjectReourceDirectories(List<String> dirs) {
+        transientResourceDirectories = dirs;
+    }
     
     public void refresh() {
         
@@ -172,6 +210,8 @@ public class CeylonProjectConfig {
         transientOutputRepo = null;
         transientProjectLocalRepos = null;
         transientProjectRemoteRepos = null;
+        transientSourceDirectories = null;
+        transientResourceDirectories = null;
     }
 
     public void save() {
@@ -180,10 +220,14 @@ public class CeylonProjectConfig {
         String oldOutputRepo = getOutputRepo();
         List<String> oldProjectLocalRepos = getProjectLocalRepos();
         List<String> oldProjectRemoteRepos = getProjectRemoteRepos();
+        List<String> oldSourceDirectories = getProjectSourceDirectories();
+        List<String> oldResourceDirectories = getProjectResourceDirectories();
         
         boolean isOutputRepoChanged = transientOutputRepo != null && !transientOutputRepo.equals(oldOutputRepo);
         boolean isProjectLocalReposChanged = transientProjectLocalRepos != null && !transientProjectLocalRepos.equals(oldProjectLocalRepos);
         boolean isProjectRemoteReposChanged = transientProjectRemoteRepos != null && !transientProjectRemoteRepos.equals(oldProjectRemoteRepos);
+        boolean isSourceDirsChanged = transientSourceDirectories != null && !transientSourceDirectories.equals(oldSourceDirectories);
+        boolean isResourceDirsChanged = transientResourceDirectories != null && !transientResourceDirectories.equals(oldResourceDirectories);
         
         if (isOutputRepoChanged) {
             deleteOldOutputFolder(oldOutputRepo);
@@ -196,7 +240,8 @@ public class CeylonProjectConfig {
             }
         }
         
-        if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged || isOfflineChanged || isEncodingChanged) {
+        if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged
+        		|| isOfflineChanged || isEncodingChanged || isSourceDirsChanged || isResourceDirsChanged) {
             try {
                 if (isOutputRepoChanged) {
                     Repository newOutputRepo = new Repositories.SimpleRepository("", transientOutputRepo, null);
@@ -223,6 +268,12 @@ public class CeylonProjectConfig {
                     } else {
                         projectConfig.removeOption(DefaultToolOptions.DEFAULTS_ENCODING);
                     }
+                }
+                if (isSourceDirsChanged) {
+                	setConfigValuesAsList(projectConfig, DefaultToolOptions.COMPILER_SOURCE, transientSourceDirectories);
+                }
+                if (isResourceDirsChanged) {
+                	setConfigValuesAsList(projectConfig, DefaultToolOptions.COMPILER_RESOURCE, transientResourceDirectories);
                 }
 
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
@@ -304,4 +355,17 @@ public class CeylonProjectConfig {
         return url.startsWith("./") || url.startsWith(".\\") ? url.substring(2) : url;
     }
 
+    private List<String> getConfigValuesAsList(CeylonConfig config, String optionKey, String defaultKey) {
+        String[] values = config.getOptionValues(optionKey);
+        if (values != null) {
+            return Arrays.asList(values);
+        } else {
+            return Collections.singletonList(defaultKey);
+        }
+    }
+
+    private void setConfigValuesAsList(CeylonConfig config, String optionKey, List<String> values) {
+    	String[] array = new String[values.size()];
+        config.setOptionValues(optionKey, values.toArray(array));
+    }
 }
