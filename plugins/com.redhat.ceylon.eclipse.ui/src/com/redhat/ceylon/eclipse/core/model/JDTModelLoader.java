@@ -93,6 +93,7 @@ import com.redhat.ceylon.compiler.loader.model.LazyMethod;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.loader.model.LazyValue;
+import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -305,15 +306,13 @@ public class JDTModelLoader extends AbstractModelLoader {
          */
         Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME, JDK_MODULE_VERSION);
         Module languageModule = getLanguageModule();
+        findOrCreatePackage(languageModule, CEYLON_LANGUAGE);
         
         loadPackage(jdkModule, "java.lang", false);
         loadPackage(languageModule, "com.redhat.ceylon.compiler.java.metadata", false);
         loadPackage(languageModule, "com.redhat.ceylon.compiler.java.language", false);
         
         if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
-//            loadPackage(languageModule, CEYLON_LANGUAGE, true);
-//            loadPackage(languageModule, CEYLON_LANGUAGE_MODEL, true);
-//            loadPackage(languageModule, CEYLON_LANGUAGE_MODEL_DECLARATION, true);
         }        
     }
     
@@ -643,6 +642,36 @@ public class JDTModelLoader extends AbstractModelLoader {
             }
         }
 
+        unit = newCompiledUnit(pkg, jdtClass);
+
+        return unit;
+    }
+
+    public void setModuleAndPackageUnits() {
+        Context context = getModuleManager().getContext();
+        for (Module module : context.getModules().getListOfModules()) {
+            if (module instanceof JDTModule) {
+                JDTModule jdtModule = (JDTModule) module;
+                if (jdtModule.isCeylonBinaryArchive()) {
+                    for (Package p : jdtModule.getPackages()) {
+                        if (p.getNameAsString().equals(jdtModule.getNameAsString())) {
+                            if (p.getUnit() == null) {
+                                p.setUnit(newCompiledUnit((LazyPackage) p, lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".package_")));
+                            }
+                        }
+                        if (jdtModule.getUnit() == null) {
+                            jdtModule.setUnit(getCompiledUnit((LazyPackage) p, lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".module_")));
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+    
+    private Unit newCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
+        Unit unit;
+        JDTClass jdtClass = (JDTClass) classMirror;
         ITypeRoot typeRoot = null;
         if (javaProject != null) {
             try {
