@@ -66,6 +66,7 @@ import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.api.VisibilityType;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
+import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
 import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
@@ -125,7 +126,15 @@ public class JDTModule extends LazyModule {
     }
     
     synchronized void setArtifact(ArtifactResult artifactResult) {
-        this.artifact = artifactResult.artifact();
+        artifact = artifactResult.artifact();
+        if (artifact.getName().endsWith(ArtifactContext.SRC)) {
+            moduleType = ModuleType.CEYLON_SOURCE_ARCHIVE;
+        } else if(artifact.getName().endsWith(ArtifactContext.CAR)) {
+            moduleType = ModuleType.CEYLON_BINARY_ARCHIVE;
+        } else if(artifact.getName().endsWith(ArtifactContext.JAR)) {
+            moduleType = ModuleType.JAVA_BINARY_ARCHIVE;
+        }
+        
         artifactType = artifactResult.type();
         if (isCeylonBinaryArchive()){
             String carPath = artifact.getPath();
@@ -462,16 +471,38 @@ public class JDTModule extends LazyModule {
         }
     }
 
+    private ModuleType moduleType;
+    
+    private enum ModuleType {
+        PROJECT_MODULE,
+        CEYLON_SOURCE_ARCHIVE,
+        CEYLON_BINARY_ARCHIVE,
+        JAVA_BINARY_ARCHIVE,
+        SDK_MODULE,
+        UNKNOWN
+    }
+    
+    public void setProjectModule() {
+        moduleType = ModuleType.PROJECT_MODULE;
+    }
+    
     public boolean isCeylonArchive() {
         return isCeylonBinaryArchive() || isSourceArchive();
     }
     
     public boolean isProjectModule() {
-        return ! (isCeylonArchive() || isJavaBinaryArchive()) && isAvailable() && !isJDKModule();
+        return ModuleType.PROJECT_MODULE.equals(moduleType);
     }
     
     public boolean isJDKModule() {
-        return JDKUtils.isJDKModule(getNameAsString()) || JDKUtils.isOracleJDKModule(getNameAsString());
+        synchronized (this) {
+            if (moduleType == null) {
+                if (JDKUtils.isJDKModule(getNameAsString()) || JDKUtils.isOracleJDKModule(getNameAsString())) {
+                    moduleType = ModuleType.SDK_MODULE;
+                }
+            }
+        }
+        return ModuleType.SDK_MODULE.equals(moduleType);
     }
     
     public boolean isUnresolved() {
@@ -479,15 +510,15 @@ public class JDTModule extends LazyModule {
     }
     
     public boolean isJavaBinaryArchive() {
-        return artifact != null && artifact.getName().endsWith(ArtifactContext.JAR);
+        return ModuleType.JAVA_BINARY_ARCHIVE.equals(moduleType);
     }
     
     public boolean isCeylonBinaryArchive() {
-        return artifact != null && artifact.getName().endsWith(ArtifactContext.CAR);
+        return ModuleType.CEYLON_BINARY_ARCHIVE.equals(moduleType);
     }
     
     public boolean isSourceArchive() {
-        return artifact != null && artifact.getName().endsWith(ArtifactContext.SRC);
+        return ModuleType.CEYLON_SOURCE_ARCHIVE.equals(moduleType);
     }
     
     public synchronized List<? extends PhasedUnit> getPhasedUnits() {
