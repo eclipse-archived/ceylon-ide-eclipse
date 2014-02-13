@@ -61,7 +61,7 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
     private static final String PAGE_NAME= "JavaCapabilityConfigurationPage"; //$NON-NLS-1$
 
     private IJavaProject fJavaProject;
-    private BuildPathsBlock fBuildPathsBlock;
+    private CeylonBuildPathsBlock fBuildPathsBlock;
 
     /**
      * Creates a wizard page that can be used in a Java project creation wizard.
@@ -79,14 +79,14 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
         setDescription(NewWizardMessages.JavaCapabilityConfigurationPage_description);
     }
 
-    protected BuildPathsBlock getBuildPathsBlock() {
+    protected CeylonBuildPathsBlock getBuildPathsBlock() {
         if (fBuildPathsBlock == null) {
             IStatusChangeListener listener= new IStatusChangeListener() {
                 public void statusChanged(IStatus status) {
                     updateStatus(status);
                 }
             };
-            fBuildPathsBlock= new BuildPathsBlock(/*new BusyIndicatorRunnableContext(),*/ 
+            fBuildPathsBlock= new CeylonBuildPathsBlock(/*new BusyIndicatorRunnableContext(),*/ 
                     listener, 0, /*useNewSourcePage(),*/ null);
         }
         return fBuildPathsBlock;
@@ -251,7 +251,7 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
      */
     public static void createProject(IProject project, URI locationURI, IProgressMonitor monitor) 
             throws CoreException {
-        BuildPathsBlock.createProject(project, locationURI, monitor);
+        CeylonBuildPathsBlock.createProject(project, locationURI, monitor);
     }
 
     /**
@@ -288,7 +288,7 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
 
         try {
             IProject project= getJavaProject().getProject();
-            BuildPathsBlock.addJavaNature(project, new SubProgressMonitor(monitor, 1));
+            CeylonBuildPathsBlock.addJavaNature(project, new SubProgressMonitor(monitor, 1));
             getBuildPathsBlock().configureJavaProject(newProjectCompliance, 
                     new SubProgressMonitor(monitor, 5));
         } catch (OperationCanceledException e) {
