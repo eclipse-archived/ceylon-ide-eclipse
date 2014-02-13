@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDefaultValue;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
@@ -429,6 +430,7 @@ public class CodeCompletions {
                     }
                     else {
                         if (p==params.get(params.size()-1) && 
+                                !isTypeUnknown(p.getType()) &&
                                 unit.isIterableParameterType(p.getType())) {
 //                            result.append(" ");
                         }
