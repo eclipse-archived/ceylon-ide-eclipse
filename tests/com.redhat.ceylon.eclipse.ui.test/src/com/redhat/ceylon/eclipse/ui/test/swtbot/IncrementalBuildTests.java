@@ -1,61 +1,30 @@
 package com.redhat.ceylon.eclipse.ui.test.swtbot;
 
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.startsWith;
+import static com.redhat.ceylon.eclipse.ui.test.Utils.openInEditor;
 import static org.hamcrest.Matchers.stringContainsInOrder;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-import java.io.ByteArrayInputStream;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
-import org.eclipse.swtbot.swt.finder.keyboard.KeyboardFactory;
-import org.eclipse.swtbot.swt.finder.keyboard.KeyboardStrategy;
-import org.eclipse.swtbot.swt.finder.keyboard.Keystrokes;
 import org.eclipse.swtbot.swt.finder.utils.Position;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.hamcrest.core.IsCollectionContaining;
-import org.hamcrest.core.IsEqual;
 import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
 import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
 import com.redhat.ceylon.eclipse.ui.test.Utils;
-
-import static com.redhat.ceylon.eclipse.ui.test.Utils.openInEditor;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class IncrementalBuildTests extends AbstractMultiProjectTest {
@@ -129,7 +98,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
         IFile useFile = copyFileFromResources("bug821", "mainModule/Use.ceylon", mainProject, "src");        
         try {
             buildSummary.waitForBuildEnd(30);
-            assertThat("The build should not have any error",
+            assertThat("The build should have an error",
                     Utils.getProjectErrorMarkers(mainProject),
                     Matchers.contains(stringContainsInOrder(Arrays.asList("src/mainModule/Use.ceylon", "l.2","type declaration does not exist"))));
             
@@ -151,4 +120,219 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
         }
     }
     
+   public void changeAndRestoreDeclaration(IProject declarationProject, String path, String declarationMatch, String prefixBeforeDeclaration, Matcher<? super String> expectedErrorMatcher) throws InterruptedException, CoreException {
+       String fileName = new Path(path).lastSegment();
+       openInEditor(declarationProject, path);
+       SWTBotEclipseEditor editor = Utils.showEditorByTitle(bot, fileName);
+       editor.setFocus();
+       String originalText = editor.getText();
+       Position position = Utils.positionInTextEditor(editor, declarationMatch, 0);
+       editor.insertText(position.line, position.column, prefixBeforeDeclaration);
+       Utils.CeylonBuildSummary buildSummary = new Utils.CeylonBuildSummary(mainProject);
+       buildSummary.install();
+       editor.save();
+       try {
+           buildSummary.waitForBuildEnd(30);
+           assertThat("The build should have an error",
+                   Utils.getProjectErrorMarkers(mainProject),
+                   Matchers.hasItem(expectedErrorMatcher));
+           editor.setText("");
+           editor.insertText(0, 0, originalText);
+           buildSummary = new Utils.CeylonBuildSummary(mainProject);
+           buildSummary.install();
+           editor.save();
+           editor = null;
+           buildSummary.waitForBuildEnd(30);
+           assertThat("The build should not have any error",
+                   Utils.getProjectErrorMarkers(mainProject),
+                   Matchers.empty());
+       }
+       catch(Throwable e) {
+           declarationProject.build(IncrementalProjectBuilder.CLEAN_BUILD, null);
+           throw e;
+       }
+       finally { 
+           if (editor != null) {
+               editor.setText(originalText);
+               editor.save();
+           }
+       }
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "CeylonTopLevelClass_Main_Ceylon_Project", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: CeylonTopLevelClass_Main_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonToplevelObject_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "ceylonTopLevelObject_Main_Ceylon_Project", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: ceylonTopLevelObject_Main_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonToplevelMethod_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "ceylonTopLevelMethod_Main_Ceylon_Project", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: ceylonTopLevelMethod_Main_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonJavaClass_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "javaSrc/mainModule/JavaCeylonTopLevelClass_Main_Ceylon_Project.java", 
+               "JavaCeylonTopLevelClass_Main_Ceylon_Project", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: JavaCeylonTopLevelClass_Main_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonJavaToplevelObject_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "javaSrc/mainModule/javaCeylonTopLevelObject_Main_Ceylon_Project_.java", 
+               "javaCeylonTopLevelObject_Main_Ceylon_Project_", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: javaCeylonTopLevelObject_Main_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonJavaToplevelMethod_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "javaSrc/mainModule/javaCeylonTopLevelMethod_Main_Ceylon_Project_.java", 
+               "javaCeylonTopLevelMethod_Main_Ceylon_Project_", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: javaCeylonTopLevelMethod_Main_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_PureJavaClass_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "javaSrc/mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java", 
+               "JavaClassInCeylonModule_Main_Ceylon_Project", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: JavaClassInCeylonModule_Main_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_Method_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "method", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: method")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_Attribute_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "attribute", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: attribute")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_InnerClass_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "InnerClass", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: InnerClass")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_Object_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "obj {}", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: obj")));
+   }
+   
+   
+   @Test
+   public void removeAndRestore_CeylonClass_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "CeylonTopLevelClass_Referenced_Ceylon_Project", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: CeylonTopLevelClass_Referenced_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonToplevelObject_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "ceylonTopLevelObject_Referenced_Ceylon_Project", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: ceylonTopLevelObject_Referenced_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonToplevelMethod_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "ceylonTopLevelMethod_Referenced_Ceylon_Project", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: ceylonTopLevelMethod_Referenced_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonJavaClass_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "javaSrc/referencedCeylonProject/JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java", 
+               "JavaCeylonTopLevelClass_Referenced_Ceylon_Project", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: JavaCeylonTopLevelClass_Referenced_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonJavaToplevelObject_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "javaSrc/referencedCeylonProject/javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java", 
+               "javaCeylonTopLevelObject_Referenced_Ceylon_Project_", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: javaCeylonTopLevelObject_Referenced_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonJavaToplevelMethod_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "javaSrc/referencedCeylonProject/javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java", 
+               "javaCeylonTopLevelMethod_Referenced_Ceylon_Project_", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: javaCeylonTopLevelMethod_Referenced_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_PureJavaClass_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "javaSrc/referencedCeylonProject/JavaClassInCeylonModule_Referenced_Ceylon_Project.java", 
+               "JavaClassInCeylonModule_Referenced_Ceylon_Project", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: JavaClassInCeylonModule_Referenced_Ceylon_Project")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_Method_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "method", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: method")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_Attribute_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "attribute", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: attribute")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_InnerClass_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "InnerClass", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: InnerClass")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_Object_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "obj {}", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: obj")));
+   }
 }
