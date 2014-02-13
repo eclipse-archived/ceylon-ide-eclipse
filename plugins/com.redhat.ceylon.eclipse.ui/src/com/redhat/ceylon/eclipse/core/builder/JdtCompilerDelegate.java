@@ -40,6 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.ModelState;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.sun.tools.javac.file.JavacFileManager;
@@ -116,12 +117,14 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     }
     
     private void buildListOfCompiledModules(Module module, Set<ProjectSourceFile> listOfModules) {
-        Unit moduleUnit = module.getUnit();
-        if (moduleUnit instanceof ProjectSourceFile && !listOfModules.contains(moduleUnit)) {
-            listOfModules.add((ProjectSourceFile) moduleUnit);
-            for (ModuleImport imp : module.getImports()) {
-                Module importedModule =imp.getModule();
-                buildListOfCompiledModules(importedModule, listOfModules);
+        if (module instanceof JDTModule && ((JDTModule) module).isProjectModule()) {
+            Unit moduleUnit = module.getUnit();
+            if (moduleUnit instanceof ProjectSourceFile && !listOfModules.contains(moduleUnit)) {
+                listOfModules.add((ProjectSourceFile) moduleUnit);
+                for (ModuleImport imp : module.getImports()) {
+                    Module importedModule =imp.getModule();
+                    buildListOfCompiledModules(importedModule, listOfModules);
+                }
             }
         }
     }
