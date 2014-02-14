@@ -178,7 +178,7 @@ public class SourceContainerWorkbookPage extends BuildPathBasePage {
 
         buttonLabels= new String[] {
             NewWizardMessages.SourceContainerWorkbookPage_folders_add_button,
-            NewWizardMessages.SourceContainerWorkbookPage_folders_link_source_button,
+            "L&ink Folder...",
             null,
             NewWizardMessages.SourceContainerWorkbookPage_folders_edit_button,
 //            "Toggl&e",
