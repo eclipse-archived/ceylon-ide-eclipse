@@ -100,7 +100,6 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         
         prepareRepositoryArguments(args, project, workingRepos);
         prepareOfflineArgument(args, project);
-        prepareDebugArgument(args, launch, runAsJs);
         
         String topLevel = launch.getLaunchConfiguration()
                 .getAttribute(ATTR_TOPLEVEL_NAME, "");
@@ -136,18 +135,6 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
             IProject project) {
         if (CeylonProjectConfig.get(project).isOffline()) {
             args.add("--offline");
-        }
-    }
-
-    protected void prepareDebugArgument(List<String> args, 
-            ILaunch launch, boolean runAsJs) {
-        if (launch.getLaunchMode().equals("debug")) {
-            if (runAsJs) {
-                args.add("--debug");
-                args.add("debug"); //
-            } else {
-                args.add("--verbose");
-            }
         }
     }
 
