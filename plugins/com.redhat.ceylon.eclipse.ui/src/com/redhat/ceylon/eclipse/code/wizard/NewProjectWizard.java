@@ -46,7 +46,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     private NewCeylonProjectWizardPageTwo secondPage;
     private NewCeylonProjectWizardPageThree thirdPage;
     
-    static final String DEFAULT_SOURCE_FOLDER = "source";
+    public static final String DEFAULT_SOURCE_FOLDER = "source";
+    public static final String DEFAULT_RESOURCE_FOLDER = "resources";
 
     private IConfigurationElement fConfigElement;
 

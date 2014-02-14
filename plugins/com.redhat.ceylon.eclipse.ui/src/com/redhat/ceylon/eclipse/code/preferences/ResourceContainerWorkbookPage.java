@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package com.redhat.ceylon.eclipse.code.wizard;
+package com.redhat.ceylon.eclipse.code.preferences;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,6 +54,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
+
+import com.redhat.ceylon.eclipse.code.wizard.AddResourceFolderWizard;
+import com.redhat.ceylon.eclipse.code.wizard.CreateMultipleResourceFoldersDialog;
 
 
 public class ResourceContainerWorkbookPage extends BuildPathBasePage {

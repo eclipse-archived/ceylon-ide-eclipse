@@ -30,7 +30,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
-import com.redhat.ceylon.eclipse.code.wizard.CeylonBuildPathsBlock;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public class CeylonBuildPathsPropertiesPage extends PropertyPage implements IStatusChangeListener {
