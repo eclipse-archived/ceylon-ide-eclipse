@@ -95,7 +95,6 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
 
         prepareRepositoryArguments(args, project, workingRepos);
         prepareOfflineArgument(args, project);
-        prepareDebugArgument(args, launch, runAsJs);
 
         for (String testArg : testArgs) {
             args.add("--test");
