@@ -216,7 +216,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 IWorkbenchPreferenceContainer container = (IWorkbenchPreferenceContainer) getContainer();
-                container.openPage(CeylonRepoPreferencesPage.ID, null);
+                container.openPage(CeylonRepoPropertiesPage.ID, null);
             }
         });
     }

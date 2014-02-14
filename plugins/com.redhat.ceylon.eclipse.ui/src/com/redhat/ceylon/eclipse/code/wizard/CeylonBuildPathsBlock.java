@@ -15,6 +15,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -296,6 +297,7 @@ public class CeylonBuildPathsBlock {
 
         if (fCurrJProject != null) {
             fSourceContainerPage.init(fCurrJProject);
+            fResourceContainerPage.init(fCurrJProject);
 //            fLibrariesPage.init(fCurrJProject);
             fProjectsPage.init(fCurrJProject);
         }
@@ -363,11 +365,24 @@ public class CeylonBuildPathsBlock {
         }
         
         newResourcePath = new ArrayList<CPListElement>();
-        IFolder defaultResourceFolder = fCurrJProject.getProject().getFolder("/resources");
-        newResourcePath.add(new CPListElement(fCurrJProject, 
-                IClasspathEntry.CPE_SOURCE, 
-                defaultResourceFolder.getFullPath(), 
-                defaultResourceFolder));
+        if (projectExists) {
+            CeylonProjectConfig config = CeylonProjectConfig.get(project);
+            for (String path: config.getProjectResourceDirectories()) {
+                IFolder folder = fCurrJProject.getProject()
+                        .getFolder(Path.fromOSString(path));
+                newResourcePath.add(new CPListElement(fCurrJProject, 
+                        IClasspathEntry.CPE_SOURCE, 
+                        folder.getFullPath(), 
+                        folder));
+            }
+        }
+        else {
+            IFolder defaultResourceFolder = fCurrJProject.getProject().getFolder("/resources");
+            newResourcePath.add(new CPListElement(fCurrJProject, 
+                    IClasspathEntry.CPE_SOURCE, 
+                    defaultResourceFolder.getFullPath(), 
+                    defaultResourceFolder));
+        }
         
         List<CPListElement> exportedEntries = new ArrayList<CPListElement>();
         for (int i= 0; i < newClassPath.size(); i++) {
@@ -438,6 +453,12 @@ public class CeylonBuildPathsBlock {
         buf.append('[').append(nElements).append(']');
         for (int i= 0; i < nElements; i++) {
             CPListElement elem= fClassPathList.getElement(i);
+            elem.appendEncodedSettings(buf);
+        }
+        nElements= fResourcePathList.getSize();
+        buf.append('[').append(nElements).append(']');
+        for (int i= 0; i < nElements; i++) {
+            CPListElement elem= fResourcePathList.getElement(i);
             elem.appendEncodedSettings(buf);
         }
         return buf.toString();
@@ -882,6 +903,79 @@ public class CeylonBuildPathsBlock {
                 } else {
                     monitor.worked(1);
                 }
+                
+                //3 ticks
+                if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+                    IPath folderOutput= (IPath) entry.getAttribute(CPListElement.OUTPUT);
+                    if (folderOutput != null && folderOutput.segmentCount() > 1) {
+                        IFolder folder= fWorkspaceRoot.getFolder(folderOutput);
+                        CoreUtility.createDerivedFolder(folder, true, true, 
+                                new SubProgressMonitor(monitor, 1));
+                    } else {
+                        monitor.worked(1);
+                    }
+
+                    IPath path= entry.getPath();
+                    if (projPath.equals(path)) {
+                        monitor.worked(2);
+                        continue;
+                    }
+
+                    if (projPath.isPrefixOf(path)) {
+                        path= path.removeFirstSegments(projPath.segmentCount());
+                    }
+                    IFolder folder= project.getFolder(path);
+                    IPath orginalPath= entry.getOrginalPath();
+                    if (orginalPath == null) {
+                        if (!folder.exists()) {
+                            //New source folder needs to be created
+                            if (entry.getLinkTarget() == null) {
+                                CoreUtility.createFolder(folder, true, true, 
+                                        new SubProgressMonitor(monitor, 2));
+                            } else {
+                                folder.createLink(entry.getLinkTarget(), 
+                                        IResource.ALLOW_MISSING_LOCAL, 
+                                        new SubProgressMonitor(monitor, 2));
+                            }
+                        }
+                    } else {
+                        if (projPath.isPrefixOf(orginalPath)) {
+                            orginalPath= orginalPath.removeFirstSegments(projPath.segmentCount());
+                        }
+                        IFolder orginalFolder= project.getFolder(orginalPath);
+                        if (entry.getLinkTarget() == null) {
+                            if (!folder.exists()) {
+                                //Source folder was edited, move to new location
+                                IPath parentPath= entry.getPath().removeLastSegments(1);
+                                if (projPath.isPrefixOf(parentPath)) {
+                                    parentPath= parentPath.removeFirstSegments(projPath.segmentCount());
+                                }
+                                if (parentPath.segmentCount() > 0) {
+                                    IFolder parentFolder= project.getFolder(parentPath);
+                                    if (!parentFolder.exists()) {
+                                        CoreUtility.createFolder(parentFolder, true, true, 
+                                                new SubProgressMonitor(monitor, 1));
+                                    } else {
+                                        monitor.worked(1);
+                                    }
+                                } else {
+                                    monitor.worked(1);
+                                }
+                                orginalFolder.move(entry.getPath(), true, true, 
+                                        new SubProgressMonitor(monitor, 1));
+                            }
+                        } else {
+                            if (!folder.exists() || !entry.getLinkTarget().equals(entry.getOrginalLinkTarget())) {
+                                orginalFolder.delete(true, new SubProgressMonitor(monitor, 1));
+                                folder.createLink(entry.getLinkTarget(), IResource.ALLOW_MISSING_LOCAL, 
+                                        new SubProgressMonitor(monitor, 1));
+                            }
+                        }
+                    }
+                }
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
             }
             
             int nEntries= classPathEntries.size();
@@ -999,20 +1093,26 @@ public class CeylonBuildPathsBlock {
             List<String> srcDirs = new ArrayList<String>();
             for (CPListElement cpe: classPathEntries) {
                 if (cpe.getEntryKind()==IClasspathEntry.CPE_SOURCE) {
-                    srcDirs.add(cpe.getPath().toOSString());
+                    srcDirs.add(configFilePath(project, cpe));
                 }
             }
             config.setProjectSourceDirectories(srcDirs);
             List<String> rsrcDirs = new ArrayList<String>();
             for (CPListElement cpe: resourcePathEntries) {
-                rsrcDirs.add(cpe.getPath().toOSString());
+                rsrcDirs.add(configFilePath(project, cpe));
             }
             config.setProjectResourceDirectories(rsrcDirs);
+            config.save();
             
         } finally {
             monitor.done();
         }
         
+    }
+
+    private static String configFilePath(IProject project, CPListElement cpe) {
+        return cpe.getPath().toOSString()
+                .replaceFirst(File.separator+project.getName(), ".");
     }
     
     private static void setOptionsFromJavaProject(IJavaProject javaProject,

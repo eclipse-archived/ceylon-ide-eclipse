@@ -14,14 +14,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
 
-import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoPreferencesBlock;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoConfigBlock;
 
 public class NewCeylonProjectWizardPageThree extends WizardPage {
 
     private static final String PAGE_NAME= "NewJavaProjectWizardPageThree"; //$NON-NLS-1$
     
     private NewCeylonProjectWizardPageTwo pageTwo;
-    private CeylonRepoPreferencesBlock block;
+    private CeylonRepoConfigBlock block;
     private IProject provisonalProject;
     
     public NewCeylonProjectWizardPageThree(NewCeylonProjectWizardPageTwo pageTwo) {
@@ -38,7 +38,7 @@ public class NewCeylonProjectWizardPageThree extends WizardPage {
         composite.setLayout(initGridLayout(new GridLayout(1, false), true));
         composite.setLayoutData(new GridData(HORIZONTAL_ALIGN_FILL));
 
-        block = new CeylonRepoPreferencesBlock(new CeylonRepoPreferencesBlock.ValidationCallback() {
+        block = new CeylonRepoConfigBlock(new CeylonRepoConfigBlock.ValidationCallback() {
             @Override
             public void validationResultChange(boolean isValid, String message) {
                 setPageComplete(isValid);
@@ -79,7 +79,7 @@ public class NewCeylonProjectWizardPageThree extends WizardPage {
         return layout;
     }
 
-    public CeylonRepoPreferencesBlock getBlock() {
+    public CeylonRepoConfigBlock getBlock() {
         return block;
     }
 
