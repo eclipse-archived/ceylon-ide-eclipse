@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package com.redhat.ceylon.eclipse.code.wizard;
+package com.redhat.ceylon.eclipse.code.preferences;
 
 import java.util.ArrayList;
 import java.util.Iterator;

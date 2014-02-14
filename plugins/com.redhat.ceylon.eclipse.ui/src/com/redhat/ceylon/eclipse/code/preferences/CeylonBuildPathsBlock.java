@@ -9,9 +9,10 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package com.redhat.ceylon.eclipse.code.wizard;
+package com.redhat.ceylon.eclipse.code.preferences;
 
 
+import static com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 
@@ -261,7 +262,7 @@ public class CeylonBuildPathsBlock {
         item.setControl(fSourceContainerPage.getControl(folder));
 
         item= new TabItem(folder, SWT.NONE);
-        item.setText("Resources");
+        item.setText(DEFAULT_RESOURCE_FOLDER);
         item.setImage(CeylonLabelProvider.FOLDER);
         fResourceContainerPage = new ResourceContainerWorkbookPage(fResourcePathList, fJavaBuildPathDialogField);
         item.setData(fResourceContainerPage);

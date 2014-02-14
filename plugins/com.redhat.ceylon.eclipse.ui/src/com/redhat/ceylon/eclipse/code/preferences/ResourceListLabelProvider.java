@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package com.redhat.ceylon.eclipse.code.preferences;
 
 /*******************************************************************************
  * Copyright (c) 2000, 2012 IBM Corporation and others.
@@ -40,34 +40,25 @@ import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.ide.IDE;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 
 public class ResourceListLabelProvider extends LabelProvider {
 
-    private String fNewLabel, fClassLabel, fMissing;
+    private String fNewLabel, fMissing;
 
     private ImageDescriptorRegistry fRegistry;
     private ISharedImages fSharedImages;
-
-    private ImageDescriptor fProjectImage;
 
     private ClasspathAttributeConfigurationDescriptors fAttributeDescriptors;
 
 
     public ResourceListLabelProvider() {
         fNewLabel= NewWizardMessages.CPListLabelProvider_new;
-        fClassLabel= NewWizardMessages.CPListLabelProvider_classcontainer;
         fMissing= NewWizardMessages.CPListLabelProvider_missing;
         fRegistry= JavaPlugin.getImageDescriptorRegistry();
 
         fSharedImages= JavaUI.getSharedImages();
-
-        IWorkbench workbench= JavaPlugin.getDefault().getWorkbench();
-
-        fProjectImage= workbench.getSharedImages().getImageDescriptor(IDE.SharedImages.IMG_OBJ_PROJECT);
         fAttributeDescriptors= JavaPlugin.getDefault().getClasspathAttributeConfigurationDescriptors();
     }
 

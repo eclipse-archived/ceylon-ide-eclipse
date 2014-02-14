@@ -41,6 +41,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
 
+import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsBlock;
+
 /**
  * Basic wizard page for creating new Java projects. This page can be used in
  * project creation wizards. The page shows UI to configure the project with a Java
