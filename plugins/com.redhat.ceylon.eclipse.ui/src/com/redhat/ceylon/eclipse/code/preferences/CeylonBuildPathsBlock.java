@@ -262,7 +262,7 @@ public class CeylonBuildPathsBlock {
         item.setControl(fSourceContainerPage.getControl(folder));
 
         item= new TabItem(folder, SWT.NONE);
-        item.setText(DEFAULT_RESOURCE_FOLDER);
+        item.setText("Resources");
         item.setImage(CeylonLabelProvider.FOLDER);
         fResourceContainerPage = new ResourceContainerWorkbookPage(fResourcePathList, fJavaBuildPathDialogField);
         item.setData(fResourceContainerPage);
@@ -378,7 +378,7 @@ public class CeylonBuildPathsBlock {
             }
         }
         else {
-            IFolder defaultResourceFolder = fCurrJProject.getProject().getFolder("/resources");
+            IFolder defaultResourceFolder = fCurrJProject.getProject().getFolder(DEFAULT_RESOURCE_FOLDER);
             newResourcePath.add(new CPListElement(fCurrJProject, 
                     IClasspathEntry.CPE_SOURCE, 
                     defaultResourceFolder.getFullPath(), 

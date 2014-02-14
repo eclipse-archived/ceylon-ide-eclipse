@@ -370,6 +370,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     }
 
     private void restoreExistingFolders(URI projectLocation) {
+        if (fOrginalFolders==null) return;
         try {
             IFileStore[] children= EFS.getStore(projectLocation).childStores(EFS.NONE, null);
             for (int i= 0; i < children.length; i++) {

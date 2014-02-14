@@ -208,8 +208,8 @@ public class AddResourceFolderWizardPage extends NewElementWizardPage {
     private final IContainer fParent;
 
     public AddResourceFolderWizardPage(CPListElement newElement, List<CPListElement> existingEntries, IPath outputLocation,
-            boolean linkedMode, boolean canCommitConflictingBuildpath,
-            boolean allowIgnoreConflicts, boolean allowRemoveProjectFolder, boolean allowAddExclusionPatterns, IContainer parent) {
+            boolean linkedMode, boolean canCommitConflictingBuildpath, boolean allowIgnoreConflicts, 
+            boolean allowRemoveProjectFolder, boolean allowAddExclusionPatterns, IContainer parent, String type) {
 
         super(PAGE_NAME);
 
@@ -246,16 +246,16 @@ public class AddResourceFolderWizardPage extends NewElementWizardPage {
             }
         }
 
-        setTitle("Resource Folder");
+        setTitle(type + " Folder");
         fOrginalPath= newElement.getPath();
         if (fOrginalPath == null) {
             if (linkedMode) {
-                setDescription(Messages.format("Link additional resources to project ''{0}''.", BasicElementLabels.getJavaElementName(newElement.getJavaProject().getElementName())));
+                setDescription(Messages.format("Link additional folder to project ''{0}''.", BasicElementLabels.getJavaElementName(newElement.getJavaProject().getElementName())));
             } else {
-                setDescription(Messages.format("Add a new resource folder relative to ''{0}''.", BasicElementLabels.getPathLabel(fParent.getFullPath(), false)));
+                setDescription(Messages.format("Add a new folder relative to ''{0}''.", BasicElementLabels.getPathLabel(fParent.getFullPath(), false)));
             }
         } else {
-            setDescription("Edit resource folder");
+            setDescription("Edit existing folder.");
         }
 
         fNewElement= newElement;
@@ -376,7 +376,7 @@ public class AddResourceFolderWizardPage extends NewElementWizardPage {
         if (field == fRootDialogField) {
             IPath initialPath= new Path(fRootDialogField.getText());
             String title= NewWizardMessages.NewSourceFolderWizardPage_ChooseExistingRootDialog_title;
-            String message= "&Choose folder as resource folder:";
+            String message= "&Choose folder:";
             IFolder folder= chooseFolder(title, message, initialPath);
             if (folder != null) {
                 setFolderDialogText(folder.getFullPath());
@@ -429,7 +429,7 @@ public class AddResourceFolderWizardPage extends NewElementWizardPage {
             if (curr.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
                 if (path.equals(curr.getPath()) && fExistingEntries.get(i) != fNewElement) {
                     if (folder.exists()) {
-                        result.setError("The folder is already a resource folder.");
+                        result.setError("The folder is already a source or resource folder.");
                         return result;
                     } else {
                         createFolderForExisting= true;

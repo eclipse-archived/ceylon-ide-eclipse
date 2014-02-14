@@ -18,7 +18,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathWizard;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.CPListElement;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.SetFilterWizardPage;
-import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
+import org.eclipse.jface.resource.ImageDescriptor;
 
 public class AddResourceFolderWizard extends BuildPathWizard {
 
@@ -30,35 +30,39 @@ public class AddResourceFolderWizard extends BuildPathWizard {
     private final boolean fAllowAddExclusionPatterns;
     private final boolean fCanCommitConflict;
     private final IContainer fParent;
+    private final String type;
 
     public AddResourceFolderWizard(CPListElement[] existingEntries, CPListElement newEntry, IPath outputLocation,
-            boolean linkedMode, boolean canCommitConflict,
-            boolean allowConflict, boolean allowRemoveProjectFolder, boolean allowAddExclusionPatterns) {
-        this(existingEntries, newEntry, outputLocation, linkedMode, canCommitConflict, allowConflict, allowRemoveProjectFolder, allowAddExclusionPatterns, newEntry.getJavaProject().getProject());
+            boolean linkedMode, boolean canCommitConflict, boolean allowConflict, boolean allowRemoveProjectFolder, 
+            boolean allowAddExclusionPatterns, String type, ImageDescriptor image) {
+        this(existingEntries, newEntry, outputLocation, linkedMode, canCommitConflict, allowConflict, 
+                allowRemoveProjectFolder, allowAddExclusionPatterns, newEntry.getJavaProject().getProject(),
+                type, image);
     }
 
     public AddResourceFolderWizard(CPListElement[] existingEntries, CPListElement newEntry, IPath outputLocation,
-            boolean linkedMode, boolean canCommitConflict,
-            boolean allowConflict, boolean allowRemoveProjectFolder, boolean allowAddExclusionPatterns, IContainer parent) {
-        super(existingEntries, newEntry, outputLocation, getTitel(newEntry, linkedMode), 
-                IDEWorkbenchPlugin.getIDEImageDescriptor("wizban/newfolder_wiz.png"));
+            boolean linkedMode, boolean canCommitConflict, boolean allowConflict, boolean allowRemoveProjectFolder, 
+            boolean allowAddExclusionPatterns, IContainer parent, String type, ImageDescriptor image) {
+        super(existingEntries, newEntry, outputLocation, getTitel(type, newEntry, linkedMode), 
+                image);
         fLinkedMode= linkedMode;
         fCanCommitConflict= canCommitConflict;
         fAllowConflict= allowConflict;
         fAllowRemoveProjectFolder= allowRemoveProjectFolder;
         fAllowAddExclusionPatterns= allowAddExclusionPatterns;
         fParent= parent;
+        this.type = type;
     }
 
-    private static String getTitel(CPListElement newEntry, boolean linkedMode) {
+    private static String getTitel(String type, CPListElement newEntry, boolean linkedMode) {
         if (newEntry.getPath() == null) {
             if (linkedMode) {
-                return "Link Resources";
+                return "Link " + type;
             } else {
-                return "New Resource Folder";
+                return "New " + type + " Folder";
             }
         } else {
-            return "Edit resource folder";
+            return "Edit " + type + " folder";
         }
     }
 
@@ -70,12 +74,12 @@ public class AddResourceFolderWizard extends BuildPathWizard {
         super.addPages();
 
         fAddFolderPage= new AddResourceFolderWizardPage(getEntryToEdit(), getExistingEntries(), getOutputLocation(),
-                fLinkedMode, fCanCommitConflict,
-                fAllowConflict, fAllowRemoveProjectFolder, fAllowAddExclusionPatterns, fParent);
+                fLinkedMode, fCanCommitConflict, fAllowConflict, fAllowRemoveProjectFolder, fAllowAddExclusionPatterns, 
+                fParent, type);
         addPage(fAddFolderPage);
 
         fFilterPage= new SetFilterWizardPage(getEntryToEdit(), getExistingEntries(), getOutputLocation());
-        addPage(fFilterPage);
+//        addPage(fFilterPage);
     }
 
     /**
