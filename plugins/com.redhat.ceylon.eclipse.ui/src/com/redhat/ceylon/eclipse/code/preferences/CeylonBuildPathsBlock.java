@@ -1112,8 +1112,14 @@ public class CeylonBuildPathsBlock {
     }
 
     private static String configFilePath(IProject project, CPListElement cpe) {
-        return cpe.getPath().toOSString()
-                .replaceFirst(File.separator+project.getName(), ".");
+        IPath linkTarget = cpe.getLinkTarget();
+        if (linkTarget==null) {
+            return cpe.getPath().toOSString()
+                    .replaceFirst(File.separator+project.getName(), ".");
+        }
+        else {
+            return cpe.getLinkTarget().toOSString();
+        }
     }
     
     private static void setOptionsFromJavaProject(IJavaProject javaProject,
