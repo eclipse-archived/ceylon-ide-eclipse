@@ -13,11 +13,11 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 
-public class CeylonRepoPreferencesPage extends PropertyPage {
+public class CeylonRepoPropertiesPage extends PropertyPage {
     
     public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.repos";
 
-    private CeylonRepoPreferencesBlock block;
+    private CeylonRepoConfigBlock block;
 
     @Override
     public boolean performOk() {
@@ -54,7 +54,7 @@ public class CeylonRepoPreferencesPage extends PropertyPage {
         IProject project = getSelectedProject();
         boolean isCeylonNatureEnabled = project.isOpen() && CeylonNature.isEnabled(project);
 
-        block = new CeylonRepoPreferencesBlock(new CeylonRepoPreferencesBlock.ValidationCallback() {
+        block = new CeylonRepoConfigBlock(new CeylonRepoConfigBlock.ValidationCallback() {
             @Override
             public void validationResultChange(boolean isValid, String message) {
                 setValid(isValid);

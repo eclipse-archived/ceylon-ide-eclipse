@@ -49,7 +49,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 
-public class CeylonRepoPreferencesBlock {
+public class CeylonRepoConfigBlock {
 
     public interface ValidationCallback {
         void validationResultChange(boolean isValid, String message);
@@ -76,7 +76,7 @@ public class CeylonRepoPreferencesBlock {
     private Button upButton;
     private Button downButton;
 
-    public CeylonRepoPreferencesBlock(ValidationCallback validationCallback) {
+    public CeylonRepoConfigBlock(ValidationCallback validationCallback) {
         this.validationCallback = validationCallback;
     }
     
