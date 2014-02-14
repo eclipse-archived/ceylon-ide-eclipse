@@ -306,14 +306,14 @@ public class JDTModelLoader extends AbstractModelLoader {
          */
         Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME, JDK_MODULE_VERSION);
         Module languageModule = getLanguageModule();
-        findOrCreatePackage(languageModule, CEYLON_LANGUAGE);
+        if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
+            findOrCreatePackage(languageModule, CEYLON_LANGUAGE);
+        }        
         
         loadPackage(jdkModule, "java.lang", false);
         loadPackage(languageModule, "com.redhat.ceylon.compiler.java.metadata", false);
         loadPackage(languageModule, "com.redhat.ceylon.compiler.java.language", false);
         
-        if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
-        }        
     }
     
     private String getToplevelQualifiedName(final String pkgName, String name) {
