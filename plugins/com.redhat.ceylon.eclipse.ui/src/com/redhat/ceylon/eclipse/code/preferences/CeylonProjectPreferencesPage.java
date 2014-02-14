@@ -77,7 +77,9 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 backendJava, backendJs).addToProject(project);
         
         CeylonProjectConfig config = CeylonProjectConfig.get(project);
-        config.setProjectOffline(offlineOption);
+        if (offlineOption!=null) {
+            config.setProjectOffline(offlineOption);
+        }
         config.save();
     }
 
@@ -155,10 +157,8 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             public void handleEvent(Event e) {
                 if (offlineOption == null) {
                     offlineOption = true;
-//                } else if (offlineOption) {
-//                    offlineOption = false;
                 } else {
-                    offlineOption = null;
+                    offlineOption = !offlineOption;
                 }
                 updateOfflineButton();
             }
