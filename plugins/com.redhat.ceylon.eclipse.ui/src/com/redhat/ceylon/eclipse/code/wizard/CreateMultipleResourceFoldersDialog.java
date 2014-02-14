@@ -41,6 +41,7 @@ import org.eclipse.jdt.ui.actions.AbstractOpenWizardAction;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -103,8 +104,13 @@ public class CreateMultipleResourceFoldersDialog extends TrayDialog {
     private final HashSet<CPListElement> fModifiedElements;
     private final HashSet<CPListElement> fInsertedElements;
     private final Hashtable<IFolder, IContainer> fNonExistingFolders;
+    private final String type;
+    private final ImageDescriptor image;
 
-    public CreateMultipleResourceFoldersDialog(final IJavaProject javaProject, final CPListElement[] existingElements, final String outputLocation, Shell shell) {
+    public CreateMultipleResourceFoldersDialog(final IJavaProject javaProject, 
+            final CPListElement[] existingElements, 
+            final String outputLocation, String type, 
+            ImageDescriptor image, Shell shell) {
         super(shell);
         fJavaProject= javaProject;
         fExistingElements= existingElements;
@@ -120,6 +126,9 @@ public class CreateMultipleResourceFoldersDialog extends TrayDialog {
                 addFakeFolder(fJavaProject.getProject(), cur);
             }
         }
+        
+        this.type = type;
+        this.image = image;
     }
 
     @Override
@@ -136,10 +145,6 @@ public class CreateMultipleResourceFoldersDialog extends TrayDialog {
             }
         }
         ViewerFilter filter= new TypedViewerFilter(acceptedClasses, rejectedElements.toArray()){
-
-            /* (non-Javadoc)
-             * @see org.eclipse.jdt.internal.ui.wizards.TypedViewerFilter#select(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
-             */
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
                 if (element instanceof IFolder && ((IFolder)element).isVirtual()) {
@@ -152,8 +157,8 @@ public class CreateMultipleResourceFoldersDialog extends TrayDialog {
         ILabelProvider lp= new WorkbenchLabelProvider();
         ITreeContentProvider cp= new FakeFolderBaseWorkbenchContentProvider();
 
-        String title= "Resource Folder Selection";
-        String message= "&Select the resource folder:";
+        String title = type + " Folder Selection";
+        String message = "&Select the folder:";
 
 
         MultipleFolderSelectionDialog dialog= new MultipleFolderSelectionDialog(getShell(), lp, cp) {
@@ -280,8 +285,11 @@ public class CreateMultipleResourceFoldersDialog extends TrayDialog {
         }
     }
 
-    private AddResourceFolderWizard newResourceFolderWizard(CPListElement element, CPListElement[] existing, String outputLocation, IContainer parent) {
-        AddResourceFolderWizard wizard= new AddResourceFolderWizard(existing, element, new Path(outputLocation).makeAbsolute(), false, true, false, false, false, parent);
+    private AddResourceFolderWizard newResourceFolderWizard(CPListElement element, 
+            CPListElement[] existing, String outputLocation, IContainer parent) {
+        AddResourceFolderWizard wizard= new AddResourceFolderWizard(existing, element, 
+                new Path(outputLocation).makeAbsolute(), 
+                false, true, false, false, false, parent, type, image);
         wizard.setDoFlushChange(false);
         return wizard;
     }
