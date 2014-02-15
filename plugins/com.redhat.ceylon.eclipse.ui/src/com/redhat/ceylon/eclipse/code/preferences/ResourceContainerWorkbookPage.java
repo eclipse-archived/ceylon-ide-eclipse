@@ -127,15 +127,17 @@ public class ResourceContainerWorkbookPage extends BuildPathBasePage {
         return wizard;
     }
 
-//    private static AddSourceFolderWizard newLinkedSourceFolderWizard(CPListElement element, 
-//            List<CPListElement> existingElements, String outputLocation, boolean newFolder) {
-//        CPListElement[] existing= existingElements.toArray(new CPListElement[existingElements.size()]);
-//        AddSourceFolderWizard wizard= new AddSourceFolderWizard(existing, element, 
-//                new Path(outputLocation).makeAbsolute(), true, newFolder, newFolder, 
-//                newFolder?CPListElement.isProjectSourceFolder(existing, element.getJavaProject()):false, newFolder);
-//        wizard.setDoFlushChange(false);
-//        return wizard;
-//    }
+    private static AddResourceFolderWizard newLinkedResourceFolderWizard(CPListElement element, 
+            List<CPListElement> existingElements, String outputLocation, boolean newFolder) {
+        CPListElement[] existing= existingElements.toArray(new CPListElement[existingElements.size()]);
+        AddResourceFolderWizard wizard= new AddResourceFolderWizard(existing, element, 
+                new Path(outputLocation).makeAbsolute(), true, newFolder, newFolder, 
+                newFolder?CPListElement.isProjectSourceFolder(existing, element.getJavaProject()):false, 
+                        newFolder, "Resource", IDEWorkbenchPlugin.getIDEImageDescriptor("wizban/newfolder_wiz.png"));
+        wizard.setDoFlushChange(false);
+        return wizard;
+    }
+
 
 //    private static EditFilterWizard newEditFilterWizard(CPListElement element, 
 //            List<CPListElement> existingElements, String outputLocation) {
@@ -156,10 +158,10 @@ public class ResourceContainerWorkbookPage extends BuildPathBasePage {
 //    private final SelectionButtonDialogField fUseFolderOutputs;
 
     private final int IDX_ADD= 0;
-//    private final int IDX_ADD_LINK= 1;
-    private final int IDX_EDIT= 2;
-//    private final int IDX_TOGGLE= 3;
-    private final int IDX_REMOVE= 3;
+    private final int IDX_ADD_LINK= 1;
+    private final int IDX_EDIT= 3;
+//    private final int IDX_TOGGLE= 4;
+    private final int IDX_REMOVE= 4;
 
     public ResourceContainerWorkbookPage(ListDialogField<CPListElement> classPathList,
             StringDialogField javaOutputLocationField) {
@@ -175,7 +177,7 @@ public class ResourceContainerWorkbookPage extends BuildPathBasePage {
 
         buttonLabels= new String[] {
             NewWizardMessages.SourceContainerWorkbookPage_folders_add_button,
-//            NewWizardMessages.SourceContainerWorkbookPage_folders_link_source_button,
+            "L&ink Folder...",
             null,
             NewWizardMessages.SourceContainerWorkbookPage_folders_edit_button,
 //            "Toggl&e",
@@ -369,13 +371,13 @@ public class ResourceContainerWorkbookPage extends BuildPathBasePage {
                     OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
                     action.run();
                 }
-            } /*else if (index == IDX_ADD_LINK) {
+            } else if (index == IDX_ADD_LINK) {
                 CPListElement newElement= new CPListElement(fCurrJProject, IClasspathEntry.CPE_SOURCE);
-                AddSourceFolderWizard wizard= newLinkedSourceFolderWizard(newElement, fFoldersList.getElements(), 
+                AddResourceFolderWizard wizard= newLinkedResourceFolderWizard(newElement, fFoldersList.getElements(), 
                         fJavaOutputLocationField.getText(), true);
                 OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
                 action.run();
-            }*/ else if (index == IDX_EDIT/*||index == IDX_TOGGLE*/) {
+            } else if (index == IDX_EDIT/*||index == IDX_TOGGLE*/) {
                 editEntry();
             } else if (index == IDX_REMOVE) {
                 removeEntry();
@@ -424,17 +426,17 @@ public class ResourceContainerWorkbookPage extends BuildPathBasePage {
     }
 
     private void editElementEntry(CPListElement elem) {
-        /*if (elem.getLinkTarget() != null) {
-            AddSourceFolderWizard wizard= newLinkedSourceFolderWizard(elem, 
+        if (elem.getLinkTarget() != null) {
+            AddResourceFolderWizard wizard= newLinkedResourceFolderWizard(elem, 
                     fFoldersList.getElements(), fJavaOutputLocationField.getText(), false);
             OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
             action.run();
-        } else {*/
-        AddResourceFolderWizard wizard= newResourceFolderWizard(elem, 
+        } else {
+            AddResourceFolderWizard wizard= newResourceFolderWizard(elem, 
                     fFoldersList.getElements(), fJavaOutputLocationField.getText(), false);
             OpenBuildPathWizardAction action= new OpenBuildPathWizardAction(wizard);
             action.run();
-        //}
+        }
     }
 
 //    private void editAttributeEntry(CPListElementAttribute elem) {
