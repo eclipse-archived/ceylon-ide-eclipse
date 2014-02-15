@@ -31,6 +31,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -339,8 +340,7 @@ public class CeylonBuildPathsBlock {
             IClasspathEntry[] classpathEntries, boolean javaCompilationEnabled) {
         fCurrJProject= jproject;
         boolean projectExists= false;
-        List<CPListElement> newClassPath= null;
-        List<CPListElement> newResourcePath= null;
+        final List<CPListElement> newClassPath;
         IProject project= fCurrJProject.getProject();
         projectExists= (project.exists() && project.getFile(".classpath").exists()); //$NON-NLS-1$
         IClasspathEntry[] existingEntries= null;
@@ -361,20 +361,44 @@ public class CeylonBuildPathsBlock {
         if (classpathEntries != null) {
             newClassPath= getCPListElements(classpathEntries, existingEntries);
         }
-        if (newClassPath == null) {
+        else {
             newClassPath= getDefaultClassPath(jproject);
         }
         
-        newResourcePath = new ArrayList<CPListElement>();
+        final List<CPListElement> newResourcePath = new ArrayList<CPListElement>();
         if (projectExists) {
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
-            for (String path: config.getProjectResourceDirectories()) {
-                IFolder folder = fCurrJProject.getProject()
-                        .getFolder(Path.fromOSString(path));
-                newResourcePath.add(new CPListElement(fCurrJProject, 
-                        IClasspathEntry.CPE_SOURCE, 
-                        folder.getFullPath(), 
-                        folder));
+            for (final String path: config.getProjectResourceDirectories()) {
+                if (path.startsWith(".")) {
+                    IFolder folder = fCurrJProject.getProject()
+                            .getFolder(Path.fromOSString(path));
+                    newResourcePath.add(new CPListElement(fCurrJProject, 
+                            IClasspathEntry.CPE_SOURCE, 
+                            folder.getFullPath(), 
+                            folder));
+                }
+                else {
+                    try {
+                        project.accept(new IResourceVisitor() {
+                            @Override
+                            public boolean visit(IResource resource) 
+                                    throws CoreException {
+                                if (resource.isLinked() &&
+                                        resource.getLocation().toOSString().equals(path)) {
+                                    newResourcePath.add(new CPListElement(null,
+                                            fCurrJProject, IClasspathEntry.CPE_SOURCE, 
+                                            resource.getFullPath(), 
+                                            resource, resource.getLocation()));
+                                }
+                                return resource instanceof IFolder || 
+                                        resource instanceof IProject;
+                            }
+                        });
+                    }
+                    catch (CoreException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
         else {
