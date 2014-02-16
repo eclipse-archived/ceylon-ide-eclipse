@@ -21,6 +21,7 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -91,21 +92,36 @@ class CreateProposal extends CorrectionProposal {
         TextFileChange change = new TextFileChange("Create Member", file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
-        String indent;
+        String indentBefore;
         String indentAfter;
+        String indent;
         int offset;
         List<Tree.Statement> statements = body.getStatements();
         String delim = getDefaultLineDelimiter(doc);
         if (statements.isEmpty()) {
-            indentAfter = getIndent(decNode, doc);
-            indent = delim + indentAfter + getDefaultIndent();
+            String bodyIndent = getIndent(decNode, doc);
+            indent = bodyIndent + getDefaultIndent();
+            indentBefore = delim + indent;
+            try {
+                if (doc.getLineOfOffset(body.getStartIndex())==doc.getLineOfOffset(body.getStopIndex())) {
+                    indentAfter = delim + bodyIndent;
+                }
+                else {
+                    indentAfter = "";
+                }
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+                indentAfter = delim;
+            }
             offset = body.getStartIndex()+1;
         }
         else {
             Tree.Statement statement = statements.get(statements.size()-1);
-            indent = "";
-            offset = statement.getStartIndex();
-            indentAfter = getIndent(statement, doc);
+            indent = getIndent(statement, doc);
+            indentBefore = delim + indent;
+            indentAfter = "";
+            offset = statement.getStopIndex()+1;
         }
         HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
         CompilationUnit cu = unit.getCompilationUnit();
@@ -114,7 +130,7 @@ class CreateProposal extends CorrectionProposal {
             importTypes(alreadyImported, dg.parameters.values(), cu);
         }
         int il = applyImports(change, alreadyImported, cu, doc);
-        String def = indent + dg.generateShared(indentAfter, delim) + delim + indentAfter;
+        String def = indentBefore + dg.generateShared(indent, delim) + indentAfter;
         change.addEdit(new InsertEdit(offset, def));
         String desc = "Create " + memberKind(dg) + " in '" + typeDec.getName() + "'";
         proposals.add(new CreateProposal(def, desc, dg.image, 
