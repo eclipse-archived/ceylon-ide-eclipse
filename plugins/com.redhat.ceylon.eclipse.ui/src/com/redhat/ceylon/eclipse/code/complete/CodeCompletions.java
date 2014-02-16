@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDefaultValue;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
@@ -67,32 +67,32 @@ public class CodeCompletions {
     static String getTextForDocLink(CeylonParseController cpc, 
             DeclarationWithProximity d) {
         
-        StringBuilder result = new StringBuilder();
-        
         Declaration decl = d.getDeclaration();
         Package pkg = decl.getUnit().getPackage();
+        String qname = decl.getQualifiedNameString();
         
         // handle language package or same module and package
-        if (pkg != null && (Module.LANGUAGE_MODULE_NAME.equals(pkg.getNameAsString())
-                            ||(cpc.getRootNode().getUnit() != null && pkg.equals(
-                                    cpc.getRootNode().getUnit().getPackage())))
-                ) {
+        Unit unit = cpc.getRootNode().getUnit();
+        if (pkg!=null && 
+                (Module.LANGUAGE_MODULE_NAME.equals(pkg.getNameAsString())
+            || (unit!=null && pkg.equals(unit.getPackage())))) {
             if (decl.isToplevel()) {
-                result.append(decl.getNameAsString());
-            } else { // not top level in language module
-                int loc = decl.getQualifiedNameString().indexOf("::");
-                if (loc != -1) {
-                    result.append(decl.getQualifiedNameString().substring(loc + 2));
+                return decl.getNameAsString();
+            }
+            else { // not top level in language module
+                int loc = qname.indexOf("::");
+                if (loc>=0) {
+                    return qname.substring(loc + 2);
+                }
+                else {
+                    return qname;
                 }
             }
         } 
-        
-        // no special case
-        if (result.length() == 0) {
-            result.append(decl.getQualifiedNameString());
+        else {
+            return qname;
         }
         
-        return result.toString();
     }
     
     static String getTextFor(DeclarationWithProximity d) {
@@ -114,7 +114,7 @@ public class CodeCompletions {
         else if (forceExplicitTypeArgs(dd, ol)) {
             appendTypeParameters(dd, result);
         }
-        appendPositionalArgs(dd, pr, unit, result, includeDefaulted);
+        appendPositionalArgs(dd, pr, unit, result, includeDefaulted, false);
         appendSemiToVoidInvocation(result, dd);
         return result.toString();
     }
@@ -156,7 +156,7 @@ public class CodeCompletions {
             appendTypeParameters(d.getDeclaration(), result);
         }
         appendPositionalArgs(d.getDeclaration(), pr, unit, result, 
-                includeDefaulted);
+                includeDefaulted, true);
         return result.toString();
     }
     
@@ -189,17 +189,17 @@ public class CodeCompletions {
                 result.append("variable ");
             }
         }
-        appendDeclarationText(d, pr, unit, result);
+        appendDeclarationHeaderText(d, pr, unit, result);
         appendTypeParameters(d, result);
-        appendParameters(d, pr, unit, result);
+        appendParametersText(d, pr, unit, result);
         if (d instanceof Class) {
             result.append(extraIndent(extraIndent(indent, containsNewline), 
                     containsNewline))
-                .append(" extends super.").append(d.getName());
-            appendPositionalArgs(d, pr, unit, result, true);
+                .append(" extends super.").append(escapeName(d));
+            appendPositionalArgs(d, pr, unit, result, true, false);
         }
         appendConstraints(d, pr, unit, indent, containsNewline, result);
-        appendImpl(d, pr, isInterface, unit, indent, result, ci);
+        appendImplText(d, pr, isInterface, unit, indent, result, ci);
         return result.toString();
     }
 
@@ -233,9 +233,9 @@ public class CodeCompletions {
     static String getInlineFunctionTextFor(Parameter p, 
             ProducedReference pr, Unit unit, String indent) {
         StringBuilder result = new StringBuilder();
-        appendNamedArgumentText(p, pr, result);
+        appendNamedArgumentHeader(p, pr, result, false);
         appendTypeParameters(p.getModel(), result);
-        appendParameters(p.getModel(), pr, unit, result);
+        appendParametersText(p.getModel(), pr, unit, result);
         if (p.isDeclaredVoid()) {
             result.append(" {}");
         }
@@ -256,9 +256,9 @@ public class CodeCompletions {
         if (isVariable(d)) {
             result.append("variable ");
         }
-        appendDeclarationText(d, pr, unit, result);
+        appendDeclarationHeaderDescription(d, pr, unit, result);
         appendTypeParameters(d, result);
-        appendParameters(d, pr, unit, result);
+        appendParametersDescription(d, pr, unit, result);
         /*result.append(" - refine declaration in ") 
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
@@ -267,26 +267,21 @@ public class CodeCompletions {
     static String getInlineFunctionDescriptionFor(Parameter p, 
             ProducedReference pr, Unit unit) {
         StringBuilder result = new StringBuilder();
-        appendNamedArgumentText(p, pr, result);
+        appendNamedArgumentHeader(p, pr, result, true);
         appendTypeParameters(p.getModel(), result);
-        appendParameters(p.getModel(), pr, unit, result);
+        appendParametersDescription(p.getModel(), pr, unit, result);
         return result.toString();
     }
     
     public static String getDescriptionFor(Declaration d) {
-        return getDescriptionFor(d, null);
-    }
-    
-    public static String getDescriptionFor(Declaration d, 
-            CeylonParseController cpc) {
         StringBuilder result = new StringBuilder();
         if (d!=null) {
             if (d.isFormal()) result.append("formal ");
             if (d.isDefault()) result.append("default ");
             if (isVariable(d)) result.append("variable ");
-            appendDeclarationText(d, d.getUnit(), result);
+            appendDeclarationHeaderDescription(d, d.getUnit(), result);
             appendTypeParameters(d, result);
-            appendParameters(d, result, cpc);
+            appendParametersDescription(d, result, null);
         }
         return result.toString();
     }
@@ -297,9 +292,9 @@ public class CodeCompletions {
         if (d.isFormal()) result.append("formal ");
         if (d.isDefault()) result.append("default ");
         if (isVariable(d)) result.append("variable ");
-        appendDeclarationText(d, pr, unit, result);
+        appendDeclarationHeaderDescription(d, pr, unit, result);
         appendTypeParameters(d, result);
-        appendParameters(d, pr, unit, result);
+        appendParametersDescription(d, pr, unit, result);
         return result.toString();
     }
     
@@ -309,17 +304,26 @@ public class CodeCompletions {
             if (d.isFormal()) result.append("formal ", ANN_STYLER);
             if (d.isDefault()) result.append("default ", ANN_STYLER);
             if (isVariable(d)) result.append("variable ", ANN_STYLER);
-            appendDeclarationText(d, result);
+            appendDeclarationDescription(d, result);
             appendTypeParameters(d, result);
-            appendParameters(d, result);
+            appendParametersDescription(d, result);
             /*result.append(" - refine declaration in ") 
                 .append(((Declaration) d.getContainer()).getName());*/
         }
         return result;
     }
     
-    static void appendPositionalArgs(Declaration d, ProducedReference pr, 
-            Unit unit, StringBuilder result, boolean includeDefaulted) {
+    static void appendPositionalArgs(Declaration dec,
+            Unit unit, StringBuilder result, boolean includeDefaulted,
+            boolean descriptionOnly) {
+        appendPositionalArgs(dec, dec.getReference(), 
+                unit, result, includeDefaulted,
+                descriptionOnly);
+    }
+    
+    private static void appendPositionalArgs(Declaration d, ProducedReference pr, 
+            Unit unit, StringBuilder result, boolean includeDefaulted,
+            boolean descriptionOnly) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, 
                     includeDefaulted, false);
@@ -338,7 +342,8 @@ public class CodeCompletions {
                         }
                         appendParameters(p.getModel(), 
                                 pr.getTypedParameter(p), 
-                                unit, result);
+                                unit, result, 
+                                descriptionOnly);
                         if (p.isDeclaredVoid()) {
                             result.append(" {}");
                         }
@@ -348,7 +353,8 @@ public class CodeCompletions {
                         }
                     }
                     else {
-                        result.append(p.getName());
+                        result.append(descriptionOnly ? 
+                                p.getName() : escapeName(p.getModel()));
                     }
                     result.append(", ");
                 }
@@ -358,7 +364,7 @@ public class CodeCompletions {
         }
     }
     
-    static void appendSuperArgs(Declaration d, ProducedReference pr, 
+    static void appendSuperArgsText(Declaration d, ProducedReference pr, 
             Unit unit, StringBuilder result, boolean includeDefaulted) {
         if (d instanceof Functional) {
             List<Parameter> params = getParameters((Functional) d, 
@@ -372,7 +378,7 @@ public class CodeCompletions {
                     if (p.isSequenced()) {
                         result.append("*");
                     }
-                    result.append(p.getName())
+                    result.append(escapeName(p.getModel()))
                         .append(", ");
                 }
                 result.setLength(result.length()-2);
@@ -405,6 +411,9 @@ public class CodeCompletions {
             else {
                 result.append(" { ");
                 for (Parameter p: params) {
+                    String name = descriptionOnly ? 
+                            p.getName() : 
+                            escapeName(p.getModel());
                     if (p.getModel() instanceof Functional) {
                         if (p.isDeclaredVoid()) {
                             result.append("void ");
@@ -412,10 +421,11 @@ public class CodeCompletions {
                         else {
                             result.append("function ");
                         }
-                        result.append(p.getName());
+                        result.append(name);
                         appendParameters(p.getModel(), 
                                 pr.getTypedParameter(p), 
-                                unit, result);
+                                unit, result, 
+                                descriptionOnly);
                         if (descriptionOnly) {
                             result.append("; ");
                         }
@@ -435,7 +445,8 @@ public class CodeCompletions {
 //                            result.append(" ");
                         }
                         else {
-                            result.append(p.getName()).append(" = ")
+                            result.append(name)
+                                .append(" = ")
                                 //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))
                                 .append("nothing")
                                 .append("; ");
@@ -454,8 +465,8 @@ public class CodeCompletions {
                     ((Generic) d).getTypeParameters();
             if (!types.isEmpty()) {
                 result.append("<");
-                for (TypeParameter p: types) {
-                    result.append(p.getName()).append(", ");
+                for (TypeParameter tp: types) {
+                    result.append(tp.getName()).append(", ");
                 }
                 result.setLength(result.length()-2);
                 result.append(">");
@@ -471,8 +482,8 @@ public class CodeCompletions {
             if (!types.isEmpty()) {
                 result.append("<");
                 int len = types.size(), i = 0;
-                for (TypeParameter p: types) {
-                    result.append(p.getName(), TYPE_STYLER);
+                for (TypeParameter tp: types) {
+                    result.append(tp.getName(), TYPE_STYLER);
                     if (++i<len) result.append(", ");
                 }
                 result.append(">");
@@ -480,14 +491,25 @@ public class CodeCompletions {
         }
     }
     
-    private static void appendDeclarationText(Declaration d, 
+    private static void appendDeclarationHeaderDescription(Declaration d, 
             Unit unit, StringBuilder result) {
-        appendDeclarationText(d, null, unit, result);
+        appendDeclarationHeader(d, null, unit, result, true);
     }
     
-    static void appendDeclarationText(Declaration d, 
+    private static void appendDeclarationHeaderDescription(Declaration d, 
+            ProducedReference pr, Unit unit, StringBuilder result) {
+        appendDeclarationHeader(d, pr, unit, result, true);
+    }
+    
+    private static void appendDeclarationHeaderText(Declaration d, 
+            ProducedReference pr, Unit unit, StringBuilder result) {
+        appendDeclarationHeader(d, pr, unit, result, false);
+    }
+    
+    private static void appendDeclarationHeader(Declaration d, 
             ProducedReference pr, Unit unit, 
-            StringBuilder result) {
+            StringBuilder result, 
+            boolean descriptionOnly) {
         if (d instanceof Class) {
             if (d.isAnonymous()) {
                 result.append("object");
@@ -549,11 +571,14 @@ public class CodeCompletions {
                 }
             }
         }
-        result.append(" ").append(escapeName(d));
+        result.append(" ")
+            .append(descriptionOnly ? 
+                    d.getName() : escapeName(d));
     }
     
-    private static void appendNamedArgumentText(Parameter p, 
-            ProducedReference pr, StringBuilder result) {
+    private static void appendNamedArgumentHeader(Parameter p, 
+            ProducedReference pr, StringBuilder result,
+            boolean descriptionOnly) {
         if (p.getModel() instanceof Functional) {
             Functional fp = (Functional) p.getModel();
             result.append(fp.isDeclaredVoid() ? "void" : "function");
@@ -561,10 +586,12 @@ public class CodeCompletions {
         else {
             result.append("value");
         }
-        result.append(" ").append(p.getName());
+        result.append(" ")
+            .append(descriptionOnly ? 
+                    p.getName() : escapeName(p.getModel()));
     }
     
-    private static void appendDeclarationText(Declaration d, 
+    private static void appendDeclarationDescription(Declaration d, 
             StyledString result) {
         if (d instanceof Class) {
             if (d.isAnonymous()) {
@@ -638,7 +665,7 @@ public class CodeCompletions {
     }
   }*/
     
-    private static void appendImpl(Declaration d, ProducedReference pr, 
+    private static void appendImplText(Declaration d, ProducedReference pr, 
             boolean isInterface, Unit unit, String indent, StringBuilder result,
             ClassOrInterface ci) {
         if (d instanceof Method) {
@@ -656,7 +683,7 @@ public class CodeCompletions {
             }
             if (!d.isFormal()) {
                 result.append(" => super.").append(d.getName());
-                appendSuperArgs(d, pr, unit, result, true);
+                appendSuperArgsText(d, pr, unit, result, true);
                 result.append(";");
                 
             }
@@ -799,18 +826,29 @@ public class CodeCompletions {
         return containsNewline ? indent + getDefaultIndent() : indent;
     }
     
-    public static void appendParameters(Declaration d, StringBuilder result, 
+    public static void appendParametersDescription(Declaration d, StringBuilder result, 
             CeylonParseController cpc) {
-        appendParameters(d, null, d.getUnit(), result, cpc);
+        appendParameters(d, null, d.getUnit(), result, cpc, true);
     }
     
-    public static void appendParameters(Declaration d, ProducedReference pr, 
+    public static void appendParametersText(Declaration d, ProducedReference pr, 
             Unit unit, StringBuilder result) {
-        appendParameters(d, pr, unit, result, null);
+        appendParameters(d, pr, unit, result, null, false);
+    }
+    
+    private static void appendParametersDescription(Declaration d, ProducedReference pr, 
+            Unit unit, StringBuilder result) {
+        appendParameters(d, pr, unit, result, null, true);
     }
     
     private static void appendParameters(Declaration d, ProducedReference pr, 
-            Unit unit, StringBuilder result, CeylonParseController cpc) {
+            Unit unit, StringBuilder result, boolean descriptionOnly) {
+        appendParameters(d, pr, unit, result, null, descriptionOnly);
+    }
+    
+    private static void appendParameters(Declaration d, ProducedReference pr, 
+            Unit unit, StringBuilder result, CeylonParseController cpc,
+            boolean descriptionOnly) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
             if (plists!=null) {
@@ -821,26 +859,10 @@ public class CodeCompletions {
                     else {
                         result.append("(");
                         for (Parameter p: params.getParameters()) {
-                            appendParameter(result, pr, p, unit);
-                            /*ProducedType type = p.getType();
-                            if (pr!=null) {
-                                type = type.substitute(pr.getTypeArguments());
-                            }
-                            result.append(type.getProducedTypeName(unit)).append(" ")
-                                .append(p.getName());
-                            if (p instanceof FunctionalParameter) {
-                                result.append("(");
-                                FunctionalParameter fp = (FunctionalParameter) p;
-                                for (Parameter pp: fp.getParameterLists().get(0).getParameters()) {
-                                    result.append(pp.getType().substitute(pr.getTypeArguments())
-                                            .getProducedTypeName(unit))
-                                        .append(" ").append(pp.getName()).append(", ");
-                                }
-                                result.setLength(result.length()-2);
-                                result.append(")");
-                            }*/
+                            appendParameter(result, pr, p, unit,
+                                    descriptionOnly);
                             if (cpc!=null) {
-                                result.append(getDefaultValue(p, cpc));
+                                result.append(getDefaultValueDescription(p, cpc));
                             }
                             result.append(", ");
                         }
@@ -851,17 +873,25 @@ public class CodeCompletions {
             }
         }
     }
-
-    public static void appendParameter(StringBuilder result,
+    
+    public static void appendParameterText(StringBuilder result,
             ProducedReference pr, Parameter p, Unit unit) {
+        appendParameter(result, pr, p, unit, false);
+    }
+
+    private static void appendParameter(StringBuilder result,
+            ProducedReference pr, Parameter p, Unit unit,
+            boolean descriptionOnly) {
         if (p.getModel() == null) {
             result.append(p.getName());
         }
         else {
             ProducedTypedReference ppr = pr==null ? 
                     null : pr.getTypedParameter(p);
-            appendDeclarationText(p.getModel(), ppr, unit, result);
-            appendParameters(p.getModel(), ppr, unit, result);
+            appendDeclarationHeader(p.getModel(), ppr, unit, result,
+                    descriptionOnly);
+            appendParameters(p.getModel(), ppr, unit, result,
+                    descriptionOnly);
         }
     }
     
@@ -888,7 +918,7 @@ public class CodeCompletions {
                 typeName = type.getProducedTypeName(unit);
             }
             result.append(typeName).append(" ").append(p.getName());
-            appendParameters(p.getModel(), ppr, unit, result);
+            appendParametersDescription(p.getModel(), ppr, unit, result);
         }
         if (namedInvocation && !isListedValues) {
             result.append(p.getModel() instanceof Method ? 
@@ -896,7 +926,7 @@ public class CodeCompletions {
         }
     }
     
-    private static void appendParameters(Declaration d, StyledString result) {
+    private static void appendParametersDescription(Declaration d, StyledString result) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
             if (plists!=null) {
@@ -912,8 +942,8 @@ public class CodeCompletions {
                                 result.append(p.getName());
                             }
                             else {
-                                appendDeclarationText(p.getModel(), result);
-                                appendParameters(p.getModel(), result);
+                                appendDeclarationDescription(p.getModel(), result);
+                                appendParametersDescription(p.getModel(), result);
                                 /*result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
                                     .append(" ").append(p.getName(), ID_STYLER);
                                 if (p instanceof FunctionalParameter) {

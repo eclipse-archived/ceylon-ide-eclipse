@@ -193,7 +193,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                         middleOffset<nextOffset) {
                     offset = middleOffset;
                 }
-                String str = getText();
+                String str = getText(false);
                 if (nextOffset==-1) {
                     nextOffset = offset;
                 }
@@ -236,12 +236,13 @@ class InvocationCompletionProposal extends CompletionProposal {
             }*/
         }
 
-        private String getText() {
+        private String getText(boolean description) {
             StringBuilder sb = new StringBuilder()
                     .append(op).append(dec.getName());
             if (dec instanceof Class && !basic) {
-                appendPositionalArgs(dec, dec.getReference(), 
-                        cpc.getRootNode().getUnit(), sb, false);
+                appendPositionalArgs(dec, 
+                        getUnit(), 
+                        sb, false, description);
             }
             return sb.toString();
         }
@@ -253,7 +254,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 
         @Override
         public String getDisplayString() {
-            return getText();
+            return getText(true);
         }
 
         @Override
@@ -336,6 +337,10 @@ class InvocationCompletionProposal extends CompletionProposal {
         this.namedInvocation = namedInvocation;
         this.positionalInvocation = positionalInvocation;
         this.qualified = qualified;
+    }
+
+    private Unit getUnit() {
+        return cpc.getRootNode().getUnit();
     }
 
     private DocumentChange createChange(IDocument document)
@@ -546,7 +551,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         ProducedType type = producedReference.getTypedParameter(p)
                 .getType();
         if (type==null) return;
-        Unit unit = cpc.getRootNode().getUnit();
+        Unit unit = getUnit();
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
                 getSortedProposedValues(scope, unit)) {
@@ -604,8 +609,8 @@ class InvocationCompletionProposal extends CompletionProposal {
     private void addTypeArgumentProposals(TypeParameter tp, 
             final int loc, int first, List<ICompletionProposal> props, 
             final int index) {
-        Unit unit = cpc.getRootNode().getUnit();
-        for (DeclarationWithProximity dwp: getSortedProposedValues(scope, unit)) {
+        for (DeclarationWithProximity dwp:
+                getSortedProposedValues(scope, getUnit())) {
             Declaration d = dwp.getDeclaration();
             if (d instanceof TypeDeclaration && !dwp.isUnimported()) {
                 TypeDeclaration td = (TypeDeclaration) d;
@@ -640,7 +645,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                 offset-prefix.length() + 
                                 text.indexOf(namedInvocation?'{':'(');
                     return new ParameterContextInformation(declaration, 
-                            producedReference, cpc.getRootNode().getUnit(), 
+                            producedReference, getUnit(), 
                             pls.get(0), argListOffset, includeDefaulted, 
                             namedInvocation, !isParameterInfo());
                 }
