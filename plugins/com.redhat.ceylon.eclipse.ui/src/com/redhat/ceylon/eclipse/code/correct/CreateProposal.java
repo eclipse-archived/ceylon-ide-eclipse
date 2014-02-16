@@ -11,6 +11,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
@@ -37,7 +38,6 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindUtils;
-import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateProposal extends CorrectionProposal {
     
@@ -52,12 +52,13 @@ class CreateProposal extends CorrectionProposal {
         if (loc<0) {
             loc = def.indexOf("= ");
             if (loc<0) {
-                loc = def.indexOf("{}")+1;
+                loc = def.indexOf("{")+1;
                 length=0;
             }
             else {
                 loc += 2;
-                length = def.length()-loc;
+                int semi = def.indexOf(";", loc);
+                length = semi<0 ? 0:semi-loc;
             }
         }
         else {
@@ -94,17 +95,17 @@ class CreateProposal extends CorrectionProposal {
         String indentAfter;
         int offset;
         List<Tree.Statement> statements = body.getStatements();
-        String delim = Indents.getDefaultLineDelimiter(doc);
+        String delim = getDefaultLineDelimiter(doc);
         if (statements.isEmpty()) {
-            indentAfter = delim + getIndent(decNode, doc);
-            indent = indentAfter + getDefaultIndent();
+            indentAfter = getIndent(decNode, doc);
+            indent = delim + indentAfter + getDefaultIndent();
             offset = body.getStartIndex()+1;
         }
         else {
             Tree.Statement statement = statements.get(statements.size()-1);
             indent = "";
             offset = statement.getStartIndex();
-            indentAfter = delim + getIndent(statement, doc);
+            indentAfter = getIndent(statement, doc);
         }
         HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
         CompilationUnit cu = unit.getCompilationUnit();
@@ -113,11 +114,18 @@ class CreateProposal extends CorrectionProposal {
             importTypes(alreadyImported, dg.parameters.values(), cu);
         }
         int il = applyImports(change, alreadyImported, cu, doc);
-        String def = indent + dg.generateShared(indentAfter, delim) + indentAfter;
+        String def = indent + dg.generateShared(indentAfter, delim) + delim + indentAfter;
         change.addEdit(new InsertEdit(offset, def));
-        String desc = "Create " + dg.desc + " in '" + typeDec.getName() + "'";
+        String desc = "Create " + memberKind(dg) + " in '" + typeDec.getName() + "'";
         proposals.add(new CreateProposal(def, desc, dg.image, 
                 offset+il, file, change));
+    }
+
+    private static String memberKind(DefinitionGenerator dg) {
+        if (dg.desc.startsWith("function")) return "method" + dg.desc.substring(8);
+        if (dg.desc.startsWith("value")) return "attribute" + dg.desc.substring(5);
+        if (dg.desc.startsWith("class")) return "member class" + dg.desc.substring(5);
+        return dg.desc;
     }
 
     private static void addCreateProposal(Collection<ICompletionProposal> proposals, 
@@ -130,7 +138,7 @@ class CreateProposal extends CorrectionProposal {
         IDocument doc = getDocument(change);
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
-        String delim = Indents.getDefaultLineDelimiter(doc);
+        String delim = getDefaultLineDelimiter(doc);
         HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
         CompilationUnit cu = unit.getCompilationUnit();
         importType(alreadyImported, dg.returnType, cu);
@@ -139,6 +147,7 @@ class CreateProposal extends CorrectionProposal {
         }
         int il = applyImports(change, alreadyImported, cu, doc);
         String def = dg.generate(indent, delim) + delim + indent;
+        if (!local) def += delim;
         change.addEdit(new InsertEdit(offset, def));
         String desc = (local ? "Create local " : "Create toplevel ") + dg.desc;
         proposals.add(new CreateProposal(def, desc, dg.image, 
