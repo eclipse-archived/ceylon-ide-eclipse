@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameters;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParametersText;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
@@ -149,7 +149,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
                 for (ProducedType pt: td.getSatisfiedTypes()) {
                     if (pt.getDeclaration() instanceof Class) {
                         foundClass = true;
-                        appendParameters((Class) pt.getDeclaration(), 
+                        appendParametersText((Class) pt.getDeclaration(), 
                                 pt, unit, def);
                         break;
                     }
@@ -157,7 +157,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
             }
             if (td instanceof Class) {
                 foundClass = true;
-                appendParameters((Class) td, type, unit, def);
+                appendParametersText((Class) td, type, unit, def);
             }
             if (!foundClass) {
                 def.append("()");

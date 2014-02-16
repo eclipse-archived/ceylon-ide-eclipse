@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYL
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.VERSION_STYLER;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
@@ -37,6 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
 public class CompletionUtil {
 
@@ -252,6 +254,49 @@ public class CompletionUtil {
             else {
                 result.append(token);
             }
+        }
+    }
+
+    public static String getInitalValueDescription(Declaration dec, CeylonParseController cpc) {
+        Node refnode = getReferencedNode(dec, cpc);
+        if (refnode instanceof Tree.AttributeDeclaration) {
+            Tree.SpecifierOrInitializerExpression sie = 
+                    ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
+            if (sie!=null) {
+                if (sie.getExpression()!=null) {
+                    Tree.Term term = sie.getExpression().getTerm();
+                    if (term instanceof Tree.Literal) {
+                        return " = " + term.getToken().getText();
+                    }
+                    else if (term instanceof Tree.BaseMemberOrTypeExpression) {
+                        Tree.BaseMemberOrTypeExpression bme = 
+                                (Tree.BaseMemberOrTypeExpression) term;
+                        if (bme.getIdentifier()!=null) {
+                            return " = " + bme.getIdentifier().getText();
+                        }
+                    }
+                    else if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
+                        return " = " + AbstractRefactoring.toString(term, cpc.getTokens());
+                    }
+                    return " = ...";
+                }
+            }
+        }
+        return "";
+    }
+
+    public static String getDefaultValueDescription(Parameter p, 
+            CeylonParseController cpc) {
+        if (p.isDefaulted()) {
+            if (p.getModel() instanceof Functional) {
+                return " => ...";
+            }
+            else {
+                return getInitalValueDescription(p.getModel(), cpc);
+            }
+        }
+        else {
+            return "";
         }
     }
 

@@ -13,8 +13,10 @@ package com.redhat.ceylon.eclipse.code.hover;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.isAvailable;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameters;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParametersDescription;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitalValueDescription;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
@@ -148,14 +150,12 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 
@@ -1280,8 +1280,8 @@ public class DocumentationHover
                     buffer.append("<p>");
                     for (Parameter p: pl.getParameters()) {
                         StringBuilder params = new StringBuilder();
-                        appendParameters(p.getModel(), params, cpc);
-                        String def = getDefaultValue(p, cpc);
+                        appendParametersDescription(p.getModel(), params, cpc);
+                        String def = getDefaultValueDescription(p, cpc);
                         StringBuilder doc = new StringBuilder();
                         Tree.Declaration refNode = 
                                 (Tree.Declaration) getReferencedNode(p.getModel(), cpc);
@@ -1449,21 +1449,6 @@ public class DocumentationHover
         return outer.getType();
     }
 
-    public static String getDefaultValue(Parameter p, 
-            CeylonParseController cpc) {
-        if (p.isDefaulted()) {
-            if (p.getModel() instanceof Functional) {
-                return " => ...";
-            }
-            else {
-                return getInitalValue(p.getModel(), cpc);
-            }
-        }
-        else {
-            return "";
-        }
-    }
-
     public static void appendExtraActions(Declaration dec, 
             StringBuilder buffer) {
         buffer.append("<hr/>");
@@ -1585,7 +1570,7 @@ public class DocumentationHover
         }
         else if (dec instanceof Value) {
             if (!((Value) dec).isVariable()) {
-                result += getInitalValue(dec, cpc);
+                result += getInitalValueDescription(dec, cpc);
             }
         }
         /*else if (dec instanceof ValueParameter) {
@@ -1608,34 +1593,6 @@ public class DocumentationHover
             }
         }*/
         return result;
-    }
-    
-    public static String getInitalValue(Declaration dec, CeylonParseController cpc) {
-        Node refnode = getReferencedNode(dec, cpc);
-        if (refnode instanceof Tree.AttributeDeclaration) {
-            Tree.SpecifierOrInitializerExpression sie = 
-                    ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
-            if (sie!=null) {
-                if (sie.getExpression()!=null) {
-                    Tree.Term term = sie.getExpression().getTerm();
-                    if (term instanceof Tree.Literal) {
-                        return " = " + term.getToken().getText();
-                    }
-                    else if (term instanceof Tree.BaseMemberOrTypeExpression) {
-                        Tree.BaseMemberOrTypeExpression bme = 
-                                (Tree.BaseMemberOrTypeExpression) term;
-                        if (bme.getIdentifier()!=null) {
-                            return " = " + bme.getIdentifier().getText();
-                        }
-                    }
-                    else if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
-                        return " = " + AbstractRefactoring.toString(term, cpc.getTokens());
-                    }
-                    return " = ...";
-                }
-            }
-        }
-        return "";
     }
     
     static String getAddress(Referenceable model) {

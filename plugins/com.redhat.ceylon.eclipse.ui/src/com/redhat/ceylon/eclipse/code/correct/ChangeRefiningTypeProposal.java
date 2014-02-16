@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameter;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterText;
 import static com.redhat.ceylon.eclipse.util.FindUtils.findDeclaration;
 
 import java.util.Collection;
@@ -109,7 +109,7 @@ public class ChangeRefiningTypeProposal {
                     if (i>0) {
                         buf.append(", ");
                     }
-                    appendParameter(buf, pr, p, unit);
+                    appendParameterText(buf, pr, p, unit);
                 }
                 Integer offset = params.isEmpty() ? 
                         list.getStartIndex()+1 : 

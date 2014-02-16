@@ -76,8 +76,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         @Override
         public String getInformationDisplayString() {
             if (declaration instanceof TypedDeclaration) {
-                final Unit unit = cpc.getRootNode().getUnit();
-                return getType().getProducedTypeName(unit);
+                return getType().getProducedTypeName(getUnit());
             }
             else {
                 return null;
@@ -198,6 +197,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         this.explicitReturnType = explicitReturnType;
     }
 
+    private Unit getUnit() {
+        return cpc.getRootNode().getUnit();
+    }
+
     private static Image getIcon(Declaration dec) {
         return dec.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT;
     }
@@ -306,12 +309,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     
     private void addProposals(final int loc, 
             List<ICompletionProposal> props, String prefix) {
-        Unit unit = cpc.getRootNode().getUnit();
         ProducedType type = getType();
         if (type==null) return;
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
-                getSortedProposedValues(scope, unit)) {
+                getSortedProposedValues(scope, getUnit())) {
             if (dwp.isUnimported()) {
                 //don't propose unimported stuff b/c adding
                 //imports drops us out of linked mode and
@@ -379,7 +381,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 while (isJavaIdentifierPart(document.getChar(offset+len))) {
                     len++;
                 }
-                document.replace(offset, len, getText());
+                document.replace(offset, len, getText(false));
             }
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -398,7 +400,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
         @Override
         public String getDisplayString() {
-            return getText();
+            return getText(true);
         }
 
         @Override
@@ -411,12 +413,12 @@ public final class RefinementCompletionProposal extends CompletionProposal {
            return null;
         }
         
-        private String getText() {
+        private String getText(boolean description) {
             StringBuilder sb = new StringBuilder()
                     .append(dec.getName());
             if (dec instanceof Class) {
-                appendPositionalArgs(dec, dec.getReference(), 
-                        cpc.getRootNode().getUnit(), sb, false);
+                appendPositionalArgs(dec, getUnit(), 
+                        sb, false, description);
             }
             return sb.toString();
         }
