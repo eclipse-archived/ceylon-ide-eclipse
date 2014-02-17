@@ -235,7 +235,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
     
     public ICompletionProposal[] getContentProposals(CeylonParseController cpc,
-            final int offset, ITextViewer viewer, boolean filter, 
+            int offset, ITextViewer viewer, boolean filter, 
             boolean returnedParamInfo) {
         
         if (cpc==null || viewer==null || 
@@ -296,11 +296,24 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 getRequiredType(rn, node, adjustedToken);
         
         String prefix = "";
+        String fullPrefix = "";
         if (isIdentifierOrKeyword(adjustedToken)) {
-            int offsetInToken = offset - adjustedToken.getStartIndex();
             String text = adjustedToken.getText();
+            //work from the end of the token to
+            //compute the offset, in order to
+            //account for quoted identifiers, where
+            //the \i or \I is not in the token text 
+            int offsetInToken = offset - adjustedToken.getStopIndex() - 1 + text.length();
             if (offsetInToken<=text.length()) {
                 prefix = text.substring(0, offsetInToken);
+                try {
+                    fullPrefix = viewer.getDocument()
+                            .get(adjustedToken.getStartIndex(), 
+                                    offset-adjustedToken.getStartIndex());
+                }
+                catch (BadLocationException e) {
+                    fullPrefix = prefix;
+                }
             }
         }
         boolean isMemberOp = isMemberOperator(adjustedToken);
@@ -331,13 +344,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (dcolon>=0) {
                 qualified = pkg + qualified;
             }
+            fullPrefix = prefix;
         }
         
         Scope scope = getRealScope(node, rn);
         
         //construct completions when outside ordinary code
         ICompletionProposal[] completions = 
-                constructCompletions(offset, prefix, cpc, node, 
+                constructCompletions(offset, fullPrefix, cpc, node, 
                         adjustedToken, scope, returnedParamInfo, 
                         isMemberOp, viewer.getDocument());
         if (completions==null) {
@@ -347,8 +361,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             filterProposals(filter, rn, requiredType, proposals);
             Set<DeclarationWithProximity> sortedProposals = 
                     sortProposals(prefix, requiredType, proposals);
-            completions = 
-                    constructCompletions(offset, inDoc ? qualified : prefix, 
+            completions =
+                    constructCompletions(offset, inDoc ? qualified : fullPrefix, 
                             sortedProposals, cpc, scope, node, adjustedToken, 
                             isMemberOp, viewer.getDocument(), filter, inDoc,
                             requiredType, previousTokenType);
@@ -549,7 +563,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (offset==token.getStopIndex()+1) {
                 addTypeArgumentListProposal(offset, cpc, node, scope, document, result);
             }
-            else if (isMemberNameProposable(offset, node, prefix, memberOp)) {
+            else if (isMemberNameProposable(offset, node, memberOp)) {
                 addMemberNameProposals(offset, cpc, node, result);
             }
             else {
@@ -595,7 +609,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     private static boolean isMemberNameProposable(int offset, Node node, 
-            String prefix, boolean memberOp) {
+            boolean memberOp) {
         return !memberOp &&
                 node.getEndToken()!=null && 
                ((CommonToken)node.getEndToken()).getStopIndex()>=offset-2;
@@ -622,7 +636,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 node instanceof Tree.BaseTypeExpression ||
                 node instanceof Tree.QualifiedTypeExpression) 
                 && prefix.isEmpty() && 
-                isMemberNameProposable(offset, node, prefix, memberOp)) {
+                isMemberNameProposable(offset, node, memberOp)) {
             
             //TODO: we get to here after "if (is Type", which is 
             //     not quite right - we should also propose 
@@ -650,7 +664,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 !(node instanceof Tree.Variable && 
                         ((Tree.Variable) node).getType() instanceof Tree.SyntheticVariable) &&
                 !(node instanceof Tree.InitializerParameter) &&
-                isMemberNameProposable(offset, node, prefix, memberOp)) {
+                isMemberNameProposable(offset, node, memberOp)) {
             //member names we can refine
             Tree.Type dnt = ((Tree.TypedDeclaration) node).getType();
             if (dnt!=null && dnt.getTypeModel()!=null) {
