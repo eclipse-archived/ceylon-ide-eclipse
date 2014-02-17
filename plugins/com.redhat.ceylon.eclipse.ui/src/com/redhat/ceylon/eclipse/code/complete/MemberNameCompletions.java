@@ -70,7 +70,9 @@ public class MemberNameCompletions {
         }
         if (suggestedName!=null) {
             suggestedName = lower(suggestedName);
-            if (!suggestedName.startsWith(prefix)) {
+            String unquoted = prefix.startsWith("\\i")||prefix.startsWith("\\I") ?
+                    prefix.substring(2) : prefix;
+            if (!suggestedName.startsWith(unquoted)) {
                 suggestedName = prefix + upper(suggestedName);
             }
             result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
