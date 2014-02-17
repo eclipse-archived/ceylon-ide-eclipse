@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
+import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
     }
     
     public Declaration getDeclaration(IProject project) {
-        TypeChecker tc = getTypeChecker(project, moduleName);
+        TypeChecker tc = getTypeChecker(project, moduleName).get(0);
         Package pack = getModelLoader(tc)
                 .getLoadedModule(moduleName)
                 .getPackage(packageName);
@@ -81,17 +82,18 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
         return null;
     }
 
-    public static TypeChecker getTypeChecker(IProject project, String moduleName) {
+    public static List<TypeChecker> getTypeChecker(IProject project, String moduleName) {
         if (project==null) {
+            List<TypeChecker> tcs = new ArrayList<TypeChecker>();
             for (TypeChecker tc: getTypeCheckers()) {
                 if (getModelLoader(tc).getLoadedModule(moduleName)!=null) {
-                    return tc;
+                    tcs.add(tc);
                 }
             }
-            return null;
+            return tcs;
         }
         else {
-            return getProjectTypeChecker(project);
+            return singletonList(getProjectTypeChecker(project));
         }
     }
     
