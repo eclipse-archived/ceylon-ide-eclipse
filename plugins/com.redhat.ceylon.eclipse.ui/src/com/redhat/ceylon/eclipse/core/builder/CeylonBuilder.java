@@ -1937,6 +1937,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         options.add("-src");
         options.add(srcPath);
+        String resPath = "";
+        CeylonProjectConfig config = CeylonProjectConfig.get(project);
+        for (String resourceFolder : config.getResourceDirectories()) {
+            if (!resPath.isEmpty()) {
+                resPath += File.pathSeparator;
+            }
+            resPath += resourceFolder;
+        }
+        options.add("-res");
+        options.add(resPath);
+        
         options.add("-encoding");
         options.add(project.getDefaultCharset());
         

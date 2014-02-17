@@ -183,7 +183,7 @@ public class CeylonProjectConfig {
         transientSourceDirectories = dirs;
     }
 
-    public List<String> getReourceDirectories() {
+    public List<String> getResourceDirectories() {
         return getConfigResourceDirectories(mergedConfig);
     }
 
