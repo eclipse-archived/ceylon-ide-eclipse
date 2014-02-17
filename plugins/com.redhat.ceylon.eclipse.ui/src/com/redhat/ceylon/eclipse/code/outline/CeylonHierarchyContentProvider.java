@@ -204,13 +204,15 @@ public final class CeylonHierarchyContentProvider
             
             monitor.beginTask("Building hierarchy", 100000);
             
-            Module currentModule = declaration.getUnit().getPackage().getModule();
-            TypeChecker tc = getTypeChecker(project, currentModule.getNameAsString());
-            //TODO: if this is a popup hierarchy, use the current  
-            //      editor typechecker here instead!
-            ModuleManager moduleManager = tc.getPhasedUnits().getModuleManager();
-            Set<Module> allModules = new HashSet<Module>(moduleManager.getCompiledModules());
-            allModules.add(currentModule);
+            Unit unit = declaration.getUnit();
+            Module currentModule = unit.getPackage().getModule();
+            List<TypeChecker> tcs = getTypeChecker(project, currentModule.getNameAsString());
+            Set<Module> allModules = new HashSet<Module>();
+            for (TypeChecker tc: tcs) {
+                ModuleManager moduleManager = tc.getPhasedUnits().getModuleManager();
+                allModules.addAll(moduleManager.getCompiledModules());
+                allModules.add(currentModule);
+            }
             
 //            boolean isFromUnversionedModule = declaration.getUnit().getPackage()
 //                    .getModule().getVersion()==null;
