@@ -303,17 +303,12 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             //compute the offset, in order to
             //account for quoted identifiers, where
             //the \i or \I is not in the token text 
-            int offsetInToken = offset - adjustedToken.getStopIndex() - 1 + text.length();
+            int offsetInToken = offset-adjustedToken.getStopIndex()-1+text.length();
+            int realOffsetInToken = offset-adjustedToken.getStartIndex();
             if (offsetInToken<=text.length()) {
                 prefix = text.substring(0, offsetInToken);
-                try {
-                    fullPrefix = viewer.getDocument()
-                            .get(adjustedToken.getStartIndex(), 
-                                    offset-adjustedToken.getStartIndex());
-                }
-                catch (BadLocationException e) {
-                    fullPrefix = prefix;
-                }
+                fullPrefix = getRealText(adjustedToken)
+                        .substring(0, realOffsetInToken);
             }
         }
         boolean isMemberOp = isMemberOperator(adjustedToken);
@@ -369,6 +364,28 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         return completions;
         
+    }
+    
+    private String getRealText(CommonToken token) {
+        String text = token.getText();
+        int type = token.getType();
+        int len = token.getStopIndex()-token.getStartIndex()+1;
+        if (text.length()<len) {
+            String quote;
+            if (type==LIDENTIFIER) {
+                quote = "\\i";
+            }
+            else if (type==UIDENTIFIER) {
+                quote = "\\I";
+            }
+            else {
+                quote = "";
+            }
+            return quote + text;
+        }
+        else {
+            return text;
+        }
     }
 
     private boolean isLineComment(CommonToken adjustedToken) {
