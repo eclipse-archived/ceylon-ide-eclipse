@@ -84,6 +84,8 @@ public class TestRunViewPart extends ViewPart {
                 TestRunViewPart view = (TestRunViewPart) page.findView(NAME);
                 if (view == null) {
                     page.showView(NAME);
+                } else {
+                	page.bringToTop(view);
                 }
             }
         } catch (PartInitException e) {
