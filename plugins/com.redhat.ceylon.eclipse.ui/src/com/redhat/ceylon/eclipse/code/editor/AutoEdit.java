@@ -455,7 +455,7 @@ class AutoEdit extends Indents {
     }
 
     private int getStringOrCommentIndent(int offset) {
-        CommonToken token = getTokenStrictlyContainingOffset(offset);
+        CommonToken token = getStartOfStringToken(getTokenStrictlyContainingOffset(offset));
         if (token!=null) {
             int type = token.getType();
             int start = token.getCharPositionInLine();
@@ -478,6 +478,24 @@ class AutoEdit extends Indents {
             }
         }
         return -1;
+    }
+
+    private CommonToken getStartOfStringToken(CommonToken token) {
+        if (token==null) {
+            return null;
+        }
+        int type = token.getType();
+        if (type==STRING_MID||type==STRING_END) {
+            while (type!=STRING_START) {
+                int index = token.getTokenIndex();
+                if (index==0) {
+                    return null;
+                }
+                token = tokens.get(index-1);
+                type = token.getType(); 
+            }
+        }
+        return token;
     }
     
     private void adjustIndentOfCurrentLine()
@@ -512,7 +530,7 @@ class AutoEdit extends Indents {
             throws BadLocationException {
         int endOfWs = firstEndOfWhitespace(command.offset, getEndOfCurrentLine());
         if (endOfWs<0) return;
-        CommonToken token = getTokenStrictlyContainingOffset(command.offset);
+        CommonToken token = getStartOfStringToken(getTokenStrictlyContainingOffset(command.offset));
         int pos = command.offset - getStartOfCurrentLine();
         int tokenIndent = token.getCharPositionInLine();
         if (pos>tokenIndent) return;
