@@ -48,6 +48,7 @@ import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonRepoConfigBlock {
 
@@ -101,7 +102,7 @@ public class CeylonRepoConfigBlock {
     }
 
     public void performDefaults() {
-        systemRepoText.setText("${ceylon.repo}");
+        systemRepoText.setText("");
         outputRepoText.setText(Repositories.withConfig(ConfigParser.loadDefaultConfig(null))
                 .getOutputRepository().getUrl());
 
@@ -124,7 +125,12 @@ public class CeylonRepoConfigBlock {
             otherRemoteRepos = CeylonProjectConfig.get(project).getOtherRemoteRepos();
         }
         
-        systemRepoText.setText(CeylonBuilder.getCeylonSystemRepo(project));
+        String systemRepo = CeylonBuilder.getCeylonSystemRepo(project);
+        if( systemRepo == null || systemRepo.equals("${ceylon.repo}") ) {
+        	systemRepoText.setText("");
+        } else {
+        	systemRepoText.setText(systemRepo);
+        }
         systemRepoText.setEnabled(isCeylonNatureEnabled);
         systemRepoBrowseButton.setEnabled(isCeylonNatureEnabled);
         
@@ -177,12 +183,19 @@ public class CeylonRepoConfigBlock {
 
         systemRepoText = new Text(composite, SWT.SINGLE | SWT.BORDER);
         systemRepoText.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).create());
+        systemRepoText.setMessage("Default System Repository");
         systemRepoText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
+            	String systemRepoUrl = systemRepoText.getText();
+            	if( systemRepoUrl == null || systemRepoUrl.isEmpty() ) {
+            		systemRepoText.setToolTipText(CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath());
+            	} else {
+            		systemRepoText.setToolTipText("");
+            	}
                 validate();
             }
-        });    
+        });
     }
 
     private void initSystemRepoBrowseButton(final Composite composite) {
@@ -478,17 +491,20 @@ public class CeylonRepoConfigBlock {
 
     private boolean isSystemRepoValid() {
         String systemRepoUrl = systemRepoText.getText();
-        if (systemRepoUrl != null && !systemRepoUrl.isEmpty()) {
-            systemRepoUrl = CeylonBuilder.interpolateVariablesInRepositoryPath(systemRepoUrl);
-
-            String ceylonLanguageSubdir = File.separator+"ceylon"+File.separator+"language"+File.separator + LANGUAGE_MODULE_VERSION;
-            String ceylonLanguageFileName = File.separator+"ceylon.language-" + LANGUAGE_MODULE_VERSION + ".car";
-
-            File ceylonLanguageFile = new File(systemRepoUrl + ceylonLanguageSubdir + ceylonLanguageFileName);
-            if (ceylonLanguageFile.exists() && ceylonLanguageFile.isFile()) {
-                return true;
-            }
+        if( systemRepoUrl == null || systemRepoUrl.isEmpty() ) {
+        	return true;
         }
+        
+        systemRepoUrl = CeylonBuilder.interpolateVariablesInRepositoryPath(systemRepoUrl);
+
+        String ceylonLanguageSubdir = File.separator+"ceylon"+File.separator+"language"+File.separator + LANGUAGE_MODULE_VERSION;
+        String ceylonLanguageFileName = File.separator+"ceylon.language-" + LANGUAGE_MODULE_VERSION + ".car";
+
+        File ceylonLanguageFile = new File(systemRepoUrl + ceylonLanguageSubdir + ceylonLanguageFileName);
+        if (ceylonLanguageFile.exists() && ceylonLanguageFile.isFile()) {
+        	return true;
+        }
+            
         return false;
     }
 
