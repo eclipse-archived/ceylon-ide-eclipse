@@ -144,7 +144,8 @@ public class EditorUtil {
             ITextSelection selection;
             @Override
             public void run() {
-                selection = (ITextSelection) editor.getSelectionProvider().getSelection();
+                ISelectionProvider sp = editor.getSelectionProvider();
+                selection = sp==null ? null : (ITextSelection) sp.getSelection();
             }
             ITextSelection getSelection() {
                 Display.getDefault().syncExec(this);
