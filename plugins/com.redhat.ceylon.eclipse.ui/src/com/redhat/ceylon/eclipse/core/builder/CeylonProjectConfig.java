@@ -11,8 +11,10 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
@@ -212,6 +214,14 @@ public class CeylonProjectConfig {
         transientProjectRemoteRepos = null;
         transientSourceDirectories = null;
         transientResourceDirectories = null;
+        
+        try {
+            project.refreshLocal(IResource.DEPTH_ONE, 
+                        new NullProgressMonitor());
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
     }
 
     public void save() {
