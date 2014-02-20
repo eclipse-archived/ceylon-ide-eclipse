@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
+import static com.redhat.ceylon.eclipse.util.FindUtils.getContainer;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -57,7 +58,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         if (node instanceof Tree.Declaration) {
             declaration = (Tree.Declaration) node;
             if (declaration.getDeclarationModel()!=null) {
-                newName = defaultName(FindUtils.getContainer(declaration.getDeclarationModel(), rootNode));
+                newName = defaultName(getContainer(declaration.getDeclarationModel(), rootNode));
             }
         }
     }
@@ -385,24 +386,25 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 int offset = 0;
                 @Override
                 public void visit(Tree.BaseMemberOrTypeExpression that) {
+                    super.visit(that);
                     if (that.getDeclaration().getContainer().equals(container)) {
-                        stb.insert(that.getStartIndex()-body.getStartIndex()+offset, 
-                                newName + ".");
+                        int start = that.getStartIndex()-body.getStartIndex()+offset;
+                        stb.insert(start, newName + ".");
                         offset+=newName.length()+1;
                     }
                 }
                 @Override
                 public void visit(Tree.QualifiedMemberOrTypeExpression that) {
-                    if (that.getPrimary() instanceof Tree.This) {
-                        stb.replace(that.getStartIndex()+offset-body.getStartIndex(), 
-                                that.getPrimary().getStopIndex()+offset+1-body.getStartIndex(), 
-                                newName);
-                        offset+=2-that.getPrimary().getStopIndex()-that.getStartIndex()+1;
+                    super.visit(that);
+                    Tree.Primary p = that.getPrimary();
+                    int start = p.getStartIndex()-body.getStartIndex()+offset;
+                    int len = p.getStopIndex()-p.getStartIndex()+1;
+                    if (p instanceof Tree.This) {
+                        stb.replace(start, start+len, newName);
+                        offset+=newName.length()-len;
                     }
-                    if (that.getPrimary() instanceof Tree.Outer) {
-                        stb.replace(that.getStartIndex()+offset-body.getStartIndex(), 
-                                that.getPrimary().getStopIndex()+offset+1-body.getStartIndex(), 
-                                "this");
+                    if (p instanceof Tree.Outer) {
+                        stb.replace(start, start+5, "this");
                         offset-=1;
                     }
                 }
