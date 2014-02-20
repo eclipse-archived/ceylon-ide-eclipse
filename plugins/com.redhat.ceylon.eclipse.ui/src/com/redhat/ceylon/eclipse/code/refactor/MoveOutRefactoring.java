@@ -7,16 +7,21 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.Indents;
@@ -24,6 +29,7 @@ import com.redhat.ceylon.eclipse.util.Indents;
 public class MoveOutRefactoring extends AbstractRefactoring {
     
     private Tree.Declaration declaration;
+    private boolean makeShared=false;
 
     public MoveOutRefactoring(ITextEditor editor) {
         super(editor);
@@ -66,7 +72,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             OperationCanceledException {
         TextChange tfc = newLocalChange();
         tfc.setEdit(new MultiTextEdit());
-        final Scope container = declaration.getDeclarationModel().getContainer();
+        final Declaration dec = declaration.getDeclarationModel();
+        final Scope container = dec.getContainer();
         class FindContainer extends Visitor {
             Tree.Declaration dec;
             @Override
@@ -149,14 +156,68 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 delim+indent+delim+indent+sb));
         tfc.addEdit(new DeleteEdit(declaration.getStartIndex(), 
                 declaration.getStopIndex()-declaration.getStartIndex()+1));
-        return tfc;
+
+        CompositeChange cc = new CompositeChange(getName());
+        for (PhasedUnit pu: getAllUnits()) {
+            if (searchInFile(pu)) {
+                TextFileChange pufc = newTextFileChange(pu);
+                pufc.setEdit(new MultiTextEdit());
+                fixInvocations(dec, pu.getCompilationUnit(), pufc);
+                if (pufc.getEdit().hasChildren()) {
+                    cc.add(pufc);
+                }
+            }
+        }
+        if (searchInEditor()) {
+            fixInvocations(dec, rootNode, tfc);
+        }
+        cc.add(tfc);
+        
+        return cc;
+    }
+
+    private void fixInvocations(final Declaration dec, CompilationUnit cu,
+            final TextChange tc) {
+        new Visitor() {
+            public void visit(Tree.InvocationExpression that) {
+                Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
+                if (that.getPrimary() instanceof Tree.BaseMemberOrTypeExpression) {
+                    Tree.BaseMemberOrTypeExpression bmte = 
+                            (Tree.BaseMemberOrTypeExpression) that.getPrimary();
+                    if (bmte.getDeclaration().equals(dec)) {
+                        if (pal!=null) {
+                            String arg = pal.getPositionalArguments().isEmpty() ? 
+                                    "this" : ", this";
+                            tc.addEdit(new InsertEdit(pal.getStopIndex(), arg));
+                        }
+                    }
+                }
+                if (that.getPrimary() instanceof Tree.QualifiedMemberOrTypeExpression) {
+                    Tree.QualifiedMemberOrTypeExpression qmte = 
+                            (Tree.QualifiedMemberOrTypeExpression) that.getPrimary();
+                    if (qmte.getDeclaration().equals(dec)) {
+                        if (pal!=null) {
+                            Tree.Primary p = qmte.getPrimary();
+                            tc.addEdit(new DeleteEdit(p.getStartIndex(), 
+                                    qmte.getMemberOperator().getStopIndex()-p.getStartIndex()+1));
+                            String pt = MoveOutRefactoring.this.toString(p);
+                            String arg = pal.getPositionalArguments().isEmpty() ? 
+                                    pt : ", " + pt;
+                            tc.addEdit(new InsertEdit(pal.getStopIndex(), arg));
+                        }
+                    }
+                }
+            }
+        }.visit(cu);
     }
 
     private void appendAnnotations(StringBuilder sb, Tree.Declaration d) {
         if (!d.getAnnotationList().getAnnotations().isEmpty()) {
             sb.append(toString(d.getAnnotationList())
-                .replaceAll("shared|default|formal|actual", ""))
-                .append(" ");
+                .replaceAll("shared|default|formal|actual", ""));
+            if (sb.length()!=0) {
+                sb.append(" ");
+            }
         }
     }
 
@@ -210,6 +271,10 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 .append(stb.toString().replaceAll(delim+originalIndent, delim+indent));
         }
         sb.append(delim).append(indent).append("}");
+    }
+
+    public void setMakeShared() {
+        makeShared=!makeShared;
     }
     
 }
