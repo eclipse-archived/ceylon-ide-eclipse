@@ -676,7 +676,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             final BooleanHolder mustDoFullBuild = new BooleanHolder();
             final BooleanHolder mustResolveClasspathContainer = new BooleanHolder();
-            final IResourceDelta currentDelta = getDelta(getProject());
+            final IResourceDelta currentDelta = getDelta(project);
             List<IResourceDelta> projectDeltas = new ArrayList<IResourceDelta>();
             projectDeltas.add(currentDelta);
             for (IProject requiredProject : project.getReferencedProjects()) {
@@ -783,13 +783,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                 monitor.subTask("Scanning deltas of project " + project.getName()); 
                 calculateChangedSources(currentDelta, projectDeltas, filesToRemove, 
-                        changedSources, monitor);                
+                        getProjectSources(project), changedSources, monitor);
                 monitor.worked(4);
                 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-                
+                    
                 monitor.subTask("Cleaning removed files for project " + project.getName()); 
                 cleanRemovedSources(filesToRemove, phasedUnits, project);
                 monitor.worked(1);
@@ -1135,14 +1135,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private void calculateChangedSources(final IResourceDelta currentDelta, 
             List<IResourceDelta> projectDeltas, final List<IFile> filesToRemove, 
-            final Set<IFile> changedSources, IProgressMonitor monitor) 
+            final List<IFile> currentProjectSources, final Set<IFile> changedSources, IProgressMonitor monitor) 
                     throws CoreException {
         for (final IResourceDelta projectDelta: projectDeltas) {
             if (projectDelta != null) {
                 IProject p = (IProject) projectDelta.getResource();
-                List<IPath> deltaSourceFolders = getSourceFolders(p);
+                List<IPath> projectSourceFolders = getSourceFolders(p);
                 for (IResourceDelta sourceDelta: projectDelta.getAffectedChildren()) {
-                    for (IPath ip: deltaSourceFolders) {
+                    for (IPath ip: projectSourceFolders) {
                         if (sourceDelta.getResource().getFullPath().isPrefixOf(ip)) {
                             //a real Ceylon source folder so scan for changes
                             /*if (emitDiags)
@@ -1158,10 +1158,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                             if (projectDelta == currentDelta) {
                                                 if (delta.getKind() == IResourceDelta.REMOVED) {
                                                     filesToRemove.add((IFile) resource);
+                                                    currentProjectSources.remove((IFile) resource);
+                                                }
+                                                if (delta.getKind() == IResourceDelta.ADDED) {
+                                                    IFile addedFile = (IFile) resource;
+                                                    int index = currentProjectSources.indexOf(addedFile);
+                                                    if ((index >= 0)) {
+                                                        currentProjectSources.remove(index);
+                                                    }
+                                                    currentProjectSources.add(addedFile);
                                                 }
                                             }
                                         }
-
                                         return false;
                                     }
                                     return true;
@@ -2889,7 +2897,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
             }
         }
-//        final com.sun.tools.javac.util.Context dummyContext = new com.sun.tools.javac.util.Context();
+        
+        //        final com.sun.tools.javac.util.Context dummyContext = new com.sun.tools.javac.util.Context();
         class ConsoleLog implements Logger {
             PrintWriter writer;
             ConsoleLog() {
@@ -2920,6 +2929,81 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
+    private void removeObsoleteResourceFiles(List<IFile> filesToRemove, 
+            IProject project) {
+        if (filesToRemove.size() == 0) {
+            return;
+        }
+        
+        Set<File> moduleJars = new HashSet<File>();
+        
+        for (IFile file : filesToRemove) {
+            IPath filePath = file.getProjectRelativePath();
+            IPath sourceFolder = retrieveSourceFolder(filePath, project);
+            if (sourceFolder == null) {
+                return;
+            }
+            
+            Package pkg = retrievePackage(file.getParent());
+            if (pkg == null) {
+                return;
+            }
+            Module module = pkg.getModule();
+            TypeChecker typeChecker = typeCheckers.get(project);
+            if (typeChecker == null) {
+                return;
+            }
+            
+            final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
+            boolean explodeModules = isExplodeModulesEnabled(project);
+            final File ceylonOutputDirectory = explodeModules ? 
+                    getCeylonClassesOutputDirectory(project) : null;
+            File moduleDir = getModulePath(modulesOutputDirectory, module);
+            
+            //Remove the classes belonging to the source file from the
+            //module archive and from the JDTClasses directory
+            File moduleJar = new File(moduleDir, getModuleArchiveName(module));
+            if(moduleJar.exists()){
+                moduleJars.add(moduleJar);
+                String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
+                try {
+                    List<String> entriesToDelete = new ArrayList<String>();
+                    ZipFile zipFile = new ZipFile(moduleJar);
+                    
+                    Properties mapping = CarUtils.retrieveMappingFile(zipFile);
+    
+                    for (String className : mapping.stringPropertyNames()) {
+                        String sourceFile = mapping.getProperty(className);
+                        if (relativeFilePath.equals(sourceFile)) {
+                            entriesToDelete.add(className);
+                        }
+                    }
+    
+                    for (String entryToDelete : entriesToDelete) {
+                        zipFile.removeFile(entryToDelete);
+                        if (explodeModules) {
+                            new File(ceylonOutputDirectory, 
+                                    entryToDelete.replace('/', File.separatorChar))
+                                    .delete();
+                        }
+                    }
+                } catch (ZipException e) {
+                    e.printStackTrace();
+                }
+            }
+            //Remove the source file from the source archive
+            File moduleSrc = new File(moduleDir, getSourceArchiveName(module));
+            if(moduleSrc.exists()){
+                moduleJars.add(moduleSrc);
+                String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
+                try {
+                    new ZipFile(moduleSrc).removeFile(relativeFilePath);
+                } catch (ZipException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     private static File getCeylonClassesOutputDirectory(IProject project) {
         return getCeylonClassesOutputFolder(project)
