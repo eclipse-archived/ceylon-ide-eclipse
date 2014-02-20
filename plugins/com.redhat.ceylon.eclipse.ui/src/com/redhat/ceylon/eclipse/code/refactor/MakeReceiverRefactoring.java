@@ -95,8 +95,10 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                     if (that.getDeclaration().equals(dec)) {
                         int len = that.getStopIndex()-that.getStartIndex()+1;
                         int start = that.getStartIndex()-fun.getStartIndex()+offset;
-                        def.replace(start, start+len, "this");
-                        offset+=4-len;
+                        String outerRef = fun.getDeclarationModel() instanceof Class ? 
+                                "outer" : "this";
+                        def.replace(start, start+len, outerRef);
+                        offset+=outerRef.length()-len;
                     }
                     super.visit(that);
                 }
@@ -159,6 +161,9 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                 else if (i<pas.size()-1) {
                                     int next = pas.get(i+1).getStartIndex();
                                     tfc.addEdit(new DeleteEdit(start, next-start));
+                                }
+                                else {
+                                    tfc.addEdit(new DeleteEdit(start, end-start));
                                 }
                             }
                         }
