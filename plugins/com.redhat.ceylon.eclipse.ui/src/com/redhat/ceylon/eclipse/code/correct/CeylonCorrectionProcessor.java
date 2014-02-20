@@ -364,6 +364,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     problem.getOffset() + problem.getLength());
         switch ( problem.getProblemId() ) {
         case 100:
+            if (tc!=null) {
+                addRenameProposals(cu, node, problem, proposals, file);
+            }
+            break;
         case 102:
             if (tc!=null) {
                 addImportProposals(cu, node, proposals, file);
