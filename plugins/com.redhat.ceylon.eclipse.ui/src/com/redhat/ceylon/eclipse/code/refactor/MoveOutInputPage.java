@@ -20,11 +20,11 @@ public class MoveOutInputPage extends UserInputWizardPage {
         layout.numColumns = 2;
         result.setLayout(layout);
         final Button checkbox = new Button(result, SWT.CHECK);
-        checkbox.setText("Use explicit type declaration");
+        checkbox.setText("Make referenced locals shared");
         checkbox.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-//                getMoveOutRefactoring().setExplicitType();
+                getMoveOutRefactoring().setMakeShared();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
