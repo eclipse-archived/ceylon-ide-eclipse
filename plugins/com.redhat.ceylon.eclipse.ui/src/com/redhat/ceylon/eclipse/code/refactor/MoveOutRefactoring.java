@@ -106,15 +106,45 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     public Change createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
         CompositeChange cc = new CompositeChange(getName());
-        final TextChange tfc = newLocalChange();
-        tfc.setEdit(new MultiTextEdit());
+        
         Declaration dec = declaration.getDeclarationModel();
         Tree.TypeDeclaration owner = getContainer(dec, rootNode);
+
+        for (PhasedUnit pu: getAllUnits()) {
+            if (searchInFile(pu)) {
+                TextFileChange pufc = newTextFileChange(pu);
+                pufc.setEdit(new MultiTextEdit());
+                if (declaration.getUnit().equals(pu.getUnit())) {
+                    move(owner, pufc);
+                    if (makeShared) {
+                        addSharedAnnotations(pufc, owner);
+                    }
+                }
+                fixInvocations(dec, pu.getCompilationUnit(), pufc);
+                if (pufc.getEdit().hasChildren()) {
+                    cc.add(pufc);
+                }
+            }
+        }
+        
+        if (searchInEditor()) {
+            TextChange tfc = newLocalChange();
+            tfc.setEdit(new MultiTextEdit());
+            move(owner, tfc);
+            fixInvocations(dec, rootNode, tfc);
+            cc.add(tfc);
+            if (makeShared) {
+                addSharedAnnotations(tfc, owner);
+            }
+        }
+        
+        return cc;
+    }
+
+    private StringBuilder renderText(Tree.TypeDeclaration owner, 
+            String indent, String originalIndent, String delim) {
         String qtype = owner.getDeclarationModel().getType()
                 .getProducedTypeName(declaration.getUnit());
-        String indent = getIndent(owner, document);
-        String originalIndent = getIndent(declaration, document);
-        String delim = getDefaultLineDelimiter(document);
         StringBuilder sb = new StringBuilder();
         if (declaration instanceof Tree.AnyMethod) {
             Tree.AnyMethod md = (Tree.AnyMethod) declaration;
@@ -184,31 +214,18 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                         cd.getClassBody());
             }
         }
+        return sb;
+    }
+
+    private void move(Tree.TypeDeclaration owner, TextChange tfc) {
+        String indent = getIndent(owner, document);
+        String originalIndent = getIndent(declaration, document);
+        String delim = getDefaultLineDelimiter(document);
+        StringBuilder sb = renderText(owner, indent, originalIndent, delim);
         tfc.addEdit(new InsertEdit(owner.getStopIndex()+1, 
                 delim+indent+delim+indent+sb));
         tfc.addEdit(new DeleteEdit(declaration.getStartIndex(), 
                 declaration.getStopIndex()-declaration.getStartIndex()+1));
-
-        for (PhasedUnit pu: getAllUnits()) {
-            if (searchInFile(pu)) {
-                TextFileChange pufc = newTextFileChange(pu);
-                pufc.setEdit(new MultiTextEdit());
-                fixInvocations(dec, pu.getCompilationUnit(), pufc);
-                if (pufc.getEdit().hasChildren()) {
-                    cc.add(pufc);
-                }
-            }
-        }
-        if (searchInEditor()) {
-            fixInvocations(dec, rootNode, tfc);
-        }
-        if (makeShared) {
-            addSharedAnnotations(tfc, owner);
-        }
-        cc.add(tfc);
-        
-        
-        return cc;
     }
 
     private void addSharedAnnotations(final TextChange tfc,
@@ -269,8 +286,12 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         }
         FindContainer fc = new FindContainer();
         rootNode.visit(fc);
-        Tree.TypeDeclaration owner = (Tree.TypeDeclaration) fc.result;
-        return owner;
+        if (fc.result instanceof Tree.TypeDeclaration) {
+            return (Tree.TypeDeclaration) fc.result;
+        }
+        else {
+            return null;
+        }
     }
 
     private void fixInvocations(final Declaration dec, CompilationUnit cu,
