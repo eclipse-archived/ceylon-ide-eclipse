@@ -28,6 +28,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
@@ -399,13 +400,20 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                     Tree.Primary p = that.getPrimary();
                     int start = p.getStartIndex()-body.getStartIndex()+offset;
                     int len = p.getStopIndex()-p.getStartIndex()+1;
-                    if (p instanceof Tree.This) {
+                    boolean isClass = declaration.getDeclarationModel() instanceof Class;
+                    if (p instanceof Tree.This && !isClass) {
                         stb.replace(start, start+len, newName);
                         offset+=newName.length()-len;
                     }
                     if (p instanceof Tree.Outer) {
-                        stb.replace(start, start+5, "this");
-                        offset-=1;
+                        if (isClass) {
+                            stb.replace(start, start+5, newName);
+                            offset-=5+newName.length();
+                        }
+                        else {
+                            stb.replace(start, start+5, "this");
+                            offset-=1;
+                        }
                     }
                 }
             });
