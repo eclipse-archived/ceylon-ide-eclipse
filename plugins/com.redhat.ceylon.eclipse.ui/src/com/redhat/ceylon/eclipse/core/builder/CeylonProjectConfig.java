@@ -214,14 +214,6 @@ public class CeylonProjectConfig {
         transientProjectRemoteRepos = null;
         transientSourceDirectories = null;
         transientResourceDirectories = null;
-        
-        try {
-            project.refreshLocal(IResource.DEPTH_ONE, 
-                        new NullProgressMonitor());
-        }
-        catch (CoreException e) {
-            e.printStackTrace();
-        }
     }
 
     public void save() {
@@ -280,6 +272,13 @@ public class CeylonProjectConfig {
 
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
                 refresh();
+                try {
+                    project.findMember(".ceylon/config").refreshLocal(IResource.DEPTH_ONE, 
+                                new NullProgressMonitor());
+                }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
