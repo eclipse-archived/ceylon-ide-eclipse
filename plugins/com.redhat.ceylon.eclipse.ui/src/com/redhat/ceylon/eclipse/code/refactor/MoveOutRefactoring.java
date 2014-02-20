@@ -51,6 +51,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     boolean isEnabled() {
         return (node instanceof Tree.MethodDefinition || 
                 node instanceof Tree.ClassDefinition) &&
+                    ((Tree.Declaration) node).getDeclarationModel()!=null &&
                     ((Tree.Declaration) node).getDeclarationModel()
                             .isClassOrInterfaceMember();
     }
