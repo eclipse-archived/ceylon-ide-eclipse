@@ -7,7 +7,9 @@ import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -38,7 +40,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 public class MoveOutRefactoring extends AbstractRefactoring {
     
     private Tree.Declaration declaration;
-    private boolean makeShared=false;
+    private boolean makeShared=true;
     private String newName;
 
     public MoveOutRefactoring(ITextEditor editor) {
@@ -101,7 +103,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
 
     public Change createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
-        TextChange tfc = newLocalChange();
+        CompositeChange cc = new CompositeChange(getName());
+        final TextChange tfc = newLocalChange();
         tfc.setEdit(new MultiTextEdit());
         Declaration dec = declaration.getDeclarationModel();
         Tree.TypeDeclaration owner = getContainer(dec);
@@ -130,6 +133,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 appendConstraints(indent, delim, sb, 
                         md.getTypeConstraintList());
             }
+            sb.append(" ");
             if (md instanceof Tree.MethodDefinition &&
                     ((Tree.MethodDefinition) md).getBlock()!=null) {
                 appendBody(owner.getDeclarationModel(), 
@@ -139,7 +143,6 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             }
             if (md instanceof Tree.MethodDeclaration &&
                     ((Tree.MethodDeclaration) md).getSpecifierExpression()!=null) {
-                sb.append(" ");
                 appendBody(owner.getDeclarationModel(), 
                         indent, originalIndent, 
                         delim, sb, 
@@ -171,6 +174,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 appendConstraints(indent, delim, sb, 
                         cd.getTypeConstraintList());
             }
+            sb.append(" ");
             if (cd.getClassBody()!=null) {
                 appendBody(owner.getDeclarationModel(), 
                         indent, originalIndent, 
@@ -183,7 +187,6 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         tfc.addEdit(new DeleteEdit(declaration.getStartIndex(), 
                 declaration.getStopIndex()-declaration.getStartIndex()+1));
 
-        CompositeChange cc = new CompositeChange(getName());
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
                 TextFileChange pufc = newTextFileChange(pu);
@@ -197,9 +200,44 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         if (searchInEditor()) {
             fixInvocations(dec, rootNode, tfc);
         }
+        if (makeShared) {
+            addSharedAnnotations(tfc, owner);
+        }
         cc.add(tfc);
         
+        
         return cc;
+    }
+
+    private void addSharedAnnotations(final TextChange tfc,
+            final Tree.TypeDeclaration owner) {
+        final Set<Declaration> decs = new HashSet<Declaration>();
+        new Visitor() {
+            private void add(Declaration d) {
+                if (d!=null && !d.isShared() && 
+                        d.getContainer().equals(owner.getDeclarationModel())) {
+                    decs.add(d);
+                }
+            }
+            public void visit(Tree.BaseMemberOrTypeExpression that) {
+                super.visit(that);
+                add(that.getDeclaration());
+            }
+            public void visit(Tree.QualifiedMemberOrTypeExpression that) {
+                super.visit(that);
+                if (that.getPrimary() instanceof Tree.This) {
+                    add(that.getDeclaration());
+                }
+            }
+        }.visit(declaration);
+        new Visitor() {
+            public void visit(Tree.Declaration that) {
+                if (decs.contains(that.getDeclarationModel())) {
+                    tfc.addEdit(new InsertEdit(that.getStartIndex(), "shared "));
+                }
+                super.visit(that);
+            }
+        }.visit(owner);
     }
 
     private static String guessName(Tree.TypeDeclaration owner) {
@@ -236,6 +274,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             final TextChange tc) {
         new Visitor() {
             public void visit(Tree.InvocationExpression that) {
+                super.visit(that);
                 Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
                 Tree.NamedArgumentList nal = that.getNamedArgumentList();
                 if (that.getPrimary() instanceof Tree.BaseMemberOrTypeExpression) {
@@ -345,8 +384,9 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 @Override
                 public void visit(Tree.BaseMemberOrTypeExpression that) {
                     if (that.getDeclaration().getContainer().equals(container)) {
-                        stb.insert(that.getStartIndex()-body.getStartIndex()+offset, "it.");
-                        offset+=3;
+                        stb.insert(that.getStartIndex()-body.getStartIndex()+offset, 
+                                newName + ".");
+                        offset+=newName.length()+1;
                     }
                 }
                 @Override

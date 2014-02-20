@@ -41,6 +41,7 @@ public class MoveOutInputPage extends UserInputWizardPage {
         });
         final Button checkbox = new Button(result, SWT.CHECK);
         checkbox.setText("Make referenced locals shared");
+        checkbox.setSelection(true);
         checkbox.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
