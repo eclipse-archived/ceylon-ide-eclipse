@@ -4,6 +4,8 @@ import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.get
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
+import java.util.List;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -25,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
@@ -55,9 +58,36 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                 public void visit(Tree.Declaration that) {
                     if (that.getDeclarationModel().equals(dec)) {
                         int len = node.getStopIndex()-node.getStartIndex()+1;
-                        final int start = node.getStartIndex()-fun.getStartIndex()+offset;
+                        int start = node.getStartIndex()-fun.getStartIndex()+offset;
                         def.replace(start, start+len, "");
                         offset-=len;
+                        boolean deleted=false;
+                        for (int i=start-1; i>=0; i--) {
+                            if (!Character.isWhitespace(def.charAt(i))) {
+                                if (def.charAt(i)==',') {
+                                    def.delete(i, start);
+                                    deleted = true;
+                                    offset-=start-i;
+                                }
+                                break;
+                            }
+                        }
+                        if (!deleted) {
+                            boolean found=false;
+                            for (int i=start; i<def.length(); i++) {
+                                if (!Character.isWhitespace(def.charAt(i))) {
+                                    if (!found && def.charAt(i)==',') {
+                                        found = true;
+                                    }
+                                    else {
+                                        def.delete(start, i);
+                                        deleted = true;
+                                        offset-=i-start;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                     super.visit(that);
                 }
@@ -71,6 +101,9 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                     super.visit(that);
                 }
             }.visit(fun);
+            if (!fun.getDeclarationModel().isShared()) {
+                def.insert(0, "shared ");
+            }
             return def.toString();
         }
 
@@ -100,6 +133,57 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                 insert(that.getInterfaceBody(), that);
             }
         }
+
+        @Override
+        public void visit(Tree.InvocationExpression that) {
+            super.visit(that);
+            Tree.Primary p = that.getPrimary();
+            if (p instanceof Tree.BaseMemberOrTypeExpression) {
+                if (((Tree.BaseMemberOrTypeExpression) p).getDeclaration()
+                        .equals(fun.getDeclarationModel())) {
+                    Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
+                    Tree.NamedArgumentList nal = that.getNamedArgumentList();
+                    if (pal!=null) {
+                        List<PositionalArgument> pas = pal.getPositionalArguments();
+                        for (int i=0; i<pas.size(); i++) {
+                            Tree.PositionalArgument arg = pas.get(i);
+                            if (arg.getParameter().getModel().equals(dec)) {
+                                tfc.addEdit(new InsertEdit(p.getStartIndex(), 
+                                        MakeReceiverRefactoring.this.toString(arg) + "."));
+                                int start = arg.getStartIndex();
+                                Integer end = arg.getStopIndex()+1;
+                                if (i>0) {
+                                    int comma = pas.get(i-1).getStopIndex()+1;
+                                    tfc.addEdit(new DeleteEdit(comma, end-comma));
+                                }
+                                else if (i<pas.size()-1) {
+                                    int next = pas.get(i+1).getStartIndex();
+                                    tfc.addEdit(new DeleteEdit(start, next-start));
+                                }
+                            }
+                        }
+                    }
+                    if (nal!=null) {
+                        for (Tree.NamedArgument arg: nal.getNamedArguments()) {
+                            if (arg.getParameter().getModel().equals(dec)) {
+                                if (arg instanceof Tree.SpecifiedArgument) {
+                                    Tree.Expression e = ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
+                                            .getExpression();
+                                    tfc.addEdit(new InsertEdit(p.getStartIndex(), 
+                                            MakeReceiverRefactoring.this.toString(e) + "."));
+                                    tfc.addEdit(new DeleteEdit(arg.getStartIndex(), 
+                                            arg.getStopIndex()-arg.getStartIndex()+1));
+                                }
+                                else {
+                                    //TODO!!!!
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
     }
     
     public MakeReceiverRefactoring(ITextEditor editor) {
