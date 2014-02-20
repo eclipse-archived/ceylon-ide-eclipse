@@ -1,11 +1,14 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getActivePage;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
+import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -159,24 +162,41 @@ public class CeylonSourcePositionLocator {
     }
     
     public static void gotoDeclaration(Declaration d, IProject project, IEditorPart editor) {
-        if (editor instanceof CeylonEditor) {
-            CeylonEditor ce = (CeylonEditor) editor;
-            IProject ep = ce.getParseController().getProject();
-            if (ep != null && ep.equals(project)) {
-                CeylonParseController cpc = ce.getParseController();
-                Node node = getReferencedNode(d, getCompilationUnit(cpc, d));
-                if (node != null) {
-                    gotoNode(node, project, cpc.getTypeChecker());
-                    return;
+        if (project!=null) {
+            if (editor instanceof CeylonEditor) {
+                CeylonEditor ce = (CeylonEditor) editor;
+                IProject ep = ce.getParseController().getProject();
+                if (ep != null && ep.equals(project)) {
+                    CeylonParseController cpc = ce.getParseController();
+                    Node node = getReferencedNode(d, getCompilationUnit(cpc, d));
+                    if (node != null) {
+                        gotoNode(node, project, cpc.getTypeChecker());
+                        return;
+                    }
                 }
             }
-        }
-        if (d.getUnit() instanceof CeylonUnit) {
-            CeylonUnit ceylonUnit = (CeylonUnit) d.getUnit();
-            Node node = getReferencedNode(d, ceylonUnit.getCompilationUnit());
-            if (node != null) {
-                gotoNode(node, project, getProjectTypeChecker(project));
+            if (d.getUnit() instanceof CeylonUnit) {
+                CeylonUnit ceylonUnit = (CeylonUnit) d.getUnit();
+                Node node = getReferencedNode(d, ceylonUnit.getCompilationUnit());
+                if (node != null) {
+                    gotoNode(node, project, getProjectTypeChecker(project));
+                }
+                else if (ceylonUnit instanceof CeylonBinaryUnit) {
+                    CeylonBinaryUnit binaryUnit = (CeylonBinaryUnit) ceylonUnit;
+                    if (isJavaLikeFileName(binaryUnit.getSourceRelativePath())) {
+                        gotoJavaNode(d, null, project);
+                    }
+                }
             }
+            else {
+                gotoJavaNode(d, null, project);
+            }
+        }
+        else {
+            //it's coming from the "unversioned" JDK module, which
+            //we don't display multiple choices for, so just pick
+            //the first available project
+            gotoJavaNode(d, null, getProjects().iterator().next());
         }
     }
     

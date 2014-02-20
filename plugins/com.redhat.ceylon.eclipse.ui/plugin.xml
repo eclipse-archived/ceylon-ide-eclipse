@@ -527,11 +527,6 @@
             description="Open toplevel declaration"
             name="Open Ceylon Declaration"/>
        <command
-            id="com.redhat.ceylon.eclipse.ui.action.openType"
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Open Ceylon or Java type declaration"
-            name="Open Ceylon or Java Type"/>
-       <command
             id="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open search screen"
@@ -727,9 +722,6 @@
             class="com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"/>
       <handler
-            class="com.redhat.ceylon.eclipse.code.open.OpenTypeHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.openType"/>
-      <handler
             class="com.redhat.ceylon.eclipse.code.search.OpenCeylonSearchPageAction"
             commandId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"/>
       <handler
@@ -809,7 +801,7 @@
             contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
       <key
             sequence="M1+M2+T"
-            commandId="com.redhat.ceylon.eclipse.ui.action.openType"
+            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
       <key
@@ -1067,11 +1059,6 @@
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
-            <command
-                  label="Open Ceylon or Java &amp;Type..." 
-                  commandId="com.redhat.ceylon.eclipse.ui.action.openType"
-                  icon="icons/opentype.gif"
-                  id="com.redhat.ceylon.eclipse.ui.menu.openType"/>
             <separator
                   visible="true"
                   name="sep8"/>
