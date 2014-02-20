@@ -61,7 +61,8 @@ public class CleanImportsHandler extends AbstractHandler {
         if (cu!=null) {
             IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
             String imports = imports(cu, doc);
-            if (imports!=null && !imports.trim().isEmpty()) {
+            if (imports!=null && 
+                    !(imports.trim().isEmpty() && cu.getImportList().getImports().isEmpty())) {
                 TextFileChange tfc = 
                         new TextFileChange("Clean Imports", file);
                 tfc.setEdit(new MultiTextEdit());
@@ -122,7 +123,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 proposed, doc);
     }
     
-    public static String reorganizeImports(ImportList til, 
+    public static String reorganizeImports(Tree.ImportList til, 
             List<Declaration> unused, List<Declaration> proposed,
             IDocument doc) {
         Map<String,List<Tree.Import>> packages = 
