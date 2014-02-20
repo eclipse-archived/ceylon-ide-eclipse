@@ -65,6 +65,10 @@ public class RefactorMenuItems extends CompoundContributionItem {
                 /*new DynamicMenuItem(PLUGIN_ID + ".action.convertToClass", 
                                 "Convert to Class...",
                                 editor!=null && new ConvertToClassRefactoringAction(editor).isEnabled()),*/
+                new DynamicMenuItem(PLUGIN_ID + ".action.moveOut", 
+                        "Move &Out...",
+                        editor!=null && new MoveOutRefactoringAction(editor).isEnabled(),
+                        AbstractRefactoring.CHANGE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.cleanImports", 
                         "&Clean Imports", new CleanImportsHandler().isEnabled(), 
