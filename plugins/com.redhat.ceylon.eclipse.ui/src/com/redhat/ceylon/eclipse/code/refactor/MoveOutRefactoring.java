@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -30,12 +34,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.Indents;
 
 public class MoveOutRefactoring extends AbstractRefactoring {
     
     private Tree.Declaration declaration;
     private boolean makeShared=false;
+    private String newName;
 
     public MoveOutRefactoring(ITextEditor editor) {
         super(editor);
@@ -49,6 +53,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private void init(ITextSelection selection) {
         if (node instanceof Tree.Declaration) {
             declaration = (Tree.Declaration) node;
+            newName = guessName(getContainer(declaration.getDeclarationModel()));
         }
     }
 
@@ -98,26 +103,13 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             OperationCanceledException {
         TextChange tfc = newLocalChange();
         tfc.setEdit(new MultiTextEdit());
-        final Declaration dec = declaration.getDeclarationModel();
-        final Scope container = dec.getContainer();
-        class FindContainer extends Visitor {
-            Tree.Declaration dec;
-            @Override
-            public void visit(Tree.Declaration that) {
-                super.visit(that);
-                if (that.getDeclarationModel().equals(container)) {
-                    dec = that;
-                }
-            }
-        }
-        FindContainer fc = new FindContainer();
-        rootNode.visit(fc);
-        Tree.TypeDeclaration owner = (Tree.TypeDeclaration) fc.dec;
-        final String qtype = owner.getDeclarationModel().getType()
+        Declaration dec = declaration.getDeclarationModel();
+        Tree.TypeDeclaration owner = getContainer(dec);
+        String qtype = owner.getDeclarationModel().getType()
                 .getProducedTypeName(declaration.getUnit());
-        String indent = Indents.getIndent(owner, document);
-        String originalIndent = Indents.getIndent(declaration, document);
-        String delim = Indents.getDefaultLineDelimiter(document);
+        String indent = getIndent(owner, document);
+        String originalIndent = getIndent(declaration, document);
+        String delim = getDefaultLineDelimiter(document);
         StringBuilder sb = new StringBuilder();
         if (declaration instanceof Tree.AnyMethod) {
             Tree.AnyMethod md = (Tree.AnyMethod) declaration;
@@ -125,15 +117,12 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             sb.append(toString(md.getType())).append(" ")
                 .append(toString(md.getIdentifier()));
             List<Tree.ParameterList> parameterLists = md.getParameterLists();
-            if (parameterLists.isEmpty()) {
-                throw new IllegalStateException("missing parameter list"); //TODO: do it in checkInitialConditions()
-            }
             Tree.ParameterList first = parameterLists.get(0);
             sb.append(toString(first));
             if (!first.getParameters().isEmpty()) {
                 sb.insert(sb.length()-1, ", ");
             }
-            sb.insert(sb.length()-1, qtype+ " it");
+            sb.insert(sb.length()-1, qtype+ " " + newName);
             for (int i=1; i<parameterLists.size(); i++) {
                 sb.append(toString(parameterLists.get(i)));
             }
@@ -143,13 +132,18 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             }
             if (md instanceof Tree.MethodDefinition &&
                     ((Tree.MethodDefinition) md).getBlock()!=null) {
-                appendBody(container, indent, originalIndent, 
-                        delim, sb, ((Tree.MethodDefinition) md).getBlock());
+                appendBody(owner.getDeclarationModel(), 
+                        indent, originalIndent, 
+                        delim, sb, 
+                        ((Tree.MethodDefinition) md).getBlock());
             }
             if (md instanceof Tree.MethodDeclaration &&
                     ((Tree.MethodDeclaration) md).getSpecifierExpression()!=null) {
-                appendBody(container, indent, originalIndent, 
-                        delim, sb, ((Tree.MethodDeclaration) md).getSpecifierExpression());
+                sb.append(" ");
+                appendBody(owner.getDeclarationModel(), 
+                        indent, originalIndent, 
+                        delim, sb, 
+                        ((Tree.MethodDeclaration) md).getSpecifierExpression());
                 sb.append(";");
             }
         }
@@ -163,7 +157,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             if (!first.getParameters().isEmpty()) {
                 sb.insert(sb.length()-1, ", ");
             }
-            sb.insert(sb.length()-1, qtype+ " it");
+            sb.insert(sb.length()-1, qtype+ " " + newName);
             if (cd.getCaseTypes()!=null) {
                 appendClause(indent, delim, sb, cd.getCaseTypes());
             }
@@ -178,12 +172,11 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                         cd.getTypeConstraintList());
             }
             if (cd.getClassBody()!=null) {
-                appendBody(container, indent, originalIndent, 
-                        delim, sb, cd.getClassBody());
+                appendBody(owner.getDeclarationModel(), 
+                        indent, originalIndent, 
+                        delim, sb, 
+                        cd.getClassBody());
             }
-        }
-        else {
-            throw new IllegalStateException();
         }
         tfc.addEdit(new InsertEdit(owner.getStopIndex()+1, 
                 delim+indent+delim+indent+sb));
@@ -209,6 +202,36 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         return cc;
     }
 
+    private static String guessName(Tree.TypeDeclaration owner) {
+        if (owner==null) {
+            return "it";
+        }
+        String name = owner.getIdentifier().getText();
+        String paramName = Character.toLowerCase(name.charAt(0))+name.substring(1);
+        if (keywords.contains(paramName)) {
+            return "it";
+        }
+        return paramName;
+    }
+
+    private Tree.TypeDeclaration getContainer(final Declaration dec) {
+        class FindContainer extends Visitor {
+            final Scope container = dec.getContainer();
+            Tree.Declaration result;
+            @Override
+            public void visit(Tree.Declaration that) {
+                super.visit(that);
+                if (that.getDeclarationModel().equals(container)) {
+                    result = that;
+                }
+            }
+        }
+        FindContainer fc = new FindContainer();
+        rootNode.visit(fc);
+        Tree.TypeDeclaration owner = (Tree.TypeDeclaration) fc.result;
+        return owner;
+    }
+
     private void fixInvocations(final Declaration dec, CompilationUnit cu,
             final TextChange tc) {
         new Visitor() {
@@ -228,7 +251,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                             try {
                                 IDocument doc = tc.getCurrentDocument(null);
                                 String arg = namedArgIndent(nal, doc) + 
-                                        "it = this;";
+                                        newName + " = this;";
                                 List<Tree.NamedArgument> args = nal.getNamedArguments();
                                 int offset = args.isEmpty() ? 
                                         nal.getStartIndex()+1 : 
@@ -258,7 +281,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                             try {
                                 IDocument doc = tc.getCurrentDocument(null);
                                 String arg = namedArgIndent(nal, doc) + 
-                                        "it = " + pt + ";";
+                                        newName + " = " + pt + ";";
                                 List<Tree.NamedArgument> args = nal.getNamedArguments();
                                 int offset = args.isEmpty() ? 
                                         nal.getStartIndex()+1 : 
@@ -275,9 +298,9 @@ public class MoveOutRefactoring extends AbstractRefactoring {
 
             private String namedArgIndent(Tree.NamedArgumentList nal,
                     IDocument doc) {
-                return Indents.getDefaultLineDelimiter(doc) + 
-                        Indents.getIndent(nal, doc) + 
-                        Indents.getDefaultIndent();
+                return getDefaultLineDelimiter(doc) + 
+                        getIndent(nal, doc) + 
+                        getDefaultIndent();
             }
             
         }.visit(cu);
@@ -307,8 +330,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private void appendClause(String indent, String delim, StringBuilder sb,
             Node clause) {
         sb.append(delim).append(indent)
-            .append(Indents.getDefaultIndent())
-            .append(Indents.getDefaultIndent())
+            .append(getDefaultIndent())
+            .append(getDefaultIndent())
             .append(toString(clause));
     }
 
@@ -331,7 +354,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                     if (that.getPrimary() instanceof Tree.This) {
                         stb.replace(that.getStartIndex()+offset-body.getStartIndex(), 
                                 that.getPrimary().getStopIndex()+offset+1-body.getStartIndex(), 
-                                "it");
+                                newName);
                         offset+=2-that.getPrimary().getStopIndex()-that.getStartIndex()+1;
                     }
                     if (that.getPrimary() instanceof Tree.Outer) {
@@ -343,7 +366,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 }
             });
 //            sb.append(delim).append(indent)
-//                .append(Indents.getDefaultIndent())
+//                .append(getDefaultIndent())
             sb.append(stb.toString().replaceAll(delim+originalIndent, delim+indent));
 //        }
 //        sb.append(delim).append(indent).append("}");
@@ -351,6 +374,14 @@ public class MoveOutRefactoring extends AbstractRefactoring {
 
     public void setMakeShared() {
         makeShared=!makeShared;
+    }
+
+    void setNewName(String name) {
+        newName = name;
+    }
+
+    String getNewName() {
+        return newName;
     }
     
 }
