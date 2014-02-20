@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
+
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
@@ -19,7 +22,9 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -49,7 +54,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
 
     @Override
     boolean isEnabled() {
-        return (node instanceof Tree.MethodDefinition || 
+        return (node instanceof Tree.AnyMethod || 
                 node instanceof Tree.ClassDefinition) &&
                     ((Tree.Declaration) node).getDeclarationModel()!=null &&
                     ((Tree.Declaration) node).getDeclarationModel()
@@ -62,7 +67,26 @@ public class MoveOutRefactoring extends AbstractRefactoring {
 
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
-        return new RefactoringStatus();
+        RefactoringStatus result = new RefactoringStatus();
+        Declaration dec = ((Tree.Declaration) node).getDeclarationModel();
+        if (!(dec instanceof Functional) || 
+                ((Functional) dec).getParameterLists().isEmpty()) {
+            result.merge(createErrorStatus("Selected declaration has no parameter list"));
+        }
+        if (!dec.isClassOrInterfaceMember()) {
+            result.merge(createErrorStatus("Selected declaration is not a member of a class or interface"));
+        }
+        if (dec.isFormal()) {
+            result.merge(createWarningStatus("Selected declaration is annotated formal")); 
+        }
+        if (dec.isDefault()) {
+            result.merge(createWarningStatus("Selected declaration is annotated default")); 
+        }
+        if (dec.isActual()) {
+            result.merge(createWarningStatus("Selected declaration is annotated actual")); 
+        }
+        //TODO: check if there are method references to this declaration
+        return result;
     }
 
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
@@ -95,9 +119,9 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         String originalIndent = Indents.getIndent(declaration, document);
         String delim = Indents.getDefaultLineDelimiter(document);
         StringBuilder sb = new StringBuilder();
-        if (declaration instanceof Tree.MethodDefinition) {
-            Tree.MethodDefinition md = (Tree.MethodDefinition) declaration;
-            appendAnnotations(sb, md);
+        if (declaration instanceof Tree.AnyMethod) {
+            Tree.AnyMethod md = (Tree.AnyMethod) declaration;
+            appendAnnotations(sb, md, owner.getDeclarationModel());
             sb.append(toString(md.getType())).append(" ")
                 .append(toString(md.getIdentifier()));
             List<Tree.ParameterList> parameterLists = md.getParameterLists();
@@ -117,14 +141,21 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 appendConstraints(indent, delim, sb, 
                         md.getTypeConstraintList());
             }
-            if (md.getBlock()!=null) {
+            if (md instanceof Tree.MethodDefinition &&
+                    ((Tree.MethodDefinition) md).getBlock()!=null) {
                 appendBody(container, indent, originalIndent, 
-                        delim, sb, md.getBlock());
+                        delim, sb, ((Tree.MethodDefinition) md).getBlock());
+            }
+            if (md instanceof Tree.MethodDeclaration &&
+                    ((Tree.MethodDeclaration) md).getSpecifierExpression()!=null) {
+                appendBody(container, indent, originalIndent, 
+                        delim, sb, ((Tree.MethodDeclaration) md).getSpecifierExpression());
+                sb.append(";");
             }
         }
         else if (declaration instanceof Tree.ClassDefinition) {
             Tree.ClassDefinition cd = (Tree.ClassDefinition) declaration;
-            appendAnnotations(sb, cd);
+            appendAnnotations(sb, cd, owner.getDeclarationModel());
             sb.append("class ")
                 .append(toString(cd.getIdentifier()));
             Tree.ParameterList first = cd.getParameterList();
@@ -252,10 +283,14 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         }.visit(cu);
     }
 
-    private void appendAnnotations(StringBuilder sb, Tree.Declaration d) {
+    private void appendAnnotations(StringBuilder sb, Tree.Declaration d, TypeDeclaration od) {
         if (!d.getAnnotationList().getAnnotations().isEmpty()) {
-            sb.append(toString(d.getAnnotationList())
-                .replaceAll("shared|default|formal|actual", ""));
+            String annotations = toString(d.getAnnotationList());
+            if (!od.isShared()) {
+                annotations = annotations.replaceAll("shared", "");
+            }
+            annotations = annotations.replaceAll("default|formal|actual", "");
+            sb.append(annotations.trim());
             if (sb.length()!=0) {
                 sb.append(" ");
             }
@@ -278,35 +313,35 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     }
 
     private void appendBody(final Scope container, String indent, String originalIndent, 
-            String delim, StringBuilder sb, final Tree.Body block) {
+            String delim, StringBuilder sb, final Node body) {
 //        sb.append(" {");
 //        for (final Tree.Statement st: block.getStatements()) {
-            final StringBuilder stb = new StringBuilder(toString(block));
-            new Visitor() {
+            final StringBuilder stb = new StringBuilder(toString(body));
+            body.visit(new Visitor() {
                 int offset = 0;
                 @Override
                 public void visit(Tree.BaseMemberOrTypeExpression that) {
                     if (that.getDeclaration().getContainer().equals(container)) {
-                        stb.insert(that.getStartIndex()-block.getStartIndex()+offset, "it.");
+                        stb.insert(that.getStartIndex()-body.getStartIndex()+offset, "it.");
                         offset+=3;
                     }
                 }
                 @Override
                 public void visit(Tree.QualifiedMemberOrTypeExpression that) {
                     if (that.getPrimary() instanceof Tree.This) {
-                        stb.replace(that.getStartIndex()+offset-block.getStartIndex(), 
-                                that.getPrimary().getStopIndex()+offset+1-block.getStartIndex(), 
+                        stb.replace(that.getStartIndex()+offset-body.getStartIndex(), 
+                                that.getPrimary().getStopIndex()+offset+1-body.getStartIndex(), 
                                 "it");
                         offset+=2-that.getPrimary().getStopIndex()-that.getStartIndex()+1;
                     }
                     if (that.getPrimary() instanceof Tree.Outer) {
-                        stb.replace(that.getStartIndex()+offset-block.getStartIndex(), 
-                                that.getPrimary().getStopIndex()+offset+1-block.getStartIndex(), 
+                        stb.replace(that.getStartIndex()+offset-body.getStartIndex(), 
+                                that.getPrimary().getStopIndex()+offset+1-body.getStartIndex(), 
                                 "this");
                         offset-=1;
                     }
                 }
-            }.visit(block);
+            });
 //            sb.append(delim).append(indent)
 //                .append(Indents.getDefaultIndent())
             sb.append(stb.toString().replaceAll(delim+originalIndent, delim+indent));
