@@ -55,7 +55,9 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private void init(ITextSelection selection) {
         if (node instanceof Tree.Declaration) {
             declaration = (Tree.Declaration) node;
-            newName = guessName(getContainer(declaration.getDeclarationModel()));
+            if (declaration.getDeclarationModel()!=null) {
+                newName = guessName(getContainer(declaration.getDeclarationModel(), rootNode));
+            }
         }
     }
 
@@ -107,7 +109,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         final TextChange tfc = newLocalChange();
         tfc.setEdit(new MultiTextEdit());
         Declaration dec = declaration.getDeclarationModel();
-        Tree.TypeDeclaration owner = getContainer(dec);
+        Tree.TypeDeclaration owner = getContainer(dec, rootNode);
         String qtype = owner.getDeclarationModel().getType()
                 .getProducedTypeName(declaration.getUnit());
         String indent = getIndent(owner, document);
@@ -252,7 +254,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         return paramName;
     }
 
-    private Tree.TypeDeclaration getContainer(final Declaration dec) {
+    public static Tree.TypeDeclaration getContainer(final Declaration dec,
+            Tree.CompilationUnit rootNode) {
         class FindContainer extends Visitor {
             final Scope container = dec.getContainer();
             Tree.Declaration result;
