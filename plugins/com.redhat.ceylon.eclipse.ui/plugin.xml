@@ -602,6 +602,11 @@
             description="Change parameters of selected function or class"
             name="Change Parameters"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.moveOut"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Move function or method to outer scope"
+            name="Move out"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.extractFunction"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Extract selected expression to function"
@@ -758,6 +763,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.MoveOutHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.moveOut"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.ConvertToClassHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.convertToClass"/>
