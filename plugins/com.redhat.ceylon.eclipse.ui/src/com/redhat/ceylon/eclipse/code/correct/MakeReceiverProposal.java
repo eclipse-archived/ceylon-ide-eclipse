@@ -17,15 +17,15 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.MoveOutRefactoringAction;
+import com.redhat.ceylon.eclipse.code.refactor.MakeReceiverRefactoringAction;
 
-public class MoveOutProposal implements ICompletionProposal, ICompletionProposalExtension6 {
+public class MakeReceiverProposal implements ICompletionProposal, ICompletionProposalExtension6 {
 
-    private MoveOutRefactoringAction action;
+    private MakeReceiverRefactoringAction action;
     private String name;
     
-    public MoveOutProposal(CeylonEditor editor, Node node) {
-        action = new MoveOutRefactoringAction(editor);
+    public MakeReceiverProposal(CeylonEditor editor, Node node) {
+        action = new MakeReceiverRefactoringAction(editor);
         if (node instanceof Tree.Declaration) {
             Declaration container = getContainer(((Tree.Declaration) node).getDeclarationModel(), 
                     editor.getParseController().getRootNode());
@@ -47,7 +47,7 @@ public class MoveOutProposal implements ICompletionProposal, ICompletionProposal
 
     @Override
     public String getDisplayString() {
-        return "Move out of '" + name + "'";
+        return "Make receiver of '" + name + "'";
     }
     
     @Override
@@ -76,7 +76,7 @@ public class MoveOutProposal implements ICompletionProposal, ICompletionProposal
     
     public static void add(Collection<ICompletionProposal> proposals, 
             CeylonEditor editor, Node node) {
-        MoveOutProposal prop = new MoveOutProposal(editor, node);
+        MakeReceiverProposal prop = new MakeReceiverProposal(editor, node);
         if (prop.isEnabled()) {
             proposals.add(prop);
         }
