@@ -87,9 +87,7 @@ class CorrectionProposal
         this(name, change, MINOR_CHANGE);
     }
 
-    /*
-     * @see ICompletionProposal#apply(IDocument)
-     */
+    @Override
     public void apply(IDocument document) {
         try {
             performChange(JavaPlugin.getActivePage().getActiveEditor(), 
@@ -192,11 +190,13 @@ class CorrectionProposal
         }
     }
 
+    @Override
     public String getAdditionalProposalInfo() {
         Object info= getAdditionalProposalInfo(new NullProgressMonitor());
         return info == null ? null : info.toString();
     }
 
+    @Override
     public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
         StringBuffer buf= new StringBuffer();
         buf.append("<p>");
@@ -220,19 +220,21 @@ class CorrectionProposal
         return buf.toString();
     }
 
+    @Override
     public IContextInformation getContextInformation() {
         return null;
     }
 
+    @Override
     public String getDisplayString() {
         return getName();
     }
 
+    @Override
     public StyledString getStyledDisplayString() {
-        StyledString str= new StyledString(getName());
-        return str;
+        return CorrectionUtil.styleProposal(getDisplayString());
     }
-
+    
     /**
      * Returns the name of the proposal.
      *
