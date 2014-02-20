@@ -604,8 +604,13 @@
        <command
             id="com.redhat.ceylon.eclipse.ui.action.moveOut"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Move function or method to outer scope"
-            name="Move out"/>
+            description="Move function or class to outer scope"
+            name="Move Out"/>
+       <command
+            id="com.redhat.ceylon.eclipse.ui.action.makeReceiver"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Move function or class to selected parameter"
+            name="Make Receiver"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.extractFunction"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -766,6 +771,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.MoveOutHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.moveOut"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.MakeReceiverHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.makeReceiver"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.ConvertToClassHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.convertToClass"/>

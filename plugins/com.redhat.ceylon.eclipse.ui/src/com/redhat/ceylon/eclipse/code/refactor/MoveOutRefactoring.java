@@ -36,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.FindUtils;
 
 public class MoveOutRefactoring extends AbstractRefactoring {
     
@@ -56,7 +57,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         if (node instanceof Tree.Declaration) {
             declaration = (Tree.Declaration) node;
             if (declaration.getDeclarationModel()!=null) {
-                newName = guessName(getContainer(declaration.getDeclarationModel(), rootNode));
+                newName = defaultName(FindUtils.getContainer(declaration.getDeclarationModel(), rootNode));
             }
         }
     }
@@ -108,7 +109,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         CompositeChange cc = new CompositeChange(getName());
         
         Declaration dec = declaration.getDeclarationModel();
-        Tree.TypeDeclaration owner = getContainer(dec, rootNode);
+        Tree.TypeDeclaration owner = (Tree.TypeDeclaration) FindUtils.getContainer(dec, rootNode);
 
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
@@ -259,7 +260,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         }.visit(owner);
     }
 
-    private static String guessName(Tree.TypeDeclaration owner) {
+    private static String defaultName(Tree.Declaration owner) {
         if (owner==null) {
             return "it";
         }
@@ -269,29 +270,6 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             return "it";
         }
         return paramName;
-    }
-
-    public static Tree.TypeDeclaration getContainer(final Declaration dec,
-            Tree.CompilationUnit rootNode) {
-        class FindContainer extends Visitor {
-            final Scope container = dec.getContainer();
-            Tree.Declaration result;
-            @Override
-            public void visit(Tree.Declaration that) {
-                super.visit(that);
-                if (that.getDeclarationModel().equals(container)) {
-                    result = that;
-                }
-            }
-        }
-        FindContainer fc = new FindContainer();
-        rootNode.visit(fc);
-        if (fc.result instanceof Tree.TypeDeclaration) {
-            return (Tree.TypeDeclaration) fc.result;
-        }
-        else {
-            return null;
-        }
     }
 
     private void fixInvocations(final Declaration dec, CompilationUnit cu,

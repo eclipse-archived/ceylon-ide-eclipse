@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveOutRefactoring.getContainer;
+import static com.redhat.ceylon.eclipse.util.FindUtils.getContainer;
 
 import java.util.Collection;
 
