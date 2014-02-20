@@ -349,7 +349,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     }
     
     boolean includeJava() {
-        return false;
+        return true;
     }
 
     private static String getLocation(DeclarationWithProject dwp) {
