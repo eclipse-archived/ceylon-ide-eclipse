@@ -586,7 +586,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addConvertToIfElseProposal(doc, proposals, file, statement);
             addConvertToThenElseProposal(cu, doc, proposals, file, statement);
-            addReverseIfElseProposal(doc, proposals, file, statement);
+            addReverseIfElseProposal(doc, proposals, file, statement, cu);
             
             addConvertGetterToMethodProposal(proposals, editor, file, statement);
             addConvertMethodToGetterProposal(proposals, editor, file, statement);

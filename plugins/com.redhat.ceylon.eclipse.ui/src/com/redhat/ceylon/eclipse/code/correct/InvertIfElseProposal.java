@@ -32,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SmallAsOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SmallerOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class InvertIfElseProposal extends CorrectionProposal {
@@ -53,12 +54,40 @@ class InvertIfElseProposal extends CorrectionProposal {
     
     static void addReverseIfElseProposal(IDocument doc,
                 Collection<ICompletionProposal> proposals, IFile file,
-                Statement statement) {
+                final Statement statement, Tree.CompilationUnit cu) {
         try {
-            if (! (statement instanceof Tree.IfStatement)) {
-                return;
+            Tree.IfStatement ifStmt;
+            if (statement instanceof Tree.IfStatement) {
+                ifStmt = (IfStatement) statement;
             }
-            IfStatement ifStmt = (IfStatement) statement;
+            else {
+                class FindIf extends Visitor {
+                    Tree.IfStatement result;
+                    @Override
+                    public void visit(Tree.IfStatement that) {
+                        super.visit(that);
+                        if (that.getIfClause()!=null &&
+                                that.getIfClause().getBlock()
+                                .getStatements().contains(statement)) {
+                            result = that;
+                        }
+                        if (that.getElseClause()!=null &&
+                                that.getElseClause().getBlock()
+                                .getStatements().contains(statement)) {
+                            result = that;
+                        }
+                    }
+                }
+                FindIf fi = new FindIf();
+                fi.visit(cu);
+                if (fi.result==null) {
+                    return;
+                }
+                else {
+                    ifStmt = fi.result;
+                }
+            }
+            
             if (ifStmt.getElseClause() == null) {
                 return;
             }
@@ -96,7 +125,7 @@ class InvertIfElseProposal extends CorrectionProposal {
             if (test == null) {
                  test = "!" + term;
             }
-            String baseIndent = getIndent(statement, doc);
+            String baseIndent = getIndent(ifStmt, doc);
             String indent = getDefaultIndent();
             String delim = getDefaultLineDelimiter(doc);
 
@@ -118,8 +147,9 @@ class InvertIfElseProposal extends CorrectionProposal {
                     .append(getTerm(doc, ifBlock));
 
             TextChange change = new TextFileChange("Invert if-else", file);
-            change.setEdit(new ReplaceEdit(statement.getStartIndex(), statement.getStopIndex() - statement.getStartIndex() + 1, replace.toString()));
-            proposals.add(new InvertIfElseProposal(statement.getStartIndex(), file, change));
+            change.setEdit(new ReplaceEdit(ifStmt.getStartIndex(), 
+                    ifStmt.getStopIndex() - ifStmt.getStartIndex() + 1, replace.toString()));
+            proposals.add(new InvertIfElseProposal(ifStmt.getStartIndex(), file, change));
         } catch (Exception e) {
             e.printStackTrace();
         }
