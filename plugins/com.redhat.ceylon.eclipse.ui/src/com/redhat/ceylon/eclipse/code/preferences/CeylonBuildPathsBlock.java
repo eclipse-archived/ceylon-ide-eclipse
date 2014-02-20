@@ -1138,8 +1138,7 @@ public class CeylonBuildPathsBlock {
     private static String configFilePath(IProject project, CPListElement cpe) {
         IPath linkTarget = cpe.getLinkTarget();
         if (linkTarget==null) {
-            return cpe.getPath().toOSString()
-                    .replaceFirst(File.separator+project.getName(), ".");
+            return "." + File.separator + cpe.getPath().makeRelativeTo(project.getFullPath()).toOSString();
         }
         else {
             return cpe.getLinkTarget().toOSString();
