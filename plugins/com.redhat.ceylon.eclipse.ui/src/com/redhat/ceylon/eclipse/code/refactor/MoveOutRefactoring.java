@@ -5,6 +5,7 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
@@ -181,6 +182,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         new Visitor() {
             public void visit(Tree.InvocationExpression that) {
                 Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
+                Tree.NamedArgumentList nal = that.getNamedArgumentList();
                 if (that.getPrimary() instanceof Tree.BaseMemberOrTypeExpression) {
                     Tree.BaseMemberOrTypeExpression bmte = 
                             (Tree.BaseMemberOrTypeExpression) that.getPrimary();
@@ -190,24 +192,62 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                                     "this" : ", this";
                             tc.addEdit(new InsertEdit(pal.getStopIndex(), arg));
                         }
+                        if (nal!=null) {
+                            try {
+                                IDocument doc = tc.getCurrentDocument(null);
+                                String arg = namedArgIndent(nal, doc) + 
+                                        "it = this;";
+                                List<Tree.NamedArgument> args = nal.getNamedArguments();
+                                int offset = args.isEmpty() ? 
+                                        nal.getStartIndex()+1 : 
+                                        args.get(args.size()-1).getStopIndex()+1;
+                                tc.addEdit(new InsertEdit(offset, arg));
+                            }
+                            catch (CoreException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 }
                 if (that.getPrimary() instanceof Tree.QualifiedMemberOrTypeExpression) {
                     Tree.QualifiedMemberOrTypeExpression qmte = 
                             (Tree.QualifiedMemberOrTypeExpression) that.getPrimary();
                     if (qmte.getDeclaration().equals(dec)) {
+                        Tree.Primary p = qmte.getPrimary();
+                        String pt = MoveOutRefactoring.this.toString(p);
+                        tc.addEdit(new DeleteEdit(p.getStartIndex(), 
+                                qmte.getMemberOperator().getStopIndex()-p.getStartIndex()+1));
                         if (pal!=null) {
-                            Tree.Primary p = qmte.getPrimary();
-                            tc.addEdit(new DeleteEdit(p.getStartIndex(), 
-                                    qmte.getMemberOperator().getStopIndex()-p.getStartIndex()+1));
-                            String pt = MoveOutRefactoring.this.toString(p);
                             String arg = pal.getPositionalArguments().isEmpty() ? 
                                     pt : ", " + pt;
                             tc.addEdit(new InsertEdit(pal.getStopIndex(), arg));
                         }
+                        if (nal!=null) {
+                            try {
+                                IDocument doc = tc.getCurrentDocument(null);
+                                String arg = namedArgIndent(nal, doc) + 
+                                        "it = " + pt + ";";
+                                List<Tree.NamedArgument> args = nal.getNamedArguments();
+                                int offset = args.isEmpty() ? 
+                                        nal.getStartIndex()+1 : 
+                                        args.get(args.size()-1).getStopIndex()+1;
+                                tc.addEdit(new InsertEdit(offset, arg));
+                            }
+                            catch (CoreException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 }
             }
+
+            private String namedArgIndent(Tree.NamedArgumentList nal,
+                    IDocument doc) {
+                return Indents.getDefaultLineDelimiter(doc) + 
+                        Indents.getIndent(nal, doc) + 
+                        Indents.getDefaultIndent();
+            }
+            
         }.visit(cu);
     }
 
@@ -237,40 +277,40 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     }
 
     private void appendBody(final Scope container, String indent, String originalIndent, 
-            String delim, StringBuilder sb, Tree.Body block) {
-        sb.append(" {");
-        for (final Tree.Statement st: block.getStatements()) {
-            final StringBuilder stb = new StringBuilder(toString(st));
+            String delim, StringBuilder sb, final Tree.Body block) {
+//        sb.append(" {");
+//        for (final Tree.Statement st: block.getStatements()) {
+            final StringBuilder stb = new StringBuilder(toString(block));
             new Visitor() {
                 int offset = 0;
                 @Override
                 public void visit(Tree.BaseMemberOrTypeExpression that) {
                     if (that.getDeclaration().getContainer().equals(container)) {
-                        stb.insert(that.getStartIndex()-st.getStartIndex()+offset, "it.");
+                        stb.insert(that.getStartIndex()-block.getStartIndex()+offset, "it.");
                         offset+=3;
                     }
                 }
                 @Override
                 public void visit(Tree.QualifiedMemberOrTypeExpression that) {
                     if (that.getPrimary() instanceof Tree.This) {
-                        stb.replace(that.getStartIndex()+offset-st.getStartIndex(), 
-                                that.getPrimary().getStopIndex()+offset+1-st.getStartIndex(), 
+                        stb.replace(that.getStartIndex()+offset-block.getStartIndex(), 
+                                that.getPrimary().getStopIndex()+offset+1-block.getStartIndex(), 
                                 "it");
                         offset+=2-that.getPrimary().getStopIndex()-that.getStartIndex()+1;
                     }
                     if (that.getPrimary() instanceof Tree.Outer) {
-                        stb.replace(that.getStartIndex()+offset-st.getStartIndex(), 
-                                that.getPrimary().getStopIndex()+offset+1-st.getStartIndex(), 
+                        stb.replace(that.getStartIndex()+offset-block.getStartIndex(), 
+                                that.getPrimary().getStopIndex()+offset+1-block.getStartIndex(), 
                                 "this");
                         offset-=1;
                     }
                 }
-            }.visit(st);
-            sb.append(delim).append(indent)
-                .append(Indents.getDefaultIndent())
-                .append(stb.toString().replaceAll(delim+originalIndent, delim+indent));
-        }
-        sb.append(delim).append(indent).append("}");
+            }.visit(block);
+//            sb.append(delim).append(indent)
+//                .append(Indents.getDefaultIndent())
+            sb.append(stb.toString().replaceAll(delim+originalIndent, delim+indent));
+//        }
+//        sb.append(delim).append(indent).append("}");
     }
 
     public void setMakeShared() {
