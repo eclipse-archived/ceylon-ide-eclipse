@@ -881,6 +881,11 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
+            sequence="M3+M"
+            commandId="com.redhat.ceylon.eclipse.ui.action.moveOut"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
             sequence="M3+V"
             commandId="com.redhat.ceylon.eclipse.ui.action.extractValue"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
