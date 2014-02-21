@@ -25,6 +25,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
+import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
+import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
+import com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler;
+
 public class SourceMenuItems extends CompoundContributionItem {
     
     public static ImageDescriptor TERMINATE = imageRegistry.getDescriptor(TERMINATE_STATEMENT);
@@ -65,6 +69,14 @@ public class SourceMenuItems extends CompoundContributionItem {
 
     private IContributionItem[] getItems(IEditorPart editor) {
         return new IContributionItem[] {
+                new DynamicMenuItem(PLUGIN_ID + ".action.cleanImports", 
+                        "&Clean Imports", new CleanImportsHandler().isEnabled(), 
+                        AbstractRefactoring.DELETE_IMPORT),
+                new DynamicMenuItem(PLUGIN_ID + ".action.revealInferredType", 
+                        "Reveal Inferred &Types",
+                        editor!=null && new RevealInferredTypeHandler().isEnabled(),
+                        AbstractRefactoring.CHANGE),
+                new Separator(),
                 new DynamicMenuItem(ITextEditorActionDefinitionIds.QUICK_ASSIST, "&Quick Fix/Assist", true, FIX),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.terminateStatement", "Terminate &Statement", true, TERMINATE),
