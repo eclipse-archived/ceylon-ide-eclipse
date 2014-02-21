@@ -27,7 +27,10 @@ public class InlineInputPage extends UserInputWizardPage {
         Label title = new Label(result, SWT.LEFT);  
         title.setText("Inline " + getInlineRefactoring().getCount() + 
                 " occurrences of declaration '" + 
-                getInlineRefactoring().getDeclaration().getName() + "'");
+                getInlineRefactoring().getDeclaration().getName() + "'.");
+        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        gd2.horizontalSpan=2;
+        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         title.setLayoutData(gd);

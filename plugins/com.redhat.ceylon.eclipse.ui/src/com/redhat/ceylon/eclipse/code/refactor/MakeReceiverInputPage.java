@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -27,6 +28,9 @@ public class MakeReceiverInputPage extends UserInputWizardPage {
                  "()' a member of the type '" + 
                  dm.getType().getDeclaration().getName() + 
                 "', and remove parameter '" + dm.getName() + "'.");
+        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        gd2.horizontalSpan=2;
+        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
     }
 
     private MakeReceiverRefactoring getMakeReceiverRefactoring() {
