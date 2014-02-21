@@ -950,7 +950,7 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
-            sequence="M2+M3+K"
+            sequence="M2+M3+P"
             commandId="com.redhat.ceylon.eclipse.ui.action.makeReceiver"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
