@@ -367,6 +367,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             if (tc!=null) {
                 addRenameProposals(cu, node, problem, proposals, file);
             }
+            addCreationProposals(cu, node, problem, proposals, 
+                    project, tc, file);
             break;
         case 102:
             if (tc!=null) {
