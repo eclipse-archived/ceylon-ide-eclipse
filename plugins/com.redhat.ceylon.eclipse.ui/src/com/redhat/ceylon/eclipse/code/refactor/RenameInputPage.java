@@ -27,7 +27,10 @@ public class RenameInputPage extends UserInputWizardPage {
         Label title = new Label(result, SWT.LEFT);  
         title.setText("Rename " + getRenameRefactoring().getCount() + 
                 " occurrences of declaration '" + 
-                getRenameRefactoring().getDeclaration().getName() + "'");
+                getRenameRefactoring().getDeclaration().getName() + "'.");
+        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        gd2.horizontalSpan=2;
+        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         title.setLayoutData(gd);

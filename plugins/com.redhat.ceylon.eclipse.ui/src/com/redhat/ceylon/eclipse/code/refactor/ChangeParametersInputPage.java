@@ -41,10 +41,13 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         Declaration dec = getRenameRefactoring().getDeclaration();
         title.setText("Change parameters of " + getRenameRefactoring().getCount() + 
                 " occurrences of '" + 
-                dec.getName() + "'");
+                dec.getName() + "'.");
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         title.setLayoutData(gd);
+        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        gd2.horizontalSpan=2;
+        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
 
         Composite composite = new Composite(result, SWT.NONE);
         GridData cgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);

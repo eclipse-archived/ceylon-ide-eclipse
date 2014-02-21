@@ -23,7 +23,7 @@ public class MakeReceiverRefactoringAction extends AbstractRefactoringAction {
     
     @Override
     String message() {
-        return "No function or class name selected";
+        return "No parameter name selected";
     }
 
 }

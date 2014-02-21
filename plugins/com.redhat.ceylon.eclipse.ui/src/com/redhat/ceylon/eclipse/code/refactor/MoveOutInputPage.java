@@ -13,6 +13,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public class MoveOutInputPage extends UserInputWizardPage {
@@ -26,6 +28,20 @@ public class MoveOutInputPage extends UserInputWizardPage {
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
         result.setLayout(layout);
+        Declaration dm = ((Tree.Declaration) getMoveOutRefactoring().node)
+                .getDeclarationModel();
+        Label desc = new Label(result, SWT.RIGHT);
+        GridData gd = new GridData();
+        gd.horizontalSpan=2;
+        desc.setLayoutData(gd);
+        desc.setText("Move '" + 
+                dm.getName() + 
+                "()' out of the type '" + 
+                ((Declaration) dm.getContainer()).getName() + 
+               "', and add a parameter.");
+        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        gd2.horizontalSpan=2;
+        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
         Label label = new Label(result, SWT.RIGHT);  
         label.setText("Parameter name: ");
         final Text text = new Text(result, SWT.SINGLE|SWT.BORDER);
