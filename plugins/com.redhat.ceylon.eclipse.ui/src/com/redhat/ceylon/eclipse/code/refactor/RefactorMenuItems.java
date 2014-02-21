@@ -12,7 +12,6 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
-import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 
 public class RefactorMenuItems extends CompoundContributionItem {
     
@@ -62,9 +61,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         "Extract &Function...",
                         editor!=null && new ExtractFunctionRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.CHANGE),
-                /*new DynamicMenuItem(PLUGIN_ID + ".action.convertToClass", 
-                                "Convert to Class...",
-                                editor!=null && new ConvertToClassRefactoringAction(editor).isEnabled()),*/
+                new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.moveOut", 
                         "Move &Out...",
                         editor!=null && new MoveOutRefactoringAction(editor).isEnabled(),
@@ -73,14 +70,6 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         "Make Receiver...",
                         editor!=null && new MakeReceiverRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.CHANGE),
-                new Separator(),
-                new DynamicMenuItem(PLUGIN_ID + ".action.cleanImports", 
-                        "&Clean Imports", new CleanImportsHandler().isEnabled(), 
-                        AbstractRefactoring.DELETE_IMPORT),
-                new DynamicMenuItem(PLUGIN_ID + ".action.revealInferredType", 
-                        "Reveal Inferred &Types",
-                        editor!=null && new RevealInferredTypeHandler().isEnabled(),
-                        AbstractRefactoring.CHANGE)
             };
     }
     
