@@ -30,7 +30,7 @@ class NewUnitWithDeclarationWizardPage extends NewUnitWizardPage {
         Button dec = new Button(composite, SWT.CHECK);
         dec.setText("Create toplevel class or method declaration");
         dec.setSelection(declaration);
-        dec.setEnabled(false);
+        dec.setEnabled(true);
         GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         igd.horizontalSpan = 3;
         igd.grabExcessHorizontalSpace = true;
