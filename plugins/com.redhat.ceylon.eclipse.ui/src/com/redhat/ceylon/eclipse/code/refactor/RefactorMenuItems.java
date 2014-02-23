@@ -64,15 +64,15 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         editor!=null && new MoveOutRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.makeReceiver", 
-                        "Make Receiver...",
+                        "&Make Receiver...",
                         editor!=null && new MakeReceiverRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.CHANGE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.moveDeclarationToNewUnit", 
-                        "Move to &New Source File...", new MoveToNewUnitHandler().isEnabled(), 
+                        "Move to New Source File...", new MoveToNewUnitHandler().isEnabled(), 
                         AbstractRefactoring.MOVE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.moveDeclarationToUnit", 
-                        "Move to &Source File...", new MoveToUnitHandler().isEnabled(), 
+                        "Move to Source File...", new MoveToUnitHandler().isEnabled(), 
                         AbstractRefactoring.MOVE),
             };
     }
