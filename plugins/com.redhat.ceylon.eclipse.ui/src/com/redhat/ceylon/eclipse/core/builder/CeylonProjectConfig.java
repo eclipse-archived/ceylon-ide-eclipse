@@ -273,8 +273,15 @@ public class CeylonProjectConfig {
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
                 refresh();
                 try {
-                    project.findMember(".ceylon/config").refreshLocal(IResource.DEPTH_ONE, 
+                    IResource config = project.findMember(".ceylon/config");
+                    if (config!=null) {
+                        config.refreshLocal(IResource.DEPTH_ZERO, 
                                 new NullProgressMonitor());
+                    }
+                    else {
+                        project.refreshLocal(IResource.DEPTH_INFINITE, 
+                                new NullProgressMonitor());
+                    }
                 }
                 catch (CoreException e) {
                     e.printStackTrace();
