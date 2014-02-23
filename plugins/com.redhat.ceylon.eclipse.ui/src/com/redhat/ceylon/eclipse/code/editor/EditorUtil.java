@@ -11,11 +11,26 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.IUndoManager;
+import org.eclipse.ltk.core.refactoring.RefactoringCore;
+import org.eclipse.ltk.core.refactoring.RefactoringStatus;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -172,5 +187,87 @@ public class EditorUtil {
         ITextSelection selection = (ITextSelection) 
                 editor.getSelectionProvider().getSelection();
         return findNode(cpc.getRootNode(), selection);
+    }
+    
+    public static void performChange(IEditorPart activeEditor, 
+            IDocument document, Change change, String name) 
+                    throws CoreException {
+        StyledText disabledStyledText= null;
+        TraverseListener traverseBlocker= null;
+        
+        IRewriteTarget rewriteTarget= null;
+        try {
+            if (change != null) {
+                if (document != null) {
+                    LinkedModeModel.closeAllModels(document);
+                }
+                if (activeEditor != null) {
+                    rewriteTarget= (IRewriteTarget) activeEditor.getAdapter(IRewriteTarget.class);
+                    if (rewriteTarget != null) {
+                        rewriteTarget.beginCompoundChange();
+                    }
+                    /*
+                     * Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=195834#c7 :
+                     * During change execution, an EventLoopProgressMonitor can process the event queue while the text
+                     * widget has focus. When that happens and the user e.g. pressed a key, the event is prematurely
+                     * delivered to the text widget and screws up the document. Change execution fails or performs
+                     * wrong changes.
+                     * 
+                     * The fix is to temporarily disable the text widget.
+                     */
+                    Object control= activeEditor.getAdapter(Control.class);
+                    if (control instanceof StyledText) {
+                        disabledStyledText= (StyledText) control;
+                        if (disabledStyledText.getEditable()) {
+                            disabledStyledText.setEditable(false);
+                            traverseBlocker= new TraverseListener() {
+                                public void keyTraversed(TraverseEvent e) {
+                                    e.doit= true;
+                                    e.detail= SWT.TRAVERSE_NONE;
+                                }
+                            };
+                            disabledStyledText.addTraverseListener(traverseBlocker);
+                        } else {
+                            disabledStyledText= null;
+                        }
+                    }
+                }
+    
+                change.initializeValidationData(new NullProgressMonitor());
+                RefactoringStatus valid= change.isValid(new NullProgressMonitor());
+                if (valid.hasFatalError()) {
+                    IStatus status= new Status(IStatus.ERROR, JavaPlugin.getPluginId(), IStatus.ERROR,
+                        valid.getMessageMatchingSeverity(RefactoringStatus.FATAL), null);
+                    throw new CoreException(status);
+                } else {
+                    IUndoManager manager= RefactoringCore.getUndoManager();
+                    Change undoChange;
+                    boolean successful= false;
+                    try {
+                        manager.aboutToPerformChange(change);
+                        undoChange= change.perform(new NullProgressMonitor());
+                        successful= true;
+                    } finally {
+                        manager.changePerformed(change, successful);
+                    }
+                    if (undoChange != null) {
+                        undoChange.initializeValidationData(new NullProgressMonitor());
+                        manager.addUndo(name, undoChange);
+                    }
+                }
+            }
+        } finally {
+            if (disabledStyledText != null) {
+                disabledStyledText.setEditable(true);
+                disabledStyledText.removeTraverseListener(traverseBlocker);
+            }
+            if (rewriteTarget != null) {
+                rewriteTarget.endCompoundChange();
+            }
+    
+            if (change != null) {
+                change.dispose();
+            }
+        }
     }
 }

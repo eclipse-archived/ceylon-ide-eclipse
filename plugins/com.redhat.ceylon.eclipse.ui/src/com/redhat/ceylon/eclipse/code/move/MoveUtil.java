@@ -2,10 +2,12 @@ package com.redhat.ceylon.eclipse.code.move;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -34,6 +36,9 @@ public class MoveUtil {
                 catch (BadLocationException e) {
                     e.printStackTrace();
                 }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -41,7 +46,8 @@ public class MoveUtil {
     private static void moveToUnit(CeylonEditor editor,
             Tree.CompilationUnit cu, Node node) 
                     throws BadLocationException,
-                           ExecutionException {
+                           ExecutionException, 
+                           CoreException {
         IDocument document = editor.getDocumentProvider()
                 .getDocument(editor.getEditorInput());
         int start = node.getStartIndex();
@@ -53,13 +59,13 @@ public class MoveUtil {
                     imports + getDefaultLineDelimiter(document) + contents;
         boolean success = AddToUnitWizard.open(text, 
                 getFile(editor.getEditorInput()), 
-                "Move to New Unit", 
+                "Move to Unit", 
                 "Create a new Ceylon compilation unit containing the selected declaration.");
         if (success) {
             TextChange tc = createChange(editor, document);
             tc.setEdit(new DeleteEdit(start, length));
             tc.initializeValidationData(null);
-            new TextChangeOperation(tc).runOperation(editor);
+            performChange(editor, document, tc, "Move to Unit");
         }
     }
 
@@ -75,6 +81,9 @@ public class MoveUtil {
                 catch (BadLocationException e) {
                     e.printStackTrace();
                 }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -82,7 +91,8 @@ public class MoveUtil {
     private static void moveToNewUnit(CeylonEditor editor,
             Tree.CompilationUnit cu, Node node) 
                     throws BadLocationException,
-                           ExecutionException {
+                           ExecutionException, 
+                           CoreException {
         IDocument document = editor.getDocumentProvider()
                 .getDocument(editor.getEditorInput());
         int start = node.getStartIndex();
@@ -101,7 +111,7 @@ public class MoveUtil {
             TextChange tc = createChange(editor, document);
             tc.setEdit(new DeleteEdit(start, length));
             tc.initializeValidationData(null);
-            new TextChangeOperation(tc).runOperation(editor);
+            performChange(editor, document, tc, "Move to New Unit");
         }
     }
 
