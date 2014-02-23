@@ -147,7 +147,7 @@ public class NewUnitWizardPage extends WizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 unitName = name.getText();
-                if (!unitIsNameLegal()) {
+                if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else if (sourceDir==null) {
@@ -249,7 +249,7 @@ public class NewUnitWizardPage extends WizardPage {
                 else if (!packageNameIsLegal()) {
                     setErrorMessage(getIllegalPackageNameMessage());
                 }
-                else if (!unitIsNameLegal()) {
+                else if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
@@ -299,7 +299,7 @@ public class NewUnitWizardPage extends WizardPage {
                 else if (!packageNameIsLegal()) {
                     setErrorMessage(getIllegalPackageNameMessage());
                 }
-                else if (!unitIsNameLegal()) {
+                else if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
@@ -335,7 +335,7 @@ public class NewUnitWizardPage extends WizardPage {
                 else if (!packageNameIsLegal()) {
                     setErrorMessage(getIllegalPackageNameMessage());
                 }
-                else if (!unitIsNameLegal()) {
+                else if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
@@ -380,7 +380,7 @@ public class NewUnitWizardPage extends WizardPage {
                 else if (sourceDir==null) {
                     setErrorMessage(getSelectSourceFolderMessage());
                 }
-                else if (!unitIsNameLegal()) {
+                else if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
@@ -422,7 +422,7 @@ public class NewUnitWizardPage extends WizardPage {
                 else if (sourceDir==null) {
                     setErrorMessage(getSelectSourceFolderMessage());
                 }
-                else if (!unitIsNameLegal()) {
+                else if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
@@ -470,7 +470,7 @@ public class NewUnitWizardPage extends WizardPage {
                     else if (sourceDir==null) {
                         setErrorMessage(getSelectSourceFolderMessage());
                     }
-                    else if (!unitIsNameLegal()) {
+                    else if (!unitNameIsLegal()) {
                         setErrorMessage(getIllegalUnitNameMessage());
                     }
                     else {
@@ -583,7 +583,8 @@ public class NewUnitWizardPage extends WizardPage {
                 //default to the first source dir 
                 //we find in the selected project
                 try {
-                    for (IPackageFragmentRoot pfr: jp.getAllPackageFragmentRoots()) {
+                    for (IPackageFragmentRoot pfr: 
+                            jp.getAllPackageFragmentRoots()) {
                         if (!pfr.isExternal() && !pfr.isArchive()) {
                             je = pfr;
                             break;
@@ -611,7 +612,7 @@ public class NewUnitWizardPage extends WizardPage {
     }
     
     boolean isComplete() {
-        return packageNameIsLegal() && unitIsNameLegal() &&
+        return packageNameIsLegal() && unitNameIsLegal() &&
                 sourceDir!=null &&
                 sourceDir.getPackageFragment(packageFragment.getElementName())
                         .equals(packageFragment);
@@ -705,7 +706,7 @@ public class NewUnitWizardPage extends WizardPage {
                 .getFile("header.ceylon");
     }
 
-    private boolean unitIsNameLegal() {
+    private boolean unitNameIsLegal() {
         return unitName!=null && 
                 unitIsNameLegal(unitName);
     }

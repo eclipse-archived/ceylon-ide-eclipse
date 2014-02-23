@@ -2,19 +2,19 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.move.MoveUtil.canMoveDeclaration;
-import static com.redhat.ceylon.eclipse.code.move.MoveUtil.moveToNewUnit;
+import static com.redhat.ceylon.eclipse.code.move.MoveUtil.moveToUnit;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-public class MoveToNewUnitHandler extends AbstractHandler {
+public class MoveToUnitHandler extends AbstractHandler {
     
     @Override
     public Object execute(ExecutionEvent event) 
             throws ExecutionException {
-        moveToNewUnit((CeylonEditor) getCurrentEditor());        
+        moveToUnit((CeylonEditor) getCurrentEditor());        
         return null;
     }
 
