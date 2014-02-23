@@ -743,7 +743,7 @@
             class="com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"/>
       <handler
-            class="com.redhat.ceylon.eclipse.code.refactor.MoveDeclarationHandler"
+            class="com.redhat.ceylon.eclipse.code.refactor.MoveToNewUnitHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.RenameHandler"
@@ -1897,7 +1897,7 @@
            id="com.redhat.ceylon.eclipse.ui.outline.findActions">
          <action
                label="Move To New &amp;Unit..."
-               class="com.redhat.ceylon.eclipse.code.refactor.MoveDeclarationHandler"
+               class="com.redhat.ceylon.eclipse.code.refactor.MoveToNewUnitHandler"
                enablesFor="1"
                icon="icons/file_change.png"
                id="moveToNewUnit"

@@ -5,9 +5,9 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinem
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -40,6 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class RefineFormalMembersProposal implements ICompletionProposal {
@@ -84,8 +85,9 @@ class RefineFormalMembersProposal implements ICompletionProposal {
             e.printStackTrace();
         }
     }
-    public static boolean canRefine(CeylonEditor editor) {
-        Node node = getSelectedNode(editor);
+    
+    private static boolean canRefine(CeylonEditor editor) {
+        Node node = EditorUtil.getSelectedNode(editor);
         return node instanceof Tree.ClassBody ||
                 node instanceof Tree.InterfaceBody ||
                 node instanceof Tree.ClassDefinition ||
@@ -93,13 +95,15 @@ class RefineFormalMembersProposal implements ICompletionProposal {
                 node instanceof Tree.ObjectDefinition;
     }
 
-    public static void refineFormalMembers(CeylonEditor editor) throws ExecutionException {
+    private static void refineFormalMembers(CeylonEditor editor) 
+            throws ExecutionException {
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return;
         Node node = getSelectedNode(editor);
         IDocument document = editor.getDocumentProvider()
                 .getDocument(editor.getEditorInput());
-        final TextChange change = new DocumentChange("Refine Formal Members", document);
+        TextChange change = 
+                new DocumentChange("Refine Formal Members", document);
         change.setEdit(new MultiTextEdit());
         //TODO: copy/pasted from CeylonQuickFixAssistant
         Tree.Body body;
@@ -143,16 +147,16 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         StringBuilder result = new StringBuilder();
         Set<Declaration> already = new HashSet<Declaration>();
         ClassOrInterface ci = (ClassOrInterface) node.getScope();
-        for (DeclarationWithProximity dwp: getProposals(node, ci, cu).values()) {
+        for (DeclarationWithProximity dwp: 
+                getProposals(node, ci, cu).values()) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
                 if (d.isFormal() && 
                         ci.isInheritedFromSupertype(d)) {
                     ProducedReference pr = getRefinedProducedReference(ci, d);
-                    result.append(indent)
-                            .append(getRefinementTextFor(d, pr, node.getUnit(), 
-                                    isInterface, ci, indent, true))
-                            .append(indent);
+                    String rt = getRefinementTextFor(d, pr, 
+                            node.getUnit(), isInterface, ci, indent, true);
+                    result.append(indent).append(rt).append(indent);
                     importSignatureTypes(d, cu, already);
                 }
             }
@@ -177,7 +181,8 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         }
     }
 
-    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+    static void add(Collection<ICompletionProposal> proposals, 
+            CeylonEditor editor) {
         if (canRefine(editor)) {
             for (ICompletionProposal cp: proposals) {
                 if (cp instanceof ImplementFormalAndAmbiguouslyInheritedMembersProposal) {

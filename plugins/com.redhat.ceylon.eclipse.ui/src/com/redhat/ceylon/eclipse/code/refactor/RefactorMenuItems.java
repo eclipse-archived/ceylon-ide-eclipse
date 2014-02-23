@@ -44,7 +44,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         editor!=null && new RenameRefactoringAction(editor).isEnabled(), 
                         AbstractRefactoring.RENAME),
                 new DynamicMenuItem(PLUGIN_ID + ".action.moveDeclarationToNewUnit", 
-                        "Move to New &Unit...", new MoveDeclarationHandler().isEnabled(), 
+                        "Move to New &Unit...", new MoveToNewUnitHandler().isEnabled(), 
                         AbstractRefactoring.MOVE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.inline", "Inlin&e...",

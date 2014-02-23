@@ -1,19 +1,16 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -64,14 +61,6 @@ class CorrectionUtil {
         // our last action in the above loop was to switch d and p, so p now 
         // actually has the most recent cost counts
         return p[n];
-    }
-
-    //TODO: copy/pasted from AbstractFindAction
-    static Node getSelectedNode(CeylonEditor editor) {
-        CeylonParseController cpc = editor==null ? null : editor.getParseController();
-        return cpc==null || cpc.getRootNode()==null ? null : 
-            findNode(cpc.getRootNode(), 
-                (ITextSelection) editor.getSelectionProvider().getSelection());
     }
 
     static Tree.Body getClassOrInterfaceBody(Tree.Declaration decNode) {

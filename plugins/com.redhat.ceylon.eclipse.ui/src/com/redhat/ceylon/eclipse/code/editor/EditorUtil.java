@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.HashMap;
@@ -26,6 +27,8 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -118,8 +121,10 @@ public class EditorUtil {
 
     public static IWorkbenchPage getActivePage() {
         try {
-            IWorkbenchWindow window = getWorkbench().getActiveWorkbenchWindow();
-            return window==null ? null : window.getActivePage();
+            IWorkbenchWindow window = getWorkbench()
+                    .getActiveWorkbenchWindow();
+            return window==null ? 
+                    null : window.getActivePage();
         }
         catch (IllegalStateException ise) {
             return null;
@@ -127,7 +132,9 @@ public class EditorUtil {
     }
     
     public static Shell getShell() {
-        return getWorkbench().getActiveWorkbenchWindow().getShell();
+        return getWorkbench()
+                .getActiveWorkbenchWindow()
+                .getShell();
     }
 
     public static IPreferenceStore getPreferences() {
@@ -145,7 +152,8 @@ public class EditorUtil {
             @Override
             public void run() {
                 ISelectionProvider sp = editor.getSelectionProvider();
-                selection = sp==null ? null : (ITextSelection) sp.getSelection();
+                selection = sp==null ? 
+                        null : (ITextSelection) sp.getSelection();
             }
             ITextSelection getSelection() {
                 Display.getDefault().syncExec(this);
@@ -153,5 +161,16 @@ public class EditorUtil {
             }
         }
         return new GetSelection().getSelection();
+    }
+    
+    public static Node getSelectedNode(CeylonEditor editor) {
+        CeylonParseController cpc = editor==null ? 
+                null : editor.getParseController();
+        if (cpc==null || cpc.getRootNode()==null) {
+            return null;
+        }
+        ITextSelection selection = (ITextSelection) 
+                editor.getSelectionProvider().getSelection();
+        return findNode(cpc.getRootNode(), selection);
     }
 }

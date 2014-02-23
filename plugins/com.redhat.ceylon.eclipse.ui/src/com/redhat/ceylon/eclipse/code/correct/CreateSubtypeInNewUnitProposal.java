@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParametersText;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 
@@ -316,7 +315,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
         return getType(editor.getParseController().getRootNode(), 
-                getSelectedNode(editor));
+                EditorUtil.getSelectedNode(editor));
     }
 
     public static ProducedType getType(Tree.CompilationUnit cu, Node node) {
