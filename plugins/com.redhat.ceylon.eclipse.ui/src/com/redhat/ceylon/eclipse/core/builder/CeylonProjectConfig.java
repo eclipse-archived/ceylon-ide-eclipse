@@ -242,8 +242,10 @@ public class CeylonProjectConfig {
             }
         }
         
-        if (isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged
-        		|| isOfflineChanged || isEncodingChanged || isSourceDirsChanged || isResourceDirsChanged) {
+        IResource config = project.findMember(".ceylon/config");
+        if (config==null || 
+                   isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged || 
+                   isOfflineChanged || isEncodingChanged || isSourceDirsChanged || isResourceDirsChanged) {
             try {
                 if (isOutputRepoChanged) {
                     Repository newOutputRepo = new Repositories.SimpleRepository("", transientOutputRepo, null);
@@ -273,7 +275,6 @@ public class CeylonProjectConfig {
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
                 refresh();
                 try {
-                    IResource config = project.findMember(".ceylon/config");
                     if (config!=null) {
                         config.refreshLocal(IResource.DEPTH_ZERO, 
                                 new NullProgressMonitor());
