@@ -41,7 +41,7 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
     @Override
     public String getName() {
         if (node.getParent()==null) {
-            return "Ceylon Compilation Unit";
+            return "Ceylon Source File";
         }
         else {
             return node.getLabel().toString();

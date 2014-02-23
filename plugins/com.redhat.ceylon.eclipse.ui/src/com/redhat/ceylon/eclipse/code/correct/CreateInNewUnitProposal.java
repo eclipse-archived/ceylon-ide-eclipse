@@ -68,16 +68,16 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public void apply(IDocument doc) {
-        SelectNewUnitWizard w = new SelectNewUnitWizard("Create in New Unit", 
-                "Create a new Ceylon compilation unit with the missing declaration.",
+        SelectNewUnitWizard w = new SelectNewUnitWizard("Create in New Source File", 
+                "Create a new Ceylon source file with the missing declaration.",
                 dg.brokenName);
         if (w.open(file)) {
             CreateUnitChange change = new CreateUnitChange(w.getFile(), 
                     w.includePreamble(), getText(doc), w.getProject(),
-                    "Create in New Unit");
+                    "Create in New Source File");
             try {
                 performChange(getCurrentEditor(), doc, change, 
-                        "Move to New Unit");
+                        "Move to New Source File");
                 gotoLocation(w.getFile().getFullPath(), 0);
             }
             catch (CoreException e) {

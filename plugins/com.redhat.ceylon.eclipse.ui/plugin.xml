@@ -580,12 +580,12 @@
             id="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Move selected declaration to new unit"
-            name="Move to New Unit"/>
+            name="Move to New Source File"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToUnit"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Move selected declaration to another unit"
-            name="Move to Unit"/>
+            name="Move to Source File"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.rename"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -1909,14 +1909,14 @@
            objectClass="com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode"
            id="com.redhat.ceylon.eclipse.ui.outline.findActions">
          <action
-               label="Move To &amp;New Unit..."
+               label="Move To &amp;New Source File..."
                class="com.redhat.ceylon.eclipse.code.refactor.MoveToNewUnitHandler"
                enablesFor="1"
                icon="icons/file_change.png"
                id="moveToNewUnit"
                menubarPath="refactor"/>
          <action
-               label="Move To &amp;Unit..."
+               label="Move To &amp;Source File..."
                class="com.redhat.ceylon.eclipse.code.refactor.MoveToUnitHandler"
                enablesFor="1"
                icon="icons/file_change.png"
