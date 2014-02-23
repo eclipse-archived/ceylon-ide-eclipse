@@ -1243,7 +1243,7 @@
       <menuContribution
          locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
          <menu
-               label="Search"
+               label="&amp;Search"
                id="org.eclipse.search.menu">
              <separator name="internalDialogGroup"/>
              <command
