@@ -1168,7 +1168,7 @@
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=edit">
           <menu
-                label="So&amp;urce"
+                label="&amp;Source"
                 id="com.redhat.ceylon.eclipse.ui.menu.source">
               <visibleWhen>
                   <with variable="activeEditorId">
@@ -1243,7 +1243,7 @@
       <menuContribution
          locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
          <menu
-               label="&amp;Search"
+               label="Se&amp;arch"
                id="org.eclipse.search.menu">
              <separator name="internalDialogGroup"/>
              <command
