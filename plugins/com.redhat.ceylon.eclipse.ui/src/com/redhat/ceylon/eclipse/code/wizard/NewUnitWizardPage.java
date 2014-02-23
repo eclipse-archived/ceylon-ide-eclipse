@@ -53,7 +53,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class NewUnitWizardPage extends WizardPage {
 
-    private String unitName;
+    private String unitName = "";
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
     private String packageName = "";
