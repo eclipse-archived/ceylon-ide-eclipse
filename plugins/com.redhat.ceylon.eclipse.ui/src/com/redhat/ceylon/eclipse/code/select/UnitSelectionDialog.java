@@ -57,7 +57,9 @@ public class UnitSelectionDialog extends ElementListSelectionDialog {
                 public boolean visit(IResource resource) throws CoreException {
                     if (resource instanceof IFile) {
                         String ext = resource.getFileExtension();
-                        if (ext!=null && ext.equals("ceylon")) {
+                        if (ext!=null && ext.equals("ceylon") && 
+                                !resource.getName().equals("module.ceylon") && 
+                                !resource.getName().equals("package.ceylon")) {
                             elements.add((IFile) resource);
                         }
                         return false;
