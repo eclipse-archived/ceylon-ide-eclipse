@@ -69,10 +69,10 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         AbstractRefactoring.CHANGE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.moveDeclarationToNewUnit", 
-                        "Move to &New Unit...", new MoveToNewUnitHandler().isEnabled(), 
+                        "Move to &New Source File...", new MoveToNewUnitHandler().isEnabled(), 
                         AbstractRefactoring.MOVE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.moveDeclarationToUnit", 
-                        "Move to &Unit...", new MoveToUnitHandler().isEnabled(), 
+                        "Move to &Source File...", new MoveToUnitHandler().isEnabled(), 
                         AbstractRefactoring.MOVE),
             };
     }

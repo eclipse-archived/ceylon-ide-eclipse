@@ -64,14 +64,14 @@ public class MoveUtil {
                            CoreException {
         IDocument document = editor.getDocumentProvider()
                 .getDocument(editor.getEditorInput());
-        SelectUnitWizard w = new SelectUnitWizard("Move to Unit", 
+        SelectUnitWizard w = new SelectUnitWizard("Move to Source File", 
                 "Select a Ceylon source file for the selected declaration.");
         if (w.open(getFile(editor.getEditorInput()))) {
             int start = node.getStartIndex();
             int length = node.getStopIndex()-start+1;
             String contents = document.get(start, length);
-            CompositeChange change = new CompositeChange("Move to Unit");
-            TextChange fc = new TextFileChange("Move to Unit", w.getFile());
+            CompositeChange change = new CompositeChange("Move to Source File");
+            TextChange fc = new TextFileChange("Move to Source File", w.getFile());
             fc.setEdit(new MultiTextEdit());
             IDocument doc = fc.getCurrentDocument(null);
             int len = doc.getLength();
@@ -117,7 +117,7 @@ public class MoveUtil {
             TextChange tc = createChange(editor, document);
             tc.setEdit(new DeleteEdit(start, length));
             change.add(tc);
-            performChange(editor, document, change, "Move to Unit");
+            performChange(editor, document, change, "Move to Source File");
             gotoLocation(w.getFile().getFullPath(), 
                     len+il+delim.length());
         }
@@ -151,7 +151,7 @@ public class MoveUtil {
                 .getDocument(editor.getEditorInput());
         String suggestedUnitName = 
                 ((Tree.Declaration) node).getIdentifier().getText();
-        SelectNewUnitWizard w = new SelectNewUnitWizard("Move to New Unit", 
+        SelectNewUnitWizard w = new SelectNewUnitWizard("Move to New Source File", 
                 "Create a new Ceylon source file for the selected declaration.",
                 suggestedUnitName);
         if (w.open(getFile(editor.getEditorInput()))) {
@@ -162,13 +162,13 @@ public class MoveUtil {
             String text = imports==null ? 
                     contents : 
                     imports + getDefaultLineDelimiter(document) + contents;
-            CompositeChange change = new CompositeChange("Move to New Unit");
+            CompositeChange change = new CompositeChange("Move to New Source File");
             change.add(new CreateUnitChange(w.getFile(), w.includePreamble(), 
-                    text, w.getProject(), "Move to New Unit"));
+                    text, w.getProject(), "Move to New Source File"));
             TextChange tc = createChange(editor, document);
             tc.setEdit(new DeleteEdit(start, length));
             change.add(tc);
-            performChange(editor, document, change, "Move to New Unit");
+            performChange(editor, document, change, "Move to New Source File");
             gotoLocation(w.getFile().getFullPath(), 0);
         }
     }
@@ -176,11 +176,11 @@ public class MoveUtil {
     private static TextChange createChange(CeylonEditor editor,
             IDocument document) {
         if (editor.isDirty()) {
-            return new DocumentChange("Move to New Unit", 
+            return new DocumentChange("Move to New Source File", 
                     document);
         }
         else {
-            return new TextFileChange("Move to New Unit", 
+            return new TextFileChange("Move to New Source File", 
                     getFile(editor.getEditorInput()));
         }
     }

@@ -95,10 +95,10 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
     @Override
     public void apply(IDocument doc) {
         String suggestedName = getSuggestedName();
-        final NewSubtypeWizardPage page = new NewSubtypeWizardPage("Create Subtype in New Unit", 
+        final NewSubtypeWizardPage page = new NewSubtypeWizardPage("Create Subtype in New Source File", 
                 suggestedName);
-        SelectNewUnitWizard w = new SelectNewUnitWizard("Create Subtype in New Unit", 
-                "Create a new Ceylon compilation unit containing the new subtype.",
+        SelectNewUnitWizard w = new SelectNewUnitWizard("Create Subtype in New Source File", 
+                "Create a new Ceylon source file containing the new subtype.",
                 suggestedName) {
             @Override
             public void addPages() {
@@ -109,10 +109,10 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         if (w.open(getFile(editor.getEditorInput()))) {
             CreateUnitChange change = new CreateUnitChange(w.getFile(), 
                     w.includePreamble(), getText(doc, page.getClassName()), 
-                    w.getProject(), "Create Subtype in New Unit");
+                    w.getProject(), "Create Subtype in New Source File");
             try {
                 performChange(getCurrentEditor(), doc, change, 
-                        "Create Subtype in New Unit");
+                        "Create Subtype in New Source File");
                 gotoLocation(w.getFile().getFullPath(), 0);
             }
             catch (CoreException e) {
