@@ -13,9 +13,9 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.MakeReceiverRefactoringAction;
 
@@ -27,10 +27,13 @@ public class MakeReceiverProposal implements ICompletionProposal, ICompletionPro
     public MakeReceiverProposal(CeylonEditor editor, Node node) {
         action = new MakeReceiverRefactoringAction(editor);
         if (node instanceof Tree.Declaration) {
-            Declaration container = getContainer(((Tree.Declaration) node).getDeclarationModel(), 
-                    editor.getParseController().getRootNode());
-            if (container!=null) {
-                name = container.getDeclarationModel().getName();
+            Declaration dec = ((Tree.Declaration) node).getDeclarationModel();
+            if (dec!=null) {
+                Tree.Declaration container = getContainer(dec, 
+                        editor.getParseController().getRootNode());
+                if (container!=null) {
+                    name = container.getDeclarationModel().getName();
+                }
             }
         }
     }

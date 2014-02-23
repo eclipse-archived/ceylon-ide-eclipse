@@ -73,7 +73,8 @@ class CreateInNewUnitProposal implements ICompletionProposal,
                 dg.brokenName);
         if (w.open(file)) {
             CreateUnitChange change = new CreateUnitChange(w.getFile(), 
-                    w.includePreamble(), getText(doc), w.getProject());
+                    w.includePreamble(), getText(doc), w.getProject(),
+                    "Create in New Unit");
             try {
                 performChange(getCurrentEditor(), doc, change, 
                         "Move to New Unit");

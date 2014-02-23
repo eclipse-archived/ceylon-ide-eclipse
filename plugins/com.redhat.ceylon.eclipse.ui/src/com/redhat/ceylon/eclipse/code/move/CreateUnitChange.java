@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.move;
 
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -18,20 +20,23 @@ public final class CreateUnitChange extends ResourceChange {
     private final boolean preamble;
     private final String text;
     private final IProject project;
+    private String name;
 
     public CreateUnitChange(IFile file, boolean preamble, String text,
-            IProject project) {
+            IProject project, String name) {
         this.file = file;
         this.preamble = preamble;
         this.text = text;
         this.project = project;
+        this.name = name;
     }
     
     @Override
-    public RefactoringStatus isValid(IProgressMonitor pm) throws CoreException,
+    public RefactoringStatus isValid(IProgressMonitor pm) 
+            throws CoreException,
             OperationCanceledException {
         if (file.exists()) {
-            return RefactoringStatus.createErrorStatus("file already exists");
+            return createErrorStatus("file already exists");
         }
         else {
             return new RefactoringStatus();
@@ -47,7 +52,7 @@ public final class CreateUnitChange extends ResourceChange {
 
     @Override
     public String getName() {
-        return "Create New Unit";
+        return name;
     }
 
     @Override

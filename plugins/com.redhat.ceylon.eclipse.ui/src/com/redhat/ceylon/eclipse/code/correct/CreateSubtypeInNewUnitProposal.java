@@ -3,6 +3,11 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParametersText;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.performChange;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 
@@ -12,6 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -41,8 +47,10 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.code.move.CreateUnitChange;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.wizard.NewSubtypeWizardPage;
+import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateSubtypeInNewUnitProposal implements ICompletionProposal, 
@@ -86,15 +94,44 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public void apply(IDocument doc) {
-        TypeDeclaration td = type.getDeclaration();
-        Unit unit = editor.getParseController().getRootNode()
-                .getUnit();
-        CreateSubtype cs = subtypeDeclaration(type, 
-                unit.getPackage(), unit, false, doc);
-//        NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
-//                EditorUtil.getFile(editor.getEditorInput()), 
-//                "My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
-//                "Create Subtype", "Create a new Ceylon compilation unit containing the new class.");
+        String suggestedName = getSuggestedName();
+        final NewSubtypeWizardPage page = new NewSubtypeWizardPage("Create Subtype in New Unit", 
+                suggestedName);
+        SelectNewUnitWizard w = new SelectNewUnitWizard("Create Subtype in New Unit", 
+                "Create a new Ceylon compilation unit containing the new subtype.",
+                suggestedName) {
+            @Override
+            public void addPages() {
+                addPage(page);
+                super.addPages();
+            }
+        };
+        if (w.open(getFile(editor.getEditorInput()))) {
+            CreateUnitChange change = new CreateUnitChange(w.getFile(), 
+                    w.includePreamble(), getText(doc, page.getClassName()), 
+                    w.getProject(), "Create Subtype in New Unit");
+            try {
+                performChange(getCurrentEditor(), doc, change, 
+                        "Create Subtype in New Unit");
+                gotoLocation(w.getFile().getFullPath(), 0);
+            }
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String getSuggestedName() {
+        return "My" + type.getDeclaration().getName()
+                .replace("&", "").replace("<", "").replace(">", "");
+    }
+
+    private String getText(IDocument doc, String name) {
+        Unit unit = editor.getParseController().getRootNode().getUnit();
+        CreateSubtype cs = subtypeDeclaration(type, unit.getPackage(), 
+                unit, false, doc);
+        return cs.getImports() + 
+                cs.getDefinition().replace("$className", name);
     }
 
     public static class CreateSubtype {
@@ -118,7 +155,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         }
     }
     
-    public static CreateSubtype subtypeDeclaration(ProducedType type, 
+    static CreateSubtype subtypeDeclaration(ProducedType type, 
             Package pkg, Unit unit, boolean object, IDocument doc) {
         TypeDeclaration td = type.getDeclaration();
         StringBuilder def = new StringBuilder();
@@ -314,7 +351,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu==null) return null;
         return getType(editor.getParseController().getRootNode(), 
-                EditorUtil.getSelectedNode(editor));
+                getSelectedNode(editor));
     }
 
     public static ProducedType getType(Tree.CompilationUnit cu, Node node) {
@@ -359,7 +396,6 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
     }
 
     static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
-        if (true) return;
         ProducedType type = getType(editor);
         if (type!=null && proposeSubtype(type)) {
             proposals.add(new CreateSubtypeInNewUnitProposal(editor, type));

@@ -163,7 +163,8 @@ public class MoveUtil {
                     contents : 
                     imports + getDefaultLineDelimiter(document) + contents;
             CompositeChange change = new CompositeChange("Move to New Unit");
-            change.add(new CreateUnitChange(w.getFile(), w.includePreamble(), text, w.getProject()));
+            change.add(new CreateUnitChange(w.getFile(), w.includePreamble(), 
+                    text, w.getProject(), "Move to New Unit"));
             TextChange tc = createChange(editor, document);
             tc.setEdit(new DeleteEdit(start, length));
             change.add(tc);
