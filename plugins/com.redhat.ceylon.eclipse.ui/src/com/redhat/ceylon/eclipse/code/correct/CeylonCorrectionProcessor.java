@@ -603,7 +603,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addCreateObjectProposal(doc, cu, proposals, file, node);
             addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);            
             CreateSubtypeInNewUnitProposal.add(proposals, editor);
-            MoveDeclarationProposal.add(proposals, editor);
+            MoveToNewUnitProposal.add(proposals, editor);
             
             RefineFormalMembersProposal.add(proposals, editor);
             

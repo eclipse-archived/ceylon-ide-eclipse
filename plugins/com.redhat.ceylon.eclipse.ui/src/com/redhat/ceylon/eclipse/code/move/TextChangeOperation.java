@@ -1,4 +1,7 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package com.redhat.ceylon.eclipse.code.move;
+
+import static org.eclipse.ui.PlatformUI.getWorkbench;
+import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
@@ -6,9 +9,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ui.operations.IWorkbenchOperationSupport;
+
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 final class TextChangeOperation extends AbstractOperation {
     
@@ -55,5 +62,14 @@ final class TextChangeOperation extends AbstractOperation {
         catch (CoreException e) {
             throw new ExecutionException(e.getMessage());
         }
+    }
+
+    static void runOperation(CeylonEditor editor, AbstractOperation op)
+            throws ExecutionException {
+        IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
+        op.addContext(os.getUndoContext());
+        os.getOperationHistory()
+                .execute(op, new NullProgressMonitor(), 
+                        getUIInfoAdapter(editor.getSite().getShell()));
     }
 }

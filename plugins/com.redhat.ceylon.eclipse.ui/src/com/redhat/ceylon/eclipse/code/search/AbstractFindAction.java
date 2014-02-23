@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getProject;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
@@ -13,7 +14,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.search.ui.NewSearchUI;
@@ -26,10 +26,8 @@ import org.eclipse.ui.views.contentoutline.ContentOutline;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 abstract class AbstractFindAction extends Action implements IObjectActionDelegate {
     
@@ -47,11 +45,14 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     public void selectionChanged(IAction action, ISelection selection) {
         if (outlineView==null) return;
         try {
-            CeylonOutlineNode on = (CeylonOutlineNode) ((ITreeSelection) outlineView.getSelection()).getFirstElement();
+            CeylonOutlineNode on = (CeylonOutlineNode) 
+                    ((ITreeSelection) outlineView.getSelection()).getFirstElement();
             if (on!=null) {
                 IEditorPart currentEditor = getCurrentEditor();
                 if (currentEditor instanceof CeylonEditor) {
-                    CompilationUnit rootNode = ((CeylonEditor) currentEditor).getParseController().getRootNode();
+                    CeylonEditor ce = (CeylonEditor) currentEditor;
+                    Tree.CompilationUnit rootNode = 
+                            ce.getParseController().getRootNode();
                     if (rootNode!=null) {
                         Node node = findNode(rootNode, on.getStartOffset());
                         if (node instanceof Tree.Declaration) {
@@ -114,13 +115,6 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
                     "Ceylon Find Error", 
                     "No appropriate declaration name selected");
         }
-    }
-    
-    private static Node getSelectedNode(CeylonEditor editor) {
-        CeylonParseController cpc = editor.getParseController();
-        return cpc.getRootNode()==null ? null : 
-            findNode(cpc.getRootNode(), 
-                (ITextSelection) editor.getSelectionProvider().getSelection());
     }
 
     abstract boolean isValidSelection();
