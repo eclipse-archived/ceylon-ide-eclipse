@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -47,6 +48,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class NewUnitWizardPage extends WizardPage {
@@ -57,22 +59,15 @@ public class NewUnitWizardPage extends WizardPage {
     private String packageName = "";
     private boolean includePreamble = true;
     boolean shared = true;
-    private boolean declaration;
-    private final boolean declarationButtonDisabled;
     
     private IStructuredSelection selection;
     private IWorkbench workbench;
     private Text unitNameText;
 
-    NewUnitWizardPage(String title, String description, 
-            String defaultUnitName, String icon,
-            boolean declarationButtonDisabled) {
+    NewUnitWizardPage(String title, String description, String icon) {
         super(title, title, CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(icon));
         setDescription(description);
-        unitName = defaultUnitName;
-        this.declarationButtonDisabled = declarationButtonDisabled;
-        declaration = declarationButtonDisabled;
     }
 
     //TODO: fix copy/paste to ExportModuleWizard
@@ -544,28 +539,7 @@ public class NewUnitWizardPage extends WizardPage {
         });
     }
 
-    void createDeclarationField(Composite composite) {
-        if (!declarationButtonDisabled) {
-            new Label(composite, SWT.NONE);
-
-            Button dec = new Button(composite, SWT.CHECK);
-            dec.setText("Create toplevel class or method declaration");
-            dec.setSelection(declaration);
-            dec.setEnabled(!declarationButtonDisabled);
-            GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-            igd.horizontalSpan = 3;
-            igd.grabExcessHorizontalSpace = true;
-            dec.setLayoutData(igd);
-            dec.addSelectionListener(new SelectionListener() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    declaration = !declaration;
-                }
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e) {}
-            });
-        }
-    }
+    void createDeclarationField(Composite composite) {}
 
     String getSharedPackageLabel() {
         return "Create shared package (visible to other modules)";
@@ -618,6 +592,12 @@ public class NewUnitWizardPage extends WizardPage {
                         .equals(packageFragment);
     }
     
+    IFile getFile() {
+        IPath path = packageFragment.getPath().append(unitName + ".ceylon");
+        IProject project = sourceDir.getJavaProject().getProject();
+        return project.getFile(path.makeRelativeTo(project.getFullPath()));
+    }
+    
     public IPackageFragment getPackageFragment() {
         return packageFragment;
     }
@@ -626,7 +606,7 @@ public class NewUnitWizardPage extends WizardPage {
         return sourceDir;
     }
     
-    public String getUnitName() {
+    String getUnitName() {
         return unitName;
     }
     
@@ -640,10 +620,6 @@ public class NewUnitWizardPage extends WizardPage {
     
     public boolean isShared() {
         return shared;
-    }
-    
-    public boolean isDeclaration() {
-        return declaration;
     }
     
     private String readHeader() {

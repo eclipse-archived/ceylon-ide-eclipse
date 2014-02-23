@@ -43,7 +43,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateSubtypeInNewUnitProposal implements ICompletionProposal, 
@@ -92,10 +91,10 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
                 .getUnit();
         CreateSubtype cs = subtypeDeclaration(type, 
                 unit.getPackage(), unit, false, doc);
-        NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
-                EditorUtil.getFile(editor.getEditorInput()), 
-                "My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
-                "Create Subtype", "Create a new Ceylon compilation unit containing the new class.");
+//        NewUnitWizard.open(cs.getImports()+cs.getDefinition(), 
+//                EditorUtil.getFile(editor.getEditorInput()), 
+//                "My" + td.getName().replace("&", "").replace("<", "").replace(">", ""), 
+//                "Create Subtype", "Create a new Ceylon compilation unit containing the new class.");
     }
 
     public static class CreateSubtype {
@@ -359,7 +358,8 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
         }
     }
 
-    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+    static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+        if (true) return;
         ProducedType type = getType(editor);
         if (type!=null && proposeSubtype(type)) {
             proposals.add(new CreateSubtypeInNewUnitProposal(editor, type));

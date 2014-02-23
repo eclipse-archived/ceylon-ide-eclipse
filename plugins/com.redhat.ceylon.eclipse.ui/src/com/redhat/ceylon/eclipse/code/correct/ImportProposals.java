@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
@@ -93,7 +94,7 @@ public class ImportProposals {
             IFile file, Declaration declaration) {
         TextFileChange change = new TextFileChange("Add Import", file);
         IDocument doc = CreateProposal.getDocument(change);
-        List<InsertEdit> ies = importEdit(cu, Collections.singleton(declaration), 
+        List<InsertEdit> ies = importEdits(cu, Collections.singleton(declaration), 
                 null, null, doc);
         if (ies.isEmpty()) return null;
         change.setEdit(new MultiTextEdit());
@@ -108,8 +109,8 @@ public class ImportProposals {
                 " in package " + declaration.getUnit().getPackage().getNameAsString(), 
                 change, CeylonLabelProvider.IMPORT);
     }
-
-    public static List<InsertEdit> importEdit(Tree.CompilationUnit cu,
+    
+    public static List<InsertEdit> importEdits(Tree.CompilationUnit cu,
             Iterable<Declaration> declarations, Iterable<String> aliases,
             Declaration declarationBeingDeleted, IDocument doc) {
         List<InsertEdit> result = new ArrayList<InsertEdit>();
@@ -308,18 +309,30 @@ public class ImportProposals {
     }
 
     public static int applyImports(TextChange change,
-            Set<Declaration> alreadyImported, 
+            Set<Declaration> declarations, 
             Tree.CompilationUnit cu, IDocument doc) {
-        return applyImports(change, alreadyImported, null, cu, doc);
+        return applyImports(change, declarations, null, cu, doc);
     }
     
     public static int applyImports(TextChange change,
-            Set<Declaration> alreadyImported, 
+            Set<Declaration> declarations, 
             Declaration declarationBeingDeleted,
             Tree.CompilationUnit cu, IDocument doc) {
         int il=0;
-        for (InsertEdit ie: importEdit(cu, alreadyImported, 
+        for (InsertEdit ie: importEdits(cu, declarations, 
                 null, declarationBeingDeleted, doc)) {
+            il+=ie.getText().length();
+            change.addEdit(ie);
+        }
+        return il;
+    }
+
+    public static int applyImports(TextChange change,
+            Map<Declaration,String> declarations, 
+            Tree.CompilationUnit cu, IDocument doc) {
+        int il=0;
+        for (InsertEdit ie: importEdits(cu, declarations.keySet(), 
+                declarations.values(), null, doc)) {
             il+=ie.getText().length();
             change.addEdit(ie);
         }

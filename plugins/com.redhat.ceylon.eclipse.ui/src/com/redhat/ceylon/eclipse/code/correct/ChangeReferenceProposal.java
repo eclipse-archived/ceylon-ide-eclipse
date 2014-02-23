@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getOccurren
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshteinDistance;
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
@@ -66,7 +66,7 @@ class ChangeReferenceProposal extends CorrectionProposal implements ICompletionP
             pkg = " in '" + pn + "'";
             if (!pn.isEmpty() && !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                 if (getOccurrenceLocation(cu, findNode(cu, problem.getOffset()))!=IMPORT) {
-                    List<InsertEdit> ies = importEdit(cu, Collections.singleton(dec), 
+                    List<InsertEdit> ies = importEdits(cu, Collections.singleton(dec), 
                             null, null, doc);
                     for (InsertEdit ie: ies) {
                         change.addEdit(ie);

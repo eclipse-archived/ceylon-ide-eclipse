@@ -12,7 +12,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 *******************************************************************************/
 
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
@@ -687,21 +687,24 @@ public class CeylonSourceViewer extends ProjectionViewer {
             @Override
             public void visit(Tree.BaseMemberOrTypeExpression that) {
                 if (inSelection(that)) {
-                    addDeclaration(that.getDeclaration(), that.getIdentifier());
+                    addDeclaration(that.getDeclaration(), 
+                            that.getIdentifier());
                 }
                 super.visit(that);
             }
             @Override
             public void visit(Tree.BaseType that) {
                 if (inSelection(that)) {
-                    addDeclaration(that.getDeclarationModel(), that.getIdentifier());
+                    addDeclaration(that.getDeclarationModel(), 
+                            that.getIdentifier());
                 }
                 super.visit(that);
             }
             @Override
             public void visit(Tree.MemberLiteral that) {
                 if (inSelection(that) && that.getType()==null) {
-                    addDeclaration(that.getDeclaration(), that.getIdentifier());
+                    addDeclaration(that.getDeclaration(), 
+                            that.getIdentifier());
                 }
                 super.visit(that);
             }
@@ -752,7 +755,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             }
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = 
-                        importEdit(cu, imports.keySet(), imports.values(), 
+                        importEdits(cu, imports.keySet(), imports.values(), 
                                 null, doc);
                 for (InsertEdit importEdit: edits) {
                     edit.addChild(importEdit);                    

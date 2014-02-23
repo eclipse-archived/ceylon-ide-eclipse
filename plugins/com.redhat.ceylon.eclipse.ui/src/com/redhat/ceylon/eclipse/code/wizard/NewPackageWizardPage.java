@@ -10,8 +10,13 @@ final class NewPackageWizardPage extends NewUnitWizardPage {
     NewPackageWizardPage(boolean shared) {
         super("New Ceylon Package", 
                 "Create a Ceylon package with a package descriptor.", 
-                "package", CEYLON_NEW_PACKAGE, true);
+                CEYLON_NEW_PACKAGE);
         this.shared = shared;
+    }
+    
+    @Override
+    String getUnitName() {
+        return "package";
     }
 
     @Override
