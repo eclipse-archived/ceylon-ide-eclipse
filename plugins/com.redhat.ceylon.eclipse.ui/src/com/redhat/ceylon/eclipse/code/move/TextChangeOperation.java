@@ -64,12 +64,12 @@ final class TextChangeOperation extends AbstractOperation {
         }
     }
 
-    static void runOperation(CeylonEditor editor, AbstractOperation op)
+    void runOperation(CeylonEditor editor)
             throws ExecutionException {
         IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
-        op.addContext(os.getUndoContext());
+        addContext(os.getUndoContext());
         os.getOperationHistory()
-                .execute(op, new NullProgressMonitor(), 
+                .execute(this, new NullProgressMonitor(), 
                         getUIInfoAdapter(editor.getSite().getShell()));
     }
 }
