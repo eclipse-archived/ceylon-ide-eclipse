@@ -38,7 +38,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportList;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -66,7 +65,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 TextFileChange tfc = 
                         new TextFileChange("Clean Imports", file);
                 tfc.setEdit(new MultiTextEdit());
-                ImportList il = cu.getImportList();
+                Tree.ImportList il = cu.getImportList();
                 int start;
                 int length;
                 String extra;
@@ -95,10 +94,9 @@ public class CleanImportsHandler extends AbstractHandler {
         }
     }
 
-    public static String imports(Node node, ImportList til,
+    public static String imports(Node node, Tree.ImportList til,
             IDocument doc) {
-        final List<Declaration> unused = 
-                new ArrayList<Declaration>();
+        List<Declaration> unused = new ArrayList<Declaration>();
         DetectUnusedImportsVisitor duiv = 
                 new DetectUnusedImportsVisitor(unused);
         til.visit(duiv);
@@ -109,8 +107,8 @@ public class CleanImportsHandler extends AbstractHandler {
     
     private static String imports(final Tree.CompilationUnit cu, 
             IDocument doc) {
-        final List<Declaration> proposals = new ArrayList<Declaration>();
-        final List<Declaration> unused = new ArrayList<Declaration>();
+        List<Declaration> proposals = new ArrayList<Declaration>();
+        List<Declaration> unused = new ArrayList<Declaration>();
         new ImportProposalsVisitor(cu, proposals).visit(cu);
         new DetectUnusedImportsVisitor(unused).visit(cu);
         return reorganizeImports(cu.getImportList(), unused, proposals, doc);

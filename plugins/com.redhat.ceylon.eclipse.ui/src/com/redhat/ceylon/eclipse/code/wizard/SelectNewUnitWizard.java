@@ -1,0 +1,75 @@
+package com.redhat.ceylon.eclipse.code.wizard;
+
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_FILE;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.INewWizard;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
+
+public class SelectNewUnitWizard extends Wizard implements INewWizard {
+    
+    private IStructuredSelection selection;
+    private IWorkbench workbench;
+
+    private NewUnitWizardPage page;
+    private String title;
+    private String description;
+    private String suggestedUnitName;
+    
+    public SelectNewUnitWizard(String title, String description, 
+            String suggestedUnitName) {
+        this.title = title;
+        this.description = description;
+        this.suggestedUnitName = suggestedUnitName;
+    }
+    
+    public IProject getProject() {
+        return page.getPackageFragment().getResource().getProject();
+    }
+    
+    public IFile getFile() {
+        return page.getFile();
+    }
+    
+    public boolean includePreamble() {
+        return page.isIncludePreamble();
+    }
+    
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        this.selection = selection;
+        this.workbench = workbench;
+    }
+    
+    @Override
+    public void addPages() {
+        super.addPages();
+        page = new NewUnitWizardPage(title, description, CEYLON_NEW_FILE);
+        page.init(workbench, selection);
+        page.setUnitName(suggestedUnitName);
+        addPage(page);
+    }
+    
+    @Override
+    public boolean performFinish() {
+        return true;
+    }
+    
+    public boolean open(IFile file) {
+        init(PlatformUI.getWorkbench(), new StructuredSelection(file));
+        Shell shell = Display.getCurrent().getActiveShell();
+        WizardDialog wd = new WizardDialog(shell, this);
+        wd.setTitle(title);
+        return wd.open()!=Window.CANCEL;
+    }
+    
+}

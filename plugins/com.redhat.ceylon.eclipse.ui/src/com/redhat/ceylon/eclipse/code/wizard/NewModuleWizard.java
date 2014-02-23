@@ -3,12 +3,10 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendImportStatement;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
+import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.runOperation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
-import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,12 +21,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.operations.IWorkbenchOperationSupport;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
@@ -37,7 +33,7 @@ import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 
 public class NewModuleWizard extends Wizard implements INewWizard {
     
-    private final class CreateCeylonModuleOperation extends AbstractOperation {
+    private final class CreateModuleOperation extends AbstractOperation {
         private IFile result;
         private List<IUndoableOperation> ops = new ArrayList<IUndoableOperation>(3);
         private Map<String, String> imports;
@@ -46,7 +42,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             return result;
         }
         
-        public CreateCeylonModuleOperation(Map<String,String> imports) {
+        public CreateModuleOperation(Map<String,String> imports) {
             super("New Ceylon Module");
             this.imports = imports;
         }
@@ -62,14 +58,14 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             
             String runFunction = "\"Run the module `" + moduleName + "`.\""+newline+
                     "shared void run() {"+newline+"    "+newline+"}";
-            CreateCeylonSourceFileOperation op = new CreateCeylonSourceFileOperation(page.getSourceDir(), 
-                    pf, page.getUnitName(), preamble, runFunction, getShell());
+            CreateSourceFileOperation op = new CreateSourceFileOperation(page.getSourceDir(), 
+                    pf, page.getUnitName(), preamble, runFunction);
             ops.add(op);
             IStatus status = op.execute(monitor, info);
             if (!status.isOK()) {
                 return status;
             }
-            result = op.getResult();
+            result = op.getFile();
             
             StringBuilder moduleDescriptor = new StringBuilder("module ").append(moduleName)
                     .append(" \"").append(page.getVersion()).append("\" {");
@@ -80,8 +76,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                 moduleDescriptor.append(newline);
             }
             moduleDescriptor.append("}").append(newline);
-            op = new CreateCeylonSourceFileOperation(page.getSourceDir(), pf, "module", 
-                    preamble, moduleDescriptor.toString(), getShell());
+            op = new CreateSourceFileOperation(page.getSourceDir(), pf, "module", 
+                    preamble, moduleDescriptor.toString());
             status = op.execute(monitor, info);
             ops.add(op);
             if (!status.isOK()) {
@@ -90,8 +86,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             
             String packageDescriptor = (page.isShared() ? "shared " : "") + 
                     "package " + moduleName + ";"+newline;
-            op = new CreateCeylonSourceFileOperation(page.getSourceDir(), pf, "package", 
-                    preamble, packageDescriptor, getShell());
+            op = new CreateSourceFileOperation(page.getSourceDir(), pf, "package", 
+                    preamble, packageDescriptor);
             status = op.execute(monitor, info);
             ops.add(op);
             if (!status.isOK()) {
@@ -128,45 +124,17 @@ public class NewModuleWizard extends Wizard implements INewWizard {
     
     @Override
     public boolean performFinish() {
-        final CreateCeylonModuleOperation op = new CreateCeylonModuleOperation(importsPage.getImports());
-        try {
-            getContainer().run(true, true, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException,
-                        InterruptedException {
-                    //TODO: should we do this in a WorkspaceModifyOperation?
-                    try {
-                        IWorkbenchOperationSupport os = getWorkbench().getOperationSupport();
-                        op.addContext(os.getUndoContext());
-                        os.getOperationHistory().execute(op, monitor, 
-                                getUIInfoAdapter(getShell()));
-                    } 
-                    catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-            });
-        } 
-        catch (InvocationTargetException e) {
-            e.printStackTrace();
-            return false;
-        } 
-        catch (InterruptedException e) {
+        CreateModuleOperation op = 
+                new CreateModuleOperation(importsPage.getImports());
+        if (runOperation(op, getContainer())) {        
+            BasicNewResourceWizard.selectAndReveal(op.getResult(), 
+                    workbench.getActiveWorkbenchWindow());
+            gotoLocation(op.getResult().getFullPath(), 0);
+            return true;
+        }
+        else {
             return false;
         }
-//        IPackageFragment pf = page.getPackageFragment();
-        BasicNewResourceWizard.selectAndReveal(op.getResult(), 
-                workbench.getActiveWorkbenchWindow());
-        gotoLocation(op.getResult().getFullPath(), 0);
-//        PreferenceDialog dialog = createPropertyDialogOn(Util.getShell(), 
-//                pf, "com.redhat.ceylon.eclipse.ui.moduleProperties", 
-//                new String[] { "com.redhat.ceylon.eclipse.ui.moduleProperties",
-//                               "org.eclipse.ui.propertypages.info.file"}, 
-//                null);
-//        dialog.setBlockOnOpen(false);
-//        dialog.open();
-        return true;
     }
     
     @Override

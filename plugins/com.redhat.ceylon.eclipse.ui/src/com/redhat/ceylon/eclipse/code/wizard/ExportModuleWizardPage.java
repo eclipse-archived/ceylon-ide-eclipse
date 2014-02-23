@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.select.ProjectSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ExportModuleWizardPage extends WizardPage implements IWizardPage {

@@ -1,12 +1,17 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -22,8 +27,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
-import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
-import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.code.move.CreateUnitChange;
+import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
 
 class CreateInNewUnitProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -63,8 +68,26 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public void apply(IDocument doc) {
-        String delim = Indents.getDefaultLineDelimiter(doc);
-        String def = dg.generate("", delim);
+        SelectNewUnitWizard w = new SelectNewUnitWizard("Create in New Unit", 
+                "Create a new Ceylon compilation unit with the missing declaration.",
+                dg.brokenName);
+        if (w.open(file)) {
+            CreateUnitChange change = new CreateUnitChange(w.getFile(), 
+                    w.includePreamble(), getText(doc), w.getProject());
+            try {
+                performChange(getCurrentEditor(), doc, change, 
+                        "Move to New Unit");
+                gotoLocation(w.getFile().getFullPath(), 0);
+            }
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String getText(IDocument doc) {
+        String delim = getDefaultLineDelimiter(doc);
+        String definition = dg.generate("", delim);
         List<Declaration> imports = new ArrayList<Declaration>();
         resolveImports(imports, dg.returnType);
         if (dg.parameters!=null) {
@@ -72,11 +95,9 @@ class CreateInNewUnitProposal implements ICompletionProposal,
         }
         String imps = imports(imports, doc);
         if (!imps.isEmpty()) {
-            def = imps + delim + delim + def;
+            definition = imps + delim + delim + definition;
         }
-        NewUnitWizard.open(def, file, dg.brokenName, 
-                "Create Missing Declaration in New Unit",
-                "Create a new Ceylon compilation unit with the missing declaration.");
+        return definition;
     }
 
     static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, 

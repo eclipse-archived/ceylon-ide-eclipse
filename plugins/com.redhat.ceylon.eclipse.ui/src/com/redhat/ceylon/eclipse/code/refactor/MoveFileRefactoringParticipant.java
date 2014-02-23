@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.findImportNode;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEditForMove;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
@@ -270,7 +270,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             TextFileChange change = new MovingTextFileChange(newFile.getName(), newFile, file);
             change.setEdit(new MultiTextEdit());
             if (!imports.isEmpty()) {
-                List<InsertEdit> edits = importEdit(cu, 
+                List<InsertEdit> edits = importEdits(cu, 
                         imports.keySet(), imports.values(), null, 
                         change.getCurrentDocument(null));
                 for (TextEdit edit: edits) {

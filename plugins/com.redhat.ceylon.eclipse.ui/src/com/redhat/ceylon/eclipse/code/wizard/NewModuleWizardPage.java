@@ -11,14 +11,20 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 final class NewModuleWizardPage extends NewUnitWizardPage {
+    
     private String version="1.0.0";
 
     NewModuleWizardPage() {
         super("New Ceylon Module", 
                 "Create a runnable Ceylon module with module and package descriptors.", 
-                "run", CEYLON_NEW_MODULE, true);
+                CEYLON_NEW_MODULE);
     }
-
+    
+    @Override
+    String getUnitName() {
+        return "run";
+    }
+    
     String getVersion() {
         return version;
     }

@@ -28,11 +28,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbench;
 
+import com.redhat.ceylon.eclipse.code.select.UnitSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class AddToUnitWizardPage extends WizardPage {
+public class SelectUnitWizardPage extends WizardPage {
 
     private IPackageFragmentRoot sourceDir;
     private String unitName = "";
@@ -40,10 +40,13 @@ public class AddToUnitWizardPage extends WizardPage {
     boolean shared = true;
     
     private IStructuredSelection selection;
-    private IWorkbench workbench;
     private Text unitNameText;
+    
+    IFile getUnit() {
+        return unit;
+    }
 
-    AddToUnitWizardPage(String title, String description, 
+    SelectUnitWizardPage(String title, String description, 
             String icon) {
         super(title, title, CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(icon));
@@ -329,9 +332,8 @@ public class AddToUnitWizardPage extends WizardPage {
         }
     }
     
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
+    public void init(IStructuredSelection selection) {
         this.selection = selection;
-        this.workbench = workbench;
     }
     
     boolean isComplete() {
@@ -355,7 +357,7 @@ public class AddToUnitWizardPage extends WizardPage {
     }
 
     boolean unitIsNameLegal(String unitName) {
-        return unitName.matches(".*/(\\w|-)+\\.ceylon");
+        return unitName.matches("^([a-z_]\\w*/)*(\\w|-)+\\.ceylon$");
     }
     
     private String getIllegalUnitNameMessage() {

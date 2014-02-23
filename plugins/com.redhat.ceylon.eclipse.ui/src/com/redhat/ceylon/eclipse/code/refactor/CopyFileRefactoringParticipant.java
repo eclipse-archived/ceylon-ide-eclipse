@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.findImportNode;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdit;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
@@ -134,7 +134,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                 change.addEdit(edit);
             }
             if (!imports.isEmpty()) {
-                List<InsertEdit> list = importEdit(cu, 
+                List<InsertEdit> list = importEdits(cu, 
                         imports.keySet(), imports.values(), 
                         null, change.getCurrentDocument(null));
                 for (TextEdit edit: list) {
