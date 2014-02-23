@@ -967,6 +967,11 @@
             commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+J"
+            commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToUnit"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
             
    </extension>
    
