@@ -6,8 +6,10 @@ import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.wizard.WizardPage;
@@ -73,7 +75,7 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         composite.setLayout(layout);
         
         moduleImportsTable = new Table(composite, 
-                SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+                SWT.CHECK | SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan=2;
         gd.verticalSpan=4;
@@ -83,10 +85,25 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         gd.widthHint = 250;
         moduleImportsTable.setLayoutData(gd);
 
-        TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
+        final TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
         item.setImage(CeylonLabelProvider.ARCHIVE);
+        item.setChecked(true);
         item.setText(Module.LANGUAGE_MODULE_NAME + "/" + 
                 Versions.CEYLON_VERSION_NUMBER); //TODO: is this right?
+        
+        moduleImportsTable.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (e.detail==SWT.CHECK) {
+                    TableItem it = (TableItem) e.item;
+                    if (it==item) {
+                        item.setChecked(true);
+                    }
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
         
         Button addButton = new Button(composite, SWT.PUSH);
         addButton.setText("Add imports...");
@@ -114,6 +131,10 @@ public abstract class ImportModulesWizardPage extends WizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+
+        Label l = new Label(parent, SWT.NONE);
+        l.setText("(Checked modules are exported.)");
+        label.setLayoutData(lgd);
     }
 
     private void selectAndAddModules() {
@@ -155,6 +176,19 @@ public abstract class ImportModulesWizardPage extends WizardPage {
             String version = item.getText().substring(ind+1);
             if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
                 result.put(name, version);
+            }
+        }
+        return result;
+    }
+    
+    Set<String> getSharedImports() {
+        Set<String> result = new HashSet<String>();
+        for (TableItem item: moduleImportsTable.getItems()) {
+            int ind = item.getText().indexOf('/');
+            String name = item.getText().substring(0, ind);
+            boolean shared = item.getChecked();
+            if (shared && !name.equals(Module.LANGUAGE_MODULE_NAME)) {
+                result.add(name);
             }
         }
         return result;

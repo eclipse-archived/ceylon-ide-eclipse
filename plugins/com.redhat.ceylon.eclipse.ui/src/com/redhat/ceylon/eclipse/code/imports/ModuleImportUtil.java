@@ -27,6 +27,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
@@ -101,6 +102,43 @@ public class ModuleImportUtil {
                 moduleVersion.length());
     }
     
+    public static void makeModuleImportShared(IProject project, Module target, 
+            String moduleName) {
+        PhasedUnit unit = findPhasedUnit(project, target);
+        TextFileChange textFileChange = 
+                new TextFileChange("Make Module Import Shared", getFile(unit));
+        textFileChange.setEdit(new MultiTextEdit());
+        Tree.CompilationUnit compilationUnit = unit.getCompilationUnit();
+        try {
+            IDocument doc = textFileChange.getCurrentDocument(null);
+            for (Tree.ImportModule im: compilationUnit.getModuleDescriptors().get(0)
+                    .getImportModuleList().getImportModules()) {
+                if (im.getImportPath().getModel().getNameAsString().equals(moduleName)) {
+                    for (Tree.Annotation a: im.getAnnotationList().getAnnotations()) {
+                        if (((Tree.BaseMemberExpression) a.getPrimary()).getDeclaration()
+                                .getName().equals("shared")) {
+                            int stop = a.getStopIndex()+1;
+                            while (Character.isWhitespace(doc.getChar(stop))) {
+                                stop++;
+                            }
+                            textFileChange.addEdit(new DeleteEdit(a.getStartIndex(), 
+                                    stop-a.getStartIndex()));
+
+                        }
+                    }
+                    if (!textFileChange.getEdit().hasChildren()) {
+                        textFileChange.addEdit(new InsertEdit(im.getStartIndex(), 
+                                "shared "));
+                    }
+                }
+            }
+            textFileChange.perform(new NullProgressMonitor());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     public static int addModuleImports(IProject project, Module target, 
             Map<String,String> moduleNamesAndVersions) {
         if (moduleNamesAndVersions.isEmpty()) return 0;
@@ -161,7 +199,7 @@ public class ModuleImportUtil {
         }
         String newline = Indents.getDefaultLineDelimiter(doc);
         StringBuilder importModule = new StringBuilder();
-        appendImportStatement(importModule, 
+        appendImportStatement(importModule, false,
                 moduleName, moduleVersion, newline);
         if (iml.getEndToken().getLine()==iml.getToken().getLine()) {
             importModule.append(newline);
@@ -170,10 +208,14 @@ public class ModuleImportUtil {
     }
 
     public static void appendImportStatement(StringBuilder importModule,
-            String moduleName, String moduleVersion, String newline) {
+            boolean shared, String moduleName, String moduleVersion, 
+            String newline) {
         importModule.append(newline)
-                .append(getDefaultIndent())
-                .append("import ")
+                .append(getDefaultIndent());
+        if (shared) {
+            importModule.append("shared ");
+        }
+        importModule.append("import ")
                 .append(moduleName)
                 .append(" \"")
                 .append(moduleVersion)

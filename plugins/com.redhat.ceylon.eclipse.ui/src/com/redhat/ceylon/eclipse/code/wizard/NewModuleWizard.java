@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResult
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
@@ -34,17 +35,21 @@ import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 public class NewModuleWizard extends Wizard implements INewWizard {
     
     private final class CreateModuleOperation extends AbstractOperation {
+        
         private IFile result;
         private List<IUndoableOperation> ops = new ArrayList<IUndoableOperation>(3);
         private Map<String, String> imports;
+        private Set<String> sharedImports;
         
         public IFile getResult() {
             return result;
         }
         
-        public CreateModuleOperation(Map<String,String> imports) {
+        public CreateModuleOperation(Map<String,String> imports,
+                Set<String> sharedImports) {
             super("New Ceylon Module");
             this.imports = imports;
+            this.sharedImports = sharedImports;
         }
         
         @Override
@@ -70,7 +75,10 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             StringBuilder moduleDescriptor = new StringBuilder("module ").append(moduleName)
                     .append(" \"").append(page.getVersion()).append("\" {");
             for (Map.Entry<String,String> entry: imports.entrySet()) {
-                appendImportStatement(moduleDescriptor, entry.getKey(), entry.getValue(), newline);
+                String name = entry.getKey();
+                String version = entry.getValue();
+                boolean shared = sharedImports.contains(name);
+                appendImportStatement(moduleDescriptor, shared, name, version, newline);
             }
             if (!imports.isEmpty()) {
                 moduleDescriptor.append(newline);
@@ -125,7 +133,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
     @Override
     public boolean performFinish() {
         CreateModuleOperation op = 
-                new CreateModuleOperation(importsPage.getImports());
+                new CreateModuleOperation(importsPage.getImports(), 
+                        importsPage.getSharedImports());
         if (runOperation(op, getContainer())) {        
             BasicNewResourceWizard.selectAndReveal(op.getResult(), 
                     workbench.getActiveWorkbenchWindow());

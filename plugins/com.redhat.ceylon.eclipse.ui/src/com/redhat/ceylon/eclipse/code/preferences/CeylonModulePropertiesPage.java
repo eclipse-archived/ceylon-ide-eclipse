@@ -99,7 +99,11 @@ public class CeylonModulePropertiesPage extends PropertyPage
     }
 
     public void createModuleDescriptorLink(Composite parent) {
-        final IFile moduleDescriptor = ((IFolder) packageFragment.getResource()).getFile("module.ceylon");
+        new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL)
+                .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        
+        final IFile moduleDescriptor = ((IFolder) packageFragment.getResource())
+                .getFile("module.ceylon");
         Link openDescriptorLink = new Link(parent, 0);
         openDescriptorLink.setLayoutData(GridDataFactory.swtDefaults()
                 .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
@@ -147,7 +151,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         composite.setLayout(layout);
         
         moduleImportsTable = new Table(composite, 
-                SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+                SWT.CHECK | SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
         gd.horizontalSpan=2;
         gd.verticalSpan=4;
@@ -161,7 +165,28 @@ public class CeylonModulePropertiesPage extends PropertyPage
             item.setImage(CeylonLabelProvider.ARCHIVE);
             item.setText(mi.getModule().getNameAsString() + "/" + 
                     mi.getModule().getVersion());
+            item.setChecked(mi.isExport());
+//            item.setGrayed(mi.getModule().getNameAsString()
+//                    .equals(Module.LANGUAGE_MODULE_NAME));
         }
+        moduleImportsTable.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (e.detail==SWT.CHECK) {
+                    TableItem item = (TableItem) e.item;
+                    String name = getModuleName(item);
+                    if (name.equals(Module.LANGUAGE_MODULE_NAME)) {
+                        item.setChecked(true);
+                    }
+                    else {
+                        ModuleImportUtil.makeModuleImportShared(project, 
+                                getModule(), name);
+                    }
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
         
         Button addButton = new Button(composite, SWT.PUSH);
         addButton.setText("Add imports...");
@@ -190,6 +215,9 @@ public class CeylonModulePropertiesPage extends PropertyPage
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
+        Label l = new Label(parent, SWT.NONE);
+        l.setText("(Checked modules are exported.)");
+        
     }
 
     private void createPackagesBlock(Composite parent) {
@@ -313,7 +341,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
             e.printStackTrace();
         }*/
         
-        new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL)
+                .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
     }
     
@@ -346,8 +375,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         List<Integer> removed = new ArrayList<Integer>();
         for (int index: selection) {
             TableItem item = moduleImportsTable.getItem(index);
-            String name = item.getText().substring(0, 
-                    item.getText().indexOf('/'));
+            String name = getModuleName(item);
             if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
                 names.add(name);
                 removed.add(index);
@@ -359,6 +387,11 @@ public class CeylonModulePropertiesPage extends PropertyPage
             indices[i] = removed.get(i);
         }
         moduleImportsTable.remove(indices);
+    }
+
+    private static String getModuleName(TableItem item) {
+        return item.getText().substring(0, 
+                item.getText().indexOf('/'));
     }
     
 }

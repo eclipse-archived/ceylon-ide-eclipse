@@ -260,7 +260,11 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
                     .append(entry.getKey())
                     .append("\" slot=\"")
                     .append(entry.getValue())
-                    .append("\"/>")
+                    .append("\"");
+            if (importsPage.getSharedImports().contains(entry.getKey())) {
+                builder.append(" export=\"true\"");
+            }
+            builder.append("/>")
                     .append(newline);
         }
         builder.append("     ")
