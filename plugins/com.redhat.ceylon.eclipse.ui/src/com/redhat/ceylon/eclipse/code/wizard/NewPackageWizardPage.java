@@ -15,11 +15,6 @@ final class NewPackageWizardPage extends NewUnitWizardPage {
     }
     
     @Override
-    String getUnitName() {
-        return "package";
-    }
-
-    @Override
     String getPackageLabel() {
         return "Package name: ";
     }

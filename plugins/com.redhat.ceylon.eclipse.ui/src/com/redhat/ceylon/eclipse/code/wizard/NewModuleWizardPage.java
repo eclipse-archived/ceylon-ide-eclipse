@@ -18,11 +18,7 @@ final class NewModuleWizardPage extends NewUnitWizardPage {
         super("New Ceylon Module", 
                 "Create a runnable Ceylon module with module and package descriptors.", 
                 CEYLON_NEW_MODULE);
-    }
-    
-    @Override
-    String getUnitName() {
-        return "run";
+        setUnitName("run");
     }
     
     String getVersion() {
