@@ -858,23 +858,6 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
                         
-      <!-- Quick menus -->
-      <key
-            commandId="com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M3+T"/>
-      <key
-            commandId="com.redhat.ceylon.eclipse.ui.menu.findQuickMenu"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M3+F"/>
-      <key
-            commandId="com.redhat.ceylon.eclipse.ui.menu.sourceQuickMenu"
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M3+S"/>
-      
       <!-- Source actions -->
       <key
             sequence="M1+M2+O"
@@ -923,10 +906,28 @@
    <extension
          point="org.eclipse.ui.bindings">
       
-      <!-- Refactorings -->
       <sequenceModifier
             find="M2+M3" replace="M1+M3" 
             platforms="cocoa,carbon"/>
+            
+      <!-- Quick menus -->
+      <key
+            commandId="com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+T"/>
+      <key
+            commandId="com.redhat.ceylon.eclipse.ui.menu.findQuickMenu"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+F"/>
+      <key
+            commandId="com.redhat.ceylon.eclipse.ui.menu.sourceQuickMenu"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+S"/>
+      
+      <!-- Refactorings -->
       <key
             sequence="M2+M3+R"
             commandId="com.redhat.ceylon.eclipse.ui.action.rename"
