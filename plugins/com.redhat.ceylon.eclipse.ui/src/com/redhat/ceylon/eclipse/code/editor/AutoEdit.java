@@ -1005,8 +1005,8 @@ class AutoEdit extends Indents {
             throws BadLocationException {
         for (;offset<document.getLength(); offset++) {
             char ch = document.getChar(offset);
-            if (!isWhitespace(ch) && 
-                !isCommentToken(getTokenTypeOfCharacterAtOffset(offset)) ||
+            int tt = getTokenTypeOfCharacterAtOffset(offset);
+            if (!isWhitespace(ch) && !isCommentToken(tt) || 
                     isLineEnding(offset)) {
                 return ch;
             }
@@ -1018,8 +1018,14 @@ class AutoEdit extends Indents {
             throws BadLocationException {
         for (;offset<document.getLength(); offset++) {
             char ch = document.getChar(offset);
-            if (!isWhitespace(ch) && 
-                getTokenTypeOfCharacterAtOffset(offset)!=MULTI_COMMENT ||
+            try {
+                if (document.get(offset, 2).equals("//")) {
+                    break; 
+                }
+            }
+            catch (BadLocationException ble) {}
+            int tt = getTokenTypeOfCharacterAtOffset(offset);
+            if (!isWhitespace(ch) && tt!=MULTI_COMMENT ||
                     isLineEnding(offset)) {
                 return ch;
             }
