@@ -1,7 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.util.FindUtils.getContainer;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.List;
@@ -24,24 +25,22 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.util.FindUtils;
-import com.redhat.ceylon.eclipse.util.Indents;
 
 public class MakeReceiverRefactoring extends AbstractRefactoring {
     
     private final class MoveVisitor extends Visitor {
-        private final ClassOrInterface newOwner;
+        private final TypeDeclaration newOwner;
         private final IDocument doc;
         private final Tree.Declaration fun;
         private final Declaration dec;
         private final TextChange tfc;
 
-        private MoveVisitor(Tree.ClassOrInterface newOwner,
+        private MoveVisitor(TypeDeclaration newOwner,
                 IDocument doc, Declaration dec, Tree.Declaration fun,
                 TextChange tfc) {
             this.newOwner = newOwner;
@@ -110,19 +109,35 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         }
 
         private void insert(Tree.Body body, Tree.Declaration that) {
-            String delim = Indents.getDefaultLineDelimiter(document);
-            String indent = getIndent(that,doc);
-            String newIndent = indent+getDefaultIndent();
-            tfc.addEdit(new InsertEdit(body.getStopIndex(), 
-                    newIndent+getDefinition().replaceAll(delim+getIndent(fun, document), 
-                            delim + newIndent)+delim+indent));
+            String delim = getDefaultLineDelimiter(document);
+            String originalIndent = delim+getIndent(fun, document);
+            String text;
+            List<Tree.Statement> sts = body.getStatements();
+            int loc;
+            if (sts.isEmpty()) {
+                String outerIndent = delim + getIndent(that,doc);
+                String newIndent = outerIndent + getDefaultIndent();
+                String def = getDefinition()
+                        .replaceAll(originalIndent, newIndent);
+                text = newIndent + def + outerIndent;
+                loc = body.getStopIndex();
+            }
+            else {
+                Tree.Statement st = sts.get(sts.size()-1);
+                String newIndent = delim + getIndent(st, doc);
+                String def = getDefinition()
+                        .replaceAll(originalIndent, newIndent);
+                text = newIndent + def;
+                loc = st.getStopIndex()+1;
+            }
+            tfc.addEdit(new InsertEdit(loc, text));
         }
 
         @Override
         public void visit(Tree.ClassDefinition that) {
             super.visit(that);
             if (that.getDeclarationModel()
-                    .equals(newOwner.getDeclarationModel())) {
+                    .equals(newOwner)) {
                 insert(that.getClassBody(), that);
             }
         }
@@ -131,7 +146,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         public void visit(Tree.InterfaceDefinition that) {
             super.visit(that);
             if (that.getDeclarationModel()
-                    .equals(newOwner.getDeclarationModel())) {
+                    .equals(newOwner)) {
                 insert(that.getInterfaceBody(), that);
             }
         }
@@ -197,16 +212,20 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
 
     @Override
     boolean isEnabled() {
-        if (node instanceof Tree.AttributeDeclaration) {
-            Value dm = ((Tree.AttributeDeclaration) node).getDeclarationModel();
-            return dm!=null && dm.isParameter() && 
-                    dm.getInitializerParameter().getDeclaration().isToplevel() &&
-                            (dm.getType().getDeclaration() instanceof Class || 
-                            dm.getType().getDeclaration() instanceof Interface);
+        if (node instanceof Tree.AttributeDeclaration && 
+                project != null) {
+            Value param = ((Tree.AttributeDeclaration) node).getDeclarationModel();
+            if (param!=null && 
+                    param.isParameter() && 
+                    param.getInitializerParameter().getDeclaration().isToplevel()) {
+                TypeDeclaration target = param.getTypeDeclaration();
+                return target!=null &&
+                        inSameProject(target) && 
+                        (target instanceof Class || 
+                         target instanceof Interface);
+            }
         }
-        else {
-            return false;
-        }
+        return false;
     }
     
     public String getName() {
@@ -227,20 +246,21 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
     public Change createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
         CompositeChange cc = new CompositeChange(getName());
-        final Value dec = ((Tree.AttributeDeclaration) node).getDeclarationModel();
-        final Tree.Declaration fun = FindUtils.getContainer(dec, rootNode);
-        final Tree.ClassOrInterface newOwner = (Tree.ClassOrInterface) 
-                getReferencedNode(dec.getType().getDeclaration(), rootNode);
+        Value param = ((Tree.AttributeDeclaration) node).getDeclarationModel();
+        TypeDeclaration target = param.getTypeDeclaration(); 
+        Tree.Declaration fun = getContainer(param, rootNode);
+//        Tree.ClassOrInterface newOwner = (Tree.ClassOrInterface) 
+//                getReferencedNode(target, rootNode);
         
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
-                final TextFileChange pufc = newTextFileChange(pu);
-                final IDocument doc = pufc.getCurrentDocument(null);
+                TextFileChange pufc = newTextFileChange(pu);
+                IDocument doc = pufc.getCurrentDocument(null);
                 pufc.setEdit(new MultiTextEdit());
                 if (fun.getUnit().equals(pu.getUnit())) {
                     deleteOld(pufc, fun);
                 }
-                new MoveVisitor(newOwner, doc, dec, fun, pufc)
+                new MoveVisitor(target, doc, param, fun, pufc)
                         .visit(pu.getCompilationUnit());
                 if (pufc.getEdit().hasChildren()) {
                     cc.add(pufc);
@@ -251,7 +271,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             final TextChange tfc = newLocalChange();
             tfc.setEdit(new MultiTextEdit());
             deleteOld(tfc, fun);
-            new MoveVisitor(newOwner, document, dec, fun, tfc)
+            new MoveVisitor(target, document, param, fun, tfc)
                     .visit(rootNode);
             cc.add(tfc);
         }
