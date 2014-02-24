@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
@@ -27,6 +28,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
@@ -106,7 +108,8 @@ public class ModuleImportUtil {
             String moduleName) {
         PhasedUnit unit = findPhasedUnit(project, target);
         TextFileChange textFileChange = 
-                new TextFileChange("Make Module Import Shared", getFile(unit));
+                new TextFileChange("Make Module Import Shared", 
+                        getFile(unit));
         textFileChange.setEdit(new MultiTextEdit());
         Tree.CompilationUnit compilationUnit = unit.getCompilationUnit();
         try {
@@ -114,18 +117,7 @@ public class ModuleImportUtil {
             for (Tree.ImportModule im: compilationUnit.getModuleDescriptors().get(0)
                     .getImportModuleList().getImportModules()) {
                 if (im.getImportPath().getModel().getNameAsString().equals(moduleName)) {
-                    for (Tree.Annotation a: im.getAnnotationList().getAnnotations()) {
-                        if (((Tree.BaseMemberExpression) a.getPrimary()).getDeclaration()
-                                .getName().equals("shared")) {
-                            int stop = a.getStopIndex()+1;
-                            while (Character.isWhitespace(doc.getChar(stop))) {
-                                stop++;
-                            }
-                            textFileChange.addEdit(new DeleteEdit(a.getStartIndex(), 
-                                    stop-a.getStartIndex()));
-
-                        }
-                    }
+                    removeSharedAnnotation(textFileChange, doc, im.getAnnotationList());
                     if (!textFileChange.getEdit().hasChildren()) {
                         textFileChange.addEdit(new InsertEdit(im.getStartIndex(), 
                                 "shared "));
@@ -136,6 +128,21 @@ public class ModuleImportUtil {
         }
         catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void removeSharedAnnotation(TextFileChange textFileChange,
+            IDocument doc, Tree.AnnotationList al) throws BadLocationException {
+        for (Tree.Annotation a: al.getAnnotations()) {
+            if (((Tree.BaseMemberExpression) a.getPrimary()).getDeclaration()
+                    .getName().equals("shared")) {
+                int stop = a.getStopIndex()+1;
+                int start = a.getStartIndex();
+                while (Character.isWhitespace(doc.getChar(stop))) {
+                    stop++;
+                }
+                textFileChange.addEdit(new DeleteEdit(start, stop-start));
+            }
         }
     }
     
@@ -174,6 +181,19 @@ public class ModuleImportUtil {
     private static PhasedUnit findPhasedUnit(IProject project, 
             Module module) {
         String moduleFullPath = module.getUnit().getFullPath();
+        List<PhasedUnit> phasedUnits = getUnits(project);
+        for (PhasedUnit phasedUnit: phasedUnits) {
+            if (phasedUnit.getUnit().getFullPath()
+                    .equals(moduleFullPath)) {
+                return phasedUnit;
+            }
+        }
+        return null;
+    }
+
+    public static PhasedUnit findPhasedUnit(IProject project, 
+            Package pkg) {
+        String moduleFullPath = pkg.getUnit().getFullPath();
         List<PhasedUnit> phasedUnits = getUnits(project);
         for (PhasedUnit phasedUnit: phasedUnits) {
             if (phasedUnit.getUnit().getFullPath()

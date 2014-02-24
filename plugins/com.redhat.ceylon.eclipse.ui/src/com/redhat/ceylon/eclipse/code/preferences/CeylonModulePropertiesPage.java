@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.removeSharedAnnotation;
 import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
@@ -17,10 +19,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -35,16 +40,20 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
@@ -166,8 +175,6 @@ public class CeylonModulePropertiesPage extends PropertyPage
             item.setText(mi.getModule().getNameAsString() + "/" + 
                     mi.getModule().getVersion());
             item.setChecked(mi.isExport());
-//            item.setGrayed(mi.getModule().getNameAsString()
-//                    .equals(Module.LANGUAGE_MODULE_NAME));
         }
         moduleImportsTable.addSelectionListener(new SelectionListener() {
             @Override
@@ -233,7 +240,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         composite.setLayout(layout);
         
         final Table packagesTable = new Table(composite, 
-                SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+                SWT.CHECK | SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
         GridData gd = new GridData(FILL_HORIZONTAL);
         gd.horizontalSpan=2;
         gd.grabExcessHorizontalSpace = true;
@@ -245,7 +252,44 @@ public class CeylonModulePropertiesPage extends PropertyPage
             TableItem item = new TableItem(packagesTable, SWT.NONE);
             item.setImage(CeylonLabelProvider.PACKAGE);
             item.setText(p.getNameAsString());
+            item.setChecked(p.isShared());
         }
+        packagesTable.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (e.detail==SWT.CHECK) {
+                    TableItem item = (TableItem) e.item;
+                    Package pkg = getModule().getPackage(item.getText());
+                    PhasedUnit phasedUnit = ModuleImportUtil.findPhasedUnit(project, pkg);
+                    if (phasedUnit==null) {
+                        item.setChecked(!item.getChecked());
+                    }
+                    else {
+                        TextFileChange textFileChange = 
+                                new TextFileChange("Make Package Import Shared", 
+                                        getFile(phasedUnit));
+                        textFileChange.setEdit(new MultiTextEdit());
+                        try {
+                            IDocument doc = textFileChange.getCurrentDocument(null);
+                            Tree.PackageDescriptor pd = phasedUnit.getCompilationUnit()
+                                    .getPackageDescriptors().get(0);
+                            if (pkg.isShared()) {
+                                removeSharedAnnotation(textFileChange, doc, pd.getAnnotationList());
+                            }
+                            else {
+                                textFileChange.addEdit(new InsertEdit(pd.getStartIndex(), "shared "));
+                            }
+                            textFileChange.perform(new NullProgressMonitor());
+                        }
+                        catch (Exception ce) {
+                            ce.printStackTrace();
+                        }
+                    }
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
         
         Button createPackageButton = new Button(composite, SWT.PUSH);
         createPackageButton.setText("Create package...");
@@ -262,11 +306,19 @@ public class CeylonModulePropertiesPage extends PropertyPage
                     TableItem item = new TableItem(packagesTable, SWT.NONE);
                     item.setImage(CeylonLabelProvider.PACKAGE);
                     item.setText(pfr.getElementName());
+                    item.setChecked(wiz.isShared());
                 }
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+
+        Label l = new Label(parent, SWT.NONE);
+        l.setText("(Checked packages are shared.)");
+        
+        new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL)
+                .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
     }
 
     private void createModuleInfoBlock(Composite parent) {

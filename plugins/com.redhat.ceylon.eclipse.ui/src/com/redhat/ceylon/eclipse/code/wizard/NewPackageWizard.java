@@ -32,6 +32,10 @@ public class NewPackageWizard extends Wizard implements INewWizard {
         return created;
     }
     
+    public boolean isShared() {
+        return page.isShared();
+    }
+    
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
