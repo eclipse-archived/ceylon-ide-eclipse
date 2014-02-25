@@ -142,4 +142,12 @@ public class FindAssignmentsVisitor extends Visitor implements NaturalVisitor {
         super.visit(that);
     }
         
+    @Override
+    public void visit(Tree.SequencedArgument that) {
+        if (isReference(that.getParameter())) {
+            nodes.add(that);
+        }
+        super.visit(that);
+    }
+        
 }
