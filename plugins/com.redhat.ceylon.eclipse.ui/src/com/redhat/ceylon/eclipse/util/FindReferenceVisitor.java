@@ -187,8 +187,17 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
     }
         
     @Override
-    public void visit(Tree.NamedArgument that) {
+    public void visit(Tree.TypedArgument that) {
         if (isReference(that.getParameter())) {
+            nodes.add(that);
+        }
+        super.visit(that);
+    }
+        
+    @Override
+    public void visit(Tree.SpecifiedArgument that) {
+        if (that.getIdentifier().getToken()!=null &&
+                isReference(that.getParameter())) {
             nodes.add(that);
         }
         super.visit(that);
