@@ -730,8 +730,8 @@ class AutoEdit extends Indents {
                 startOfCurrentLineChar=='}' /*&& endOfLastLineChar!='{'*/ ||
                 startOfCurrentLineChar==')' /*&& endOfLastLineChar!='('*/;
         boolean isOpening = 
-                    endOfLastLineChar=='{' && startOfCurrentLineChar!='}' ||
-                    endOfLastLineChar=='(' && startOfCurrentLineChar!=')';
+                    endOfLastLineChar=='{' /*&& startOfCurrentLineChar!='}'*/ ||
+                    endOfLastLineChar=='(' /*&& startOfCurrentLineChar!=')'*/;
         boolean isListContinuation =
                     count("{", startOfPrev, endOfPrev)>count("}", startOfPrev, endOfPrev) ||
                     count("(", startOfPrev, endOfPrev)>count(")", startOfPrev, endOfPrev);
@@ -857,35 +857,33 @@ class AutoEdit extends Indents {
         String delim = getLineDelimiter(document, line);
         buf.append(indent);
         if (isOpening||isListContinuation) {
-            if (!isClosing||closeBraces) {
+            if (isClosing) {
+                if (closeBraces && isOpening) {
+                    //increment the indent level
+                    incrementIndent(buf, indent);
+                    //move the closing brace to next line
+                    command.shiftsCaret=false;
+                    command.caretOffset=command.offset+buf.length();
+                    buf.append(delim).append(indent);
+                }
+            }
+            else {
                 //increment the indent level
                 incrementIndent(buf, indent);
                 if (closeBraces && count("{")>count("}")) {
+                    //close the opening brace
                     command.shiftsCaret=false;
                     command.caretOffset=command.offset+buf.length();
                     buf.append(delim).append(indent).append('}');
                 }
             }
         }
-        if (isContinuation) {
+        else if (isContinuation) {
             incrementIndent(buf, indent);
             incrementIndent(buf, indent);
         }
-        if (isClosing) {
-            if (isOpening||isListContinuation) {
-                if (closeBraces && !isListContinuation) {
-                    command.shiftsCaret=false;
-                    command.caretOffset=command.offset+buf.length();
-                    buf.append(delim).append(indent);
-                }
-            }
-            else if (isContinuation) {
-//                decrementIndent(buf, indent);
-//                decrementIndent(buf, indent);
-            }
-            else {
-                decrementIndent(buf, indent);
-            }
+        else if (isClosing) {
+            decrementIndent(buf, indent);
         }
     }
 
