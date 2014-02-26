@@ -1,6 +1,10 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.io.File;
 import java.nio.file.DirectoryStream;
@@ -9,6 +13,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -23,9 +29,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PlatformUI;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ExportModuleWizard extends Wizard implements IExportWizard {
@@ -121,7 +125,17 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                 Job job = new Job("Exporting modules") {
                     @Override
                     protected IStatus run(IProgressMonitor monitor) {
-                        File outputDir = CeylonBuilder.getCeylonModulesOutputDirectory(project.getProject());
+                        monitor.setTaskName("Exporting modules to repository");
+                        IProject p = project.getProject();
+                        try {
+                            p.build(CLEAN_BUILD, monitor);
+                        }
+                        catch (CoreException e) {
+                            ex = e;
+                            return Status.CANCEL_STATUS;
+                        }
+                        yieldRule(monitor);
+                        File outputDir = getCeylonModulesOutputDirectory(p);
                         Path outputPath = Paths.get(outputDir.getAbsolutePath());
                         Path repoPath = Paths.get(repositoryPath);
                         if (!Files.exists(repoPath)) {
@@ -141,8 +155,9 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                                 Files.createDirectories(repoModulePath);
                                 DirectoryStream<Path> ds = Files.newDirectoryStream(repoOutputPath, glob);
                                 try {
-                                    for (Path p: ds) {
-                                        Files.copy(p, repoModulePath.resolve(p.getFileName()), REPLACE_EXISTING);
+                                    for (Path path: ds) {
+                                        Files.copy(path, repoModulePath.resolve(path.getFileName()), 
+                                                REPLACE_EXISTING);
                                     }
                                 }
                                 finally {
@@ -157,8 +172,9 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                         return Status.OK_STATUS;
                     }
                 };
-                PlatformUI.getWorkbench().getProgressService().showInDialog(getShell(), job);
+                getWorkbench().getProgressService().showInDialog(getShell(), job);
                 job.setUser(true);
+                job.setRule(getWorkspace().getRuleFactory().buildRule());
                 job.schedule();
             } 
             catch (Exception e) {
