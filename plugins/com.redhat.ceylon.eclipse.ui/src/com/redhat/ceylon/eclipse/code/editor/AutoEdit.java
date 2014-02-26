@@ -383,9 +383,21 @@ class AutoEdit extends Indents {
         try {
             IRegion li = document.getLineInformationOfOffset(offset);
             StringBuilder result = new StringBuilder();
-            for (int i = li.getOffset()+indent;
-                document.getChar(i++)==' ';) {
-                result.append(' ');
+            int lo = li.getOffset();
+            for (int i = lo; i<lo+indent; i++) {
+                char ch = document.getChar(i);
+                if (ch!=' ' && ch!='\t') {
+                    return "";
+                }
+            }
+            for (int i = lo+indent;;) {
+                char ch = document.getChar(i++);
+                if (ch==' '||ch=='\t') {
+                    result.append(ch);
+                }
+                else {
+                    break;
+                }
             }
             return result.toString();
         }
