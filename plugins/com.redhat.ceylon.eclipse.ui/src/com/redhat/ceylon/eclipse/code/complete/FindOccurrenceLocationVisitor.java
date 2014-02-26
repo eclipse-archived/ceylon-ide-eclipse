@@ -56,6 +56,14 @@ class FindOccurrenceLocationVisitor extends Visitor
         //don't go any further down this branch
     }
     
+    @Override
+    public void visit(Tree.Condition that) {
+        if (inBounds(that)) {
+            occurrence = EXPRESSION;
+        }
+        super.visit(that);
+    }
+    
     public void visit(Tree.TypeConstraint that) {
         inTypeConstraint=true;
         super.visit(that);

@@ -40,12 +40,13 @@ public class CeylonTokenColorer  {
     public static String PACKAGES = "packages";    
     public static String MEMBERS = "members";    
     
-    public static final Set<String> keywords = new LinkedHashSet<String>(Arrays.asList("import", "assert",
-            "alias", "class", "interface", "object", "given", "value", "assign", "void", "function", 
-            "assembly", "module", "package", "of", "extends", "satisfies", "abstracts", "in", "out", 
-            "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", 
-            "try", "catch", "finally", "this", "outer", "super", "is", "exists", "nonempty", "then",
-            "dynamic", "new", "let"));
+    public static final Set<String> keywords = 
+            new LinkedHashSet<String>(Arrays.asList("import", "assert",
+                "alias", "class", "interface", "object", "given", "value", "assign", "void", "function", 
+                "assembly", "module", "package", "of", "extends", "satisfies", "abstracts", "in", "out", 
+                "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", 
+                "try", "catch", "finally", "this", "outer", "super", "is", "exists", "nonempty", "then",
+                "dynamic", "new", "let"));
     
     private static TextAttribute identifierAttribute, typeAttribute, typeLiteralAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
