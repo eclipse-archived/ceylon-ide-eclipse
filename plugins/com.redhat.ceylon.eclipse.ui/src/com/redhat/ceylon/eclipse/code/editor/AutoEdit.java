@@ -598,8 +598,7 @@ class AutoEdit extends Indents {
             StringBuilder buf = new StringBuilder(command.text);
             IPreferenceStore store = getPreferences();
             boolean closeBrace = store==null || 
-                    store.getBoolean(CLOSE_BRACES) && 
-                            count("{")>count("}");
+                    store.getBoolean(CLOSE_BRACES);
             int end = getEndOfCurrentLine();
             appendIndent(command.offset, end, start, command.offset, 
                     startOfNewLineChar, endOfLastLineChar, closeBrace, buf);
@@ -635,6 +634,18 @@ class AutoEdit extends Indents {
         List<CommonToken> tokens = getTokens();
         for (CommonToken tok: tokens) {
             if (tok.getText().equals(token)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int count(String token, int startIndex, int stopIndex) {
+        int count = 0;
+        List<CommonToken> tokens = getTokens();
+        for (CommonToken tok: tokens) {
+            if (tok.getStartIndex()>=startIndex && tok.getStopIndex()<stopIndex &&
+                    tok.getText().equals(token)) {
                 count++;
             }
         }
@@ -703,11 +714,16 @@ class AutoEdit extends Indents {
                 (isBinaryOperator(prevEnding) || isBinaryOperator(currStarting) ||
                         isInheritanceClause(currStarting) || 
                         isOperatorChar(startOfCurrentLineChar)); //to account for a previously line-commented character
-        boolean isOpening = endOfLastLineChar=='{' && startOfCurrentLineChar!='}' ||
-                endOfLastLineChar=='(' && startOfCurrentLineChar!=')';
-        boolean isClosing = startOfCurrentLineChar=='}' && endOfLastLineChar!='{' ||
-                startOfCurrentLineChar==')' && endOfLastLineChar!='(';
-        appendIndent(isContinuation, isOpening, isClosing,  
+        boolean isClosing =
+                startOfCurrentLineChar=='}' /*&& endOfLastLineChar!='{'*/ ||
+                startOfCurrentLineChar==')' /*&& endOfLastLineChar!='('*/;
+        boolean isOpening = 
+                    endOfLastLineChar=='{' && startOfCurrentLineChar!='}' ||
+                    endOfLastLineChar=='(' && startOfCurrentLineChar!=')';
+        boolean isListContinuation =
+                    count("{", startOfPrev, endOfPrev)>count("}", startOfPrev, endOfPrev) ||
+                    count("(", startOfPrev, endOfPrev)>count(")", startOfPrev, endOfPrev);
+        appendIndent(isContinuation, isOpening, isClosing, isListContinuation,
                 startOfPrev, endOfPrev, closeBraces, buf);
     }
     
@@ -819,31 +835,45 @@ class AutoEdit extends Indents {
         return d.getLineOffset(d.getLineOfOffset(offset)+1);
     }*/
     
-    private void appendIndent(boolean isContinuation, boolean isBeginning,
-            boolean isEnding, int start, int end, boolean closeBraces, 
-            StringBuilder buf) 
+    private void appendIndent(boolean isContinuation, boolean isOpening,
+            boolean isClosing, boolean isListContinuation, 
+            int start, int end, 
+            boolean closeBraces, StringBuilder buf) 
                     throws BadLocationException {
+        int line = document.getLineOfOffset(start);
         String indent = getIndent(start, end);
+        String delim = getLineDelimiter(document, line);
         buf.append(indent);
-        if (isBeginning) {
-            //increment the indent level
-            incrementIndent(buf, indent);
-            if (closeBraces) {
-                command.shiftsCaret=false;
-                command.caretOffset=command.offset+buf.length();
-                int line = document.getLineOfOffset(start);
-                buf.append(getLineDelimiter(document, line))
-                    .append(indent)
-                    .append('}');
+        if (isOpening||isListContinuation) {
+            if (!isClosing||closeBraces) {
+                //increment the indent level
+                incrementIndent(buf, indent);
+                if (closeBraces && count("{")>count("}")) {
+                    command.shiftsCaret=false;
+                    command.caretOffset=command.offset+buf.length();
+                    buf.append(delim).append(indent).append('}');
+                }
             }
         }
-        else if (isContinuation) {
+        if (isContinuation) {
             incrementIndent(buf, indent);
             incrementIndent(buf, indent);
         }
-        if (isEnding) {
-            decrementIndent(buf, indent);
-            if (isContinuation) decrementIndent(buf, indent);
+        if (isClosing) {
+            if (isOpening||isListContinuation) {
+                if (closeBraces && !isListContinuation) {
+                    command.shiftsCaret=false;
+                    command.caretOffset=command.offset+buf.length();
+                    buf.append(delim).append(indent);
+                }
+            }
+            else if (isContinuation) {
+//                decrementIndent(buf, indent);
+//                decrementIndent(buf, indent);
+            }
+            else {
+                decrementIndent(buf, indent);
+            }
         }
     }
 
