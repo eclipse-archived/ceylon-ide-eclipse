@@ -67,7 +67,8 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         
         doc = new Document("doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}");
         instance.doCorrectIndentation(doc);
-        assertResult(doc, "doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}");
+//        assertResult(doc, "doc (\"Hello\n\t World\n\t !\")\nvoid hello(){}");
+        assertResult(doc, "doc (\"Hello\n      World\n      !\")\nvoid hello(){}");
 
         doc = new Document("\"Hello\n World\n !\"\nvoid hello(){}");
         instance.doCorrectIndentation(doc);
@@ -171,6 +172,10 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         doc = new Document("\t\t/*\n\tcomment\n\t*/\n");
         instance.doCorrectIndentation(doc);
         assertResult(doc, "/*\n comment\n */\n");
+        
+        doc = new Document("/*\nhello\n  world\n*/\n");
+        instance.doCorrectIndentation(doc);
+        assertResult(doc, "/*\n hello\n  world\n */\n");
         
         doc = new Document("x=1;");
         instance.doNewline(doc);
@@ -282,7 +287,7 @@ class AutoEditTest extends CeylonAutoEditStrategy {
         
         doc = new Document("\t/*\n\thello");
         instance.doNewline(doc);
-        assertResult(doc, "\t/*\n\thello\n\t");
+        assertResult(doc, "\t/*\n\thello\n\t ");
         
         doc = new Document("void x() {}");
         instance.doNewline(doc);
