@@ -34,7 +34,7 @@ public class CeylonTokenColorer  {
     public static String COMMENTS = "comments";
     public static String TODOS = "todos";
     public static String ANNOTATIONS = "annotations";
-    public static String ANNOTATION__STRINGS = "annotationstrings";
+    public static String ANNOTATION_STRINGS = "annotationstrings";
     public static String SEMIS = "semis";
     public static String BRACES = "braces";    
     public static String PACKAGES = "packages";    
@@ -91,7 +91,7 @@ public class CeylonTokenColorer  {
         stringAttribute = text(colorRegistry, STRINGS, SWT.NORMAL);
         charAttribute = text(colorRegistry, CHARS, SWT.NORMAL);
         interpAttribute = text(colorRegistry, INTERP, SWT.NORMAL);
-        annotationStringAttribute = text(colorRegistry, ANNOTATION__STRINGS, SWT.NORMAL);
+        annotationStringAttribute = text(colorRegistry, ANNOTATION_STRINGS, SWT.NORMAL);
         annotationAttribute = text(colorRegistry, ANNOTATIONS, SWT.NORMAL);
         todoAttribute = text(colorRegistry, TODOS, SWT.NORMAL);
         semiAttribute = text(colorRegistry, SEMIS, SWT.NORMAL);
