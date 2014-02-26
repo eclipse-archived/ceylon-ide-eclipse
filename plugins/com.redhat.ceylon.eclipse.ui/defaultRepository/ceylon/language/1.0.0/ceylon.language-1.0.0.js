@@ -334,7 +334,7 @@ function $init$Exception(){
             defineAttr($$exception,'description$1',function(){return this.description$1_;},undefined,function(){return{mod:$$METAMODEL$$,$t:{t:'u', l:[{t:Null},{t:String$}]},$cont:Exception,$an:function(){return[doc(String$("A description of the problem.",29))];},d:['ceylon.language','Exception','$at','description']};});
             defineAttr($$exception,'message',function(){
                 var $$exception=this;
-                return (opt$2=(opt$3=$$exception.description$1,opt$3!==null&&opt$3!==undefined?opt$3:(opt$4=$$exception.cause,opt$4!==null?opt$4.message:null)),opt$2!==null&&opt$2!==undefined?opt$2:String$("",0));
+                return (opt$2=(opt$3=$$exception.description$1,opt$3!==null&&opt$3!==undefined?opt$3:(opt$4=$$exception.cause,opt$4!==null&&opt$4!==undefined?opt$4.message:null)),opt$2!==null&&opt$2!==undefined?opt$2:String$("",0));
             },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},$cont:Exception,$an:function(){return[doc(String$("A message describing the problem. This default \nimplementation returns the description, if any, or \notherwise the message of the cause, if any.",143)),see([$init$OpenValue()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),$init$Exception().$$.prototype.$prop$getCause)].reifyCeylonType({Absent$Iterable:{t:Null},Element$Iterable:{t:ValueDeclaration$meta$declaration}})),shared(),$default()];},d:['ceylon.language','Exception','$at','message']};});
             defineAttr($$exception,'string',function(){
                 var $$exception=this;
@@ -1406,7 +1406,7 @@ var commaList=function (elements$188){
         return function(){
             if(element$191!==getFinished()){
                 var element$191$192=element$191;
-                var tmpvar$193=(opt$194=(opt$195=element$191$192,opt$195!==null?opt$195.string:null),opt$194!==null&&opt$194!==undefined?opt$194:String$("<null>",6));
+                var tmpvar$193=(opt$194=(opt$195=element$191$192,opt$195!==null&&opt$195!==undefined?opt$195.string:null),opt$194!==null&&opt$194!==undefined?opt$194:String$("<null>",6));
                 next$element$191();
                 return tmpvar$193;
             }
@@ -3950,7 +3950,7 @@ function $init$Singleton(){
             };$$singleton.iterator.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Iterator,a:{Element$Iterator:'Element$Singleton'}},$ps:[],$cont:Singleton,$an:function(){return[shared(),actual(),$default()];},d:['ceylon.language','Singleton','$m','iterator']};};
             defineAttr($$singleton,'string',function(){
                 var $$singleton=this;
-                return StringBuilder().appendAll([String$("[",1),(opt$629=(opt$630=$$singleton.element$624,opt$630!==null?opt$630.string:null),opt$629!==null&&opt$629!==undefined?opt$629:String$("null",4)).string,String$("]",1)]).string;
+                return StringBuilder().appendAll([String$("[",1),(opt$629=(opt$630=$$singleton.element$624,opt$630!==null&&opt$630!==undefined?opt$630.string:null),opt$629!==null&&opt$629!==undefined?opt$629:String$("null",4)).string,String$("]",1)]).string;
             },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:String$},$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$at','string']};});
             $$singleton.segment=function (from$631,length$632){
                 var $$singleton=this;
@@ -3995,7 +3995,7 @@ function $init$Singleton(){
             };$$singleton.equals.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:$Boolean},$ps:[{$nm:'that',$mt:'prm',$t:{t:$Object},$an:function(){return[];}}],$cont:Singleton,$an:function(){return[doc(String$("A `Singleton` can be equal to another `List` if \nthat `List` has only one element which is equal to \nthis `Singleton`\'s element.",128)),shared(),actual()];},d:['ceylon.language','Singleton','$m','equals']};};
             defineAttr($$singleton,'hash',function(){
                 var $$singleton=this;
-                return (31).plus((opt$645=(opt$646=$$singleton.element$624,opt$646!==null?opt$646.hash:null),opt$645!==null&&opt$645!==undefined?opt$645:(0)));
+                return (31).plus((opt$645=(opt$646=$$singleton.element$624,opt$646!==null&&opt$646!==undefined?opt$646.hash:null),opt$645!==null&&opt$645!==undefined?opt$645:(0)));
             },undefined,function(){return{mod:$$METAMODEL$$,$t:{t:Integer},$cont:Singleton,$an:function(){return[shared(),actual()];},d:['ceylon.language','Singleton','$at','hash']};});
             $$singleton.contains=function contains(element$647){
                 var $$singleton=this;
@@ -4939,7 +4939,7 @@ function printAll(values$858,separator$859){
 exports.printAll=printAll;
 printAll.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:Anything},$ps:[{$nm:'values',$mt:'prm',$t:{t:Iterable,a:{Element$Iterable:{t:Anything},Absent$Iterable:{t:Null}}},$an:function(){return[];}},{$nm:'separator',$mt:'prm',$def:1,$t:{t:String$},$an:function(){return[doc("A character sequence to use to separate the values")];}}],$an:function(){return[doc(String$("Print multiple values to the standard output of the virtual \nmachine process as a single line of text, separated by a\ngiven character sequence.",143)),by([String$("Gavin",5)].reifyCeylonType({Absent$Iterable:{t:Null},Element$Iterable:{t:String$}})),see([$init$OpenFunction()(getModules$meta().find('ceylon.language','1.0.0').findPackage('ceylon.language'),getProcess().write)].reifyCeylonType({Absent$Iterable:{t:Null},Element$Iterable:{t:FunctionDeclaration$meta$declaration}})),shared()];},d:['ceylon.language','printAll']};};
 var stringify=function (val$863){
-    return (opt$864=(opt$865=val$863,opt$865!==null?opt$865.string:null),opt$864!==null&&opt$864!==undefined?opt$864:String$("<null>",6));
+    return (opt$864=(opt$865=val$863,opt$865!==null&&opt$865!==undefined?opt$865.string:null),opt$864!==null&&opt$864!==undefined?opt$864:String$("<null>",6));
 };
 stringify.$$metamodel$$=function(){return{mod:$$METAMODEL$$,$t:{t:String$},$ps:[{$nm:'val',$mt:'prm',$t:{t:Anything},$an:function(){return[];}}],d:['ceylon.language','stringify']};};
 var opt$864,opt$865;
