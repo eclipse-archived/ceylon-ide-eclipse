@@ -1861,36 +1861,33 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             final Module defaultModule, IProgressMonitor mon) throws CoreException {
         SubMonitor monitor = SubMonitor.convert(mon, 10000);
         final List<IFile> scannedSources = new ArrayList<IFile>();
-        final Collection<IPath> sourceFolders = getSourceFolders(javaProject);
-        for (final IPath srcAbsoluteFolderPath : sourceFolders) {
-            final IPath srcFolderPath = srcAbsoluteFolderPath.makeRelativeTo(project.getFullPath());
-            final ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
-
-            IResource srcDirResource = srcDir.getResource();
-            if (! srcDirResource.exists()) {
-                continue;
+        final Collection<IFolder> sourceFolders = new LinkedList<>();
+        for (IFolder sourceFolder : getSourceFolders(project)) {
+            if (sourceFolder.exists()) {
+                sourceFolders.add(sourceFolder);
             }
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-            // First Scan all non-default source modules and attach the contained packages 
-            srcDirResource.accept(new ModulesScanner(defaultModule, modelLoader, moduleManager,
-                    srcDir, srcFolderPath, typeChecker, monitor));
         }
-        for (final IPath srcAbsoluteFolderPath : sourceFolders) {
-            final IPath srcFolderPath = srcAbsoluteFolderPath.makeRelativeTo(project.getFullPath());
-            final IFolderVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
 
-            IResource srcDirResource = srcDir.getResource();
-            if (! srcDirResource.exists()) {
-                continue;
-            }
+        // First Scan all non-default source modules and attach the contained packages 
+        for (IFolder srcFolder : sourceFolders) {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-            // Then scan all source files
-            srcDirResource.accept(new SourceScanner(defaultModule, modelLoader, moduleManager,
-                    srcDir, srcFolderPath, typeChecker, scannedSources,
+
+            final ResourceVirtualFile srcDir = ResourceVirtualFile.createResourceVirtualFile(srcFolder);
+            srcFolder.accept(new ModulesScanner(defaultModule, modelLoader, moduleManager,
+                    srcDir, typeChecker, monitor));
+        }
+
+        // Then scan all source files
+        for (final IFolder srcFolder : sourceFolders) {
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+
+            final IFolderVirtualFile srcDir = ResourceVirtualFile.createResourceVirtualFile(srcFolder);
+            srcFolder.accept(new RootFolderScanner(defaultModule, modelLoader, moduleManager,
+                    srcDir, typeChecker, scannedSources,
                     phasedUnits, monitor));
         }
         return scannedSources;

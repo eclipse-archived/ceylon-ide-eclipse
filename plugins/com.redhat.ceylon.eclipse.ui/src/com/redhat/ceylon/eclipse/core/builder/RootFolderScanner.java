@@ -7,12 +7,12 @@ import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -26,27 +26,24 @@ import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
-final class SourceScanner implements IResourceVisitor {
+final class RootFolderScanner implements IResourceVisitor {
     private final Module defaultModule;
     private final JDTModelLoader modelLoader;
     private final JDTModuleManager moduleManager;
     private final IFolderVirtualFile srcDir;
-    private final IPath srcFolderPath;
     private final TypeChecker typeChecker;
     private final List<IFile> scannedSources;
     private final PhasedUnits phasedUnits;
     private Module module;
     private SubMonitor monitor;
 
-    SourceScanner(Module defaultModule, JDTModelLoader modelLoader,
-            JDTModuleManager moduleManager, IFolderVirtualFile srcDir,
-            IPath srcFolderPath, TypeChecker typeChecker,
+    RootFolderScanner(Module defaultModule, JDTModelLoader modelLoader,
+            JDTModuleManager moduleManager, IFolderVirtualFile srcDir, TypeChecker typeChecker,
             List<IFile> scannedSources, PhasedUnits phasedUnits, SubMonitor monitor) {
         this.defaultModule = defaultModule;
         this.modelLoader = modelLoader;
         this.moduleManager = moduleManager;
         this.srcDir = srcDir;
-        this.srcFolderPath = srcFolderPath;
         this.typeChecker = typeChecker;
         this.scannedSources = scannedSources;
         this.phasedUnits = phasedUnits;
@@ -74,8 +71,7 @@ final class SourceScanner implements IResourceVisitor {
         }
 
         if (resource instanceof IFolder) {
-            List<String> pkgName = Arrays.asList(resource.getProjectRelativePath()
-                    .makeRelativeTo(srcFolderPath).segments());
+            List<String> pkgName = getPackageName((IFolder)resource);
             String pkgNameAsString = formatPath(pkgName);
             
             if ( module != defaultModule ) {
@@ -113,8 +109,7 @@ final class SourceScanner implements IResourceVisitor {
         if (resource instanceof IFile) {
             IFile file = (IFile) resource;
             if (file.exists() && CeylonBuilder.isCeylonOrJava(file)) {
-                List<String> pkgName = Arrays.asList(file.getParent().getProjectRelativePath()
-                        .makeRelativeTo(srcFolderPath).segments());
+                List<String> pkgName = getPackageName(file.getParent());
                 String pkgNameAsString = formatPath(pkgName);
                 pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
                 
@@ -136,5 +131,11 @@ final class SourceScanner implements IResourceVisitor {
             }
         }
         return false;
+    }
+
+    private List<String> getPackageName(IContainer container) {
+        List<String> pkgName = Arrays.asList(container.getProjectRelativePath()
+                .makeRelativeTo(srcDir.getResource().getProjectRelativePath()).segments());
+        return pkgName;
     }
 }

@@ -29,6 +29,16 @@ public abstract class ResourceVirtualFile implements VirtualFile {
         throw new RuntimeException("Bad resource for constructing the VirtualFile :" +  resource.toString());
     }
     
+    public static IFileVirtualFile createResourceVirtualFile(IFile resource)    
+    {
+        return new IFileVirtualFile(resource);
+    }
+    
+    public static IFolderVirtualFile createResourceVirtualFile(IFolder resource)    
+    {
+        return new IFolderVirtualFile(resource);
+    }
+    
     // TODO Verify the everything works with project-relative paths
     public ResourceVirtualFile(IProject project, IPath path) {
         this.project = project;
