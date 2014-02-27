@@ -2687,6 +2687,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return resourceFolers;
     }
 
+    public static List<IFolder> getRootFolders(IProject project) {
+        LinkedList<IFolder> rootFolders = new LinkedList<>();
+        rootFolders.addAll(getSourceFolders(project));
+        rootFolders.addAll(getResourceFolders(project));
+        return rootFolders;
+    }
+
     public static boolean isCeylonSourceEntry(IClasspathEntry entry) {
         if (entry.getEntryKind()!=IClasspathEntry.CPE_SOURCE) {
             return false;
