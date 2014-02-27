@@ -614,13 +614,18 @@
        <command
             id="com.redhat.ceylon.eclipse.ui.action.extractFunction"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Extract selected expression to function"
+            description="Extract selected expression to a function"
             name="Extract Function"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.extractValue"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Extract selected expression to value"
+            description="Extract selected expression to a value"
             name="Extract Value"/>
+       <command
+            id="com.redhat.ceylon.eclipse.ui.action.extractParameter"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Extract selected expression to a parameter"
+            name="Extract Parameter"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.convertToClass"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -762,6 +767,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.ChangeParametersHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.changeParameters"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.ExtractParameterHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.extractParameter"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.ExtractValueHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.extractValue"/>
