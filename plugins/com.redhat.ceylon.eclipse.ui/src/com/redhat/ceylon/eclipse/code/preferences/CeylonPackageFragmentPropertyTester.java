@@ -8,7 +8,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IPackageFragment;
 
-public class CeylonPropertyTester extends PropertyTester {
+public class CeylonPackageFragmentPropertyTester extends PropertyTester {
 
     @Override
     public boolean test(Object receiver, String property, Object[] args,
