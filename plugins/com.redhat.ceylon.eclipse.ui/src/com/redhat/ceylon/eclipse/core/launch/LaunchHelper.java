@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE;
@@ -429,11 +429,10 @@ public class LaunchHelper {
     }
 
     static Module getModule(IFolder folder) {
-        for (Module mod : getModulesInProject((folder.getProject()))) {
-        if (getPackageName(folder)
-                .equals(mod.getRootPackage().getNameAsString()))
-            return mod;
-        }
+        Package pkg = getPackage(folder);
+        if (pkg != null) {
+            return pkg.getModule();
+        }        
         return null;
     }
     

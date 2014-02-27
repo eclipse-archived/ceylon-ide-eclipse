@@ -17,7 +17,7 @@ public class IFolderVirtualFile extends ResourceVirtualFile {
         super(project, path);
     }
 
-    IFolderVirtualFile(IResource resource) {
+    IFolderVirtualFile(IFolder resource) {
         super(resource);
     }
     

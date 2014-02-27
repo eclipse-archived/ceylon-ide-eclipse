@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.builder;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,13 +23,14 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
+import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
 final class SourceScanner implements IResourceVisitor {
     private final Module defaultModule;
     private final JDTModelLoader modelLoader;
     private final JDTModuleManager moduleManager;
-    private final ResourceVirtualFile srcDir;
+    private final IFolderVirtualFile srcDir;
     private final IPath srcFolderPath;
     private final TypeChecker typeChecker;
     private final List<IFile> scannedSources;
@@ -37,7 +39,7 @@ final class SourceScanner implements IResourceVisitor {
     private SubMonitor monitor;
 
     SourceScanner(Module defaultModule, JDTModelLoader modelLoader,
-            JDTModuleManager moduleManager, ResourceVirtualFile srcDir,
+            JDTModuleManager moduleManager, IFolderVirtualFile srcDir,
             IPath srcFolderPath, TypeChecker typeChecker,
             List<IFile> scannedSources, PhasedUnits phasedUnits, SubMonitor monitor) {
         this.defaultModule = defaultModule;
@@ -58,6 +60,8 @@ final class SourceScanner implements IResourceVisitor {
         monitor.worked(1);
 
         if (resource.equals(srcDir.getResource())) {
+            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(modelLoader.findPackage("")));
+            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, srcDir.getFolder());
             return true;
         }
 
@@ -101,6 +105,8 @@ final class SourceScanner implements IResourceVisitor {
             }
             
             pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
+            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(pkg));
+            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, srcDir.getFolder());
             return true;
         }
 
@@ -112,10 +118,11 @@ final class SourceScanner implements IResourceVisitor {
                 String pkgNameAsString = formatPath(pkgName);
                 pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
                 
+                if (scannedSources != null) {
+                    scannedSources.add((IFile)resource);
+                }
+                
                 if (CeylonBuilder.isCeylon(file)) {
-                    if (scannedSources != null) {
-                        scannedSources.add(file);
-                    }
                     ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
                     try {
                         PhasedUnit newPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
@@ -124,11 +131,6 @@ final class SourceScanner implements IResourceVisitor {
                     } 
                     catch (Exception e) {
                         e.printStackTrace();
-                    }
-                }
-                if (CeylonBuilder.isJava((IFile)resource)) {
-                    if (scannedSources != null) {
-                        scannedSources.add((IFile)resource);
                     }
                 }
             }

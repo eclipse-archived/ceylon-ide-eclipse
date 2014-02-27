@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
@@ -18,12 +17,12 @@ public class IFileVirtualFile extends ResourceVirtualFile {
         super(project, path);
     }
 
-    IFileVirtualFile(IResource resource) {
+    IFileVirtualFile(IFile resource) {
         super(resource);
     }
 
     @Override
-    protected IResource createResourceFromIPath() {
+    protected IFile createResourceFromIPath() {
         return project.getFile(path);
     }
     

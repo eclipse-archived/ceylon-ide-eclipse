@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.retrievePackage;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -37,7 +37,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         if (resource instanceof IFolder) {
             if (resourceDelta.getKind()==IResourceDelta.REMOVED) {
                 IFolder folder = (IFolder) resource; 
-                Package pkg = retrievePackage(folder);
+                Package pkg = getPackage(folder);
                 if (pkg!=null) {
                     //a package has been removed
                     mustDoFullBuild.value = true;

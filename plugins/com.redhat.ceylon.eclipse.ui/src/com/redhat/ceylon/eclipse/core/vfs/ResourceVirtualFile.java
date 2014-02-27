@@ -18,12 +18,12 @@ public abstract class ResourceVirtualFile implements VirtualFile {
     {
         if (resource instanceof IFolder)
         {
-            return new IFolderVirtualFile(resource);
+            return new IFolderVirtualFile((IFolder)resource);
         }
         
         if (resource instanceof IFile)
         {
-            return new IFileVirtualFile(resource);
+            return new IFileVirtualFile((IFile)resource);
         }
         
         throw new RuntimeException("Bad resource for constructing the VirtualFile :" +  resource.toString());
