@@ -11,7 +11,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -29,21 +28,17 @@ final class ModulesScanner implements IResourceVisitor {
     private final JDTModelLoader modelLoader;
     private final JDTModuleManager moduleManager;
     private final ResourceVirtualFile srcDir;
-    private final IPath srcFolderPath;
     private final TypeChecker typeChecker;
-//    private final List<IFile> scannedSources;
-//    private final PhasedUnits phasedUnits;
     private Module module;
     private SubMonitor monitor;
 
     ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
-            JDTModuleManager moduleManager, ResourceVirtualFile srcDir,
-            IPath srcFolderPath, TypeChecker typeChecker, SubMonitor monitor) {
+            JDTModuleManager moduleManager, ResourceVirtualFile srcDir, 
+            TypeChecker typeChecker, SubMonitor monitor) {
         this.defaultModule = defaultModule;
         this.modelLoader = modelLoader;
         this.moduleManager = moduleManager;
         this.srcDir = srcDir;
-        this.srcFolderPath = srcFolderPath;
         this.typeChecker = typeChecker;
         this.monitor = monitor;
     }
@@ -67,7 +62,7 @@ final class ModulesScanner implements IResourceVisitor {
 
         if (resource instanceof IFolder) {
             List<String> pkgName = Arrays.asList(resource.getProjectRelativePath()
-                    .makeRelativeTo(srcFolderPath).segments());
+                    .makeRelativeTo(srcDir.getResource().getProjectRelativePath()).segments());
             String pkgNameAsString = formatPath(pkgName);
             
             if ( module != defaultModule ) {
