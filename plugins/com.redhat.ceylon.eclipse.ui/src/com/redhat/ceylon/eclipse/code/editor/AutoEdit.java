@@ -530,9 +530,34 @@ class AutoEdit extends Indents {
             case '(':
                 fixIndentOfCurrentLine();
             default:
-                //when spacesfortabs is enabled, we get sent spaces instead of a tab
+                //when spacesfortabs is enabled, and a tab is
+                //pressed, we get sent spaces instead of a tab
+                //we need this special case to "jump" the caret
+                //to the start of the code in the line
                 if (getIndentWithSpaces() && isIndent(getPrefix())) {
                     fixIndentOfCurrentLine();
+                }
+            }
+            adjustStringOrCommentIndentation();
+        }
+    }
+    
+    private void adjustStringOrCommentIndentation() throws BadLocationException {
+        CommonToken tok = getTokenStrictlyContainingOffset(getEndOfCurrentLine());
+        if (tok!=null) {
+            int len = command.length;
+            String text = command.text;
+            if (isQuoteOrCommentToken(tok.getType()) &&
+                    text.length()<len) { //reduced indent of a quoted or commented token
+                String indent = document.get(command.offset, len);
+                int line=document.getLineOfOffset(tok.getStartIndex())+1;
+                int lastLine=document.getLineOfOffset(tok.getStopIndex());
+                while (line<=lastLine) {
+                    int offset = document.getLineOffset(line);
+                    if (document.get(offset, len).equals(indent)) {
+                        document.replace(offset, len, text);
+                    }
+                    line++;
                 }
             }
         }
@@ -553,6 +578,15 @@ class AutoEdit extends Indents {
             char ch = prefix.charAt(i);
             indent.append(ch=='\t'?'\t':' ');
         }
+        indent.append(getExtraIndent(token));
+        indent.append(getRelativeIndent(command.offset));
+        if (indent.length()>0) {
+            command.length = endOfWs-command.offset;
+            command.text = indent.toString();
+        }
+    }
+
+    private String getExtraIndent(CommonToken token) {
         String extraIndent = "";
         switch (token.getType()) {
         case MULTI_COMMENT:
@@ -579,12 +613,7 @@ class AutoEdit extends Indents {
             extraIndent="   ";
             break;
         }
-        indent.append(extraIndent);
-        indent.append(getRelativeIndent(command.offset));
-        if (indent.length()>0) {
-            command.length = endOfWs-command.offset;
-            command.text = indent.toString();
-        }
+        return extraIndent;
     }
     
     private void indentNewLine()
@@ -866,6 +895,11 @@ class AutoEdit extends Indents {
                     command.caretOffset=command.offset+buf.length();
                     buf.append(delim).append(indent);
                 }
+//                else if (closeBraces && //hack just to distinguish a newline from a correct indentation! 
+//                        isListContinuation) {
+//                    //just increment the indent level
+//                    incrementIndent(buf, indent);
+//                }
             }
             else {
                 //increment the indent level
