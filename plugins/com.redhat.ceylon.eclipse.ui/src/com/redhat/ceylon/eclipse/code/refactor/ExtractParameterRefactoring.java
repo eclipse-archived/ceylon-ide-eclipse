@@ -6,8 +6,10 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -95,6 +97,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     boolean isEnabled() {
         return node instanceof Tree.Term && 
                 methodOrClass!=null &&
+                methodOrClass.getDeclarationModel()!=null &&
                 !methodOrClass.getDeclarationModel().isActual();
     }
 
@@ -119,19 +122,19 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         return new RefactoringStatus();
     }
 
-    public Change createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException,
+                   OperationCanceledException {
         TextChange tfc = newLocalChange();
         extractInFile(tfc);
         return tfc;
     }
 
-    private void extractInFile(TextChange tfc) throws CoreException {
+    private void extractInFile(TextChange tfc) 
+            throws CoreException {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = tfc.getCurrentDocument(null);
         
-        tfc.addEdit(new ReplaceEdit(getStartOffset(node), 
-                getLength(node), newName));
         Tree.ParameterList pl;
         if (methodOrClass instanceof Tree.MethodDefinition) {
             List<Tree.ParameterList> pls = 
@@ -152,7 +155,8 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         }
         String text;
         try {
-            text = doc.get(getStartOffset(node), getLength(node));
+            text = doc.get(getStartOffset(node),
+                    getLength(node));
         }
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -165,15 +169,60 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
             typeDec = "dynamic";
         }
         else {
-            ProducedType type = node.getUnit().denotableType(tm);
-            typeDec = type.getProducedTypeName();
-            HashSet<Declaration> decs = new HashSet<Declaration>();
-            importType(decs, type, rootNode);
-            applyImports(tfc, decs, rootNode, doc);
+            typeDec = addType(tfc, doc, tm);
+        }
+        final List<Tree.BaseMemberExpression> localRefs = 
+                new ArrayList<Tree.BaseMemberExpression>();
+        node.visit(new Visitor() {
+            private Set<Declaration> decs = new HashSet<Declaration>();
+            @Override
+            public void visit(Tree.BaseMemberExpression that) {
+                super.visit(that);
+                Declaration d = that.getDeclaration();
+                if (d!=null && !d.isParameter() && !decs.contains(d) &&
+                        d.getContainer().equals(methodOrClass.getDeclarationModel())) {
+                    localRefs.add(that);
+                    decs.add(d);
+                }
+            }
+        });
+        String decl;
+        String call;
+        if (localRefs.isEmpty()) {
+            decl = typeDec + " " + newName + " = " + text;
+            call = newName;
+        }
+        else {
+            StringBuilder params = new StringBuilder();
+            StringBuilder args = new StringBuilder();
+            for (Tree.BaseMemberExpression bme: localRefs) {
+                if (params.length()!=0) {
+                    params.append(", ");
+                    args.append(", ");
+                }
+                String n = bme.getIdentifier().getText();
+                params.append(addType(tfc, doc, bme.getTypeModel()))
+                    .append(" ")
+                    .append(n);
+                args.append(n);
+            }
+            decl = typeDec + " " + newName + "(" + params + ") => " + text;
+            call = newName + "(" + args + ")";
         }
         tfc.addEdit(new InsertEdit(pl.getStopIndex(), 
-                (pl.getParameters().isEmpty()?"":", ") + 
-                typeDec + " " + newName + " = " + text));
+                (pl.getParameters().isEmpty()?"":", ") + decl));
+        tfc.addEdit(new ReplaceEdit(getStartOffset(node), 
+                getLength(node), call));
+    }
+
+    private String addType(TextChange tfc, IDocument doc, ProducedType tm) {
+        String typeDec;
+        ProducedType type = node.getUnit().denotableType(tm);
+        typeDec = type.getProducedTypeName();
+        HashSet<Declaration> decs = new HashSet<Declaration>();
+        importType(decs, type, rootNode);
+        applyImports(tfc, decs, rootNode, doc);
+        return typeDec;
     }
 
     public void setNewName(String text) {
