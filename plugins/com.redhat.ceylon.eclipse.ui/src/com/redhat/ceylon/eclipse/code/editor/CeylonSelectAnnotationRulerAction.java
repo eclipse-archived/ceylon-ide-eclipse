@@ -50,7 +50,7 @@ public class CeylonSelectAnnotationRulerAction extends SelectMarkerRulerAction {
                 if (ra.getLine()==line) {
                     Declaration dec = ra.getDeclaration();
                     CeylonParseController cpc = editor.getParseController();
-                    CompilationUnit cu = getCompilationUnit(cpc, dec);
+                    CompilationUnit cu = getCompilationUnit(dec, cpc);
                     if (cu!=null) {
                         gotoNode(getReferencedNode(dec, cu), 
                                 cpc.getProject(),

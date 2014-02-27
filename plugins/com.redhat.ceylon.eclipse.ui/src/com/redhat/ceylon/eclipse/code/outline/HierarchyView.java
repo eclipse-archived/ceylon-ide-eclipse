@@ -21,6 +21,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
@@ -132,7 +133,10 @@ public class HierarchyView extends ViewPart {
                 TypeDeclaration declaration = (TypeDeclaration) inputElement;
                 if (showInherited) {
                     ArrayList<Declaration> list = new ArrayList<Declaration>();
-                    for (DeclarationWithProximity dwp: declaration.getMatchingMemberDeclarations(declaration, "", 0).values()) {
+                    Collection<DeclarationWithProximity> children = 
+                            declaration.getMatchingMemberDeclarations(declaration, "", 0)
+                                    .values();
+                    for (DeclarationWithProximity dwp: children) {
                         list.add(dwp.getDeclaration());
                     }
                     //TODO: sort by declaring type?
@@ -265,8 +269,7 @@ public class HierarchyView extends ViewPart {
             public void doubleClick(DoubleClickEvent event) {
                 TreeSelection selection = (TreeSelection) event.getSelection();
                 CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
-                Declaration dec = firstElement.getDeclaration(project);
-                gotoCeylonOrJavaDeclaration(dec);
+                firstElement.gotoHierarchyDeclaration(project, null);
             }
         });
         return tree;

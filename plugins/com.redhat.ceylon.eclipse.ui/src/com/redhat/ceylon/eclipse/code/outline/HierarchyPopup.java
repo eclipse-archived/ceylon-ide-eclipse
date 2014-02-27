@@ -1,10 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
-import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 
 import org.eclipse.core.resources.IProject;
@@ -22,9 +18,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
@@ -181,24 +174,11 @@ public class HierarchyPopup extends TreeViewPopup {
             if (object instanceof CeylonHierarchyNode) {
                 dispose();
                 CeylonHierarchyNode hn = (CeylonHierarchyNode) object;
-                Declaration dec = hn.getDeclaration(cpc.getProject());
-                if (dec!=null) {
-                    //TODO: this is broken for Java declarations
-                    CompilationUnit cu = getCompilationUnit(cpc, dec);
-                    if (cu!=null) {
-                        Node refNode = getReferencedNode(dec, cu);
-                        if (refNode!=null) {
-                            gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
-                        }
-                    }
-                    else {
-                        gotoJavaNode(dec, cpc);
-                    }
-                }
+                hn.gotoHierarchyDeclaration(cpc.getProject(), cpc);
             }
         }
     }
-    
+
     @Override
     protected void reveal() {
         if (contentProvider.isEmpty()) return;
