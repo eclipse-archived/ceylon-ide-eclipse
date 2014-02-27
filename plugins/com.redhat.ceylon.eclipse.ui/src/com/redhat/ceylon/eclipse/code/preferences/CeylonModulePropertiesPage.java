@@ -19,8 +19,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -127,8 +130,18 @@ public class CeylonModulePropertiesPage extends PropertyPage
     }
 
     private void initProjectAndModule() {
-        packageFragment = (IPackageFragment) getElement()
-                .getAdapter(IPackageFragment.class);
+        IAdaptable element = getElement();
+        IFile file = (IFile) element.getAdapter(IFile.class);
+        if (file==null) {
+            packageFragment = (IPackageFragment) element
+                    .getAdapter(IPackageFragment.class);
+        }
+        else {
+            IJavaElement javaElement = JavaCore.create(file.getParent());
+            if (javaElement instanceof IPackageFragment) {
+                packageFragment = (IPackageFragment) javaElement;
+            }
+        }
         if (packageFragment!=null) {
             project = packageFragment.getJavaProject().getProject();
         }

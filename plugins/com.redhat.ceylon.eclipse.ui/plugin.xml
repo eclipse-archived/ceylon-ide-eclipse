@@ -1469,13 +1469,24 @@
            name="Ceylon Module"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonModulePropertiesPage">
          <enabledWhen>
-            <and>
-            <adapt
-                  type="org.eclipse.jdt.core.IPackageFragment"/>
-            <test value="true"
-                  forcePluginActivation="true"
-                  property="com.redhat.ceylon.eclipse.ui.module"/>
-            </and>
+            <or>
+               <and>
+                  <adapt
+                     type="org.eclipse.jdt.core.IPackageFragment"/>
+                  <test 
+                     value="true"
+                     forcePluginActivation="true"
+                     property="com.redhat.ceylon.eclipse.ui.module"/>
+               </and>
+               <and>
+                  <adapt
+                     type="org.eclipse.core.resources.IFile"/>
+                  <test 
+                     value="true"
+                     forcePluginActivation="true"
+                     property="com.redhat.ceylon.eclipse.ui.module"/>
+               </and>
+            </or>
          </enabledWhen>
        </page>
    </extension>
@@ -1494,7 +1505,19 @@
            namespace="com.redhat.ceylon.eclipse.ui"
            type="org.eclipse.jdt.core.IPackageFragment"
            id="com.redhat.ceylon.eclipse.ui.IPackageFragmentTester"
-           class="com.redhat.ceylon.eclipse.code.preferences.CeylonPropertyTester"/>
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonPackageFragmentPropertyTester"/>
+       <propertyTester
+           properties="module"
+           namespace="com.redhat.ceylon.eclipse.ui"
+           type="org.eclipse.core.resources.IFile"
+           id="com.redhat.ceylon.eclipse.ui.IFileTester"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonFilePropertyTester"/>
+       <propertyTester
+           properties="module"
+           namespace="com.redhat.ceylon.eclipse.ui"
+           type="org.eclipse.ui.IEditorInput"
+           id="com.redhat.ceylon.eclipse.ui.IEditorInputTester"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonEditorInputPropertyTester"/>
    </extension>
    
    <extension point="org.eclipse.ui.intro.configExtension">
