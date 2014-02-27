@@ -46,10 +46,10 @@ class AddAnnotionProposal extends CorrectionProposal {
     private static final List<String> ANNOTATIONS_ON_SEPARATE_LINE = 
             asList("doc", "throws", "see", "tagged");
     
-    final int offset; 
-    final IFile file;
-    final Declaration dec;
-    final String annotation;
+    private final int offset; 
+    private final IFile file;
+    private final Declaration dec;
+    private final String annotation;
     
     AddAnnotionProposal(Declaration dec, String annotation,
             int offset, IFile file, TextFileChange change) {

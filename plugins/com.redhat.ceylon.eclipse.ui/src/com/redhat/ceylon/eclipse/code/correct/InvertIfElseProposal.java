@@ -37,8 +37,8 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class InvertIfElseProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     InvertIfElseProposal(int offset, IFile file, TextChange change) {
         super("Invert if-else", change);

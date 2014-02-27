@@ -33,8 +33,8 @@ import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
 class AddParameterProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     AddParameterProposal(Declaration dec, int offset, IFile file, 
             TextChange change) {

@@ -19,8 +19,8 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ConvertToGetterProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     ConvertToGetterProposal(Declaration dec, int offset, 
             IFile file, TextChange change) {

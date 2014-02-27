@@ -17,8 +17,8 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ConvertToSpecifierProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     ConvertToSpecifierProposal(int offset, IFile file, TextChange change) {
         super("Convert block to =>", change);

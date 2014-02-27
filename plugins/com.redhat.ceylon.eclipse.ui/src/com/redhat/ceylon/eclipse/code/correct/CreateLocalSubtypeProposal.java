@@ -27,9 +27,9 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateLocalSubtypeProposal extends CorrectionProposal {
     
-    final int offset;
-    final int length;
-    final IFile file;
+    private final int offset;
+    private final int length;
+    private final IFile file;
     
     CreateLocalSubtypeProposal(ProducedType type, int offset, int length, 
             IFile file, TextChange change) {

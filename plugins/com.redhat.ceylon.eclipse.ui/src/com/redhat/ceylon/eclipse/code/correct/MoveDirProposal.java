@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 final class MoveDirProposal implements ICompletionProposal {
+    
     private final Shell shell;
     private final String pn;
     private final String cpn;

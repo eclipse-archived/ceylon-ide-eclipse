@@ -35,9 +35,9 @@ import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
 class CreateTypeParameterProposal extends CorrectionProposal {
     
-    final int offset;
-    final IFile file;
-    final int length;
+    private final int offset;
+    private final IFile file;
+    private final int length;
     
     CreateTypeParameterProposal(String def, String desc, 
             Image image, String name, int offset, IFile file, 

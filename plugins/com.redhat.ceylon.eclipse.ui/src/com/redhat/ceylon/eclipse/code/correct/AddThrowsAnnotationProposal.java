@@ -112,8 +112,8 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
         return false;
     }
 
-    private IFile file;
-    private int offset;
+    private final IFile file;
+    private final int offset;
 
     private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, IFile file, int offset, String declName) {
         super("Add throws annotation to '" + declName + "'", change);

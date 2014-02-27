@@ -42,9 +42,9 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class CreateParameterProposal extends CorrectionProposal {
     
-    final int offset;
-    final IFile file;
-    final int length;
+    private final int offset;
+    private final IFile file;
+    private final int length;
     
     CreateParameterProposal(String def, String desc, 
             Image image, int offset, IFile file, 

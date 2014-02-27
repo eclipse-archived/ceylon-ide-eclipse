@@ -22,8 +22,8 @@ import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
 class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     public ConvertToPositionalArgumentsProposal(int offset, IFile file, Change change) {
         super("Convert to positional arguments", change);

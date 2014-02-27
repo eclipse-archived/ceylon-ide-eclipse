@@ -23,8 +23,8 @@ import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
 class ConvertToNamedArgumentsProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     public ConvertToNamedArgumentsProposal(int offset, IFile file, Change change) {
         super("Convert to named arguments", change);

@@ -27,9 +27,9 @@ import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 public class ExportModuleImportProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
     
-    private IProject project;
-    private Unit unit; 
-    String name;
+    private final IProject project;
+    private final Unit unit; 
+    private final String name;
     
     ExportModuleImportProposal(IProject project, Unit unit, String name) {
         this.project = project;

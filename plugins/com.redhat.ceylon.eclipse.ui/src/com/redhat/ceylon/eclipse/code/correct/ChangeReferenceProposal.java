@@ -33,9 +33,9 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ChangeReferenceProposal extends CorrectionProposal implements ICompletionProposalExtension {
     
-    final int offset;
-    final int length;
-    final IFile file;
+    private final int offset;
+    private final int length;
+    private final IFile file;
     
     ChangeReferenceProposal(ProblemLocation problem, IFile file, String name, 
             String pkg, Declaration dec, int dist, TextFileChange change) {

@@ -15,9 +15,9 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ChangeDeclarationProposal extends CorrectionProposal {
     
-    final IFile file;
-    final int offset;
-    final int length;
+    private final IFile file;
+    private final int offset;
+    private final int length;
     
     ChangeDeclarationProposal(String kw, CommonToken token, 
             IFile file, TextFileChange change) {

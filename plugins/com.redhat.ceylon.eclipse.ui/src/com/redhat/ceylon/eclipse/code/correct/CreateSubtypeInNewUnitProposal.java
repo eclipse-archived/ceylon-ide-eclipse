@@ -56,8 +56,8 @@ import com.redhat.ceylon.eclipse.util.Indents;
 class CreateSubtypeInNewUnitProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
 
-    private CeylonEditor editor;
-    private ProducedType type;
+    private final CeylonEditor editor;
+    private final ProducedType type;
     
     public CreateSubtypeInNewUnitProposal(CeylonEditor editor, 
             ProducedType type) {

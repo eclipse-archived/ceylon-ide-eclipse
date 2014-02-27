@@ -25,10 +25,10 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class RemoveAnnotionProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
-    final Declaration dec;
-    final String annotation;
+    private final int offset; 
+    private final IFile file;
+    private final Declaration dec;
+    private final String annotation;
     
     RemoveAnnotionProposal(Declaration dec, String annotation,
             int offset, IFile file, TextFileChange change) {

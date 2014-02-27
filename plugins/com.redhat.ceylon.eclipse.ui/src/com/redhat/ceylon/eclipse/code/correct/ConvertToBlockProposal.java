@@ -21,8 +21,8 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ConvertToBlockProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     ConvertToBlockProposal(int offset, IFile file, TextChange change) {
         super("Convert => to block", change);

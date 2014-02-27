@@ -22,9 +22,9 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 public class SpecifyTypeProposal extends CorrectionProposal {
 
-    final int offset;
-    final int length;
-    final IFile file;
+    private final int offset;
+    private final int length;
+    private final IFile file;
     
     SpecifyTypeProposal(int offset, IFile file, String type, TextFileChange change) {
         super("Specify explicit type '" + type + "'", change);

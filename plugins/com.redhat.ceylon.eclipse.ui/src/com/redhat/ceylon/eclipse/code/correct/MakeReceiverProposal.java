@@ -21,7 +21,7 @@ import com.redhat.ceylon.eclipse.code.refactor.MakeReceiverRefactoringAction;
 
 public class MakeReceiverProposal implements ICompletionProposal, ICompletionProposalExtension6 {
 
-    private MakeReceiverRefactoringAction action;
+    private final MakeReceiverRefactoringAction action;
     private String name;
     
     public MakeReceiverProposal(CeylonEditor editor, Node node) {

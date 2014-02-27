@@ -14,7 +14,7 @@ import com.redhat.ceylon.eclipse.code.refactor.InlineRefactoringAction;
 
 class InlineDeclarationProposal implements ICompletionProposal {
 
-    private InlineRefactoringAction action;
+    private final InlineRefactoringAction action;
     
     public InlineDeclarationProposal(CeylonEditor editor) {
         action = new InlineRefactoringAction(editor);

@@ -47,9 +47,9 @@ public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
         }                               
     }
 
-    private int offset; 
-    private IFile file;
-    private TypedDeclaration parameter;
+    private final int offset; 
+    private final IFile file;
+    private final TypedDeclaration parameter;
     
     private AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, int offset, IFile file, TextFileChange change) {
         super("Spread iterable argument of variadic parameter", change);
