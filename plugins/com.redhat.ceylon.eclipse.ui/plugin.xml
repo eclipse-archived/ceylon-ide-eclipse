@@ -1083,6 +1083,11 @@
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
+            <command
+                  label="Open &amp;Resource..." 
+                  commandId="org.eclipse.ui.navigate.openResource"
+                  icon="icons/openrsrc.gif"
+                  id="com.redhat.ceylon.eclipse.ui.menu.openResource"/>
             <separator
                   visible="true"
                   name="sep8"/>
@@ -1098,7 +1103,7 @@
                   visible="true"
                   name="belowOpen"/>
             <command
-                  label="Show &amp;Repository Explorer..." 
+                  label="Show Repository &amp;Explorer..." 
                   commandId="org.eclipse.ui.views.showView"
                   icon="icons/repositories.gif"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.showRepositoryExplorer">
@@ -1118,6 +1123,12 @@
                   icon="icons/opentype.gif"
                   tooltip="Open Ceylon Declaration"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.openDeclaration"/>
+            <command
+                  label="Open Resource..." 
+                  commandId="org.eclipse.ui.navigate.openResource"
+                  icon="icons/openrsrc.gif"
+                  tooltip="Open Resource"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.openResource"/>
             <command
                   label="Show Repository Explorer..." 
                   commandId="org.eclipse.ui.views.showView"
