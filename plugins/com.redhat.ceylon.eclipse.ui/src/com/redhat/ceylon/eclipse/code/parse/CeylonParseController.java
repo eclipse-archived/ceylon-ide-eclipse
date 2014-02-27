@@ -22,6 +22,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -181,6 +182,7 @@ public class CeylonParseController {
         return null;
     }
     
+    @SuppressWarnings("unchecked")
     public void parse(String contents, 
             IProgressMonitor monitor, Stager stager) {
         
@@ -691,10 +693,10 @@ public class CeylonParseController {
     }
     
     private VirtualFile getSourceFolder(IProject project, IPath resolvedPath) {
-        for (IPath folderPath: getSourceFolders(project)) {
-            if (folderPath.isPrefixOf(resolvedPath)) {
+        for (IFolder sourceFolder: getSourceFolders(project)) {
+            if (sourceFolder.getFullPath().isPrefixOf(resolvedPath)) {
                 return new IFolderVirtualFile(project, 
-                        folderPath.makeRelativeTo(project.getFullPath()));
+                        sourceFolder.getProjectRelativePath());
             }
         }
         return null;

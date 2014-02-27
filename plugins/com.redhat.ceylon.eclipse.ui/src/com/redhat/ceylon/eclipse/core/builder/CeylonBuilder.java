@@ -63,6 +63,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
@@ -100,7 +101,6 @@ import com.redhat.ceylon.compiler.js.JsCompiler;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
-import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
@@ -115,6 +115,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -368,23 +369,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      * @return true iff an arbitrary file is a ceylon source file.
      */
     protected boolean isSourceFile(IFile file) {
-        IPath path = file.getFullPath(); //getProjectRelativePath();
-        if (path == null)
-            return false;
-
         if (!isCeylonOrJava(file)) {
             return false;
         }
         
-        IProject project = file.getProject();
-        if (project != null) {
-            for (IPath sourceFolder: getSourceFolders(project)) {
-                if (sourceFolder.isPrefixOf(path)) {
-                    return true;
-                }
-            }
+        if (getRootFolder(file) == null) {
+            return false;
         }
-        return false;
+        return true;
     }
     
     public static JDTModelLoader getModelLoader(TypeChecker tc) {
@@ -428,7 +420,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         protected void endBuild() {}
     };
     
-    public static final CeylonBuildHook noOpHook = new CeylonBuildHook(); 
+    public static final CeylonBuildHook noOpHook = new CeylonBuildHook();
+
+    public static final QualifiedName RESOURCE_PROPERTY_PACKAGE_MODEL = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty.packageModel");
+    public static final QualifiedName RESOURCE_PROPERTY_ROOT_FOLDER = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty.rootFolder"); 
+    
     private static CeylonBuildHook buildHook = new CeylonBuildHook() {
         List<CeylonBuildHook> contributedHooks = new LinkedList<>();
 
@@ -1003,7 +999,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             else if (isJava(fileToRemove)) {
                 // Remove the external unit from the package
-                Package pkg = retrievePackage(fileToRemove.getParent());
+                Package pkg = getPackage((IFolder)fileToRemove.getParent());
                 if (pkg != null) {
                     for (Unit unitToTest: pkg.getUnits()) {
                         if (unitToTest.getFilename().equals(fileToRemove.getName())) {
@@ -1139,47 +1135,77 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     throws CoreException {
         for (final IResourceDelta projectDelta: projectDeltas) {
             if (projectDelta != null) {
-                IProject p = (IProject) projectDelta.getResource();
-                List<IPath> projectSourceFolders = getSourceFolders(p);
-                for (IResourceDelta sourceDelta: projectDelta.getAffectedChildren()) {
-                    for (IPath ip: projectSourceFolders) {
-                        if (sourceDelta.getResource().getFullPath().isPrefixOf(ip)) {
-                            //a real Ceylon source folder so scan for changes
-                            /*if (emitDiags)
-                                getConsoleStream().println("==> Scanning resource delta for '" + 
-                                        p.getName() + "'... <==");*/
-                            sourceDelta.accept(new IResourceDeltaVisitor() {
-                                public boolean visit(IResourceDelta delta) throws CoreException {
-                                    IResource resource = delta.getResource();
-                                    if (resource instanceof IFile) {
-                                        IFile file= (IFile) resource;
-                                        if (isCeylonOrJava(file)) {
-                                            changedSources.add(file);
-                                            if (projectDelta == currentDelta) {
-                                                if (delta.getKind() == IResourceDelta.REMOVED) {
-                                                    filesToRemove.add((IFile) resource);
-                                                    currentProjectSources.remove((IFile) resource);
+                final IProject project = (IProject) projectDelta.getResource();
+                List<IFolder> projectSourceFolders = getSourceFolders(project);
+                List<IFolder> projectResourceFolders = getResourceFolders(project);
+                for (IResourceDelta projectAffectedChild: projectDelta.getAffectedChildren()) {
+                    if (! (projectAffectedChild.getResource() instanceof IFolder)) {
+                        continue;
+                    }
+                    final IFolder rootFolder = (IFolder) projectAffectedChild.getResource();
+                    boolean isSourceDirectory = false;
+                    boolean isResourceDirectory = false;
+                    
+                    for (IFolder sourceFolder: projectSourceFolders) {
+                        if (projectAffectedChild.getResource().getFullPath().isPrefixOf(sourceFolder.getFullPath())) {
+                            isSourceDirectory = true;
+                            break;
+                        }
+                    }
+                    for (IFolder resourceFolder: projectResourceFolders) {
+                        if (projectAffectedChild.getResource().getFullPath().isPrefixOf(resourceFolder.getFullPath())) {
+                            isSourceDirectory = true;
+                            break;
+                        }
+                    }
+                    
+                    if (isResourceDirectory || isSourceDirectory) {
+                        // a real Ceylon source or resource folder so scan for changes
+                        projectAffectedChild.accept(new IResourceDeltaVisitor() {
+                            public boolean visit(IResourceDelta delta) throws CoreException {
+                                IResource resource = delta.getResource();
+                                if (resource instanceof IFile) {
+                                    IFile file= (IFile) resource;
+                                    if (isCeylonOrJava(file)) {
+                                        changedSources.add(file);
+                                        if (projectDelta == currentDelta) {
+                                            if (delta.getKind() == IResourceDelta.REMOVED) {
+                                                filesToRemove.add((IFile) resource);
+                                                currentProjectSources.remove((IFile) resource);
+                                            }
+                                            if (delta.getKind() == IResourceDelta.ADDED) {
+                                                IFile addedFile = (IFile) resource;
+                                                int index = currentProjectSources.indexOf(addedFile);
+                                                if ((index >= 0)) {
+                                                    currentProjectSources.remove(index);
                                                 }
-                                                if (delta.getKind() == IResourceDelta.ADDED) {
-                                                    IFile addedFile = (IFile) resource;
-                                                    int index = currentProjectSources.indexOf(addedFile);
-                                                    if ((index >= 0)) {
-                                                        currentProjectSources.remove(index);
+                                                currentProjectSources.add(addedFile);
+                                            }
+                                        }
+                                    }
+                                    return false;
+                                }
+                                if (resource instanceof IFolder) {
+                                    IFolder folder= (IFolder) resource;
+                                    if (projectDelta == currentDelta) {
+                                        if (folder.exists() && delta.getKind() != IResourceDelta.REMOVED) {
+                                            if (getPackage(folder) == null || getRootFolder(folder) == null) {
+                                                IContainer parent = folder.getParent();
+                                                if (parent instanceof IFolder) {
+                                                    Package parentPkg = getPackage((IFolder)parent);
+                                                    if (parentPkg != null) {
+                                                        Package pkg = getProjectModelLoader(project).findOrCreatePackage(parentPkg.getModule(), parentPkg.getNameAsString() + "." + folder.getName());
+                                                        resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(pkg));
+                                                        resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootFolder);
                                                     }
-                                                    currentProjectSources.add(addedFile);
                                                 }
                                             }
                                         }
-                                        return false;
                                     }
-                                    return true;
                                 }
-                            });
-                            /*if (emitDiags)
-                                getConsoleStream().println("Delta scan completed for project '" + 
-                                        projectDelta.getResource().getName() + "'...");*/
-                            break;
-                        }
+                                return true;
+                            }
+                        });
                     }
                 }
             }
@@ -1259,50 +1285,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return Collections.emptySet();
     }
 
-//    private void updateExternalPhasedUnitsInReferencingProjects(IProject project, 
-//            List<PhasedUnit> builtPhasedUnits) {
-//        for (IProject referencingProject : project.getReferencingProjects()) {
-//            TypeChecker referencingTypeChecker = getProjectTypeChecker(referencingProject);
-//            if (referencingTypeChecker != null) {
-//                List<PhasedUnit> referencingPhasedUnits = new ArrayList<PhasedUnit>();
-//                for (PhasedUnit builtPhasedUnit : builtPhasedUnits) {
-//                    List<PhasedUnits> phasedUnitsOfDependencies = referencingTypeChecker.getPhasedUnitsOfDependencies();
-//                    for (PhasedUnits phasedUnitsOfDependency : phasedUnitsOfDependencies) {
-//                        String relativePath = builtPhasedUnit.getPathRelativeToSrcDir();
-//                        PhasedUnit referencingPhasedUnit = phasedUnitsOfDependency.getPhasedUnitFromRelativePath(relativePath);
-//                        if (referencingPhasedUnit != null) {
-//                            phasedUnitsOfDependency.removePhasedUnitForRelativePath(relativePath);
-//                            PhasedUnit newReferencingPhasedUnit = new CrossProjectPhasedUnit(referencingPhasedUnit.getUnitFile(), 
-//                                    referencingPhasedUnit.getSrcDir(), 
-//                                    builtPhasedUnit.getCompilationUnit(), 
-//                                    referencingPhasedUnit.getPackage(), 
-//                                    phasedUnitsOfDependency.getModuleManager(), 
-//                                    referencingTypeChecker, 
-//                                    builtPhasedUnit.getTokens(),
-//                                    project);
-//                            phasedUnitsOfDependency.addPhasedUnit(newReferencingPhasedUnit.getUnitFile(), 
-//                                    newReferencingPhasedUnit);
-//                            // replace referencingPhasedUnit
-//                            referencingPhasedUnits.add(newReferencingPhasedUnit);
-//                        }
-//                    }
-//                }
-//                
-//                if (isModelTypeChecked(referencingProject)) {
-//                    for (PhasedUnit pu : referencingPhasedUnits) {
-//                        pu.scanDeclarations();
-//                    }
-//                    for (PhasedUnit pu : referencingPhasedUnits) {
-//                        pu.scanTypeDeclarations();
-//                    }
-//                    for (PhasedUnit pu : referencingPhasedUnits) {
-//                        pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     static ProjectPhasedUnit parseFileToPhasedUnit(final ModuleManager moduleManager, final TypeChecker typeChecker,
             final ResourceVirtualFile file, final ResourceVirtualFile srcDir,
             final Package pkg) {
@@ -1318,6 +1300,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
             }
             
+            @SuppressWarnings("unchecked")
             @Override
             protected ProjectPhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
                 return new ProjectPhasedUnit(file, srcDir, cu, pkg, 
@@ -1403,14 +1386,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             cleanedPackages.add(packageName);
                         }
                     }                    
-                    continue;
                 }
-                
+                continue;
             }
             
             ResourceVirtualFile file = ResourceVirtualFile.createResourceVirtualFile(fileToUpdate);
-            IPath srcFolderPath = retrieveSourceFolder(fileToUpdate, project);
-            ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
+            IFolder srcFolder = getRootFolder(fileToUpdate);
 
             ProjectPhasedUnit alreadyBuiltPhasedUnit = (ProjectPhasedUnit) pus.getPhasedUnit(file);
 
@@ -1420,15 +1401,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 pkg = alreadyBuiltPhasedUnit.getPackage();
             }
             else {
-                IContainer packageFolder = file.getResource().getParent();
-                pkg = retrievePackage(packageFolder);
-                if (pkg == null) {
-                    pkg = createNewPackage(packageFolder);
-                }
+                IFolder packageFolder = (IFolder) file.getResource().getParent();
+                pkg = getPackage(packageFolder);
             }
+            if (srcFolder == null || pkg == null) {
+                continue;
+            }
+            ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolder.getProjectRelativePath());
             PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, typeChecker, file, srcDir, pkg);
             phasedUnitsToUpdate.add(newPhasedUnit);
-            
         }
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
@@ -1898,7 +1879,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         for (final IPath srcAbsoluteFolderPath : sourceFolders) {
             final IPath srcFolderPath = srcAbsoluteFolderPath.makeRelativeTo(project.getFullPath());
-            final ResourceVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
+            final IFolderVirtualFile srcDir = new IFolderVirtualFile(project, srcFolderPath);
 
             IResource srcDirResource = srcDir.getResource();
             if (! srcDirResource.exists()) {
@@ -2653,9 +2634,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         projectModuleDependencies.remove(project);
     }
     
-    public static List<IPath> getSourceFolders(IProject project) {
+    public static List<IFolder> getSourceFolders(IProject project) {
         //TODO: is the call to JavaCore.create() very expensive??
-        return getSourceFolders(JavaCore.create(project));
+        List<IPath> folderPaths = getSourceFolders(JavaCore.create(project));
+        List<IFolder> sourceFolders = new ArrayList<>(folderPaths.size());
+        for (IPath path : folderPaths) {
+            IResource r = project.findMember(path.makeRelativeTo(project.getFullPath()));
+            if (r instanceof IFolder) {
+                sourceFolders.add((IFolder) r);
+            }
+        }
+        return sourceFolders;
     }
 
     /**
@@ -2681,17 +2670,28 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return Collections.emptyList();
     }
 
+    public static List<IFolder> getResourceFolders(IProject project) {
+        LinkedList<IFolder> resourceFolers = new LinkedList<>();
+        if (project.exists()) {
+            for (String resourceFolder : CeylonProjectConfig.get(project).getResourceDirectories()) {
+                if (resourceFolder.startsWith("." + File.separator)) {
+                    resourceFolder = project.getLocation().toOSString() + resourceFolder.substring(1);
+                }
+                IPath resourceDirFullPath = Path.fromOSString(resourceFolder);
+                IPath projectLocation = project.getLocation();
+                if (projectLocation.isPrefixOf(resourceDirFullPath)) {
+                    resourceFolers.add(project.getFolder(resourceDirFullPath.makeRelativeTo(projectLocation)));
+                }
+            }
+        }
+        return resourceFolers;
+    }
+
     public static boolean isCeylonSourceEntry(IClasspathEntry entry) {
         if (entry.getEntryKind()!=IClasspathEntry.CPE_SOURCE) {
             return false;
         }
         
-        /*for (IClasspathAttribute attribute: entry.getExtraAttributes()) {
-            if (attribute.getName().equals("ceylonSource")) {
-                return true;
-            }
-        }*/
-
         for (IPath exclusionPattern : entry.getExclusionPatterns()) {
             if (exclusionPattern.toString().endsWith(".ceylon")) {
                 return false;
@@ -2701,127 +2701,84 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return true;
     }
 
-    private IPath retrieveSourceFolder(IFile file, IProject project) {
-        IPath path = file.getProjectRelativePath();
-        if (path == null)
-            return null;
-
-        if (! isCeylonOrJava(file))
-            return null;
-
-        return retrieveSourceFolder(path, project);
-    }
-
-    // path is project-relative
-    private static IPath retrieveSourceFolder(IPath path, IProject project) {
-        if (project != null) {
-            Collection<IPath> sourceFolders = getSourceFolders(project);
-            for (IPath sourceFolderAbsolute : sourceFolders) {
-                IPath sourceFolder = sourceFolderAbsolute.makeRelativeTo(project.getFullPath());
-                if (sourceFolder.isPrefixOf(path)) {
+    public static IFolder getRootFolder(IFolder folder) {
+        Object property = null;
+        if (! folder.exists()) {
+            for (IFolder sourceFolder: getSourceFolders(folder.getProject())) {
+                if (sourceFolder.getFullPath().isPrefixOf(folder.getFullPath())) {
                     return sourceFolder;
                 }
             }
+            for (IFolder resourceFolder: getResourceFolders(folder.getProject())) {
+                if (resourceFolder.getFullPath().isPrefixOf(folder.getFullPath())) {
+                    return resourceFolder;
+                }
+            }
+            return null;
+        }
+
+        try {
+            property = folder.getSessionProperty(RESOURCE_PROPERTY_ROOT_FOLDER);
+        } catch (CoreException e) {
+            CeylonPlugin.getInstance().getLog().log(new Status(Status.WARNING, CeylonPlugin.PLUGIN_ID, "Unexpected exception", e));
+        }
+        if (property instanceof IFolder) {
+            return (IFolder) property;
         }
         return null;
     }
     
-    static Package retrievePackage(IResource folder) {
-        IProject project = folder.getProject();
-        if (project.isOpen()) {
-            String packageName = getPackageName(folder);
-            if (packageName != null) {
-                TypeChecker typeChecker = typeCheckers.get(project);
-                Context context = typeChecker.getContext();
-                Modules modules = context.getModules();
-                for (Module module : modules.getListOfModules()) {
-                    for (Package p : module.getPackages()) {
-                        if (p.getQualifiedNameString().equals(packageName)) {
-                            return p;
-                        }
-                    }
-                }
-            }
+    public static IFolder getRootFolder(IFile file) {
+        if (file.getParent() instanceof IFolder) {
+            return getRootFolder((IFolder) file.getParent());
         }
         return null;
     }
 
     public static String getPackageName(IResource resource) {
-        IProject project = resource.getProject();
-        IContainer folder = null;
+        if (resource instanceof IFolder) {
+            return getPackage((IFolder) resource).getQualifiedNameString();
+        }
+
         if (resource instanceof IFile) {
-            folder = resource.getParent();
+            return getPackage((IFile) resource).getQualifiedNameString();
         }
-        else {
-            folder = (IContainer) resource;
-        }
-        String packageName = null;
-        IPath folderPath = folder.getProjectRelativePath();
-        IPath sourceFolder = retrieveSourceFolder(folderPath, project);
-        if (sourceFolder != null) {
-            IPath relativeFolderPath = folderPath.makeRelativeTo(sourceFolder);
-            packageName = relativeFolderPath.toString().replace('/', '.');
-        }
-        return packageName;
+        return null;
     }
     
-    private Package createNewPackage(IContainer folder) {
-        IPath folderPath = folder.getProjectRelativePath();
-        IPath sourceFolder = retrieveSourceFolder(folderPath, getProject());
-        if (sourceFolder == null) {
+    public static Package getPackage(IFolder resource) {
+        Object property = null;
+        if (! resource.exists()) {
+            IFolder rootFolder = getRootFolder(resource);
+            if (rootFolder != null) {
+                IPath rootRelativePath = resource.getFullPath().makeRelativeTo(rootFolder.getFullPath());
+                JDTModelLoader modelLoader = getProjectModelLoader(resource.getProject());
+                if (modelLoader != null) {
+                    return modelLoader.findPackage(Util.formatPath(Arrays.asList(rootRelativePath.segments()), '.'));
+                }
+            }
             return null;
         }
-        
-        IContainer parent = folder.getParent();
-        IPath packageRelativePath = folder.getProjectRelativePath().makeRelativeTo(parent.getProjectRelativePath());
-        Package parentPackage = null;
-        while (parentPackage == null && ! parent.equals(folder.getProject())) {
-            packageRelativePath = folder.getProjectRelativePath().makeRelativeTo(parent.getProjectRelativePath());
-            parentPackage = retrievePackage(parent);
-            parent = parent.getParent();
+        try {
+            property = resource.getSessionProperty(RESOURCE_PROPERTY_PACKAGE_MODEL);
+        } catch (CoreException e) {
+            CeylonPlugin.getInstance().getLog().log(new Status(Status.WARNING, CeylonPlugin.PLUGIN_ID, "Unexpected exception", e));
         }
-        
-        Context context = typeCheckers.get(folder.getProject()).getContext();
-        return createPackage(parentPackage, packageRelativePath, context.getModules());
+        if (property instanceof WeakReference<?>) {
+            Object pkg = ((WeakReference<?>) property).get();
+            if (pkg instanceof Package) {
+                return (Package) pkg;
+            }
+        }
+        return null;
     }
     
-    private Package createPackage(Package parentPackage, IPath packageRelativePath, Modules modules) {
-        String[] packageSegments = packageRelativePath.segments();
-        if (packageSegments.length == 1) {
-            Package pkg = new LazyPackage(getProjectModelLoader(getProject()));
-            List<String> parentName = null;
-            if (parentPackage == null) {
-                parentName = Collections.emptyList();
-            }
-            else {
-                parentName = parentPackage.getName();
-            }
-            final ArrayList<String> name = new ArrayList<String>(parentName.size() + 1);
-            name.addAll(parentName);
-            name.add(packageRelativePath.segment(0));
-            pkg.setName(name);
-            Module module = null;
-            if (parentPackage != null) {
-                module = parentPackage.getModule();
-            }
-            
-            if (module == null) {
-                module = modules.getDefaultModule();
-            }
-            
-            module.getPackages().add(pkg);
-            pkg.setModule(module);
-            return pkg;
+    public static Package getPackage(IFile file) {
+        if (file.getParent() instanceof IFolder) {
+            return getPackage((IFolder) file.getParent());
         }
-        else {
-            Package childPackage = createPackage(parentPackage, 
-                    packageRelativePath.uptoSegment(1), modules);
-            return createPackage(childPackage, 
-                    packageRelativePath.removeFirstSegments(1), 
-                    modules);
-        }
-    }
-    
+        return null;
+    }    
 
     private void removeObsoleteClassFiles(List<IFile> filesToRemove, 
             IProject project) {
@@ -2833,12 +2790,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         for (IFile file : filesToRemove) {
             IPath filePath = file.getProjectRelativePath();
-            IPath sourceFolder = retrieveSourceFolder(filePath, project);
-            if (sourceFolder == null) {
+            IFolder rootFolder = getRootFolder(file);
+            if (rootFolder == null) {
                 return;
             }
-            
-            Package pkg = retrievePackage(file.getParent());
+            IPath rootFolderProjectRelativePath = rootFolder.getProjectRelativePath();
+            Package pkg = getPackage((IFolder)file.getParent());
             if (pkg == null) {
                 return;
             }
@@ -2859,7 +2816,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             File moduleJar = new File(moduleDir, getModuleArchiveName(module));
             if(moduleJar.exists()){
                 moduleJars.add(moduleJar);
-                String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
+                String relativeFilePath = filePath.makeRelativeTo(rootFolderProjectRelativePath).toString();
                 try {
                     List<String> entriesToDelete = new ArrayList<String>();
                     ZipFile zipFile = new ZipFile(moduleJar);
@@ -2889,7 +2846,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             File moduleSrc = new File(moduleDir, getSourceArchiveName(module));
             if(moduleSrc.exists()){
                 moduleJars.add(moduleSrc);
-                String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
+                String relativeFilePath = filePath.makeRelativeTo(rootFolderProjectRelativePath).toString();
                 try {
                     new ZipFile(moduleSrc).removeFile(relativeFilePath);
                 } catch (ZipException e) {
@@ -2926,82 +2883,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         ConsoleLog log = new ConsoleLog();
         for (File moduleJar: moduleJars) {
             ShaSigner.sign(moduleJar, log, false);
-        }
-    }
-
-    private void removeObsoleteResourceFiles(List<IFile> filesToRemove, 
-            IProject project) {
-        if (filesToRemove.size() == 0) {
-            return;
-        }
-        
-        Set<File> moduleJars = new HashSet<File>();
-        
-        for (IFile file : filesToRemove) {
-            IPath filePath = file.getProjectRelativePath();
-            IPath sourceFolder = retrieveSourceFolder(filePath, project);
-            if (sourceFolder == null) {
-                return;
-            }
-            
-            Package pkg = retrievePackage(file.getParent());
-            if (pkg == null) {
-                return;
-            }
-            Module module = pkg.getModule();
-            TypeChecker typeChecker = typeCheckers.get(project);
-            if (typeChecker == null) {
-                return;
-            }
-            
-            final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
-            boolean explodeModules = isExplodeModulesEnabled(project);
-            final File ceylonOutputDirectory = explodeModules ? 
-                    getCeylonClassesOutputDirectory(project) : null;
-            File moduleDir = getModulePath(modulesOutputDirectory, module);
-            
-            //Remove the classes belonging to the source file from the
-            //module archive and from the JDTClasses directory
-            File moduleJar = new File(moduleDir, getModuleArchiveName(module));
-            if(moduleJar.exists()){
-                moduleJars.add(moduleJar);
-                String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
-                try {
-                    List<String> entriesToDelete = new ArrayList<String>();
-                    ZipFile zipFile = new ZipFile(moduleJar);
-                    
-                    Properties mapping = CarUtils.retrieveMappingFile(zipFile);
-    
-                    for (String className : mapping.stringPropertyNames()) {
-                        String sourceFile = mapping.getProperty(className);
-                        if (relativeFilePath.equals(sourceFile)) {
-                            entriesToDelete.add(className);
-                        }
-                    }
-    
-                    for (String entryToDelete : entriesToDelete) {
-                        zipFile.removeFile(entryToDelete);
-                        if (explodeModules) {
-                            new File(ceylonOutputDirectory, 
-                                    entryToDelete.replace('/', File.separatorChar))
-                                    .delete();
-                        }
-                    }
-                } catch (ZipException e) {
-                    e.printStackTrace();
-                }
-            }
-            //Remove the source file from the source archive
-            File moduleSrc = new File(moduleDir, getSourceArchiveName(module));
-            if(moduleSrc.exists()){
-                moduleJars.add(moduleSrc);
-                String relativeFilePath = filePath.makeRelativeTo(sourceFolder).toString();
-                try {
-                    new ZipFile(moduleSrc).removeFile(relativeFilePath);
-                } catch (ZipException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
