@@ -53,7 +53,8 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return "Create toplevel " + dg.desc + " in new unit";
+        return "Create toplevel " + dg.desc + 
+                " in a new source file";
     }
 
     @Override

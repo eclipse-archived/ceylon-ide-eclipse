@@ -56,7 +56,8 @@ class ConvertToClassProposal implements ICompletionProposal {
         return action.isEnabled();
     }
     
-    public static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+    public static void add(Collection<ICompletionProposal> proposals, 
+            CeylonEditor editor) {
         ConvertToClassProposal prop = new ConvertToClassProposal(editor);
         if (prop.isEnabled()) {
             proposals.add(prop);

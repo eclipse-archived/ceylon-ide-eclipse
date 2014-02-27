@@ -558,9 +558,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     context.getOffset() + context.getLength());
             int currentOffset = editor.getSelection().getOffset();
             
-            RenameDeclarationProposal.add(proposals, file, editor);
+            RenameDeclarationProposal.add(proposals, editor);
             InlineDeclarationProposal.add(proposals, editor);
-            ChangeParametersProposal.add(proposals, file, editor);
+            ChangeParametersProposal.add(proposals, editor);
             ExtractValueProposal.add(proposals, editor, node);
             ExtractFunctionProposal.add(proposals, editor, node);
             MoveOutProposal.add(proposals, editor, node);

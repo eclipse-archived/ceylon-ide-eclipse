@@ -79,7 +79,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
     public String getDisplayString() {
         return "Create subtype of '" + 
                 type.getProducedTypeName() + 
-                "' in new unit";
+                "' in a new source file";
     }
 
     @Override
