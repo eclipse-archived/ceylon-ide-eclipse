@@ -145,6 +145,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public ContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         if (editor==null) return null;
         ContentAssistant contentAssistant = new ContentAssistant();
+        contentAssistant.setRestoreCompletionProposalSize(getOrCreateSection(getSettings(),
+                "completion_proposal_popup"));
         CeylonCompletionProcessor completionProcessor = new CeylonCompletionProcessor(editor);
         contentAssistant.addCompletionListener(new CompletionListener(editor, completionProcessor));
         contentAssistant.setContentAssistProcessor(completionProcessor, DEFAULT_CONTENT_TYPE);
@@ -201,6 +203,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
         if (editor==null) return null;
         CeylonCorrectionProcessor quickAssist = new CeylonCorrectionProcessor(editor);
+        quickAssist.setRestoreCompletionProposalSize(getOrCreateSection(getSettings(), 
+                "quickassist_proposal_popup"));
         quickAssist.enableColoredLabels(true);
         return quickAssist;
     }
@@ -316,7 +320,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         }
     }*/
 
-    private IDialogSettings getSettings() { return CeylonPlugin.getInstance().getDialogSettings(); }
+    private IDialogSettings getSettings() {
+        return CeylonPlugin.getInstance().getDialogSettings(); 
+    }
     
     public IInformationPresenter getCodePresenter(ISourceViewer sourceViewer) {
         if (editor==null) return null;
