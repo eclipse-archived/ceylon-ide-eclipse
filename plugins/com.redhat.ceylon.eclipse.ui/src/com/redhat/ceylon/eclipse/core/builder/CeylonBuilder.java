@@ -1002,7 +1002,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private void cleanRemovedSources(List<IFile> filesToRemove,
             PhasedUnits phasedUnits, IProject project) {
-        removeObsoleteClassFiles(filesToRemove, project);
+        removeFromArchives(filesToRemove, project);
         for (IFile fileToRemove: filesToRemove) {
             if(isCeylon(fileToRemove)) {
                 // Remove the ceylon phasedUnit (which will also remove the unit from the package)
@@ -1014,7 +1014,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             else if (isJava(fileToRemove)) {
                 // Remove the external unit from the package
-                Package pkg = getPackage((IFolder)fileToRemove.getParent());
+                Package pkg = getPackage(fileToRemove);
                 if (pkg != null) {
                     for (Unit unitToTest: pkg.getUnits()) {
                         if (unitToTest.getFilename().equals(fileToRemove.getName())) {
@@ -2835,7 +2835,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }    
 
-    private void removeObsoleteClassFiles(List<IFile> filesToRemove, 
+    private void removeFromArchives(List<IFile> filesToRemove, 
             IProject project) {
         if (filesToRemove.size() == 0) {
             return;
@@ -2844,12 +2844,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         Set<File> moduleJars = new HashSet<File>();
         
         for (IFile file : filesToRemove) {
-            IPath filePath = file.getProjectRelativePath();
             IFolder rootFolder = getRootFolder(file);
             if (rootFolder == null) {
                 return;
             }
-            IPath rootFolderProjectRelativePath = rootFolder.getProjectRelativePath();
+            String relativeFilePath = file.getProjectRelativePath().makeRelativeTo(rootFolder.getProjectRelativePath()).toString();
             Package pkg = getPackage((IFolder)file.getParent());
             if (pkg == null) {
                 return;
@@ -2866,22 +2865,27 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     getCeylonClassesOutputDirectory(project) : null;
             File moduleDir = getModulePath(modulesOutputDirectory, module);
             
+            boolean fileIsResource = isResourceFile(file);
+            
             //Remove the classes belonging to the source file from the
             //module archive and from the JDTClasses directory
             File moduleJar = new File(moduleDir, getModuleArchiveName(module));
             if(moduleJar.exists()){
                 moduleJars.add(moduleJar);
-                String relativeFilePath = filePath.makeRelativeTo(rootFolderProjectRelativePath).toString();
                 try {
                     List<String> entriesToDelete = new ArrayList<String>();
                     ZipFile zipFile = new ZipFile(moduleJar);
                     
                     Properties mapping = CarUtils.retrieveMappingFile(zipFile);
 
-                    for (String className : mapping.stringPropertyNames()) {
-                        String sourceFile = mapping.getProperty(className);
-                        if (relativeFilePath.equals(sourceFile)) {
-                            entriesToDelete.add(className);
+                    if (fileIsResource) {
+                        entriesToDelete.add(relativeFilePath);
+                    } else {
+                        for (String className : mapping.stringPropertyNames()) {
+                            String sourceFile = mapping.getProperty(className);
+                            if (relativeFilePath.equals(sourceFile)) {
+                                entriesToDelete.add(className);
+                            }
                         }
                     }
 
@@ -2897,15 +2901,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     e.printStackTrace();
                 }
             }
-            //Remove the source file from the source archive
-            File moduleSrc = new File(moduleDir, getSourceArchiveName(module));
-            if(moduleSrc.exists()){
-                moduleJars.add(moduleSrc);
-                String relativeFilePath = filePath.makeRelativeTo(rootFolderProjectRelativePath).toString();
-                try {
-                    new ZipFile(moduleSrc).removeFile(relativeFilePath);
-                } catch (ZipException e) {
-                    e.printStackTrace();
+            
+            if (!fileIsResource) {
+                //Remove the source file from the source archive
+                File moduleSrc = new File(moduleDir, getSourceArchiveName(module));
+                if(moduleSrc.exists()){
+                    moduleJars.add(moduleSrc);
+                    try {
+                        new ZipFile(moduleSrc).removeFile(relativeFilePath);
+                    } catch (ZipException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
