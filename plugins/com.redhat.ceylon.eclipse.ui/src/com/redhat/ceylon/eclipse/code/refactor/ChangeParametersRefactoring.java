@@ -213,13 +213,22 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             }
             FindRefinementsVisitor frv = new FindRefinementsVisitor(declaration);
             root.visit(frv);
-            for (Tree.Declaration decNode: frv.getDeclarationNodes()) {
+            for (Tree.StatementOrArgument decNode: frv.getDeclarationNodes()) {
                 Tree.ParameterList pl;
                 if (decNode instanceof Tree.AnyMethod) {
                     pl = ((Tree.AnyMethod) decNode).getParameterLists().get(0);
                 }
                 else if (decNode instanceof Tree.AnyClass) {
                     pl = ((Tree.AnyClass) decNode).getParameterList();
+                }
+                else if (decNode instanceof Tree.SpecifierStatement) {
+                    Tree.Term bme = ((Tree.SpecifierStatement) decNode).getBaseMemberExpression();
+                    if (bme instanceof Tree.ParameterizedExpression) {
+                        pl = ((Tree.ParameterizedExpression) bme).getParameterLists().get(0);
+                    }
+                    else {
+                        continue;
+                    }
                 }
                 else {
                     continue;
