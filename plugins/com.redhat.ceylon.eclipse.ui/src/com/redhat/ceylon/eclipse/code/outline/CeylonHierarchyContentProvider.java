@@ -353,4 +353,5 @@ public final class CeylonHierarchyContentProvider
             }
         }
     }
+    
 }

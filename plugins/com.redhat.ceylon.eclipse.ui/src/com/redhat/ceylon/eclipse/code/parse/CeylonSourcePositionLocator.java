@@ -165,10 +165,10 @@ public class CeylonSourcePositionLocator {
         if (project!=null) {
             if (editor instanceof CeylonEditor) {
                 CeylonEditor ce = (CeylonEditor) editor;
-                IProject ep = ce.getParseController().getProject();
+                CeylonParseController cpc = ce.getParseController();
+                IProject ep = cpc.getProject();
                 if (ep != null && ep.equals(project)) {
-                    CeylonParseController cpc = ce.getParseController();
-                    Node node = getReferencedNode(d, getCompilationUnit(cpc, d));
+                    Node node = getReferencedNode(d, getCompilationUnit(d, cpc));
                     if (node != null) {
                         gotoNode(node, project, cpc.getTypeChecker());
                         return;

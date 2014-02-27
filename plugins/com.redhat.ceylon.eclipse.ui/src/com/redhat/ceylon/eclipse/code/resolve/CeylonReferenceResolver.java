@@ -31,7 +31,7 @@ public class CeylonReferenceResolver {
 
     public static Node getReferencedNode(Referenceable dec, 
             CeylonParseController controller) {
-        return getReferencedNode(dec, getCompilationUnit(controller,dec));
+        return getReferencedNode(dec, getCompilationUnit(dec, controller));
     }
 
     public static Referenceable getReferencedModel(Node node) {
@@ -119,19 +119,20 @@ public class CeylonReferenceResolver {
         }
     }
     
-    public static Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc,
-            Referenceable r) {
-        if (cpc==null || r==null) {
+    public static Tree.CompilationUnit getCompilationUnit(Referenceable model,
+            CeylonParseController cpc) {
+        if (model==null) {
             return null;
         }
         else {
-            Tree.CompilationUnit root = cpc.getRootNode();            
+            Tree.CompilationUnit root = cpc==null ? 
+                    null : cpc.getRootNode();            
             if (root!=null && root.getUnit()!=null && 
-                    root.getUnit().equals(r.getUnit())) {
+                    root.getUnit().equals(model.getUnit())) {
                 return root;
             }
             else {
-                Unit unit = r.getUnit();
+                Unit unit = model.getUnit();
                 PhasedUnit pu = null; 
                 if (unit instanceof ProjectSourceFile) {
                     pu = ((ProjectSourceFile) unit).getPhasedUnit();

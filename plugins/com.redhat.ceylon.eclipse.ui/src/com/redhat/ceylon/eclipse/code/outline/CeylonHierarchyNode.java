@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
+import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
@@ -14,6 +18,9 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
     
@@ -175,4 +182,28 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
             }
         }
     }
+
+    //TODO: review this code with David:
+    void gotoHierarchyDeclaration(IProject project,
+            //optional:
+            CeylonParseController cpc) {
+        Declaration dec = getDeclaration(project);
+        if (dec!=null) {
+            //TODO: this is broken for Java declarations
+            Tree.CompilationUnit cu = getCompilationUnit(dec, cpc);
+            if (cu!=null) {
+                Node refNode = getReferencedNode(dec, cu);
+                if (refNode!=null) {
+                    TypeChecker tc = cpc==null ?
+                            getProjectTypeChecker(project) :
+                            cpc.getTypeChecker();
+                    gotoNode(refNode, project, tc);
+                }
+            }
+            else {
+                gotoJavaNode(dec, project);
+            }
+        }
+    }
+    
 }
