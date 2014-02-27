@@ -848,12 +848,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
-            sequence="M1+M2+R"
+            sequence="M1+M2+U"
             commandId="com.redhat.ceylon.eclipse.ui.action.findRefinements"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
-            sequence="M1+R"
+            sequence="M1+U"
             commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
