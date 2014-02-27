@@ -216,13 +216,11 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     }
 
     private String addType(TextChange tfc, IDocument doc, ProducedType tm) {
-        String typeDec;
         ProducedType type = node.getUnit().denotableType(tm);
-        typeDec = type.getProducedTypeName();
         HashSet<Declaration> decs = new HashSet<Declaration>();
         importType(decs, type, rootNode);
         applyImports(tfc, decs, rootNode, doc);
-        return typeDec;
+        return type.getProducedTypeName(rootNode.getUnit());
     }
 
     public void setNewName(String text) {
