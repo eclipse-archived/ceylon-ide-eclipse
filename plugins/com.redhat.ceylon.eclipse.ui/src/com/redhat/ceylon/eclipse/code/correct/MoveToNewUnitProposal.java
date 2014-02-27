@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.move.MoveUtil.canMoveDeclaration;
+import static com.redhat.ceylon.eclipse.code.move.MoveUtil.getDeclarationName;
 import static com.redhat.ceylon.eclipse.code.move.MoveUtil.moveToNewUnit;
 
 import java.util.Collection;
@@ -17,10 +18,12 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 
 class MoveToNewUnitProposal implements ICompletionProposal {
 
-    private CeylonEditor editor;
+    private final CeylonEditor editor;
+    private final String name;
     
-    public MoveToNewUnitProposal(CeylonEditor editor) {
+    public MoveToNewUnitProposal(String name, CeylonEditor editor) {
         this.editor = editor;
+        this.name = name;
     }
     
     @Override
@@ -35,7 +38,7 @@ class MoveToNewUnitProposal implements ICompletionProposal {
 
     @Override
     public String getDisplayString() {
-        return "Move declaration to new unit";
+        return "Move '" + name + "' to a new source file";
     }
 
     @Override
@@ -58,9 +61,11 @@ class MoveToNewUnitProposal implements ICompletionProposal {
         }
     }
     
-    static void add(Collection<ICompletionProposal> proposals, CeylonEditor editor) {
+    static void add(Collection<ICompletionProposal> proposals, 
+            CeylonEditor editor) {
         if (canMoveDeclaration(editor)) {
-            proposals.add(new MoveToNewUnitProposal(editor));
+            proposals.add(new MoveToNewUnitProposal(getDeclarationName(editor), 
+                    editor));
         }
     }
 

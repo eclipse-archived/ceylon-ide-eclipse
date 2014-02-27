@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.REORDER
 
 import java.util.Collection;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -14,7 +13,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeParametersRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeParametersRefactoringAction;
@@ -22,16 +20,11 @@ import com.redhat.ceylon.eclipse.code.refactor.ChangeParametersRefactoringAction
 class ChangeParametersProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
 
-    Node node;
-    Declaration dec;
-    CeylonEditor editor;
-    IFile file;
-    
-    ChangeParametersProposal(IFile file, Node node, 
-            Declaration dec, CeylonEditor editor) {
-        this.node = node;
+    private final Declaration dec;
+    private final CeylonEditor editor;
+        
+    ChangeParametersProposal(Declaration dec, CeylonEditor editor) {
         this.dec = dec;
-        this.file = file;
         this.editor = editor;
     }
     
@@ -71,11 +64,11 @@ class ChangeParametersProposal implements ICompletionProposal,
     }
 
     public static void add(Collection<ICompletionProposal> proposals,
-            IFile file, CeylonEditor editor) {
+            CeylonEditor editor) {
         ChangeParametersRefactoring cpr = new ChangeParametersRefactoring(editor);
         if (cpr.isEnabled()) {
-            proposals.add(new ChangeParametersProposal(file, 
-                    cpr.getNode(), cpr.getDeclaration(), editor));
+            proposals.add(new ChangeParametersProposal(cpr.getDeclaration(), 
+                    editor));
         }
     }
 

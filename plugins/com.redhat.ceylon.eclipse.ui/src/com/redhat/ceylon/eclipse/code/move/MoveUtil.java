@@ -196,4 +196,14 @@ public class MoveUtil {
         }
     }
 
+    public static String getDeclarationName(CeylonEditor editor) {
+        Node node = getSelectedNode(editor);
+        if (node instanceof Tree.Declaration) {
+            return ((Tree.Declaration) node).getIdentifier().getText();
+        }
+        else {
+            return null;
+        }
+    }
+
 }
