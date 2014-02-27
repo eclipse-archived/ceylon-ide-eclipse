@@ -12,13 +12,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 public class FindRefinementsVisitor extends Visitor implements NaturalVisitor {
     
     private final Declaration declaration;
-    private Set<Tree.Declaration> declarationNodes = new HashSet<Tree.Declaration>();
+    private Set<Tree.StatementOrArgument> declarationNodes = 
+            new HashSet<Tree.StatementOrArgument>();
     
     public FindRefinementsVisitor(Declaration declaration) {
         this.declaration = declaration;
     }
     
-    public Set<Tree.Declaration> getDeclarationNodes() {
+    public Set<Tree.StatementOrArgument> getDeclarationNodes() {
         return declarationNodes;
     }
     
@@ -26,6 +27,15 @@ public class FindRefinementsVisitor extends Visitor implements NaturalVisitor {
         return dec!=null && dec.refines(declaration) ||
                 dec instanceof Setter && ((Setter)dec).getGetter()
                         .refines(declaration);
+    }
+    
+    @Override
+    public void visit(Tree.SpecifierStatement that) {
+        if (that.getRefinement() &&
+                isRefinement(that.getDeclaration())) {
+            declarationNodes.add(that);
+        }
+        super.visit(that);
     }
     
     @Override
