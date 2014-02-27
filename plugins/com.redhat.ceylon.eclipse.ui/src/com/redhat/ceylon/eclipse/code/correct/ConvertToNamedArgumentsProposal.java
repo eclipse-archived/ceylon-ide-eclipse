@@ -170,9 +170,16 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
         }
         
         @Override
+        public void visit(Tree.ExtendedType that) {
+            //don't add proposals for extends clause
+        }
+        
+        @Override
         public void visit(Tree.PositionalArgumentList that) {
-            if (offset>=that.getStartIndex() && 
-                    offset<=that.getStopIndex()+1) {
+            Integer start = that.getStartIndex();
+            Integer stop = that.getStopIndex();
+            if (start!=null && offset>=start && 
+                stop!=null && offset<=stop+1) {
                 argumentList = that;
             }
             super.visit(that); 
