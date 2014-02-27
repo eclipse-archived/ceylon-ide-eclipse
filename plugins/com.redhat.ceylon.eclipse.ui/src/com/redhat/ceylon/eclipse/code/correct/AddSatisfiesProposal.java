@@ -450,9 +450,9 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
     }
 
-    private TextFileChange change;
-    private TypeDeclaration typeParam;
-    private String missingSatisfiedTypeText;
+    private final TextFileChange change;
+    private final TypeDeclaration typeParam;
+    private final String missingSatisfiedTypeText;
 
     private AddSatisfiesProposal(TypeDeclaration typeParam, 
             String description, String missingSatisfiedTypeText, 

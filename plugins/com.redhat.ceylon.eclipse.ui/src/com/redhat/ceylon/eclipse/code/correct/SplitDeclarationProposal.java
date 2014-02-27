@@ -30,8 +30,8 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class SplitDeclarationProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     SplitDeclarationProposal(Declaration dec, int offset, IFile file, TextChange change) {
         super("Split declaration of '" + dec.getName() + "'", change);

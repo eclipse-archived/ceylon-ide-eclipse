@@ -18,7 +18,7 @@ import com.redhat.ceylon.eclipse.code.refactor.ExtractValueRefactoringAction;
 
 public class ExtractValueProposal implements ICompletionProposal {
 
-    private ExtractValueRefactoringAction action;
+    private final ExtractValueRefactoringAction action;
     
     public ExtractValueProposal(CeylonEditor editor) {
         action = new ExtractValueRefactoringAction(editor);

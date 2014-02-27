@@ -34,9 +34,9 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ImplementFormalAndAmbiguouslyInheritedMembersProposal extends CorrectionProposal {
 
-    final int offset;
-    final IFile file;
-    final Set<String> refinementsNames;
+    private final int offset;
+    private final IFile file;
+    private final Set<String> refinementsNames;
 
     ImplementFormalAndAmbiguouslyInheritedMembersProposal(String name, Set<String> refinementsNames, int offset, IFile file, TextFileChange change) {
         super(name, change, FORMAL_REFINEMENT);

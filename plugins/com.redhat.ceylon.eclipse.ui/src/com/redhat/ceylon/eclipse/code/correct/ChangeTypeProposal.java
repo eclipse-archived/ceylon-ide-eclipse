@@ -37,9 +37,9 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class ChangeTypeProposal extends CorrectionProposal {
 
-    final int offset;
-    final int length;
-    final IFile file;
+    private final int offset;
+    private final int length;
+    private final IFile file;
     
     ChangeTypeProposal(ProblemLocation problem, IFile file, 
             String name, String type, int offset,

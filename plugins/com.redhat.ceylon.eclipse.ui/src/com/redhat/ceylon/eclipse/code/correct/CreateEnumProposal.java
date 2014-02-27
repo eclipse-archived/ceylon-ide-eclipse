@@ -29,9 +29,9 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateEnumProposal extends CorrectionProposal {
     
-    final int offset;
-    final IFile file;
-    final int length;
+    private final int offset;
+    private final IFile file;
+    private final int length;
     
     CreateEnumProposal(String def, String desc, Image image, 
             int offset, IFile file, TextFileChange change) {

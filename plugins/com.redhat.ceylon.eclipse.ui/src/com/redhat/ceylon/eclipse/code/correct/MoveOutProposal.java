@@ -21,7 +21,7 @@ import com.redhat.ceylon.eclipse.code.refactor.MoveOutRefactoringAction;
 
 public class MoveOutProposal implements ICompletionProposal, ICompletionProposalExtension6 {
 
-    private MoveOutRefactoringAction action;
+    private final MoveOutRefactoringAction action;
     private String name;
     
     public MoveOutProposal(CeylonEditor editor, Node node) {

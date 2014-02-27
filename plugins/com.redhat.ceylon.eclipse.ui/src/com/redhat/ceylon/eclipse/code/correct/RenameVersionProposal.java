@@ -18,8 +18,8 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 class RenameVersionProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
     
-    Tree.ModuleDescriptor node;
-    CeylonEditor editor;
+    private final Tree.ModuleDescriptor node;
+    private final CeylonEditor editor;
     
     RenameVersionProposal(Tree.ModuleDescriptor node, 
             CeylonEditor editor) {

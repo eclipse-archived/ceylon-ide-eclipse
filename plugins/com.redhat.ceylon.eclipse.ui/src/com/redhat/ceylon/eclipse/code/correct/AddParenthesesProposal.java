@@ -16,8 +16,8 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class AddParenthesesProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     AddParenthesesProposal(Declaration dec, int offset, IFile file, 
             TextFileChange change) {

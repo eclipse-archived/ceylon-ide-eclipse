@@ -14,8 +14,8 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class FixAliasProposal extends CorrectionProposal {
     
-    final int offset; 
-    final IFile file;
+    private final int offset; 
+    private final IFile file;
     
     FixAliasProposal(int offset, IFile file, TextChange change) {
         super("Change = to =>", change);

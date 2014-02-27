@@ -8,6 +8,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 
 public class ProblemLocation implements Comparable<ProblemLocation> {
+    
     private final int fId;
     // private final String[] fArguments;
     private final int fOffset;

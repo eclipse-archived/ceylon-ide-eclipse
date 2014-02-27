@@ -27,9 +27,9 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class ShadowReferenceProposal extends CorrectionProposal {
     
-    final IFile file;
-    final int offset;
-    final int length;
+    private final IFile file;
+    private final int offset;
+    private final int length;
     
     ShadowReferenceProposal(int offset, int length, IFile file, 
             TextChange change) {

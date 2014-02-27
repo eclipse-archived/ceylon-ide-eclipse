@@ -32,10 +32,10 @@ import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 public class AddModuleImportProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
     
-    private IProject project;
-    private Unit unit; 
-    String name; 
-    String version;
+    private final IProject project;
+    private final Unit unit; 
+    private final String name; 
+    private final String version;
     
     AddModuleImportProposal(IProject project, Unit unit, ModuleDetails details) {
         this.project = project;

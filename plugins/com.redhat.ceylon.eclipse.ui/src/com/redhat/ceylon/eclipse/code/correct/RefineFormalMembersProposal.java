@@ -45,7 +45,7 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class RefineFormalMembersProposal implements ICompletionProposal {
 
-    private CeylonEditor editor;
+    private final CeylonEditor editor;
     
     public RefineFormalMembersProposal(CeylonEditor editor) {
         this.editor = editor;

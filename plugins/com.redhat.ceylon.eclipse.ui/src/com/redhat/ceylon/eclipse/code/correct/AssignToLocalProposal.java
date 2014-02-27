@@ -23,9 +23,9 @@ import com.redhat.ceylon.eclipse.util.FindUtils;
 
 class AssignToLocalProposal extends CorrectionProposal {
     
-    final IFile file;
-    final int offset;
-    final int length;
+    private final IFile file;
+    private final int offset;
+    private final int length;
     
     AssignToLocalProposal(int offset, int length, IFile file, 
             TextChange change) {
