@@ -672,9 +672,6 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     private void addTypingProposals(Collection<ICompletionProposal> proposals,
             IFile file, Tree.CompilationUnit cu, Node node,
             Tree.Declaration decNode) {
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            addSpecifyTypeArgumentsProposal(cu, node, proposals, file);
-        }
         if (decNode instanceof Tree.TypedDeclaration && 
                 !(decNode instanceof Tree.ObjectDefinition) &&
                 !(decNode instanceof Tree.Variable)) {
@@ -685,6 +682,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
         else if (node instanceof Tree.LocalModifier) {
             addSpecifyTypeProposal(cu, node, proposals, file);
+        }
+        if (node instanceof Tree.MemberOrTypeExpression) {
+            addSpecifyTypeArgumentsProposal(cu, node, proposals, file);
         }
     }
 
