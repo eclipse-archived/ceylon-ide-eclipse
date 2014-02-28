@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getEndOffset;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+import static com.redhat.ceylon.eclipse.util.FindUtils.findToplevelStatement;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,7 +26,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -34,39 +35,47 @@ import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class CollectParametersRefactoring extends AbstractRefactoring {
     
-    private Method declaration;
-    private Node body;
+    private Declaration declaration;
+    private int parameterListIndex;
     private List<Tree.Parameter> parameters = 
             new ArrayList<Tree.Parameter>();
-    private List<MethodOrValue> models = 
-            new ArrayList<MethodOrValue>();
+    private int firstParam=-1;
+    private int lastParam;
     
     private class FindParametersVisitor extends Visitor {
-        @Override
-        public void visit(Tree.AnyMethod that) {
-            for (Tree.ParameterList pl: that.getParameterLists()) {
-                IRegion selection = editor.getSelection();
-                int start = selection.getOffset();
-                int end = selection.getOffset() + selection.getLength();
-                if (start>pl.getStartIndex() &&
-                    start<=pl.getStopIndex()) {
-                    declaration = that.getDeclarationModel();
-                    if (that instanceof Tree.MethodDefinition) {
-                        body = ((Tree.MethodDefinition) that).getBlock();
-                    }
-                    else if (that instanceof Tree.MethodDeclaration) {
-                        body = ((Tree.MethodDeclaration) that).getSpecifierExpression();
-                    }
-                    for (Tree.Parameter p: pl.getParameters()) {
-                        if (p.getStartIndex()>=start && p.getStopIndex()<end) {
-                            parameters.add(p);
-                            models.add(p.getParameterModel().getModel());
-                        }
+        private void handleParamList(Tree.Declaration that, int i,
+                Tree.ParameterList pl) {
+            IRegion selection = editor.getSelection();
+            int start = selection.getOffset();
+            int end = selection.getOffset() + selection.getLength();
+            if (start>pl.getStartIndex() &&
+                start<=pl.getStopIndex()) {
+                parameterListIndex = i;
+                declaration = that.getDeclarationModel();
+                for (int j=0; j<pl.getParameters().size(); j++) {
+                    Tree.Parameter p = pl.getParameters().get(j);
+                    if (p.getStartIndex()>=start && p.getStopIndex()<end) {
+                        parameters.add(p);
+                        if (firstParam==-1) firstParam=j;
+                        lastParam=j;
                     }
                 }
             }
         }
-        
+        @Override
+        public void visit(Tree.AnyMethod that) {
+            for (int i=0; i<that.getParameterLists().size(); i++) {
+                handleParamList(that, i, 
+                        that.getParameterLists().get(i));
+            }
+            super.visit(that);
+        }
+        @Override
+        public void visit(Tree.ClassDefinition that) {
+            handleParamList(that, 0, 
+                    that.getParameterList());
+            super.visit(that);
+        }        
     }
     
     private static class FindInvocationsVisitor extends Visitor {
@@ -137,7 +146,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     
     @Override
     public boolean isEnabled() {
-        return declaration!=null && body!=null && 
+        return declaration!=null && 
                 !parameters.isEmpty();
     }
     
@@ -202,100 +211,128 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             FindInvocationsVisitor fiv = new FindInvocationsVisitor(declaration);
             root.visit(fiv);
             for (Tree.PositionalArgumentList pal: fiv.getResults()) {
-                List<Tree.PositionalArgument> pas = pal.getPositionalArguments();
-                for (Tree.PositionalArgument pa: pas) {
-                    MethodOrValue model = pa.getParameter().getModel();
-                    if (model.equals(models.get(0))) {
-                        tfc.addEdit(new InsertEdit(pa.getStartIndex(), newName + "("));
-                    }
-                    if (model.equals(models.get(models.size()-1))) {
-                        int loc;
-                        if (pa==pas.get(pas.size()-1)) {
-                            loc = pa.getStopIndex()+1;
-                        }
-                        else {
-                            loc = pa.getStopIndex();
-                        }
-                        tfc.addEdit(new InsertEdit(loc, ")"));
-                    }
-                }
+                refactorInvocation(tfc, pal);
             }
             FindRefinementsVisitor frv = new FindRefinementsVisitor(declaration);
             root.visit(frv);
             final String paramName = 
                     Character.toLowerCase(newName.charAt(0)) + newName.substring(1);
             for (Tree.StatementOrArgument decNode: frv.getDeclarationNodes()) {
-                Tree.ParameterList pl;
-                if (decNode instanceof Tree.AnyMethod) {
-                    pl = ((Tree.AnyMethod) decNode).getParameterLists().get(0);
-                }
-                else if (decNode instanceof Tree.AnyClass) {
-                    pl = ((Tree.AnyClass) decNode).getParameterList();
-                }
-                else if (decNode instanceof Tree.SpecifierStatement) {
-                    Tree.Term bme = ((Tree.SpecifierStatement) decNode).getBaseMemberExpression();
-                    if (bme instanceof Tree.ParameterizedExpression) {
-                        pl = ((Tree.ParameterizedExpression) bme).getParameterLists().get(0);
-                    }
-                    else {
-                        continue;
-                    }
-                }
-                else {
-                    continue;
-                }
-                List<Tree.Parameter> ps = pl.getParameters();
-                int start=-1;
-                for (Tree.Parameter pa: ps) {
-                    MethodOrValue model = pa.getParameterModel().getModel();
-                    if (model.equals(models.get(0))) {
-                        tfc.addEdit(new InsertEdit(getStartOffset(pa), 
-                                newName + " " + paramName));
-                        start = getStartOffset(pa);
-                    }
-                    if (model.equals(models.get(models.size()-1))) {
-                        tfc.addEdit(new DeleteEdit(start, getEndOffset(pa)-start));
-                    }
-                }
+                refactorDeclaration(tfc, paramName, decNode);
             }
             FindArgumentsVisitor fav = new FindArgumentsVisitor(declaration);
             root.visit(fav);
             for (Tree.MethodArgument decNode: fav.getResults()) {
-                Tree.ParameterList pl = decNode.getParameterLists().get(0);
-                List<Tree.Parameter> ps = pl.getParameters();
-                int start=-1;
-                for (Tree.Parameter pa: ps) {
-                    MethodOrValue model = pa.getParameterModel().getModel();
-                    if (model.equals(models.get(0))) {
-                        tfc.addEdit(new InsertEdit(getStartOffset(pa), 
-                                newName + " " + paramName));
-                        start = getStartOffset(pa);
-                    }
-                    if (model.equals(models.get(models.size()-1))) {
-                        tfc.addEdit(new DeleteEdit(start, getEndOffset(pa)-start));
-                    }
-                }
+                refactorArgument(tfc, paramName, decNode);
             }
-            if (body.getUnit().equals(root.getUnit())) {
-                body.visit(new Visitor() {
-                    @Override
-                    public void visit(Tree.BaseMemberExpression that) {
-                        super.visit(that);
-                        if (models.contains(that.getDeclaration())) {
-                            tfc.addEdit(new InsertEdit(that.getStartIndex(), 
-                                    paramName + "."));
-                        }
-                    }
-                });
-            }
+            createNewClassDeclaration(tfc, root);
         }
         if (tfc.getEdit().hasChildren()) {
             cc.add(tfc);
         }
     }
+
+    private void refactorInvocation(final TextChange tfc,
+            Tree.PositionalArgumentList pal) {
+        List<Tree.PositionalArgument> pas = pal.getPositionalArguments();
+        if (pas.size()>firstParam) {
+            Integer startIndex = pas.get(firstParam).getStartIndex();
+            tfc.addEdit(new InsertEdit(startIndex, newName + "("));
+            Integer stopIndex = pas.size()>lastParam?
+                    pas.get(lastParam).getStopIndex()+1:
+                    pas.get(pas.size()-1).getStopIndex()+1;
+            tfc.addEdit(new InsertEdit(stopIndex, ")"));
+        }
+    }
+
+    private void createNewClassDeclaration(final TextChange tfc,
+            Tree.CompilationUnit root) {
+        if (declaration.getUnit().equals(root.getUnit())) {
+            String delim = getDefaultLineDelimiter(document);
+            //TODO: for unshared declarations, we don't 
+            //      need to make it toplevel, I guess
+            int loc = findToplevelStatement(rootNode, node).getStartIndex();
+            StringBuilder builder = new StringBuilder();
+            if (declaration.isShared()) {
+                builder.append("shared ");
+            }
+            builder.append("class ").append(newName).append("(");
+            for (Tree.Parameter p: parameters) {
+                builder.append("shared ").append(toString(p)).append(", ");
+            }
+            if (builder.toString().endsWith(", ")) {
+                builder.setLength(builder.length()-2);
+            }
+            builder.append(") {}").append(delim).append(delim);
+            tfc.addEdit(new InsertEdit(loc, builder.toString()));
+        }
+    }
+
+    private void refactorArgument(TextChange tfc, String paramName,
+            Tree.MethodArgument decNode) {
+        refactorDec(tfc, paramName, 
+                decNode.getParameterLists().get(parameterListIndex), 
+                decNode.getBlock());
+    }
+
+    private void refactorDeclaration(TextChange tfc, String paramName, 
+            Tree.StatementOrArgument decNode) {
+        Tree.ParameterList pl;
+        Node body;
+        if (decNode instanceof Tree.MethodDefinition) {
+            pl = ((Tree.AnyMethod) decNode).getParameterLists()
+                    .get(parameterListIndex);
+            body = ((Tree.MethodDefinition) decNode).getBlock();
+        }
+        else if (decNode instanceof Tree.MethodDeclaration) {
+            pl = ((Tree.AnyMethod) decNode).getParameterLists()
+                    .get(parameterListIndex);
+            body = ((Tree.MethodDeclaration) decNode).getSpecifierExpression();
+        }
+        else if (decNode instanceof Tree.ClassDefinition) {
+            pl = ((Tree.ClassDefinition) decNode).getParameterList();
+            body = ((Tree.ClassDefinition) decNode).getClassBody();
+        }
+        else if (decNode instanceof Tree.SpecifierStatement) {
+            Tree.Term bme = 
+                    ((Tree.SpecifierStatement) decNode).getBaseMemberExpression();
+            body = ((Tree.SpecifierStatement) decNode).getSpecifierExpression();
+            if (bme instanceof Tree.ParameterizedExpression) {
+                pl = ((Tree.ParameterizedExpression) bme)
+                        .getParameterLists().get(parameterListIndex);
+            }
+            else {
+                return;
+            }
+        }
+        else {
+            return;
+        }
+        refactorDec(tfc, paramName, pl, body);
+    }
     
-    public Declaration getDeclaration() {
-        return declaration;
+    private void refactorDec(final TextChange tfc, final String paramName,
+            Tree.ParameterList pl, Node body) {
+        List<Tree.Parameter> ps = pl.getParameters();
+        final Set<MethodOrValue> params = new HashSet<MethodOrValue>();
+        for (int i=firstParam; i<ps.size()&&i<=lastParam; i++) {
+            params.add(ps.get(i).getParameterModel().getModel());
+        }
+        int startOffset = getStartOffset(ps.get(firstParam));
+        int endOffset = getEndOffset(ps.get(lastParam));
+        tfc.addEdit(new InsertEdit(startOffset, 
+                newName + " " + paramName));
+        tfc.addEdit(new DeleteEdit(startOffset, endOffset-startOffset));
+        body.visit(new Visitor() {
+            @Override
+            public void visit(Tree.BaseMemberExpression that) {
+                super.visit(that);
+                if (params.contains(that.getDeclaration())) {
+                    tfc.addEdit(new InsertEdit(that.getStartIndex(), 
+                            paramName + "."));
+                }
+            }
+        });
     }
     
 }
