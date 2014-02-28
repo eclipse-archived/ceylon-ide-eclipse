@@ -382,7 +382,8 @@ public class JDTModelLoader extends AbstractModelLoader {
                                          // only top-levels are added in source declarations
                                             && ! (type.isMember() || type.isAnonymous() || type.isLocal()) 
                                             && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))
-                                            && ! isTypeHidden(module, type.getFullyQualifiedName())) {  
+                                            && ! isTypeHidden(module, type.getFullyQualifiedName())
+                                            && ! type.getFullyQualifiedName().endsWith("$")) {  
                                         convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
                                     }
                                 }
