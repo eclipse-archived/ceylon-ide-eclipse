@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.move;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.performChange;
@@ -31,7 +32,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.correct.ImportProposals;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
 import com.redhat.ceylon.eclipse.code.wizard.SelectUnitWizard;
@@ -64,14 +64,17 @@ public class MoveUtil {
                            CoreException {
         IDocument document = editor.getDocumentProvider()
                 .getDocument(editor.getEditorInput());
-        SelectUnitWizard w = new SelectUnitWizard("Move to Source File", 
-                "Select a Ceylon source file for the selected declaration.");
+        SelectUnitWizard w = 
+                new SelectUnitWizard("Move to Source File", 
+                        "Select a Ceylon source file for the selected declaration.");
         if (w.open(getFile(editor.getEditorInput()))) {
             int start = node.getStartIndex();
             int length = node.getStopIndex()-start+1;
             String contents = document.get(start, length);
-            CompositeChange change = new CompositeChange("Move to Source File");
-            TextChange fc = new TextFileChange("Move to Source File", w.getFile());
+            CompositeChange change = 
+                    new CompositeChange("Move to Source File");
+            TextChange fc = new TextFileChange("Move to Source File", 
+                    w.getFile());
             fc.setEdit(new MultiTextEdit());
             IDocument doc = fc.getCurrentDocument(null);
             int len = doc.getLength();
@@ -84,7 +87,8 @@ public class MoveUtil {
             final Tree.CompilationUnit ncu = getProjectTypeChecker(project)
                     .getPhasedUnitFromRelativePath(relpath)
                     .getCompilationUnit();
-            final Map<Declaration, String> imports = new HashMap<Declaration, String>();
+            final Map<Declaration, String> imports = 
+                    new HashMap<Declaration, String>();
             final Package p = ncu.getUnit().getPackage();
             node.visit(new Visitor() {
                 private void add(Declaration d, Tree.Identifier id) {
@@ -92,7 +96,7 @@ public class MoveUtil {
                             !d.getUnit().getPackage().equals(p) &&
                             !d.getUnit().getPackage().getNameAsString()
                                     .equals(Module.LANGUAGE_MODULE_NAME) &&
-                            !ImportProposals.isImported(d, ncu)) {
+                            !isImported(d, ncu)) {
                         imports.put(d, id.getText());
                     }
                 }
@@ -151,9 +155,10 @@ public class MoveUtil {
                 .getDocument(editor.getEditorInput());
         String suggestedUnitName = 
                 ((Tree.Declaration) node).getIdentifier().getText();
-        SelectNewUnitWizard w = new SelectNewUnitWizard("Move to New Source File", 
-                "Create a new Ceylon source file for the selected declaration.",
-                suggestedUnitName);
+        SelectNewUnitWizard w = 
+                new SelectNewUnitWizard("Move to New Source File", 
+                        "Create a new Ceylon source file for the selected declaration.",
+                        suggestedUnitName);
         if (w.open(getFile(editor.getEditorInput()))) {
             String imports = imports(node, cu.getImportList(), document);
             int start = node.getStartIndex();
@@ -162,7 +167,8 @@ public class MoveUtil {
             String text = imports==null ? 
                     contents : 
                     imports + getDefaultLineDelimiter(document) + contents;
-            CompositeChange change = new CompositeChange("Move to New Source File");
+            CompositeChange change = 
+                    new CompositeChange("Move to New Source File");
             change.add(new CreateUnitChange(w.getFile(), w.includePreamble(), 
                     text, w.getProject(), "Move to New Source File"));
             TextChange tc = createChange(editor, document);
