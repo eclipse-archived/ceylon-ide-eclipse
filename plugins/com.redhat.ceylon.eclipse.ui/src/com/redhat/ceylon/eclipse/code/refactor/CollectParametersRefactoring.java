@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeEndOffset;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
 import static com.redhat.ceylon.eclipse.util.FindUtils.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -258,12 +257,20 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         else if (al instanceof Tree.NamedArgumentList) {
             List<Tree.NamedArgument> nas = 
                     ((Tree.NamedArgumentList) al).getNamedArguments();
-            List<Tree.NamedArgument> results = new ArrayList<Tree.NamedArgument>();
+            List<Tree.NamedArgument> results = 
+                    new ArrayList<Tree.NamedArgument>();
+            Tree.NamedArgument prev = null;
             for (Tree.NamedArgument na: nas) {
                 if (models.contains(na.getParameter().getModel())) {
+                    int fromOffset = results.isEmpty() ? 
+                            getNodeStartOffset(na) : 
+                            getNodeEndOffset(prev);
+                    int toOffset = getNodeEndOffset(na);
+                    tfc.addEdit(new DeleteEdit(fromOffset, 
+                            toOffset-fromOffset));
                     results.add(na);
-                    tfc.addEdit(new DeleteEdit(getNodeStartOffset(na), getNodeLength(na)));
                 }
+                prev = na;
             }
             if (!results.isEmpty()) {
                 StringBuilder builder = new StringBuilder();
@@ -272,7 +279,8 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                     builder.append(toString(na)).append(" ");
                 }
                 builder.append("};");
-                tfc.addEdit(new InsertEdit(results.get(0).getStartIndex(), builder.toString()));
+                tfc.addEdit(new InsertEdit(getNodeStartOffset(results.get(0)), 
+                        builder.toString()));
             }
         }
     }
