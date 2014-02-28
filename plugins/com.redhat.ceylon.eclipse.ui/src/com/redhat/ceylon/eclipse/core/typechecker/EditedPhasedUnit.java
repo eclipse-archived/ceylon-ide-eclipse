@@ -64,4 +64,9 @@ public class EditedPhasedUnit extends IdePhasedUnit {
         return getOriginalPhasedUnit() == null ? null
                 : getOriginalPhasedUnit().getProjectResource();
     }
+    
+    @Override
+    protected boolean reuseExistingDescriptorModels() {
+        return true;
+    }
 }
