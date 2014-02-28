@@ -2560,7 +2560,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
         if (modulesOutputDirectory != null) {
             monitor.subTask("Cleaning existing artifacts of project " + project.getName());
-            List<String> extensionsToDelete = Arrays.asList(".jar", ".car", ".src", ".sha1");
+            List<String> extensionsToDelete = Arrays.asList(".jar", ".js", ".car", ".src", ".sha1");
             new RepositoryLister(extensionsToDelete).list(modulesOutputDirectory, 
                     new RepositoryLister.Actions() {
                 @Override
