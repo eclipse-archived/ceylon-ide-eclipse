@@ -52,10 +52,11 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
-            Node node = getSelectedNode(getSelection((ITextEditor) editor));
+            CeylonEditor ce = (CeylonEditor) editor;
+            Node node = getSelectedNode(getSelection((ITextEditor)ce));
             Referenceable r = getReferencedModel(node);
             if (r!=null) {
-                CeylonParseController cpc = ((CeylonEditor) editor).getParseController();
+                CeylonParseController cpc = ce.getParseController();
                 Node refNode = getReferencedNode(r, cpc);
                 IProject project = cpc.getProject();
                 if (refNode!=null) {

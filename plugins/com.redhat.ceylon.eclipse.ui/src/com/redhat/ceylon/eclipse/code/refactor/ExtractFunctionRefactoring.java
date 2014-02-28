@@ -4,6 +4,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
@@ -241,8 +242,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         super(editor);
         if (editor instanceof CeylonEditor && 
                 editor.getSelectionProvider()!=null) {
-            init((ITextSelection) editor.getSelectionProvider()
-                    .getSelection());
+            init(getSelection(editor));
         }
         if (result!=null) {
             newName = result.getDeclarationModel().getName();

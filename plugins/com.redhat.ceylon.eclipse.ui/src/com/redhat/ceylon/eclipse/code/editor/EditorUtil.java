@@ -161,7 +161,7 @@ public class EditorUtil {
         }
     }
 
-    public static ITextSelection getSelection(final CeylonEditor editor) {
+    public static ITextSelection getSelectionFromThread(final CeylonEditor editor) {
         final class GetSelection implements Runnable {
             ITextSelection selection;
             @Override

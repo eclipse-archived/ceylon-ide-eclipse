@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
@@ -18,7 +19,6 @@ import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ContentAssistEvent;
@@ -479,8 +479,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         private Node getSelectedNode() {
             CeylonParseController cpc = getParseController();
             return cpc.getRootNode()==null ? null : 
-                findNode(cpc.getRootNode(), 
-                        (ITextSelection) editor.getSelectionProvider().getSelection());
+                findNode(cpc.getRootNode(), getSelection(editor));
         }
     }
 

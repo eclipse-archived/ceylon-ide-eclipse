@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 import static com.redhat.ceylon.eclipse.util.FindUtils.getContainer;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
@@ -50,8 +51,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         super(editor);
         if (editor instanceof CeylonEditor && 
                 editor.getSelectionProvider()!=null) {
-            init((ITextSelection) editor.getSelectionProvider()
-                    .getSelection());
+            init(getSelection(editor));
         }
     }
 

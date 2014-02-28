@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIterator;
@@ -20,7 +21,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.Refactoring;
@@ -86,8 +86,7 @@ public abstract class AbstractRefactoring extends Refactoring {
             IEditorInput input = editor.getEditorInput();
             if (rootNode!=null && input instanceof IFileEditorInput) {
                 sourceFile = EditorUtil.getFile(input);
-                node = findNode(rootNode, 
-                    (ITextSelection) editor.getSelectionProvider().getSelection());
+                node = findNode(rootNode, getSelection(editor));
             }
         }
     }
