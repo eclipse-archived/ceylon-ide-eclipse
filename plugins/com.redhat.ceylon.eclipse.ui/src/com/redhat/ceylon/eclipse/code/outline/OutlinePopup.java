@@ -215,7 +215,8 @@ public class OutlinePopup extends TreeViewPopup {
             if (object instanceof CeylonOutlineNode) {
                 dispose();
                 CeylonOutlineNode on = (CeylonOutlineNode) object;
-                editor.selectAndReveal(on.getStartOffset(), 0);
+                editor.selectAndReveal(on.getStartOffset(), 
+                        on.getEndOffset()-on.getStartOffset());
             }
         }
     }

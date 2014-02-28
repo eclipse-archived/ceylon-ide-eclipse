@@ -202,7 +202,7 @@ public class CeylonSourcePositionLocator {
     
     public static void gotoNode(Node node, IProject project, TypeChecker tc) {
         gotoLocation(getNodePath(node, project, tc), 
-                getStartOffset(node));
+                getStartOffset(node), getLength(node));
     }
 
     public static void gotoLocation(IPath path, int offset) {
