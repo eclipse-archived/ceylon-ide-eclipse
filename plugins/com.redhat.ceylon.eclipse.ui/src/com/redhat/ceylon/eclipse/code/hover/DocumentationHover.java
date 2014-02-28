@@ -550,7 +550,7 @@ public class DocumentationHover
         Tree.CompilationUnit rn = parseController.getRootNode();
         if (rn!=null) {
             int hoffset = hoverRegion.getOffset();
-            ITextSelection selection = EditorUtil.getSelection(editor);
+            ITextSelection selection = EditorUtil.getSelectionFromThread(editor);
             if (selection!=null && 
                 selection.getOffset()<=hoffset &&
                 selection.getOffset()+selection.getLength()>=hoffset) {

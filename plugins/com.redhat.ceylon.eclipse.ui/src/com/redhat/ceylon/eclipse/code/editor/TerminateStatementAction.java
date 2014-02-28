@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static java.lang.Math.min;
 
@@ -51,7 +52,7 @@ final class TerminateStatementAction extends Action {
 
     @Override
     public void run() {
-        ITextSelection ts = (ITextSelection) editor.getSelectionProvider().getSelection();
+        ITextSelection ts = getSelection(editor);
         String before = editor.getSelectionText();
         line = ts.getEndLine();
         try {

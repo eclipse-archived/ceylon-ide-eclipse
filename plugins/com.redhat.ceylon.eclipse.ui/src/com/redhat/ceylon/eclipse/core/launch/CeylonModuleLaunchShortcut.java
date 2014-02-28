@@ -342,7 +342,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
             if (cpc!=null) {
                 Tree.CompilationUnit cu = cpc.getRootNode();
                 if (cu!=null) {
-                    ITextSelection selection = EditorUtil.getSelection(ce);
+                    ITextSelection selection = EditorUtil.getSelectionFromThread(ce);
                     Node node = FindUtils.findToplevelStatement(cu, 
                             findNode(cu,selection));
                     if (node instanceof Tree.AnyMethod) {

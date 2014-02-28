@@ -1538,7 +1538,7 @@ public class CeylonEditor extends TextEditor {
     }
 
     public IRegion getSelection() {
-        ITextSelection ts= (ITextSelection) getSelectionProvider().getSelection();
+        ITextSelection ts = (ITextSelection) getSelectionProvider().getSelection();
         return new Region(ts.getOffset(), ts.getLength());
     }
 

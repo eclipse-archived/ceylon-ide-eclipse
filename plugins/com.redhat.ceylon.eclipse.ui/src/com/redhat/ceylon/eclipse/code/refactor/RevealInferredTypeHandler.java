@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.ltk.core.refactoring.RefactoringCore.getUndoManager;
 
@@ -112,17 +113,17 @@ public class RevealInferredTypeHandler extends AbstractHandler {
     private void findCandidatesForRevelation(CeylonEditor editor, 
             final List<Tree.LocalModifier> localModifiers, 
             final List<Tree.ValueIterator> valueIterators) {
-        if (editor != null && 
-                editor.getParseController() != null && 
-                editor.getParseController().getRootNode() != null && 
-                editor.getSelectionProvider() != null && 
-                editor.getSelectionProvider().getSelection() != null) {
-
-            final ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
+        if (editor!=null &&  
+                editor.getParseController()!=null) {
+            final Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
+            final ITextSelection selection = getSelection(editor);
+            if (rootNode==null || selection==null) {
+                return;
+            }
             final int selectionStart = selection.getOffset();
             final int selectionStop = selection.getOffset() + selection.getLength();
 
-            editor.getParseController().getRootNode().visit(new Visitor() {
+            rootNode.visit(new Visitor() {
 
                 @Override
                 public void visit(Tree.TypedDeclaration typedDeclaration) {
