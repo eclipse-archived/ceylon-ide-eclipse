@@ -620,7 +620,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
             for (IMarker m: buildMarkers) {
                 Object message = m.getAttribute("message");
-                if (message!=null && message.toString().endsWith("'JDTClasses'")) {
+                if (message!=null && message.toString().endsWith("'.exploded'")) {
                     //ignore message from JDT about missing JDTClasses dir
                     m.delete();
                 }
@@ -645,20 +645,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 //if the ClassPathContainer is missing, add an error
                 IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
                 marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container for the language module is not set on the project " + 
-                        project.getName() + " (try running Enable Ceylon Builder on the project)");
+                        " (try running Enable Ceylon Builder on the project)");
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
+                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
                 return project.getReferencedProjects();
             }
             if (! applicationModulesContainerFound) {
                 //if the ClassPathContainer is missing, add an error
                 IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
                 marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container for application modules is not set on the project " + 
-                        project.getName() + " (try running Enable Ceylon Builder on the project)");
+                        " (try running Enable Ceylon Builder on the project)");
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
+                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
                 return project.getReferencedProjects();
             }
             
@@ -676,14 +676,30 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (ceylonOrder < javaOrder) {
                 //if the build order is not correct, add an error and return
                 IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
-                marker.setAttribute(IMarker.MESSAGE, "The Ceylon Builder should run after the Java Builder. Change order of builders in project properties for project: " + 
-                        project.getName());
+                marker.setAttribute(IMarker.MESSAGE, "The Ceylon Builder should run after the Java Builder. Change the order of builders in the project properties");
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.LOCATION, "Bytecode generation");
+                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
                 return project.getReferencedProjects();
             }
-            /* End issue #471 */      
+            /* End issue #471 */
+            
+            IPath modulesOutputFolderPath = getCeylonModulesOutputFolder(project).getRawLocation();
+            IPath jdtOutputFolderPath = javaProject.getOutputLocation();
+            IFolder jdtOutputFolder = project.getWorkspace().getRoot().getFolder(jdtOutputFolderPath);
+            if (jdtOutputFolder.exists()) {
+                jdtOutputFolderPath = jdtOutputFolder.getRawLocation();
+            }
+            if (modulesOutputFolderPath.isPrefixOf(jdtOutputFolderPath) || jdtOutputFolderPath.isPrefixOf(modulesOutputFolderPath)) {
+                //if the build order is not correct, add an error and return
+                IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+                marker.setAttribute(IMarker.MESSAGE, "The Ceylon modules output directory and Java class directory shoudln't collide." + 
+                        " Change one of them in the project properties");
+                marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                return project.getReferencedProjects();
+            }
             
             List<PhasedUnit> builtPhasedUnits = Collections.emptyList();
             
