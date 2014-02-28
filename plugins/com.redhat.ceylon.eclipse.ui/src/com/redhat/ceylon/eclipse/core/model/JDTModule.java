@@ -749,6 +749,11 @@ public class JDTModule extends LazyModule {
             return null;
         }
         
+        File sourceArchiveFile = new File(sourceArchivePath);
+        if (! sourceArchiveFile.exists()) {
+            return null;
+        }
+        
         ExternalPhasedUnit phasedUnit = null;
         String sourceUnitRelativePath = sourceUnitFullPath.replace(sourceArchivePath + "!/", "");
         Package pkg = getPackageFromRelativePath(sourceUnitRelativePath);
@@ -757,7 +762,7 @@ public class JDTModule extends LazyModule {
                 JDTModuleManager moduleManager = getModuleManager();
                 ClosableVirtualFile sourceArchive = null;
                 try {
-                    sourceArchive = moduleManager.getContext().getVfs().getFromZipFile(new File(sourceArchivePath));
+                    sourceArchive = moduleManager.getContext().getVfs().getFromZipFile(sourceArchiveFile);
                     
                     String ceylonSourceUnitRelativePath = sourceUnitRelativePath; 
                     if (sourceUnitRelativePath.endsWith(".java")) {
@@ -780,10 +785,20 @@ public class JDTModule extends LazyModule {
                         tokens.addAll(tokenStream.getTokens());
                         if(originalProject == null) {
                             phasedUnit = new ExternalPhasedUnit(archiveEntry, sourceArchive, cu, 
-                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, CeylonBuilder.getProjectTypeChecker(project), tokens);
+                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, CeylonBuilder.getProjectTypeChecker(project), tokens) {
+                                @Override
+                                protected boolean reuseExistingDescriptorModels() {                                    
+                                    return true;
+                                }
+                            };
                         } else {
                             phasedUnit = new CrossProjectPhasedUnit(archiveEntry, sourceArchive, cu, 
-                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject);
+                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject) {
+                                @Override
+                                protected boolean reuseExistingDescriptorModels() {                                    
+                                    return true;
+                                }
+                            };
                         }
                     }
                 } catch (Exception e) {
@@ -797,6 +812,9 @@ public class JDTModule extends LazyModule {
                     }
                 }
                 if (phasedUnit != null) {
+                    phasedUnit.validateTree();
+                    phasedUnit.visitSrcModulePhase();
+                    phasedUnit.visitRemainingModulePhase();
                     phasedUnit.scanDeclarations();
                     phasedUnit.scanTypeDeclarations();
                     phasedUnit.validateRefinement();
@@ -868,16 +886,6 @@ public class JDTModule extends LazyModule {
         return super.getPackages();
     }
 
-    @Override
-    public void setUnit(Unit newUnit) {
-        Unit oldUnit = getUnit();
-        if (oldUnit instanceof ProjectSourceFile && newUnit instanceof EditedSourceFile) {
-            // Don't set the unit : we're just typechecking in the editor : DON'T Change the global ceylon model !
-            return;
-        }
-        super.setUnit(newUnit);
-    }
-    
     @Override
     public void clearCache(final TypeDeclaration declaration) {
         clearCacheLocally(declaration);

@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResou
 import java.util.Arrays;
 import java.util.List;
 
+import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -18,10 +19,13 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
+import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 
 final class ModulesScanner implements IResourceVisitor {
     private final Module defaultModule;
@@ -87,21 +91,37 @@ final class ModulesScanner implements IResourceVisitor {
                     pkg.setName(pkgName);
                     
                     IFile file = moduleFile;
-                    ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
+                    final ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
                     boolean moduleVisited = false;
                     try {
                         PhasedUnit tempPhasedUnit = null;
                         tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
                                 typeChecker, virtualFile, srcDir, pkg);
+                        tempPhasedUnit = new CeylonSourceParser<ProjectPhasedUnit>() {
+                            @Override
+                            protected String getCharset() {
+                                try {
+                                    return virtualFile.getResource().getProject().getDefaultCharset();
+                                }
+                                catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            @SuppressWarnings("unchecked")
+                            @Override
+                            protected ProjectPhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
+                                return new ProjectPhasedUnit(virtualFile, srcDir, cu, pkg, 
+                                        moduleManager, typeChecker, tokenStream.getTokens()) {
+                                    protected boolean reuseExistingDescriptorModels() {
+                                        return true;
+                                    };
+                                };
+                            }
+                        }.parseFileToPhasedUnit(moduleManager, typeChecker, virtualFile, srcDir, pkg);
+                        
                         Module m = tempPhasedUnit.visitSrcModulePhase();
-                        // The following is necessary since the annotations will be set 
-                        // during the real module parsing in PhasedUnit.visitModules()
-                        // And the annotations are stored in a list instead of a set...
-                        // The other module informations will be correctly overwritten 
-                        // in PhasedUnit.visitModule() 
                         if (m!= null) {
                             module = m;
-                            module.getAnnotations().clear(); 
                             moduleVisited = true;
                         }
                     } 
