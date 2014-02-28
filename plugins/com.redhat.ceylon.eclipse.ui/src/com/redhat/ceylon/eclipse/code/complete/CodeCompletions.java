@@ -906,13 +906,21 @@ public class CodeCompletions {
                     null : pr.getTypedParameter(p);
             String typeName;
             ProducedType type = ppr.getType();
-            if (isListedValues) {
+            if (isListedValues && namedInvocation) {
                 ProducedType et = unit.getIteratedType(type);
                 typeName = et.getProducedTypeName(unit);
                 if (unit.isEntryType(et)) {
                     typeName = '<' + typeName + '>';
                 }
                 typeName += unit.isNonemptyIterableType(type) ? '+' : '*';
+            }
+            else if (p.isSequenced() && !namedInvocation) {
+                ProducedType et = unit.getSequentialElementType(type);
+                typeName = et.getProducedTypeName(unit);
+                if (unit.isEntryType(et)) {
+                    typeName = '<' + typeName + '>';
+                }
+                typeName += p.isAtLeastOne() ? '+' : '*';
             }
             else {
                 typeName = type.getProducedTypeName(unit);
