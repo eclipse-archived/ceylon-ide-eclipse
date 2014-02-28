@@ -58,6 +58,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 project != null &&
                 inSameProject(declaration) &&
                 declaration instanceof MethodOrValue &&
+                !declaration.isParameter() &&
                 !(declaration instanceof Setter) &&
                 !declaration.isDefault() &&
                 !declaration.isFormal() &&
