@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_CHANGE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_COMPOSITE_CHANGE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE_IMPORT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MOVE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_RENAME;
@@ -54,6 +55,7 @@ public abstract class AbstractRefactoring extends Refactoring {
     public static ImageDescriptor MOVE = imageRegistry.getDescriptor(CEYLON_MOVE);
     public static ImageDescriptor REORDER = imageRegistry.getDescriptor(CEYLON_REORDER);
     public static ImageDescriptor RENAME = imageRegistry.getDescriptor(CEYLON_RENAME);
+    public static ImageDescriptor DELETE = imageRegistry.getDescriptor(CEYLON_DELETE);
     public static ImageDescriptor DELETE_IMPORT = imageRegistry.getDescriptor(CEYLON_DELETE_IMPORT);
     
     IProject project;
@@ -222,7 +224,7 @@ public abstract class AbstractRefactoring extends Refactoring {
             }
         }
         if (searchInEditor()) {
-            count += countReferences(editor.getParseController().getRootNode());
+            count += countReferences(rootNode);
         }
         return count;
     }

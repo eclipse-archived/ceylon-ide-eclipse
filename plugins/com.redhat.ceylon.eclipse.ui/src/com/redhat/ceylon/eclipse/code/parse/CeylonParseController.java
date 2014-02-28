@@ -159,6 +159,10 @@ public class CeylonParseController {
         return stage;
     }
     
+    public PhasedUnit getPhasedUnit() {
+        return phasedUnit;
+    }
+    
     private boolean isCanceling(IProgressMonitor monitor) {
         boolean isCanceling = false;
         if (monitor!=null) {

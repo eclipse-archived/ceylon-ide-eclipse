@@ -592,6 +592,11 @@
             description="Rename selected declaration"
             name="Rename"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.delete"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Safely delete the selected declaration"
+            name="Safe Delete"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.inline"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Inline selected function or value"
@@ -766,6 +771,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.RenameHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.rename"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.DeleteHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.delete"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.InlineHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.inline"/>
