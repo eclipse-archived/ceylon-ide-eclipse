@@ -69,6 +69,7 @@ import static com.redhat.ceylon.eclipse.code.correct.RenameDescriptorProposal.ad
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowSwitchReferenceProposal;
+import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addSpecifyTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
@@ -671,6 +672,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     private void addTypingProposals(Collection<ICompletionProposal> proposals,
             IFile file, Tree.CompilationUnit cu, Node node,
             Tree.Declaration decNode) {
+        if (node instanceof Tree.MemberOrTypeExpression) {
+            addSpecifyTypeArgumentsProposal(cu, node, proposals, file);
+        }
         if (decNode instanceof Tree.TypedDeclaration && 
                 !(decNode instanceof Tree.ObjectDefinition) &&
                 !(decNode instanceof Tree.Variable)) {
