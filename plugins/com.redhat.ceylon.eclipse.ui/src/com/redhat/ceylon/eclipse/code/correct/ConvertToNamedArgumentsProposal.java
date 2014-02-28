@@ -47,7 +47,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                     new TextFileChange("Convert To Named Arguments", file);
             Integer start = pal.getStartIndex();
             int length = pal.getStopIndex()-start+1;
-            StringBuilder result = new StringBuilder().append(" {");
+            StringBuilder result = new StringBuilder().append(" { ");
             boolean sequencedArgs = false;
             List<CommonToken> tokens = editor.getParseController().getTokens();
             final List<Tree.PositionalArgument> args = pal.getPositionalArguments();
@@ -66,8 +66,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                         //      argument we don't need to wrap it
                         //      in a sequence, we only need to
                         //      get rid of the * operator
-                        result.append(" ")
-                            .append(param.getName())
+                        result.append(param.getName())
                             .append(" = [");
                         sequencedArgs=true;
                     }
@@ -114,7 +113,8 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                             }
                         }
                     }
-                    result.append(" " + param.getName() + " = ")
+                    result.append(param.getName())
+                        .append(" = ")
                         .append(AbstractRefactoring.toString(arg, tokens))
                         .append("; ");
                 }
