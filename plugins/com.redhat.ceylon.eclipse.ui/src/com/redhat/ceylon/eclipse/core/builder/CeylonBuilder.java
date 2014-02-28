@@ -803,8 +803,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     throw new OperationCanceledException();
                 }
                     
-                monitor.subTask("Cleaning removed files for project " + project.getName()); 
-                cleanRemovedSources(filesToRemove, phasedUnits, project);
+                monitor.subTask("Cleaning removed files for project " + project.getName());
+                cleanRemovedFilesFromOutputs(filesToRemove, project);
+                cleanRemovedFilesFromCeylonModel(filesToRemove, phasedUnits, project);
                 monitor.worked(1);
                 
                 if (monitor.isCanceled()) {
@@ -915,8 +916,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
             buildHook.beforeGeneratingBinaries();
             monitor.subTask("Generating binaries for project " + project.getName());
-
+            
             final Collection<IFile> filesToProcess = filesForBinaryGeneration;
+            cleanChangedFilesFromExplodedDirectory(filesToProcess, project);
             doWithCeylonModelCaching(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws CoreException {
@@ -1000,9 +1002,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private void cleanRemovedSources(List<IFile> filesToRemove,
+    private void cleanRemovedFilesFromCeylonModel(Collection<IFile> filesToRemove,
             PhasedUnits phasedUnits, IProject project) {
-        removeFromArchives(filesToRemove, project);
         for (IFile fileToRemove: filesToRemove) {
             if(isCeylon(fileToRemove)) {
                 // Remove the ceylon phasedUnit (which will also remove the unit from the package)
@@ -2835,7 +2836,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }    
 
-    private void removeFromArchives(List<IFile> filesToRemove, 
+    private void cleanRemovedFilesFromOutputs(Collection<IFile> filesToRemove, 
             IProject project) {
         if (filesToRemove.size() == 0) {
             return;
@@ -2947,6 +2948,69 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
+    private void cleanChangedFilesFromExplodedDirectory(Collection<IFile> changedFiles, 
+            IProject project) {
+        if (changedFiles.size() == 0) {
+            return;
+        }
+        
+        if (! isExplodeModulesEnabled(project)) {
+            return;
+        }
+        
+        for (IFile file : changedFiles) {
+            IFolder rootFolder = getRootFolder(file);
+            if (rootFolder == null) {
+                return;
+            }
+
+            if (isResourceFile(file)) {
+                return;
+            }
+            
+            String relativeFilePath = file.getProjectRelativePath().makeRelativeTo(rootFolder.getProjectRelativePath()).toString();
+            Package pkg = getPackage((IFolder)file.getParent());
+            if (pkg == null) {
+                return;
+            }
+            Module module = pkg.getModule();
+            TypeChecker typeChecker = typeCheckers.get(project);
+            if (typeChecker == null) {
+                return;
+            }
+            
+            final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
+            final File ceylonOutputDirectory = getCeylonClassesOutputDirectory(project);
+            File moduleDir = getModulePath(modulesOutputDirectory, module);
+            
+            //Remove the classes belonging to the source file from the
+            //from the .exploded directory
+            File moduleJar = new File(moduleDir, getModuleArchiveName(module));
+            if(moduleJar.exists()){
+                try {
+                    List<String> entriesToDelete = new ArrayList<String>();
+                    ZipFile zipFile = new ZipFile(moduleJar);
+                    
+                    Properties mapping = CarUtils.retrieveMappingFile(zipFile);
+
+                    for (String className : mapping.stringPropertyNames()) {
+                        String sourceFile = mapping.getProperty(className);
+                        if (relativeFilePath.equals(sourceFile)) {
+                            entriesToDelete.add(className);
+                        }
+                    }
+
+                    for (String entryToDelete : entriesToDelete) {
+                        new File(ceylonOutputDirectory, 
+                                entryToDelete.replace('/', File.separatorChar))
+                                .delete();
+                    }
+                } catch (ZipException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }    
     private static File getCeylonClassesOutputDirectory(IProject project) {
         return getCeylonClassesOutputFolder(project)
                 .getRawLocation().toFile();
