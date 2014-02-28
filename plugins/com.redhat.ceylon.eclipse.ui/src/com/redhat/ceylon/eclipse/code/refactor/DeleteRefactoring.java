@@ -235,7 +235,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
             }
         }
         if (searchInEditor()) {
-            addReferences(rootNode, list, editor.getParseController().getPhasedUnit());
+            addReferences(rootNode, list, 
+                    editor.getParseController().getPhasedUnit());
         }
         return list;
     }
@@ -245,7 +246,12 @@ public class DeleteRefactoring extends AbstractRefactoring {
         FindReferencesVisitor frv = 
                 new FindReferencesVisitor(declaration);
         FindRefinementsVisitor fdv = 
-                new FindRefinementsVisitor(frv.getDeclaration());
+                new FindRefinementsVisitor(frv.getDeclaration()) {
+            @Override
+            protected boolean isRefinement(Declaration dec) {
+                return !dec.equals(declaration) && super.isRefinement(dec);
+            }
+        };
         FindDocLinkReferencesVisitor fdlrv = 
                 new FindDocLinkReferencesVisitor(frv.getDeclaration());
         cu.visit(frv);
