@@ -1,11 +1,16 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInSourceFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isSourceFile;
 
+import java.lang.ref.WeakReference;
+
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -54,14 +59,30 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         }
         
         if (resource instanceof IFolder) {
+            IFolder folder = (IFolder) resource; 
             if (resourceDelta.getKind()==IResourceDelta.REMOVED) {
-                IFolder folder = (IFolder) resource; 
                 Package pkg = getPackage(folder);
                 if (pkg!=null) {
                     //a package has been removed
                     mustDoFullBuild.value = true;
                 }
+            } else {
+                if (folder.exists() && folder.getProject().equals(project)) {
+                    if (getPackage(folder) == null || getRootFolder(folder) == null) {
+                        IContainer parent = folder.getParent();
+                        if (parent instanceof IFolder) {
+                            Package parentPkg = getPackage((IFolder)parent);
+                            IFolder rootFolder = getRootFolder((IFolder)parent);
+                            if (parentPkg != null && rootFolder != null) {
+                                Package pkg = getProjectModelLoader(project).findOrCreatePackage(parentPkg.getModule(), parentPkg.getNameAsString() + "." + folder.getName());
+                                resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(pkg));
+                                resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootFolder);
+                            }
+                        }
+                    }
+                }
             }
+            
         }
         
         if (resource instanceof IFile) {
