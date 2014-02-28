@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.common.Constants.DEFAULT_RESOURCE_DIR;
+import static com.redhat.ceylon.common.Constants.DEFAULT_SOURCE_DIR;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
@@ -46,8 +48,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     private NewCeylonProjectWizardPageTwo secondPage;
     private NewCeylonProjectWizardPageThree thirdPage;
     
-    public static final String DEFAULT_SOURCE_FOLDER = "source";
-    public static final String DEFAULT_RESOURCE_FOLDER = "resources";
+    public static final String DEFAULT_SOURCE_FOLDER = DEFAULT_SOURCE_DIR;
+    public static final String DEFAULT_RESOURCE_FOLDER = DEFAULT_RESOURCE_DIR;
 
     private IConfigurationElement fConfigElement;
 
