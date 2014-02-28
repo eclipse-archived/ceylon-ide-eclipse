@@ -363,7 +363,15 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         tfc.addEdit(new InsertEdit(startOffset, 
                 newName + " " + paramName));
         tfc.addEdit(new DeleteEdit(startOffset, endOffset-startOffset));
-        body.visit(new Visitor() {
+        for (int i=lastParam+1; i<ps.size(); i++) {
+            refactorLocalRefs(tfc, paramName, params, ps.get(i));
+        }
+        refactorLocalRefs(tfc, paramName, params, body);
+    }
+
+    private void refactorLocalRefs(final TextChange tfc,
+            final String paramName, final Set<MethodOrValue> params, Node node) {
+        node.visit(new Visitor() {
             @Override
             public void visit(Tree.BaseMemberExpression that) {
                 super.visit(that);
