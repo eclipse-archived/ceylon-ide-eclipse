@@ -19,6 +19,8 @@ public class DeleteInputPage extends UserInputWizardPage {
     }
 
     public void createControl(Composite parent) {
+        int count = getDeleteRefactoring().getCount();
+        
         Composite result = new Composite(parent, SWT.NONE);
         setControl(result);
         GridLayout layout = new GridLayout();
@@ -28,7 +30,7 @@ public class DeleteInputPage extends UserInputWizardPage {
         Label title = new Label(result, SWT.LEFT);  
         Declaration dec = getDeleteRefactoring().getDeclaration();
         title.setText("Delete '" + dec.getName() + 
-                "' which is referenced in " + getDeleteRefactoring().getCount() + 
+                "' which is referenced in " + count + 
                 " places.");
         GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
         gd2.horizontalSpan=2;
@@ -63,6 +65,19 @@ public class DeleteInputPage extends UserInputWizardPage {
         tgd.heightHint = 100;
         tgd.widthHint = 250;
         table.getTable().setLayoutData(tgd);
+        
+        Declaration declaration = getDeleteRefactoring().getDeclaration();
+        Declaration refinedDeclaration = getDeleteRefactoring().getRefinedDeclaration();
+        if (declaration.isActual() && refinedDeclaration!=null) {
+            setMessage("'" + declaration.getName() + "' refines '" + 
+                    refinedDeclaration.getName() + "' declared by '" +
+                    ((Declaration) refinedDeclaration.getContainer()).getName() + "'", 
+                    WARNING);
+        }
+        else if (count>0) {
+            setMessage("There are " + count + " references to '" + 
+                    declaration.getName() + "'", WARNING); 
+        }
     }
     
     private DeleteRefactoring getDeleteRefactoring() {

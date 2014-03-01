@@ -11,7 +11,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class FindRefinementsAction extends AbstractFindAction {
@@ -24,7 +24,7 @@ public class FindRefinementsAction extends AbstractFindAction {
         @Override
         protected Set<Node> getNodes(Tree.CompilationUnit cu,
                 Declaration referencedDeclaration) {
-            Declaration declaration = new FindReferenceVisitor(referencedDeclaration).getDeclaration();
+            Declaration declaration = new FindReferencesVisitor(referencedDeclaration).getDeclaration();
             FindRefinementsVisitor frv = new FindRefinementsVisitor(declaration);
             cu.visit(frv);
             Set<Tree.StatementOrArgument> nodes = frv.getDeclarationNodes();
@@ -51,7 +51,7 @@ public class FindRefinementsAction extends AbstractFindAction {
     
     @Override
     boolean isValidSelection() {
-        declaration = new FindReferenceVisitor(declaration).getDeclaration();
+        declaration = new FindReferencesVisitor(declaration).getDeclaration();
         return declaration!=null /*&& 
                 declaration.isClassOrInterfaceMember() &&
                 !(declaration instanceof TypeParameter)*/;

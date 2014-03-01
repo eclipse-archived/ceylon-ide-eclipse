@@ -39,7 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
-import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 
 public class JavaQueryParticipant implements IQueryParticipant {
 
@@ -103,7 +103,7 @@ public class JavaQueryParticipant implements IQueryParticipant {
                                 nodes = fav.getNodes();
                             }
                             else {
-                                FindReferenceVisitor frv = new FindReferenceVisitor(d);
+                                FindReferencesVisitor frv = new FindReferencesVisitor(d);
                                 frv.visit(cu);
                                 nodes = frv.getNodes();
                             }

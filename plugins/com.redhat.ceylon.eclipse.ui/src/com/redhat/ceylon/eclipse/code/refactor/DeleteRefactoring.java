@@ -23,61 +23,30 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.CeylonElement;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
-import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class DeleteRefactoring extends AbstractRefactoring {
     
-    private static class FindReferencesVisitor 
-            extends FindReferenceVisitor {
-        private FindReferencesVisitor(Declaration declaration) {
+    private class FindDeletedReferencesVisitor 
+            extends FindReferencesVisitor {
+        private FindDeletedReferencesVisitor(Declaration declaration) {
             super(declaration);
         }
         @Override
         protected boolean isReference(Declaration ref) {
-            return super.isReference(ref) ||
-                    ref!=null && ref.refines(getDeclaration());
+            return ref!=null && ref.equals(getDeclaration());
         }
         @Override
-        protected boolean isReference(Declaration ref, String id) {
-            return isReference(ref) && id!=null &&
-                    getDeclaration().getName().equals(id); //TODO: really lame way to tell if it's an alias!
-        }
-    }
-    
-    private final Declaration declaration;
-    
-    public Node getNode() {
-        return node;
-    }
-
-    public DeleteRefactoring(ITextEditor editor) {
-        super(editor);
-        if (rootNode!=null) {
-            Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);
-            if (refDec!=null) {
-                declaration = refDec.getRefinedDeclaration();
-            }
-            else {
-                declaration = null;
+        public void visit(Tree.Declaration that) {
+            if (!that.getDeclarationModel()
+                    .equals(declarationToDelete)) {
+                super.visit(that);                
             }
         }
-        else {
-            declaration = null;
-        }
     }
     
-    @Override
-    public boolean isEnabled() {
-        return declaration!=null &&
-                project != null &&
-                inSameProject(declaration);
-    }
-
-    public int getCount() {
-        return declaration==null ? 0 : countDeclarationOccurrences();
-    }
-    
+    //TODO: copy/pasted from RenameRefactoring!
     class FindDocLinkReferencesVisitor extends Visitor {
         private Declaration declaration;
         private List<Tree.DocLink> links = new ArrayList<Tree.DocLink>();
@@ -100,20 +69,70 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 }
             }
         }
+        @Override
+        public void visit(Tree.Declaration that) {
+            if (!that.getDeclarationModel()
+                    .equals(declarationToDelete)) {
+                super.visit(that);                
+            }
+        }
+    }
+    
+    private class FindDeletedRefinementsVisitor
+            extends FindRefinementsVisitor {
+        public FindDeletedRefinementsVisitor(Declaration declaration) {
+            super(declaration);
+        }
+        @Override
+        protected boolean isRefinement(Declaration dec) {
+            return !dec.equals(declarationToDelete) && 
+                    super.isRefinement(dec);
+        }
+    }
+    
+    private final Declaration refinedDeclaration;
+    private final Declaration declarationToDelete;
+    
+    public Node getNode() {
+        return node;
     }
 
+    public DeleteRefactoring(ITextEditor editor) {
+        super(editor);
+        if (rootNode!=null) {
+            declarationToDelete = getReferencedExplicitDeclaration(node, rootNode);
+            if (declarationToDelete!=null) {
+                refinedDeclaration = declarationToDelete.getRefinedDeclaration();
+            }
+            else {
+                refinedDeclaration = null;
+            }
+        }
+        else {
+            declarationToDelete = null;
+            refinedDeclaration = null;
+        }
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return declarationToDelete!=null &&
+                project != null &&
+                inSameProject(declarationToDelete);
+    }
+
+    public int getCount() {
+        return declarationToDelete==null ? 
+                0 : countDeclarationOccurrences();
+    }
+    
     @Override
     int countReferences(Tree.CompilationUnit cu) {
-        FindReferencesVisitor frv = 
-                new FindReferencesVisitor(declaration);
-        FindRefinementsVisitor fdv = 
-                new FindRefinementsVisitor(frv.getDeclaration()) {
-            @Override
-            protected boolean isRefinement(Declaration dec) {
-                return !dec.equals(declaration) && super.isRefinement(dec);
-            }
-        };
-        FindDocLinkReferencesVisitor fdlrv = 
+        FindDeletedReferencesVisitor frv =
+                new FindDeletedReferencesVisitor(declarationToDelete);
+        FindRefinementsVisitor fdv =
+                new FindDeletedRefinementsVisitor(frv.getDeclaration());
+        FindDocLinkReferencesVisitor fdlrv =
                 new FindDocLinkReferencesVisitor(frv.getDeclaration());
         cu.visit(frv);
         cu.visit(fdv);
@@ -137,80 +156,26 @@ public class DeleteRefactoring extends AbstractRefactoring {
         return new RefactoringStatus();
     }
     
-    /*public List<Node> getNodesToRename(Tree.CompilationUnit root) {
-        ArrayList<Node> list = new ArrayList<Node>();
-        FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-        root.visit(frv);
-        list.addAll(frv.getNodes());
-        FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
-        root.visit(fdv);
-        list.addAll(fdv.getDeclarationNodes());
-        return list;
+    public Declaration getDeclaration() {
+        return declarationToDelete;
     }
     
-    public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
-        final List<Region> result = new ArrayList<Region>();
-        new Visitor() {
-            private void visitIt(String name, int offset, Declaration dec) {
-                if (dec!=null && dec.equals(declaration)) {
-                    result.add(new Region(offset, name.length()));
-                }
-            }
-            @Override
-            public void visit(Tree.DocLink that) {
-                String text = that.getText();
-                Integer offset = that.getStartIndex();
-                
-                int pipeIndex = text.indexOf("|");
-                if (pipeIndex > -1) {
-                    text = text.substring(pipeIndex + 1);
-                    offset += pipeIndex + 1;
-                }
-                
-                int scopeIndex = text.indexOf("::");
-                int start = scopeIndex<0 ? 0 : scopeIndex+2;
-                Declaration base = that.getBase();
-                if (base!=null) {
-                    int index = text.indexOf('.', start);
-                    String name = index<0 ? 
-                            text.substring(start) : 
-                            text.substring(start, index);
-                    visitIt(name, offset+start, base);
-                    start = index+1;
-                    int i=0;
-                    List<Declaration> qualified = that.getQualified();
-                    if (qualified!=null) {
-                        while (start>0 && i<qualified.size()) {
-                            index = text.indexOf('.', start);
-                            name = index<0 ? 
-                                    text.substring(start) : 
-                                    text.substring(start, index);
-                            visitIt(name, offset+start, qualified.get(i++));
-                            start = index+1;
-                        }
-                    }
-                }
-            }
-        }.visit(root);
-        return result;
-    }*/
-
-    public Declaration getDeclaration() {
-        return declaration;
+    public Declaration getRefinedDeclaration() {
+        return refinedDeclaration;
     }
 
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
         List<PhasedUnit> units = getAllUnits();
-        if (rootNode.getUnit().equals(declaration.getUnit()) &&
+        if (rootNode.getUnit().equals(declarationToDelete.getUnit()) &&
                 searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             dc.setEdit(getDeleteEdit(rootNode));
             return dc;
         }
         for (PhasedUnit pu: units) {
-            if (pu.getUnit().equals(declaration.getUnit()) && 
+            if (pu.getUnit().equals(declarationToDelete.getUnit()) && 
                     searchInFile(pu)) {
                 TextFileChange tfc = newTextFileChange(pu);
                 tfc.setEdit(getDeleteEdit(pu.getCompilationUnit()));
@@ -221,7 +186,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
     }
 
     private DeleteEdit getDeleteEdit(Tree.CompilationUnit compilationUnit) {
-        Node node = getReferencedNode(declaration, compilationUnit);
+        Node node = getReferencedNode(declarationToDelete, compilationUnit);
         return new DeleteEdit(node.getStartIndex(), 
                 node.getStopIndex()-node.getStartIndex()+1);
     }
@@ -243,15 +208,10 @@ public class DeleteRefactoring extends AbstractRefactoring {
     
     private void addReferences(Tree.CompilationUnit cu, 
             List<CeylonElement> list, PhasedUnit pu) {
-        FindReferencesVisitor frv = 
-                new FindReferencesVisitor(declaration);
-        FindRefinementsVisitor fdv = 
-                new FindRefinementsVisitor(frv.getDeclaration()) {
-            @Override
-            protected boolean isRefinement(Declaration dec) {
-                return !dec.equals(declaration) && super.isRefinement(dec);
-            }
-        };
+        FindDeletedReferencesVisitor frv = 
+                new FindDeletedReferencesVisitor(declarationToDelete);
+        FindDeletedRefinementsVisitor fdv = 
+                new FindDeletedRefinementsVisitor(frv.getDeclaration());
         FindDocLinkReferencesVisitor fdlrv = 
                 new FindDocLinkReferencesVisitor(frv.getDeclaration());
         cu.visit(frv);

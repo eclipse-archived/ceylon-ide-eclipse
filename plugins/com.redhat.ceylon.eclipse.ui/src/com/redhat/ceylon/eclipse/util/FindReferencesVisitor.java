@@ -14,12 +14,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
+public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     
     private Declaration declaration;
     private final Set<Node> nodes = new HashSet<Node>();
     
-    public FindReferenceVisitor(Declaration declaration) {
+    public FindReferencesVisitor(Declaration declaration) {
         if (declaration instanceof TypedDeclaration) {
             Declaration od = declaration;
             while (od!=null && od!=declaration) {
@@ -27,9 +27,11 @@ public class FindReferenceVisitor extends Visitor implements NaturalVisitor {
                 od = ((TypedDeclaration) od).getOriginalDeclaration();
             }
         }
-        if (declaration!=null && declaration.getContainer() instanceof Setter) {
+        if (declaration!=null && 
+                declaration.getContainer() instanceof Setter) {
             Setter setter = (Setter) declaration.getContainer();
-            if (setter.getDirectMember(setter.getName(), null, false).equals(declaration)) {
+            if (setter.getDirectMember(setter.getName(), null, false)
+                    .equals(declaration)) {
                 declaration = setter;
             }
         }

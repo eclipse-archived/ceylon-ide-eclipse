@@ -24,16 +24,16 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
-import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class RenameRefactoring extends AbstractRefactoring {
     
-    private static class FindReferencesVisitor 
-            extends FindReferenceVisitor {
-        private FindReferencesVisitor(Declaration declaration) {
+    private static class FindRenamedReferencesVisitor 
+            extends FindReferencesVisitor {
+        private FindRenamedReferencesVisitor(Declaration declaration) {
             super(declaration);
         }
         @Override
@@ -45,6 +45,27 @@ public class RenameRefactoring extends AbstractRefactoring {
         protected boolean isReference(Declaration ref, String id) {
             return isReference(ref) && id!=null &&
                     getDeclaration().getName().equals(id); //TODO: really lame way to tell if it's an alias!
+        }
+    }
+
+    private static class FindDocLinkReferencesVisitor extends Visitor {
+        private Declaration declaration;
+        int count;
+        FindDocLinkReferencesVisitor(Declaration declaration) {
+            this.declaration = declaration;
+        }
+        @Override
+        public void visit(DocLink that) {
+            if (that.getBase()!=null) {
+                if (that.getBase().equals(declaration)) {
+                    count++;
+                }
+                else if (that.getQualified()!=null) {
+                    if (that.getQualified().contains(declaration)) {
+                        count++;
+                    }
+                }
+            }
         }
     }
 
@@ -83,31 +104,10 @@ public class RenameRefactoring extends AbstractRefactoring {
         return declaration==null ? 0 : countDeclarationOccurrences();
     }
     
-    class FindDocLinkReferencesVisitor extends Visitor {
-        private Declaration declaration;
-        int count;
-        FindDocLinkReferencesVisitor(Declaration declaration) {
-            this.declaration = declaration;
-        }
-        @Override
-        public void visit(DocLink that) {
-            if (that.getBase()!=null) {
-                if (that.getBase().equals(declaration)) {
-                    count++;
-                }
-                else if (that.getQualified()!=null) {
-                    if (that.getQualified().contains(declaration)) {
-                        count++;
-                    }
-                }
-            }
-        }
-    }
-
     @Override
     int countReferences(Tree.CompilationUnit cu) {
-        FindReferencesVisitor frv = 
-                new FindReferencesVisitor(declaration);
+        FindRenamedReferencesVisitor frv = 
+                new FindRenamedReferencesVisitor(declaration);
         FindRefinementsVisitor fdv = 
                 new FindRefinementsVisitor(frv.getDeclaration());
         FindDocLinkReferencesVisitor fdlrv = 
@@ -182,10 +182,12 @@ public class RenameRefactoring extends AbstractRefactoring {
     
     public List<Node> getNodesToRename(Tree.CompilationUnit root) {
         ArrayList<Node> list = new ArrayList<Node>();
-        FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+        FindRenamedReferencesVisitor frv = 
+                new FindRenamedReferencesVisitor(declaration);
         root.visit(frv);
         list.addAll(frv.getNodes());
-        FindRefinementsVisitor fdv = new FindRefinementsVisitor(frv.getDeclaration());
+        FindRefinementsVisitor fdv = 
+                new FindRefinementsVisitor(frv.getDeclaration());
         root.visit(fdv);
         list.addAll(fdv.getDeclarationNodes());
         return list;

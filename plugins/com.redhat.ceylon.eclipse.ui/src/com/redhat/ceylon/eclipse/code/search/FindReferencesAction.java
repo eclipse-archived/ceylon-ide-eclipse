@@ -10,7 +10,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 
 public class FindReferencesAction extends AbstractFindAction {
 
@@ -22,7 +22,7 @@ public class FindReferencesAction extends AbstractFindAction {
         @Override
         protected Set<Node> getNodes(Tree.CompilationUnit cu,
                 Declaration referencedDeclaration) {
-            FindReferenceVisitor frv = new FindReferenceVisitor(referencedDeclaration);
+            FindReferencesVisitor frv = new FindReferencesVisitor(referencedDeclaration);
             cu.visit(frv);
             return frv.getNodes();
         }

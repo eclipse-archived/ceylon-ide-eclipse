@@ -46,7 +46,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
-import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 
 /**
  * Action class that implements the "Mark Occurrences" mode. This action contains a number of
@@ -418,7 +418,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             }
             else {
                 List<Node> occurrences = new ArrayList<Node>();
-                FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
+                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
                 root.visit(frv);
                 occurrences.addAll(frv.getNodes());
                 FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(frv.getDeclaration());

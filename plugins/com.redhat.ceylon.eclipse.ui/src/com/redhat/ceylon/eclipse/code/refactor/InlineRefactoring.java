@@ -40,7 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
-import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 
 public class InlineRefactoring extends AbstractRefactoring {
     
@@ -75,7 +75,7 @@ public class InlineRefactoring extends AbstractRefactoring {
     
     @Override
     int countReferences(Tree.CompilationUnit cu) {
-        FindReferenceVisitor frv = new FindReferenceVisitor(declaration);
+        FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
         cu.visit(frv);
         return frv.getNodes().size();
     }
