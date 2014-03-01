@@ -21,7 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
-import com.redhat.ceylon.eclipse.util.FindReferenceVisitor;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
 
@@ -64,7 +64,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
                 if (node instanceof BaseMemberExpression) {
                     Declaration d = ((BaseMemberExpression) node).getDeclaration();
                     if (d!=null) {
-                        FindReferenceVisitor frv = new FindReferenceVisitor(d);
+                        FindReferencesVisitor frv = new FindReferencesVisitor(d);
                         frv.visit(((Tree.SwitchStatement) statement).getSwitchCaseList());
                         for (Node n: frv.getNodes()) {
                             Node identifyingNode = getIdentifyingNode(n);
@@ -92,7 +92,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
             change.setEdit(new MultiTextEdit());
             change.addEdit(new InsertEdit(offset, name + " = "));
             Tree.Statement statement = FindUtils.findStatement(cu, node);
-            FindReferenceVisitor frv = new FindReferenceVisitor(var.getDeclarationModel());
+            FindReferencesVisitor frv = new FindReferencesVisitor(var.getDeclarationModel());
             frv.visit(statement);
             for (Node n: frv.getNodes()) {
                 Node identifyingNode = getIdentifyingNode(n);
