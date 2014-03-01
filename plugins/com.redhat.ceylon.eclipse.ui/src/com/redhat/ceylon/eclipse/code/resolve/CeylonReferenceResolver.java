@@ -48,7 +48,8 @@ public class CeylonReferenceResolver {
         }
     }
 
-    public static Declaration getReferencedExplicitDeclaration(Node node, Tree.CompilationUnit rn) {
+    public static Declaration getReferencedExplicitDeclaration(Node node, 
+            Tree.CompilationUnit rn) {
         Declaration dec = getReferencedDeclaration(node);
         if (dec!=null && dec.getUnit().equals(node.getUnit())) {
             FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
@@ -57,9 +58,9 @@ public class CeylonReferenceResolver {
             if (decNode instanceof Tree.Variable) {
                 Tree.Variable var = (Tree.Variable) decNode;
                 if (var.getType() instanceof Tree.SyntheticVariable) {
-                    return getReferencedExplicitDeclaration(
-                            var.getSpecifierExpression().getExpression().getTerm(), 
-                            rn);
+                    Tree.Term term = var.getSpecifierExpression()
+                            .getExpression().getTerm();
+                    return getReferencedExplicitDeclaration(term, rn);
                 }
             }
         }
