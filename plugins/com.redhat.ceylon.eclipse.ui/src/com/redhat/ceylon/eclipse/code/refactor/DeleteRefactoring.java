@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
@@ -11,10 +10,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.ltk.core.refactoring.Change;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.DeleteEdit;
+import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -29,6 +29,8 @@ import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class DeleteRefactoring extends AbstractRefactoring {
     
+    private boolean deleteRefinements;
+    
     private class FindDeletedReferencesVisitor 
             extends FindReferencesVisitor {
         private FindDeletedReferencesVisitor(Declaration declaration) {
@@ -36,12 +38,25 @@ public class DeleteRefactoring extends AbstractRefactoring {
         }
         @Override
         protected boolean isReference(Declaration ref) {
-            return ref!=null && ref.equals(getDeclaration());
+            Declaration declaration = getDeclaration();
+            if (ref==null) {
+                return false;
+            }
+            else if (ref.equals(declaration)) {
+                return !declaration.isActual() && 
+                        !declaration.equals(refinedDeclaration); //TODO: should check that it doesn't refine the return type
+            }
+            else {
+                return deleteRefinements &&
+                        ref.refines(declaration);
+            }
         }
         @Override
         public void visit(Tree.Declaration that) {
-            if (!that.getDeclarationModel()
-                    .equals(declarationToDelete)) {
+            Declaration dec = that.getDeclarationModel();
+            if (!dec.equals(declarationToDelete) &&
+                    (!deleteRefinements || 
+                            !dec.refines(declarationToDelete))) {
                 super.visit(that);                
             }
         }
@@ -86,8 +101,11 @@ public class DeleteRefactoring extends AbstractRefactoring {
         }
         @Override
         protected boolean isRefinement(Declaration dec) {
-            return !dec.equals(declarationToDelete) && 
-                    super.isRefinement(dec);
+            return !dec.equals(declarationToDelete) &&
+                    (super.isRefinement(dec) &&
+                    !deleteRefinements ||
+                    dec.equals(refinedDeclaration) &&
+                    dec.isFormal());
         }
     }
     
@@ -168,28 +186,39 @@ public class DeleteRefactoring extends AbstractRefactoring {
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
+        CompositeChange change = new CompositeChange("Safe Delete");
         List<PhasedUnit> units = getAllUnits();
-        if (rootNode.getUnit().equals(declarationToDelete.getUnit()) &&
-                searchInEditor()) {
-            DocumentChange dc = newDocumentChange();
-            dc.setEdit(getDeleteEdit(rootNode));
-            return dc;
+        if (searchInEditor()) {
+            deleteInFile(change, newDocumentChange(), 
+                    rootNode);
         }
         for (PhasedUnit pu: units) {
-            if (pu.getUnit().equals(declarationToDelete.getUnit()) && 
-                    searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange(pu);
-                tfc.setEdit(getDeleteEdit(pu.getCompilationUnit()));
-                return tfc;
+            if (searchInFile(pu)) {
+                deleteInFile(change, newTextFileChange(pu), 
+                        pu.getCompilationUnit());
             }
         }
-        return null;
+        return change;
     }
 
-    private DeleteEdit getDeleteEdit(Tree.CompilationUnit compilationUnit) {
-        Node node = getReferencedNode(declarationToDelete, compilationUnit);
-        return new DeleteEdit(node.getStartIndex(), 
-                node.getStopIndex()-node.getStartIndex()+1);
+    private void deleteInFile(CompositeChange change, 
+            final TextChange tfc, Tree.CompilationUnit cu) {
+        tfc.setEdit(new MultiTextEdit());
+        new Visitor() {
+            public void visit(Tree.Declaration that) {
+                super.visit(that);
+                Declaration d = that.getDeclarationModel();
+                if (d.equals(declarationToDelete) ||
+                        (deleteRefinements &&
+                                d.refines(declarationToDelete))) {
+                    tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
+                            that.getStopIndex()-that.getStartIndex()+1));
+                }
+            }
+        }.visit(cu);
+        if (tfc.getEdit().hasChildren()) {
+            change.add(tfc);
+        }
     }
     
     List<CeylonSearchMatch> getReferences() {
@@ -236,6 +265,10 @@ public class DeleteRefactoring extends AbstractRefactoring {
         cu.visit(fcv);
         return new CeylonSearchMatch(fcv.getStatementOrArgument(), 
                 pu.getUnitFile(), node);
+    }
+
+    public void setDeleteRefinements() {
+        deleteRefinements = !deleteRefinements;
     }
 
 }

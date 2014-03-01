@@ -48,7 +48,7 @@ public class ExtractValueInputPage extends UserInputWizardPage {
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
-        });        
+        });
         final Button gs = new Button(result, SWT.CHECK);
         gs.setText("Create a getter");
         gs.addSelectionListener(new SelectionListener() {
