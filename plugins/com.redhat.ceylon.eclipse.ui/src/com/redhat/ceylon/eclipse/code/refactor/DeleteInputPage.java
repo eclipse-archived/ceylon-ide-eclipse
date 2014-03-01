@@ -11,9 +11,12 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
@@ -55,7 +58,10 @@ public class DeleteInputPage extends UserInputWizardPage {
         tableLayout.marginWidth=0;
         composite.setLayout(tableLayout);
         
-        TableViewer table = new TableViewer(composite, 
+        final Button et = new Button(result, SWT.CHECK);
+        et.setText("Delete refinements");
+        
+        final TableViewer table = new TableViewer(composite, 
                 SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
         table.setLabelProvider(new CeylonLabelProvider(true) {
             @Override
@@ -70,6 +76,16 @@ public class DeleteInputPage extends UserInputWizardPage {
         table.setContentProvider(ArrayContentProvider.getInstance());
         table.setComparator(new CeylonViewerComparator());
         table.setInput(getDeleteRefactoring().getReferences());
+        
+        et.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                getDeleteRefactoring().setDeleteRefinements();
+                table.setInput(getDeleteRefactoring().getReferences());
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
         
         GridData tgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
         tgd.horizontalSpan=3;
@@ -89,7 +105,6 @@ public class DeleteInputPage extends UserInputWizardPage {
                     gotoFile(element.getFile(), match.getOffset(), match.getLength());
                 }
             }
-
         });
         
         Declaration declaration = getDeleteRefactoring().getDeclaration();
