@@ -4,14 +4,14 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 
 
-public class CeylonSearchResultContentProvider implements
+class CeylonSearchResultContentProvider implements
         CeylonStructuredContentProvider {
     
     private final TableViewer viewer;
     private CeylonSearchResult result;
     private CeylonSearchResultPage page;
 
-    public CeylonSearchResultContentProvider(TableViewer viewer, 
+    CeylonSearchResultContentProvider(TableViewer viewer, 
             CeylonSearchResultPage page) {
         this.viewer = viewer;
         this.page = page;
