@@ -21,7 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.search.CeylonElement;
+import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
@@ -191,9 +191,9 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 node.getStopIndex()-node.getStartIndex()+1);
     }
     
-    List<CeylonElement> getReferences() {
-        List<CeylonElement> list = 
-                new ArrayList<CeylonElement>();
+    List<CeylonSearchMatch> getReferences() {
+        List<CeylonSearchMatch> list = 
+                new ArrayList<CeylonSearchMatch>();
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
                 addReferences(pu.getCompilationUnit(), list, pu);
@@ -207,7 +207,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
     }
     
     private void addReferences(Tree.CompilationUnit cu, 
-            List<CeylonElement> list, PhasedUnit pu) {
+            List<CeylonSearchMatch> list, PhasedUnit pu) {
         FindDeletedReferencesVisitor frv = 
                 new FindDeletedReferencesVisitor(declarationToDelete);
         FindDeletedRefinementsVisitor fdv = 
@@ -228,12 +228,12 @@ public class DeleteRefactoring extends AbstractRefactoring {
         }
     }
 
-    private CeylonElement findContainer(Node node,
+    private CeylonSearchMatch findContainer(Node node,
             Tree.CompilationUnit cu, PhasedUnit pu) {
         FindContainerVisitor fcv = new FindContainerVisitor(node);
         cu.visit(fcv);
-        return new CeylonElement(fcv.getStatementOrArgument(), 
-                pu.getUnitFile(), node.getToken().getLine());
+        return new CeylonSearchMatch(fcv.getStatementOrArgument(), 
+                pu.getUnitFile(), node);
     }
 
 }
