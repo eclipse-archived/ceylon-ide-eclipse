@@ -24,7 +24,7 @@ public class DeleteInputPage extends UserInputWizardPage {
         Composite result = new Composite(parent, SWT.NONE);
         setControl(result);
         GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
+        layout.numColumns = 1;
         result.setLayout(layout);
         
         Label title = new Label(result, SWT.LEFT);  
@@ -66,18 +66,30 @@ public class DeleteInputPage extends UserInputWizardPage {
         tgd.widthHint = 250;
         table.getTable().setLayoutData(tgd);
         
+//        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
+
         Declaration declaration = getDeleteRefactoring().getDeclaration();
         Declaration refinedDeclaration = getDeleteRefactoring().getRefinedDeclaration();
+        if (count>0) {
+            addWarning(result, "There are " + count + " references to '" + 
+                    declaration.getName() + "'");
+        }
         if (declaration.isActual() && refinedDeclaration!=null) {
-            setMessage("'" + declaration.getName() + "' refines '" + 
+            addWarning(result, "This declaration refines '" + 
                     refinedDeclaration.getName() + "' declared by '" +
-                    ((Declaration) refinedDeclaration.getContainer()).getName() + "'", 
-                    WARNING);
+                    ((Declaration) refinedDeclaration.getContainer()).getName() + "'");
         }
-        else if (count>0) {
-            setMessage("There are " + count + " references to '" + 
-                    declaration.getName() + "'", WARNING); 
-        }
+    }
+
+    private void addWarning(Composite result, String text) {
+        Composite warn = new Composite(result, SWT.NONE);
+        GridLayout l = new GridLayout();
+        l.numColumns = 2;
+        warn.setLayout(l);
+        Label icon = new Label(warn, SWT.LEFT);
+        icon.setImage(CeylonLabelProvider.WARNING);
+        Label label = new Label(warn, SWT.LEFT);
+        label.setText(text);
     }
     
     private DeleteRefactoring getDeleteRefactoring() {
