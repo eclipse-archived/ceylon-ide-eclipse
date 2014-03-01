@@ -86,6 +86,13 @@ public class FindContainerVisitor extends Visitor
         super.visit(that);
         currentDeclaration = d;
     }
+    @Override
+    public void visit(Tree.TypeAliasDeclaration that) {
+        Tree.StatementOrArgument d = currentDeclaration;
+        currentDeclaration = that;
+        super.visit(that);
+        currentDeclaration = d;
+    }
     public void visitAny(Node node) {
         if (this.node==node) {
             declaration=currentDeclaration;
