@@ -16,4 +16,9 @@ public class CeylonSearchMatch extends Match {
                 CeylonSourcePositionLocator.getLength(node));
     }
     
+    @Override
+    public CeylonElement getElement() {
+        return (CeylonElement) super.getElement();
+    }
+    
 }

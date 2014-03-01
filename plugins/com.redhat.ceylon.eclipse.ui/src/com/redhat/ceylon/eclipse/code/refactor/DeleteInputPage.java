@@ -1,10 +1,18 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
+
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -12,6 +20,9 @@ import org.eclipse.swt.widgets.Label;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.search.CeylonElement;
+import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
+import com.redhat.ceylon.eclipse.code.search.CeylonViewerComparator;
 
 public class DeleteInputPage extends UserInputWizardPage {
     public DeleteInputPage(String name) {
@@ -46,18 +57,20 @@ public class DeleteInputPage extends UserInputWizardPage {
         composite.setLayout(tableLayout);
         
         TableViewer table = new TableViewer(composite, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-        table.setLabelProvider(new CeylonLabelProvider(true));
+        table.setLabelProvider(new CeylonLabelProvider(true) {
+            @Override
+            public StyledString getStyledText(Object element) {
+                return super.getStyledText(((CeylonSearchMatch) element).getElement());
+            }
+            @Override
+            public Image getImage(Object element) {
+                return super.getImage(((CeylonSearchMatch) element).getElement());
+            }
+        });
         table.setContentProvider(ArrayContentProvider.getInstance());
+        table.setComparator(new CeylonViewerComparator());
         table.setInput(getDeleteRefactoring().getReferences());
-//        Table table = new Table(composite, SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER);
-//        for (CeylonElement e: getDeleteRefactoring().getReferences()) {
-//            TableItem item = new TableItem(table, SWT.NONE);
-//            item.setText(e.getLabel().getString() + 
-//                    " - " + e.getPackageLabel() + 
-//                    " - " + e.getFile().getFullPath() + 
-//                    ":" + e.getLocation());
-//            item.setImage(CeylonPlugin.getInstance().getImageRegistry().get(e.getImageKey()));
-//        }
+        
         GridData tgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
         tgd.horizontalSpan=3;
         tgd.verticalSpan=4;
@@ -66,8 +79,19 @@ public class DeleteInputPage extends UserInputWizardPage {
         tgd.widthHint = 250;
         table.getTable().setLayoutData(tgd);
         
-//        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
-
+        table.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                Object obj = ((IStructuredSelection) event.getSelection()).getFirstElement();
+                if (obj instanceof CeylonSearchMatch) {
+                    CeylonSearchMatch match = (CeylonSearchMatch) obj;
+                    CeylonElement element = (CeylonElement) match.getElement();
+                    IPath path = element.getFile().getFullPath();
+                    gotoLocation(path, match.getOffset(), match.getLength());
+                }
+            }
+        });
+        
         Declaration declaration = getDeleteRefactoring().getDeclaration();
         Declaration refinedDeclaration = getDeleteRefactoring().getRefinedDeclaration();
         if (count>0) {
