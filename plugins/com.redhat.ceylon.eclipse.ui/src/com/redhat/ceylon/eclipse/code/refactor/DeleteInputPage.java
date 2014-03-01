@@ -1,9 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoFile;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -56,7 +55,8 @@ public class DeleteInputPage extends UserInputWizardPage {
         tableLayout.marginWidth=0;
         composite.setLayout(tableLayout);
         
-        TableViewer table = new TableViewer(composite, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+        TableViewer table = new TableViewer(composite, 
+                SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
         table.setLabelProvider(new CeylonLabelProvider(true) {
             @Override
             public StyledString getStyledText(Object element) {
@@ -86,10 +86,10 @@ public class DeleteInputPage extends UserInputWizardPage {
                 if (obj instanceof CeylonSearchMatch) {
                     CeylonSearchMatch match = (CeylonSearchMatch) obj;
                     CeylonElement element = (CeylonElement) match.getElement();
-                    IPath path = element.getFile().getFullPath();
-                    gotoLocation(path, match.getOffset(), match.getLength());
+                    gotoFile(element.getFile(), match.getOffset(), match.getLength());
                 }
             }
+
         });
         
         Declaration declaration = getDeleteRefactoring().getDeclaration();

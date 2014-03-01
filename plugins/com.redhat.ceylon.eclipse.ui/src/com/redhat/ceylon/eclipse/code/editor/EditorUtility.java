@@ -218,29 +218,35 @@ public class EditorUtility {
 
 
     public static IEditorInput getEditorInput(Object input) {
-        if (input instanceof IFile)
+        if (input instanceof IFile) {
             return new FileEditorInput((IFile) input);
+        }
         if (input instanceof IPath) {
             IPath path= (IPath) input;
-            IWorkspace ws= ResourcesPlugin.getWorkspace();
-            IWorkspaceRoot wsRoot= ws.getRoot();
-
-            // Only create an IFileStore directly from the path if the path is outside the workspace,
-            // or points inside the workspace, but is still file-system-absolute.
-            if (path.isAbsolute() && (wsRoot.getLocation().isPrefixOf(path) || !wsRoot.exists(path))) {
-                try {
-                    IFileSystem fileSystem= EFS.getFileSystem("file");
-                    IFileStore fileStore= fileSystem.getStore((IPath) input);
-                    return getEditorInput(fileStore);
-                } 
-                catch (CoreException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                return new FileEditorInput(wsRoot.getFile(path));
-            }
+            return getEditorInput(path);
         }
         return null;
+    }
+
+    public static IEditorInput getEditorInput(IPath path) {
+        IWorkspace ws= ResourcesPlugin.getWorkspace();
+        IWorkspaceRoot wsRoot= ws.getRoot();
+
+        // Only create an IFileStore directly from the path if the path is outside the workspace,
+        // or points inside the workspace, but is still file-system-absolute.
+        if (path.isAbsolute() && (wsRoot.getLocation().isPrefixOf(path) || !wsRoot.exists(path))) {
+            try {
+                IFileSystem fileSystem= EFS.getFileSystem("file");
+                IFileStore fileStore= fileSystem.getStore(path);
+                return getEditorInput(fileStore);
+            } 
+            catch (CoreException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            return new FileEditorInput(wsRoot.getFile(path));
+        }
     }
 
     /**

@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -200,8 +201,9 @@ public class DeleteRefactoring extends AbstractRefactoring {
             }
         }
         if (searchInEditor()) {
+            String relpath = editor.getParseController().getPhasedUnit().getPathRelativeToSrcDir();
             addReferences(rootNode, list, 
-                    editor.getParseController().getPhasedUnit());
+                    getProjectTypeChecker(project).getPhasedUnitFromRelativePath(relpath));
         }
         return list;
     }

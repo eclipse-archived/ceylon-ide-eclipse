@@ -23,7 +23,10 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -219,6 +222,30 @@ public class CeylonSourcePositionLocator {
         }
         catch (PartInitException pie) {
             pie.printStackTrace();
+        }
+    }
+    
+    public static void gotoFile(IFile file, int offset, int length) {
+        IWorkbenchPage page = EditorUtil.getActivePage();
+        IEditorInput input = new FileEditorInput(file);
+        if (input!=null) {
+            IEditorPart part = page.findEditor(input);
+            ITextEditor editor = null;
+            if (part instanceof ITextEditor) {
+                editor = (ITextEditor) part;
+            }
+            else {
+                try {
+                    editor = (ITextEditor) 
+                            page.openEditor(input, EDITOR_ID);
+                } 
+                catch (PartInitException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+            editor.selectAndReveal(offset, length);
+            page.activate(editor);
         }
     }
     
