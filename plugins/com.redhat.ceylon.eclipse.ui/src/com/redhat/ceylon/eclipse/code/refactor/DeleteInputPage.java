@@ -18,7 +18,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
@@ -41,14 +40,17 @@ public class DeleteInputPage extends UserInputWizardPage {
         layout.numColumns = 1;
         result.setLayout(layout);
         
-        Label title = new Label(result, SWT.LEFT);  
         Declaration dec = refactoring.getDeclaration();
-        title.setText("Delete '" + dec.getName() + 
+        setDescription("Safely delete '" + dec.getName() + 
                 "' which is referenced in " + refactoring.getCount() + 
                 " places.");
-        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
-        gd2.horizontalSpan=2;
-        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
+//        Label title = new Label(result, SWT.LEFT);  
+//        title.setText("Delete '" + dec.getName() + 
+//                "' which is referenced in " + refactoring.getCount() + 
+//                " places.");
+//        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+//        gd2.horizontalSpan=2;
+//        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
         
         final Button et = new Button(result, SWT.CHECK);
         et.setText("Also delete refinements");
@@ -131,7 +133,7 @@ public class DeleteInputPage extends UserInputWizardPage {
             addWarning(table, "There are " + refinements + 
                     " refinements of '" + name + "'");
         }
-        if (dec.isActual() && rdec!=null) {
+        if (dec.isActual() && rdec!=null && !rdec.equals(dec)) {
             addWarning(table, "This declaration refines '" + 
                     rdec.getName() + "' declared by '" +
                     ((Declaration) rdec.getContainer()).getName() + "'");
