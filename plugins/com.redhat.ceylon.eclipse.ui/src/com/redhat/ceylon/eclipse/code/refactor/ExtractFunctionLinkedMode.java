@@ -20,14 +20,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
-public final class ExtractValueLinkedMode extends
+public final class ExtractFunctionLinkedMode extends
             AbstractRenameLinkedMode {
         
-    private final ExtractValueRefactoring refactoring;
+    private final ExtractFunctionRefactoring refactoring;
     
-    public ExtractValueLinkedMode(CeylonEditor editor) {
+    public ExtractFunctionLinkedMode(CeylonEditor editor) {
         super(editor);
-        this.refactoring = new ExtractValueRefactoring(editor);
+        this.refactoring = new ExtractFunctionRefactoring(editor);
     }
     
     public static boolean useLinkedMode() {
@@ -39,7 +39,7 @@ public final class ExtractValueLinkedMode extends
     protected int init(IDocument document) {
         try {
             DocumentChange change = 
-                    new DocumentChange("Extract Value", document);
+                    new DocumentChange("Extract Function", document);
             refactoring.extractInFile(change);
             change.perform(new NullProgressMonitor());
         }
@@ -51,12 +51,18 @@ public final class ExtractValueLinkedMode extends
     
     @Override
     public void start() {
-        if (!refactoring.isEnabled()) return;
-        editor.doSave(new NullProgressMonitor());
-        saveEditorState();
-        super.start();
+//        if (refactoring.forceWizardMode()) {
+//            openDialog();
+//        }
+//        else {
+            if (!refactoring.isEnabled()) return;
+            editor.doSave(new NullProgressMonitor());
+            saveEditorState();
+            super.start();
+//        }
     }
     
+    @Override
     public void done() {
         if (isEnabled()) {
             refactoring.setNewName(getNewName());
@@ -128,14 +134,14 @@ public final class ExtractValueLinkedMode extends
     }
     
     void openPreview() {
-        new RenameRefactoringAction(editor) {
+        new ExtractFunctionRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
-                return ExtractValueLinkedMode.this.refactoring;
+                return ExtractFunctionLinkedMode.this.refactoring;
             }
             @Override
             public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
-                return new ExtractValueWizard((ExtractValueRefactoring) refactoring) {
+                return new ExtractFunctionWizard((ExtractFunctionRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };
@@ -144,10 +150,10 @@ public final class ExtractValueLinkedMode extends
     }
 
     void openDialog() {
-        new ExtractValueRefactoringAction(editor) {
+        new ExtractFunctionRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
-                return ExtractValueLinkedMode.this.refactoring;
+                return ExtractFunctionLinkedMode.this.refactoring;
             }
         }.run();
     }
@@ -172,7 +178,7 @@ public final class ExtractValueLinkedMode extends
                 .getAdapter(IBindingService.class);
         if (bindingService == null) return "";
         String binding= bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + 
-                ".action.extractValue");
+                ".action.extractFunction");
         return binding == null ? "" : binding;
     }
     
