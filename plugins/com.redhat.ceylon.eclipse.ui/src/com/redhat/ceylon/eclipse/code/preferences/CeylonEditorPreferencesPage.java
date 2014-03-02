@@ -394,7 +394,7 @@ public class CeylonEditorPreferencesPage
         linkedModeRename.load();
         addField(linkedModeRename);
         linkedModeExtract = new BooleanFieldEditor(LINKED_MODE_EXTRACT, 
-                "Use linked mode for extract refactoring", 
+                "Use linked mode for extract refactorings", 
                 getFieldEditorParent(group));
         linkedModeExtract.load();
         addField(linkedModeExtract);
