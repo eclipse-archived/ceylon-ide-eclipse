@@ -129,14 +129,22 @@ public class DeleteInputPage extends UserInputWizardPage {
                     " usages of '" + name + "'");
         }
         int refinements = refactoring.countRefinements();
+        if (dec.isActual() && rdec!=null && !rdec.equals(dec)) {
+            if (rdec.isFormal() && !dec.isFormal()) {
+                addWarning(table, "This declaration refines formal member '" + 
+                        rdec.getName() + "' declared by '" +
+                        ((Declaration) rdec.getContainer()).getName() + "'");
+                refinements--;
+            }
+            else {
+                addWarning(table, "This declaration refines member '" + 
+                        rdec.getName() + "' declared by '" +
+                        ((Declaration) rdec.getContainer()).getName() + "'");
+            }
+        }
         if (refinements>0) {
             addWarning(table, "There are " + refinements + 
-                    " refinements of '" + name + "'");
-        }
-        if (dec.isActual() && rdec!=null && !rdec.equals(dec)) {
-            addWarning(table, "This declaration refines '" + 
-                    rdec.getName() + "' declared by '" +
-                    ((Declaration) rdec.getContainer()).getName() + "'");
+                    " refinements of member '" + name + "'");
         }
     }
 
