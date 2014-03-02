@@ -18,6 +18,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
@@ -64,6 +65,7 @@ public class CeylonEditorPreferencesPage
     BoolFieldEditor autoActivation;
     BooleanFieldEditor linkedMode;
     BooleanFieldEditor linkedModeRename;
+    BooleanFieldEditor linkedModeExtract;
     ScaleFieldEditor autoActivationDelay;
     RadioGroupFieldEditor autoActivationChars;
     BooleanFieldEditor smartCaret;
@@ -96,6 +98,7 @@ public class CeylonEditorPreferencesPage
         autoActivationChars.store();
         linkedMode.store();
         linkedModeRename.store();
+        linkedModeExtract.store();
         smartCaret.store();
         pasteCorrectIndent.store();
         normalizeWs.store();
@@ -125,6 +128,7 @@ public class CeylonEditorPreferencesPage
         autoActivationChars.loadDefault();
         linkedMode.loadDefault();
         linkedModeRename.loadDefault();
+        linkedModeExtract.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
         normalizeWs.loadDefault();
@@ -389,6 +393,11 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent(group));
         linkedModeRename.load();
         addField(linkedModeRename);
+        linkedModeExtract = new BooleanFieldEditor(LINKED_MODE_EXTRACT, 
+                "Use linked mode for extract refactoring", 
+                getFieldEditorParent(group));
+        linkedModeExtract.load();
+        addField(linkedModeExtract);
         smartCaret = new BooleanFieldEditor(SUB_WORD_NAVIGATION, 
                 "Smart caret positioning inside identifiers", 
                 getFieldEditorParent(group));
