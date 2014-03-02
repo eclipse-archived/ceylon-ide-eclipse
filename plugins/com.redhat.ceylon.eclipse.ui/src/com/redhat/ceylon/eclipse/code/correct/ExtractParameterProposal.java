@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
+import static com.redhat.ceylon.eclipse.code.refactor.ExtractValueLinkedMode.useLinkedMode;
 
 import java.util.Collection;
 
@@ -14,14 +15,16 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.refactor.ExtractParameterLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.ExtractParameterRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractParameterRefactoringAction;
 
 public class ExtractParameterProposal implements ICompletionProposal {
 
-    private final ExtractParameterRefactoringAction action;
-    
+    private CeylonEditor editor;
+
     public ExtractParameterProposal(CeylonEditor editor) {
-        action = new ExtractParameterRefactoringAction(editor);
+        this.editor = editor;
     }
     
     @Override
@@ -51,11 +54,12 @@ public class ExtractParameterProposal implements ICompletionProposal {
 
     @Override
     public void apply(IDocument doc) {
-        action.run();
-    }
-    
-    boolean isEnabled() {
-        return action.isEnabled();
+        if (useLinkedMode()) {
+            new ExtractParameterLinkedMode(editor).start();
+        }
+        else {
+            new ExtractParameterRefactoringAction(editor).run();
+        }
     }
     
     public static void add(Collection<ICompletionProposal> proposals, 
@@ -66,9 +70,9 @@ public class ExtractParameterProposal implements ICompletionProposal {
                 return;
             }
         }
-        ExtractParameterProposal prop = new ExtractParameterProposal(editor);
-        if (prop.isEnabled()) {
-            proposals.add(prop);
+        ExtractParameterRefactoring epr = new ExtractParameterRefactoring(editor);
+        if (epr.isEnabled()) {
+            proposals.add(new ExtractParameterProposal(editor));
         }
     }
 
