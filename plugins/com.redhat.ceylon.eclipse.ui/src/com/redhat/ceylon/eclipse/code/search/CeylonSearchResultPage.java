@@ -30,7 +30,7 @@ import org.eclipse.ui.PartInitException;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-class CeylonSearchResultPage extends AbstractTextSearchViewPage {
+public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     
     private CeylonStructuredContentProvider contentProvider;
     

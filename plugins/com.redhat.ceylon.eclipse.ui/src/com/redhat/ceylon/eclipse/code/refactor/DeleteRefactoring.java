@@ -145,6 +145,46 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 0 : countDeclarationOccurrences();
     }
     
+    int countRefinements() {
+        int count = 0;
+        for (PhasedUnit pu: getAllUnits()) {
+            if (searchInFile(pu)) {
+                count += countRefinements(pu.getCompilationUnit());
+            }
+        }
+        if (searchInEditor()) {
+            count += countRefinements(rootNode);
+        }
+        return count;
+    }
+    
+    private int countRefinements(Tree.CompilationUnit cu) {
+        FindDeletedRefinementsVisitor fdv =
+                new FindDeletedRefinementsVisitor(declarationToDelete);
+        cu.visit(fdv);
+        return fdv.getDeclarationNodes().size();
+    }
+    
+    int countUsages() {
+        int count = 0;
+        for (PhasedUnit pu: getAllUnits()) {
+            if (searchInFile(pu)) {
+                count += countUsages(pu.getCompilationUnit());
+            }
+        }
+        if (searchInEditor()) {
+            count += countUsages(rootNode);
+        }
+        return count;
+    }
+    
+    private int countUsages(Tree.CompilationUnit cu) {
+        FindDeletedReferencesVisitor frv =
+                new FindDeletedReferencesVisitor(declarationToDelete);
+        cu.visit(frv);
+        return frv.getNodes().size();
+    }
+    
     @Override
     int countReferences(Tree.CompilationUnit cu) {
         FindDeletedReferencesVisitor frv =

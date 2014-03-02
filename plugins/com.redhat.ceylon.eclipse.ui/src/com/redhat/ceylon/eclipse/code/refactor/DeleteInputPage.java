@@ -19,6 +19,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
@@ -32,8 +34,7 @@ public class DeleteInputPage extends UserInputWizardPage {
     }
 
     public void createControl(Composite parent) {
-        int count = getDeleteRefactoring().getCount();
-        
+        final DeleteRefactoring refactoring = getDeleteRefactoring();
         Composite result = new Composite(parent, SWT.NONE);
         setControl(result);
         GridLayout layout = new GridLayout();
@@ -41,13 +42,16 @@ public class DeleteInputPage extends UserInputWizardPage {
         result.setLayout(layout);
         
         Label title = new Label(result, SWT.LEFT);  
-        Declaration dec = getDeleteRefactoring().getDeclaration();
+        Declaration dec = refactoring.getDeclaration();
         title.setText("Delete '" + dec.getName() + 
-                "' which is referenced in " + count + 
+                "' which is referenced in " + refactoring.getCount() + 
                 " places.");
         GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
         gd2.horizontalSpan=2;
         new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
+        
+        final Button et = new Button(result, SWT.CHECK);
+        et.setText("Also delete refinements");
         
         Composite composite = new Composite(result, SWT.NONE);
         GridData cgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
@@ -57,9 +61,6 @@ public class DeleteInputPage extends UserInputWizardPage {
         GridLayout tableLayout = new GridLayout(3, true);
         tableLayout.marginWidth=0;
         composite.setLayout(tableLayout);
-        
-        final Button et = new Button(result, SWT.CHECK);
-        et.setText("Delete refinements");
         
         final TableViewer table = new TableViewer(composite, 
                 SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
@@ -75,17 +76,7 @@ public class DeleteInputPage extends UserInputWizardPage {
         });
         table.setContentProvider(ArrayContentProvider.getInstance());
         table.setComparator(new CeylonViewerComparator());
-        table.setInput(getDeleteRefactoring().getReferences());
-        
-        et.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent event) {
-                getDeleteRefactoring().setDeleteRefinements();
-                table.setInput(getDeleteRefactoring().getReferences());
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent event) {}
-        });
+        table.setInput(refactoring.getReferences());
         
         GridData tgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
         tgd.horizontalSpan=3;
@@ -107,28 +98,50 @@ public class DeleteInputPage extends UserInputWizardPage {
             }
         });
         
-        Declaration declaration = getDeleteRefactoring().getDeclaration();
-        Declaration refinedDeclaration = getDeleteRefactoring().getRefinedDeclaration();
-        if (count>0) {
-            addWarning(result, "There are " + count + " references to '" + 
-                    declaration.getName() + "'");
+        final Table warnings = new Table(result, SWT.NO_SCROLL|SWT.NO_FOCUS|SWT.NO_BACKGROUND);
+        warnings.setBackground(result.getBackground());
+        showWarnings(warnings);
+
+        et.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                refactoring.setDeleteRefinements();
+                table.setInput(refactoring.getReferences());
+                showWarnings(warnings);
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        
+    }
+
+    private void showWarnings(Table table) {
+        table.removeAll();
+        DeleteRefactoring refactoring = getDeleteRefactoring();
+        Declaration dec = refactoring.getDeclaration();
+        Declaration rdec = refactoring.getRefinedDeclaration();
+        String name = dec.getName();
+        int usages = refactoring.countUsages();
+        if (usages>0) {
+            addWarning(table, "There are " + usages + 
+                    " usages of '" + name + "'");
         }
-        if (declaration.isActual() && refinedDeclaration!=null) {
-            addWarning(result, "This declaration refines '" + 
-                    refinedDeclaration.getName() + "' declared by '" +
-                    ((Declaration) refinedDeclaration.getContainer()).getName() + "'");
+        int refinements = refactoring.countRefinements();
+        if (refinements>0) {
+            addWarning(table, "There are " + refinements + 
+                    " refinements of '" + name + "'");
+        }
+        if (dec.isActual() && rdec!=null) {
+            addWarning(table, "This declaration refines '" + 
+                    rdec.getName() + "' declared by '" +
+                    ((Declaration) rdec.getContainer()).getName() + "'");
         }
     }
 
-    private void addWarning(Composite result, String text) {
-        Composite warn = new Composite(result, SWT.NONE);
-        GridLayout l = new GridLayout();
-        l.numColumns = 2;
-        warn.setLayout(l);
-        Label icon = new Label(warn, SWT.LEFT);
-        icon.setImage(CeylonLabelProvider.WARNING);
-        Label label = new Label(warn, SWT.LEFT);
-        label.setText(text);
+    private void addWarning(Table table, String text) {
+        TableItem item = new TableItem(table, SWT.NONE);
+        item.setImage(CeylonLabelProvider.WARNING);
+        item.setText(text);
     }
     
     private DeleteRefactoring getDeleteRefactoring() {
