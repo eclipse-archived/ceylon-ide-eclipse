@@ -16,6 +16,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -105,6 +107,12 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         return "Extract Parameter";
     }
 
+    public boolean forceWizardMode() {
+        Declaration existing = node.getScope()
+                .getMemberOrParameter(node.getUnit(), newName, null, false);
+        return existing!=null;
+    }
+    
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
         // Check parameters retrieved from editor context
@@ -130,7 +138,10 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         return tfc;
     }
 
-    private void extractInFile(TextChange tfc) 
+    IRegion decRegion;
+    IRegion refRegion;
+
+    void extractInFile(TextChange tfc) 
             throws CoreException {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = tfc.getCurrentDocument(null);
@@ -163,13 +174,16 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
             return;
         }
         Tree.Term term = (Tree.Term) node;
+        int il = 0;
         ProducedType tm = term.getTypeModel();
         String typeDec;
         if (tm==null || tm.isUnknown()) {
             typeDec = "dynamic";
         }
         else {
-            typeDec = addType(tfc, doc, tm);
+            StringBuilder builder = new StringBuilder(); 
+            il+=addType(tfc, doc, tm, builder);
+            typeDec = builder.toString();
         }
         final List<Tree.BaseMemberExpression> localRefs = 
                 new ArrayList<Tree.BaseMemberExpression>();
@@ -201,26 +215,29 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
                     args.append(", ");
                 }
                 String n = bme.getIdentifier().getText();
-                params.append(addType(tfc, doc, bme.getTypeModel()))
-                    .append(" ")
-                    .append(n);
+                il+=addType(tfc, doc, bme.getTypeModel(), params);
+                params.append(" ").append(n);
                 args.append(n);
             }
             decl = typeDec + " " + newName + "(" + params + ") => " + text;
             call = newName + "(" + args + ")";
         }
-        tfc.addEdit(new InsertEdit(pl.getStopIndex(), 
-                (pl.getParameters().isEmpty()?"":", ") + decl));
-        tfc.addEdit(new ReplaceEdit(getStartOffset(node), 
-                getLength(node), call));
+        Integer start = pl.getStopIndex();
+        String dectext = (pl.getParameters().isEmpty()?"":", ") + decl;
+        tfc.addEdit(new InsertEdit(start, dectext));
+        tfc.addEdit(new ReplaceEdit(getStartOffset(node), getLength(node), call));
+        decRegion = new Region(start+typeDec.length()+(pl.getParameters().isEmpty()?1:3), newName.length());
+        refRegion = new Region(getStartOffset(node)+dectext.length()+il, call.length());
     }
 
-    private String addType(TextChange tfc, IDocument doc, ProducedType tm) {
+    private int addType(TextChange tfc, IDocument doc, 
+            ProducedType tm, StringBuilder builder) {
         ProducedType type = node.getUnit().denotableType(tm);
         HashSet<Declaration> decs = new HashSet<Declaration>();
         importType(decs, type, rootNode);
-        applyImports(tfc, decs, rootNode, doc);
-        return type.getProducedTypeName(rootNode.getUnit());
+        int il = applyImports(tfc, decs, rootNode, doc);
+        builder.append(type.getProducedTypeName(rootNode.getUnit()));
+        return il;
     }
 
     public void setNewName(String text) {
