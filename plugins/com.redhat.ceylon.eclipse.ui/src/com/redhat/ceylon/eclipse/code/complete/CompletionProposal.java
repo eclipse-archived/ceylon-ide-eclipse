@@ -42,7 +42,6 @@ public class CompletionProposal implements ICompletionProposal,
     @Override
     public Point getSelection(IDocument document) {
         return new Point(offset + text.length() - prefix.length(), 0);
-
     }
     
     public void apply(IDocument document) {
