@@ -219,8 +219,10 @@ class AssignToLocalProposal extends CorrectionProposal {
             else {
                 exitPos = stopIndex+1;
             }
-            proposals.add(new AssignToLocalProposal(offset+6, name.length(), exitPos, 
-                    resultType, file, change));
+            ProducedType type = resultType==null ? 
+                    null : node.getUnit().denotableType(resultType);
+            proposals.add(new AssignToLocalProposal(offset+6, name.length(), 
+                    exitPos, type, file, change));
         //}
     }
 }
