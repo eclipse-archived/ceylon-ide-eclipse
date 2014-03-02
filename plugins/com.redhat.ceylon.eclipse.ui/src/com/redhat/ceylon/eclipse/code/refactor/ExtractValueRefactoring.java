@@ -40,7 +40,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    boolean isEnabled() {
+    public boolean isEnabled() {
         return node instanceof Tree.Term;
     }
 

@@ -19,13 +19,13 @@ import com.redhat.ceylon.eclipse.code.refactor.RenameLinkedMode;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoringAction;
 
-class RenameDeclarationProposal implements ICompletionProposal,
+class RenameProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
 
     private final Declaration dec;
     private final CeylonEditor editor;
     
-    RenameDeclarationProposal(Declaration dec, 
+    RenameProposal(Declaration dec, 
             CeylonEditor editor) {
         this.dec = dec;
         this.editor = editor;
@@ -75,7 +75,7 @@ class RenameDeclarationProposal implements ICompletionProposal,
             CeylonEditor editor) {
         RenameRefactoring rr = new RenameRefactoring(editor);
         if (rr.isEnabled()) {
-            proposals.add(new RenameDeclarationProposal(rr.getDeclaration(), editor));
+            proposals.add(new RenameProposal(rr.getDeclaration(), editor));
         }
     }
 

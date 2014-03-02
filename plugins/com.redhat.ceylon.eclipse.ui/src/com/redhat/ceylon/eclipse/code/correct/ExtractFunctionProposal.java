@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
+import static com.redhat.ceylon.eclipse.code.refactor.ExtractValueLinkedMode.useLinkedMode;
 
 import java.util.Collection;
 
@@ -14,14 +15,16 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionRefactoringAction;
 
 public class ExtractFunctionProposal implements ICompletionProposal {
 
-    private final ExtractFunctionRefactoringAction action;
-    
+    private CeylonEditor editor;
+
     public ExtractFunctionProposal(CeylonEditor editor) {
-        action = new ExtractFunctionRefactoringAction(editor);
+        this.editor = editor;
     }
     
     @Override
@@ -51,11 +54,12 @@ public class ExtractFunctionProposal implements ICompletionProposal {
 
     @Override
     public void apply(IDocument doc) {
-        action.run();
-    }
-    
-    boolean isEnabled() {
-        return action.isEnabled();
+        if (useLinkedMode()) {
+            new ExtractFunctionLinkedMode(editor).start();
+        }
+        else {
+            new ExtractFunctionRefactoringAction(editor).run();
+        }
     }
     
     public static void add(Collection<ICompletionProposal> proposals, 
@@ -66,9 +70,9 @@ public class ExtractFunctionProposal implements ICompletionProposal {
                 return;
             }
         }
-        ExtractFunctionProposal prop = new ExtractFunctionProposal(editor);
-        if (prop.isEnabled()) {
-            proposals.add(prop);
+        ExtractFunctionRefactoring efr = new ExtractFunctionRefactoring(editor);
+        if (efr.isEnabled()) {
+            proposals.add(new ExtractFunctionProposal(editor));
         }
     }
 

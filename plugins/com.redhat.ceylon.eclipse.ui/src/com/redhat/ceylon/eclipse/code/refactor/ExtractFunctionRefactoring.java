@@ -305,7 +305,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    boolean isEnabled() {
+    public boolean isEnabled() {
         return node instanceof Tree.Term || 
                 node instanceof Tree.Body && 
                     !statements.isEmpty();

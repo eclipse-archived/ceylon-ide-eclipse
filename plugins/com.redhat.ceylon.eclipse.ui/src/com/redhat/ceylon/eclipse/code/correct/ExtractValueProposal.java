@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
+import static com.redhat.ceylon.eclipse.code.refactor.ExtractValueLinkedMode.useLinkedMode;
 
 import java.util.Collection;
 
@@ -14,14 +15,16 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.refactor.ExtractValueLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.ExtractValueRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractValueRefactoringAction;
 
 public class ExtractValueProposal implements ICompletionProposal {
 
-    private final ExtractValueRefactoringAction action;
-    
+    private CeylonEditor editor;
+
     public ExtractValueProposal(CeylonEditor editor) {
-        action = new ExtractValueRefactoringAction(editor);
+        this.editor = editor;
     }
     
     @Override
@@ -51,11 +54,12 @@ public class ExtractValueProposal implements ICompletionProposal {
 
     @Override
     public void apply(IDocument doc) {
-        action.run();
-    }
-    
-    boolean isEnabled() {
-        return action.isEnabled();
+        if (useLinkedMode()) {
+            new ExtractValueLinkedMode(editor).start();
+        }
+        else {
+            new ExtractValueRefactoringAction(editor).run();
+        }
     }
     
     public static void add(Collection<ICompletionProposal> proposals, 
@@ -66,9 +70,9 @@ public class ExtractValueProposal implements ICompletionProposal {
                 return;
             }
         }
-        ExtractValueProposal prop = new ExtractValueProposal(editor);
-        if (prop.isEnabled()) {
-            proposals.add(prop);
+        ExtractValueRefactoring evr = new ExtractValueRefactoring(editor);
+        if (evr.isEnabled()) {
+            proposals.add(new ExtractValueProposal(editor));
         }
     }
 
