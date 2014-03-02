@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
+
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
@@ -51,9 +53,10 @@ public abstract class AbstractRenameLinkedMode {
         }
 
         @Override
-        public ExitFlags doExit(LinkedModeModel model, VerifyEvent event, int offset, int length) {
+        public ExitFlags doExit(LinkedModeModel model, 
+                VerifyEvent event, int offset, int length) {
             showPreview = (event.stateMask & SWT.CTRL) != 0
-                            && (event.character == SWT.CR || event.character == SWT.LF);
+                    && (event.character == SWT.CR || event.character == SWT.LF);
             return super.doExit(model, event, offset, length);
         }
     }
@@ -137,7 +140,7 @@ public abstract class AbstractRenameLinkedMode {
         ISourceViewer viewer = editor.getCeylonSourceViewer();
         final IDocument document = viewer.getDocument();
         originalSelection = viewer.getSelectedRange();
-        int offset= originalSelection.x;
+        int offset = originalSelection.x;
         final int adjust = init(document);        
         originalName = getName();
                 
@@ -159,12 +162,12 @@ public abstract class AbstractRenameLinkedMode {
             editor.setLinkedMode(linkedModeModel, this);
             
             LinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
-//            ui.setExitPosition(viewer, offset, 0, Integer.MAX_VALUE);
-            ui.setExitPosition(viewer, offset, 0, LinkedPositionGroup.NO_STOP);
+            ui.setExitPosition(viewer, getExitPosition(offset, adjust), 0, NO_STOP);
             ui.setExitPolicy(new PreviewingDeleteBlockingExitPolicy(document));
             ui.enter();
             
-//            viewer.setSelectedRange(fOriginalSelection.x, fOriginalSelection.y); // by default, full word is selected; restore original selection
+            //NOTE: I hate this behavior in the Java editor!
+//            viewer.setSelectedRange(originalSelection.x+adjust, originalSelection.y+adjust); // by default, full word is selected; restore original selection
             
             if (viewer instanceof IEditingSupportRegistry) {
                 ((IEditingSupportRegistry) viewer).register(focusEditingSupport);
@@ -178,6 +181,10 @@ public abstract class AbstractRenameLinkedMode {
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
+    }
+
+    protected int getExitPosition(int selectionOffset, final int adjust) {
+        return selectionOffset+adjust;
     }
 
     String getOpenDialogBinding() {

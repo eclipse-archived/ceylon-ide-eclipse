@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static java.util.Collections.singletonList;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -21,7 +22,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -40,6 +43,7 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -58,21 +62,24 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.MemberOrTypeExpression that) {
             super.visit(that);
-            if (that.getDeclaration().equals(declaration)) {
+            if (that.getDeclaration()
+                    .equals(declaration)) {
                 refs++;
             }
         }
         @Override
         public void visit(Tree.Declaration that) {
             super.visit(that);
-            if (that.getDeclarationModel().equals(declaration)) {
+            if (that.getDeclarationModel()
+                    .equals(declaration)) {
                 refs++;
             }
         }
         @Override
         public void visit(Tree.Type that) {
             super.visit(that);
-            if (that.getTypeModel().getDeclaration().equals(declaration)) {
+            if (that.getTypeModel().getDeclaration()
+                    .equals(declaration)) {
                 refs++;
             }
         }
@@ -123,7 +130,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         public void visit(Tree.SpecifierStatement that) {
             super.visit(that);
             if (that.getBaseMemberExpression() instanceof Tree.MemberOrTypeExpression) {
-                Declaration d = ((Tree.MemberOrTypeExpression) that.getBaseMemberExpression()).getDeclaration();
+                Declaration d = 
+                        ((Tree.MemberOrTypeExpression) that.getBaseMemberExpression()).getDeclaration();
                 if (notResultRef(d) && hasOuterRefs(d, scope, statements)) {
                     problem = "a specification statement for a declaration used or defined elsewhere";
                 }
@@ -133,7 +141,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         public void visit(Tree.AssignmentOp that) {
             super.visit(that);
             if (that.getLeftTerm() instanceof Tree.MemberOrTypeExpression) {
-                Declaration d = ((Tree.MemberOrTypeExpression) that.getLeftTerm()).getDeclaration();
+                Declaration d = 
+                        ((Tree.MemberOrTypeExpression) that.getLeftTerm()).getDeclaration();
                 if (notResultRef(d) && hasOuterRefs(d, scope, statements)) {
                     problem = "an assignment to a declaration used or defined elsewhere";
                 }
@@ -221,7 +230,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     return;
                 }
                 if (currentDec instanceof TypedDeclaration) {
-                    TypedDeclaration od = ((TypedDeclaration)currentDec).getOriginalDeclaration();
+                    TypedDeclaration od = 
+                            ((TypedDeclaration)currentDec).getOriginalDeclaration();
                     if (od!=null && od.equals(dec)) return;
                 }
             }
@@ -253,22 +263,44 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }
 
     private void init(ITextSelection selection) {
+        Tree.Body body;
         if (node instanceof Tree.Body) {
-            Tree.Body body = (Tree.Body) node;
+            body = (Tree.Body) node;
             statements = getStatements(body, selection);
-            for (Statement s: statements) {
-                FindResultVisitor v = new FindResultVisitor(body, statements);
-                s.visit(v);
-                if (v.result!=null) {
-                    result = v.result;
+        }
+        else if (node instanceof Tree.Statement) {
+            class FindBodyVisitor extends Visitor {
+                Tree.Body body;
+                @Override
+                public void visit(Body that) {
+                    super.visit(that);
+                    if (that.getStatements().contains(node)) {
+                        body = that;
+                    }
                 }
             }
-            returns = new ArrayList<Return>();
-            for (Statement s: statements) {
-                FindReturnsVisitor v = new FindReturnsVisitor(returns);
-                s.visit(v);
+            FindBodyVisitor fbv = new FindBodyVisitor();
+            fbv.visit(rootNode);
+            body = fbv.body;
+            statements = singletonList((Tree.Statement) node);
+            node = body; //TODO: wow, ugly!!!!!
+        }
+        else {
+            return;
+        }
+        for (Statement s: statements) {
+            FindResultVisitor v = 
+                    new FindResultVisitor(body, statements);
+            s.visit(v);
+            if (v.result!=null) {
+                result = v.result;
             }
-            
+        }
+        returns = new ArrayList<Return>();
+        for (Statement s: statements) {
+            FindReturnsVisitor v = 
+                    new FindReturnsVisitor(returns);
+            s.visit(v);
         }
     }
 
@@ -282,13 +314,39 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     public String getName() {
         return "Extract Function";
     }
+    
+    public boolean forceWizardMode() {
+        if (node instanceof Tree.Body) {
+            Tree.Body body = (Tree.Body) node;
+            for (Statement s: statements) {
+                CheckStatementsVisitor v = 
+                        new CheckStatementsVisitor(body, statements);
+                s.visit(v);
+                if (v.problem!=null) {
+                    return true;
+                }
+            }
+        }
+        else if (node instanceof Tree.Term) {
+            CheckExpressionVisitor v = 
+                    new CheckExpressionVisitor();
+            node.visit(v);
+            if (v.problem!=null) {
+                return true;
+            }
+        }
+        Declaration existing = node.getScope()
+                .getMemberOrParameter(node.getUnit(), newName, null, false);
+        return existing!=null;
+    }
 
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
         if (node instanceof Tree.Body) {
             Tree.Body body = (Tree.Body) node;
             for (Statement s: statements) {
-                CheckStatementsVisitor v = new CheckStatementsVisitor(body, statements);
+                CheckStatementsVisitor v = 
+                        new CheckStatementsVisitor(body, statements);
                 s.visit(v);
                 if (v.problem!=null) {
                     return createWarningStatus("Selected statements contain "
@@ -297,7 +355,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             }
         }
         else if (node instanceof Tree.Term) {
-            CheckExpressionVisitor v = new CheckExpressionVisitor();
+            CheckExpressionVisitor v = 
+                    new CheckExpressionVisitor();
             node.visit(v);
             if (v.problem!=null) {
                 return createWarningStatus("Selected expression contains "
@@ -318,19 +377,29 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         return new RefactoringStatus();
     }
 
-    public Change createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
+    IRegion decRegion;
+    IRegion refRegion;
+
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException,
+                   OperationCanceledException {
         TextChange tfc = newLocalChange();
+        extractInFile(tfc);
+        return tfc;
+    }
+
+    void extractInFile(TextChange tfc) 
+            throws CoreException {
         if (node instanceof Tree.Term) {
             extractExpressionInFile(tfc);
         }
         else if (node instanceof Tree.Body) {
             extractStatementsInFile(tfc);
         }
-        return tfc;
     }
 
-    private void extractExpressionInFile(TextChange tfc) throws CoreException {
+    private void extractExpressionInFile(TextChange tfc) 
+            throws CoreException {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = tfc.getCurrentDocument(null);
         
@@ -342,10 +411,12 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         rootNode.visit(fsv);
         Tree.Declaration decNode = fsv.getDeclaration();
         Declaration dec = decNode.getDeclarationModel();
-        FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(node.getScope(), 
+        FindLocalReferencesVisitor flrv = 
+                new FindLocalReferencesVisitor(node.getScope(), 
                 getContainingScope(decNode));
         term.visit(flrv);
-        List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
+        List<TypeDeclaration> localTypes = 
+                new ArrayList<TypeDeclaration>();
         for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
             addLocalType(dec, node.getUnit().denotableType(bme.getTypeModel()), 
                     localTypes, new ArrayList<ProducedType>());
@@ -361,7 +432,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     params += "dynamic";
                 }
                 else {
-                    params += node.getUnit().denotableType(bme.getTypeModel()).getProducedTypeName();
+                    params += node.getUnit().denotableType(bme.getTypeModel())
+                            .getProducedTypeName();
                 }
                 params += " " + bme.getIdentifier().getText() + ", ";
                 args += bme.getIdentifier().getText() + ", ";
@@ -391,16 +463,19 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
         }
         
+        int il;
         String type;
         ProducedType tt = term.getTypeModel();
         if (tt==null || tt.isUnknown()) {
             type = "dynamic";
+            il = 0;
         }
         else {
             boolean isVoid = (tt.getDeclaration() instanceof Class) && 
                     tt.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
             if (isVoid) {
                 type = "void";
+                il = 0;
             }
             else {
                 if (explicitType || dec.isToplevel()) {
@@ -408,27 +483,31 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     type = returnType.getProducedTypeName();
                     HashSet<Declaration> decs = new HashSet<Declaration>();
                     importType(decs, returnType, rootNode);
-                    applyImports(tfc, decs, rootNode, doc);
+                    il = applyImports(tfc, decs, rootNode, doc);
                 }
                 else {
                     type = "function";
+                    il = 0;
                 }
             }
         }
 
-        tfc.addEdit(new InsertEdit(decNode.getStartIndex(),
-                type + " " + newName + typeParams + "(" + params + ")" + 
-                        constraints + 
-                        " => " + exp + ";" 
-                        + indent + indent));
+        String text = type + " " + newName + typeParams + "(" + params + ")" + 
+                constraints + 
+                " => " + exp + ";" 
+                + indent + indent;
+        tfc.addEdit(new InsertEdit(decNode.getStartIndex(), text));
         tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
+        decRegion = new Region(decNode.getStartIndex()+type.length()+1, newName.length());
+        refRegion = new Region(start+text.length()+il, newName.length());
     }
 
     private Scope getContainingScope(Tree.Declaration decNode) {
         return decNode.getDeclarationModel().getContainer().getScope();
     }
 
-    private void extractStatementsInFile(TextChange tfc) throws CoreException {
+    private void extractStatementsInFile(TextChange tfc) 
+            throws CoreException {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = tfc.getCurrentDocument(null);
         final Unit unit = node.getUnit();
@@ -442,12 +521,14 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         rootNode.visit(fsv);
         Tree.Declaration decNode = fsv.getDeclaration();
         final Declaration dec = decNode.getDeclarationModel();
-        FindLocalReferencesVisitor flrv = new FindLocalReferencesVisitor(node.getScope(),
+        FindLocalReferencesVisitor flrv = 
+                new FindLocalReferencesVisitor(node.getScope(),
                 getContainingScope(decNode));
         for (Statement s: statements) {
             s.visit(flrv);
         }
-        final List<TypeDeclaration> localTypes = new ArrayList<TypeDeclaration>();
+        final List<TypeDeclaration> localTypes = 
+                new ArrayList<TypeDeclaration>();
         for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
             addLocalType(dec, unit.denotableType(bme.getTypeModel()), 
                   localTypes, new ArrayList<ProducedType>());
@@ -462,23 +543,6 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 }
             }.visit(s);
         }
-        //TODO: what was all this for?!
-//      List<Tree.BaseMemberExpression> localRefs = new ArrayList<Tree.BaseMemberExpression>();
-//        for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
-//            if (result==null || !bme.getDeclaration().equals(result.getDeclarationModel())) {
-//                FindOuterReferencesVisitor v = new FindOuterReferencesVisitor(bme.getDeclaration());
-//                for (Statement s: body.getStatements()) {
-//                    if (!statements.contains(s)) {
-//                        s.visit(v);
-//                    }
-//                }
-//                if (v.refs>0) {
-//                    addLocalType(dec, unit.denotableType(bme.getTypeModel()), 
-//                            localTypes, new ArrayList<ProducedType>());
-//                    localRefs.add(bme);
-//                }
-//            }
-//        }
         
         HashSet<Declaration> movingDecs = new HashSet<Declaration>();
         for (Statement s: statements) {
@@ -499,7 +563,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     params += "dynamic";
                 }
                 else {
-                    params += unit.denotableType(bme.getTypeModel()).getProducedTypeName();
+                    params += unit.denotableType(bme.getTypeModel())
+                            .getProducedTypeName();
                 }
                 params += " " + bme.getIdentifier().getText() + ", ";
                 args += bme.getIdentifier().getText() + ", ";
@@ -549,6 +614,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             returnType = null;
         }
         String content;
+        int il = 0;
         if (result!=null||!returns.isEmpty()) {
             if (returnType.isUnknown()) {
                 content = "dynamic";
@@ -557,7 +623,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 content = returnType.getProducedTypeName();
                 HashSet<Declaration> already = new HashSet<Declaration>();
                 importType(already, returnType, rootNode);
-                applyImports(tfc, already, rootNode, doc);
+                il = applyImports(tfc, already, rootNode, doc);
             }
             else {
                 content = "function";
@@ -614,6 +680,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         
         tfc.addEdit(new InsertEdit(decNode.getStartIndex(), content));        
         tfc.addEdit(new ReplaceEdit(start, length, invocation));
+        decRegion = new Region(decNode.getStartIndex()+content.indexOf(' ')+1, newName.length());
+        refRegion = new Region(start+content.length()+il, newName.length());
     }
 
     private List<Statement> getStatements(Tree.Body body, ITextSelection selection) {

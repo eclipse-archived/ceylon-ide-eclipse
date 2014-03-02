@@ -48,6 +48,12 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         return "Extract Value";
     }
 
+    public boolean forceWizardMode() {
+        Declaration existing = node.getScope()
+                .getMemberOrParameter(node.getUnit(), newName, null, false);
+        return existing!=null;
+    }
+    
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
         // Check parameters retrieved from editor context
@@ -124,5 +130,5 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     public void setGetter() {
         this.getter = !getter;
     }
-    
+
 }
