@@ -7,8 +7,11 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessName;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
@@ -38,22 +41,28 @@ import com.redhat.ceylon.eclipse.util.FindUtils;
 
 class AssignToLocalProposal extends CorrectionProposal {
     
+    private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
+    private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z]+)([_a-z]+)");
+    
     private final IFile file;
     private final int offset;
     private final int length;
     private final int exitPos;
     private final ProducedType resultType;
     private String text;
+    private String name;
     
     AssignToLocalProposal(int offset, int length, int exitPos, 
-            ProducedType resultType, IFile file, TextChange change) {
+            ProducedType resultType, String name, IFile file, 
+            TextChange change) {
         super("Assign expression to new local", change);
         this.exitPos = exitPos;
         this.resultType = resultType;
         this.file=file;
         this.offset=offset;
         this.length=length;
-        text = "value";
+        this.text = "value";
+        this.name = name;
     }
     
     private class TypeCompletionProposal 
@@ -105,7 +114,54 @@ class AssignToLocalProposal extends CorrectionProposal {
         }
         
     }
-    
+
+    private class NameCompletionProposal 
+            implements ICompletionProposal {
+        
+        private final String text;
+        private final int offset;
+        
+        private NameCompletionProposal(int offset, String text) {
+            this.text=text;
+            this.offset = offset;
+        }
+        
+        @Override
+        public Image getImage() {
+            return null;
+        }
+        
+        @Override
+        public Point getSelection(IDocument document) {
+            return new Point(offset + text.length(), 0);
+        }
+        
+        public void apply(IDocument document) {
+            try {
+                document.replace(offset + AssignToLocalProposal.this.text.length(), 
+                        AssignToLocalProposal.this.name.length(), text);
+                AssignToLocalProposal.this.name = text;
+            } 
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        public String getDisplayString() {
+            return text;
+        }
+        
+        public String getAdditionalProposalInfo() {
+            return null;
+        }
+        
+        @Override
+        public IContextInformation getContextInformation() {
+            return null;
+        }
+
+    }
+
     @Override
     public void apply(IDocument document) {
         super.apply(document);
@@ -116,20 +172,32 @@ class AssignToLocalProposal extends CorrectionProposal {
             CeylonParseController cpc = editor.getParseController();
             Unit unit = cpc.getRootNode().getUnit();
             List<ProducedType> supertypes = resultType.getSupertypes();
-            ICompletionProposal[] proposals = 
+            ICompletionProposal[] typeProposals = 
                     new ICompletionProposal[supertypes.size()];
             for (int i=0; i<supertypes.size(); i++) {
                 ProducedType type = supertypes.get(i);
                 String typeName = type.getProducedTypeName(unit);
-                proposals[i] = new TypeCompletionProposal(offset-6, typeName, 
+                typeProposals[i] = new TypeCompletionProposal(offset-6, typeName, 
                         getImageForDeclaration(type.getDeclaration()));
             }
-            ProposalPosition linkedPosition = 
-                    new ProposalPosition(document, offset-6, 5, 0, proposals);
+            ProposalPosition typePosition = 
+                    new ProposalPosition(document, offset-6, 5, 0, typeProposals);
+            List<ICompletionProposal> nameProposals = new ArrayList<ICompletionProposal>();
+            Matcher matcher = IDPATTERN.matcher(name);
+            while (matcher.find()) {
+                int loc = matcher.start(2);
+                String nameProposal = 
+                        name.substring(matcher.start(1), loc).toLowerCase() + name.substring(loc);
+                nameProposals.add(new NameCompletionProposal(offset-5, nameProposal));
+            }
+            ProposalPosition namePosition = 
+                    new ProposalPosition(document, offset, name.length(), 2, 
+                            nameProposals.toArray(NO_COMPLETIONS));
             try {
-                addLinkedPosition(linkedModeModel, linkedPosition);
+                addLinkedPosition(linkedModeModel, typePosition);
+                addLinkedPosition(linkedModeModel, namePosition);
                 installLinkedMode(editor, document, linkedModeModel, 
-                        this, 1, exitPos + length + 9);
+                        this, 2, exitPos + length + 9);
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -222,7 +290,7 @@ class AssignToLocalProposal extends CorrectionProposal {
             ProducedType type = resultType==null ? 
                     null : node.getUnit().denotableType(resultType);
             proposals.add(new AssignToLocalProposal(offset+6, name.length(), 
-                    exitPos, type, file, change));
+                    exitPos, type, name, file, change));
         //}
     }
 }
