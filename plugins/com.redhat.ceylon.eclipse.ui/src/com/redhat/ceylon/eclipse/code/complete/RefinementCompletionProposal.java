@@ -17,6 +17,8 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importParameterTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -66,6 +68,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -292,8 +296,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                                 loc+pos, 7, 0, 
                                 props.toArray(NO_COMPLETIONS));
                 addLinkedPosition(linkedModeModel, linkedPosition);
-                installLinkedMode(document, linkedModeModel, 
-                        1, loc+text.length());
+                installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(),
+                        document, linkedModeModel, this, 1, loc+text.length());
             }
 
         }
