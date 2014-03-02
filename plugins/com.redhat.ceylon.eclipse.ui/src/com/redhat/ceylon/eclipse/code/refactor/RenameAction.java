@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.refactor.RenameDeclarationLinkedMode.useLinkedMode;
+import static com.redhat.ceylon.eclipse.code.refactor.RenameLinkedMode.useLinkedMode;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -16,7 +16,7 @@ public class RenameAction extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ITextEditor editor = (ITextEditor) getCurrentEditor();
         if (useLinkedMode() && editor instanceof CeylonEditor) {
-            new RenameDeclarationLinkedMode((CeylonEditor) editor).start();
+            new RenameLinkedMode((CeylonEditor) editor).start();
         }
         else {
             new RenameRefactoringAction(editor).run();

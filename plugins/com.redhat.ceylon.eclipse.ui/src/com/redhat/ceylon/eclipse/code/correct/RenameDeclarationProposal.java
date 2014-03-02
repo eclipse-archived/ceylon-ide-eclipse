@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.RENAME;
-import static com.redhat.ceylon.eclipse.code.refactor.RenameDeclarationLinkedMode.useLinkedMode;
+import static com.redhat.ceylon.eclipse.code.refactor.RenameLinkedMode.useLinkedMode;
 
 import java.util.Collection;
 
@@ -15,7 +15,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.RenameDeclarationLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.RenameLinkedMode;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoringAction;
 
@@ -59,7 +59,7 @@ class RenameDeclarationProposal implements ICompletionProposal,
     @Override
     public void apply(IDocument doc) {
         if (useLinkedMode()) {
-            new RenameDeclarationLinkedMode(editor).start();
+            new RenameLinkedMode(editor).start();
         }
         else {
             new RenameRefactoringAction(editor).run();

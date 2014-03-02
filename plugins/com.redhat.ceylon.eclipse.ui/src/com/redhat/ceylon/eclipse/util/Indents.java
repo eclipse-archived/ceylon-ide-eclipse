@@ -20,7 +20,7 @@ public class Indents {
             return "";
         }
         try {
-            IRegion region = doc.getLineInformation(node.getEndToken().getLine()-1);
+            IRegion region = doc.getLineInformation(node.getToken().getLine()-1);
             String line = doc.get(region.getOffset(), region.getLength());
             char[] chars = line.toCharArray();
             for (int i=0; i<chars.length; i++) {

@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
@@ -34,8 +32,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -184,6 +180,10 @@ public abstract class AbstractRenameLinkedMode {
         }
     }
 
+    String getOpenDialogBinding() {
+        return null;
+    }
+
     protected abstract void addLinkedPositions(IDocument document, 
             Tree.CompilationUnit rootNode, int adjust, 
             LinkedPositionGroup linkedPositionGroup);
@@ -276,18 +276,6 @@ public abstract class AbstractRenameLinkedMode {
 
     public abstract String getHintTemplate();
 
-    /**
-     * WARNING: only works in workbench window context!
-     * @return the keybinding for Refactor &gt; Rename
-     */
-    private static String getOpenDialogBinding() {
-        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench()
-                .getAdapter(IBindingService.class);
-        if (bindingService == null) return "";
-        String binding= bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + ".action.rename");
-        return binding == null ? "" : binding;
-    }
-    
     void addMenuItems(IMenuManager manager) {
         
         IAction previewAction = createPreviewAction();
