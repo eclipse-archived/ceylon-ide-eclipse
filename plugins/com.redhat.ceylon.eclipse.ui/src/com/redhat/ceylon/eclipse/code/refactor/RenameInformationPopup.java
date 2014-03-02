@@ -77,9 +77,11 @@ import org.eclipse.swt.widgets.Tracker;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage;
 
 public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
 
@@ -755,16 +757,16 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
                 addMoveMenuItem(subMenuManager, SNAP_POSITION_LOWER_RIGHT, "Snap Bottom Right");
                 manager.add(subMenuManager);
 
-//                IAction prefsAction= new Action("Preferences") {
-//                    @Override
-//                    public void run() {
-//                        fRenameLinkedMode.cancel();
-//                        String linkedModePrefPageID= "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage"; //$NON-NLS-1$
-//                        String refactoringPrefPageID= JavaBasePreferencePage.JAVA_BASE_PREF_PAGE_ID;
-//                        PreferencesUtil.createPreferenceDialogOn(fEditor.getSite().getShell(), refactoringPrefPageID, new String[] { linkedModePrefPageID, refactoringPrefPageID }, null).open();
-//                    }
-//                };
-//                manager.add(prefsAction);
+                IAction prefsAction= new Action("Preferences...") {
+                    @Override
+                    public void run() {
+                        fRenameLinkedMode.cancel();
+                        String linkedModePrefPageID= "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
+                        String refactoringPrefPageID= CeylonEditorPreferencesPage.ID;
+                        PreferencesUtil.createPreferenceDialogOn(fEditor.getSite().getShell(), refactoringPrefPageID, new String[] { linkedModePrefPageID, refactoringPrefPageID }, null).open();
+                    }
+                };
+                manager.add(prefsAction);
             }
         });
         return fMenuManager;
