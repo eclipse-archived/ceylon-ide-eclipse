@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
-import static com.redhat.ceylon.eclipse.code.refactor.ExtractValueLinkedMode.useLinkedMode;
+import static com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionLinkedMode.useLinkedMode;
 
 import java.util.Collection;
 

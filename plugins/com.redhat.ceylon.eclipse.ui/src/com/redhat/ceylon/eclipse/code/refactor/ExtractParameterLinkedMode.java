@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 
@@ -32,7 +32,7 @@ public final class ExtractParameterLinkedMode extends
     
     public static boolean useLinkedMode() {
         return EditorsUI.getPreferenceStore()
-                .getBoolean(LINKED_MODE_RENAME);
+                .getBoolean(LINKED_MODE_EXTRACT);
     }
     
     @Override

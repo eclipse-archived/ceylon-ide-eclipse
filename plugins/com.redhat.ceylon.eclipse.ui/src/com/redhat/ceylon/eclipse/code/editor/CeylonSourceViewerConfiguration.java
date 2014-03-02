@@ -68,6 +68,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
     public static final String LINKED_MODE = "linkedModeCompletion";
     public static final String LINKED_MODE_RENAME = "linkedModeRename";
+    public static final String LINKED_MODE_EXTRACT = "linkedModeExtract";
     public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
     
     public static final String CLOSE_PARENS = "closeParens";
@@ -93,7 +94,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         PresentationReconciler reconciler = new PresentationReconciler();
         //make sure we pass the sourceViewer we get as an argument here
         //otherwise it breaks syntax highlighting in Code popup
-        PresentationDamageRepairer damageRepairer = new PresentationDamageRepairer(sourceViewer, editor);
+        PresentationDamageRepairer damageRepairer = 
+                new PresentationDamageRepairer(sourceViewer, editor);
         reconciler.setRepairer(damageRepairer, DEFAULT_CONTENT_TYPE);
         reconciler.setDamager(damageRepairer, DEFAULT_CONTENT_TYPE);
         return reconciler;
@@ -130,6 +132,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(AUTO_ACTIVATION_CHARS, ".");
         preferenceStore.setDefault(LINKED_MODE, true);
         preferenceStore.setDefault(LINKED_MODE_RENAME, true);
+        preferenceStore.setDefault(LINKED_MODE_EXTRACT, true);
         preferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
         preferenceStore.setDefault(NORMALIZE_WS, false);
         preferenceStore.setDefault(NORMALIZE_NL, false);
