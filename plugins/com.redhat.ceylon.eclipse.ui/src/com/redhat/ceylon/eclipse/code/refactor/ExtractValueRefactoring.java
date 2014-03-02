@@ -36,11 +36,6 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         newName = guessName(node);
     }
     
-    /*public ExtractValueRefactoring(IQuickFixInvocationContext context) {
-        super(context);
-        newName = guessName();
-    }*/
-    
     @Override
     boolean isEnabled() {
         return node instanceof Tree.Term;
