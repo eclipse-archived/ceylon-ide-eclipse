@@ -43,8 +43,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 return false;
             }
             else if (ref.equals(declaration)) {
-                return !declaration.isActual() && 
-                        !declaration.equals(refinedDeclaration); //TODO: should check that it doesn't refine the return type
+                return !declaration.isActual() || 
+                        declaration.equals(refinedDeclaration); //TODO: should check that it doesn't refine the return type
             }
             else {
                 return deleteRefinements &&
