@@ -44,6 +44,7 @@ public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
             return;
         }
         if (typeArguments instanceof Tree.InferredTypeArguments &&
+                typeArguments.getTypeModels()!=null &&
                 !typeArguments.getTypeModels().isEmpty()) {
             StringBuilder builder = new StringBuilder("<");
             for (ProducedType arg: typeArguments.getTypeModels()) {
