@@ -105,7 +105,9 @@ public class DeleteRefactoring extends AbstractRefactoring {
                     (super.isRefinement(dec) &&
                     !deleteRefinements ||
                     dec.equals(refinedDeclaration) &&
-                    dec.isFormal());
+                    declarationToDelete.isActual() &&
+                    !declarationToDelete.isFormal() &&
+                    refinedDeclaration.isFormal());
         }
     }
     

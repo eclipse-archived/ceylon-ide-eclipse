@@ -13,7 +13,7 @@ public class DeleteWizard extends RefactoringWizard {
     
     @Override
     protected void addUserInputPages() {
-        ((WizardDialog) getContainer()).setPageSize(200, 200);
+        ((WizardDialog) getContainer()).setPageSize(600, 200);
         addPage(new DeleteInputPage(getRefactoring().getName()));
     }
 
