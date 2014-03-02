@@ -1,39 +1,51 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
-import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
-import org.eclipse.ltk.core.refactoring.RefactoringStatus;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.keys.IBindingService;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
-public final class RenameDeclarationLinkedMode extends
+public final class ExtractValueLinkedMode extends
             AbstractRenameLinkedMode {
         
-    private final RenameRefactoring refactoring;
+    private final ExtractValueRefactoring refactoring;
     
-    public RenameDeclarationLinkedMode(CeylonEditor editor) {
+    public ExtractValueLinkedMode(CeylonEditor editor) {
         super(editor);
-        this.refactoring = new RenameRefactoring(editor);
+        this.refactoring = new ExtractValueRefactoring(editor);
     }
     
     public static boolean useLinkedMode() {
         return EditorsUI.getPreferenceStore()
                 .getBoolean(LINKED_MODE_RENAME);
+    }
+    
+    @Override
+    protected int init(IDocument document) {
+        try {
+            DocumentChange change = new DocumentChange("", document);
+            refactoring.extractInFile(change);
+            change.perform(new NullProgressMonitor());
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
     }
     
     @Override
@@ -43,24 +55,14 @@ public final class RenameDeclarationLinkedMode extends
         saveEditorState();
         super.start();
     }
-
+    
     public void done() {
-        if (isEnabled()) {
+        if (isEnabled() && showPreview) {
             try {
                 hideEditorActivity();
                 refactoring.setNewName(getNewName());
                 revertChanges();
-                if (showPreview) {
-                    openPreview();
-                }
-                else {
-                    new RefactoringExecutionHelper(refactoring,
-                            RefactoringStatus.WARNING,
-                            RefactoringSaveHelper.SAVE_ALL,
-                            editor.getSite().getShell(),
-                            editor.getSite().getWorkbenchWindow())
-                        .perform(false, true);
-                }
+                openPreview();
             } 
             catch (Exception e) {
                 e.printStackTrace();
@@ -74,49 +76,41 @@ public final class RenameDeclarationLinkedMode extends
             super.cancel();
         }
     }
-
+    
+    @Override
+    public boolean isEnabled() {
+        String newName = getNewName();
+        return newName.matches("^\\w(\\w|\\d)*$") &&
+                !CeylonTokenColorer.keywords.contains(newName);
+    }
+    
     @Override
     public String getHintTemplate() {
-        return "Enter new name for " + refactoring.getCount() + 
-                " occurrences of '" + getName()  + "' {0}";
+        return "Enter name for new value declaration {0}";
     }
 
     @Override
     protected int getIdentifyingOffset() {
-        return getIdentifyingNode(refactoring.getNode()).getStartIndex();
+        return refactoring.decRegion.getOffset();
     }
     
     @Override
     protected void addLinkedPositions(IDocument document,
             CompilationUnit rootNode, int adjust,
             LinkedPositionGroup linkedPositionGroup) {
-        int i=1;
-        for (Node node: refactoring.getNodesToRename(rootNode)) {
-            Node identifyingNode = getIdentifyingNode(node);
-            try {
-                linkedPositionGroup.addPosition(new LinkedPosition(document, 
-                        identifyingNode.getStartIndex(), 
-                        identifyingNode.getText().length(), i++));
-            } 
-            catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-        }
-        for (Region region: refactoring.getStringsToReplace(rootNode)) {
-            try {
-                linkedPositionGroup.addPosition(new LinkedPosition(document, 
-                        region.getOffset(), 
-                        region.getLength(), i++));
-            } 
-            catch (BadLocationException e) {
-                e.printStackTrace();
-            }
+        try {
+            linkedPositionGroup.addPosition(new LinkedPosition(document, 
+                    refactoring.refRegion.getOffset(), 
+                    refactoring.refRegion.getLength(), 1));
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     protected String getName() {
-        return refactoring.getDeclaration().getName();
+        return refactoring.getNewName();
     }
     
     void enterDialogMode() {
@@ -129,7 +123,7 @@ public final class RenameDeclarationLinkedMode extends
         new RenameRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
-                return RenameDeclarationLinkedMode.this.refactoring;
+                return ExtractValueLinkedMode.this.refactoring;
             }
             @Override
             public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
@@ -142,10 +136,10 @@ public final class RenameDeclarationLinkedMode extends
     }
 
     void openDialog() {
-        new RenameRefactoringAction(editor) {
+        new ExtractValueRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
-                return RenameDeclarationLinkedMode.this.refactoring;
+                return ExtractValueLinkedMode.this.refactoring;
             }
         }.run();
     }
@@ -161,6 +155,19 @@ public final class RenameDeclarationLinkedMode extends
         };
     }
 
+    /**
+     * WARNING: only works in workbench window context!
+     * @return the keybinding for Refactor &gt; Rename
+     */
+    @Override
+    String getOpenDialogBinding() {
+        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench()
+                .getAdapter(IBindingService.class);
+        if (bindingService == null) return "";
+        String binding= bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + ".action.extractValue");
+        return binding == null ? "" : binding;
+    }
+    
     protected Action createPreviewAction() {
         return new Action("Preview") {
             @Override

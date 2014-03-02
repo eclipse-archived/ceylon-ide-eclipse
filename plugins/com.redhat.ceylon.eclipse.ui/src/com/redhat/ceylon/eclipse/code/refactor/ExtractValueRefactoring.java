@@ -2,6 +2,10 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+import static com.redhat.ceylon.eclipse.util.FindUtils.findStatement;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -11,7 +15,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
@@ -22,8 +27,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.FindUtils;
-import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ExtractValueRefactoring extends AbstractRefactoring {
     
@@ -62,42 +65,48 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         return new RefactoringStatus();
     }
 
-    public Change createChange(IProgressMonitor pm) throws CoreException,
+    public TextChange createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
         TextChange tfc = newLocalChange();
         extractInFile(tfc);
         return tfc;
     }
+    
+    IRegion decRegion;
+    IRegion refRegion;
 
-    private void extractInFile(TextChange tfc) throws CoreException {
+    void extractInFile(TextChange tfc) throws CoreException {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = tfc.getCurrentDocument(null);
-        
         Tree.Term term = (Tree.Term) node;
-        Integer start = node.getStartIndex();
-        int length = node.getStopIndex()-start+1;
+        Tree.Statement statement = findStatement(rootNode, node);
         String exp = toString(unparenthesize(term));
-        Tree.Statement statement = FindUtils.findStatement(rootNode, node);
         String typeDec;
         ProducedType tm = term.getTypeModel();
+        int il;
         if (tm==null || tm.isUnknown()) {
             typeDec = "dynamic";
+            il = 0;
         }
         else if (explicitType) {
             ProducedType type = node.getUnit().denotableType(tm);
             typeDec = type.getProducedTypeName();
             HashSet<Declaration> decs = new HashSet<Declaration>();
             importType(decs, type, rootNode);
-            applyImports(tfc, decs, rootNode, doc);
+            il = applyImports(tfc, decs, rootNode, doc);
         }
         else {
              typeDec = "value";
+             il = 0;
         }
         String dec = typeDec + " " +  newName + 
                 (getter ? " { return " + exp  + "; } " : " = " + exp + ";");
-        tfc.addEdit(new InsertEdit(statement.getStartIndex(),
-                dec + Indents.getDefaultLineDelimiter(doc) + getIndent(statement, doc)));
-        tfc.addEdit(new ReplaceEdit(start, length, newName));
+        String text = dec + getDefaultLineDelimiter(doc) + getIndent(statement, doc);
+        Integer start = statement.getStartIndex();
+        tfc.addEdit(new InsertEdit(start, text));
+        tfc.addEdit(new ReplaceEdit(getStartOffset(node), getLength(node), newName));
+        decRegion = new Region(start+typeDec.length()+1, newName.length());
+        refRegion = new Region(getStartOffset(node)+text.length()+il, newName.length());
     }
 
     public void setNewName(String text) {
