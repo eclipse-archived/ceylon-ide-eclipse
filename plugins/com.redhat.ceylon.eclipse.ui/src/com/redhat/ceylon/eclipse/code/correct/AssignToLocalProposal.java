@@ -55,8 +55,8 @@ class AssignToLocalProposal extends CorrectionProposal {
     public void apply(IDocument document) {
         super.apply(document);
         gotoLocation(file, offset, length);
-        LinkedModeModel linkedModeModel = new LinkedModeModel();
         if (!isTypeUnknown(resultType)) {
+            LinkedModeModel linkedModeModel = new LinkedModeModel();
             CeylonEditor editor = (CeylonEditor) EditorUtil.getCurrentEditor();
             Unit unit = editor.getParseController().getRootNode().getUnit();
             List<ProducedType> supertypes = resultType.getSupertypes();
