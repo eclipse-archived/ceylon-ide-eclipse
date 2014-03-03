@@ -25,6 +25,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IEditingSupport;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.IUndoManagerExtension;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
@@ -47,6 +48,9 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public abstract class AbstractRenameLinkedMode {
 
+//    private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
+//    private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
+    
     protected boolean showPreview = false;
     private IUndoableOperation startingUndoOperation;
     
@@ -74,7 +78,7 @@ public abstract class AbstractRenameLinkedMode {
     
     protected final CeylonEditor editor;
     
-    private RenameInformationPopup infoPopup;
+    private RefactorInformationPopup infoPopup;
 
     private Point originalSelection;
     private String originalName;
@@ -93,6 +97,10 @@ public abstract class AbstractRenameLinkedMode {
     
     protected int init(IDocument document) {
         return 0;
+    }
+    
+    RefactorInformationPopup getInfoPopup() {
+        return infoPopup;
     }
     
     protected abstract int getIdentifyingOffset();
@@ -121,20 +129,42 @@ public abstract class AbstractRenameLinkedMode {
         linkedModeModel = new LinkedModeModel();
         
         linkedPositionGroup = new LinkedPositionGroup();
-        namePosition = new LinkedPosition(document, getIdentifyingOffset(), 
+        int offset = getIdentifyingOffset();
+        namePosition = new LinkedPosition(document, offset, 
                 originalName.length(), 0);
+//        namePosition = 
+//                new ProposalPosition(document, offset, originalName.length(), 
+//                        0, getNameProposals(offset));
+//        
         linkedPositionGroup.addPosition(namePosition);
         
-        addLinkedPositions(document, editor.getParseController().getRootNode(), 
+        addLinkedPositions(document, 
+                editor.getParseController().getRootNode(), 
                 adjust, linkedPositionGroup);
 
         linkedModeModel.addGroup(linkedPositionGroup);
     }
 
+//    private ICompletionProposal[] getNameProposals(int offset) {
+//        List<ICompletionProposal> nameProposals = 
+//                new ArrayList<ICompletionProposal>();
+//        Matcher matcher = IDPATTERN.matcher(originalName);
+//        while (matcher.find()) {
+//            int loc = matcher.start(2);
+//            String initial = originalName.substring(matcher.start(1), loc);
+//            if (Character.isLowerCase(originalName.charAt(0))) {
+//                initial = initial.toLowerCase();
+//            }
+//            String nameProposal = initial + originalName.substring(loc);
+//            nameProposals.add(new LinkedModeCompletionProposal(offset, nameProposal, 1));
+//        }
+//        return nameProposals.toArray(NO_COMPLETIONS);
+//    }
+
     private void openPopup() {
         // Must cache here, since editor context is not available in menu from popup shell:
         openDialogKeyBinding = getOpenDialogBinding();
-        infoPopup = new RenameInformationPopup(editor, this);
+        infoPopup = new RefactorInformationPopup(editor, this);
         infoPopup.open();
     }
 
@@ -230,12 +260,12 @@ public abstract class AbstractRenameLinkedMode {
 
     public LinkedPosition getCurrentLinkedPosition() {
         Point selection = editor.getCeylonSourceViewer().getSelectedRange();
-        int start = selection.x;
-        int end = start + selection.y;
-        LinkedPosition[] positions = linkedPositionGroup.getPositions();
-        for (int i=0; i<positions.length; i++) {
-            LinkedPosition position = positions[i];
-            if (position.includes(start) && position.includes(end)) {
+        Position pos = new Position(selection.x, selection.y);
+        LinkedPosition[] positions = linkedModeModel.getGroupForPosition(pos)
+                .getPositions();
+        for (LinkedPosition position: positions) {
+            if (position.includes(selection.x) && 
+                    position.includes(selection.x+selection.y)) {
                 return position;
             }
         }
@@ -269,7 +299,6 @@ public abstract class AbstractRenameLinkedMode {
     public abstract String getHintTemplate();
 
     void addMenuItems(IMenuManager manager) {
-        
         IAction previewAction = createPreviewAction();
         if (previewAction!=null) {
             previewAction.setAccelerator(SWT.CTRL | SWT.CR);
@@ -338,5 +367,7 @@ public abstract class AbstractRenameLinkedMode {
             e.printStackTrace();
         }
     }
+
+    void updatePopupLocation() {}
 
 }

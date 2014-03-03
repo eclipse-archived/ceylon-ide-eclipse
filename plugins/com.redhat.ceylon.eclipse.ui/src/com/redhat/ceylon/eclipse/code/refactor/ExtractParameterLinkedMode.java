@@ -201,6 +201,20 @@ public final class ExtractParameterLinkedMode extends
         };
     }
     
+    @Override
+    void updatePopupLocation() {
+        LinkedPosition currentLinkedPosition = getCurrentLinkedPosition();
+        if (currentLinkedPosition==null) {
+            getInfoPopup().setHintTemplate(getHintTemplate());
+        }
+        else if (currentLinkedPosition.getSequenceNumber()==2) {
+            getInfoPopup().setHintTemplate("Enter type for new parameter declaration {0}");
+        }
+        else {
+            getInfoPopup().setHintTemplate("Enter name for new parameter declaration {0}");
+        }
+    }
+    
 //  private Image image= null;
 //  private Label label= null;
     
