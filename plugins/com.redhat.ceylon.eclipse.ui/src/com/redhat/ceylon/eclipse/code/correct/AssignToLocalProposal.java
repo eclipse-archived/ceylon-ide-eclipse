@@ -17,13 +17,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -34,6 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
+import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -49,8 +47,7 @@ class AssignToLocalProposal extends CorrectionProposal {
     private final int length;
     private final int exitPos;
     private final ProducedType resultType;
-    private String text;
-    private String name;
+    private final String name;
     
     AssignToLocalProposal(int offset, int length, int exitPos, 
             ProducedType resultType, String name, IFile file, 
@@ -61,107 +58,9 @@ class AssignToLocalProposal extends CorrectionProposal {
         this.file=file;
         this.offset=offset;
         this.length=length;
-        this.text = "value";
         this.name = name;
     }
     
-    private class TypeCompletionProposal 
-            implements ICompletionProposal {
-        
-        private final String text;
-        private final Image image;
-        private final int offset;
-        
-        private TypeCompletionProposal(int offset, String text, 
-                Image image) {
-            this.text=text;
-            this.image = image;
-            this.offset = offset;
-        }
-        
-        @Override
-        public Image getImage() {
-            return image;
-        }
-        
-        @Override
-        public Point getSelection(IDocument document) {
-            return new Point(offset + text.length(), 0);
-        }
-        
-        public void apply(IDocument document) {
-            try {
-                document.replace(offset, 
-                        AssignToLocalProposal.this.text.length(), text);
-                AssignToLocalProposal.this.text = text;
-            } 
-            catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-        }
-        
-        public String getDisplayString() {
-            return text;
-        }
-        
-        public String getAdditionalProposalInfo() {
-            return null;
-        }
-        
-        @Override
-        public IContextInformation getContextInformation() {
-            return null;
-        }
-        
-    }
-
-    private class NameCompletionProposal 
-            implements ICompletionProposal {
-        
-        private final String text;
-        private final int offset;
-        
-        private NameCompletionProposal(int offset, String text) {
-            this.text=text;
-            this.offset = offset;
-        }
-        
-        @Override
-        public Image getImage() {
-            return null;
-        }
-        
-        @Override
-        public Point getSelection(IDocument document) {
-            return new Point(offset + text.length(), 0);
-        }
-        
-        public void apply(IDocument document) {
-            try {
-                document.replace(offset + AssignToLocalProposal.this.text.length(), 
-                        AssignToLocalProposal.this.name.length(), text);
-                AssignToLocalProposal.this.name = text;
-            } 
-            catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-        }
-        
-        public String getDisplayString() {
-            return text;
-        }
-        
-        public String getAdditionalProposalInfo() {
-            return null;
-        }
-        
-        @Override
-        public IContextInformation getContextInformation() {
-            return null;
-        }
-
-    }
-
     @Override
     public void apply(IDocument document) {
         super.apply(document);
@@ -171,28 +70,31 @@ class AssignToLocalProposal extends CorrectionProposal {
             CeylonEditor editor = (CeylonEditor) EditorUtil.getCurrentEditor();
             CeylonParseController cpc = editor.getParseController();
             Unit unit = cpc.getRootNode().getUnit();
+            
             List<ProducedType> supertypes = resultType.getSupertypes();
             ICompletionProposal[] typeProposals = 
                     new ICompletionProposal[supertypes.size()];
             for (int i=0; i<supertypes.size(); i++) {
                 ProducedType type = supertypes.get(i);
                 String typeName = type.getProducedTypeName(unit);
-                typeProposals[i] = new TypeCompletionProposal(offset-6, typeName, 
+                typeProposals[i] = new LinkedModeCompletionProposal(offset-6, typeName, 0,
                         getImageForDeclaration(type.getDeclaration()));
             }
             ProposalPosition typePosition = 
                     new ProposalPosition(document, offset-6, 5, 0, typeProposals);
+            
             List<ICompletionProposal> nameProposals = new ArrayList<ICompletionProposal>();
             Matcher matcher = IDPATTERN.matcher(name);
             while (matcher.find()) {
                 int loc = matcher.start(2);
                 String nameProposal = 
                         name.substring(matcher.start(1), loc).toLowerCase() + name.substring(loc);
-                nameProposals.add(new NameCompletionProposal(offset-5, nameProposal));
+                nameProposals.add(new LinkedModeCompletionProposal(offset-6, nameProposal, 1));
             }
             ProposalPosition namePosition = 
                     new ProposalPosition(document, offset, name.length(), 2, 
                             nameProposals.toArray(NO_COMPLETIONS));
+            
             try {
                 addLinkedPosition(linkedModeModel, typePosition);
                 addLinkedPosition(linkedModeModel, namePosition);

@@ -18,7 +18,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -30,7 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.CompletionProposal;
+import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
@@ -39,7 +38,7 @@ public class SpecifyTypeProposal extends CorrectionProposal {
     private final int offset;
     private final IFile file;
     private final ProducedType infType;
-    private String explicitType;
+    private final String explicitType;
     
     SpecifyTypeProposal(int offset, IFile file, String explicitType, 
             ProducedType infType, TextFileChange change) {
@@ -64,16 +63,8 @@ public class SpecifyTypeProposal extends CorrectionProposal {
             for (int i=0; i<supertypes.size(); i++) {
                 ProducedType type = supertypes.get(i);
                 String typeName = type.getProducedTypeName(unit);
-                proposals[i] = new CompletionProposal(offset+explicitType.length(), 
-                        explicitType,
-                        getImageForDeclaration(type.getDeclaration()),
-                        typeName, typeName) {
-                    @Override
-                    public void apply(IDocument document) {
-                        super.apply(document);
-                        linkedModeModel.exit(ILinkedModeListener.SELECT);
-                    }
-                };
+                proposals[i] = new LinkedModeCompletionProposal(offset, typeName, 0,
+                        getImageForDeclaration(type.getDeclaration()));
             }
             ProposalPosition linkedPosition = 
                     new ProposalPosition(document, offset, explicitType.length(), 0, proposals);

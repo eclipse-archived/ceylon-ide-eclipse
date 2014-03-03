@@ -26,7 +26,6 @@ import org.eclipse.jface.text.IEditingSupport;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.IUndoManagerExtension;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedPosition;
@@ -35,12 +34,12 @@ import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.AbstractLinkedModeListener;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.FocusEditingSupport;
@@ -60,7 +59,7 @@ public abstract class AbstractRenameLinkedMode {
         for (int i=0; i<supertypes.size(); i++) {
             ProducedType type = supertypes.get(i);
             String typeName = type.getProducedTypeName(unit);
-            proposals[i] = new TypeCompletionProposal(offset, typeName, 
+            proposals[i] = new LinkedModeCompletionProposal(offset, typeName, 0,
                     getImageForDeclaration(type.getDeclaration()));
         }
         ProposalPosition linkedPosition = 
@@ -73,61 +72,6 @@ public abstract class AbstractRenameLinkedMode {
         }
     }
     
-    class TypeCompletionProposal 
-            implements ICompletionProposal {
-        
-        private final String text;
-        private final Image image;
-        private final int offset;
-        
-        TypeCompletionProposal(int offset, String text, 
-                Image image) {
-            this.text=text;
-            this.image = image;
-            this.offset = offset;
-        }
-        
-        @Override
-        public Image getImage() {
-            return image;
-        }
-        
-        @Override
-        public Point getSelection(IDocument document) {
-            return new Point(offset + text.length(), 0);
-        }
-        
-        public void apply(IDocument document) {
-            try {
-                int length = 0;
-                for (int i=offset;
-                        i<document.getLength() &&
-                        !Character.isWhitespace(document.getChar(i)); 
-                        i++) {
-                    length++;
-                }
-                document.replace(offset, length, text);
-            } 
-            catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-        }
-        
-        public String getDisplayString() {
-            return text;
-        }
-        
-        public String getAdditionalProposalInfo() {
-            return null;
-        }
-        
-        @Override
-        public IContextInformation getContextInformation() {
-            return null;
-        }
-        
-    }
-
     protected final CeylonEditor editor;
     
     private RenameInformationPopup infoPopup;
