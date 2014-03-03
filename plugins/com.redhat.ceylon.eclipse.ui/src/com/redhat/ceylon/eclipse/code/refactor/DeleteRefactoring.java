@@ -60,6 +60,27 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 super.visit(that);                
             }
         }
+        @Override
+        public void visit(Tree.NamedArgument that) {
+            if (isReference(that.getParameter())) {
+                getNodes().add(that);
+            }
+            super.visit(that);
+        }
+        @Override
+        public void visit(Tree.PositionalArgument that) {
+            if (isReference(that.getParameter())) {
+                getNodes().add(that);
+            }
+            super.visit(that);
+        }
+        @Override
+        public void visit(Tree.SequencedArgument that) {
+            if (isReference(that.getParameter())) {
+                getNodes().add(that);
+            }
+            super.visit(that);
+        }
     }
     
     //TODO: copy/pasted from RenameRefactoring!
