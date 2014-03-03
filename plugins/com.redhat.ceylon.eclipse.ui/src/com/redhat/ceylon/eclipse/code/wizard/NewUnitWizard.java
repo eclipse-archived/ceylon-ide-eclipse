@@ -9,12 +9,18 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 public class NewUnitWizard extends Wizard implements INewWizard {
     
     private IStructuredSelection selection;
     private IWorkbench workbench;
 
     private NewUnitWithDeclarationWizardPage page;
+    
+    public NewUnitWizard() {
+        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+    }
     
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
