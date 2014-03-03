@@ -355,13 +355,21 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             Tree.ParameterList pl, Node body) {
         List<Tree.Parameter> ps = pl.getParameters();
         final Set<MethodOrValue> params = new HashSet<MethodOrValue>();
+        boolean allDefaulted = true;
         for (int i=firstParam; i<ps.size()&&i<=lastParam; i++) {
-            params.add(ps.get(i).getParameterModel().getModel());
+            Parameter p = ps.get(i).getParameterModel();
+            params.add(p.getModel());
+            if (!p.isDefaulted()) {
+                allDefaulted = false;
+            }
         }
         int startOffset = getNodeStartOffset(ps.get(firstParam));
         int endOffset = getNodeEndOffset(ps.get(lastParam));
-        tfc.addEdit(new InsertEdit(startOffset, 
-                newName + " " + paramName));
+        String text = newName + " " + paramName;
+        if (allDefaulted) {
+            text += " = " + newName + "()";
+        }
+        tfc.addEdit(new InsertEdit(startOffset, text));
         tfc.addEdit(new DeleteEdit(startOffset, endOffset-startOffset));
         for (int i=lastParam+1; i<ps.size(); i++) {
             refactorLocalRefs(tfc, paramName, params, ps.get(i));
