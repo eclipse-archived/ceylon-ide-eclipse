@@ -1,8 +1,11 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
@@ -23,19 +26,25 @@ import org.eclipse.jface.text.IEditingSupportRegistry;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.IUndoManagerExtension;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
 import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
+import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
@@ -109,6 +118,80 @@ public abstract class AbstractRenameLinkedMode {
         }
     }
 
+    int typeLength;
+    
+    void addTypeProposals(IDocument document,
+            List<ProducedType> supertypes, 
+            int offset, int length) {
+        Unit unit = editor.getParseController().getRootNode().getUnit();
+        ICompletionProposal[] proposals = 
+                new ICompletionProposal[supertypes.size()];
+        typeLength = length;
+        for (int i=0; i<supertypes.size(); i++) {
+            ProducedType type = supertypes.get(i);
+            String typeName = type.getProducedTypeName(unit);
+            proposals[i] = new TypeCompletionProposal(offset, typeName, 
+                    getImageForDeclaration(type.getDeclaration()));
+        }
+        ProposalPosition linkedPosition = 
+                new ProposalPosition(document, offset, length, 2, proposals);
+        try {
+            addLinkedPosition(linkedModeModel, linkedPosition);
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    class TypeCompletionProposal 
+            implements ICompletionProposal {
+        
+        private final String text;
+        private final Image image;
+        private final int offset;
+        
+        TypeCompletionProposal(int offset, String text, 
+                Image image) {
+            this.text=text;
+            this.image = image;
+            this.offset = offset;
+        }
+        
+        @Override
+        public Image getImage() {
+            return image;
+        }
+        
+        @Override
+        public Point getSelection(IDocument document) {
+            return new Point(offset + text.length(), 0);
+        }
+        
+        public void apply(IDocument document) {
+            try {
+                document.replace(offset, typeLength, text);
+                typeLength = text.length();
+            } 
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        public String getDisplayString() {
+            return text;
+        }
+        
+        public String getAdditionalProposalInfo() {
+            return null;
+        }
+        
+        @Override
+        public IContextInformation getContextInformation() {
+            return null;
+        }
+        
+    }
+
     protected final CeylonEditor editor;
     
     private RenameInformationPopup infoPopup;
@@ -119,7 +202,7 @@ public abstract class AbstractRenameLinkedMode {
     protected LinkedPosition namePosition;
     protected LinkedModeModel linkedModeModel;
     protected LinkedPositionGroup linkedPositionGroup;
-    private final FocusEditingSupport focusEditingSupport;
+    protected final FocusEditingSupport focusEditingSupport;
     
     protected String openDialogKeyBinding= "";
     
@@ -157,13 +240,18 @@ public abstract class AbstractRenameLinkedMode {
 
             linkedModeModel = new LinkedModeModel();
             linkedModeModel.addGroup(linkedPositionGroup);
+            
+            addAdditionalLinkedPositionGroups(document);
+            
             linkedModeModel.forceInstall();
-            linkedModeModel.addLinkingListener(new LinkedModeListener());
+            linkedModeModel.addLinkingListener(createLinkingListener());
             editor.setLinkedMode(linkedModeModel, this);
             
             LinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
             ui.setExitPosition(viewer, getExitPosition(offset, adjust), 0, NO_STOP);
             ui.setExitPolicy(new PreviewingDeleteBlockingExitPolicy(document));
+            ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
+            ui.setDoContextInfo(true);
             ui.enter();
             
             //NOTE: I hate this behavior in the Java editor!
@@ -182,6 +270,12 @@ public abstract class AbstractRenameLinkedMode {
             e.printStackTrace();
         }
     }
+
+    protected ILinkedModeListener createLinkingListener() {
+        return new LinkedModeListener();
+    }
+
+    protected void addAdditionalLinkedPositionGroups(IDocument document) {}
 
     protected int getExitPosition(int selectionOffset, final int adjust) {
         return selectionOffset+adjust;

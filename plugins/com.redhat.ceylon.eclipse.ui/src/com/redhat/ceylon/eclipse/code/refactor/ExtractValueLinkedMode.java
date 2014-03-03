@@ -1,13 +1,17 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
+
+import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -16,8 +20,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.keys.IBindingService;
 
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.ProposalLinkedModeListener;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public final class ExtractValueLinkedMode extends
@@ -115,7 +121,23 @@ public final class ExtractValueLinkedMode extends
             e.printStackTrace();
         }
     }
+    
+    @Override
+    protected void addAdditionalLinkedPositionGroups(IDocument document) {
+        ProducedType type = refactoring.getType();
+        if (!isTypeUnknown(type)) {
+            List<ProducedType> supertypes = type.getSupertypes();
+            int offset = refactoring.typeRegion.getOffset();
+            int length = refactoring.typeRegion.getLength();
+            addTypeProposals(document, supertypes, offset, length);
+        }
+    }
 
+    @Override
+    protected ILinkedModeListener createLinkingListener() {
+        return new ProposalLinkedModeListener(editor, focusEditingSupport);
+    }
+    
     @Override
     protected String getName() {
         return refactoring.getNewName();

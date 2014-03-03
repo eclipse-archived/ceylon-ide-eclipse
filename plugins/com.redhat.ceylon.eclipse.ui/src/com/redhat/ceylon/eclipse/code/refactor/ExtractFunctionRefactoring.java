@@ -247,6 +247,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     private Tree.AttributeDeclaration result;
     private List<Statement> statements;
     List<Return> returns;
+    private ProducedType returnType;
 
     public ExtractFunctionRefactoring(ITextEditor editor) {
         super(editor);
@@ -379,6 +380,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
     IRegion decRegion;
     IRegion refRegion;
+    IRegion typeRegion;
 
     public Change createChange(IProgressMonitor pm) 
             throws CoreException,
@@ -465,21 +467,21 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         
         int il;
         String type;
-        ProducedType tt = term.getTypeModel();
-        if (tt==null || tt.isUnknown()) {
+        returnType = node.getUnit()
+                .denotableType(term.getTypeModel());
+        if (returnType==null || returnType.isUnknown()) {
             type = "dynamic";
             il = 0;
         }
         else {
-            boolean isVoid = (tt.getDeclaration() instanceof Class) && 
-                    tt.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
+            boolean isVoid = (returnType.getDeclaration() instanceof Class) && 
+                    returnType.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
             if (isVoid) {
                 type = "void";
                 il = 0;
             }
             else {
                 if (explicitType || dec.isToplevel()) {
-                    ProducedType returnType = node.getUnit().denotableType(tt);
                     type = returnType.getProducedTypeName();
                     HashSet<Declaration> decs = new HashSet<Declaration>();
                     importType(decs, returnType, rootNode);
@@ -496,9 +498,11 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 constraints + 
                 " => " + exp + ";" 
                 + indent + indent;
-        tfc.addEdit(new InsertEdit(decNode.getStartIndex(), text));
+        Integer decStart = decNode.getStartIndex();
+        tfc.addEdit(new InsertEdit(decStart, text));
         tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
-        decRegion = new Region(decNode.getStartIndex()+type.length()+1, newName.length());
+        typeRegion = new Region(decStart, type.length());
+        decRegion = new Region(decStart+type.length()+1, newName.length());
         refRegion = new Region(start+text.length()+il, newName.length());
     }
 
@@ -597,7 +601,6 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
         }
         
-        ProducedType returnType;
         if (result!=null) {
             returnType = unit.denotableType(result.getDeclarationModel().getType());
         }
@@ -678,9 +681,11 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             invocation = "return " + invocation;
         }
         
-        tfc.addEdit(new InsertEdit(decNode.getStartIndex(), content));        
+        Integer decStart = decNode.getStartIndex();
+        tfc.addEdit(new InsertEdit(decStart, content));        
         tfc.addEdit(new ReplaceEdit(start, length, invocation));
-        decRegion = new Region(decNode.getStartIndex()+content.indexOf(' ')+1, newName.length());
+        typeRegion = new Region(decStart, content.indexOf(' '));
+        decRegion = new Region(decStart+content.indexOf(' ')+1, newName.length());
         refRegion = new Region(start+content.length()+il, newName.length());
     }
 
@@ -735,6 +740,10 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     
     public void setExplicitType() {
         this.explicitType = !explicitType;
+    }
+
+    ProducedType getType() {
+        return returnType;
     }
     
 }

@@ -25,7 +25,6 @@ import org.eclipse.jface.text.IEditingSupportRegistry;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
@@ -278,42 +277,6 @@ public class EditorUtil {
             if (change != null) {
                 change.dispose();
             }
-        }
-    }
-
-    private static final class ProposalLinkedModeListener implements
-        ILinkedModeListener {
-        private final CeylonEditor editor;
-        private IEditingSupport editingSupport;
-        
-        ProposalLinkedModeListener(CeylonEditor editor, 
-                IEditingSupport editingSupport) {
-            this.editor = editor;
-            this.editingSupport = editingSupport;
-        }
-        
-        @Override
-        public void left(LinkedModeModel model, int flags) {
-            editor.clearLinkedMode();
-            //linkedModeModel.exit(ILinkedModeListener.NONE);
-            CeylonSourceViewer viewer= editor.getCeylonSourceViewer();
-            if (viewer instanceof IEditingSupportRegistry) {
-                ((IEditingSupportRegistry) viewer).unregister(editingSupport);
-            }
-            editor.getSite().getPage().activate(editor);
-            if ((flags&EXTERNAL_MODIFICATION)==0 && viewer!=null) {
-                viewer.invalidateTextPresentation();
-            }
-        }
-        
-        @Override
-        public void suspend(LinkedModeModel model) {
-            editor.clearLinkedMode();
-        }
-        
-        @Override
-        public void resume(LinkedModeModel model, int flags) {
-            editor.setLinkedMode(model, this);
         }
     }
 
