@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.util.ExceptionHandler;
 import org.eclipse.jdt.internal.ui.wizards.NewElementWizard;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
@@ -60,7 +59,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     public NewProjectWizard(NewCeylonProjectWizardPageOne pageOne, NewCeylonProjectWizardPageTwo pageTwo) {
         setDefaultPageImageDescriptor(CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(CEYLON_NEW_PROJECT));
-        setDialogSettings(JavaPlugin.getDefault().getDialogSettings());
+        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
         setWindowTitle("New Ceylon Project");
         firstPage= pageOne;
         secondPage= pageTwo;

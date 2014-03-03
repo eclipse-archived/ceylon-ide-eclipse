@@ -46,6 +46,10 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
     private ExportJarWizardPage page;
     private ImportModulesWizardPage importsPage;
     
+    public ExportJarWizard() {
+        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+    }
+    
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;

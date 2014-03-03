@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.code.wizard.ExportModuleWizardPage.CLEAN_BUILD_BEFORE_EXPORT;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
@@ -36,6 +37,10 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
 
     private IStructuredSelection selection;
     private ExportModuleWizardPage page;
+    
+    public ExportModuleWizard() {
+        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+    }
     
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
@@ -127,14 +132,17 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                     protected IStatus run(IProgressMonitor monitor) {
                         monitor.setTaskName("Exporting modules to repository");
                         IProject p = project.getProject();
-                        try {
-                            p.build(CLEAN_BUILD, monitor);
+                        getDialogSettings().put(CLEAN_BUILD_BEFORE_EXPORT, page.isClean());
+                        if (page.isClean()) {
+                            try {
+                                p.build(CLEAN_BUILD, monitor);
+                            }
+                            catch (CoreException e) {
+                                ex = e;
+                                return Status.CANCEL_STATUS;
+                            }
+                            yieldRule(monitor);
                         }
-                        catch (CoreException e) {
-                            ex = e;
-                            return Status.CANCEL_STATUS;
-                        }
-                        yieldRule(monitor);
                         File outputDir = getCeylonModulesOutputDirectory(p);
                         Path outputPath = Paths.get(outputDir.getAbsolutePath());
                         Path repoPath = Paths.get(repositoryPath);

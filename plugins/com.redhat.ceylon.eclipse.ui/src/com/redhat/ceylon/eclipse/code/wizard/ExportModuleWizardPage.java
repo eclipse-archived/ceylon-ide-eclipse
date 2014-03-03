@@ -38,10 +38,12 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 
+    static final String CLEAN_BUILD_BEFORE_EXPORT = "cleanBuildBeforeExport";
     //private IStructuredSelection selection;
     private String repositoryPath;
     private IJavaProject project;
     private IJavaElement selection;
+    private boolean clean = true;
     
     ExportModuleWizardPage(String defaultRepositoryPath, 
             IJavaProject project, IJavaElement selection) {
@@ -145,6 +147,20 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+        new Label(composite, SWT.NONE);
+        final Button et = new Button(composite, SWT.CHECK);
+        et.setText("Perform a clean build before exporting");
+        clean = getDialogSettings().getBoolean(CLEAN_BUILD_BEFORE_EXPORT);
+        et.setSelection(clean);
+        et.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                clean = !clean;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
         });
         
         modules.addSelectionListener(new SelectionListener() {
@@ -269,7 +285,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             modules.removeAll();
             
             List<Module> moduleList = getModulesInProject(project.getProject());
-            for (Module module : moduleList) {
+            for (Module module: moduleList) {
                 TableItem item = new TableItem(modules, SWT.NONE);
                 item.setText(module.getNameAsString() + "/" + module.getVersion());
                 item.setImage(CeylonLabelProvider.ARCHIVE);
@@ -301,6 +317,10 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     
     public IJavaProject getProject() {
         return project;
+    }
+    
+    public boolean isClean() {
+        return clean;
     }
     
 }

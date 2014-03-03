@@ -31,6 +31,7 @@ import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class NewModuleWizard extends Wizard implements INewWizard {
     
@@ -123,6 +124,10 @@ public class NewModuleWizard extends Wizard implements INewWizard {
     private NewModuleWizardPage page;
     private ImportModulesWizardPage importsPage;
     private IWorkbench workbench;
+    
+    public NewModuleWizard() {
+        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+    }
     
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
