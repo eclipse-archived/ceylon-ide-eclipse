@@ -686,7 +686,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         tfc.addEdit(new ReplaceEdit(start, length, invocation));
         typeRegion = new Region(decStart, content.indexOf(' '));
         decRegion = new Region(decStart+content.indexOf(' ')+1, newName.length());
-        refRegion = new Region(start+content.length()+il, newName.length());
+        refRegion = new Region(start+content.length()+il+invocation.indexOf('=')+1, newName.length());
     }
 
     private List<Statement> getStatements(Tree.Body body, ITextSelection selection) {
