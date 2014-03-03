@@ -510,7 +510,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }
 
     private Scope getContainingScope(Tree.Declaration decNode) {
-        return decNode.getDeclarationModel().getContainer().getScope();
+        return decNode.getDeclarationModel().getContainer();
     }
 
     private void extractStatementsInFile(TextChange tfc) 
