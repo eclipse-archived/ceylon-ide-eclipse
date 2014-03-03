@@ -93,7 +93,7 @@ public final class ExtractParameterLinkedMode extends
     
     @Override
     public String getHintTemplate() {
-        return "Enter name for new value declaration {0}";
+        return "Enter name for new parameter declaration {0}";
     }
 
     @Override

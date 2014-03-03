@@ -99,7 +99,7 @@ public final class ExtractFunctionLinkedMode
     
     @Override
     public String getHintTemplate() {
-        return "Enter name for new value declaration {0}";
+        return "Enter name for new function declaration {0}";
     }
 
     @Override
