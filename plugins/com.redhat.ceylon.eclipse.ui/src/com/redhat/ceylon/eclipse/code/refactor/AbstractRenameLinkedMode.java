@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.unregisterEditingSupport;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
@@ -19,18 +21,13 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IEditingSupport;
-import org.eclipse.jface.text.IEditingSupportRegistry;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.IUndoManagerExtension;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
-import org.eclipse.jface.text.link.LinkedModeUI;
 import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
@@ -40,14 +37,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.AbstractLinkedModeListener;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
+import com.redhat.ceylon.eclipse.code.editor.FocusEditingSupport;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public abstract class AbstractRenameLinkedMode {
@@ -55,78 +51,12 @@ public abstract class AbstractRenameLinkedMode {
     protected boolean showPreview = false;
     private IUndoableOperation startingUndoOperation;
     
-    protected final class PreviewingDeleteBlockingExitPolicy extends
-            DeleteBlockingExitPolicy {
-        protected PreviewingDeleteBlockingExitPolicy(IDocument document) {
-            super(document);
-        }
-
-        @Override
-        public ExitFlags doExit(LinkedModeModel model, 
-                VerifyEvent event, int offset, int length) {
-            showPreview = (event.stateMask & SWT.CTRL) != 0
-                    && (event.character == SWT.CR || event.character == SWT.LF);
-            return super.doExit(model, event, offset, length);
-        }
-    }
-
-    private final class LinkedModeListener implements
-            ILinkedModeListener {
-        @Override
-        public void left(LinkedModeModel model, int flags) {
-            if ((flags&UPDATE_CARET)!=0) {
-                done();
-            }
-            else {
-                if ((flags&EXTERNAL_MODIFICATION)==0) {
-                    editor.getCeylonSourceViewer().invalidateTextPresentation();
-                }
-                cancel();
-            }
-        }
-
-        @Override
-        public void suspend(LinkedModeModel model) {
-            editor.clearLinkedMode();
-        }
-
-        @Override
-        public void resume(LinkedModeModel model, int flags) {
-            editor.setLinkedMode(linkedModeModel, AbstractRenameLinkedMode.this);
-        }
-    }
-
-    private final class FocusEditingSupport implements IEditingSupport {
-        public boolean ownsFocusShell() {
-            if (infoPopup == null) {
-                return false;
-            }
-            if (infoPopup.ownsFocusShell()) {
-                return true;
-            }
-
-            Shell editorShell= editor.getSite().getShell();
-            Shell activeShell= editorShell.getDisplay().getActiveShell();
-            if (editorShell == activeShell) {
-                return true;
-            }
-            return false;
-        }
-
-        public boolean isOriginator(DocumentEvent event, IRegion subjectRegion) {
-            return false; //leave on external modification outside positions
-        }
-    }
-
-    int typeLength;
-    
     void addTypeProposals(IDocument document,
             List<ProducedType> supertypes, 
             int offset, int length) {
         Unit unit = editor.getParseController().getRootNode().getUnit();
         ICompletionProposal[] proposals = 
                 new ICompletionProposal[supertypes.size()];
-        typeLength = length;
         for (int i=0; i<supertypes.size(); i++) {
             ProducedType type = supertypes.get(i);
             String typeName = type.getProducedTypeName(unit);
@@ -169,8 +99,14 @@ public abstract class AbstractRenameLinkedMode {
         
         public void apply(IDocument document) {
             try {
-                document.replace(offset, typeLength, text);
-                typeLength = text.length();
+                int length = 0;
+                for (int i=offset;
+                        i<document.getLength() &&
+                        !Character.isWhitespace(document.getChar(i)); 
+                        i++) {
+                    length++;
+                }
+                document.replace(offset, length, text);
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -202,13 +138,11 @@ public abstract class AbstractRenameLinkedMode {
     protected LinkedPosition namePosition;
     protected LinkedModeModel linkedModeModel;
     protected LinkedPositionGroup linkedPositionGroup;
-    protected final FocusEditingSupport focusEditingSupport;
     
     protected String openDialogKeyBinding= "";
     
     public AbstractRenameLinkedMode(CeylonEditor editor) {
         this.editor = editor;
-        focusEditingSupport = new FocusEditingSupport();
     }
     
     protected abstract String getName();
@@ -226,58 +160,95 @@ public abstract class AbstractRenameLinkedMode {
         int offset = originalSelection.x;
         final int adjust = init(document);        
         originalName = getName();
-                
-        
         try {
-            
-            linkedPositionGroup = new LinkedPositionGroup();
-            namePosition = new LinkedPosition(document, getIdentifyingOffset(), 
-                    originalName.length(), 0);
-            linkedPositionGroup.addPosition(namePosition);
-            
-            addLinkedPositions(document, editor.getParseController().getRootNode(), 
-                    adjust, linkedPositionGroup);
-
-            linkedModeModel = new LinkedModeModel();
-            linkedModeModel.addGroup(linkedPositionGroup);
-            
+            createLinkedModeModel(document, adjust);
             addAdditionalLinkedPositionGroups(document);
-            
-            linkedModeModel.forceInstall();
-            linkedModeModel.addLinkingListener(createLinkingListener());
-            editor.setLinkedMode(linkedModeModel, this);
-            
-            LinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
-            ui.setExitPosition(viewer, getExitPosition(offset, adjust), 0, NO_STOP);
-            ui.setExitPolicy(new PreviewingDeleteBlockingExitPolicy(document));
-            ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
-            ui.setDoContextInfo(true);
-            ui.enter();
-            
-            //NOTE: I hate this behavior in the Java editor!
-//            viewer.setSelectedRange(originalSelection.x+adjust, originalSelection.y+adjust); // by default, full word is selected; restore original selection
-            
-            if (viewer instanceof IEditingSupportRegistry) {
-                ((IEditingSupportRegistry) viewer).register(focusEditingSupport);
-            }
-
-            // Must cache here, since editor context is not available in menu from popup shell:
-            openDialogKeyBinding = getOpenDialogBinding();
-            infoPopup = new RenameInformationPopup(editor, this);
-            infoPopup.open();
-
-        } catch (BadLocationException e) {
+            enterLinkedMode(document, offset, adjust);
+            openPopup();
+        }
+        catch (BadLocationException e) {
             e.printStackTrace();
         }
     }
 
-    protected ILinkedModeListener createLinkingListener() {
-        return new LinkedModeListener();
+    private void createLinkedModeModel(IDocument document,
+            int adjust) 
+                    throws BadLocationException {
+        linkedModeModel = new LinkedModeModel();
+        
+        linkedPositionGroup = new LinkedPositionGroup();
+        namePosition = new LinkedPosition(document, getIdentifyingOffset(), 
+                originalName.length(), 0);
+        linkedPositionGroup.addPosition(namePosition);
+        
+        addLinkedPositions(document, editor.getParseController().getRootNode(), 
+                adjust, linkedPositionGroup);
+
+        linkedModeModel.addGroup(linkedPositionGroup);
+    }
+
+    private void openPopup() {
+        // Must cache here, since editor context is not available in menu from popup shell:
+        openDialogKeyBinding = getOpenDialogBinding();
+        infoPopup = new RenameInformationPopup(editor, this);
+        infoPopup.open();
+    }
+
+    private void enterLinkedMode(final IDocument document, 
+            int offset, int adjust) 
+                    throws BadLocationException {
+        final IEditingSupport editingSupport = new FocusEditingSupport(editor) {
+            public boolean ownsFocusShell() {
+                if (infoPopup == null) {
+                    return false;
+                }
+                if (infoPopup.ownsFocusShell()) {
+                    return true;
+                }
+                return super.ownsFocusShell();
+            }
+        };
+        installLinkedMode(editor, linkedModeModel, this, 
+                NO_STOP, getExitPosition(offset, adjust), 
+                editingSupport, 
+                new DeleteBlockingExitPolicy(document) {
+                    @Override
+                    public ExitFlags doExit(LinkedModeModel model, 
+                            VerifyEvent event, int offset, int length) {
+                        showPreview = (event.stateMask & SWT.CTRL) != 0
+                                && (event.character == SWT.CR || event.character == SWT.LF);
+                        return super.doExit(model, event, offset, length);
+                    }
+                }, 
+                new AbstractLinkedModeListener(editor, this) {
+                    @Override
+                    public void left(LinkedModeModel model, int flags) {
+                        editor.clearLinkedMode();
+                        if (infoPopup != null) {
+                            infoPopup.close();
+                            infoPopup=null;
+                        }                
+                        editor.getSite().getPage().activate(editor);
+                        if ((flags&UPDATE_CARET)!=0) {
+                            done();
+                        }
+                        else {
+                            if ((flags&EXTERNAL_MODIFICATION)==0) {
+                                editor.getCeylonSourceViewer().invalidateTextPresentation();
+                            }
+                            cancel();
+                        }
+                        unregisterEditingSupport(editor, editingSupport);
+                    }
+                });
+        
+        //NOTE: I hate this behavior in the Java editor!
+        //viewer.setSelectedRange(originalSelection.x+adjust, originalSelection.y+adjust); // by default, full word is selected; restore original selection
     }
 
     protected void addAdditionalLinkedPositionGroups(IDocument document) {}
 
-    protected int getExitPosition(int selectionOffset, final int adjust) {
+    protected int getExitPosition(int selectionOffset, int adjust) {
         return selectionOffset+adjust;
     }
 
@@ -289,12 +260,9 @@ public abstract class AbstractRenameLinkedMode {
             Tree.CompilationUnit rootNode, int adjust, 
             LinkedPositionGroup linkedPositionGroup);
 
-    public void cancel() {
-        linkedModeLeft();
-    }
+    protected void cancel() {}
     
-    public void done() {
-        linkedModeLeft();
+    protected void done() {
         editor.doSave(new NullProgressMonitor());
     }
 
@@ -311,27 +279,6 @@ public abstract class AbstractRenameLinkedMode {
             }
         }
     }*/
-
-    private void linkedModeLeft() {
-        CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
-        editor.clearLinkedMode();
-
-//        if (linkedModeModel != null) {
-//            linkedModeModel.exit(ILinkedModeListener.NONE);
-//            linkedModeModel = null;
-//        }
-                
-        if (infoPopup != null) {
-            infoPopup.close();
-            infoPopup=null;
-        }
-        
-        if (viewer instanceof IEditingSupportRegistry) {
-            ((IEditingSupportRegistry) viewer).unregister(focusEditingSupport);
-        }
-        
-        editor.getSite().getPage().activate(editor);
-    }
 
     public boolean isCaretInLinkedPosition() {
         return getCurrentLinkedPosition() != null;

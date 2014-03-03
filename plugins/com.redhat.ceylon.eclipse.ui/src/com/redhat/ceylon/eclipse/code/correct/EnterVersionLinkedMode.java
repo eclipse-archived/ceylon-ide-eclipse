@@ -204,7 +204,7 @@ class EnterVersionLinkedMode extends AbstractRenameLinkedMode {
     }
     
     protected Action createOpenDialogAction() {
-        return new Action("Open Dialog"/* + '\t' + 
+        return new Action("Open Dialog..."/* + '\t' + 
                 openDialogKeyBinding*/) {
             @Override
             public void run() {
@@ -215,7 +215,7 @@ class EnterVersionLinkedMode extends AbstractRenameLinkedMode {
     }
 
     protected Action createPreviewAction() {
-        return new Action("Preview") {
+        return new Action("Preview...") {
             @Override
             public void run() {
                 enterDialogMode();
