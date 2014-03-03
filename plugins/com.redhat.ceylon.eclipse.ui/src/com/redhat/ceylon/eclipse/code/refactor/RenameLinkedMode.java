@@ -25,7 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public final class RenameLinkedMode
-        extends AbstractRenameLinkedMode {
+        extends RefactorLinkedMode {
         
     private final RenameRefactoring refactoring;
     

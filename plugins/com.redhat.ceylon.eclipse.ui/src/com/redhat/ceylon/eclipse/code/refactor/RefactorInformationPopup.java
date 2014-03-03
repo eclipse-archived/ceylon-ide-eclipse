@@ -118,7 +118,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
                         fMenuManager.dispose();
                         fMenuManager= null;
                     }
-                    fRenameLinkedMode.cancel();
+                    fLinkedMode.cancel();
                 }
             });
         }
@@ -249,7 +249,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
     private static final int GAP= 2;
 
     private final CeylonEditor fEditor;
-    private final AbstractRenameLinkedMode fRenameLinkedMode;
+    private final RefactorLinkedMode fLinkedMode;
 
     private int fSnapPosition;
     private boolean fSnapPositionChanged;
@@ -265,9 +265,9 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
     private boolean fDelayJobFinished= false;
 
     public RefactorInformationPopup(CeylonEditor editor, 
-            AbstractRenameLinkedMode renameLinkedMode) {
+            RefactorLinkedMode renameLinkedMode) {
         fEditor= editor;
-        fRenameLinkedMode= renameLinkedMode;
+        fLinkedMode= renameLinkedMode;
         restoreSnapPosition();
     }
 
@@ -317,7 +317,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
                     public void run() {
                         Shell activeShell= display.getActiveShell();
                         if (activeShell != editorShell) {
-                            fRenameLinkedMode.cancel();
+                            fLinkedMode.cancel();
                         }
                     }
                 });
@@ -371,7 +371,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
     }
     
     private void updatePopupLocation(boolean force) {
-        fRenameLinkedMode.updatePopupLocation();
+        fLinkedMode.updatePopupLocation();
         if (! force && fSnapPosition == SNAP_POSITION_LOWER_RIGHT)
             return;
 
@@ -388,7 +388,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
         if (fPopup != null && !fPopup.isDisposed() && fDelayJobFinished) {
             boolean visible= false;
             //TODO: Check for visibility of linked position, not whether popup is outside of editor?
-            if (fRenameLinkedMode.isCaretInLinkedPosition()) {
+            if (fLinkedMode.isCaretInLinkedPosition()) {
                 StyledText textWidget= fEditor.getCeylonSourceViewer().getTextWidget();
                 Rectangle eArea= Geometry.toDisplay(textWidget, textWidget.getClientArea());
                 Rectangle pBounds= fPopup.getBounds();
@@ -442,7 +442,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
             case SNAP_POSITION_UNDER_RIGHT_FIELD:
             case SNAP_POSITION_OVER_RIGHT_FIELD:
             {
-                LinkedPosition position= fRenameLinkedMode.getCurrentLinkedPosition();
+                LinkedPosition position= fLinkedMode.getCurrentLinkedPosition();
                 if (position == null)
                     return null;
                 ISourceViewer viewer= fEditor.getCeylonSourceViewer();
@@ -469,7 +469,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
             case SNAP_POSITION_OVER_LEFT_FIELD:
             default: // same as SNAP_POSITION_UNDER_LEFT_FIELD
             {
-                LinkedPosition position= fRenameLinkedMode.getCurrentLinkedPosition();
+                LinkedPosition position= fLinkedMode.getCurrentLinkedPosition();
                 if (position == null)
                     return null;
                 ISourceViewer viewer= fEditor.getCeylonSourceViewer();
@@ -680,7 +680,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
 
         hint= new StyledText(fPopup, SWT.READ_ONLY | SWT.SINGLE);
         hint.setForeground(foreground);
-        setHintTemplate(fRenameLinkedMode.getHintTemplate());
+        setHintTemplate(fLinkedMode.getHintTemplate());
         hint.setEnabled(false); // text must not be selectable
         addMoveSupport(fPopup, hint);
 
@@ -744,7 +744,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
                 IAction refactorAction= new Action("Apply") {
                     @Override
                     public void run() {
-                        fRenameLinkedMode.linkedModeModel.exit(UPDATE_CARET);
+                        fLinkedMode.linkedModeModel.exit(UPDATE_CARET);
 //                        fRenameLinkedMode.done();
                     }
                 };
@@ -752,7 +752,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
                 refactorAction.setEnabled(true);
                 manager.add(refactorAction);
 
-                fRenameLinkedMode.addMenuItems(manager);
+                fLinkedMode.addMenuItems(manager);
 
                 manager.add(new Separator());
                 
@@ -767,7 +767,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
                 IAction prefsAction= new Action("Preferences...") {
                     @Override
                     public void run() {
-                        fRenameLinkedMode.cancel();
+                        fLinkedMode.cancel();
                         String linkedModePrefPageID= 
                                 "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
                         String refactoringPrefPageID= CeylonEditorPreferencesPage.ID;

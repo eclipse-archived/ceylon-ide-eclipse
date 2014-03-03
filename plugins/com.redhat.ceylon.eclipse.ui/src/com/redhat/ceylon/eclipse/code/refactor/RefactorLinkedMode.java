@@ -47,7 +47,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.FocusEditingSupport;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
-public abstract class AbstractRenameLinkedMode {
+public abstract class RefactorLinkedMode {
 
 //    private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
 //    private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
@@ -90,7 +90,7 @@ public abstract class AbstractRenameLinkedMode {
     
     protected String openDialogKeyBinding= "";
     
-    public AbstractRenameLinkedMode(CeylonEditor editor) {
+    public RefactorLinkedMode(CeylonEditor editor) {
         this.editor = editor;
     }
     
