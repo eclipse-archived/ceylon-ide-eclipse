@@ -817,7 +817,7 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
     }
 
     public boolean requestWidgetToken(IWidgetTokenOwner owner) {
-        return false;
+        return true;
     }
 
     public boolean requestWidgetToken(IWidgetTokenOwner owner, int priority) {

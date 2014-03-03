@@ -33,7 +33,8 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     private String newName;
     private boolean explicitType;
     private boolean getter;
-
+    private ProducedType type;
+    
     public ExtractValueRefactoring(ITextEditor editor) {
         super(editor);
         newName = guessName(node);
@@ -78,6 +79,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         return tfc;
     }
     
+    IRegion typeRegion;
     IRegion decRegion;
     IRegion refRegion;
 
@@ -87,15 +89,15 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         Tree.Term term = (Tree.Term) node;
         Tree.Statement statement = findStatement(rootNode, node);
         String exp = toString(unparenthesize(term));
-        String typeDec;
-        ProducedType tm = term.getTypeModel();
+        type = node.getUnit()
+                .denotableType(term.getTypeModel());
         int il;
-        if (tm==null || tm.isUnknown()) {
+        String typeDec;
+        if (type==null || type.isUnknown()) {
             typeDec = "dynamic";
             il = 0;
         }
         else if (explicitType) {
-            ProducedType type = node.getUnit().denotableType(tm);
             typeDec = type.getProducedTypeName();
             HashSet<Declaration> decs = new HashSet<Declaration>();
             importType(decs, type, rootNode);
@@ -111,6 +113,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         Integer start = statement.getStartIndex();
         tfc.addEdit(new InsertEdit(start, text));
         tfc.addEdit(new ReplaceEdit(getStartOffset(node), getLength(node), newName));
+        typeRegion = new Region(start, typeDec.length());
         decRegion = new Region(start+typeDec.length()+1, newName.length());
         refRegion = new Region(getStartOffset(node)+text.length()+il, newName.length());
     }
@@ -131,4 +134,8 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         this.getter = !getter;
     }
 
+    ProducedType getType() {
+        return type;
+    }
+    
 }
