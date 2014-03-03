@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.unregisterEditingSupport;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static org.eclipse.core.commands.operations.OperationHistoryFactory.getOperationHistory;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.lang.reflect.InvocationTargetException;
@@ -261,12 +262,15 @@ public abstract class AbstractRenameLinkedMode {
     public LinkedPosition getCurrentLinkedPosition() {
         Point selection = editor.getCeylonSourceViewer().getSelectedRange();
         Position pos = new Position(selection.x, selection.y);
-        LinkedPosition[] positions = linkedModeModel.getGroupForPosition(pos)
-                .getPositions();
-        for (LinkedPosition position: positions) {
-            if (position.includes(selection.x) && 
-                    position.includes(selection.x+selection.y)) {
-                return position;
+        LinkedPositionGroup group = linkedModeModel.getGroupForPosition(pos);
+        if (group!=null) {
+            LinkedPosition[] positions = group
+                    .getPositions();
+            for (LinkedPosition position: positions) {
+                if (position.includes(selection.x) && 
+                        position.includes(selection.x+selection.y)) {
+                    return position;
+                }
             }
         }
         return null;
@@ -350,11 +354,12 @@ public abstract class AbstractRenameLinkedMode {
                         throws InvocationTargetException, InterruptedException {
                     IUndoManager undoManager = editor.getCeylonSourceViewer().getUndoManager();
                     if (undoManager instanceof IUndoManagerExtension) {
-                        IUndoContext undoContext = ((IUndoManagerExtension) undoManager).getUndoContext();
-                        IOperationHistory operationHistory = OperationHistoryFactory.getOperationHistory();
+                        IUndoContext undoContext = 
+                                ((IUndoManagerExtension) undoManager).getUndoContext();
+                        IOperationHistory oh = getOperationHistory();
                         while (undoManager.undoable()) {
                             if (startingUndoOperation != null && 
-                                    startingUndoOperation.equals(operationHistory.getUndoOperation(undoContext))) {
+                                    startingUndoOperation.equals(oh.getUndoOperation(undoContext))) {
                                 return;
                             }
                             undoManager.undo();
