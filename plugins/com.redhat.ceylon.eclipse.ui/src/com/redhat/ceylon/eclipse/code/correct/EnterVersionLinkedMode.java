@@ -33,13 +33,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRenameLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.RefactorLinkedMode;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionRefactoringAction;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionWizard;
 
 
-class EnterVersionLinkedMode extends AbstractRenameLinkedMode {
+class EnterVersionLinkedMode extends RefactorLinkedMode {
 
     private final Tree.ImportPath module;
     private final Tree.QuotedLiteral version;

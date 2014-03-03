@@ -25,7 +25,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public final class ExtractFunctionLinkedMode
-            extends AbstractRenameLinkedMode {
+            extends RefactorLinkedMode {
         
     private final ExtractFunctionRefactoring refactoring;
     

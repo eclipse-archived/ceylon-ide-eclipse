@@ -26,11 +26,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRenameLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.RefactorLinkedMode;
 
 
 //TODO: implement preview, like for other linked modes
-class EnterAliasLinkedMode extends AbstractRenameLinkedMode {
+class EnterAliasLinkedMode extends RefactorLinkedMode {
 
     private final ImportMemberOrType element;
     private final Declaration dec;
