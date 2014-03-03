@@ -2,8 +2,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
 import static com.redhat.ceylon.eclipse.util.FindUtils.findStatement;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -112,10 +112,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         String text = dec + getDefaultLineDelimiter(doc) + getIndent(statement, doc);
         Integer start = statement.getStartIndex();
         tfc.addEdit(new InsertEdit(start, text));
-        tfc.addEdit(new ReplaceEdit(getStartOffset(node), getLength(node), newName));
+        tfc.addEdit(new ReplaceEdit(getNodeStartOffset(node), getNodeLength(node), newName));
         typeRegion = new Region(start, typeDec.length());
         decRegion = new Region(start+typeDec.length()+1, newName.length());
-        refRegion = new Region(getStartOffset(node)+text.length()+il, newName.length());
+        refRegion = new Region(getNodeStartOffset(node)+text.length()+il, newName.length());
     }
 
     public void setNewName(String text) {

@@ -2,8 +2,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
+import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -168,8 +168,8 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         }
         String text;
         try {
-            text = doc.get(getStartOffset(node),
-                    getLength(node));
+            text = doc.get(getNodeStartOffset(node),
+                    getNodeLength(node));
         }
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -228,10 +228,10 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         Integer start = pl.getStopIndex();
         String dectext = (pl.getParameters().isEmpty()?"":", ") + decl;
         tfc.addEdit(new InsertEdit(start, dectext));
-        tfc.addEdit(new ReplaceEdit(getStartOffset(node), getLength(node), call));
+        tfc.addEdit(new ReplaceEdit(getNodeStartOffset(node), getNodeLength(node), call));
         int buffer = pl.getParameters().isEmpty()?0:2;
         decRegion = new Region(start+typeDec.length()+buffer+1, newName.length());
-        refRegion = new Region(getStartOffset(node)+dectext.length()+il, call.length());
+        refRegion = new Region(getNodeStartOffset(node)+dectext.length()+il, call.length());
         typeRegion = new Region(start+buffer, typeDec.length());
     }
 
