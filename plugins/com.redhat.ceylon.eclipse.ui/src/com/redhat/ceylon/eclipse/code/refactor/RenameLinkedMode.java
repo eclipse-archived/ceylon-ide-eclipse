@@ -154,7 +154,7 @@ public final class RenameLinkedMode extends
     }
     
     protected Action createOpenDialogAction() {
-        return new Action("Open Dialog" + '\t' + 
+        return new Action("Open Dialog..." + '\t' + 
                 openDialogKeyBinding) {
             @Override
             public void run() {
@@ -178,7 +178,7 @@ public final class RenameLinkedMode extends
     }
     
     protected Action createPreviewAction() {
-        return new Action("Preview") {
+        return new Action("Preview...") {
             @Override
             public void run() {
                 enterDialogMode();

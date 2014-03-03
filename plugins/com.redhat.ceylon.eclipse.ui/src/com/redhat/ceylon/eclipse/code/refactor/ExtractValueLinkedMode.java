@@ -11,7 +11,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -23,11 +22,10 @@ import org.eclipse.ui.keys.IBindingService;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.ProposalLinkedModeListener;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
-public final class ExtractValueLinkedMode extends
-            AbstractRenameLinkedMode {
+public final class ExtractValueLinkedMode
+        extends AbstractRenameLinkedMode {
         
     private final ExtractValueRefactoring refactoring;
     
@@ -132,11 +130,6 @@ public final class ExtractValueLinkedMode extends
             addTypeProposals(document, supertypes, offset, length);
         }
     }
-
-    @Override
-    protected ILinkedModeListener createLinkingListener() {
-        return new ProposalLinkedModeListener(editor, focusEditingSupport);
-    }
     
     @Override
     protected String getName() {
@@ -175,7 +168,7 @@ public final class ExtractValueLinkedMode extends
     }
     
     protected Action createOpenDialogAction() {
-        return new Action("Open Dialog" + '\t' + 
+        return new Action("Open Dialog..." + '\t' + 
                 openDialogKeyBinding) {
             @Override
             public void run() {
@@ -199,7 +192,7 @@ public final class ExtractValueLinkedMode extends
     }
     
     protected Action createPreviewAction() {
-        return new Action("Preview") {
+        return new Action("Preview...") {
             @Override
             public void run() {
                 enterDialogMode();

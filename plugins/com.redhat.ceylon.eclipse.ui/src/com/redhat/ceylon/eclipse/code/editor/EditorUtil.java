@@ -18,15 +18,14 @@ import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IEditingSupport;
 import org.eclipse.jface.text.IEditingSupportRegistry;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
+import org.eclipse.jface.text.link.LinkedModeUI.IExitPolicy;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -280,43 +279,66 @@ public class EditorUtil {
         }
     }
 
-    public static void installLinkedMode(CeylonEditor editor, 
+    public static void installLinkedMode(final CeylonEditor editor, 
             IDocument document, LinkedModeModel linkedModeModel, 
             Object linkedModeOwner,
             int exitSequenceNumber, int exitPosition)
                     throws BadLocationException {
+        final IEditingSupport editingSupport = new FocusEditingSupport(editor);
+        installLinkedMode(editor, linkedModeModel, linkedModeOwner,
+                exitSequenceNumber, exitPosition, editingSupport,
+                new DeleteBlockingExitPolicy(document), 
+                new AbstractLinkedModeListener(editor, 
+                        linkedModeOwner) {
+                    @Override
+                    public void left(LinkedModeModel model, int flags) {
+                        editor.clearLinkedMode();
+                        //linkedModeModel.exit(ILinkedModeListener.NONE);
+                        unregisterEditingSupport(editor, editingSupport);
+                        editor.getSite().getPage().activate(editor);
+                        if ((flags&EXTERNAL_MODIFICATION)==0) {
+                            CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
+                            if (viewer!=null) {
+                                viewer.invalidateTextPresentation();
+                            }
+                        }
+                    }
+                });
+    }
+
+    public static void installLinkedMode(final CeylonEditor editor,
+            LinkedModeModel linkedModeModel, Object linkedModeOwner,
+            int exitSequenceNumber, int exitPosition,
+            IEditingSupport editingSupport, IExitPolicy exitPolicy,
+            AbstractLinkedModeListener linkedModelListener) 
+                    throws BadLocationException {
         linkedModeModel.forceInstall();
-        CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
-        IEditingSupport editingSupport = registerEditingSupport(editor, viewer);
-        linkedModeModel.addLinkingListener(new ProposalLinkedModeListener(editor, editingSupport));
+        linkedModeModel.addLinkingListener(linkedModelListener);
+        registerEditingSupport(editor, editingSupport);
         editor.setLinkedMode(linkedModeModel, linkedModeOwner);
-        EditorLinkedModeUI ui= new EditorLinkedModeUI(linkedModeModel, viewer);
+        CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
+        EditorLinkedModeUI ui = new EditorLinkedModeUI(linkedModeModel, viewer);
         ui.setExitPosition(viewer, exitPosition, 0, exitSequenceNumber);
-        ui.setExitPolicy(new DeleteBlockingExitPolicy(document));
+        ui.setExitPolicy(exitPolicy);
         ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
         ui.setDoContextInfo(true);
         ui.enter();
     }
 
-    private static IEditingSupport registerEditingSupport(final CeylonEditor editor,
-            CeylonSourceViewer viewer) {
-        if (viewer instanceof IEditingSupportRegistry) {
-            IEditingSupport editingSupport = new IEditingSupport() {
-                public boolean ownsFocusShell() {
-                    Shell editorShell= editor.getSite().getShell();
-                    Shell activeShell= editorShell.getDisplay().getActiveShell();
-                    if (editorShell == activeShell)
-                        return true;
-                    return false;
-                }
-                public boolean isOriginator(DocumentEvent event, IRegion subjectRegion) {
-                    return false; //leave on external modification outside positions
-                }
-            };
-            ((IEditingSupportRegistry) viewer).register(editingSupport);
-            return editingSupport;
+    public static void unregisterEditingSupport(CeylonEditor editor,
+            IEditingSupport editingSupport) {
+        CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
+        if (viewer!=null) {
+            ((IEditingSupportRegistry) viewer).unregister(editingSupport);
         }
-        return null;
+    }
+    
+    public static void registerEditingSupport(CeylonEditor editor,
+            IEditingSupport editingSupport) {
+        CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
+        if (viewer!=null) {
+            ((IEditingSupportRegistry) viewer).register(editingSupport);
+        }
     }
     
     public static void addLinkedPosition(final LinkedModeModel linkedModeModel,

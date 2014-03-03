@@ -37,6 +37,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     
     private String newName;
     private Tree.Declaration methodOrClass;
+    private ProducedType type;
 
     private static class FindFunctionVisitor 
             extends Visitor 
@@ -140,6 +141,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
 
     IRegion decRegion;
     IRegion refRegion;
+    IRegion typeRegion;
 
     void extractInFile(TextChange tfc) 
             throws CoreException {
@@ -175,14 +177,15 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         }
         Tree.Term term = (Tree.Term) node;
         int il = 0;
-        ProducedType tm = term.getTypeModel();
+        type = node.getUnit()
+                .denotableType(term.getTypeModel());
         String typeDec;
-        if (tm==null || tm.isUnknown()) {
+        if (type==null || type.isUnknown()) {
             typeDec = "dynamic";
         }
         else {
             StringBuilder builder = new StringBuilder(); 
-            il+=addType(tfc, doc, tm, builder);
+            il+=addType(tfc, doc, type, builder);
             typeDec = builder.toString();
         }
         final List<Tree.BaseMemberExpression> localRefs = 
@@ -226,8 +229,10 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         String dectext = (pl.getParameters().isEmpty()?"":", ") + decl;
         tfc.addEdit(new InsertEdit(start, dectext));
         tfc.addEdit(new ReplaceEdit(getStartOffset(node), getLength(node), call));
-        decRegion = new Region(start+typeDec.length()+(pl.getParameters().isEmpty()?1:3), newName.length());
+        int buffer = pl.getParameters().isEmpty()?0:2;
+        decRegion = new Region(start+typeDec.length()+buffer+1, newName.length());
         refRegion = new Region(getStartOffset(node)+dectext.length()+il, call.length());
+        typeRegion = new Region(start+buffer, typeDec.length());
     }
 
     private int addType(TextChange tfc, IDocument doc, 
@@ -246,6 +251,10 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     
     public String getNewName() {
         return newName;
+    }
+
+    ProducedType getType() {
+        return type;
     }
     
 }

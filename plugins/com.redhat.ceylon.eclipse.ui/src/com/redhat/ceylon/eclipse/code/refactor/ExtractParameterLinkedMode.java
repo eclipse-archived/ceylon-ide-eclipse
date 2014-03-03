@@ -1,8 +1,11 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
+
+import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -16,6 +19,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.keys.IBindingService;
 
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
@@ -117,6 +121,17 @@ public final class ExtractParameterLinkedMode extends
     }
 
     @Override
+    protected void addAdditionalLinkedPositionGroups(IDocument document) {
+        ProducedType type = refactoring.getType();
+        if (!isTypeUnknown(type)) {
+            List<ProducedType> supertypes = type.getSupertypes();
+            int offset = refactoring.typeRegion.getOffset();
+            int length = refactoring.typeRegion.getLength();
+            addTypeProposals(document, supertypes, offset, length);
+        }
+    }
+    
+    @Override
     protected String getName() {
         return refactoring.getNewName();
     }
@@ -153,7 +168,7 @@ public final class ExtractParameterLinkedMode extends
     }
     
     protected Action createOpenDialogAction() {
-        return new Action("Open Dialog" + '\t' + 
+        return new Action("Open Dialog..." + '\t' + 
                 openDialogKeyBinding) {
             @Override
             public void run() {
@@ -177,7 +192,7 @@ public final class ExtractParameterLinkedMode extends
     }
     
     protected Action createPreviewAction() {
-        return new Action("Preview") {
+        return new Action("Preview...") {
             @Override
             public void run() {
                 enterDialogMode();
