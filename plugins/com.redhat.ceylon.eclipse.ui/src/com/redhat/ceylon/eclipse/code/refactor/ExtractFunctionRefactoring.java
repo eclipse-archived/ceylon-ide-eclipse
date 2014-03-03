@@ -260,6 +260,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         else {
             newName = guessName(node);
+            if ("it".equals(newName)) {
+                newName = "do";
+            }
         }
     }
 
