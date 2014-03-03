@@ -159,7 +159,7 @@ public final class ExtractParameterLinkedMode extends
     }
 
     void openDialog() {
-        new ExtractValueRefactoringAction(editor) {
+        new ExtractParameterRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
                 return ExtractParameterLinkedMode.this.refactoring;
