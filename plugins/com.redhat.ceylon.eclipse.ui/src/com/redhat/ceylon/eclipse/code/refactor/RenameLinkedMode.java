@@ -24,8 +24,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-public final class RenameLinkedMode extends
-            AbstractRenameLinkedMode {
+public final class RenameLinkedMode
+        extends AbstractRenameLinkedMode {
         
     private final RenameRefactoring refactoring;
     
@@ -173,7 +173,8 @@ public final class RenameLinkedMode extends
         IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench()
                 .getAdapter(IBindingService.class);
         if (bindingService == null) return "";
-        String binding= bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + ".action.rename");
+        String binding = bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + 
+                ".action.rename");
         return binding == null ? "" : binding;
     }
     

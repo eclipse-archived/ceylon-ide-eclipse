@@ -93,7 +93,7 @@ public final class ExtractValueLinkedMode
     
     @Override
     public String getHintTemplate() {
-        return "Enter name for new value declaration {0}";
+        return "Enter name and type for new value declaration {0}";
     }
 
     @Override
@@ -199,6 +199,20 @@ public final class ExtractValueLinkedMode
                 openPreview();
             }
         };
+    }
+    
+    @Override
+    void updatePopupLocation() {
+        LinkedPosition currentLinkedPosition = getCurrentLinkedPosition();
+        if (currentLinkedPosition==null) {
+            getInfoPopup().setHintTemplate(getHintTemplate());
+        }
+        else if (currentLinkedPosition.getSequenceNumber()==2) {
+            getInfoPopup().setHintTemplate("Enter type for new value declaration {0}");
+        }
+        else {
+            getInfoPopup().setHintTemplate("Enter name for new value declaration {0}");
+        }
     }
     
 //  private Image image= null;

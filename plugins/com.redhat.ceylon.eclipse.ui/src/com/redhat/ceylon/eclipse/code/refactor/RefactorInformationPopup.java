@@ -83,7 +83,7 @@ import org.eclipse.ui.progress.UIJob;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage;
 
-public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
+public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
 
     private class PopupVisibilityManager implements 
             IPartListener2, ControlListener, MouseListener, 
@@ -264,7 +264,7 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
 
     private boolean fDelayJobFinished= false;
 
-    public RenameInformationPopup(CeylonEditor editor, 
+    public RefactorInformationPopup(CeylonEditor editor, 
             AbstractRenameLinkedMode renameLinkedMode) {
         fEditor= editor;
         fRenameLinkedMode= renameLinkedMode;
@@ -277,7 +277,7 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
             fSnapPosition= settings.getInt(SNAP_POSITION_KEY);
         } catch (NumberFormatException e) {
             // default:
-            fSnapPosition= SNAP_POSITION_UNDER_LEFT_FIELD;
+            fSnapPosition= SNAP_POSITION_OVER_LEFT_FIELD;
         }
         fSnapPositionChanged= true;
     }
@@ -369,8 +369,9 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
     public Shell getShell() {
         return fPopup;
     }
-
+    
     private void updatePopupLocation(boolean force) {
+        fRenameLinkedMode.updatePopupLocation();
         if (! force && fSnapPosition == SNAP_POSITION_LOWER_RIGHT)
             return;
 
@@ -669,18 +670,17 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
         return poly;
     }
 
+    private StyledText hint;
+    
     private void createContent(Composite parent) {
         Display display= parent.getDisplay();
         Color foreground= display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
         Color background= display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
         addMoveSupport(fPopup, parent);
 
-        StyledText hint= new StyledText(fPopup, SWT.READ_ONLY | SWT.SINGLE);
-        String enterKeyName= getEnterBinding();
-        String hintTemplate= fRenameLinkedMode.getHintTemplate();
-        hint.setText(hintTemplate.replace("{0}", enterKeyName));
+        hint= new StyledText(fPopup, SWT.READ_ONLY | SWT.SINGLE);
         hint.setForeground(foreground);
-        hint.setStyleRange(new StyleRange(hintTemplate.indexOf("{0}"), enterKeyName.length(), null, null, SWT.BOLD)); //$NON-NLS-1$
+        setHintTemplate(fRenameLinkedMode.getHintTemplate());
         hint.setEnabled(false); // text must not be selectable
         addMoveSupport(fPopup, hint);
 
@@ -688,6 +688,13 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
 
         recursiveSetBackgroundColor(parent, background);
 
+    }
+
+    void setHintTemplate(String hintTemplate) {
+        String enterKeyName= getEnterBinding();
+        hint.setText(hintTemplate.replace("{0}", enterKeyName));
+        hint.setStyleRange(new StyleRange(hintTemplate.indexOf("{0}"), 
+                enterKeyName.length(), null, null, SWT.BOLD)); //$NON-NLS-1$
     }
 
     private ToolBar addViewMenu(final Composite parent) {
@@ -761,9 +768,13 @@ public class RenameInformationPopup implements IWidgetTokenKeeper, IWidgetTokenK
                     @Override
                     public void run() {
                         fRenameLinkedMode.cancel();
-                        String linkedModePrefPageID= "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
+                        String linkedModePrefPageID= 
+                                "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
                         String refactoringPrefPageID= CeylonEditorPreferencesPage.ID;
-                        PreferencesUtil.createPreferenceDialogOn(fEditor.getSite().getShell(), refactoringPrefPageID, new String[] { linkedModePrefPageID, refactoringPrefPageID }, null).open();
+                        PreferencesUtil.createPreferenceDialogOn(fEditor.getSite().getShell(), 
+                                refactoringPrefPageID, 
+                                new String[] { linkedModePrefPageID, refactoringPrefPageID }, 
+                                null).open();
                     }
                 };
                 manager.add(prefsAction);
