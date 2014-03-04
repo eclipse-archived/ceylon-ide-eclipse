@@ -70,7 +70,7 @@ class EnterAliasLinkedMode extends RefactorLinkedMode {
                     that.getDeclaration());
         }
         
-        protected void addLinkedPosition(final IDocument document,
+        private void addLinkedPosition(final IDocument document,
                 Identifier id, Declaration d) {
             if (id!=null && d!=null && dec.equals(getAbstraction(d))) {
                 try {
@@ -145,6 +145,11 @@ class EnterAliasLinkedMode extends RefactorLinkedMode {
     public void addLinkedPositions(final IDocument document, Tree.CompilationUnit rootNode, 
             final int adjust, final LinkedPositionGroup linkedPositionGroup) {
         rootNode.visit(new LinkedPositionsVisitor(adjust, document, linkedPositionGroup));
+    }
+    
+    @Override
+    protected String getActionName() {
+        return null;
     }
     
 }

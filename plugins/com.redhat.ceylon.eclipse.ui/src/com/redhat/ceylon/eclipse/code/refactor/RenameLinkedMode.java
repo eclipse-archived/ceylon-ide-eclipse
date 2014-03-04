@@ -16,9 +16,7 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.keys.IBindingService;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -46,7 +44,8 @@ public final class RenameLinkedMode
         saveEditorState();
         super.start();
     }
-
+    
+    @Override
     public void done() {
         if (isEnabled()) {
             try {
@@ -122,6 +121,11 @@ public final class RenameLinkedMode
         return refactoring.getDeclaration().getName();
     }
     
+    @Override
+    protected String getActionName() {
+        return PLUGIN_ID + ".action.rename";
+    }
+    
     void enterDialogMode() {
         refactoring.setNewName(getNewName());
         revertChanges();
@@ -163,21 +167,8 @@ public final class RenameLinkedMode
             }
         };
     }
-
-    /**
-     * WARNING: only works in workbench window context!
-     * @return the keybinding for Refactor &gt; Rename
-     */
-    @Override
-    String getOpenDialogBinding() {
-        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench()
-                .getAdapter(IBindingService.class);
-        if (bindingService == null) return "";
-        String binding = bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + 
-                ".action.rename");
-        return binding == null ? "" : binding;
-    }
     
+    @Override
     protected Action createPreviewAction() {
         return new Action("Preview...") {
             @Override
