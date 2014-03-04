@@ -3,8 +3,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
-import java.util.List;
-
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -63,10 +61,9 @@ public final class ExtractFunctionLinkedMode
         
         ProducedType type = refactoring.getType();
         if (!isTypeUnknown(type)) {
-            List<ProducedType> supertypes = type.getSupertypes();
-            int offset = refactoring.typeRegion.getOffset();
-            int length = refactoring.typeRegion.getLength();
-            addTypePosition(document, supertypes, offset, length);
+            addTypePosition(document, type.getSupertypes(), 
+                    refactoring.typeRegion.getOffset(), 
+                    refactoring.typeRegion.getLength());
         }
     }
     
