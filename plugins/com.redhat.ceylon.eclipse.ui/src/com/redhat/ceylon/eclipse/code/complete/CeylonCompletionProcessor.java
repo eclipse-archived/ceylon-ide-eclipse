@@ -665,10 +665,16 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 t = ((Tree.Type) node).getTypeModel();
             }
             else if (node instanceof Tree.BaseTypeExpression) {
-                t = ((Tree.BaseTypeExpression) node).getTarget().getType();
+                ProducedReference target = ((Tree.BaseTypeExpression) node).getTarget();
+                if (target!=null) {
+                    t = target.getType();
+                }
             }
             else if (node instanceof Tree.QualifiedTypeExpression) {
-                t = ((Tree.BaseTypeExpression) node).getTarget().getType();
+                ProducedReference target = ((Tree.BaseTypeExpression) node).getTarget();
+                if (target!=null) {
+                    t = target.getType();
+                }
             }
             if (t!=null) {
                 addRefinementProposals(offset, set, cpc, scope, node, doc,
