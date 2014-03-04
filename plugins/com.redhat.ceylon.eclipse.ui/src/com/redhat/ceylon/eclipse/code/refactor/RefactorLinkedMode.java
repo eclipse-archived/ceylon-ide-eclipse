@@ -49,10 +49,10 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
             editor.doSave(new NullProgressMonitor());
             saveEditorState();
             ISourceViewer viewer = editor.getCeylonSourceViewer();
-            final IDocument document = viewer.getDocument();
+            IDocument document = viewer.getDocument();
             int offset = originalSelection.x;
             initialName = getName();
-            final int adjust = performInitialChange(document);        
+            int adjust = performInitialChange(document);        
             try {
                 setupLinkedPositions(document, adjust);
                 enterLinkedMode(document, NO_STOP, 

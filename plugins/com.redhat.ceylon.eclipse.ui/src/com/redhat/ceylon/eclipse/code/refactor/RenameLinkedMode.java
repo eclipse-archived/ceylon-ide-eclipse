@@ -148,7 +148,7 @@ public final class RenameLinkedMode
             }
             @Override
             public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
-                return new RenameWizard((AbstractRefactoring) refactoring) {
+                return new RenameWizard((EnterAliasRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };

@@ -592,6 +592,11 @@
             description="Rename selected declaration"
             name="Rename"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.enterAlias"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Enter alias for imported declaration"
+            name="Enter Alias"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.delete"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Safely delete the selected declaration"
@@ -771,6 +776,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.RenameHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.rename"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.EnterAliasHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.enterAlias"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.DeleteHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.delete"/>

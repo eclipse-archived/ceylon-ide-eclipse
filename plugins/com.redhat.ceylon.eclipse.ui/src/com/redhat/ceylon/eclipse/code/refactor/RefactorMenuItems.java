@@ -39,10 +39,12 @@ public class RefactorMenuItems extends CompoundContributionItem {
 
     private IContributionItem[] getItems(IEditorPart editor) {
         return new IContributionItem[] {
-                //new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.rename", "Re&name...",
                         editor!=null && new RenameRefactoringAction(editor).isEnabled(), 
                         AbstractRefactoring.RENAME),
+                new DynamicMenuItem(PLUGIN_ID + ".action.enterAlias", "Enter Import &Alias...",
+                        editor!=null && new EnterAliasRefactoringAction(editor).isEnabled(), 
+                        AbstractRefactoring.IMPORT),
                 new DynamicMenuItem(PLUGIN_ID + ".action.changeParameters", "Change &Parameters...",
                         editor!=null && new ChangeParametersRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.REORDER),

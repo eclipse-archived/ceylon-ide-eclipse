@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.styleProposal;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.RENAME;
+import static com.redhat.ceylon.eclipse.code.refactor.RenameLinkedMode.useLinkedMode;
 
 import java.util.Collection;
 
@@ -15,6 +17,8 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.refactor.EnterAliasLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.EnterAliasRefactoringAction;
 
 class RenameAliasProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
@@ -32,7 +36,12 @@ class RenameAliasProposal implements ICompletionProposal,
     
     @Override
     public void apply(IDocument document) {
-        new EnterAliasLinkedMode(node, dec, editor).start();
+        if (useLinkedMode()) {
+            new EnterAliasLinkedMode(editor).start();
+        }
+        else {
+            new EnterAliasRefactoringAction(editor).run();
+        }
     }
     
     static void addRenameAliasProposal(Tree.ImportMemberOrType node,  
@@ -43,7 +52,7 @@ class RenameAliasProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString());
+        return styleProposal(getDisplayString());
     }
 
     @Override
@@ -58,7 +67,8 @@ class RenameAliasProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return "Rename alias '" + node.getAlias().getIdentifier().getText() + 
+        return "Rename alias '" + 
+                node.getAlias().getIdentifier().getText() + 
                 "' of '" + dec.getName() + "'";
     }
 
