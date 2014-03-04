@@ -11,6 +11,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
 
@@ -21,6 +22,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
+import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
@@ -149,8 +151,12 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         else {
             offset = element.getIdentifier().getStartIndex();
         }
-        namePosition = new LinkedPosition(document, offset, 
-                getOriginalName().length(), 0);
+        String originalName = getOriginalName();
+        namePosition = new ProposalPosition(document, offset, 
+                originalName.length(), 0,
+                getNameProposals(offset, 0, 
+                        element.getDeclarationModel().getName(),
+                        originalName));
         
         linkedPositionGroup.addPosition(namePosition);
         editor.getParseController().getRootNode()

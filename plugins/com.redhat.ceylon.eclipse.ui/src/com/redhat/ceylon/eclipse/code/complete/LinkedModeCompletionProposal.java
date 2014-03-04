@@ -4,6 +4,7 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -90,11 +91,21 @@ public class LinkedModeCompletionProposal
     
     private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
     private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
-    
+
     public static ICompletionProposal[] getNameProposals(int offset, 
             int seq, String name) {
+        return getNameProposals(offset, seq, name, null);
+    }
+    
+    public static ICompletionProposal[] getNameProposals(int offset, 
+            int seq, String name, String defaultName) {
         List<ICompletionProposal> nameProposals = 
                 new ArrayList<ICompletionProposal>();
+        if (defaultName!=null) {
+            LinkedModeCompletionProposal nameProposal = 
+                    new LinkedModeCompletionProposal(offset, defaultName, seq);
+            nameProposals.add(nameProposal);
+        }
         Matcher matcher = IDPATTERN.matcher(name);
         while (matcher.find()) {
             int loc = matcher.start(2);
@@ -103,30 +114,34 @@ public class LinkedModeCompletionProposal
                 initial = initial.toLowerCase();
             }
             String subname = initial + name.substring(loc);
-            LinkedModeCompletionProposal nameProposal = 
-                    new LinkedModeCompletionProposal(offset, subname, seq);
-            nameProposals.add(nameProposal);
+            if (defaultName==null || !defaultName.equals(subname)) {
+                LinkedModeCompletionProposal nameProposal = 
+                        new LinkedModeCompletionProposal(offset, subname, seq);
+                nameProposals.add(nameProposal);
+            }
         }
         return nameProposals.toArray(NO_COMPLETIONS);
     }
 
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
-            Unit unit, ProducedType type) {
-        ICompletionProposal[] typeProposals;
-        if (!isTypeUnknown(type)) {
-            List<ProducedType> supertypes = type.getSupertypes();
-            typeProposals = new ICompletionProposal[supertypes.size()];
-            for (int i=0; i<supertypes.size(); i++) {
-                ProducedType supertype = supertypes.get(i);
-                String typeName = supertype.getProducedTypeName(unit);
-                typeProposals[i] = 
-                        new LinkedModeCompletionProposal(offset, typeName, 0, 
-                                getImageForDeclaration(supertype.getDeclaration()));
-            }
-            return typeProposals;
+            Unit unit, ProducedType type, boolean includeValue) {
+        List<ProducedType> supertypes = isTypeUnknown(type) ?
+                Collections.<ProducedType>emptyList() :
+                    type.getSupertypes();
+        ICompletionProposal[] typeProposals = 
+                new ICompletionProposal[supertypes.size() + (includeValue?1:0)];
+        int i=0;
+        if (includeValue) {
+            typeProposals[i++] =
+                    new LinkedModeCompletionProposal(offset, "value", 0, null);
         }
-        else {
-            return NO_COMPLETIONS;
+        for (int j=0; j<supertypes.size(); j++) {
+            ProducedType supertype = supertypes.get(j);
+            String typeName = supertype.getProducedTypeName(unit);
+            typeProposals[i++] = 
+                    new LinkedModeCompletionProposal(offset, typeName, 0, 
+                            getImageForDeclaration(supertype.getDeclaration()));
         }
+        return typeProposals;
     }
 }
