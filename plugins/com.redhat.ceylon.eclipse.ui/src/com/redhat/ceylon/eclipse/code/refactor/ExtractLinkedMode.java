@@ -1,14 +1,12 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
+import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getSupertypeProposals;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-
-import java.util.List;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
@@ -17,7 +15,6 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
@@ -58,14 +55,17 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
                 !CeylonTokenColorer.keywords.contains(newName);
     }
     
-    protected abstract int getIdentifyingOffset();
+    protected abstract int getNameOffset();
+    protected abstract int getTypeOffset();
     
     protected void addNamePosition(IDocument document, 
             int offset2, int length) {
         linkedPositionGroup = new LinkedPositionGroup();
-        int offset1 = getIdentifyingOffset();
-        namePosition = new LinkedPosition(document, offset1, 
-                getOriginalName().length(), 0);
+        namePosition =
+                new ProposalPosition(document, getNameOffset(), 
+                        getOriginalName().length(), 0,
+                        getNameProposals(getTypeOffset(), 1, 
+                                getOriginalName()));
         try {
             linkedPositionGroup.addPosition(namePosition);
             linkedPositionGroup.addPosition(new LinkedPosition(document, 
@@ -78,19 +78,11 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     }
     
     protected void addTypePosition(IDocument document,
-            List<ProducedType> supertypes, 
-            int offset, int length) {
+            ProducedType type, int offset, int length) {
         Unit unit = editor.getParseController().getRootNode().getUnit();
-        ICompletionProposal[] proposals = 
-                new ICompletionProposal[supertypes.size()];
-        for (int i=0; i<supertypes.size(); i++) {
-            ProducedType type = supertypes.get(i);
-            String typeName = type.getProducedTypeName(unit);
-            proposals[i] = new LinkedModeCompletionProposal(offset, typeName, 0,
-                    getImageForDeclaration(type.getDeclaration()));
-        }
         ProposalPosition linkedPosition = 
-                new ProposalPosition(document, offset, length, 1, proposals);
+                new ProposalPosition(document, offset, length, 1, 
+                        getSupertypeProposals(offset, unit, type));
         try {
             addLinkedPosition(linkedModeModel, linkedPosition);
         } 

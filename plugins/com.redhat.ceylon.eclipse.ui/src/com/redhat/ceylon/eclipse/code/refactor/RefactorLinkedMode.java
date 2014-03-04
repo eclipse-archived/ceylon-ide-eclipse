@@ -14,9 +14,6 @@ import org.eclipse.ui.keys.IBindingService;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public abstract class RefactorLinkedMode extends AbstractLinkedMode {
-
-//    private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
-//    private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
     
     private String initialName;
 
@@ -101,21 +98,6 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
         linkedModeModel.exit(NONE);
     }
     
-//    private ICompletionProposal[] getNameProposals(int offset) {
-//        List<ICompletionProposal> nameProposals = 
-//                new ArrayList<ICompletionProposal>();
-//        Matcher matcher = IDPATTERN.matcher(originalName);
-//        while (matcher.find()) {
-//            int loc = matcher.start(2);
-//            String initial = originalName.substring(matcher.start(1), loc);
-//            if (Character.isLowerCase(originalName.charAt(0))) {
-//                initial = initial.toLowerCase();
-//            }
-//            String nameProposal = initial + originalName.substring(loc);
-//            nameProposals.add(new LinkedModeCompletionProposal(offset, nameProposal, 1));
-//        }
-//        return nameProposals.toArray(NO_COMPLETIONS);
-//    }
 
     /**
      * WARNING: only works in workbench window context!

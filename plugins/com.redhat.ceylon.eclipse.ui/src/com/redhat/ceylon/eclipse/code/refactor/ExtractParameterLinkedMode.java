@@ -42,8 +42,13 @@ public final class ExtractParameterLinkedMode
     }
     
     @Override
-    protected int getIdentifyingOffset() {
+    protected int getNameOffset() {
         return refactoring.decRegion.getOffset();
+    }
+    
+    @Override
+    protected int getTypeOffset() {
+        return refactoring.typeRegion.getOffset();
     }
     
     @Override
@@ -61,7 +66,7 @@ public final class ExtractParameterLinkedMode
         
         ProducedType type = refactoring.getType();
         if (!isTypeUnknown(type)) {
-            addTypePosition(document, type.getSupertypes(), 
+            addTypePosition(document, type, 
                     refactoring.typeRegion.getOffset(), 
                     refactoring.typeRegion.getLength());
         }
