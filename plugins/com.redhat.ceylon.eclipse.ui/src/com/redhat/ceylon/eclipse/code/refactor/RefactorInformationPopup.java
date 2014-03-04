@@ -35,7 +35,6 @@ import org.eclipse.jface.text.IViewportListener;
 import org.eclipse.jface.text.IWidgetTokenKeeper;
 import org.eclipse.jface.text.IWidgetTokenKeeperExtension;
 import org.eclipse.jface.text.IWidgetTokenOwner;
-import org.eclipse.jface.text.IWidgetTokenOwnerExtension;
 import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -402,11 +401,12 @@ public class RefactorInformationPopup
                 }
             }
             if (visible && ! fPopup.isVisible()) {
-                ISourceViewer viewer= fEditor.getCeylonSourceViewer();
+                /*ISourceViewer viewer= fEditor.getCeylonSourceViewer();
                 if (viewer instanceof IWidgetTokenOwnerExtension) {
                     IWidgetTokenOwnerExtension widgetTokenOwnerExtension= (IWidgetTokenOwnerExtension) viewer;
                     visible= widgetTokenOwnerExtension.requestWidgetToken(this, WIDGET_PRIORITY);
-                }
+                }*/
+                visible = true;
             } else if (! visible && fPopup.isVisible()) {
                 releaseWidgetToken();
             }
