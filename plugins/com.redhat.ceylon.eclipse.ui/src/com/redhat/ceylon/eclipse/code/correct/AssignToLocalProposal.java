@@ -2,8 +2,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.gotoLocation;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessName;
 
@@ -17,7 +15,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -35,14 +32,78 @@ import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 
+//TODO: refactor this to directly extend ICompletionProposal, ICompletionProposalExtension6
 class AssignToLocalProposal extends CorrectionProposal {
     
     private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
     private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z]+)([_a-z]+)");
     
-    private final IFile file;
+    class AssignToLocalLinkedMode extends AbstractLinkedMode {
+        final IDocument document;
+        
+        private AssignToLocalLinkedMode(IDocument document) {
+            super((CeylonEditor) EditorUtil.getCurrentEditor());
+            this.document = document;
+        }
+
+        @Override
+        protected String getHintTemplate() {
+            return "Enter type and name for new local {0}";
+        }
+        
+        void start() {
+            try {
+                AssignToLocalProposal.super.apply(document);
+                CeylonParseController cpc = editor.getParseController();
+                Unit unit = cpc.getRootNode().getUnit();
+                
+                ICompletionProposal[] typeProposals;
+                if (!isTypeUnknown(resultType)) {
+                    List<ProducedType> supertypes = resultType.getSupertypes();
+                    typeProposals = new ICompletionProposal[supertypes.size()];
+                    for (int i=0; i<supertypes.size(); i++) {
+                        ProducedType type = supertypes.get(i);
+                        String typeName = type.getProducedTypeName(unit);
+                        typeProposals[i] = new LinkedModeCompletionProposal(offset-6, 
+                                typeName, 0, getImageForDeclaration(type.getDeclaration()));
+                    }
+                }
+                else {
+                    typeProposals = NO_COMPLETIONS;
+                }
+                ProposalPosition typePosition = 
+                        new ProposalPosition(document, offset-6, 5, 1, typeProposals);
+                
+                List<ICompletionProposal> nameProposals = 
+                        new ArrayList<ICompletionProposal>();
+                Matcher matcher = IDPATTERN.matcher(name);
+                while (matcher.find()) {
+                    int loc = matcher.start(2);
+                    String nameProposal = 
+                            name.substring(matcher.start(1), loc).toLowerCase() + 
+                            name.substring(loc);
+                    nameProposals.add(new LinkedModeCompletionProposal(offset-6, nameProposal, 1));
+                }
+                ProposalPosition namePosition = 
+                        new ProposalPosition(document, offset, name.length(), 0, 
+                                nameProposals.toArray(NO_COMPLETIONS));
+                
+                addLinkedPosition(linkedModeModel, typePosition);
+                addLinkedPosition(linkedModeModel, namePosition);
+                
+                enterLinkedMode(document, 2, exitPos + length + 9);
+                openPopup();
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+//    private final IFile file;
     private final int offset;
     private final int length;
     private final int exitPos;
@@ -50,12 +111,12 @@ class AssignToLocalProposal extends CorrectionProposal {
     private final String name;
     
     AssignToLocalProposal(int offset, int length, int exitPos, 
-            ProducedType resultType, String name, IFile file, 
+            ProducedType resultType, String name, //IFile file, 
             TextChange change) {
         super("Assign expression to new local", change);
         this.exitPos = exitPos;
         this.resultType = resultType;
-        this.file=file;
+//        this.file=file;
         this.offset=offset;
         this.length=length;
         this.name = name;
@@ -63,48 +124,8 @@ class AssignToLocalProposal extends CorrectionProposal {
     
     @Override
     public void apply(IDocument document) {
-        super.apply(document);
-        gotoLocation(file, offset, length);
-        if (!isTypeUnknown(resultType)) {
-            final LinkedModeModel linkedModeModel = new LinkedModeModel();
-            CeylonEditor editor = (CeylonEditor) EditorUtil.getCurrentEditor();
-            CeylonParseController cpc = editor.getParseController();
-            Unit unit = cpc.getRootNode().getUnit();
-            
-            List<ProducedType> supertypes = resultType.getSupertypes();
-            ICompletionProposal[] typeProposals = 
-                    new ICompletionProposal[supertypes.size()];
-            for (int i=0; i<supertypes.size(); i++) {
-                ProducedType type = supertypes.get(i);
-                String typeName = type.getProducedTypeName(unit);
-                typeProposals[i] = new LinkedModeCompletionProposal(offset-6, typeName, 0,
-                        getImageForDeclaration(type.getDeclaration()));
-            }
-            ProposalPosition typePosition = 
-                    new ProposalPosition(document, offset-6, 5, 0, typeProposals);
-            
-            List<ICompletionProposal> nameProposals = new ArrayList<ICompletionProposal>();
-            Matcher matcher = IDPATTERN.matcher(name);
-            while (matcher.find()) {
-                int loc = matcher.start(2);
-                String nameProposal = 
-                        name.substring(matcher.start(1), loc).toLowerCase() + name.substring(loc);
-                nameProposals.add(new LinkedModeCompletionProposal(offset-6, nameProposal, 1));
-            }
-            ProposalPosition namePosition = 
-                    new ProposalPosition(document, offset, name.length(), 2, 
-                            nameProposals.toArray(NO_COMPLETIONS));
-            
-            try {
-                addLinkedPosition(linkedModeModel, typePosition);
-                addLinkedPosition(linkedModeModel, namePosition);
-                installLinkedMode(editor, document, linkedModeModel, 
-                        this, 2, exitPos + length + 9);
-            } 
-            catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-        }
+        new AssignToLocalLinkedMode(document).start();
+//        gotoLocation(file, offset, length);
     }
     
     static void addAssignToLocalProposal(IFile file, Tree.CompilationUnit cu, 
@@ -192,7 +213,7 @@ class AssignToLocalProposal extends CorrectionProposal {
             ProducedType type = resultType==null ? 
                     null : node.getUnit().denotableType(resultType);
             proposals.add(new AssignToLocalProposal(offset+6, name.length(), 
-                    exitPos, type, name, file, change));
+                    exitPos, type, name, /*file,*/ change));
         //}
     }
 }

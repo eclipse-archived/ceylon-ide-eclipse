@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -43,7 +44,8 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
         final int adjust = performInitialChange(document);        
         try {
             setupLinkedPositions(document, adjust);
-            enterLinkedMode(document, offset, adjust);
+            enterLinkedMode(document, NO_STOP, 
+                    getExitPosition(offset, adjust));
         }
         catch (BadLocationException e) {
             e.printStackTrace();
