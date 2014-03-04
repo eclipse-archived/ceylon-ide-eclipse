@@ -83,7 +83,8 @@ import org.eclipse.ui.progress.UIJob;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage;
 
-public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
+public class RefactorInformationPopup 
+        implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
 
     private class PopupVisibilityManager implements 
             IPartListener2, ControlListener, MouseListener, 
@@ -217,8 +218,8 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
 
     private static final int WIDGET_PRIORITY= 15;
 
-    private static final String DIALOG_SETTINGS_SECTION= "EnterAliasInformationPopup"; //$NON-NLS-1$
-    private static final String SNAP_POSITION_KEY= "snap_position"; //$NON-NLS-1$
+    private static final String DIALOG_SETTINGS_SECTION= "RefactorInformationPopup";
+    private static final String SNAP_POSITION_KEY= "snap_position";
 
     private static final int SNAP_POSITION_UNDER_RIGHT_FIELD= 0;
     private static final int SNAP_POSITION_OVER_RIGHT_FIELD= 1;
@@ -249,7 +250,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
     private static final int GAP= 2;
 
     private final CeylonEditor fEditor;
-    private final RefactorLinkedMode fLinkedMode;
+    private final AbstractLinkedMode fLinkedMode;
 
     private int fSnapPosition;
     private boolean fSnapPositionChanged;
@@ -265,7 +266,7 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
     private boolean fDelayJobFinished= false;
 
     public RefactorInformationPopup(CeylonEditor editor, 
-            RefactorLinkedMode renameLinkedMode) {
+            AbstractLinkedMode renameLinkedMode) {
         fEditor= editor;
         fLinkedMode= renameLinkedMode;
         restoreSnapPosition();
@@ -736,53 +737,60 @@ public class RefactorInformationPopup implements IWidgetTokenKeeper, IWidgetToke
 
         fMenuManager.addMenuListener(new IMenuListener2() {
             public void menuAboutToHide(IMenuManager manager) {
-                fIsMenuUp= false;
+                fIsMenuUp = false;
             }
-            public void menuAboutToShow(IMenuManager manager) {
-//                boolean canRefactor= ! fRenameLinkedMode.isOriginalName();
-                
-                IAction refactorAction= new Action("Apply") {
-                    @Override
-                    public void run() {
-                        fLinkedMode.linkedModeModel.exit(UPDATE_CARET);
-//                        fRenameLinkedMode.done();
-                    }
-                };
-                refactorAction.setAccelerator(SWT.CR);
-                refactorAction.setEnabled(true);
-                manager.add(refactorAction);
-
-                fLinkedMode.addMenuItems(manager);
-
+            public void menuAboutToShow(IMenuManager manager) {                
+                addApplyMenuItem(manager);
+                fLinkedMode.addAdditionalMenuItems(manager);
                 manager.add(new Separator());
-                
-                MenuManager subMenuManager= new MenuManager("Snap To");
-                addMoveMenuItem(subMenuManager, SNAP_POSITION_UNDER_LEFT_FIELD, "Snap Under Left");
-                addMoveMenuItem(subMenuManager, SNAP_POSITION_UNDER_RIGHT_FIELD, "Snap Under Right");
-                addMoveMenuItem(subMenuManager, SNAP_POSITION_OVER_LEFT_FIELD, "Snap Over Left");
-                addMoveMenuItem(subMenuManager, SNAP_POSITION_OVER_RIGHT_FIELD, "Snap Over Right");
-                addMoveMenuItem(subMenuManager, SNAP_POSITION_LOWER_RIGHT, "Snap Bottom Right");
-                manager.add(subMenuManager);
-
-                IAction prefsAction= new Action("Preferences...") {
-                    @Override
-                    public void run() {
-                        fLinkedMode.cancel();
-                        String linkedModePrefPageID= 
-                                "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
-                        String refactoringPrefPageID= CeylonEditorPreferencesPage.ID;
-                        PreferencesUtil.createPreferenceDialogOn(fEditor.getSite().getShell(), 
-                                refactoringPrefPageID, 
-                                new String[] { linkedModePrefPageID, refactoringPrefPageID }, 
-                                null).open();
-                    }
-                };
-                manager.add(prefsAction);
+                addSnapToMenuItem(manager);
+                addPreferencesMenuItem(manager);
             }
         });
+        
         return fMenuManager;
     }
 
+    private void addPreferencesMenuItem(IMenuManager manager) {
+        IAction prefsAction= new Action("Preferences...") {
+            @Override
+            public void run() {
+                fLinkedMode.cancel();
+                String linkedModePrefPageID= 
+                        "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
+                String refactoringPrefPageID= CeylonEditorPreferencesPage.ID;
+                PreferencesUtil.createPreferenceDialogOn(fEditor.getSite().getShell(), 
+                        refactoringPrefPageID, 
+                        new String[] { linkedModePrefPageID, refactoringPrefPageID }, 
+                        null).open();
+            }
+        };
+        manager.add(prefsAction);
+    }
+    
+    private void addApplyMenuItem(IMenuManager manager) {
+        IAction refactorAction= new Action("Apply") {
+            @Override
+            public void run() {
+                fLinkedMode.linkedModeModel.exit(UPDATE_CARET);
+//                fRenameLinkedMode.done();
+            }
+        };
+        refactorAction.setAccelerator(SWT.CR);
+        refactorAction.setEnabled(true);
+        manager.add(refactorAction);
+    }
+    
+    private void addSnapToMenuItem(IMenuManager manager) {
+        MenuManager subMenuManager= new MenuManager("Snap To");
+        addMoveMenuItem(subMenuManager, SNAP_POSITION_UNDER_LEFT_FIELD, "Snap Under Left");
+        addMoveMenuItem(subMenuManager, SNAP_POSITION_UNDER_RIGHT_FIELD, "Snap Under Right");
+        addMoveMenuItem(subMenuManager, SNAP_POSITION_OVER_LEFT_FIELD, "Snap Over Left");
+        addMoveMenuItem(subMenuManager, SNAP_POSITION_OVER_RIGHT_FIELD, "Snap Over Right");
+        addMoveMenuItem(subMenuManager, SNAP_POSITION_LOWER_RIGHT, "Snap Bottom Right");
+        manager.add(subMenuManager);
+    }
+    
     private void addMoveMenuItem(IMenuManager manager, final int snapPosition, String text) {
         IAction action= new Action(text, IAction.AS_RADIO_BUTTON) {
             @Override

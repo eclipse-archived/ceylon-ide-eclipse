@@ -33,10 +33,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
-import com.redhat.ceylon.eclipse.code.refactor.RefactorLinkedMode;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionRefactoringAction;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionWizard;
+import com.redhat.ceylon.eclipse.code.refactor.RefactorLinkedMode;
 
 
 class EnterVersionLinkedMode extends RefactorLinkedMode {
@@ -109,6 +109,11 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
     protected String getName() {
         String quoted = version.getText();
         return quoted.substring(1, quoted.length()-1);
+    }
+    
+    @Override
+    protected String getActionName() {
+        return null;
     }
 
     @Override

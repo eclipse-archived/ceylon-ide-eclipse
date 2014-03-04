@@ -15,9 +15,7 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.keys.IBindingService;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -142,6 +140,11 @@ public final class ExtractFunctionLinkedMode
         return refactoring.getNewName();
     }
     
+    @Override
+    protected String getActionName() {
+        return PLUGIN_ID + ".action.extractFunction";
+    }
+    
     void enterDialogMode() {
         refactoring.setNewName(getNewName());
         revertChanges();
@@ -184,19 +187,6 @@ public final class ExtractFunctionLinkedMode
         };
     }
 
-    /**
-     * WARNING: only works in workbench window context!
-     */
-    @Override
-    String getOpenDialogBinding() {
-        IBindingService bindingService= (IBindingService)PlatformUI.getWorkbench()
-                .getAdapter(IBindingService.class);
-        if (bindingService == null) return "";
-        String binding= bindingService.getBestActiveBindingFormattedFor(PLUGIN_ID + 
-                ".action.extractFunction");
-        return binding == null ? "" : binding;
-    }
-    
     protected Action createPreviewAction() {
         return new Action("Preview...") {
             @Override
@@ -208,7 +198,7 @@ public final class ExtractFunctionLinkedMode
     }
     
     @Override
-    void updatePopupLocation() {
+    protected void updatePopupLocation() {
         LinkedPosition currentLinkedPosition = getCurrentLinkedPosition();
         if (currentLinkedPosition==null) {
             getInfoPopup().setHintTemplate(getHintTemplate());
