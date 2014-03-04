@@ -1,8 +1,11 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -15,10 +18,10 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
 //    private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
 //    private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
     
-    private String originalName;
+    private String initialName;
 
     protected String getOriginalName() {
-        return originalName;
+        return initialName;
     }
     
     protected final String openDialogKeyBinding;
@@ -30,33 +33,74 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
     
     protected abstract String getActionName();
     
+    protected abstract String getNewNameFromNamePosition();
+    
     protected abstract String getName();
+    protected abstract void setName(String name);
+    
+    protected abstract boolean canStart();
     
     protected int performInitialChange(IDocument document) {
         return 0;
     }
     
-    public void start() {
-        ISourceViewer viewer = editor.getCeylonSourceViewer();
-        final IDocument document = viewer.getDocument();
-        int offset = originalSelection.x;
-        originalName = getName();
-        final int adjust = performInitialChange(document);        
-        try {
-            setupLinkedPositions(document, adjust);
-            enterLinkedMode(document, NO_STOP, 
-                    getExitPosition(offset, adjust));
-        }
-        catch (BadLocationException e) {
-            e.printStackTrace();
-            return;
-        }
-        openPopup();
-    }
-
     protected abstract void setupLinkedPositions(final IDocument document, final int adjust) 
             throws BadLocationException;
 
+    public final void start() {
+        if (canStart()) {
+            editor.doSave(new NullProgressMonitor());
+            saveEditorState();
+            ISourceViewer viewer = editor.getCeylonSourceViewer();
+            final IDocument document = viewer.getDocument();
+            int offset = originalSelection.x;
+            initialName = getName();
+            final int adjust = performInitialChange(document);        
+            try {
+                setupLinkedPositions(document, adjust);
+                enterLinkedMode(document, NO_STOP, 
+                        getExitPosition(offset, adjust));
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+                return;
+            }
+            openPopup();
+        }
+    }
+
+    @Override
+    protected final Action createOpenDialogAction() {
+        return new Action("Open Dialog..." + '\t' + 
+                openDialogKeyBinding) {
+            @Override
+            public void run() {
+                enterDialogMode();
+                openDialog();
+            }
+        };
+    }
+    
+    @Override
+    protected final Action createPreviewAction() {
+        return new Action("Preview...") {
+            @Override
+            public void run() {
+                enterDialogMode();
+                openPreview();
+            }
+        };
+    }
+    
+    protected abstract void openPreview();
+    protected abstract void openDialog();
+    
+    public final void enterDialogMode() {
+        setName(getNewNameFromNamePosition());
+        revertChanges();
+        linkedModeModel.exit(NONE);
+    }
+    
 //    private ICompletionProposal[] getNameProposals(int offset) {
 //        List<ICompletionProposal> nameProposals = 
 //                new ArrayList<ICompletionProposal>();
@@ -76,7 +120,7 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
     /**
      * WARNING: only works in workbench window context!
      */
-    private String getOpenDialogBinding(String actionName) {
+    private static String getOpenDialogBinding(String actionName) {
         if (actionName==null) {
             return "";
         }
