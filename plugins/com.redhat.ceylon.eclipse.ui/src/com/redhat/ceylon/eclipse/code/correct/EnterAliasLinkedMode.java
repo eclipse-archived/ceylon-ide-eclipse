@@ -13,6 +13,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
+import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -106,7 +107,8 @@ class EnterAliasLinkedMode extends AbstractLinkedMode {
         final int adjust = performInitialChange(document);        
         try {
             setupLinkedPositions(document, adjust);
-            enterLinkedMode(document, offset, adjust);
+            enterLinkedMode(document, NO_STOP, 
+                    getExitPosition(offset, adjust));
         }
         catch (BadLocationException e) {
             e.printStackTrace();

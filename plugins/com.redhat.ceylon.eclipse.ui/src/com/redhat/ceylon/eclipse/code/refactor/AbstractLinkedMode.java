@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.unregisterEditingSupport;
 import static org.eclipse.core.commands.operations.OperationHistoryFactory.getOperationHistory;
-import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -67,7 +66,7 @@ public abstract class AbstractLinkedMode {
     }
     
     protected void enterLinkedMode(final IDocument document, 
-            int offset, int adjust)
+            int exitSequenceNumber, int exitPosition)
             throws BadLocationException {
         final IEditingSupport editingSupport = 
                 new FocusEditingSupport(editor) {
@@ -82,9 +81,8 @@ public abstract class AbstractLinkedMode {
             }
         };
         installLinkedMode(editor, linkedModeModel, this, 
-                NO_STOP, getExitPosition(offset, adjust), 
-                editingSupport, 
-                createExitPolicy(document), 
+                exitSequenceNumber, exitPosition, 
+                editingSupport, createExitPolicy(document), 
                 new AbstractLinkedModeListener(editor, this) {
                     @Override
                     public void left(LinkedModeModel model, int flags) {
