@@ -108,7 +108,6 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     @Override
     protected void setupLinkedPositions(IDocument document, int adjust)
             throws BadLocationException {
-        
         addLinkedPositions(document, 
                 editor.getParseController().getRootNode(), 
                 adjust);

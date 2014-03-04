@@ -508,7 +508,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
             break;
         case 3000:
-            addAssignToLocalProposal(file, cu, proposals, node, problem.getOffset());
+            addAssignToLocalProposal(cu, proposals, node, problem.getOffset());
             break;
         case 3100:
             addShadowReferenceProposal(file, cu, proposals, node);
@@ -570,8 +570,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             MakeReceiverProposal.add(proposals, editor, node);
             ConvertToClassProposal.add(proposals, editor);
                     
-            addAssignToLocalProposal(file, cu, proposals, node, 
-                    currentOffset);
+            addAssignToLocalProposal(cu, proposals, node, currentOffset);
             
             addConvertToNamedArgumentsProposal(proposals, file, cu, 
                     editor, currentOffset);
