@@ -58,12 +58,10 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
                 !CeylonTokenColorer.keywords.contains(newName);
     }
     
-//  private Image image= null;
-//  private Label label= null;
-    
     protected abstract int getIdentifyingOffset();
     
-    protected void addNamePosition(IDocument document, int offset2, int length) {
+    protected void addNamePosition(IDocument document, 
+            int offset2, int length) {
         linkedPositionGroup = new LinkedPositionGroup();
         int offset1 = getIdentifyingOffset();
         namePosition = new LinkedPosition(document, offset1, 
@@ -115,7 +113,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     }
 
     @Override
-    protected void setupLinkedPositions(final IDocument document, final int adjust)
+    protected void setupLinkedPositions(IDocument document, int adjust)
             throws BadLocationException {
         
         addLinkedPositions(document, 
@@ -141,12 +139,12 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
             getInfoPopup().setHintTemplate(getHintTemplate());
         }
         else if (currentLinkedPosition.getSequenceNumber()==1) {
-            getInfoPopup().setHintTemplate("Enter type for extracted " + getKind() + 
-                    " declaration {0}");
+            getInfoPopup().setHintTemplate("Enter type for extracted " + 
+                    getKind() + " declaration {0}");
         }
         else {
-            getInfoPopup().setHintTemplate("Enter name for extracted " + getKind() + 
-                    " declaration {0}");
+            getInfoPopup().setHintTemplate("Enter name for extracted " + 
+                    getKind() + " declaration {0}");
         }
     }
 
