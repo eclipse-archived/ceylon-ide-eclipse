@@ -70,7 +70,8 @@ class AssignToLocalProposal extends CorrectionProposal {
                 
                 ProposalPosition typePosition = 
                         new ProposalPosition(document, offset-6, 5, 1, 
-                                getSupertypeProposals(offset-6, unit, resultType));
+                                getSupertypeProposals(offset-6, unit, 
+                                        resultType, true));
                 
                 ProposalPosition namePosition = 
                         new ProposalPosition(document, offset, name.length(), 0, 

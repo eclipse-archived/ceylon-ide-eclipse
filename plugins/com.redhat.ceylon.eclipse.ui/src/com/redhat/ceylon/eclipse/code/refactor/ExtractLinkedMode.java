@@ -82,7 +82,8 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
         Unit unit = editor.getParseController().getRootNode().getUnit();
         ProposalPosition linkedPosition = 
                 new ProposalPosition(document, offset, length, 1, 
-                        getSupertypeProposals(offset, unit, type));
+                        getSupertypeProposals(offset, unit, type,
+                                this instanceof ExtractValueLinkedMode));
         try {
             addLinkedPosition(linkedModeModel, linkedPosition);
         } 
