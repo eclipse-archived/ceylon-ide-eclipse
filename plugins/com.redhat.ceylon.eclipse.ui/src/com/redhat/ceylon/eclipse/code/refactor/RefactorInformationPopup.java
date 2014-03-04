@@ -691,7 +691,7 @@ public class RefactorInformationPopup
 
     }
 
-    void setHintTemplate(String hintTemplate) {
+    public void setHintTemplate(String hintTemplate) {
         String enterKeyName= getEnterBinding();
         hint.setText(hintTemplate.replace("{0}", enterKeyName));
         hint.setStyleRange(new StyleRange(hintTemplate.indexOf("{0}"), 

@@ -31,7 +31,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
 
 
-//TODO: implement preview, like for other linked modes
+//TODO: turn this into a regular refactoring!!
 class EnterAliasLinkedMode extends AbstractLinkedMode {
 
     private final ImportMemberOrType element;

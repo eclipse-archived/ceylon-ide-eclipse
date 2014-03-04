@@ -1,20 +1,18 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
+import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getSupertypeProposals;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessName;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -28,7 +26,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
-import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -37,9 +34,6 @@ import com.redhat.ceylon.eclipse.util.FindUtils;
 
 //TODO: refactor this to directly extend ICompletionProposal, ICompletionProposalExtension6
 class AssignToLocalProposal extends CorrectionProposal {
-    
-    private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
-    private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z]+)([_a-z]+)");
     
     class AssignToLocalLinkedMode extends AbstractLinkedMode {
         final IDocument document;
@@ -54,42 +48,33 @@ class AssignToLocalProposal extends CorrectionProposal {
             return "Enter type and name for new local {0}";
         }
         
+        @Override
+        protected final void updatePopupLocation() {
+            LinkedPosition currentLinkedPosition = getCurrentLinkedPosition();
+            if (currentLinkedPosition==null) {
+                getInfoPopup().setHintTemplate(getHintTemplate());
+            }
+            else if (currentLinkedPosition.getSequenceNumber()==1) {
+                getInfoPopup().setHintTemplate("Enter type for new local {0}");
+            }
+            else {
+                getInfoPopup().setHintTemplate("Enter name for new local {0}");
+            }
+        }
+
         void start() {
             try {
                 AssignToLocalProposal.super.apply(document);
                 CeylonParseController cpc = editor.getParseController();
                 Unit unit = cpc.getRootNode().getUnit();
                 
-                ICompletionProposal[] typeProposals;
-                if (!isTypeUnknown(resultType)) {
-                    List<ProducedType> supertypes = resultType.getSupertypes();
-                    typeProposals = new ICompletionProposal[supertypes.size()];
-                    for (int i=0; i<supertypes.size(); i++) {
-                        ProducedType type = supertypes.get(i);
-                        String typeName = type.getProducedTypeName(unit);
-                        typeProposals[i] = new LinkedModeCompletionProposal(offset-6, 
-                                typeName, 0, getImageForDeclaration(type.getDeclaration()));
-                    }
-                }
-                else {
-                    typeProposals = NO_COMPLETIONS;
-                }
                 ProposalPosition typePosition = 
-                        new ProposalPosition(document, offset-6, 5, 1, typeProposals);
+                        new ProposalPosition(document, offset-6, 5, 1, 
+                                getSupertypeProposals(offset-6, unit, resultType));
                 
-                List<ICompletionProposal> nameProposals = 
-                        new ArrayList<ICompletionProposal>();
-                Matcher matcher = IDPATTERN.matcher(name);
-                while (matcher.find()) {
-                    int loc = matcher.start(2);
-                    String nameProposal = 
-                            name.substring(matcher.start(1), loc).toLowerCase() + 
-                            name.substring(loc);
-                    nameProposals.add(new LinkedModeCompletionProposal(offset-6, nameProposal, 1));
-                }
                 ProposalPosition namePosition = 
                         new ProposalPosition(document, offset, name.length(), 0, 
-                                nameProposals.toArray(NO_COMPLETIONS));
+                                getNameProposals(offset-6, 1, name));
                 
                 addLinkedPosition(linkedModeModel, typePosition);
                 addLinkedPosition(linkedModeModel, namePosition);
@@ -101,6 +86,7 @@ class AssignToLocalProposal extends CorrectionProposal {
                 e.printStackTrace();
             }
         }
+
     }
     
 //    private final IFile file;
