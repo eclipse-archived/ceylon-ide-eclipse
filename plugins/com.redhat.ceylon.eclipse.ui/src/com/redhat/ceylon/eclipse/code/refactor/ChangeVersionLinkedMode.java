@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package com.redhat.ceylon.eclipse.code.refactor;
 
 /*******************************************************************************
  * Copyright (c) 2005, 2011 IBM Corporation and others.
@@ -11,6 +11,7 @@ package com.redhat.ceylon.eclipse.code.correct;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 
 import java.util.List;
@@ -32,19 +33,16 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
-import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionRefactoring;
-import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionRefactoringAction;
-import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionWizard;
-import com.redhat.ceylon.eclipse.code.refactor.RefactorLinkedMode;
 
 
-class EnterVersionLinkedMode extends RefactorLinkedMode {
+public class ChangeVersionLinkedMode extends RefactorLinkedMode {
 
     private final Tree.ImportPath module;
     private final Tree.QuotedLiteral version;
     
     private final ChangeVersionRefactoring refactoring;
+    protected LinkedPosition versionPosition;
+    protected LinkedPositionGroup linkedPositionGroup;
 
     private final class LinkedPositionsVisitor 
             extends Visitor implements NaturalVisitor {
@@ -81,7 +79,7 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
             return true;
         }
         
-        protected void addLinkedPosition(final IDocument document,
+        private void addLinkedPosition(final IDocument document,
                 Tree.QuotedLiteral version, Tree.ImportPath path) {
             if (version!=null && path!=null && eq(module, path)) {
                 try {
@@ -97,7 +95,7 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
         }
     }
 
-    public EnterVersionLinkedMode(Tree.QuotedLiteral version, 
+    public ChangeVersionLinkedMode(Tree.QuotedLiteral version, 
             Tree.ImportPath module, CeylonEditor editor) {
         super(editor);
         this.module = module;
@@ -113,7 +111,7 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
     
     @Override
     protected String getActionName() {
-        return null;
+        return PLUGIN_ID + ".action.changeVersion";
     }
 
     @Override
@@ -122,19 +120,18 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
                 " occurrences of \"" + getName() + "\" {0}";
     }
     
-    @Override
-    protected int getIdentifyingOffset() {
-        return version.getStartIndex()+1;
-    }
-    
-    @Override
-    public void addLinkedPositions(final IDocument document, Tree.CompilationUnit rootNode, 
-            final int adjust, final LinkedPositionGroup linkedPositionGroup) {
+    private void addLinkedPositions(final IDocument document, Tree.CompilationUnit rootNode, 
+            final int adjust, final LinkedPositionGroup linkedPositionGroup) 
+                    throws BadLocationException {
+        versionPosition = new LinkedPosition(document, 
+                version.getStartIndex()+1, 
+                getOriginalName().length(), 0);
+        linkedPositionGroup.addPosition(versionPosition);
         rootNode.visit(new LinkedPositionsVisitor(adjust, document, linkedPositionGroup));
     }
     
-    public boolean isEnabled() {
-        return !getNewName().isEmpty();
+    private boolean isEnabled() {
+        return !getNewNameFromNamePosition().isEmpty();
     }
     
     @Override
@@ -145,14 +142,14 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
         super.start();
     }
 
+    @Override
     public void done() {
         if (isEnabled()) {
             try {
-//                editor.doSave(new NullProgressMonitor());
 //                hideEditorActivity();
-                refactoring.setNewVersion(getNewName());
+                refactoring.setNewVersion(getNewNameFromNamePosition());
                 revertChanges();
-                if (showPreview) {
+                if (isShowPreview()) {
                     openPreview();
                 }
                 else {
@@ -178,7 +175,7 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
     }
 
     void enterDialogMode() {
-        refactoring.setNewVersion(getNewName());
+        refactoring.setNewVersion(getNewNameFromNamePosition());
         revertChanges();
         linkedModeModel.exit(NONE);
     }
@@ -187,7 +184,7 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
         new ChangeVersionRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
-                return EnterVersionLinkedMode.this.refactoring;
+                return ChangeVersionLinkedMode.this.refactoring;
             }
             @Override
             public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
@@ -203,14 +200,14 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
         new ChangeVersionRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
-                return EnterVersionLinkedMode.this.refactoring;
+                return ChangeVersionLinkedMode.this.refactoring;
             }
         }.run();
     }
     
     protected Action createOpenDialogAction() {
-        return new Action("Open Dialog..."/* + '\t' + 
-                openDialogKeyBinding*/) {
+        return new Action("Open Dialog..." + '\t' + 
+                openDialogKeyBinding) {
             @Override
             public void run() {
                 enterDialogMode();
@@ -227,6 +224,25 @@ class EnterVersionLinkedMode extends RefactorLinkedMode {
                 openPreview();
             }
         };
+    }
+
+    private String getNewNameFromNamePosition() {
+        try {
+            return versionPosition.getContent();
+        }
+        catch (BadLocationException e) {
+            return getOriginalName();
+        }
+    }
+
+    @Override
+    protected void setupLinkedPositions(final IDocument document, final int adjust)
+            throws BadLocationException {
+        linkedPositionGroup = new LinkedPositionGroup();        
+        addLinkedPositions(document, 
+                editor.getParseController().getRootNode(), 
+                adjust, linkedPositionGroup);
+        linkedModeModel.addGroup(linkedPositionGroup);
     }
     
 }

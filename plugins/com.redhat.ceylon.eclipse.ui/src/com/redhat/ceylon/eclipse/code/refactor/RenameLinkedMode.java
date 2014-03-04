@@ -21,11 +21,14 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public final class RenameLinkedMode
         extends RefactorLinkedMode {
         
     private final RenameRefactoring refactoring;
+    protected LinkedPosition namePosition;
+    protected LinkedPositionGroup linkedPositionGroup;
     
     public RenameLinkedMode(CeylonEditor editor) {
         super(editor);
@@ -45,14 +48,21 @@ public final class RenameLinkedMode
         super.start();
     }
     
+    private boolean isEnabled() {
+        String newName = getNewNameFromNamePosition();
+        return !getOriginalName().equals(newName) &&
+                newName.matches("^\\w(\\w|\\d)*$") &&
+                !CeylonTokenColorer.keywords.contains(newName);
+    }
+
     @Override
     public void done() {
         if (isEnabled()) {
             try {
                 hideEditorActivity();
-                refactoring.setNewName(getNewName());
+                refactoring.setNewName(getNewNameFromNamePosition());
                 revertChanges();
-                if (showPreview) {
+                if (isShowPreview()) {
                     openPreview();
                 }
                 else {
@@ -82,16 +92,17 @@ public final class RenameLinkedMode
         return "Enter new name for " + refactoring.getCount() + 
                 " occurrences of '" + getName()  + "' {0}";
     }
-
-    @Override
-    protected int getIdentifyingOffset() {
-        return getIdentifyingNode(refactoring.getNode()).getStartIndex();
-    }
     
-    @Override
-    protected void addLinkedPositions(IDocument document,
+    private void addLinkedPositions(IDocument document,
             CompilationUnit rootNode, int adjust,
-            LinkedPositionGroup linkedPositionGroup) {
+            LinkedPositionGroup linkedPositionGroup) 
+                    throws BadLocationException {
+        
+        int offset = getIdentifyingNode(refactoring.getNode()).getStartIndex();
+        namePosition = new LinkedPosition(document, offset, 
+                getOriginalName().length(), 0);
+        linkedPositionGroup.addPosition(namePosition);
+        
         int i=1;
         for (Node node: refactoring.getNodesToRename(rootNode)) {
             Node identifyingNode = getIdentifyingNode(node);
@@ -127,7 +138,7 @@ public final class RenameLinkedMode
     }
     
     void enterDialogMode() {
-        refactoring.setNewName(getNewName());
+        refactoring.setNewName(getNewNameFromNamePosition());
         revertChanges();
         linkedModeModel.exit(NONE);
     }
@@ -179,6 +190,25 @@ public final class RenameLinkedMode
         };
     }
     
+    private String getNewNameFromNamePosition() {
+        try {
+            return namePosition.getContent();
+        }
+        catch (BadLocationException e) {
+            return getOriginalName();
+        }
+    }
+
+    @Override
+    protected void setupLinkedPositions(final IDocument document, final int adjust)
+            throws BadLocationException {
+        linkedPositionGroup = new LinkedPositionGroup();
+        addLinkedPositions(document, 
+                editor.getParseController().getRootNode(), 
+                adjust, linkedPositionGroup);
+        linkedModeModel.addGroup(linkedPositionGroup);
+    }
+
 //  private Image image= null;
 //  private Label label= null;
     
@@ -220,5 +250,5 @@ public final class RenameLinkedMode
 //        if (image != null)
 //            image.dispose();
     }
-
+    
 }
