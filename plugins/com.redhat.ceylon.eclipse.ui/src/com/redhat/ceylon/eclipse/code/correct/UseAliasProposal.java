@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.styleProposal;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD_CORR;
+import static com.redhat.ceylon.eclipse.code.refactor.RenameLinkedMode.useLinkedMode;
 
 import java.util.Collection;
 
@@ -15,24 +17,28 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.refactor.EnterAliasLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.EnterAliasRefactoringAction;
 
 class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtension6 {
     
-    private final Tree.ImportMemberOrType node;
     private final Declaration dec;
     private final CeylonEditor editor;
     
     private UseAliasProposal(Tree.ImportMemberOrType node, 
             Declaration dec, CeylonEditor editor) {
-        this.node = node;
         this.dec = dec;
         this.editor = editor;
     }
     
     @Override
     public void apply(IDocument document) {
-        new EnterAliasLinkedMode(node, dec, editor).start();
-        
+        if (useLinkedMode()) {
+            new EnterAliasLinkedMode(editor).start();
+        }
+        else {
+            new EnterAliasRefactoringAction(editor).run();
+        }
     }
     
     static void addUseAliasProposal(Tree.ImportMemberOrType node,  
@@ -43,7 +49,7 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
 
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString());
+        return styleProposal(getDisplayString());
     }
 
     @Override

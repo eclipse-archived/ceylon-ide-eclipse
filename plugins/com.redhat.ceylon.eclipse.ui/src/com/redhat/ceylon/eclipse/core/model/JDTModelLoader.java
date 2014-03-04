@@ -932,6 +932,12 @@ public class JDTModelLoader extends AbstractModelLoader {
         // TODO Check that returning true in any case is the right way to do.
         return super.isModuleInClassPath(module);
     }
+
+    @Override
+    protected boolean isOverloadingMethod(MethodMirror methodMirror) {
+        // TODO Auto-generated method stub
+        return false;
+    }
     
     
 }
