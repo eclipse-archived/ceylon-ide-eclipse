@@ -3,12 +3,9 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
@@ -41,13 +38,10 @@ public final class RenameLinkedMode
     }
     
     @Override
-    public void start() {
-        if (!refactoring.isEnabled()) return;
-        editor.doSave(new NullProgressMonitor());
-        saveEditorState();
-        super.start();
+    protected boolean canStart() {
+        return refactoring.isEnabled();
     }
-    
+        
     private boolean isEnabled() {
         String newName = getNewNameFromNamePosition();
         return !getOriginalName().equals(newName) &&
@@ -59,8 +53,8 @@ public final class RenameLinkedMode
     public void done() {
         if (isEnabled()) {
             try {
-                hideEditorActivity();
-                refactoring.setNewName(getNewNameFromNamePosition());
+//                hideEditorActivity();
+                setName(getNewNameFromNamePosition());
                 revertChanges();
                 if (isShowPreview()) {
                     openPreview();
@@ -77,9 +71,9 @@ public final class RenameLinkedMode
             catch (Exception e) {
                 e.printStackTrace();
             }
-            finally {
-                unhideEditorActivity();
-            }
+//            finally {
+//                unhideEditorActivity();
+//            }
             super.done();
         }
         else {
@@ -133,17 +127,17 @@ public final class RenameLinkedMode
     }
     
     @Override
+    protected void setName(String name) {
+        refactoring.setNewName(name);
+    }
+    
+    @Override
     protected String getActionName() {
         return PLUGIN_ID + ".action.rename";
     }
     
-    void enterDialogMode() {
-        refactoring.setNewName(getNewNameFromNamePosition());
-        revertChanges();
-        linkedModeModel.exit(NONE);
-    }
-    
-    void openPreview() {
+    @Override
+    protected void openPreview() {
         new RenameRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
@@ -159,7 +153,8 @@ public final class RenameLinkedMode
         }.run();
     }
 
-    void openDialog() {
+    @Override
+    protected void openDialog() {
         new RenameRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
@@ -168,29 +163,8 @@ public final class RenameLinkedMode
         }.run();
     }
     
-    protected Action createOpenDialogAction() {
-        return new Action("Open Dialog..." + '\t' + 
-                openDialogKeyBinding) {
-            @Override
-            public void run() {
-                enterDialogMode();
-                openDialog();
-            }
-        };
-    }
-    
     @Override
-    protected Action createPreviewAction() {
-        return new Action("Preview...") {
-            @Override
-            public void run() {
-                enterDialogMode();
-                openPreview();
-            }
-        };
-    }
-    
-    private String getNewNameFromNamePosition() {
+    protected String getNewNameFromNamePosition() {
         try {
             return namePosition.getContent();
         }
@@ -212,7 +186,7 @@ public final class RenameLinkedMode
 //  private Image image= null;
 //  private Label label= null;
     
-    private void hideEditorActivity() {
+//    private void hideEditorActivity() {
 //      if (viewer instanceof SourceViewer) {
 //      final SourceViewer sourceViewer= (SourceViewer) viewer;
 //      Control viewerControl= sourceViewer.getControl();
@@ -242,13 +216,13 @@ public final class RenameLinkedMode
 //          label.setBounds(0, 0, size.x, size.y);
 //          label.moveAbove(null);
 //      }
-    }
+//    }
     
-    private void unhideEditorActivity() {
+//    private void unhideEditorActivity() {
 //        if (label != null)
 //            label.dispose();
 //        if (image != null)
 //            image.dispose();
-    }
+//    }
     
 }

@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
@@ -40,16 +39,10 @@ public final class ExtractParameterLinkedMode
     }
     
     @Override
-    public void start() {
-        if (!refactoring.isEnabled()) return;
-        super.start();
+    protected boolean canStart() {
+        return refactoring.isEnabled();
     }
     
-    @Override
-    public String getHintTemplate() {
-        return "Enter name for new parameter declaration {0}";
-    }
-
     @Override
     protected int getIdentifyingOffset() {
         return refactoring.decRegion.getOffset();
@@ -98,7 +91,8 @@ public final class ExtractParameterLinkedMode
         return PLUGIN_ID + ".action.extractParameter";
     }
     
-    void openPreview() {
+    @Override
+    protected void openPreview() {
         new RenameRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
@@ -114,7 +108,8 @@ public final class ExtractParameterLinkedMode
         }.run();
     }
 
-    void openDialog() {
+    @Override
+    protected void openDialog() {
         new ExtractParameterRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
@@ -124,17 +119,8 @@ public final class ExtractParameterLinkedMode
     }
     
     @Override
-    protected void updatePopupLocation() {
-        LinkedPosition currentLinkedPosition = getCurrentLinkedPosition();
-        if (currentLinkedPosition==null) {
-            getInfoPopup().setHintTemplate(getHintTemplate());
-        }
-        else if (currentLinkedPosition.getSequenceNumber()==2) {
-            getInfoPopup().setHintTemplate("Enter type for new parameter declaration {0}");
-        }
-        else {
-            getInfoPopup().setHintTemplate("Enter name for new parameter declaration {0}");
-        }
+    protected String getKind() {
+        return "parameter";
     }
     
 }

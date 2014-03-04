@@ -12,14 +12,11 @@ package com.redhat.ceylon.eclipse.code.refactor;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 
 import java.util.List;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.LinkedPosition;
@@ -110,6 +107,11 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
     }
     
     @Override
+    protected void setName(String version) {
+        refactoring.setNewVersion(version);
+    }
+    
+    @Override
     protected String getActionName() {
         return PLUGIN_ID + ".action.changeVersion";
     }
@@ -135,19 +137,15 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
     }
     
     @Override
-    public void start() {
-        if (!refactoring.isEnabled()) return;
-        editor.doSave(new NullProgressMonitor());
-        saveEditorState();
-        super.start();
+    protected boolean canStart() {
+        return refactoring.isEnabled();
     }
-
+    
     @Override
     public void done() {
         if (isEnabled()) {
             try {
-//                hideEditorActivity();
-                refactoring.setNewVersion(getNewNameFromNamePosition());
+                setName(getNewNameFromNamePosition());
                 revertChanges();
                 if (isShowPreview()) {
                     openPreview();
@@ -164,23 +162,15 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            finally {
-//                unhideEditorActivity();
-            }
             super.done();
         }
         else {
             super.cancel();
         }
     }
-
-    void enterDialogMode() {
-        refactoring.setNewVersion(getNewNameFromNamePosition());
-        revertChanges();
-        linkedModeModel.exit(NONE);
-    }
     
-    void openPreview() {
+    @Override
+    protected void openPreview() {
         new ChangeVersionRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
@@ -196,7 +186,8 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
         }.run();
     }
 
-    void openDialog() {
+    @Override
+    protected void openDialog() {
         new ChangeVersionRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
@@ -205,28 +196,8 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
         }.run();
     }
     
-    protected Action createOpenDialogAction() {
-        return new Action("Open Dialog..." + '\t' + 
-                openDialogKeyBinding) {
-            @Override
-            public void run() {
-                enterDialogMode();
-                openDialog();
-            }
-        };
-    }
-
-    protected Action createPreviewAction() {
-        return new Action("Preview...") {
-            @Override
-            public void run() {
-                enterDialogMode();
-                openPreview();
-            }
-        };
-    }
-
-    private String getNewNameFromNamePosition() {
+    @Override
+    protected String getNewNameFromNamePosition() {
         try {
             return versionPosition.getContent();
         }

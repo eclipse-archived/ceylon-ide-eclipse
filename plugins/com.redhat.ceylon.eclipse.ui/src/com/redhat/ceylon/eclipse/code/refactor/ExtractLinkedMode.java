@@ -3,12 +3,9 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 
 import java.util.List;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -34,27 +31,16 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     }
     
     @Override
-    public void start() {
-        editor.doSave(new NullProgressMonitor());
-        saveEditorState();
-        super.start();
-    }
-    
-    @Override
     public void done() {
         if (isEnabled()) {
             setName(getNewNameFromNamePosition());
             if (isShowPreview() || forceWizardMode()) {
                 try {
-                    hideEditorActivity();
                     revertChanges();
                     openPreview();
                 } 
                 catch (Exception e) {
                     e.printStackTrace();
-                }
-                finally {
-                    unhideEditorActivity();
                 }
             }
             super.done();
@@ -66,87 +52,14 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     
     protected abstract boolean forceWizardMode();
 
-    protected abstract void setName(String newName);
-
     public boolean isEnabled() {
         String newName = getNewNameFromNamePosition();
         return newName.matches("^\\w(\\w|\\d)*$") &&
                 !CeylonTokenColorer.keywords.contains(newName);
     }
     
-    void enterDialogMode() {
-        setName(getNewNameFromNamePosition());
-        revertChanges();
-        linkedModeModel.exit(NONE);
-    }
-    
-    @Override
-    protected Action createOpenDialogAction() {
-        return new Action("Open Dialog..." + '\t' + 
-                openDialogKeyBinding) {
-            @Override
-            public void run() {
-                enterDialogMode();
-                openDialog();
-            }
-        };
-    }
-    
-    @Override
-    protected Action createPreviewAction() {
-        return new Action("Preview...") {
-            @Override
-            public void run() {
-                enterDialogMode();
-                openPreview();
-            }
-        };
-    }
-    
-    abstract void openPreview();
-    abstract void openDialog();
-    
 //  private Image image= null;
 //  private Label label= null;
-    
-    private void hideEditorActivity() {
-//      if (viewer instanceof SourceViewer) {
-//      final SourceViewer sourceViewer= (SourceViewer) viewer;
-//      Control viewerControl= sourceViewer.getControl();
-//      if (viewerControl instanceof Composite) {
-//          Composite composite= (Composite) viewerControl;
-//          Display display= composite.getDisplay();
-//
-//          // Flush pending redraw requests:
-//          while (! display.isDisposed() && display.readAndDispatch()) {
-//          }
-//
-//          // Copy editor area:
-//          GC gc= new GC(composite);
-//          Point size;
-//          try {
-//              size= composite.getSize();
-//              image= new Image(gc.getDevice(), size.x, size.y);
-//              gc.copyArea(image, 0, 0);
-//          } finally {
-//              gc.dispose();
-//              gc= null;
-//          }
-//
-//          // Persist editor area while executing refactoring:
-//          label= new Label(composite, SWT.NONE);
-//          label.setImage(image);
-//          label.setBounds(0, 0, size.x, size.y);
-//          label.moveAbove(null);
-//      }
-    }
-    
-    private void unhideEditorActivity() {
-//        if (label != null)
-//            label.dispose();
-//        if (image != null)
-//            image.dispose();
-    }
     
     protected abstract int getIdentifyingOffset();
     
@@ -158,7 +71,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
         try {
             linkedPositionGroup.addPosition(namePosition);
             linkedPositionGroup.addPosition(new LinkedPosition(document, 
-                    offset2, length, 1));
+                    offset2, length, 2));
             linkedModeModel.addGroup(linkedPositionGroup);
         }
         catch (BadLocationException e) {
@@ -179,7 +92,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
                     getImageForDeclaration(type.getDeclaration()));
         }
         ProposalPosition linkedPosition = 
-                new ProposalPosition(document, offset, length, 2, proposals);
+                new ProposalPosition(document, offset, length, 1, proposals);
         try {
             addLinkedPosition(linkedModeModel, linkedPosition);
         } 
@@ -191,7 +104,8 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     protected abstract void addLinkedPositions(IDocument document, 
             Tree.CompilationUnit rootNode, int adjust);
 
-    private String getNewNameFromNamePosition() {
+    @Override
+    protected String getNewNameFromNamePosition() {
         try {
             return namePosition.getContent();
         }
@@ -213,5 +127,29 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
         return EditorsUI.getPreferenceStore()
                 .getBoolean(LINKED_MODE_RENAME);
     }
+    
+    @Override
+    public final String getHintTemplate() {
+        return "Enter name for extracted " + getKind() +
+                " declaration {0}";
+    }
+
+    @Override
+    protected final void updatePopupLocation() {
+        LinkedPosition currentLinkedPosition = getCurrentLinkedPosition();
+        if (currentLinkedPosition==null) {
+            getInfoPopup().setHintTemplate(getHintTemplate());
+        }
+        else if (currentLinkedPosition.getSequenceNumber()==1) {
+            getInfoPopup().setHintTemplate("Enter type for extracted " + getKind() + 
+                    " declaration {0}");
+        }
+        else {
+            getInfoPopup().setHintTemplate("Enter name for extracted " + getKind() + 
+                    " declaration {0}");
+        }
+    }
+
+    protected abstract String getKind();
     
 }
