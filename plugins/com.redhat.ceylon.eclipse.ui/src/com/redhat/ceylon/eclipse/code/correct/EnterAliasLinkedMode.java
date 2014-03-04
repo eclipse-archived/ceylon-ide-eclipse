@@ -18,6 +18,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
+import org.eclipse.jface.text.source.ISourceViewer;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
@@ -26,14 +27,18 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.RefactorLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
 
 
 //TODO: implement preview, like for other linked modes
-class EnterAliasLinkedMode extends RefactorLinkedMode {
+class EnterAliasLinkedMode extends AbstractLinkedMode {
 
     private final ImportMemberOrType element;
     private final Declaration dec;
+    protected LinkedPosition namePosition;
+    protected LinkedPositionGroup linkedPositionGroup;
+    
+    private String originalName;
 
     private final class LinkedPositionsVisitor 
             extends Visitor implements NaturalVisitor {
@@ -93,8 +98,24 @@ class EnterAliasLinkedMode extends RefactorLinkedMode {
         this.dec = dec;
     }
 
-    @Override
-    protected String getName() {
+    public void start() {
+        ISourceViewer viewer = editor.getCeylonSourceViewer();
+        final IDocument document = viewer.getDocument();
+        int offset = originalSelection.x;
+        originalName = getName();
+        final int adjust = performInitialChange(document);        
+        try {
+            setupLinkedPositions(document, adjust);
+            enterLinkedMode(document, offset, adjust);
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
+            return;
+        }
+        openPopup();
+    }
+    
+    private String getName() {
         Tree.Alias alias = element.getAlias();
         if (alias==null) {
             return dec.getName();
@@ -109,9 +130,8 @@ class EnterAliasLinkedMode extends RefactorLinkedMode {
         return "Enter alias for " + linkedPositionGroup.getPositions().length + 
                 " occurrences of '" + dec.getName() + "' {0}";
     }
-
-    @Override
-    protected int init(IDocument document) {
+    
+    private int performInitialChange(IDocument document) {
         Tree.Alias alias = ((Tree.ImportMemberOrType) element).getAlias();
         if (alias==null) {
             try {
@@ -130,26 +150,43 @@ class EnterAliasLinkedMode extends RefactorLinkedMode {
         }
     }
     
-    @Override
-    protected int getIdentifyingOffset() {
+    private void addLinkedPositions(final IDocument document, 
+            Tree.CompilationUnit rootNode, int adjust, 
+            LinkedPositionGroup linkedPositionGroup) 
+                    throws BadLocationException {
+        
+        int offset;
         Tree.Alias alias = element.getAlias();
         if (alias!=null) {
-            return alias.getStartIndex();
+            offset = alias.getStartIndex();
         }
         else {
-            return getIdentifyingNode(element).getStartIndex();
+            offset = getIdentifyingNode(element).getStartIndex();
+        }
+        namePosition = new LinkedPosition(document, offset, 
+                originalName.length(), 0);
+        
+        linkedPositionGroup.addPosition(namePosition);
+        rootNode.visit(new LinkedPositionsVisitor(adjust, document, 
+                linkedPositionGroup));
+    }
+
+    protected String getNewNameFromNamePosition() {
+        try {
+            return namePosition.getContent();
+        }
+        catch (BadLocationException e) {
+            return originalName;
         }
     }
     
-    @Override
-    public void addLinkedPositions(final IDocument document, Tree.CompilationUnit rootNode, 
-            final int adjust, final LinkedPositionGroup linkedPositionGroup) {
-        rootNode.visit(new LinkedPositionsVisitor(adjust, document, linkedPositionGroup));
+    protected void setupLinkedPositions(IDocument document, int adjust)
+            throws BadLocationException {
+        linkedPositionGroup = new LinkedPositionGroup();        
+        addLinkedPositions(document, 
+                editor.getParseController().getRootNode(), 
+                adjust, linkedPositionGroup);
+        linkedModeModel.addGroup(linkedPositionGroup);
     }
-    
-    @Override
-    protected String getActionName() {
-        return null;
-    }
-    
+
 }

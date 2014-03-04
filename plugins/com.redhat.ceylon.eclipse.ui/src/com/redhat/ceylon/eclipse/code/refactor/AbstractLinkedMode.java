@@ -10,7 +10,6 @@ import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.commands.operations.IUndoableOperation;
-import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
@@ -38,16 +37,18 @@ import com.redhat.ceylon.eclipse.code.editor.FocusEditingSupport;
 
 public abstract class AbstractLinkedMode {
 
-    protected boolean showPreview = false;
-    private IUndoableOperation startingUndoOperation;
     protected final CeylonEditor editor;
-    private RefactorInformationPopup infoPopup;
     protected final Point originalSelection;
     protected final LinkedModeModel linkedModeModel;
+    
+    private boolean showPreview = false;
+    private IUndoableOperation startingUndoOperation;
+    private RefactorInformationPopup infoPopup;
 
     protected AbstractLinkedMode(CeylonEditor ceylonEditor) {
         editor = ceylonEditor;
-        originalSelection = ceylonEditor.getCeylonSourceViewer().getSelectedRange();
+        originalSelection = ceylonEditor.getCeylonSourceViewer()
+                .getSelectedRange();
         linkedModeModel = new LinkedModeModel();
     }
 
@@ -61,9 +62,15 @@ public abstract class AbstractLinkedMode {
         infoPopup.open();
     }
 
-    protected void enterLinkedMode(final IDocument document, int offset, int adjust)
+    protected boolean isShowPreview() {
+        return showPreview;
+    }
+    
+    protected void enterLinkedMode(final IDocument document, 
+            int offset, int adjust)
             throws BadLocationException {
-        final IEditingSupport editingSupport = new FocusEditingSupport(editor) {
+        final IEditingSupport editingSupport = 
+                new FocusEditingSupport(editor) {
             public boolean ownsFocusShell() {
                 if (infoPopup == null) {
                     return false;
@@ -92,7 +99,8 @@ public abstract class AbstractLinkedMode {
                         }
                         else {
                             if ((flags&EXTERNAL_MODIFICATION)==0) {
-                                editor.getCeylonSourceViewer().invalidateTextPresentation();
+                                editor.getCeylonSourceViewer()
+                                        .invalidateTextPresentation();
                             }
                             cancel();
                         }
@@ -169,22 +177,26 @@ public abstract class AbstractLinkedMode {
 
     protected void saveEditorState() {
         //save where we are before opening linked mode
-        IUndoManager undoManager = editor.getCeylonSourceViewer().getUndoManager();
+        IUndoManager undoManager = editor.getCeylonSourceViewer()
+                .getUndoManager();
         if (undoManager instanceof IUndoManagerExtension) {
-            IUndoManagerExtension undoManagerExtension= (IUndoManagerExtension)undoManager;
+            IUndoManagerExtension undoManagerExtension = 
+                    (IUndoManagerExtension)undoManager;
             IUndoContext undoContext = undoManagerExtension.getUndoContext();
-            IOperationHistory operationHistory = OperationHistoryFactory.getOperationHistory();
-            startingUndoOperation = operationHistory.getUndoOperation(undoContext);
+            IOperationHistory oh = getOperationHistory();
+            startingUndoOperation = oh.getUndoOperation(undoContext);
         }
     }
 
     protected void revertChanges() {
         //go back to where we were before opening linked mode
         try {
-            editor.getSite().getWorkbenchWindow().run(false, true, new IRunnableWithProgress() {
+            editor.getSite().getWorkbenchWindow().run(false, true, 
+                    new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) 
                         throws InvocationTargetException, InterruptedException {
-                    IUndoManager undoManager = editor.getCeylonSourceViewer().getUndoManager();
+                    IUndoManager undoManager = editor.getCeylonSourceViewer()
+                            .getUndoManager();
                     if (undoManager instanceof IUndoManagerExtension) {
                         IUndoContext undoContext = 
                                 ((IUndoManagerExtension) undoManager).getUndoContext();

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.refactor.ExtractValueLinkedMode.useLinkedMode;
+import static com.redhat.ceylon.eclipse.code.refactor.ExtractLinkedMode.useLinkedMode;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -19,7 +19,8 @@ public class ExtractValueHandler extends AbstractHandler {
             CeylonEditor ce = (CeylonEditor)editor;
             if (ce.isInLinkedMode()) {
                 if (ce.getLinkedModeOwner() instanceof ExtractValueLinkedMode) {
-                    ExtractValueLinkedMode current = (ExtractValueLinkedMode) ce.getLinkedModeOwner();
+                    ExtractValueLinkedMode current = 
+                            (ExtractValueLinkedMode) ce.getLinkedModeOwner();
                     current.enterDialogMode();
                     current.openDialog();
                 }

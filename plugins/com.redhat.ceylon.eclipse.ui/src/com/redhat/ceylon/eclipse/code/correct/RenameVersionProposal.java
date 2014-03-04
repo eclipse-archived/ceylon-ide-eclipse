@@ -14,6 +14,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionLinkedMode;
 
 class RenameVersionProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
@@ -29,7 +30,7 @@ class RenameVersionProposal implements ICompletionProposal,
     
     @Override
     public void apply(IDocument document) {
-        new EnterVersionLinkedMode(node.getVersion(), node.getImportPath(), editor).start();
+        new ChangeVersionLinkedMode(node.getVersion(), node.getImportPath(), editor).start();
     }
     
     static void addRenameVersionProposal(Tree.ModuleDescriptor node,  

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.refactor.ExtractParameterLinkedMode.useLinkedMode;
+import static com.redhat.ceylon.eclipse.code.refactor.ExtractLinkedMode.useLinkedMode;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -19,7 +19,8 @@ public class ExtractParameterHandler extends AbstractHandler {
             CeylonEditor ce = (CeylonEditor)editor;
             if (ce.isInLinkedMode()) {
                 if (ce.getLinkedModeOwner() instanceof ExtractParameterLinkedMode) {
-                    ExtractParameterLinkedMode current = (ExtractParameterLinkedMode) ce.getLinkedModeOwner();
+                    ExtractParameterLinkedMode current = 
+                            (ExtractParameterLinkedMode) ce.getLinkedModeOwner();
                     current.enterDialogMode();
                     current.openDialog();
                 }
