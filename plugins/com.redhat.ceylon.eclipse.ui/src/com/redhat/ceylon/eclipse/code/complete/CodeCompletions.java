@@ -536,11 +536,11 @@ public class CodeCompletions {
             else {
                 type = pr.getType();
             }
+            if (isSequenced && type!=null) {
+                type = unit.getIteratedType(type);
+            }
             if (type==null) {
                 type = new UnknownType(unit).getType();
-            }
-            if (isSequenced) {
-                type = unit.getIteratedType(type);
             }
             String typeName = type.getProducedTypeName(unit);
             if (td.isDynamicallyTyped()) {
