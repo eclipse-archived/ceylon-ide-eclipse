@@ -391,8 +391,9 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     public void update(CeylonParseController parseController,
             IProgressMonitor monitor) {
         if (activeEditor!=null) {
-            synchronized (activeEditor) {
-                if (!activeEditor.isBackgroundParsingPaused()) {
+//            synchronized (activeEditor) {
+                if (!activeEditor.isBackgroundParsingPaused() &&
+                        !activeEditor.isInLinkedMode()) {
                     try {
                         getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
                                 new IRunnableWithProgress() {
@@ -410,7 +411,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
                         e.printStackTrace();
                     }
                 }
-            }
+//            }
         }
     }
 
