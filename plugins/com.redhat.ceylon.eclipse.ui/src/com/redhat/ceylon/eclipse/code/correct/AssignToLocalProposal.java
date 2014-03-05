@@ -248,7 +248,43 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
     static void addAssignToLocalProposal(Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals, Node node, 
             int currentOffset) {
-        proposals.add(new AssignToLocalProposal(cu, node, currentOffset));
+        AssignToLocalProposal prop = 
+                new AssignToLocalProposal(cu, node, currentOffset);
+        if (prop.isEnabled()) {
+            proposals.add(prop);
+        }
+    }
+    
+    private boolean isEnabled() {
+        Tree.Statement st = findStatement(rootNode, node);
+        if (st instanceof Tree.ExpressionStatement) {
+            return true;
+        }
+        else if (st instanceof Tree.Declaration) {
+            Declaration d = ((Tree.Declaration) st).getDeclarationModel();
+            if (d==null || d.isToplevel()) {
+                return false;
+            }
+            //some expressions get interpreted as annotations
+            List<Annotation> annotations = 
+                    ((Tree.Declaration) st).getAnnotationList().getAnnotations();
+            if (!annotations.isEmpty()) {
+                return true;
+            }
+            else if (st instanceof Tree.TypedDeclaration) {
+                //some expressions look like a type declaration
+                //when they appear right in front of an annotation
+                //or function invocations
+                Tree.Type type = ((Tree.TypedDeclaration) st).getType();
+                return type instanceof Tree.SimpleType;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
     }
 
 }

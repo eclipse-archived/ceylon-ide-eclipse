@@ -18,11 +18,27 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Alias;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class EnterAliasRefactoring extends AbstractRefactoring {
     
+    private final class FindImportVisitor extends Visitor {
+        
+        private final Declaration dec;
+        private Tree.ImportMemberOrType result;
+
+        private FindImportVisitor(Declaration dec) {
+            this.dec = dec;
+        }
+
+        public void visit(Tree.ImportMemberOrType that) {
+            super.visit(that);
+            if (that.getDeclarationModel().equals(dec)) {
+                result = that;
+            }
+        }
+    }
+
     private String newName;
     private Tree.ImportMemberOrType element;
     
@@ -34,6 +50,23 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         super(editor);
         if (node instanceof Tree.ImportMemberOrType) {
             element = (Tree.ImportMemberOrType) node;
+        }
+        if (node instanceof Tree.StaticMemberOrTypeExpression) {
+            Tree.StaticMemberOrTypeExpression bmte =
+                    (Tree.StaticMemberOrTypeExpression) node;
+            setElement(bmte.getDeclaration());
+        }
+        if (node instanceof Tree.SimpleType) {
+            Tree.SimpleType bmte =
+                    (Tree.SimpleType) node;
+            setElement(bmte.getDeclarationModel());
+        }
+        if (node instanceof Tree.MemberLiteral) {
+            Tree.MemberLiteral bmte =
+                    (Tree.MemberLiteral) node;
+            setElement(bmte.getDeclaration());
+        }
+        if (element!=null) {
             final Alias alias = element.getAlias();
             if (alias==null) {
                 newName = element.getIdentifier().getText();
@@ -43,11 +76,19 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
             }
         }
     }
+
+    private void setElement(Declaration dec) {
+        if (dec!=null) {
+            FindImportVisitor fiv = new FindImportVisitor(dec);
+            fiv.visit(rootNode);
+            element = fiv.result;
+        }
+    }
     
     @Override
     public boolean isEnabled() {
-        return node instanceof Tree.ImportMemberOrType &&
-                ((Tree.ImportMemberOrType) node).getDeclarationModel()!=null;
+        return element!=null &&
+                element.getDeclarationModel()!=null;
     }
 
     public String getName() {
@@ -55,8 +96,8 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
     }
 
     public boolean forceWizardMode() {
-        Declaration existing = node.getScope()
-                .getMemberOrParameter(node.getUnit(), newName, null, false);
+        Declaration existing = element.getScope()
+                .getMemberOrParameter(element.getUnit(), newName, null, false);
         return existing!=null;
     }
     
@@ -68,8 +109,8 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
 
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
-        Declaration existing = node.getScope()
-                .getMemberOrParameter(node.getUnit(), newName, null, false);
+        Declaration existing = element.getScope()
+                .getMemberOrParameter(element.getUnit(), newName, null, false);
         if (null!=existing) {
             return createWarningStatus("An existing declaration named '" +
                     newName + "' already exists in the same scope");
@@ -86,7 +127,6 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
     
     int renameInFile(final TextChange tfc) throws CoreException {
         tfc.setEdit(new MultiTextEdit());
-        Tree.ImportMemberOrType element = (Tree.ImportMemberOrType) node;
         Tree.Alias alias = element.getAlias();
         final Declaration dec = element.getDeclarationModel();
         
@@ -135,8 +175,8 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
                 addEdit(document, that.getIdentifier(), 
                         that.getDeclaration());
             }
-            private void addEdit(final IDocument document,
-                    Identifier id, Declaration d) {
+            private void addEdit(IDocument document, Tree.Identifier id, 
+                    Declaration d) {
                 if (id!=null && d!=null && 
                         dec.equals(getAbstraction(d))) {
                     int pos = id.getStartIndex();
