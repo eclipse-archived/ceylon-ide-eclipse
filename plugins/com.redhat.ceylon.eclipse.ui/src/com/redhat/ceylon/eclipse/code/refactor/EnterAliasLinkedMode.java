@@ -48,7 +48,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         private final int adjust;
         private final IDocument document;
         private final LinkedPositionGroup linkedPositionGroup;
-        int i=1;
+        int i=2;
 
         private LinkedPositionsVisitor(int adjust, IDocument document,
                 LinkedPositionGroup linkedPositionGroup) {
@@ -78,16 +78,24 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
                     that.getDeclaration());
         }
         
-        private void addLinkedPosition(final IDocument document,
+        private void addLinkedPosition(IDocument document,
                 Identifier id, Declaration d) {
-            if (id!=null && d!=null && 
+            if (id!=null && d!=null &&
                     refactoring.getElement().getDeclarationModel()
                             .equals(getAbstraction(d))) {
                 try {
-                    int pos = id.getStartIndex()+adjust;
+                    int pos = id.getStartIndex();
                     int len = id.getText().length();
+                    int offset = originalSelection.x;
+                    int seq;
+                    if (offset<pos || offset>pos+len) {
+                        seq = i++;
+                    }
+                    else {
+                        seq = 1; //the selected node
+                    }
                     linkedPositionGroup.addPosition(new LinkedPosition(document, 
-                            pos, len, i++));
+                            pos+adjust, len, seq));
                 }
                 catch (BadLocationException e) {
                     e.printStackTrace();
@@ -108,7 +116,8 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
 
     @Override
     public String getHintTemplate() {
-        return "Enter alias for " + linkedPositionGroup.getPositions().length + 
+        return "Enter alias for " + 
+                linkedPositionGroup.getPositions().length + 
                 " occurrences of '" + 
                 refactoring.getElement().getDeclarationModel().getName() + 
                 "' {0}";
@@ -141,9 +150,10 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
     @Override
     protected void setupLinkedPositions(IDocument document, int adjust)
             throws BadLocationException {
-        linkedPositionGroup = new LinkedPositionGroup();        
-        int offset;
+        linkedPositionGroup = new LinkedPositionGroup();
+        
         Tree.ImportMemberOrType element = refactoring.getElement();
+        int offset;
         Tree.Alias alias = element.getAlias();
         if (alias == null) {
             offset = element.getIdentifier().getStartIndex();
