@@ -35,6 +35,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -186,8 +187,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         if (declarationNode!=null) {
             for (PhasedUnit pu: getAllUnits()) {
                 if (searchInFile(pu) && 
-                        (delete||!justOne||
-                                pu.getUnit().equals(declaration.getUnit()))) {
+                        affectsUnit(pu.getUnit())) {
                     TextFileChange tfc = newTextFileChange(pu);
                     Tree.CompilationUnit cu = pu.getCompilationUnit();
                     inlineInFile(tfc, cc, declarationNode, 
@@ -197,8 +197,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             }
         }
         if (searchInEditor() && 
-                (delete||!justOne||
-                        editorRootNode.getUnit().equals(declaration.getUnit()))) {
+                affectsUnit(editorRootNode.getUnit())) {
             DocumentChange dc = newDocumentChange();
             inlineInFile(dc, cc, declarationNode, declarationUnit, 
                     term, declarationTokens,
@@ -206,6 +205,11 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
         return cc;
         
+    }
+
+    private boolean affectsUnit(Unit unit) {
+        return delete && unit.equals(declaration.getUnit()) ||
+                !justOne || unit.equals(node.getUnit());
     }
     
     private boolean addImports(final TextChange change, 
