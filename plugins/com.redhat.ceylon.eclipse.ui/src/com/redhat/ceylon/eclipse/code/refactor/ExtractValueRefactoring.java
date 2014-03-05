@@ -43,10 +43,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     
     @Override
     public boolean isEnabled() {
-        String fn = node==null ? null : node.getUnit().getFilename();
-        return node instanceof Tree.Term && 
-                !fn.equals("module.ceylon") &&
-                !fn.equals("package.ceylon");
+        return sourceFile!=null &&
+                !sourceFile.getName().equals("module.ceylon") &&
+                !sourceFile.getName().equals("package.ceylon") &&
+                node instanceof Tree.Term;
     }
 
     public String getName() {
