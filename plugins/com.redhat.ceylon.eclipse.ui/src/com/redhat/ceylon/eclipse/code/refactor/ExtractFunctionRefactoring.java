@@ -310,9 +310,12 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
     @Override
     public boolean isEnabled() {
-        return node instanceof Tree.Term || 
-                node instanceof Tree.Body && 
-                    !statements.isEmpty();
+        String fn = node.getUnit().getFilename();
+        return node instanceof Tree.Term &&
+                !fn.equals("module.ceylon") &&
+                !fn.equals("package.ceylon") || 
+            node instanceof Tree.Body && 
+                !statements.isEmpty();
     }
     
     public String getName() {
