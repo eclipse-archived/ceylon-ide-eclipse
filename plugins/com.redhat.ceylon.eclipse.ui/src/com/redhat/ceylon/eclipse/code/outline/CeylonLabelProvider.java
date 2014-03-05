@@ -788,5 +788,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         cell.setImage(getImage(element));
         super.update(cell);
     }
+
+    private static String getRefinementIconKey(Declaration dec) {
+        if (dec.isParameter()) {
+            return CEYLON_ARGUMENT;
+        }
+        else {
+            return dec.isFormal() ? 
+                CEYLON_FORMAL_REFINEMENT : 
+                CEYLON_DEFAULT_REFINEMENT;
+        }
+    }
+
+    public static Image getRefinementIcon(Declaration dec) {
+        return getDecoratedImage(null, getRefinementIconKey(dec));
+    }
     
 }

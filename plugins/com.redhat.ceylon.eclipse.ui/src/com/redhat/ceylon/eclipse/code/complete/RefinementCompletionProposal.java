@@ -22,6 +22,9 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getRefinementIcon;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static java.lang.Character.isJavaIdentifierPart;
@@ -72,7 +75,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public final class RefinementCompletionProposal extends CompletionProposal {
     
@@ -99,9 +101,9 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     }
 
     public static Image DEFAULT_REFINEMENT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(CeylonResources.CEYLON_DEFAULT_REFINEMENT);
+            .getImageRegistry().get(CEYLON_DEFAULT_REFINEMENT);
     public static Image FORMAL_REFINEMENT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(CeylonResources.CEYLON_FORMAL_REFINEMENT);
+            .getImageRegistry().get(CEYLON_FORMAL_REFINEMENT);
     
     static void addRefinementProposal(int offset, final Declaration dec, 
             ClassOrInterface ci, Node node, Scope scope, String prefix, 
@@ -191,8 +193,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             ProducedReference pr, String desc, String text, 
             CeylonParseController cpc, Declaration dec, Scope scope,
             boolean fullType, boolean explicitReturnType) {
-        super(offset, prefix, getIcon(dec), 
-                desc, text);
+        super(offset, prefix, getRefinementIcon(dec), desc, text);
         this.cpc = cpc;
         this.declaration = dec;
         this.pr = pr;
@@ -204,11 +205,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     private Unit getUnit() {
         return cpc.getRootNode().getUnit();
     }
-
-    private static Image getIcon(Declaration dec) {
-        return dec.isFormal() ? FORMAL_REFINEMENT : DEFAULT_REFINEMENT;
-    }
-
+    
     @Override
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
@@ -331,7 +328,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     name.equals(split[split.length-1])) {
                 continue;
             }
-            if (d instanceof Value) {
+            if (d instanceof Value && !d.equals(declaration)) {
                 if (d.getUnit().getPackage().getNameAsString()
                         .equals(Module.LANGUAGE_MODULE_NAME)) {
                     if (isIgnoredLanguageModuleValue(name)) {

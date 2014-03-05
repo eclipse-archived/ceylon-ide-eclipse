@@ -30,6 +30,7 @@ public interface CeylonResources {
     
     public static final String CEYLON_PROJECT = "ceylon_project";
     
+    public static final String CEYLON_ARGUMENT = "ceylon_argument";
     public static final String CEYLON_DEFAULT_REFINEMENT = "ceylon_default_refinement";
     public static final String CEYLON_FORMAL_REFINEMENT = "ceylon_formal_refinement";
     
