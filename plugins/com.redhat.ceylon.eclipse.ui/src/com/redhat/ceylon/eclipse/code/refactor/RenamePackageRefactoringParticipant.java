@@ -63,7 +63,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
     }
     
     @Override
-    public RefactoringStatus checkConditions(IProgressMonitor pm, CheckConditionsContext context) {
+    public RefactoringStatus checkConditions(IProgressMonitor pm, 
+            CheckConditionsContext context) {
         return new RefactoringStatus();
     }
 
@@ -95,7 +96,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                 try {
                     final IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
                     IFile movedFile = getMovedFile(file);
-                    TextFileChange change= new MovingTextFileChange(movedFile.getName(), movedFile, file);
+                    TextFileChange change = 
+                            new MovingTextFileChange(movedFile.getName(), movedFile, file);
                     change.setEdit(new MultiTextEdit());
                     for (ReplaceEdit edit: edits) {
                         change.addEdit(edit);
