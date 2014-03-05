@@ -21,6 +21,7 @@
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
+import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
@@ -52,6 +54,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     private List<TypeParameterMirror> typeParameters;
     Boolean isOverriding;
     private LookupEnvironment lookupEnvironment;
+    private Boolean isOverloading;
     
     public JDTMethod(MethodBinding method, LookupEnvironment lookupEnvironment) {
         this.method = method;
@@ -167,6 +170,28 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         return isOverriding.booleanValue();
     }
 
+    public boolean isOverloadingMethod() {
+        if (isOverloading == null) {
+            isOverloading = Boolean.FALSE;
+
+            ReferenceBinding declaringClass = method.declaringClass;
+            
+            // Exception has a pretend supertype of Object, unlike its Java supertype of java.lang.RuntimeException
+            // so we stop there for it, especially since it does not have any overloading
+            if(CharOperation.equals(declaringClass.qualifiedSourceName(), "ceylon.language.Exception".toCharArray()))
+                return false;
+
+            // try the superclass first
+            if (isOverloadingInSuperClasses(declaringClass)) {
+                isOverloading = Boolean.TRUE;
+            } 
+            if (isOverloadingInSuperInterfaces(declaringClass)) {
+                isOverloading = Boolean.TRUE;
+            }
+        }
+        return isOverloading.booleanValue();
+    }
+
     private boolean isDefinedInType(ReferenceBinding superClass) {
         for (MethodBinding inheritedMethod : superClass.methods()) {
             if (methodVerifier.doesMethodOverride(method, inheritedMethod)) {
@@ -175,7 +200,27 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         }
         return false;
     }
-    
+
+    private boolean isOverloadingInType(ReferenceBinding superClass) {
+        for (MethodBinding inheritedMethod : superClass.methods()) {
+            if(inheritedMethod.isPrivate()
+                    || inheritedMethod.isStatic()
+                    || inheritedMethod.isConstructor()
+                    || inheritedMethod.isBridge()
+                    || inheritedMethod.isSynthetic()
+                    || !Arrays.equals(inheritedMethod.constantPoolName(), method.selector))
+                continue;
+            // skip ignored methods too
+            if(JDTUtils.hasAnnotation(inheritedMethod, AbstractModelLoader.CEYLON_IGNORE_ANNOTATION))
+                continue;
+            // if it does not override it and has the same name, it's overloading
+            if (!methodVerifier.doesMethodOverride(method, inheritedMethod)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     boolean isDefinedInSuperClasses(ReferenceBinding declaringClass) {
         ReferenceBinding superClass = declaringClass.superclass();
         if (superClass == null) {
@@ -202,6 +247,43 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                 return true;
             }
             if (isDefinedInSuperInterfaces(superInterface)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    boolean isOverloadingInSuperClasses(ReferenceBinding declaringClass) {
+        ReferenceBinding superClass = declaringClass.superclass();
+        if (superClass == null) {
+            return false;
+        }
+
+        // Exception has a pretend supertype of Object, unlike its Java supertype of java.lang.RuntimeException
+        // so we stop there for it, especially since it does not have any overloading
+        if(CharOperation.equals(superClass.qualifiedSourceName(), "ceylon.language.Exception".toCharArray()))
+            return false;
+
+        superClass = JDTUtils.inferTypeParametersFromSuperClass(declaringClass,
+                superClass, lookupEnvironment);
+        
+        if (isOverloadingInType(superClass)) {
+            return true;
+        }
+        return isOverloadingInSuperClasses(superClass);
+    }
+
+    boolean isOverloadingInSuperInterfaces(ReferenceBinding declaringType) {
+        ReferenceBinding[] superInterfaces = declaringType.superInterfaces();
+        if (superInterfaces == null) {
+            return false;
+        }
+        
+        for (ReferenceBinding superInterface : superInterfaces) {
+            if (isOverloadingInType(superInterface)) {
+                return true;
+            }
+            if (isOverloadingInSuperInterfaces(superInterface)) {
                 return true;
             }
         }
