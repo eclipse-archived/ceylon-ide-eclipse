@@ -35,12 +35,14 @@ public class InlineInputPage extends UserInputWizardPage {
         gd.horizontalSpan=2;
         title.setLayoutData(gd);
         final Button checkbox = new Button(result, SWT.CHECK);
-        checkbox.setText("Delete declaration");
+        checkbox.setText("Inline all references and delete declaration");
         checkbox.setSelection(true);
+        checkbox.setEnabled(getInlineRefactoring().isReference());
         checkbox.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 getInlineRefactoring().setDelete();
+                getInlineRefactoring().setJustOne();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}

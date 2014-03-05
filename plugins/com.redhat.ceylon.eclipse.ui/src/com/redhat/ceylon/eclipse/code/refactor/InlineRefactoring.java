@@ -46,10 +46,15 @@ public class InlineRefactoring extends AbstractRefactoring {
     
     private final Declaration declaration;
     private boolean delete = true;
+    private boolean justOne = false;
 
     public InlineRefactoring(ITextEditor editor) {
         super(editor);
         declaration = getReferencedDeclaration(node);
+    }
+    
+    boolean isReference() {
+        return !(node instanceof Tree.Declaration);
     }
     
     @Override
@@ -157,9 +162,8 @@ public class InlineRefactoring extends AbstractRefactoring {
         List<CommonToken> editorTokens = editor.getParseController().getTokens();
         if (declaration!=null) {
             if (searchInEditor()) {
-                Tree.CompilationUnit cu = editorRootNode;
-                if (cu.getUnit().equals(declaration.getUnit())) {
-                    declarationUnit = cu;
+                if (editorRootNode.getUnit().equals(declaration.getUnit())) {
+                    declarationUnit = editorRootNode;
                     declarationTokens = editorTokens;
                 }
             }
@@ -181,7 +185,9 @@ public class InlineRefactoring extends AbstractRefactoring {
         CompositeChange cc = new CompositeChange(getName());
         if (declarationNode!=null) {
             for (PhasedUnit pu: getAllUnits()) {
-                if (searchInFile(pu)) {
+                if (searchInFile(pu) && 
+                        (delete||!justOne||
+                                pu.getUnit().equals(declaration.getUnit()))) {
                     TextFileChange tfc = newTextFileChange(pu);
                     Tree.CompilationUnit cu = pu.getCompilationUnit();
                     inlineInFile(tfc, cc, declarationNode, 
@@ -190,7 +196,9 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
             }
         }
-        if (searchInEditor()) {
+        if (searchInEditor() && 
+                (delete||!justOne||
+                        editorRootNode.getUnit().equals(declaration.getUnit()))) {
             DocumentChange dc = newDocumentChange();
             inlineInFile(dc, cc, declarationNode, declarationUnit, 
                     term, declarationTokens,
@@ -390,7 +398,8 @@ public class InlineRefactoring extends AbstractRefactoring {
                 super.visit(that);
                 if (that.getPrimary() instanceof Tree.MemberOrTypeExpression) {
                     Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) that.getPrimary();
-                    if (mte.getDeclaration().equals(declaration)) {
+                    Declaration d = mte.getDeclaration();
+                    if (inlineRef(mte, d)) {
                         //TODO: breaks for invocations like f(f(x, y),z)
                         final StringBuilder result = new StringBuilder();
                         class InterpolateArgumentsVisitor extends Visitor {
@@ -436,7 +445,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             public void visit(Tree.Variable that) {
                 if (that.getType() instanceof Tree.SyntheticVariable) {
                     TypedDeclaration od = that.getDeclarationModel().getOriginalDeclaration();
-                    if (od!=null && od.equals(declaration)) {
+                    if (od!=null && od.equals(declaration) && delete) {
                         tfc.addEdit(new InsertEdit(that.getSpecifierExpression().getStartIndex(), 
                                 that.getIdentifier().getText()+" = "));
                     }
@@ -446,7 +455,8 @@ public class InlineRefactoring extends AbstractRefactoring {
             @Override
             public void visit(Tree.BaseMemberExpression that) {
                 super.visit(that);
-                if (that.getDeclaration().equals(declaration)) {
+                Declaration d = that.getDeclaration();
+                if (inlineRef(that, d)) {
                     tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
                             that.getStopIndex()-that.getStartIndex()+1, 
                             template));    
@@ -455,6 +465,13 @@ public class InlineRefactoring extends AbstractRefactoring {
         }.visit(pu);
     }
 
+    private boolean inlineRef(Tree.MemberOrTypeExpression that, Declaration d) {
+        return (!justOne || that.getUnit().equals(node.getUnit()) && 
+                    that.getStartIndex()!=null &&
+                    that.getStartIndex().equals(node.getStartIndex())) &&
+                d!=null && d.equals(declaration);
+    }
+    
     private static void interpolatePositionalArguments(StringBuilder result, 
             Tree.InvocationExpression that, Tree.BaseMemberExpression it,
             boolean sequenced, List<CommonToken> tokens) {
@@ -528,5 +545,9 @@ public class InlineRefactoring extends AbstractRefactoring {
     
     public void setDelete() {
         this.delete = !delete;
+    }
+    
+    public void setJustOne() {
+        this.justOne = !justOne;
     }
 }
