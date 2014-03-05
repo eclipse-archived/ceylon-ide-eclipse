@@ -366,6 +366,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(TREE_MODE, image("hierarchicalLayout.gif"));
         
         reg.put(TERMINATE_STATEMENT, image("correction_cast.gif"));
+        reg.put(FORMAT_BLOCK, image("format_block.gif"));
         reg.put(REMOVE_COMMENT, image("remove_comment_edit.gif"));
         reg.put(ADD_COMMENT, image("comment_edit.gif"));
         reg.put(TOGGLE_COMMENT, image("url.gif"));

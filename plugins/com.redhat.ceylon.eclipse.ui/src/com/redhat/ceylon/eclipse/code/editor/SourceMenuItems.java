@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRe
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_COMMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CORRECT_INDENT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.FORMAT_BLOCK;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.QUICK_ASSIST;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REMOVE_COMMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SHIFT_LEFT;
@@ -33,6 +34,7 @@ import com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler;
 public class SourceMenuItems extends CompoundContributionItem {
     
     public static ImageDescriptor TERMINATE = imageRegistry.getDescriptor(TERMINATE_STATEMENT);
+    public static ImageDescriptor FORMAT = imageRegistry.getDescriptor(FORMAT_BLOCK);
     public static ImageDescriptor ADD = imageRegistry.getDescriptor(ADD_COMMENT);
     public static ImageDescriptor REMOVE = imageRegistry.getDescriptor(REMOVE_COMMENT);
     public static ImageDescriptor TOGGLE = imageRegistry.getDescriptor(TOGGLE_COMMENT);
@@ -86,6 +88,7 @@ public class SourceMenuItems extends CompoundContributionItem {
                 new DynamicMenuItem(PLUGIN_ID + ".editor.terminateStatement", "Terminate &Statement", true, TERMINATE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.correctIndentation", "Correct &Indentation", true, CORRECT),
+                new DynamicMenuItem(PLUGIN_ID + ".editor.formatBlock", "Format &Block", true, FORMAT),
                 new Separator(),
                 new DynamicMenuItem(ITextEditorActionDefinitionIds.SHIFT_LEFT, "Shift &Left", true, LEFT),
                 new DynamicMenuItem(ITextEditorActionDefinitionIds.SHIFT_RIGHT, "Shift &Right", true, RIGHT),

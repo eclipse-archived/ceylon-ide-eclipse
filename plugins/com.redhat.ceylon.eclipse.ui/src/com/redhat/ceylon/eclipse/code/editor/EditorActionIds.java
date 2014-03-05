@@ -19,6 +19,11 @@ public interface EditorActionIds {
     public static final String TERMINATE_STATEMENT= PLUGIN_ID + ".editor.terminateStatement";
 
     /**
+     * Action definition ID of the Edit -> Format Block action
+     */
+    public static final String FORMAT_BLOCK = PLUGIN_ID + ".editor.formatBlock";
+
+    /**
      * Action definition id of the collapse members action
      */
     public static final String FOLDING_COLLAPSE_MEMBERS= PLUGIN_ID + ".editor.folding.collapseMembers";

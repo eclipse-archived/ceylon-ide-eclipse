@@ -728,6 +728,11 @@
             name="Terminate Statement"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Format the statements in the enclosing block"
+            id="com.redhat.ceylon.eclipse.ui.editor.formatBlock"
+            name="Format Block"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Select the innermost enclosing construct"
             id="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
             name="Select Enclosing"/>
@@ -922,6 +927,11 @@
             sequence="M1+;"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.terminateStatement"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+'"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.formatBlock"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <!--key
             contextId="com.redhat.ceylon.eclipse.ui.context"

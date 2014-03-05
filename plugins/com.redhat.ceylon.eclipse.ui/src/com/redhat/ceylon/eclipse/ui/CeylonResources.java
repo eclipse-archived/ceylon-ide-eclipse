@@ -105,6 +105,7 @@ public interface CeylonResources {
     public static final String TREE_MODE = "tree_mode";
     
     public static final String TERMINATE_STATEMENT = "terminate_statement";
+    public static final String FORMAT_BLOCK = "format_block";
     public static final String ADD_COMMENT = "add_comment";
     public static final String REMOVE_COMMENT = "remove_comment";
     public static final String TOGGLE_COMMENT = "toggle_comment";
