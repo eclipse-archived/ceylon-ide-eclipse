@@ -66,7 +66,7 @@ import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemo
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameDescriptorProposal.addRenameDescriptorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposal;
+import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowSwitchReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
@@ -81,6 +81,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTyp
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 import static com.redhat.ceylon.eclipse.util.FindUtils.findArgument;
 import static com.redhat.ceylon.eclipse.util.FindUtils.findDeclaration;
+import static com.redhat.ceylon.eclipse.util.FindUtils.findImport;
+import static com.redhat.ceylon.eclipse.util.FindUtils.findStatement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -116,12 +118,10 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
-import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 
 public class CeylonCorrectionProcessor extends QuickAssistAssistant 
@@ -577,9 +577,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertToPositionalArgumentsProposal(proposals, file, cu, 
                     editor, currentOffset);
             
-            Tree.Statement statement = FindUtils.findStatement(cu, node);
+            Tree.Statement statement = findStatement(cu, node);
             Tree.Declaration declaration = findDeclaration(cu, node);
             Tree.NamedArgument argument = findArgument(cu, node);
+            Tree.ImportMemberOrType imp = findImport(cu, node);
             
             addVerboseRefinementProposal(proposals, file, statement, cu);
             
@@ -591,7 +592,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     declaration, currentOffset);
             
             addArgumentProposals(proposals, doc, file, argument);
-            addRefactorImportProposals(editor, cu, proposals, file, node);
+            addUseAliasProposal(imp, proposals, editor);
+            addRenameAliasProposal(imp, proposals, editor);
+            addRemoveAliasProposal(imp, proposals, file, editor);            
+            addRenameVersionProposals(node, proposals, cu, editor);
             
             addConvertToIfElseProposal(doc, proposals, file, statement);
             addConvertToThenElseProposal(cu, doc, proposals, file, statement);
@@ -776,68 +780,6 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
     }
 
-    private void addRefactorImportProposals(CeylonEditor editor, 
-            Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals, 
-            IFile file, Node node) {
-        
-        class FindImportVisitor extends Visitor {
-            private Declaration declaration;
-            Tree.ImportMemberOrType result;
-            FindImportVisitor(Declaration dec) {
-                this.declaration = dec;
-            }
-            @Override
-            public void visit(Tree.Declaration that) {}
-            @Override
-            public void visit(Tree.ImportMemberOrType that) {
-                super.visit(that);
-                if (that.getDeclarationModel()!=null &&
-                        that.getDeclarationModel().equals(declaration)) {
-                    result = that;
-                }
-            }
-        }
-        
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            Declaration declaration = 
-                    ((Tree.MemberOrTypeExpression) node).getDeclaration();
-            if (declaration!=null) {
-                FindImportVisitor visitor = new FindImportVisitor(declaration);
-                visitor.visit(cu);
-                node = visitor.result;
-            }
-        }
-        else if (node instanceof Tree.SimpleType) {
-            Declaration declaration = 
-                    ((Tree.SimpleType) node).getDeclarationModel();
-            if (declaration!=null) {
-                FindImportVisitor visitor = new FindImportVisitor(declaration);
-                visitor.visit(cu);
-                node = visitor.result;
-            }
-        }
-            
-        if (node instanceof Tree.ImportMemberOrType) {
-            Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
-            Declaration dec = imt.getDeclarationModel();
-            if (dec!=null) {
-                if (imt.getAlias()==null) {
-                    addUseAliasProposal(imt, proposals, dec, editor);
-                }
-                else {
-                    addRenameAliasProposal(imt, proposals, dec, editor);
-                    addRemoveAliasProposal(imt, proposals, dec, file, editor);
-                }
-            }
-        }
-        
-        for (Tree.ModuleDescriptor md: cu.getModuleDescriptors()) {
-            if (md.getVersion()==node || md==node || md.getImportPath()==node) {
-                addRenameVersionProposal(md, proposals, editor);
-            }
-        }
-    }
-
     private void addArgumentProposals(Collection<ICompletionProposal> proposals, 
             IDocument doc, IFile file, Tree.StatementOrArgument node) {
         if (node instanceof Tree.MethodArgument) {
@@ -904,5 +846,3 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     }
 
 }
-
-

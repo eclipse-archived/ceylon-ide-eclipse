@@ -13,19 +13,18 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 class RemoveAliasProposal extends CorrectionProposal {
         
-    protected static final class AliasRemovalVisitor extends Visitor {
+    private static final class AliasRemovalVisitor extends Visitor {
         private final Declaration dec;
         private final TextFileChange change;
-        private final Identifier aid;
+        private final Tree.Identifier aid;
 
-        protected AliasRemovalVisitor(Declaration dec, TextFileChange change,
-                Identifier aid) {
+        private AliasRemovalVisitor(Declaration dec, TextFileChange change,
+                Tree.Identifier aid) {
             this.dec = dec;
             this.change = change;
             this.aid = aid;
@@ -52,7 +51,7 @@ class RemoveAliasProposal extends CorrectionProposal {
                     that.getDeclaration());
         }
 
-        protected void addRemoval(Identifier id, Declaration d) {
+        private void addRemoval(Tree.Identifier id, Declaration d) {
             if (id!=null && d!=null && dec.equals(d) && 
                     id.getText().equals(aid.getText())) {
                 change.addEdit(new ReplaceEdit(id.getStartIndex(), 
@@ -61,21 +60,28 @@ class RemoveAliasProposal extends CorrectionProposal {
         }
     }
 
-    private RemoveAliasProposal(IFile file, Declaration dec, TextFileChange change) {
-        super("Remove alias of '" + dec.getName() + "'", change, REMOVE_CORR);
+    private RemoveAliasProposal(IFile file, Declaration dec, 
+            TextFileChange change) {
+        super("Remove alias of '" + dec.getName() + "'", 
+                change, REMOVE_CORR);
     }
     
-    static void addRemoveAliasProposal(Tree.ImportMemberOrType node,  
+    static void addRemoveAliasProposal(Tree.ImportMemberOrType imt,  
             Collection<ICompletionProposal> proposals, 
-            final Declaration dec, IFile file, CeylonEditor editor) {
-        final TextFileChange change =  new TextFileChange("Remove Alias", file);
-        change.setEdit(new MultiTextEdit());
-        final Identifier aid = node.getAlias().getIdentifier();
-        change.addEdit(new DeleteEdit(aid.getStartIndex(), 
-                node.getIdentifier().getStartIndex()-aid.getStartIndex()));
-        editor.getParseController().getRootNode()
-                .visit(new AliasRemovalVisitor(dec, change, aid));
-        proposals.add(new RemoveAliasProposal(file, dec, change));
+            IFile file, CeylonEditor editor) {
+        if (imt!=null) {
+            Declaration dec = imt.getDeclarationModel();
+            if (dec!=null && imt.getAlias()!=null) {
+                TextFileChange change =  new TextFileChange("Remove Alias", file);
+                change.setEdit(new MultiTextEdit());
+                Tree.Identifier aid = imt.getAlias().getIdentifier();
+                change.addEdit(new DeleteEdit(aid.getStartIndex(), 
+                        imt.getIdentifier().getStartIndex()-aid.getStartIndex()));
+                Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
+                rootNode.visit(new AliasRemovalVisitor(dec, change, aid));
+                proposals.add(new RemoveAliasProposal(file, dec, change));
+            }
+        }
     }
     
 }

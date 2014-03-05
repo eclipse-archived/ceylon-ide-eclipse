@@ -276,7 +276,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         Tree.AttributeDeclaration decNode = (Tree.AttributeDeclaration) node;
         Value param = decNode.getDeclarationModel();
         TypeDeclaration target = param.getTypeDeclaration();
-        Tree.Declaration fun = getContainer(param, rootNode);
+        Tree.Declaration fun = getContainer(rootNode, param);
         Tree.SpecifierOrInitializerExpression sie = 
                 decNode.getSpecifierOrInitializerExpression();
         Tree.Term defaultArg = null;

@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionLinkedMode;
@@ -33,10 +34,14 @@ class RenameVersionProposal implements ICompletionProposal,
         new ChangeVersionLinkedMode(node.getVersion(), node.getImportPath(), editor).start();
     }
     
-    static void addRenameVersionProposal(Tree.ModuleDescriptor node,  
+    static void addRenameVersionProposals(Node node, 
             Collection<ICompletionProposal> proposals, 
-            CeylonEditor editor) {
-        proposals.add(new RenameVersionProposal(node, editor));
+            Tree.CompilationUnit cu, CeylonEditor editor) {
+        for (Tree.ModuleDescriptor md: cu.getModuleDescriptors()) {
+            if (md.getVersion()==node || md==node || md.getImportPath()==node) {
+                proposals.add(new RenameVersionProposal(md, editor));
+            }
+        }
     }
 
     @Override

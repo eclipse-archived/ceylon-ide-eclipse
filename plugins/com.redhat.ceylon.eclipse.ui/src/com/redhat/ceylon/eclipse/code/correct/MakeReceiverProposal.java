@@ -29,8 +29,8 @@ public class MakeReceiverProposal implements ICompletionProposal, ICompletionPro
         if (node instanceof Tree.Declaration) {
             Declaration dec = ((Tree.Declaration) node).getDeclarationModel();
             if (dec!=null) {
-                Tree.Declaration container = getContainer(dec, 
-                        editor.getParseController().getRootNode());
+                Tree.Declaration container = getContainer(editor.getParseController().getRootNode(), 
+                        dec);
                 if (container!=null) {
                     name = container.getDeclarationModel().getName();
                 }

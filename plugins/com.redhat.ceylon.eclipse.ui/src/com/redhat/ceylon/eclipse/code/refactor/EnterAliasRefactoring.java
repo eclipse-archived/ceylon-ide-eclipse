@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.FindUtils.findImport;
 import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -22,23 +23,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class EnterAliasRefactoring extends AbstractRefactoring {
     
-    private final class FindImportVisitor extends Visitor {
-        
-        private final Declaration dec;
-        private Tree.ImportMemberOrType result;
-
-        private FindImportVisitor(Declaration dec) {
-            this.dec = dec;
-        }
-
-        public void visit(Tree.ImportMemberOrType that) {
-            super.visit(that);
-            if (that.getDeclarationModel().equals(dec)) {
-                result = that;
-            }
-        }
-    }
-
     private String newName;
     private Tree.ImportMemberOrType element;
     
@@ -48,24 +32,7 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
     
     public EnterAliasRefactoring(ITextEditor editor) {
         super(editor);
-        if (node instanceof Tree.ImportMemberOrType) {
-            element = (Tree.ImportMemberOrType) node;
-        }
-        if (node instanceof Tree.StaticMemberOrTypeExpression) {
-            Tree.StaticMemberOrTypeExpression bmte =
-                    (Tree.StaticMemberOrTypeExpression) node;
-            setElement(bmte.getDeclaration());
-        }
-        if (node instanceof Tree.SimpleType) {
-            Tree.SimpleType bmte =
-                    (Tree.SimpleType) node;
-            setElement(bmte.getDeclarationModel());
-        }
-        if (node instanceof Tree.MemberLiteral) {
-            Tree.MemberLiteral bmte =
-                    (Tree.MemberLiteral) node;
-            setElement(bmte.getDeclaration());
-        }
+        element = findImport(rootNode, node);
         if (element!=null) {
             final Alias alias = element.getAlias();
             if (alias==null) {
@@ -77,14 +44,6 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void setElement(Declaration dec) {
-        if (dec!=null) {
-            FindImportVisitor fiv = new FindImportVisitor(dec);
-            fiv.visit(rootNode);
-            element = fiv.result;
-        }
-    }
-    
     @Override
     public boolean isEnabled() {
         return element!=null &&
