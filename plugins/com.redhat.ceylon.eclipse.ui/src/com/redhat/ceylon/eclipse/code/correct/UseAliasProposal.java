@@ -25,8 +25,7 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
     private final Declaration dec;
     private final CeylonEditor editor;
     
-    private UseAliasProposal(Tree.ImportMemberOrType node, 
-            Declaration dec, CeylonEditor editor) {
+    private UseAliasProposal(Declaration dec, CeylonEditor editor) {
         this.dec = dec;
         this.editor = editor;
     }
@@ -41,10 +40,15 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
         }
     }
     
-    static void addUseAliasProposal(Tree.ImportMemberOrType node,  
-            Collection<ICompletionProposal> proposals, 
-            Declaration dec, CeylonEditor editor) {
-        proposals.add(new UseAliasProposal(node, dec, editor));
+    static void addUseAliasProposal(Tree.ImportMemberOrType imt,  
+            Collection<ICompletionProposal> proposals,
+            CeylonEditor editor) {
+        if (imt!=null) {
+            Declaration dec = imt.getDeclarationModel();
+            if (dec!=null && imt.getAlias()==null) {
+                proposals.add(new UseAliasProposal(dec, editor));
+            }
+        }
     }
 
     @Override

@@ -23,13 +23,13 @@ import com.redhat.ceylon.eclipse.code.refactor.EnterAliasRefactoringAction;
 class RenameAliasProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
     
-    private final Tree.ImportMemberOrType node;
+    private final Tree.Alias alias;
     private final Declaration dec;
     private final CeylonEditor editor;
     
-    private RenameAliasProposal(Tree.ImportMemberOrType node, 
+    private RenameAliasProposal(Tree.Alias alias, 
             Declaration dec, CeylonEditor editor) {
-        this.node = node;
+        this.alias = alias;
         this.dec = dec;
         this.editor = editor;
     }
@@ -43,11 +43,17 @@ class RenameAliasProposal implements ICompletionProposal,
             new EnterAliasRefactoringAction(editor).run();
         }
     }
-    
-    static void addRenameAliasProposal(Tree.ImportMemberOrType node,  
+
+    static void addRenameAliasProposal(Tree.ImportMemberOrType imt,  
             Collection<ICompletionProposal> proposals, 
-            Declaration dec, CeylonEditor editor) {
-        proposals.add(new RenameAliasProposal(node, dec, editor));
+            CeylonEditor editor) {
+        if (imt!=null) {
+            Declaration dec = imt.getDeclarationModel();
+            Tree.Alias a = imt.getAlias();
+            if (dec!=null && a!=null) {
+                proposals.add(new RenameAliasProposal(a, dec, editor));
+            }
+        }
     }
 
     @Override
@@ -68,7 +74,7 @@ class RenameAliasProposal implements ICompletionProposal,
     @Override
     public String getDisplayString() {
         return "Rename alias '" + 
-                node.getAlias().getIdentifier().getText() + 
+                alias.getIdentifier().getText() + 
                 "' of '" + dec.getName() + "'";
     }
 

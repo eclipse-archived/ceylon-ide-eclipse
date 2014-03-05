@@ -59,7 +59,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         if (node instanceof Tree.Declaration) {
             declaration = (Tree.Declaration) node;
             if (declaration.getDeclarationModel()!=null) {
-                newName = defaultName(getContainer(declaration.getDeclarationModel(), rootNode));
+                newName = defaultName(getContainer(rootNode, declaration.getDeclarationModel()));
             }
         }
     }
@@ -111,7 +111,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         CompositeChange cc = new CompositeChange(getName());
         
         Declaration dec = declaration.getDeclarationModel();
-        Tree.TypeDeclaration owner = (Tree.TypeDeclaration) FindUtils.getContainer(dec, rootNode);
+        Tree.TypeDeclaration owner = (Tree.TypeDeclaration) FindUtils.getContainer(rootNode, dec);
 
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {

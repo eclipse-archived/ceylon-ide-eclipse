@@ -44,8 +44,8 @@ public class FindUtils {
         }
     }
 
-    public static Tree.Declaration getContainer(final Declaration dec,
-            Tree.CompilationUnit rootNode) {
+    public static Tree.Declaration getContainer(Tree.CompilationUnit cu,
+            final Declaration dec) {
         class FindContainer extends Visitor {
             final Scope container = dec.getContainer();
             Tree.Declaration result;
@@ -58,13 +58,58 @@ public class FindUtils {
             }
         }
         FindContainer fc = new FindContainer();
-        rootNode.visit(fc);
+        cu.visit(fc);
         if (fc.result instanceof Tree.Declaration) {
             return (Tree.Declaration) fc.result;
         }
         else {
             return null;
         }
+    }
+
+    public static Tree.ImportMemberOrType findImport(Tree.CompilationUnit cu, Node node) {
+        
+        if (node instanceof Tree.ImportMemberOrType) {
+            return (Tree.ImportMemberOrType) node;
+        }
+        
+        final Declaration declaration;
+        if (node instanceof Tree.MemberOrTypeExpression) {
+            declaration = ((Tree.MemberOrTypeExpression) node).getDeclaration();
+        }
+        else if (node instanceof Tree.SimpleType) {
+            declaration = ((Tree.SimpleType) node).getDeclarationModel();
+        }
+        else if (node instanceof Tree.MemberLiteral) {
+            declaration = ((Tree.MemberLiteral) node).getDeclaration();
+        }
+        else {
+            return null;
+        }
+        
+        class FindImportVisitor extends Visitor {
+            Tree.ImportMemberOrType result;
+            @Override
+            public void visit(Tree.Declaration that) {}
+            @Override
+            public void visit(Tree.ImportMemberOrType that) {
+                super.visit(that);
+                if (that.getDeclarationModel()!=null &&
+                        that.getDeclarationModel().equals(declaration)) {
+                    result = that;
+                }
+            }
+        }
+        
+        if (declaration!=null) {
+            FindImportVisitor visitor = new FindImportVisitor();
+            visitor.visit(cu);
+            return visitor.result;
+        }
+        else {
+            return null;
+        }
+    
     }
 
 }
