@@ -768,7 +768,8 @@ public class CodeCompletions {
     }
 
     private static boolean isObjectField(Declaration m) {
-        return m.getName().equals("hash") ||
+        return m.getName()!=null &&
+                m.getName().equals("hash") ||
                 m.getName().equals("string");
     }
 
