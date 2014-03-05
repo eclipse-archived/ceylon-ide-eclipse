@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -201,6 +202,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         try {
             List<Node> occurrences = getOccurrencesOf(parseController, selectedNode);
             List<Node> assignments = getAssignmentsOf(parseController, selectedNode);
+            removeEditedOccurrences(document, occurrences);
+            removeEditedOccurrences(document, assignments);
             Map<Annotation,Position> annotationMap = new HashMap<Annotation,Position>
                     (occurrences.size()+assignments.size());
             addPositionsToAnnotationMap(convertRefNodesToPositions(occurrences), 
@@ -215,6 +218,18 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         DocumentationView documentationView = DocumentationView.getInstance();
         if (documentationView!=null) {
             documentationView.update(activeEditor, offset, length);
+        }
+    }
+
+    private static void removeEditedOccurrences(IDocument document, List<Node> occurrences)
+            throws BadLocationException {
+        for (Iterator<Node> i=occurrences.iterator(); i.hasNext();) {
+            CommonToken tok = (CommonToken) i.next().getToken();
+            String docText = document.get(tok.getStartIndex(), 
+                    tok.getStopIndex()-tok.getStartIndex()+1);
+            if (!docText.equals(tok.getText())) {
+                i.remove();
+            }
         }
     }
 
@@ -375,7 +390,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     @Override
     public void update(CeylonParseController parseController,
             IProgressMonitor monitor) {
-        if (activeEditor==null) {
+        if (activeEditor!=null) {
             synchronized (activeEditor) {
                 if (!activeEditor.isBackgroundParsingPaused()) {
                     try {
