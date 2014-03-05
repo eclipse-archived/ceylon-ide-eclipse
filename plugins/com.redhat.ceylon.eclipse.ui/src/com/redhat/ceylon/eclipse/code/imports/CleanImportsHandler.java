@@ -311,11 +311,11 @@ public class CleanImportsHandler extends AbstractHandler {
                 if (dm!=null && 
                         !hasRealErrors(imt.getIdentifier()) && 
                         !hasRealErrors(imt)) {
+                    Tree.ImportMemberOrTypeList nimtl = imt.getImportMemberOrTypeList();
                     if (unused.contains(dm)) {
-                        if (imt.getImportMemberOrTypeList()!=null) {
+                        if (nimtl!=null) {
                             for (Tree.ImportMemberOrType nimt: 
-                                    imt.getImportMemberOrTypeList()
-                                            .getImportMemberOrTypes()) {
+                                    nimtl.getImportMemberOrTypes()) {
                                 Declaration ndm = nimt.getDeclarationModel();
                                 if (ndm!=null && 
                                         !hasRealErrors(nimt.getIdentifier()) && 
@@ -326,12 +326,15 @@ public class CleanImportsHandler extends AbstractHandler {
                                     }
                                 }
                             }
+                            if (nimtl.getImportWildcard()!=null) {
+                                list.add(imt);
+                            }
                         }
                     } 
                     else {
                         if (!hasWildcard || 
                                 imt.getAlias()!=null || 
-                                imt.getImportMemberOrTypeList()!=null || 
+                                nimtl!=null || 
                                 preventAmbiguityDueWildcards(dm, packages)) {
                             list.add(imt);
                         }
