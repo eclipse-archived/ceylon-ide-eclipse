@@ -118,7 +118,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
     protected int performInitialChange(IDocument document) {
         try {
             DocumentChange change = 
-                    new DocumentChange("Extract Value", document);
+                    new DocumentChange("Enter Alias", document);
             int result = refactoring.renameInFile(change);
             change.perform(new NullProgressMonitor());
             return result;
@@ -145,11 +145,11 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         int offset;
         Tree.ImportMemberOrType element = refactoring.getElement();
         Tree.Alias alias = element.getAlias();
-        if (alias!=null) {
-            offset = alias.getStartIndex();
+        if (alias == null) {
+            offset = element.getIdentifier().getStartIndex();
         }
         else {
-            offset = element.getIdentifier().getStartIndex();
+            offset = alias.getStartIndex();
         }
         String originalName = getOriginalName();
         namePosition = new ProposalPosition(document, offset, 
