@@ -27,6 +27,53 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 public class LinkedModeCompletionProposal 
         implements ICompletionProposal,  ICompletionProposalExtension2 {
     
+    public static final class NullProposal 
+            implements ICompletionProposal, ICompletionProposalExtension2 {
+        @Override
+        public void apply(IDocument document) {}
+
+        @Override
+        public Point getSelection(IDocument document) {
+            return null;
+        }
+
+        @Override
+        public String getAdditionalProposalInfo() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayString() {
+            return "";
+        }
+
+        @Override
+        public Image getImage() {
+            return null;
+        }
+
+        @Override
+        public IContextInformation getContextInformation() {
+            return null;
+        }
+
+        @Override
+        public void apply(ITextViewer viewer, char trigger, int stateMask,
+                int offset) {}
+
+        @Override
+        public void selected(ITextViewer viewer, boolean smartToggle) {}
+
+        @Override
+        public void unselected(ITextViewer viewer) {}
+
+        @Override
+        public boolean validate(IDocument document, int offset,
+                DocumentEvent event) {
+            return true;
+        }
+    }
+
     private final String text;
     private final Image image;
     private final int offset;
@@ -66,7 +113,8 @@ public class LinkedModeCompletionProposal
         }
     }
 
-    private IRegion getCurrentRegion(IDocument document) throws BadLocationException {
+    private IRegion getCurrentRegion(IDocument document) 
+            throws BadLocationException {
         int start = offset;
         int length = 0;
         int count = 0;
@@ -117,7 +165,8 @@ public class LinkedModeCompletionProposal
             DocumentEvent event) {
         try {
             IRegion region = getCurrentRegion(document);
-            String prefix = document.get(region.getOffset(), offset-region.getOffset());
+            String prefix = document.get(region.getOffset(), 
+                    offset-region.getOffset());
             return text.startsWith(prefix);
         }
         catch (BadLocationException e) {
@@ -127,7 +176,8 @@ public class LinkedModeCompletionProposal
     
     private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
     private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
-
+    private static final ICompletionProposal NULL_PROPOSAL = new NullProposal();
+    
     public static ICompletionProposal[] getNameProposals(int offset, 
             int seq, String name) {
         return getNameProposals(offset, seq, name, null);
@@ -137,6 +187,7 @@ public class LinkedModeCompletionProposal
             int seq, String name, String defaultName) {
         List<ICompletionProposal> nameProposals = 
                 new ArrayList<ICompletionProposal>();
+        nameProposals.add(NULL_PROPOSAL);
         if (defaultName!=null) {
             LinkedModeCompletionProposal nameProposal = 
                     new LinkedModeCompletionProposal(offset, defaultName, seq);
