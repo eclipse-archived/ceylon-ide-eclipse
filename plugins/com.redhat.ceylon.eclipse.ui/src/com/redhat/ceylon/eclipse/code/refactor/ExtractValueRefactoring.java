@@ -43,7 +43,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     
     @Override
     public boolean isEnabled() {
-        return node instanceof Tree.Term;
+        String fn = node.getUnit().getFilename();
+        return node instanceof Tree.Term && 
+                !fn.equals("module.ceylon") &&
+                !fn.equals("package.ceylon");
     }
 
     public String getName() {
