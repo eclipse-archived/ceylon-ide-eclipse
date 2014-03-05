@@ -19,7 +19,7 @@ public class InlineInputPage extends UserInputWizardPage {
         Composite result = new Composite(parent, SWT.NONE);
         setControl(result);
         GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
+        layout.numColumns = 1;
         result.setLayout(layout);
         Label title = new Label(result, SWT.LEFT);  
         title.setText("Inline " + getInlineRefactoring().getCount() + 
