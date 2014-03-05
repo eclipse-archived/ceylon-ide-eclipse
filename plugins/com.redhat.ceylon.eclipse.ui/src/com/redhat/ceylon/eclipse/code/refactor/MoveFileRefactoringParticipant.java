@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.findImportNode;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEditForMove;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
@@ -92,6 +92,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         else {
             PhasedUnit movedPhasedUnit= getProjectTypeChecker(project)
                     .getPhasedUnitFromRelativePath(movedRelFilePath);
+            if (movedPhasedUnit==null) return null;
             final List<Declaration> declarations = movedPhasedUnit.getDeclarations();
             if (newName.equals(oldName)) return null;
             updateRefsFromMovedCeylonFile(project, newName, oldName, changes, 

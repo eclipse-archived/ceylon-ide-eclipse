@@ -80,6 +80,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
         TypeChecker tc = getProjectTypeChecker(project);
         if (tc==null) return null;
         PhasedUnit phasedUnit = tc.getPhasedUnitFromRelativePath(relFilePath);
+        if (phasedUnit==null) return null;
         final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();                
         final List<Declaration> declarations = phasedUnit.getDeclarations();
         final Map<Declaration,String> imports = new HashMap<Declaration,String>();
