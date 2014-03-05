@@ -109,7 +109,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
             il = 0;
         }
         else if (explicitType||toplevel) {
-            typeDec = type.getProducedTypeName();
+            typeDec = type.getProducedTypeName(node.getUnit());
             HashSet<Declaration> decs = new HashSet<Declaration>();
             importType(decs, type, rootNode);
             il = applyImports(tfc, decs, rootNode, doc);

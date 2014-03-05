@@ -441,7 +441,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 }
                 else {
                     params += node.getUnit().denotableType(bme.getTypeModel())
-                            .getProducedTypeName();
+                            .getProducedTypeName(node.getUnit());
                 }
                 params += " " + bme.getIdentifier().getText() + ", ";
                 args += bme.getIdentifier().getText() + ", ";
@@ -463,7 +463,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     constraints += extraIndent + getDefaultIndent() + 
                             "given " + t.getName() + " satisfies ";
                     for (ProducedType pt: t.getSatisfiedTypes()) {
-                        constraints += pt.getProducedTypeName() + "&";
+                        constraints += pt.getProducedTypeName(node.getUnit()) + "&";
                     }
                     constraints = constraints.substring(0, constraints.length()-1);
                 }
@@ -488,7 +488,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             }
             else {
                 if (explicitType || dec.isToplevel()) {
-                    type = returnType.getProducedTypeName();
+                    type = returnType.getProducedTypeName(node.getUnit());
                     HashSet<Declaration> decs = new HashSet<Declaration>();
                     importType(decs, returnType, rootNode);
                     il = applyImports(tfc, decs, rootNode, doc);
@@ -574,7 +574,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 }
                 else {
                     params += unit.denotableType(bme.getTypeModel())
-                            .getProducedTypeName();
+                            .getProducedTypeName(node.getUnit());
                 }
                 params += " " + bme.getIdentifier().getText() + ", ";
                 args += bme.getIdentifier().getText() + ", ";
@@ -599,7 +599,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     constraints += extraIndent + getDefaultIndent() + 
                             "given " + t.getName() + " satisfies ";
                     for (ProducedType pt: t.getSatisfiedTypes()) {
-                        constraints += pt.getProducedTypeName() + "&";
+                        constraints += pt.getProducedTypeName(node.getUnit()) + "&";
                     }
                     constraints = constraints.substring(0, constraints.length()-1);
                 }
@@ -629,7 +629,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 content = "dynamic";
             }
             else if (explicitType||dec.isToplevel()) {
-                content = returnType.getProducedTypeName();
+                content = returnType.getProducedTypeName(node.getUnit());
                 HashSet<Declaration> already = new HashSet<Declaration>();
                 importType(already, returnType, rootNode);
                 il = applyImports(tfc, already, rootNode, doc);
@@ -675,7 +675,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         if (result!=null) {
             String modifs;
             if (result.getDeclarationModel().isShared()) {
-                modifs = "shared " + returnType.getProducedTypeName() + " ";
+                modifs = "shared " + returnType.getProducedTypeName(node.getUnit()) + " ";
             }
             else {
                 modifs = "value ";
