@@ -277,6 +277,16 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private void fixInvocations(final Declaration dec, CompilationUnit cu,
             final TextChange tc) {
         new Visitor() {
+            
+            public void visit(Tree.QualifiedType that) {
+                TypeDeclaration d = that.getDeclarationModel();
+                if (d!=null && d.equals(dec)) {
+                    Tree.StaticType qt = that.getOuterType();
+                    tc.addEdit(new DeleteEdit(qt.getStartIndex(), 
+                            that.getIdentifier().getStartIndex()-qt.getStartIndex()));
+                }
+            }
+            
             public void visit(Tree.InvocationExpression that) {
                 super.visit(that);
                 Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
@@ -314,7 +324,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                         Tree.Primary p = qmte.getPrimary();
                         String pt = MoveOutRefactoring.this.toString(p);
                         tc.addEdit(new DeleteEdit(p.getStartIndex(), 
-                                qmte.getMemberOperator().getStopIndex()-p.getStartIndex()+1));
+                                qmte.getIdentifier().getStartIndex()-p.getStartIndex()));
                         if (pal!=null) {
                             String arg = pal.getPositionalArguments().isEmpty() ? 
                                     pt : ", " + pt;

@@ -25,6 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -155,7 +156,9 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.SimpleType that) {
             super.visit(that);
-            if (that.getDeclarationModel().equals(fun.getDeclarationModel())) {
+            TypeDeclaration d = that.getDeclarationModel();
+            if (d!=null &&
+                    d.equals(fun.getDeclarationModel())) {
                 tfc.addEdit(new InsertEdit(that.getIdentifier().getStartIndex(), 
                         newOwner.getName(that.getUnit())+"."));
             }
@@ -166,8 +169,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             super.visit(that);
             Tree.Primary p = that.getPrimary();
             if (p instanceof Tree.BaseMemberOrTypeExpression) {
-                if (((Tree.BaseMemberOrTypeExpression) p).getDeclaration()
-                        .equals(fun.getDeclarationModel())) {
+                Declaration d = ((Tree.BaseMemberOrTypeExpression) p).getDeclaration();
+                if (d!=null && d.equals(fun.getDeclarationModel())) {
                     Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
                     Tree.NamedArgumentList nal = that.getNamedArgumentList();
                     if (pal!=null) {
@@ -195,7 +198,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                     }
                     if (nal!=null) {
                         for (Tree.NamedArgument arg: nal.getNamedArguments()) {
-                            if (arg.getParameter().getModel().equals(dec)) {
+                            Parameter param = arg.getParameter();
+                            if (param!=null && param.getModel().equals(dec)) {
                                 if (arg instanceof Tree.SpecifiedArgument) {
                                     Tree.Expression e = ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
                                             .getExpression();
