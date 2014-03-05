@@ -51,7 +51,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         }
 
         private String getDefinition() {
-            final StringBuilder def = new StringBuilder(MakeReceiverRefactoring.this.toString(fun));
+            final StringBuilder def = 
+                    new StringBuilder(MakeReceiverRefactoring.this.toString(fun));
             new Visitor() {
                 int offset=0;
                 public void visit(Tree.Declaration that) {
@@ -148,6 +149,15 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             if (that.getDeclarationModel()
                     .equals(newOwner)) {
                 insert(that.getInterfaceBody(), that);
+            }
+        }
+        
+        @Override
+        public void visit(Tree.SimpleType that) {
+            super.visit(that);
+            if (that.getDeclarationModel().equals(fun.getDeclarationModel())) {
+                tfc.addEdit(new InsertEdit(that.getIdentifier().getStartIndex(), 
+                        newOwner.getName(that.getUnit())+"."));
             }
         }
 
