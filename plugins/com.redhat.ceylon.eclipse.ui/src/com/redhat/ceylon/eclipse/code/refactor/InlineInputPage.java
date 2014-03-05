@@ -15,9 +15,6 @@ public class InlineInputPage extends UserInputWizardPage {
         super(name);
     }
 
-    /**
-     * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
-     */
     public void createControl(Composite parent) {
         Composite result = new Composite(parent, SWT.NONE);
         setControl(result);
@@ -34,11 +31,16 @@ public class InlineInputPage extends UserInputWizardPage {
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         title.setLayoutData(gd);
-        final Button checkbox = new Button(result, SWT.CHECK);
-        checkbox.setText("Inline all references and delete declaration");
-        checkbox.setSelection(true);
-        checkbox.setEnabled(getInlineRefactoring().isReference());
-        checkbox.addSelectionListener(new SelectionListener() {
+        boolean ref = getInlineRefactoring().isReference();
+        Button radioOne = new Button(result, SWT.RADIO);
+        radioOne.setText("Inline just this reference");
+        radioOne.setSelection(false);
+        radioOne.setEnabled(ref);
+        Button radioAll = new Button(result, SWT.RADIO);
+        radioAll.setText("Inline all references and delete declaration");
+        radioAll.setSelection(true);
+        radioAll.setEnabled(ref);
+        SelectionListener listener = new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 getInlineRefactoring().setDelete();
@@ -46,7 +48,8 @@ public class InlineInputPage extends UserInputWizardPage {
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
-        });        
+        };
+        radioOne.addSelectionListener(listener);
     }
 
     private InlineRefactoring getInlineRefactoring() {
