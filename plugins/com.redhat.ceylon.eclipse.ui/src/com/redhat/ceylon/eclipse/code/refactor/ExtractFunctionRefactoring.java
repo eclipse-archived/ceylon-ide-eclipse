@@ -310,7 +310,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
     @Override
     public boolean isEnabled() {
-        String fn = node.getUnit().getFilename();
+        String fn = node==null ? null : node.getUnit().getFilename();
         return node instanceof Tree.Term &&
                 !fn.equals("module.ceylon") &&
                 !fn.equals("package.ceylon") || 
