@@ -225,9 +225,14 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             throws BadLocationException {
         for (Iterator<Node> i=occurrences.iterator(); i.hasNext();) {
             CommonToken tok = (CommonToken) i.next().getToken();
-            String docText = document.get(tok.getStartIndex(), 
-                    tok.getStopIndex()-tok.getStartIndex()+1);
-            if (!docText.equals(tok.getText())) {
+            try {
+                String docText = document.get(tok.getStartIndex(), 
+                        tok.getStopIndex()-tok.getStartIndex()+1);
+                if (!docText.equals(tok.getText())) {
+                    i.remove();
+                }
+            }
+            catch (BadLocationException e) {
                 i.remove();
             }
         }
