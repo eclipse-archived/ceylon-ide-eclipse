@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
@@ -12,7 +11,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
-import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -95,9 +93,11 @@ public final class RenameLinkedMode
                     throws BadLocationException {
         
         int offset = getIdentifyingNode(refactoring.getNode()).getStartIndex();
-        namePosition = new ProposalPosition(document, offset, 
-                getOriginalName().length(), 0, 
-                getNameProposals(offset, 0, getOriginalName()));
+//        namePosition = new ProposalPosition(document, offset, 
+//                getOriginalName().length(), 0, 
+//                LinkedModeCompletionProposal.getNameProposals(offset, 0, getOriginalName()));
+        namePosition = new LinkedPosition(document, offset, 
+                getOriginalName().length(), 0);
         linkedPositionGroup.addPosition(namePosition);
         
         int i=1;

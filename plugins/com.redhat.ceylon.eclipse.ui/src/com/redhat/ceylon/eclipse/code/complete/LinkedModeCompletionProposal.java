@@ -27,8 +27,14 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 public class LinkedModeCompletionProposal 
         implements ICompletionProposal,  ICompletionProposalExtension2 {
     
-    public static final class NullProposal 
+    private static final class NullProposal 
             implements ICompletionProposal, ICompletionProposalExtension2 {
+        private List<ICompletionProposal> proposals;
+
+        private NullProposal(List<ICompletionProposal> proposals) {
+            this.proposals = proposals;
+            
+        }
         @Override
         public void apply(IDocument document) {}
 
@@ -70,7 +76,17 @@ public class LinkedModeCompletionProposal
         @Override
         public boolean validate(IDocument document, int offset,
                 DocumentEvent event) {
-            return true;
+            for (ICompletionProposal p: proposals) {
+                if (p instanceof ICompletionProposalExtension2) {
+                    if (((ICompletionProposalExtension2) p).validate(document, offset, event)) {
+                        return true;
+                    }
+                }
+                else {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -176,7 +192,7 @@ public class LinkedModeCompletionProposal
     
     private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
     private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
-    private static final ICompletionProposal NULL_PROPOSAL = new NullProposal();
+//    private static final ICompletionProposal NULL_PROPOSAL = new NullProposal();
     
     public static ICompletionProposal[] getNameProposals(int offset, 
             int seq, String name) {
@@ -187,7 +203,6 @@ public class LinkedModeCompletionProposal
             int seq, String name, String defaultName) {
         List<ICompletionProposal> nameProposals = 
                 new ArrayList<ICompletionProposal>();
-        nameProposals.add(NULL_PROPOSAL);
         if (defaultName!=null) {
             LinkedModeCompletionProposal nameProposal = 
                     new LinkedModeCompletionProposal(offset, defaultName, seq);
@@ -207,7 +222,14 @@ public class LinkedModeCompletionProposal
                 nameProposals.add(nameProposal);
             }
         }
-        return nameProposals.toArray(NO_COMPLETIONS);
+        ICompletionProposal[] proposals = 
+                new ICompletionProposal[nameProposals.size() + 1];
+        int i=0;
+        proposals[i++] = new NullProposal(nameProposals);
+        for (ICompletionProposal tp: nameProposals) {
+            proposals[i++] = tp;
+        }
+        return proposals;
     }
 
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
