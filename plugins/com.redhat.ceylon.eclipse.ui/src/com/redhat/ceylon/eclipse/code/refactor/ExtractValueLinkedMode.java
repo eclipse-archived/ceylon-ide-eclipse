@@ -121,6 +121,11 @@ public final class ExtractValueLinkedMode
     }
     
     @Override
+    public boolean canBeInferred() {
+        return refactoring.canBeInferred();
+    }
+    
+    @Override
     protected String getKind() {
         return "value";
     }

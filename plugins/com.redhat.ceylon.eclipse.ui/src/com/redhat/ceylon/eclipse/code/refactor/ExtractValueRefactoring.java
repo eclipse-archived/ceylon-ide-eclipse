@@ -34,6 +34,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     private boolean explicitType;
     private boolean getter;
     private ProducedType type;
+    private boolean canBeInferred;
     
     public ExtractValueRefactoring(ITextEditor editor) {
         super(editor);
@@ -88,6 +89,13 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         IDocument doc = tfc.getCurrentDocument(null);
         Tree.Term term = (Tree.Term) node;
         Tree.Statement statement = findStatement(rootNode, node);
+        boolean toplevel;
+        if (statement instanceof Tree.Declaration) {
+            toplevel = ((Tree.Declaration) statement).getDeclarationModel().isToplevel();
+        }
+        else {
+            toplevel = false;
+        }
         String exp = toString(unparenthesize(term));
         type = node.getUnit()
                 .denotableType(term.getTypeModel());
@@ -97,15 +105,16 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
             typeDec = "dynamic";
             il = 0;
         }
-        else if (explicitType) {
+        else if (explicitType||toplevel) {
             typeDec = type.getProducedTypeName();
             HashSet<Declaration> decs = new HashSet<Declaration>();
             importType(decs, type, rootNode);
             il = applyImports(tfc, decs, rootNode, doc);
         }
         else {
-             typeDec = "value";
-             il = 0;
+            canBeInferred = true;
+            typeDec = "value";
+            il = 0;
         }
         String dec = typeDec + " " +  newName + 
                 (getter ? " { return " + exp  + "; } " : " = " + exp + ";");
@@ -116,6 +125,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         typeRegion = new Region(start, typeDec.length());
         decRegion = new Region(start+typeDec.length()+1, newName.length());
         refRegion = new Region(getNodeStartOffset(node)+text.length()+il, newName.length());
+    }
+    
+    public boolean canBeInferred() {
+        return canBeInferred;
     }
 
     public void setNewName(String text) {

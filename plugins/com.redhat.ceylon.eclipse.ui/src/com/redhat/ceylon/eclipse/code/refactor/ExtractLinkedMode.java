@@ -83,7 +83,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
         ProposalPosition linkedPosition = 
                 new ProposalPosition(document, offset, length, 1, 
                         getSupertypeProposals(offset, unit, type,
-                                this instanceof ExtractValueLinkedMode));
+                                canBeInferred()));
         try {
             addLinkedPosition(linkedModeModel, linkedPosition);
         } 
@@ -138,6 +138,10 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
             getInfoPopup().setHintTemplate("Enter name for extracted " + 
                     getKind() + " declaration {0}");
         }
+    }
+
+    public boolean canBeInferred() {
+        return false;
     }
 
     protected abstract String getKind();
