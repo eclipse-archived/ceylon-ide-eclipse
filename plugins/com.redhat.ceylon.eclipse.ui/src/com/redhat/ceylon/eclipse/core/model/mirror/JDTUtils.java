@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.impl.Constant;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
+import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.RawTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
@@ -87,5 +88,14 @@ public class JDTUtils {
                     rawSuperType.genericType(), declaringType.arguments, rawSuperType.enclosingType());
         }
         return superClass;
+    }
+
+
+    public static boolean hasAnnotation(MethodBinding inheritedMethod, String ceylonIgnoreAnnotation) {
+        for(AnnotationBinding annotation : inheritedMethod.getAnnotations()){
+            if(getFullyQualifiedName(annotation.getAnnotationType()).equals(ceylonIgnoreAnnotation))
+                return true;
+        }
+        return false;
     }
 }

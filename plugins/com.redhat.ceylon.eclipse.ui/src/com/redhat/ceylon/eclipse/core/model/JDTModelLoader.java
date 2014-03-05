@@ -621,6 +621,11 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
+    protected boolean isOverloadingMethod(MethodMirror methodSymbol) {
+        return ((JDTMethod)methodSymbol).isOverloadingMethod();
+    }
+
+    @Override
     protected Unit getCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
         if (classMirror == null) {
             Unit unit = unitsByPackage.get(pkg);
@@ -932,12 +937,4 @@ public class JDTModelLoader extends AbstractModelLoader {
         // TODO Check that returning true in any case is the right way to do.
         return super.isModuleInClassPath(module);
     }
-
-    @Override
-    protected boolean isOverloadingMethod(MethodMirror methodMirror) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-    
-    
 }
