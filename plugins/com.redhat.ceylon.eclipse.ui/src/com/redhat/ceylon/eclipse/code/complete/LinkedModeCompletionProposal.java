@@ -10,8 +10,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -20,7 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 public class LinkedModeCompletionProposal 
-        implements ICompletionProposal {
+        implements ICompletionProposal,  ICompletionProposalExtension2 {
     
     private final String text;
     private final Image image;
@@ -52,28 +57,34 @@ public class LinkedModeCompletionProposal
     
     public void apply(IDocument document) {
         try {
-            int start = offset;
-            int length = 0;
-            int count = 0;
-            for (int i=offset;
-                    i<document.getLength(); 
-                    i++) {
-                if (Character.isWhitespace(document.getChar(i))) {
-                    if (count++==position) {
-                        break;
-                    }
-                    else {
-                        start = i+1;
-                        length = -1;
-                    }
-                }
-                length++;
-            }
-            document.replace(start, length, text);
+            IRegion region = getCurrentRegion(document);
+            document.replace(region.getOffset(), region.getLength(), 
+                    text);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
         }
+    }
+
+    private IRegion getCurrentRegion(IDocument document) throws BadLocationException {
+        int start = offset;
+        int length = 0;
+        int count = 0;
+        for (int i=offset;
+                i<document.getLength(); 
+                i++) {
+            if (Character.isWhitespace(document.getChar(i))) {
+                if (count++==position) {
+                    break;
+                }
+                else {
+                    start = i+1;
+                    length = -1;
+                }
+            }
+            length++;
+        }
+        return new Region(start, length);
     }
     
     public String getDisplayString() {
@@ -87,6 +98,31 @@ public class LinkedModeCompletionProposal
     @Override
     public IContextInformation getContextInformation() {
         return null;
+    }
+    
+    @Override
+    public void apply(ITextViewer viewer, char trigger, int stateMask,
+            int offset) {
+        apply(viewer.getDocument());
+    }
+    
+    @Override
+    public void selected(ITextViewer viewer, boolean smartToggle) {}
+    
+    @Override
+    public void unselected(ITextViewer viewer) {}
+    
+    @Override
+    public boolean validate(IDocument document, int offset, 
+            DocumentEvent event) {
+        try {
+            IRegion region = getCurrentRegion(document);
+            String prefix = document.get(region.getOffset(), offset-region.getOffset());
+            return text.startsWith(prefix);
+        }
+        catch (BadLocationException e) {
+            return false;
+        }
     }
     
     private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
@@ -144,4 +180,5 @@ public class LinkedModeCompletionProposal
         }
         return typeProposals;
     }
+
 }
