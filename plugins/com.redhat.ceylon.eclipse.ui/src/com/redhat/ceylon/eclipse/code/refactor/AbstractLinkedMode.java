@@ -10,7 +10,6 @@ import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -129,7 +128,7 @@ public abstract class AbstractLinkedMode {
     protected void cancel() {}
 
     protected void done() {
-        editor.doSave(new NullProgressMonitor());
+        editor.saveWithoutActions();
     }
 
     boolean isCaretInLinkedPosition() {

@@ -4,7 +4,6 @@ import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -46,7 +45,7 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
 
     public final void start() {
         if (canStart()) {
-            editor.doSave(new NullProgressMonitor());
+            editor.saveWithoutActions();
             saveEditorState();
             ISourceViewer viewer = editor.getCeylonSourceViewer();
             IDocument document = viewer.getDocument();
