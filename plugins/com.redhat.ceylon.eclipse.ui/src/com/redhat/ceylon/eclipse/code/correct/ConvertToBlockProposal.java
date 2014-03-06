@@ -56,13 +56,15 @@ class ConvertToBlockProposal extends CorrectionProposal {
         String addedKeyword = null;
         if (decNode instanceof Tree.Declaration) {
             Declaration dm = ((Tree.Declaration) decNode).getDeclarationModel();
-            if (dm.isParameter()) return;
+            if (dm==null || dm.isParameter()) return;
             isVoid = dm instanceof Setter ||
                     dm instanceof Method && ((Method) dm).isDeclaredVoid();
         }
         else if (decNode instanceof Tree.MethodArgument) {
             Tree.MethodArgument ma = (Tree.MethodArgument) decNode;
-            isVoid = ma.getDeclarationModel().isDeclaredVoid();
+            Method dm = ma.getDeclarationModel();
+            if (dm==null) return;
+            isVoid = dm.isDeclaredVoid();
             if (ma.getType().getToken()==null) {
                 addedKeyword = "function ";
             }
@@ -75,7 +77,9 @@ class ConvertToBlockProposal extends CorrectionProposal {
             }
         }
         else if (decNode instanceof Tree.FunctionArgument) {
-            isVoid = ((Tree.FunctionArgument) decNode).getDeclarationModel().isDeclaredVoid();
+            Method dm = ((Tree.FunctionArgument) decNode).getDeclarationModel();
+            if (dm==null) return;
+            isVoid = dm.isDeclaredVoid();
         }
         else {
             return;
