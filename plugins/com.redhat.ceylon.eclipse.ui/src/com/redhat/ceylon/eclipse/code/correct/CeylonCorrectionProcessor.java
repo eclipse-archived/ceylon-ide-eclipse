@@ -58,10 +58,10 @@ import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.
 import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
-import static com.redhat.ceylon.eclipse.code.correct.ImplementFormalAndAmbiguouslyInheritedMembersProposal.addImplementFormalAndAmbiguouslyInheritedMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.addImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addReverseIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
+import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
@@ -394,14 +394,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addSpecifyTypeProposal(cu, node, proposals, file);
             break;
         case 300:
+            addRefineFormalMembersProposal(proposals, node, cu, false);
+            addMakeAbstractDecProposal(proposals, project, node);
+            break;
         case 350:
-            if (context.getSourceViewer()!=null) {
-                //TODO: figure out some other way to get the Document!
-                IDocument document = context.getSourceViewer().getDocument();
-                addImplementFormalAndAmbiguouslyInheritedMembersProposal(cu, node, 
-                        proposals, file, document);
-            }
-        //fallthrough:
+            addRefineFormalMembersProposal(proposals, node, cu, true);
+            addMakeAbstractDecProposal(proposals, project, node);
+            break;
         case 310:
             addMakeAbstractDecProposal(proposals, project, node);
             break;
@@ -612,7 +611,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             MoveToNewUnitProposal.add(proposals, editor);
             MoveToUnitProposal.add(proposals, editor);
             
-            RefineFormalMembersProposal.add(proposals, editor);
+            addRefineFormalMembersProposal(proposals, node, cu, false);
             
             addConvertToVerbatimProposal(proposals, file, cu, node, doc);
             addConvertFromVerbatimProposal(proposals, file, cu, node, doc);
