@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CHANGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.COMPOSITE_CHANGE;
 import static com.redhat.ceylon.eclipse.util.FindUtils.getContainer;
 
 import java.util.Collection;
@@ -45,7 +45,7 @@ public class MoveOutProposal implements ICompletionProposal, ICompletionProposal
 
     @Override
     public Image getImage() {
-        return CHANGE;
+        return COMPOSITE_CHANGE;
     }
 
     @Override
