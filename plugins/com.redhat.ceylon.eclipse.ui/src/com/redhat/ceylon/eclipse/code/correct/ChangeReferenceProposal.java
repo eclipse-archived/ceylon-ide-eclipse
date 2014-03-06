@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshte
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
@@ -29,15 +30,16 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation;
 
-class ChangeReferenceProposal extends CorrectionProposal implements ICompletionProposalExtension {
+class ChangeReferenceProposal extends CorrectionProposal 
+        implements ICompletionProposalExtension {
     
     private final int offset;
     private final int length;
     private final IFile file;
     
-    ChangeReferenceProposal(ProblemLocation problem, IFile file, String name, 
+    private ChangeReferenceProposal(ProblemLocation problem, IFile file, String name, 
             String pkg, Declaration dec, int dist, TextFileChange change) {
         super("Change reference to '" + name + "'" + pkg, change, 
                 MINOR_CHANGE/*CeylonLabelProvider.getImage(dec)*/);
@@ -49,10 +51,10 @@ class ChangeReferenceProposal extends CorrectionProposal implements ICompletionP
     @Override
     public void apply(IDocument document) {
         super.apply(document);
-        EditorUtil.gotoLocation(file, offset, length);
+        gotoLocation(file, offset, length);
     }
 
-    static void addRenameProposal(ProblemLocation problem,
+    static void addChangeReferenceProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file,
             String brokenName, DeclarationWithProximity dwp, int dist,
             Tree.CompilationUnit cu) {
@@ -61,13 +63,20 @@ class ChangeReferenceProposal extends CorrectionProposal implements ICompletionP
         IDocument doc = getDocument(change);
         Declaration dec = dwp.getDeclaration();
         String pkg = "";
-        if (dec.isToplevel() && !isImported(dec, cu) && isInPackage(cu, dec)) {
+        if (dec.isToplevel() && 
+                !isImported(dec, cu) && 
+                isInPackage(cu, dec)) {
             String pn = dec.getContainer().getQualifiedNameString();
             pkg = " in '" + pn + "'";
-            if (!pn.isEmpty() && !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
-                if (getOccurrenceLocation(cu, findNode(cu, problem.getOffset()))!=IMPORT) {
-                    List<InsertEdit> ies = importEdits(cu, Collections.singleton(dec), 
-                            null, null, doc);
+            if (!pn.isEmpty() && 
+                    !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
+                OccurrenceLocation ol = 
+                        getOccurrenceLocation(cu, 
+                                findNode(cu, problem.getOffset()));
+                if (ol!=IMPORT) {
+                    List<InsertEdit> ies = 
+                            importEdits(cu, Collections.singleton(dec), 
+                                    null, null, doc);
                     for (InsertEdit ie: ies) {
                         change.addEdit(ie);
                     }
@@ -76,8 +85,8 @@ class ChangeReferenceProposal extends CorrectionProposal implements ICompletionP
         }
         change.addEdit(new ReplaceEdit(problem.getOffset(), 
                 brokenName.length(), dwp.getName())); //Note: don't use problem.getLength() because it's wrong from the problem list
-        proposals.add(new ChangeReferenceProposal(problem, file, dwp.getName(), 
-                pkg, dec, dist, change));
+        proposals.add(new ChangeReferenceProposal(problem, file, 
+                dwp.getName(), pkg, dec, dist, change));
     }
 
     protected static boolean isInPackage(Tree.CompilationUnit cu,
@@ -106,16 +115,18 @@ class ChangeReferenceProposal extends CorrectionProposal implements ICompletionP
         return -1;
     }
     
-    static void addRenameProposals(Tree.CompilationUnit cu, Node node, ProblemLocation problem,
-            Collection<ICompletionProposal> proposals, IFile file) {
+    static void addChangeReferenceProposals(Tree.CompilationUnit cu, Node node, 
+            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+            IFile file) {
           String brokenName = getIdentifyingNode(node).getText();
           if (brokenName.isEmpty()) return;
-          for (DeclarationWithProximity dwp: getProposals(node, node.getScope(), cu).values()) {
+          for (DeclarationWithProximity dwp: 
+                  getProposals(node, node.getScope(), cu).values()) {
               int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
               //TODO: would it be better to just sort by dist, and
               //      then select the 3 closest possibilities?
               if (dist<=brokenName.length()/3+1) {
-                  addRenameProposal(problem, proposals, file, 
+                  addChangeReferenceProposal(problem, proposals, file, 
                           brokenName, dwp, dist, cu);
               }
           }

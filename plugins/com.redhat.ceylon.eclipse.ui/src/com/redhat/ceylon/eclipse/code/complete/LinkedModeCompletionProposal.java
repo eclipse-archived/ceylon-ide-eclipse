@@ -121,15 +121,15 @@ public class LinkedModeCompletionProposal
     public void apply(IDocument document) {
         try {
             IRegion region = getCurrentRegion(document);
-            document.replace(region.getOffset(), region.getLength(), 
-                    text);
+            document.replace(region.getOffset(), 
+                    region.getLength(), text);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
         }
     }
 
-    private IRegion getCurrentRegion(IDocument document) 
+    protected IRegion getCurrentRegion(IDocument document) 
             throws BadLocationException {
         int start = offset;
         int length = 0;
@@ -190,9 +190,7 @@ public class LinkedModeCompletionProposal
         }
     }
     
-    private static final ICompletionProposal[] NO_COMPLETIONS = new ICompletionProposal[0];
     private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
-//    private static final ICompletionProposal NULL_PROPOSAL = new NullProposal();
     
     public static ICompletionProposal[] getNameProposals(int offset, 
             int seq, String name) {

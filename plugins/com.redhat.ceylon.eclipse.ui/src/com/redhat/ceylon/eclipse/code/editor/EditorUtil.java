@@ -318,7 +318,9 @@ public class EditorUtil {
         editor.setLinkedMode(linkedModeModel, linkedModeOwner);
         CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
         EditorLinkedModeUI ui = new EditorLinkedModeUI(linkedModeModel, viewer);
-        ui.setExitPosition(viewer, exitPosition, 0, exitSequenceNumber);
+        if (exitPosition>=0 && exitSequenceNumber>=0) {
+            ui.setExitPosition(viewer, exitPosition, 0, exitSequenceNumber);
+        }
         ui.setExitPolicy(exitPolicy);
         ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
         ui.setDoContextInfo(true);
