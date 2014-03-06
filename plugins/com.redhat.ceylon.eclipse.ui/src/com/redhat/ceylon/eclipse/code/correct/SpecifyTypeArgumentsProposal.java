@@ -5,7 +5,6 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
@@ -16,15 +15,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
 
-    SpecifyTypeArgumentsProposal(//int offset, IFile file, 
-            String type, 
-            TextFileChange change) {
+    SpecifyTypeArgumentsProposal(String type, TextFileChange change) {
         super("Specify explicit type arguments '" + type + "'", change);
-    }
-    
-    @Override
-    public void apply(IDocument document) {
-        super.apply(document);
     }
     
     static void addSpecifyTypeArgumentsProposal(Tree.CompilationUnit cu, Node node,

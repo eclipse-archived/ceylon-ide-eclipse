@@ -140,16 +140,10 @@ class CorrectionProposal
         return fName;
     }
 
-    /*
-     * @see ICompletionProposal#getImage()
-     */
     public Image getImage() {
         return fImage;
     }
 
-    /*
-     * @see ICompletionProposal#getSelection(IDocument)
-     */
     public Point getSelection(IDocument document) {
         return null;
     }
