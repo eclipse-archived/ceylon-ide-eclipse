@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,14 +16,11 @@ import java.util.TreeMap;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.window.Window;
-import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -56,16 +52,16 @@ public class CleanImportsHandler extends AbstractHandler {
 
     public static void cleanImports(CeylonEditor editor, IDocument doc)
             throws ExecutionException {
-        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-        if (cu!=null) {
-            IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
-            String imports = imports(cu, doc);
+        Tree.CompilationUnit rootNode = editor.getParseController()
+                .getRootNode();
+        if (rootNode!=null) {
+            String imports = imports(rootNode, doc);
             if (imports!=null && 
-                    !(imports.trim().isEmpty() && cu.getImportList().getImports().isEmpty())) {
-                TextFileChange tfc = 
-                        new TextFileChange("Clean Imports", file);
-                tfc.setEdit(new MultiTextEdit());
-                Tree.ImportList il = cu.getImportList();
+                    !(imports.trim().isEmpty() && 
+                            rootNode.getImportList().getImports().isEmpty())) {
+                DocumentChange change = 
+                        new DocumentChange("Clean Imports", doc);
+                Tree.ImportList il = rootNode.getImportList();
                 int start;
                 int length;
                 String extra;
@@ -79,17 +75,13 @@ public class CleanImportsHandler extends AbstractHandler {
                     length = il.getStopIndex()-il.getStartIndex()+1;
                     extra="";
                 }
-//                if (!imports.trim().isEmpty()) {
-                    tfc.addEdit(new ReplaceEdit(start, length, imports+extra));
-                    tfc.initializeValidationData(null);
-                    try {
-                        getWorkspace().run(new PerformChangeOperation(tfc), 
-                                new NullProgressMonitor());
-                    }
-                    catch (CoreException ce) {
-                        throw new ExecutionException("Error cleaning imports", ce);
-                    }
-//                }
+                change.setEdit(new ReplaceEdit(start, length, imports+extra));
+                try {
+                    change.perform(new NullProgressMonitor());
+                }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
