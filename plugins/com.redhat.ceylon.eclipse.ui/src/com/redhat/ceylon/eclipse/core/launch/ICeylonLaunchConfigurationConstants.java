@@ -22,6 +22,7 @@ public interface ICeylonLaunchConfigurationConstants extends
     public static final String ATTR_LAUNCH_TYPE = "CEYLON_LAUNCH_TYPE";
     public static final String ATTR_MODULE_NAME = "CEYLON_MODULE";
     public static final String ATTR_TOPLEVEL_NAME = "CEYLON_TOPLEVEL";
+    public static final String ATTR_LAUNCH_VERBOSE = "CEYLON_LAUNCH_VERBOSE";
     
     public static final String CAN_LAUNCH_AS_CEYLON_JAVA_MODULE = "canLaunchAsCeylonJavaModule";
     public static final String CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE = "canLaunchAsCeylonJavaScriptModule";

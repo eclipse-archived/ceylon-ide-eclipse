@@ -29,6 +29,7 @@ import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -55,6 +56,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
     private Text fTopLevelText;
     private Button fModuleSearchButton;
     private Button fTopLevelSearchButton;
+    private Button verboseCheck;
     
     /* (non-Javadoc)
      * @see org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse.swt.widgets.Composite)
@@ -141,19 +143,17 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
      */
     public void initializeFrom(ILaunchConfiguration config) {
         super.initializeFrom(config); // sets project
-        String moduleName = EMPTY_STRING;
-            try {
-                moduleName = config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, EMPTY_STRING);
-            }
-            catch (CoreException ce) {JDIDebugUIPlugin.log(ce);}    
-        fModuleText.setText(moduleName);        
 
-        String topLevelName = EMPTY_STRING;
-            try {
-                topLevelName = config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, EMPTY_STRING);
-            }
-            catch (CoreException ce) {JDIDebugUIPlugin.log(ce);}    
-        fTopLevelText.setText(topLevelName);
+        try { // exception in any value renders existing config useless, so combining
+            fModuleText.setText(
+                config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, EMPTY_STRING));
+            fTopLevelText.setText(
+                config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, EMPTY_STRING));
+            verboseCheck.setSelection(
+                config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE, false));
+        } catch (CoreException ce) {
+            JDIDebugUIPlugin.log(ce);
+        }
     }   
 
     /* (non-Javadoc)
@@ -244,7 +244,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME, fModuleText.getText().trim());
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, fTopLevelText.getText().trim());
-        
+        config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE, verboseCheck.getSelection());
         mapResources(config);
     }
     
@@ -343,5 +343,24 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
                 handleSearchButtonSelected();
             }
             });
-    } 
+        
+        createVerboseCheckbox(group, "Verbose output"); // creating here just for visual alignment
+    }
+    
+    protected void createVerboseCheckbox(Composite parent, String text) {
+        verboseCheck = createCheckButton(parent, text);
+        verboseCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                Button button = (Button) e.widget;
+                if (button.getSelection()) {
+                    verboseCheck.setSelection(true);
+                } else {
+                    verboseCheck.setSelection(false);
+                }
+                updateLaunchConfigurationDialog();                
+            }
+        });
+    }
 }
