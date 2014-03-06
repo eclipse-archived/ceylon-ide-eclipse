@@ -1239,11 +1239,6 @@
                       <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
                   </with>
               </visibleWhen>
-            <dynamic id="refactor"
-                  class="com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems"/>
-            <separator
-                  visible="true"
-                  name="sep2"/>
             <command 
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
@@ -1264,6 +1259,20 @@
                   visible="true"/>
             <dynamic id="source"
                   class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
+          </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=com.redhat.ceylon.eclipse.ui.menu.source">
+          <menu
+                label="&amp;Refactor"
+                id="com.redhat.ceylon.eclipse.ui.menu.refactor">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            <dynamic id="refactor"
+                  class="com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems"/>
           </menu>
       </menuContribution>
       <menuContribution
