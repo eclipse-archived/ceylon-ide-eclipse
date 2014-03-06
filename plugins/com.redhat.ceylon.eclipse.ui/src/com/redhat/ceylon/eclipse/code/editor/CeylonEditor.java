@@ -1399,6 +1399,10 @@ public class CeylonEditor extends TextEditor {
         return bracketMatcher;
     }
     
+    public void saveWithoutActions() {
+        super.doSave(getProgressMonitor());
+    }
+    
     @Override
     public void doSave(IProgressMonitor progressMonitor) {
         CeylonSourceViewer viewer = getCeylonSourceViewer();
