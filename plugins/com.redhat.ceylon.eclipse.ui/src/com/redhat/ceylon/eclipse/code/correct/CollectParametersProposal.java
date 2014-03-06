@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.COMPOSITE_CHANGE;
+
 import java.util.Collection;
 
 import org.eclipse.jface.text.IDocument;
@@ -11,7 +13,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.CollectParametersRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.CollectParametersRefactoringAction;
 
@@ -31,7 +32,7 @@ class CollectParametersProposal implements ICompletionProposal,
 
     @Override
     public Image getImage() {
-        return CeylonLabelProvider.COMPOSITE_CHANGE;
+        return COMPOSITE_CHANGE;
     }
 
     @Override
