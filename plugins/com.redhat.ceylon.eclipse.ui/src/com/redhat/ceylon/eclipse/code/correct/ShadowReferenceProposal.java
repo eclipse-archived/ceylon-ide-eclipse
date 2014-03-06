@@ -12,6 +12,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -20,29 +21,25 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class ShadowReferenceProposal extends CorrectionProposal {
     
-    private final IFile file;
     private final int offset;
     private final int length;
     
-    ShadowReferenceProposal(int offset, int length, IFile file, 
+    ShadowReferenceProposal(int offset, int length,
             TextChange change) {
         super("Shadow reference inside control structure", change);
-        this.file=file;
         this.offset=offset;
         this.length=length;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset, length);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, length);
     }
     
     static void addShadowSwitchReferenceProposal(IFile file, Tree.CompilationUnit cu, 
@@ -76,8 +73,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
                         }
                     }
                 }
-                proposals.add(new ShadowReferenceProposal(offset+6, name.length(), 
-                        file, change));
+                proposals.add(new ShadowReferenceProposal(offset+6, name.length(), change));
             }
         }
     }
@@ -102,7 +98,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
                             identifyingNode.getText().length(), name));
                 }
             }
-            proposals.add(new ShadowReferenceProposal(offset, 1, file, change));
+            proposals.add(new ShadowReferenceProposal(offset, 1, change));
         }
         else if (node instanceof Tree.Term) {
             String name = guessName(node);
@@ -110,7 +106,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
 //            change.setEdit(new MultiTextEdit());
             Integer offset = node.getStartIndex();
             change.setEdit(new InsertEdit(offset, name + " = "));
-            proposals.add(new ShadowReferenceProposal(offset, 1, file, change));
+            proposals.add(new ShadowReferenceProposal(offset, 1, change));
         }
     }
 }

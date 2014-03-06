@@ -49,18 +49,16 @@ public class SpecifyTypeProposal implements ICompletionProposal,
     private final Tree.Type typeNode;
     private final CeylonEditor editor;
     private final Tree.CompilationUnit rootNode;
-    private final IFile file;
     private Point selection;
     
     private SpecifyTypeProposal(String desc, Tree.Type type,
             Tree.CompilationUnit cu, ProducedType infType, 
-            CeylonEditor editor, IFile file) {
+            CeylonEditor editor) {
         this.desc = desc;
         this.typeNode = type;
         this.rootNode = cu;
         this.infType = infType;
         this.editor = editor;
-        this.file = file;
     }
     
     @Override
@@ -141,17 +139,16 @@ public class SpecifyTypeProposal implements ICompletionProposal,
     }
     
     static void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node,
-            Collection<ICompletionProposal> proposals, IFile file, 
-            CeylonEditor editor) {
+            Collection<ICompletionProposal> proposals, CeylonEditor editor) {
         SpecifyTypeProposal proposal = 
-                createProposal(cu, node, editor, file);
+                createProposal(cu, node, editor);
         if (proposal!=null) {
             proposals.add(proposal);
         }
     }
 
     public static SpecifyTypeProposal createProposal(Tree.CompilationUnit cu, 
-            Node node, CeylonEditor editor, IFile file) {
+            Node node, CeylonEditor editor) {
         final Tree.Type type = (Tree.Type) node;
         String desc;
         if (type instanceof Tree.LocalModifier) {
@@ -166,7 +163,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
         }
         else {
             return new SpecifyTypeProposal(desc, type, cu,
-                    infType, editor, file);
+                    infType, editor);
         }
     }
 
@@ -226,12 +223,12 @@ public class SpecifyTypeProposal implements ICompletionProposal,
             Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
             if (type instanceof Tree.LocalModifier || 
                     type instanceof Tree.StaticType) {
-                addSpecifyTypeProposal(cu, type, proposals, file, editor);
+                addSpecifyTypeProposal(cu, type, proposals, editor);
             }
         }
         else if (node instanceof Tree.LocalModifier || 
                 node instanceof Tree.StaticType) {
-            addSpecifyTypeProposal(cu, node, proposals, file, editor);
+            addSpecifyTypeProposal(cu, node, proposals, editor);
         }
         if (node instanceof Tree.MemberOrTypeExpression) {
             addSpecifyTypeArgumentsProposal(cu, node, proposals, file);

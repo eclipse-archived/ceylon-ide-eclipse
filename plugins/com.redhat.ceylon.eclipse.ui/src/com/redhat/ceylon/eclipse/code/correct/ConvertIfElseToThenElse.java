@@ -14,6 +14,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree.AttributeDeclaration;
@@ -32,24 +33,20 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 
 class ConvertIfElseToThenElse extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
-    ConvertIfElseToThenElse(int offset, IFile file, TextChange change) {
+    ConvertIfElseToThenElse(int offset, TextChange change) {
         super("Convert to then-else", change);
         this.offset=offset;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
     
     static void addConvertToThenElseProposal(CompilationUnit cu, IDocument doc,
@@ -57,7 +54,7 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
             Statement statement) {
             TextChange change = createTextChange(cu, doc, statement, file);
             if (change != null) {
-                proposals.add(new ConvertIfElseToThenElse(change.getEdit().getOffset(), file, change));
+                proposals.add(new ConvertIfElseToThenElse(change.getEdit().getOffset(), change));
             }
    }
 

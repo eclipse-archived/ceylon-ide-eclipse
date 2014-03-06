@@ -61,7 +61,6 @@ import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.Token;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.FileLocator;
@@ -306,8 +305,7 @@ public class DocumentationHover
                 close(control);
                 CompilationUnit rn = editor.getParseController().getRootNode();
                 Node node = findNode(rn, Integer.parseInt(location.substring(4)));
-                IFile file = EditorUtil.getFile(editor.getEditorInput());
-                SpecifyTypeProposal.createProposal(rn, node, editor, file)
+                SpecifyTypeProposal.createProposal(rn, node, editor)
                         .apply(editor.getParseController().getDocument());
             }
             else if (location.startsWith("exv:")) {

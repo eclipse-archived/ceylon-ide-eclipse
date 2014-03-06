@@ -6,6 +6,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
@@ -15,11 +16,11 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
     
-    public static void addEllipsisToSequenceParameterProposal(CompilationUnit cu, Node node, Collection<ICompletionProposal> proposals, IFile file) {
+    public static void addEllipsisToSequenceParameterProposal(CompilationUnit cu, 
+            Node node, Collection<ICompletionProposal> proposals, IFile file) {
         if( !(node instanceof Tree.Term) ) {
             return;
         }
@@ -41,27 +42,27 @@ public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
         
         TextFileChange change = new TextFileChange("Spread iterable argument of variadic parameter", file);
         change.setEdit(new InsertEdit(term.getStartIndex(), "*"));
-        AddSpreadToVariadicParameterProposal p = new AddSpreadToVariadicParameterProposal(fiv.parameter, term.getStopIndex() + 4, file, change);
+        AddSpreadToVariadicParameterProposal p = 
+                new AddSpreadToVariadicParameterProposal(fiv.parameter, 
+                        term.getStopIndex() + 4, change);
         if ( !proposals.contains(p)) {
             proposals.add(p);
         }                               
     }
 
     private final int offset; 
-    private final IFile file;
     private final TypedDeclaration parameter;
     
-    private AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, int offset, IFile file, TextFileChange change) {
+    private AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, 
+            int offset, TextFileChange change) {
         super("Spread iterable argument of variadic parameter", change);
-        this.file=file;
         this.offset=offset;
         this.parameter = parameter;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
 
     @Override

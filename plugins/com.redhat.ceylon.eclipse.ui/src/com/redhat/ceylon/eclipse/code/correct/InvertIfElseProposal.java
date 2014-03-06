@@ -13,6 +13,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -33,23 +34,19 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SmallerOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class InvertIfElseProposal extends CorrectionProposal {
     
-    private final int offset; 
-    private final IFile file;
+    private final int offset;
     
-    InvertIfElseProposal(int offset, IFile file, TextChange change) {
+    InvertIfElseProposal(int offset, TextChange change) {
         super("Invert if-else", change);
         this.offset=offset;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
     
     static void addReverseIfElseProposal(IDocument doc,
@@ -149,7 +146,7 @@ class InvertIfElseProposal extends CorrectionProposal {
             TextChange change = new TextFileChange("Invert if-else", file);
             change.setEdit(new ReplaceEdit(ifStmt.getStartIndex(), 
                     ifStmt.getStopIndex() - ifStmt.getStartIndex() + 1, replace.toString()));
-            proposals.add(new InvertIfElseProposal(ifStmt.getStartIndex(), file, change));
+            proposals.add(new InvertIfElseProposal(ifStmt.getStartIndex(), change));
         } catch (Exception e) {
             e.printStackTrace();
         }

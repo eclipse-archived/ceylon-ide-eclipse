@@ -15,6 +15,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -27,27 +28,23 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
 class AddParameterProposal extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
-    AddParameterProposal(Declaration dec, int offset, IFile file, 
+    AddParameterProposal(Declaration dec, int offset, 
             TextChange change) {
         super("Add to parameter list of '" + dec.getName() + "'", 
                 change, ADD);
         this.offset=offset;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
 
     static void addParameterProposal(IDocument doc, Tree.CompilationUnit cu,
@@ -129,7 +126,7 @@ class AddParameterProposal extends CorrectionProposal {
                             explicitType));
                 }
                 proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
-                        offset+param.length()+shift, file, change));
+                        offset+param.length()+shift, change));
             }
         }
     }

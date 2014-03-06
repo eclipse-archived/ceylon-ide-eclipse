@@ -26,6 +26,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -35,7 +36,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindUtils;
@@ -43,11 +43,10 @@ import com.redhat.ceylon.eclipse.util.FindUtils;
 class CreateProposal extends CorrectionProposal {
     
     private final int offset;
-    private final IFile file;
     private final int length;
     
     private CreateProposal(String def, String desc, Image image, 
-            int offset, IFile file, TextFileChange change) {
+            int offset, TextFileChange change) {
         super(desc, change, image);
         int loc = def.indexOf("= nothing");
         if (loc<0) {
@@ -67,15 +66,13 @@ class CreateProposal extends CorrectionProposal {
             length=7;
         }
         this.offset=offset + loc;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset, length);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, length);
     }
-
+    
     static IDocument getDocument(TextFileChange change) {
         try {
             return change.getCurrentDocument(null);
@@ -133,8 +130,7 @@ class CreateProposal extends CorrectionProposal {
         String def = indentBefore + dg.generateShared(indent, delim) + indentAfter;
         change.addEdit(new InsertEdit(offset, def));
         String desc = "Create " + memberKind(dg) + " in '" + typeDec.getName() + "'";
-        proposals.add(new CreateProposal(def, desc, dg.image, 
-                offset+il, file, change));
+        proposals.add(new CreateProposal(def, desc, dg.image, offset+il, change));
     }
 
     private static String memberKind(DefinitionGenerator dg) {
@@ -166,8 +162,7 @@ class CreateProposal extends CorrectionProposal {
         if (!local) def += delim;
         change.addEdit(new InsertEdit(offset, def));
         String desc = (local ? "Create local " : "Create toplevel ") + dg.desc;
-        proposals.add(new CreateProposal(def, desc, dg.image, 
-                offset+il, file, change));
+        proposals.add(new CreateProposal(def, desc, dg.image, offset+il, change));
     }
     
     static void addCreateMemberProposals(Collection<ICompletionProposal> proposals,

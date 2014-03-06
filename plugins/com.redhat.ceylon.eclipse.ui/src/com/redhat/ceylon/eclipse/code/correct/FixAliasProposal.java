@@ -7,28 +7,24 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class FixAliasProposal extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
-    FixAliasProposal(int offset, IFile file, TextChange change) {
+    FixAliasProposal(int offset, TextChange change) {
         super("Change = to =>", change);
         this.offset=offset;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
-
+    
     static void addFixAliasProposal(Collection<ICompletionProposal> proposals, 
             IFile file, ProblemLocation problem) {
         /*Token token;
@@ -49,7 +45,7 @@ class FixAliasProposal extends CorrectionProposal {
         TextChange change = new TextFileChange("Fix Alias Syntax", file);
         change.setEdit(new MultiTextEdit());
         change.addEdit(new ReplaceEdit(offset, 1, "=>"));
-        proposals.add(new FixAliasProposal(offset + 2 , file, change));
+        proposals.add(new FixAliasProposal(offset + 2 , change));
     }
     
 }

@@ -8,6 +8,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -15,26 +16,22 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ConvertToGetterProposal extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
     ConvertToGetterProposal(Declaration dec, int offset, 
-            IFile file, TextChange change) {
+            TextChange change) {
         super("Convert '" + dec.getName() + "' to getter", change);
         this.offset=offset;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
-
+    
     static void addConvertToGetterProposal(IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.AttributeDeclaration decNode) {
@@ -59,7 +56,7 @@ class ConvertToGetterProposal extends CorrectionProposal {
                 // change.addEdit(new ReplaceEdit(offset, 1, space + "{ return" + spaceAfter));
                 // change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
                 proposals.add(new ConvertToGetterProposal(dec, 
-                        offset + space.length() + 2 , file, change));
+                        offset + space.length() + 2 , change));
             }
         }
     }

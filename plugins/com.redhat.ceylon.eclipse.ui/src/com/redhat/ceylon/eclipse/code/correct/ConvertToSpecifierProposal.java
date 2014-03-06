@@ -8,30 +8,27 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ConvertToSpecifierProposal extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
-    ConvertToSpecifierProposal(int offset, IFile file, TextChange change) {
+    ConvertToSpecifierProposal(int offset, TextChange change) {
         super("Convert block to =>", change);
         this.offset=offset;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
-
+    
     static void addConvertToSpecifierProposal(IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.Block block) {
@@ -65,7 +62,7 @@ class ConvertToSpecifierProposal extends CorrectionProposal {
                 }
                 change.addEdit(new ReplaceEdit(offset, block.getStopIndex()-offset+1, 
                         "=> " + es + ";"));
-                proposals.add(new ConvertToSpecifierProposal(offset+2 , file, change));
+                proposals.add(new ConvertToSpecifierProposal(offset+2 , change));
             }
         }
     }
