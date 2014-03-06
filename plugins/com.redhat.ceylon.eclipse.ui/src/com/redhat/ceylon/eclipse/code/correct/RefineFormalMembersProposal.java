@@ -7,8 +7,8 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
@@ -23,7 +23,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -31,24 +33,33 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Indents;
 
-class RefineFormalMembersProposal implements ICompletionProposal {
+class RefineFormalMembersProposal implements ICompletionProposal,
+        ICompletionProposalExtension6 {
 
-    private final CeylonEditor editor;
+    private final Tree.CompilationUnit rootNode;
+    private final String description;
+    private Node node;
     
-    public RefineFormalMembersProposal(CeylonEditor editor) {
-        this.editor = editor;
+    public RefineFormalMembersProposal(Node node, 
+            Tree.CompilationUnit rootNode,
+            String description) {
+        this.node = node;
+        this.description = description;
+        this.rootNode = rootNode;
     }
     
     @Override
@@ -63,7 +74,12 @@ class RefineFormalMembersProposal implements ICompletionProposal {
 
     @Override
     public String getDisplayString() {
-        return "Refine formal members";
+        return description;
+    }
+
+    @Override
+    public StyledString getStyledDisplayString() {
+        return CorrectionUtil.styleProposal(getDisplayString());
     }
 
     @Override
@@ -73,37 +89,25 @@ class RefineFormalMembersProposal implements ICompletionProposal {
 
     @Override
     public String getAdditionalProposalInfo() {
+        //TODO: list the members that will be refined!
         return null;
     }
 
     @Override
     public void apply(IDocument doc) {
         try {
-            RefineFormalMembersProposal.refineFormalMembers(editor);
+            refineFormalMembers(doc);
         } 
         catch (ExecutionException e) {
             e.printStackTrace();
         }
     }
     
-    private static boolean canRefine(CeylonEditor editor) {
-        Node node = EditorUtil.getSelectedNode(editor);
-        return node instanceof Tree.ClassBody ||
-                node instanceof Tree.InterfaceBody ||
-                node instanceof Tree.ClassDefinition ||
-                node instanceof Tree.InterfaceDefinition ||
-                node instanceof Tree.ObjectDefinition;
-    }
-
-    private static void refineFormalMembers(CeylonEditor editor) 
+    private void refineFormalMembers(IDocument document) 
             throws ExecutionException {
-        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-        if (cu==null) return;
-        Node node = getSelectedNode(editor);
-        IDocument document = editor.getDocumentProvider()
-                .getDocument(editor.getEditorInput());
+        if (rootNode==null) return;
         TextChange change = 
-                new DocumentChange("Refine Formal Members", document);
+                new DocumentChange("Refine Members", document);
         change.setEdit(new MultiTextEdit());
         //TODO: copy/pasted from CeylonQuickFixAssistant
         Tree.Body body;
@@ -123,18 +127,23 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         else if (node instanceof Tree.ClassBody || 
                 node instanceof Tree.InterfaceBody) {
             body = (Tree.Body) node;
-            offset = editor.getSelection().getOffset();
+            IEditorPart editor = EditorUtil.getCurrentEditor();
+            if (editor instanceof CeylonEditor) {
+                offset = ((CeylonEditor) editor).getSelection().getOffset();
+            }
+            else {
+                offset = -1;
+            }
         }
         else {
             //TODO run a visitor to find the containing body!
-            return;//TODO popup error dialog
+            return; //TODO popup error dialog
         }
         boolean isInterface = body instanceof Tree.InterfaceBody;
-        //TODO: copy/pasted from ImplementFormalMembersProposal
         List<Statement> statements = body.getStatements();
         String indent;
         String bodyIndent = getIndent(body, document);
-        String delim = Indents.getDefaultLineDelimiter(document);
+        String delim = getDefaultLineDelimiter(document);
         if (statements.isEmpty()) {
             indent = delim + bodyIndent + getDefaultIndent();
             if (offset<0) offset = body.getStartIndex()+1;
@@ -148,7 +157,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         Set<Declaration> already = new HashSet<Declaration>();
         ClassOrInterface ci = (ClassOrInterface) node.getScope();
         for (DeclarationWithProximity dwp: 
-                getProposals(node, ci, cu).values()) {
+                getProposals(node, ci, rootNode).values()) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
                 if (d.isFormal() && 
@@ -157,10 +166,31 @@ class RefineFormalMembersProposal implements ICompletionProposal {
                     String rt = getRefinementTextFor(d, pr, 
                             node.getUnit(), isInterface, ci, indent, true);
                     result.append(indent).append(rt).append(indent);
-                    importSignatureTypes(d, cu, already);
+                    importSignatureTypes(d, rootNode, already);
                 }
             }
         }
+        Set<String> ambiguousNames = new HashSet<String>();
+        for (TypeDeclaration superType : ci.getSuperTypeDeclarations()) {
+            for (Declaration m : superType.getMembers()) {
+                if (m.isShared()) {
+                    Declaration r = ci.getMember(m.getName(), null, false);
+                    if (r==null || 
+                            !r.refines(m) && 
+                            !r.getContainer().equals(ci) && 
+                            !ambiguousNames.contains(m.getName())) {
+                        ambiguousNames.add(m.getName());
+                        ProducedReference pr = getRefinedProducedReference(ci, m);
+                        result.append(indent)
+                            .append(getRefinementTextFor(m, pr, node.getUnit(), 
+                                    false, null, indent, true))
+                            .append(indent);
+                        importSignatureTypes(m, rootNode, already);
+                    }
+                }
+            }
+        }
+        
         try {
             if (document.getChar(offset)=='}' && result.length()>0) {
                 result.append(delim).append(bodyIndent);
@@ -169,7 +199,7 @@ class RefineFormalMembersProposal implements ICompletionProposal {
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        applyImports(change, already, cu, document);
+        applyImports(change, already, rootNode, document);
         change.addEdit(new InsertEdit(offset, result.toString()));
         change.initializeValidationData(null);
         try {
@@ -180,16 +210,27 @@ class RefineFormalMembersProposal implements ICompletionProposal {
             throw new ExecutionException("Error cleaning imports", ce);
         }
     }
-
-    static void add(Collection<ICompletionProposal> proposals, 
-            CeylonEditor editor) {
-        if (canRefine(editor)) {
-            for (ICompletionProposal cp: proposals) {
-                if (cp instanceof ImplementFormalAndAmbiguouslyInheritedMembersProposal) {
-                    return;
-                }
+    
+    static void addRefineFormalMembersProposal(Collection<ICompletionProposal> proposals, 
+            Node node, Tree.CompilationUnit rootNode, boolean ambiguousError) {
+        for (ICompletionProposal p: proposals) {
+            if (p instanceof RefineFormalMembersProposal) {
+                return;
             }
-            proposals.add(new RefineFormalMembersProposal(editor));
+        }
+        if (node instanceof Tree.ClassBody ||
+                node instanceof Tree.InterfaceBody ||
+                node instanceof Tree.ClassDefinition ||
+                node instanceof Tree.InterfaceDefinition ||
+                node instanceof Tree.ObjectDefinition) {
+            Scope scope = node.getScope();
+            if (scope instanceof ClassOrInterface) {
+                ClassOrInterface ci = (ClassOrInterface) scope;
+                String desc = ambiguousError ?
+                        "Refine inherited ambiguous and formal members of '" + ci.getName() + "'":
+                        "Refine inherited formal members of '" + ci.getName() + "'";
+                proposals.add(new RefineFormalMembersProposal(node, rootNode, desc));
+            }
         }
     }
 
