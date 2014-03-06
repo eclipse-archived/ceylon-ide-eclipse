@@ -405,10 +405,12 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
                             @Override
                             public void run(IProgressMonitor monitor) 
                                     throws InvocationTargetException, InterruptedException {
-                                IRegion selection = activeEditor.getSelection();
-                                int offset = selection.getOffset();
-                                int length = selection.getLength();
-                                recomputeAnnotationsForSelection(offset, length, document);
+                                if (activeEditor!=null) {
+                                    IRegion selection = activeEditor.getSelection();
+                                    int offset = selection.getOffset();
+                                    int length = selection.getLength();
+                                    recomputeAnnotationsForSelection(offset, length, document);
+                                }
                             }
                         }, null);
                     } 
