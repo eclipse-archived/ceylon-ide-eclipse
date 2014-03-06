@@ -32,7 +32,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addRenameProposals;
+import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeReferenceProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningParametersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeProposals;
@@ -69,8 +69,8 @@ import static com.redhat.ceylon.eclipse.code.correct.RenameDescriptorProposal.ad
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowSwitchReferenceProposal;
-import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addSpecifyTypeProposal;
+import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addTypingProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.VerboseRefinementProposal.addVerboseRefinementProposal;
@@ -366,7 +366,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         switch ( problem.getProblemId() ) {
         case 100:
             if (tc!=null) {
-                addRenameProposals(cu, node, problem, proposals, file);
+                addChangeReferenceProposals(cu, node, problem, proposals, file);
             }
             addCreationProposals(cu, node, problem, proposals, 
                     project, tc, file);
@@ -380,18 +380,18 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addCreationProposals(cu, node, problem, proposals, 
                     project, tc, file);
             if (tc!=null) {
-                addRenameProposals(cu, node, problem, proposals, file);
+                addChangeReferenceProposals(cu, node, problem, proposals, file);
             }
             break;
         case 101:
             addCreateParameterProposals(cu, node, problem, proposals, 
                     project, tc, file);
             if (tc!=null) {
-                addRenameProposals(cu, node, problem, proposals, file);
+                addChangeReferenceProposals(cu, node, problem, proposals, file);
             }
             break;
         case 200:
-            addSpecifyTypeProposal(cu, node, proposals, file);
+            addSpecifyTypeProposal(cu, node, proposals, file, null);
             break;
         case 300:
             addRefineFormalMembersProposal(proposals, node, cu, false);
@@ -585,7 +585,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addAnnotationProposals(proposals, project, declaration,
                     doc, currentOffset);
-            addTypingProposals(proposals, file, cu, node, declaration);
+            addTypingProposals(proposals, file, cu, node, declaration, editor);
             
             addDeclarationProposals(editor, proposals, doc, file, cu, 
                     declaration, currentOffset);
@@ -668,25 +668,6 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     }
                 }
             }
-        }
-    }
-
-    private void addTypingProposals(Collection<ICompletionProposal> proposals,
-            IFile file, Tree.CompilationUnit cu, Node node,
-            Tree.Declaration decNode) {
-        if (decNode instanceof Tree.TypedDeclaration && 
-                !(decNode instanceof Tree.ObjectDefinition) &&
-                !(decNode instanceof Tree.Variable)) {
-            Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
-            if (type instanceof Tree.LocalModifier) {
-                addSpecifyTypeProposal(cu, type, proposals, file);
-            }
-        }
-        else if (node instanceof Tree.LocalModifier) {
-            addSpecifyTypeProposal(cu, node, proposals, file);
-        }
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            addSpecifyTypeArgumentsProposal(cu, node, proposals, file);
         }
     }
 
