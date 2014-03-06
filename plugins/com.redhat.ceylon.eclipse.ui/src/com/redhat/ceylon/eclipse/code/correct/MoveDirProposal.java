@@ -81,7 +81,7 @@ final class MoveDirProposal implements ICompletionProposal {
         if (!cu.getPackageDescriptors().isEmpty()) {
             importPath = cu.getPackageDescriptors().get(0).getImportPath();
         }
-        else if (cu.getModuleDescriptors().isEmpty()) {
+        else if (!cu.getModuleDescriptors().isEmpty()) {
             importPath = cu.getModuleDescriptors().get(0).getImportPath();
         }
         else {
