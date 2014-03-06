@@ -17,6 +17,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -30,30 +31,26 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
 class CreateTypeParameterProposal extends CorrectionProposal {
     
     private final int offset;
-    private final IFile file;
     private final int length;
     
     CreateTypeParameterProposal(String def, String desc, 
-            Image image, String name, int offset, IFile file, 
+            Image image, String name, int offset,  
             TextFileChange change) {
         super(desc, change, image);
         this.offset = offset+1;
         this.length = name.length();
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset, length);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, length);
     }
-
+    
     static IDocument getDocument(TextFileChange change) {
         try {
             return change.getCurrentDocument(null);
@@ -83,7 +80,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         proposals.add(new CreateTypeParameterProposal(def, 
                 "Add type parameter '" + name + "'" + 
                         " to '" + dec.getName() + "'", 
-                image, name, offset+il, file, change));
+                image, name, offset+il, change));
     }
 
     private static int getConstraintLoc(Tree.Declaration decNode) {

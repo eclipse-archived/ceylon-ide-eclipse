@@ -391,7 +391,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             }
             break;
         case 200:
-            addSpecifyTypeProposal(cu, node, proposals, file, null);
+            addSpecifyTypeProposal(cu, node, proposals, null);
             break;
         case 300:
             addRefineFormalMembersProposal(proposals, node, cu, false);

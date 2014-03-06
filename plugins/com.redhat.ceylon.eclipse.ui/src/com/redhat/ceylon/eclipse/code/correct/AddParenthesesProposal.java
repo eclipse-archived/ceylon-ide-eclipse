@@ -6,33 +6,30 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class AddParenthesesProposal extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
-    AddParenthesesProposal(Declaration dec, int offset, IFile file, 
+    AddParenthesesProposal(Declaration dec, int offset, 
             TextFileChange change) {
         super("Add empty parameter list to '" + dec.getName() + "'" + 
                 (dec.getContainer() instanceof TypeDeclaration?
                         "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
                         change);
         this.offset=offset;
-        this.file=file;
     }
 
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
 
     static void addAddParenthesesProposal(ProblemLocation problem, IFile file,
@@ -44,7 +41,7 @@ class AddParenthesesProposal extends CorrectionProposal {
             TextFileChange change = new TextFileChange("Add Empty Parameter List", file);
             change.setEdit(new InsertEdit(offset+1, "()"));
             proposals.add(new AddParenthesesProposal(decNode.getDeclarationModel(), 
-                    offset+2, file, change));
+                    offset+2, change));
         }
     }
 

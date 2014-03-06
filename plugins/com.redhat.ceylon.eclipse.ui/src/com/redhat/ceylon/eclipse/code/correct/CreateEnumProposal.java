@@ -17,37 +17,34 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateEnumProposal extends CorrectionProposal {
     
     private final int offset;
-    private final IFile file;
     private final int length;
     
     CreateEnumProposal(String def, String desc, Image image, 
-            int offset, IFile file, TextFileChange change) {
+            int offset, TextFileChange change) {
         super(desc, change, image);
         int loc = def.indexOf("{}")+1;
         length = 0;
         this.offset = offset + loc;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset, length);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, length);
     }
-
+    
     static IDocument getDocument(TextFileChange change) {
         try {
             return change.getCurrentDocument(null);
@@ -129,7 +126,7 @@ class CreateEnumProposal extends CorrectionProposal {
         change.setEdit(new InsertEdit(offset, s));
         proposals.add(new CreateEnumProposal(def, 
                 "Create enumerated " + desc, 
-                image, offset, file, change));
+                image, offset, change));
     }
 
         private static void addCreateEnumProposal(Collection<ICompletionProposal> proposals,

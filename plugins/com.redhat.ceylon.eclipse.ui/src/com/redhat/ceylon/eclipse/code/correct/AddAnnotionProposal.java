@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -35,7 +36,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class AddAnnotionProposal extends CorrectionProposal {
@@ -47,26 +47,23 @@ class AddAnnotionProposal extends CorrectionProposal {
             asList("doc", "throws", "see", "tagged");
     
     private final int offset; 
-    private final IFile file;
     private final Declaration dec;
     private final String annotation;
     
     AddAnnotionProposal(Declaration dec, String annotation,
-            int offset, IFile file, TextFileChange change) {
+            int offset, TextFileChange change) {
         super("Make '" + dec.getName() + "' " + annotation +
             (dec.getContainer() instanceof TypeDeclaration ?
                     " in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
                     change);
         this.offset=offset;
-        this.file=file;
         this.dec = dec;
         this.annotation = annotation;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, annotation.length());
     }
     
     @Override
@@ -130,8 +127,8 @@ class AddAnnotionProposal extends CorrectionProposal {
                 }
             }
         }
-        AddAnnotionProposal p = new AddAnnotionProposal(dec, annotation, 
-                insertEdit.getOffset(), file, change);
+        AddAnnotionProposal p = new AddAnnotionProposal(dec, 
+                annotation, insertEdit.getOffset(), change);
         if (!proposals.contains(p)) {
             proposals.add(p);
         }

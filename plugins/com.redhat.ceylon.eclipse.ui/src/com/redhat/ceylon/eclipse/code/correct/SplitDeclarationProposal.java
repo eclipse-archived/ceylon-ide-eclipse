@@ -15,6 +15,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -25,24 +26,21 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class SplitDeclarationProposal extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
-    SplitDeclarationProposal(Declaration dec, int offset, IFile file, TextChange change) {
+    SplitDeclarationProposal(Declaration dec, int offset, 
+            TextChange change) {
         super("Split declaration of '" + dec.getName() + "'", change);
         this.offset=offset;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
 
     static void addSplitDeclarationProposal(IDocument doc, Tree.CompilationUnit cu,
@@ -98,7 +96,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
         else {
             il=0;
         }
-        proposals.add(new SplitDeclarationProposal(dec, offset+il, file, change));
+        proposals.add(new SplitDeclarationProposal(dec, offset+il, change));
     }
     
 }

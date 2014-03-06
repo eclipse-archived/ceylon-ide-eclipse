@@ -13,6 +13,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -21,7 +22,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.correct.CreateSubtypeInNewUnitProposal.CreateSubtype;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindUtils;
 import com.redhat.ceylon.eclipse.util.Indents;
 
@@ -29,7 +29,6 @@ class CreateLocalSubtypeProposal extends CorrectionProposal {
     
     private final int offset;
     private final int length;
-    private final IFile file;
     
     CreateLocalSubtypeProposal(ProducedType type, int offset, int length, 
             IFile file, TextChange change) {
@@ -37,15 +36,13 @@ class CreateLocalSubtypeProposal extends CorrectionProposal {
                 change);
         this.offset=offset;
         this.length=length;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset, length);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, length);
     }
-
+    
     static void addCreateLocalSubtypeProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file, Node node) {
         Tree.Statement statement = FindUtils.findToplevelStatement(cu, node);

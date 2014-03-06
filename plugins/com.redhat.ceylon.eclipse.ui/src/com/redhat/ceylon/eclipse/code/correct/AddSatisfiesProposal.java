@@ -15,6 +15,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -32,7 +33,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
@@ -462,12 +462,10 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         this.typeParam = typeParam;
         this.missingSatisfiedTypeText = missingSatisfiedTypeText;
     }
-
+    
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(change.getFile(), 
-                change.getEdit().getOffset());
+    public Point getSelection(IDocument document) {
+        return new Point(change.getEdit().getOffset(), 0);
     }
 
     @Override

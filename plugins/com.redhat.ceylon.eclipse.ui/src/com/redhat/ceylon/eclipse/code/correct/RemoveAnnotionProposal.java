@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -19,35 +20,31 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class RemoveAnnotionProposal extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     private final Declaration dec;
     private final String annotation;
     
     RemoveAnnotionProposal(Declaration dec, String annotation,
-            int offset, IFile file, TextFileChange change) {
+            int offset, TextFileChange change) {
         super("Make '" + dec.getName() + "' non-" + annotation + " " +
             (dec.getContainer() instanceof TypeDeclaration ?
                     "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
                     change);
         this.offset=offset;
-        this.file=file;
         this.dec = dec;
         this.annotation = annotation;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof RemoveAnnotionProposal) {
@@ -106,7 +103,7 @@ class RemoveAnnotionProposal extends CorrectionProposal {
             }
         }
         RemoveAnnotionProposal p = 
-                new RemoveAnnotionProposal(dec, annotation, offset, file, change);
+                new RemoveAnnotionProposal(dec, annotation, offset, change);
         if (!proposals.contains(p)) {
             proposals.add(p);
         }

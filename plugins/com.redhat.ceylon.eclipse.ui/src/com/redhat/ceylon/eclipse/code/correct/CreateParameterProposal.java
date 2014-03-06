@@ -22,6 +22,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -36,19 +37,16 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class CreateParameterProposal extends CorrectionProposal {
     
     private final int offset;
-    private final IFile file;
     private final int length;
     
     CreateParameterProposal(String def, String desc, 
-            Image image, int offset, IFile file, 
-            TextFileChange change) {
+            Image image, int offset, TextFileChange change) {
         super(desc, change, image);
         int loc = def.indexOf("= nothing");
         if (loc<0) {
@@ -67,15 +65,13 @@ class CreateParameterProposal extends CorrectionProposal {
             length=7;
         }
         this.offset=offset + loc;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset, length);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, length);
     }
-
+    
     static IDocument getDocument(TextFileChange change) {
         try {
             return change.getCurrentDocument(null);
@@ -101,7 +97,7 @@ class CreateParameterProposal extends CorrectionProposal {
         change.addEdit(new InsertEdit(offset, def));
         proposals.add(new CreateParameterProposal(def, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
-                image, offset+il, file, change));
+                image, offset+il, change));
     }
 
     private static void addCreateParameterAndAttributeProposal(Collection<ICompletionProposal> proposals, 
@@ -136,7 +132,7 @@ class CreateParameterProposal extends CorrectionProposal {
         change.addEdit(new InsertEdit(offset2, indent+adef+indentAfter));
         proposals.add(new CreateParameterProposal(pdef, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
-                image, offset+il, file, change));
+                image, offset+il, change));
     }
 
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 

@@ -11,6 +11,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -25,25 +26,21 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueModifier;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class ConvertThenElseToIfElse extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
-    ConvertThenElseToIfElse(int offset, IFile file, TextChange change) {
+    ConvertThenElseToIfElse(int offset, TextChange change) {
         super("Convert to if-else", change);
         this.offset=offset;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
     
     static void addConvertToIfElseProposal(IDocument doc,
@@ -175,7 +172,7 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
             change.setEdit(new ReplaceEdit(statement.getStartIndex(), 
                     statement.getStopIndex() - statement.getStartIndex() + 1, 
                     replace.toString()));
-            proposals.add(new ConvertThenElseToIfElse(statement.getStartIndex(), file, change));
+            proposals.add(new ConvertThenElseToIfElse(statement.getStartIndex(), change));
         } catch (BadLocationException e) {
             e.printStackTrace();
         }

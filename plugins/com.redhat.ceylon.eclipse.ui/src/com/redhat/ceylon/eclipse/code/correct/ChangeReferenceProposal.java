@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshte
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
@@ -21,6 +20,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -37,7 +37,6 @@ class ChangeReferenceProposal extends CorrectionProposal
     
     private final int offset;
     private final int length;
-    private final IFile file;
     
     private ChangeReferenceProposal(ProblemLocation problem, IFile file, String name, 
             String pkg, Declaration dec, int dist, TextFileChange change) {
@@ -45,15 +44,13 @@ class ChangeReferenceProposal extends CorrectionProposal
                 MINOR_CHANGE/*CeylonLabelProvider.getImage(dec)*/);
         offset = problem.getOffset();
         length = name.length();
-        this.file = file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        gotoLocation(file, offset, length);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, length);
     }
-
+    
     static void addChangeReferenceProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file,
             String brokenName, DeclarationWithProximity dwp, int dist,

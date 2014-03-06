@@ -10,6 +10,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -17,24 +18,21 @@ import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
 class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
-    public ConvertToPositionalArgumentsProposal(int offset, IFile file, Change change) {
+    public ConvertToPositionalArgumentsProposal(int offset, 
+            Change change) {
         super("Convert to positional arguments", change);
         this.offset=offset;
-        this.file=file;
     }
 
     @Override
-    public void apply(IDocument document) {
-         super.apply(document);
-         EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
     
     public static void addConvertToPositionalArgumentsProposal(Collection<ICompletionProposal> proposals, 
@@ -114,7 +112,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
         result.append(")");
         tc.setEdit(new ReplaceEdit(start, length, result.toString()));
         int offset = start+result.toString().length();
-        proposals.add(new ConvertToPositionalArgumentsProposal(offset, file, tc));
+        proposals.add(new ConvertToPositionalArgumentsProposal(offset, tc));
     }
     
     private static Tree.NamedArgumentList findNamedArgumentList(

@@ -10,13 +10,13 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 
 public class AddThrowsAnnotationProposal extends CorrectionProposal {
@@ -46,7 +46,9 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
         throwsAnnotationChange.setEdit(throwsAnnotationInsertEdit);
 
         int cursorOffset = throwsAnnotationInsertEdit.getOffset() + throwsAnnotationInsertEdit.getText().indexOf(")") - 1;
-        AddThrowsAnnotationProposal proposal = new AddThrowsAnnotationProposal(throwsAnnotationChange, exceptionType, file, cursorOffset, throwContainer.getIdentifier() != null ? throwContainer.getIdentifier().getText() : "");
+        AddThrowsAnnotationProposal proposal = 
+                new AddThrowsAnnotationProposal(throwsAnnotationChange, exceptionType, cursorOffset, 
+                        throwContainer.getIdentifier() != null ? throwContainer.getIdentifier().getText() : "");
         if (!proposals.contains(proposal)) {
             proposals.add(proposal);
         }
@@ -112,19 +114,16 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
         return false;
     }
 
-    private final IFile file;
     private final int offset;
 
-    private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, IFile file, int offset, String declName) {
+    private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, int offset, String declName) {
         super("Add throws annotation to '" + declName + "'", change);
-        this.file = file;
         this.offset = offset;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
-    }    
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
+    }
 
 }

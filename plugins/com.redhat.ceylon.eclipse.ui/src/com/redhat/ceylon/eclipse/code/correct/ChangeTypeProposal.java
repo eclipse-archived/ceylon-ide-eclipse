@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -32,29 +33,25 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class ChangeTypeProposal extends CorrectionProposal {
 
     private final int offset;
     private final int length;
-    private final IFile file;
     
-    ChangeTypeProposal(ProblemLocation problem, IFile file, 
+    ChangeTypeProposal(ProblemLocation problem, 
             String name, String type, int offset,
             TextFileChange change) {
         super("Change type of "+ name + " to '" + type + "'", 
                 change);
         this.offset = offset;
         this.length = type.length();
-        this.file = file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset, length);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, length);
     }
     
     static void addChangeTypeProposal(Node node, ProblemLocation problem, 
@@ -83,7 +80,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         else {
             name = "'" + dec.getName() + "'";
         }
-        proposals.add(new ChangeTypeProposal(problem, file, name, 
+        proposals.add(new ChangeTypeProposal(problem, name, 
                 typeName, offset+il, change));
     }
     

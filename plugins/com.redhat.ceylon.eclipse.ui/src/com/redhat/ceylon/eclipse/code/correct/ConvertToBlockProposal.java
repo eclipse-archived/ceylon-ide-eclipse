@@ -8,6 +8,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -17,25 +18,21 @@ import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class ConvertToBlockProposal extends CorrectionProposal {
     
     private final int offset; 
-    private final IFile file;
     
-    ConvertToBlockProposal(int offset, IFile file, TextChange change) {
+    ConvertToBlockProposal(int offset, TextChange change) {
         super("Convert => to block", change);
         this.offset=offset;
-        this.file=file;
     }
     
     @Override
-    public void apply(IDocument document) {
-        super.apply(document);
-        EditorUtil.gotoLocation(file, offset);
+    public Point getSelection(IDocument document) {
+        return new Point(offset, 0);
     }
-
+    
     static void addConvertToBlockProposal(IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.LazySpecifierExpression spec, Node decNode) {
@@ -89,7 +86,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
         }
         change.addEdit(new ReplaceEdit(offset, 2, space + (isVoid?"{":"{ return") + spaceAfter));
         change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
-        proposals.add(new ConvertToBlockProposal(offset + space.length() + 2 , file, change));
+        proposals.add(new ConvertToBlockProposal(offset + space.length() + 2 , change));
     }
 
 }
