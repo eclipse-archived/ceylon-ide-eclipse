@@ -29,7 +29,6 @@ import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -344,23 +343,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             }
             });
         
-        createVerboseCheckbox(group, "Verbose output"); // creating here just for visual alignment
-    }
-    
-    protected void createVerboseCheckbox(Composite parent, String text) {
-        verboseCheck = createCheckButton(parent, text);
-        verboseCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                Button button = (Button) e.widget;
-                if (button.getSelection()) {
-                    verboseCheck.setSelection(true);
-                } else {
-                    verboseCheck.setSelection(false);
-                }
-                updateLaunchConfigurationDialog();                
-            }
-        });
+        verboseCheck = createCheckButton(group, "Verbose output"); // creating here just for visual alignment
+        verboseCheck.addSelectionListener(getDefaultListener());
     }
 }
