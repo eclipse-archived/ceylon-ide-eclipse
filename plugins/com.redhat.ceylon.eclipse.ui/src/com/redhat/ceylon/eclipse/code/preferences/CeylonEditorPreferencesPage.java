@@ -432,7 +432,7 @@ public class CeylonEditorPreferencesPage
                 "Fix line endings",
                 parent);
         normalizeNl.load();
-        addField(normalizeWs);
+        addField(normalizeNl);
         cleanImports = new BooleanFieldEditor(CLEAN_IMPORTS, 
                 "Clean imports",
                 parent);
