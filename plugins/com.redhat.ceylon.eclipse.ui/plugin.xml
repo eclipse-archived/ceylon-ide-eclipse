@@ -934,10 +934,10 @@
             commandId="com.redhat.ceylon.eclipse.ui.editor.formatBlock"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <!--key
+            sequence="M1+M2+F"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.formatSource"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+F"/-->
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/-->
       
       <!-- Navigation actions -->
       <key
