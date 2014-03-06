@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKE
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE;
 
@@ -91,7 +92,8 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         };
     }
     
-    protected void prepareArguments(List<String> args, List<IPath> workingRepos, IProject project, ILaunch launch, boolean runAsJs) throws CoreException {
+    protected void prepareArguments(List<String> args, List<IPath> workingRepos, IProject project, 
+            ILaunch launch, boolean runAsJs) throws CoreException {
         if (runAsJs) {
             args.add("run-js");
         } else {
@@ -100,6 +102,9 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         
         prepareRepositoryArguments(args, project, workingRepos);
         prepareOfflineArgument(args, project);
+        if (launch.getLaunchConfiguration().getAttribute(ATTR_LAUNCH_VERBOSE, false)) {
+            prepareVerboseArgument(args, launch, runAsJs);
+        }
         
         String topLevel = launch.getLaunchConfiguration()
                 .getAttribute(ATTR_TOPLEVEL_NAME, "");
@@ -131,13 +136,20 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         }
     }
 
-    protected void prepareOfflineArgument(List<String> args, 
-            IProject project) {
+    protected void prepareOfflineArgument(List<String> args, IProject project) {
         if (CeylonProjectConfig.get(project).isOffline()) {
             args.add("--offline");
         }
     }
 
+    protected void prepareVerboseArgument(List<String> args, ILaunch launch, boolean runAsJs) {
+        args.add("--verbose");        
+        if (runAsJs) {
+            args.add("--debug");
+            args.add("debug"); //
+        }
+    }
+    
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
 
