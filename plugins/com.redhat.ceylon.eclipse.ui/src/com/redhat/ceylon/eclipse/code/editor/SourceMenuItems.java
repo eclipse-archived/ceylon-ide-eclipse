@@ -7,6 +7,9 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_COMMENT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_CORRECTION;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE_IMPORT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CORRECT_INDENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FORMAT_BLOCK;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.QUICK_ASSIST;
@@ -27,12 +30,12 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.DeleteRefactoringAction;
 import com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler;
 
 public class SourceMenuItems extends CompoundContributionItem {
     
+    public static ImageDescriptor CORRECTION = imageRegistry.getDescriptor(CEYLON_CORRECTION);
     public static ImageDescriptor TERMINATE = imageRegistry.getDescriptor(TERMINATE_STATEMENT);
     public static ImageDescriptor FORMAT = imageRegistry.getDescriptor(FORMAT_BLOCK);
     public static ImageDescriptor ADD = imageRegistry.getDescriptor(ADD_COMMENT);
@@ -42,6 +45,8 @@ public class SourceMenuItems extends CompoundContributionItem {
     public static ImageDescriptor LEFT = imageRegistry.getDescriptor(SHIFT_LEFT);
     public static ImageDescriptor RIGHT = imageRegistry.getDescriptor(SHIFT_RIGHT);
     public static ImageDescriptor FIX = imageRegistry.getDescriptor(QUICK_ASSIST);
+    public static ImageDescriptor DELETE = imageRegistry.getDescriptor(CEYLON_DELETE);
+    public static ImageDescriptor DELETE_IMPORT = imageRegistry.getDescriptor(CEYLON_DELETE_IMPORT);
     
     public SourceMenuItems() {}
     
@@ -72,30 +77,26 @@ public class SourceMenuItems extends CompoundContributionItem {
 
     private IContributionItem[] getItems(IEditorPart editor) {
         return new IContributionItem[] {
-                new DynamicMenuItem(PLUGIN_ID + ".action.cleanImports", 
-                        "&Clean Imports", new CleanImportsHandler().isEnabled(), 
-                        AbstractRefactoring.DELETE_IMPORT),
+                new DynamicMenuItem(PLUGIN_ID + ".action.cleanImports", "&Clean Imports", 
+                        new CleanImportsHandler().isEnabled(), DELETE_IMPORT),
                 new DynamicMenuItem(PLUGIN_ID + ".action.delete", "Safe &Delete...",
-                        editor!=null && new DeleteRefactoringAction(editor).isEnabled(),
-                        AbstractRefactoring.DELETE),
-                new DynamicMenuItem(PLUGIN_ID + ".action.revealInferredType", 
-                        "Reveal Inferred &Types",
-                        editor!=null && new RevealInferredTypeHandler().isEnabled(),
-                        AbstractRefactoring.CHANGE),
+                        editor!=null && new DeleteRefactoringAction(editor).isEnabled(), DELETE),
+                new DynamicMenuItem(PLUGIN_ID + ".action.revealInferredType", "Reveal Inferred &Types",
+                        editor!=null && new RevealInferredTypeHandler().isEnabled(), CORRECTION),
                 new Separator(),
                 new DynamicMenuItem(ITextEditorActionDefinitionIds.QUICK_ASSIST, "&Quick Fix/Assist", true, FIX),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.terminateStatement", "Terminate &Statement", true, TERMINATE),
                 new Separator(),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.correctIndentation", "Correct &Indentation", true, CORRECT),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.formatBlock", "Format &Block", true, FORMAT),
+                new DynamicMenuItem(PLUGIN_ID + ".editor.correctIndentation", "Correct &Indentation", true),
+                new DynamicMenuItem(PLUGIN_ID + ".editor.formatBlock", "Format &Block", true),
                 new Separator(),
-                new DynamicMenuItem(ITextEditorActionDefinitionIds.SHIFT_LEFT, "Shift &Left", true, LEFT),
-                new DynamicMenuItem(ITextEditorActionDefinitionIds.SHIFT_RIGHT, "Shift &Right", true, RIGHT),
+                new DynamicMenuItem(ITextEditorActionDefinitionIds.SHIFT_LEFT, "Shift &Left", true),
+                new DynamicMenuItem(ITextEditorActionDefinitionIds.SHIFT_RIGHT, "Shift &Right", true),
                 new Separator(),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.toggleComment", "To&ggle Comment", true, TOGGLE),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.addBlockComment", "Add Block Comment", true, ADD),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.removeBlockComment", "Remove Block Comment", true, REMOVE)
+                new DynamicMenuItem(PLUGIN_ID + ".editor.toggleComment", "To&ggle Comment", true),
+                new DynamicMenuItem(PLUGIN_ID + ".editor.addBlockComment", "Add Block Comment", true),
+                new DynamicMenuItem(PLUGIN_ID + ".editor.removeBlockComment", "Remove Block Comment", true)
             };
     }
 
