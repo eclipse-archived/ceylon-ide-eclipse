@@ -1264,7 +1264,7 @@
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=com.redhat.ceylon.eclipse.ui.menu.source">
           <menu
-                label="&amp;Refactor"
+                label="Refac&amp;tor"
                 id="com.redhat.ceylon.eclipse.ui.menu.refactor">
               <visibleWhen>
                   <with variable="activeEditorId">
