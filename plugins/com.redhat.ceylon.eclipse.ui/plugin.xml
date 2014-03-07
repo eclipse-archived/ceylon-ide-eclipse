@@ -527,6 +527,11 @@
             description="Open toplevel declaration"
             name="Open Ceylon Declaration"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.openDeclarationInHierarchy"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Open toplevel declaration in hierarchy view"
+            name="Open in Hierarchy"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open search screen"
@@ -752,6 +757,9 @@
             class="com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"/>
       <handler
+            class="com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationInHierarchyHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclarationInHierarchy"/>
+      <handler
             class="com.redhat.ceylon.eclipse.code.search.OpenCeylonSearchPageAction"
             commandId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"/>
       <handler
@@ -843,6 +851,11 @@
       <key
             sequence="M1+M2+T"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
+      <key
+            sequence="M1+M2+H"
+            commandId="com.redhat.ceylon.eclipse.ui.action.openDeclarationInHierarchy"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"/>
       <key
@@ -1138,15 +1151,19 @@
                   visible="true"
                   name="aboveOpen"/>
             <command
+                  label="Open &amp;Resource..." 
+                  commandId="org.eclipse.ui.navigate.openResource"
+                  icon="icons/openrsrc.gif"
+                  id="com.redhat.ceylon.eclipse.ui.menu.openResource"/>
+            <command
                   label="&amp;Open Ceylon Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
             <command
-                  label="Open &amp;Resource..." 
-                  commandId="org.eclipse.ui.navigate.openResource"
-                  icon="icons/openrsrc.gif"
-                  id="com.redhat.ceylon.eclipse.ui.menu.openResource"/>
+                  label="&amp;Open in Hierarchy..." 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.openDeclarationInHierarchy"
+                  id="com.redhat.ceylon.eclipse.ui.menu.openDeclarationInHierarchy"/>
             <separator
                   visible="true"
                   name="sep8"/>
@@ -1177,17 +1194,17 @@
                   label="Ceylon"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.ceylon">
             <command
-                  label="Open Ceylon Declaration..." 
-                  commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
-                  icon="icons/opentype.gif"
-                  tooltip="Open Ceylon Declaration"
-                  id="com.redhat.ceylon.eclipse.ui.toolbar.openDeclaration"/>
-            <command
                   label="Open Resource..." 
                   commandId="org.eclipse.ui.navigate.openResource"
                   icon="icons/openrsrc.gif"
                   tooltip="Open Resource"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.openResource"/>
+            <command
+                  label="Open Ceylon Declaration..." 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
+                  icon="icons/opentype.gif"
+                  tooltip="Open Ceylon Declaration"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.openDeclaration"/>
             <command
                   label="Show Repository Explorer..." 
                   commandId="org.eclipse.ui.views.showView"
