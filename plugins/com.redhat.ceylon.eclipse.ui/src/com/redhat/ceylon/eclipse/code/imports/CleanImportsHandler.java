@@ -18,6 +18,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -59,8 +60,6 @@ public class CleanImportsHandler extends AbstractHandler {
             if (imports!=null && 
                     !(imports.trim().isEmpty() && 
                             rootNode.getImportList().getImports().isEmpty())) {
-                DocumentChange change = 
-                        new DocumentChange("Organize Imports", doc);
                 Tree.ImportList il = rootNode.getImportList();
                 int start;
                 int length;
@@ -75,11 +74,20 @@ public class CleanImportsHandler extends AbstractHandler {
                     length = il.getStopIndex()-il.getStartIndex()+1;
                     extra="";
                 }
-                change.setEdit(new ReplaceEdit(start, length, imports+extra));
                 try {
-                    change.perform(new NullProgressMonitor());
+                    if (!doc.get(start, length).equals(imports+extra)) {
+                        DocumentChange change = 
+                                new DocumentChange("Organize Imports", doc);
+                        change.setEdit(new ReplaceEdit(start, length, imports+extra));
+                        try {
+                            change.perform(new NullProgressMonitor());
+                        }
+                        catch (CoreException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-                catch (CoreException e) {
+                catch (BadLocationException e) {
                     e.printStackTrace();
                 }
             }
