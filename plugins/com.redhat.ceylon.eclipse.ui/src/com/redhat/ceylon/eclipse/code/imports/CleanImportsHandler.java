@@ -60,7 +60,7 @@ public class CleanImportsHandler extends AbstractHandler {
                     !(imports.trim().isEmpty() && 
                             rootNode.getImportList().getImports().isEmpty())) {
                 DocumentChange change = 
-                        new DocumentChange("Clean Imports", doc);
+                        new DocumentChange("Organize Imports", doc);
                 Tree.ImportList il = rootNode.getImportList();
                 int start;
                 int length;

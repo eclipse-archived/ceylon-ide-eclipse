@@ -574,8 +574,8 @@
        <command
             id="com.redhat.ceylon.eclipse.ui.action.cleanImports"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Clean unused imports from current file"
-            name="Clean Imports"/>
+            description="Organize import statements in current file"
+            name="Organize Imports"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"
             categoryId="com.redhat.ceylon.eclipse.ui"

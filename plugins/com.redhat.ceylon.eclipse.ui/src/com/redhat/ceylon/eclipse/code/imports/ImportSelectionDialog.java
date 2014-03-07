@@ -37,7 +37,7 @@ final class ImportSelectionDialog extends
     ImportSelectionDialog(Shell shell, List<Declaration> proposals) {
         super(shell);
         this.proposals = proposals;
-        setTitle("Clean Imports");
+        setTitle("Organize Imports");
         setMessage("Select declaration to import:");
         setListLabelProvider(new LabelProvider());
         setDetailsLabelProvider(new DetailsLabelProvider());
