@@ -1141,7 +1141,7 @@
       <menuContribution
             locationURI="menu:window?before=additions">
             <command
-                  label="Quick Switch to Editor" 
+                  label="Quick Switch Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"
                   id="com.redhat.ceylon.eclipse.ui.menu.openEditorDropDown"/>
       </menuContribution>
@@ -1343,7 +1343,7 @@
                   name="sep9"/>
             <command
                   id="openEditorDropDown"
-                  label="Quick Switch to Editor" 
+                  label="Quick Switch Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"/>
             <command
                   label="Go to Line..."
