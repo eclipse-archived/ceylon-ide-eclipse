@@ -147,7 +147,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     }
 
     public String getName() {
-        return "Change Parameters";
+        return "Change Parameter List";
     }
 
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
