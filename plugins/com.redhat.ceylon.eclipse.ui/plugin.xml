@@ -541,16 +541,21 @@
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open welcome page"
             name="Ceylon Welcome"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Show the quick outline for the editor input"
+            id="com.redhat.ceylon.eclipse.ui.editor.showOutline"
+            name="Quick Outline"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Show popup hierarchy view"
-            name="Show Ceylon Hierarchy"/>
+            name="Quick Type Hierarchy"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.editor.code"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Show popup code view"
-            name="Show Ceylon Code"/>
+            name="Peek"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.showInHierarchyView"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -671,11 +676,6 @@
              description="Open source quick menu"
              id="com.redhat.ceylon.eclipse.ui.menu.sourceQuickMenu"
              name="Source Menu"/>
-      <command
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Show the quick outline for the editor input"
-            id="com.redhat.ceylon.eclipse.ui.editor.showOutline"
-            name="Show Outline"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             name="Collapse Imports"
@@ -1263,26 +1263,26 @@
                       <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
                   </with>
               </visibleWhen>
+            <dynamic id="source"
+                  class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
+            <separator
+                  name="sep4" 
+                  visible="true"/>
             <command 
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
                   icon="icons/outline_co.gif"
-                  label="Show &amp;Outline"/>
+                  label="Quick &amp;Outline"/>
             <command 
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
                   icon="icons/class_hi.gif"
-                  label="Show &amp;Hierarchy"/>
+                  label="Quick &amp;Hierarchy"/>
             <command 
                   id="showCode"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.code"
                   icon="icons/source.gif"
-                  label="Show Code"/>
-            <separator
-                  name="sep4" 
-                  visible="true"/>
-            <dynamic id="source"
-                  class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
+                  label="&amp;Peek Definition"/>
           </menu>
       </menuContribution>
       <menuContribution
@@ -1327,17 +1327,17 @@
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
                   icon="icons/outline_co.gif"
-                  label="Show &amp;Outline"/>
+                  label="Quick &amp;Outline"/>
             <command 
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
                   icon="icons/class_hi.gif"
-                  label="Show &amp;Hierarchy"/>
+                  label="Quick &amp;Hierarchy"/>
             <command 
                   id="showCode"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.code"
                   icon="icons/source.gif"
-                  label="Show Code"/>
+                  label="&amp;Peek Definition"/>
             <separator
                   visible="true"
                   name="sep9"/>
