@@ -37,16 +37,8 @@ import com.redhat.ceylon.eclipse.util.FindUtils;
 
 class ConvertIfElseToThenElse extends CorrectionProposal {
     
-    private final int offset; 
-    
     ConvertIfElseToThenElse(int offset, TextChange change) {
-        super("Convert to then-else", change);
-        this.offset=offset;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
+        super("Convert to then-else", change, new Point(offset, 0));
     }
     
     static void addConvertToThenElseProposal(CompilationUnit cu, IDocument doc,

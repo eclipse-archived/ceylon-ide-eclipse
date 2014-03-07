@@ -94,7 +94,7 @@ class FixMultilineStringIndentationProposal
     }
     
     private FixMultilineStringIndentationProposal(TextFileChange change) {
-        super("Fix multiline string indentation", change);
+        super("Fix multiline string indentation", change, null);
     }
 
 }

@@ -71,7 +71,7 @@ public class ChangeInitialCaseOfIdentifierInDeclaration
     }
 
     public ChangeInitialCaseOfIdentifierInDeclaration(String newIdentifier, Change change) {
-        super("Change initial case of identifier to '" + newIdentifier + "'", change);
+        super("Change initial case of identifier to '" + newIdentifier + "'", change, null);
     }
 
 }

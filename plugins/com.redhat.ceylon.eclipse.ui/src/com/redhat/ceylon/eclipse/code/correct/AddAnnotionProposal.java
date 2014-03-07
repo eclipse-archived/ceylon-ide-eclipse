@@ -46,7 +46,6 @@ class AddAnnotionProposal extends CorrectionProposal {
     private static final List<String> ANNOTATIONS_ON_SEPARATE_LINE = 
             asList("doc", "throws", "see", "tagged");
     
-    private final int offset; 
     private final Declaration dec;
     private final String annotation;
     
@@ -55,15 +54,9 @@ class AddAnnotionProposal extends CorrectionProposal {
         super("Make '" + dec.getName() + "' " + annotation +
             (dec.getContainer() instanceof TypeDeclaration ?
                     " in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
-                    change);
-        this.offset=offset;
+                    change, new Point(offset, annotation.length()));
         this.dec = dec;
         this.annotation = annotation;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, annotation.length());
     }
     
     @Override

@@ -27,19 +27,9 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class ShadowReferenceProposal extends CorrectionProposal {
     
-    private final int offset;
-    private final int length;
-    
-    ShadowReferenceProposal(int offset, int length,
-            TextChange change) {
-        super("Shadow reference inside control structure", change);
-        this.offset=offset;
-        this.length=length;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
+    ShadowReferenceProposal(int offset, int length, TextChange change) {
+        super("Shadow reference inside control structure", change,
+                new Point(offset, length));
     }
     
     static void addShadowSwitchReferenceProposal(IFile file, Tree.CompilationUnit cu, 

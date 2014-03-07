@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Point;
@@ -40,7 +39,8 @@ public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
             return;
         }
         
-        TextFileChange change = new TextFileChange("Spread iterable argument of variadic parameter", file);
+        TextFileChange change = 
+                new TextFileChange("Spread iterable argument of variadic parameter", file);
         change.setEdit(new InsertEdit(term.getStartIndex(), "*"));
         AddSpreadToVariadicParameterProposal p = 
                 new AddSpreadToVariadicParameterProposal(fiv.parameter, 
@@ -50,25 +50,20 @@ public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
         }                               
     }
 
-    private final int offset; 
     private final TypedDeclaration parameter;
     
     private AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, 
             int offset, TextFileChange change) {
-        super("Spread iterable argument of variadic parameter", change);
-        this.offset=offset;
+        super("Spread iterable argument of variadic parameter", change,
+                new Point(offset, 0));
         this.parameter = parameter;
     }
     
     @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (obj instanceof AddSpreadToVariadicParameterProposal) {
-            AddSpreadToVariadicParameterProposal that = (AddSpreadToVariadicParameterProposal) obj;
+            AddSpreadToVariadicParameterProposal that = 
+                    (AddSpreadToVariadicParameterProposal) obj;
             return that.parameter.equals(parameter);
         }
         return false;

@@ -35,20 +35,9 @@ import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
 class CreateTypeParameterProposal extends CorrectionProposal {
     
-    private final int offset;
-    private final int length;
-    
-    CreateTypeParameterProposal(String def, String desc, 
-            Image image, String name, int offset,  
-            TextFileChange change) {
-        super(desc, change, image);
-        this.offset = offset+1;
-        this.length = name.length();
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
+    CreateTypeParameterProposal(String desc, Image image, 
+            int offset, int length, TextFileChange change) {
+        super(desc, change, new Point(offset, length), image);
     }
     
     static IDocument getDocument(TextFileChange change) {
@@ -60,7 +49,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         }
     }
     
-    private static void addCreateTypeParameterProposal(Collection<ICompletionProposal> proposals, 
+    private static void addProposal(Collection<ICompletionProposal> proposals, 
             String def, String name, Image image, Declaration dec, PhasedUnit unit,
             Tree.Declaration decNode, int offset, String constraints) {
         IFile file = getFile(unit);
@@ -77,10 +66,10 @@ class CreateTypeParameterProposal extends CorrectionProposal {
                 change.addEdit(new InsertEdit(loc, constraints));
             }
         }
-        proposals.add(new CreateTypeParameterProposal(def, 
-                "Add type parameter '" + name + "'" + 
-                        " to '" + dec.getName() + "'", 
-                image, name, offset+il, change));
+        String desc = "Add type parameter '" + name + "'" + 
+                " to '" + dec.getName() + "'";
+        proposals.add(new CreateTypeParameterProposal(desc, 
+                image, offset+il+1, name.length(), change));
     }
 
     private static int getConstraintLoc(Tree.Declaration decNode) {
@@ -192,7 +181,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         
         for (PhasedUnit unit : getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
-                addCreateTypeParameterProposal(proposals, 
+                addProposal(proposals, 
                         paramDef, brokenName, ADD, d, unit, 
                         decl, offset, constraints);
                 break;

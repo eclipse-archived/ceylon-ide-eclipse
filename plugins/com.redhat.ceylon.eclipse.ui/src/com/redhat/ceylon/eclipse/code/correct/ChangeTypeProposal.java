@@ -37,23 +37,13 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class ChangeTypeProposal extends CorrectionProposal {
 
-    private final int offset;
-    private final int length;
-    
     ChangeTypeProposal(ProblemLocation problem, 
             String name, String type, int offset,
             TextFileChange change) {
         super("Change type of "+ name + " to '" + type + "'", 
-                change);
-        this.offset = offset;
-        this.length = type.length();
+                change, new Point(offset, type.length()));
     }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
-    }
-    
+        
     static void addChangeTypeProposal(Node node, ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, Declaration dec, 
             ProducedType newType, IFile file, Tree.CompilationUnit cu) {

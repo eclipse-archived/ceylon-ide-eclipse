@@ -63,7 +63,7 @@ class RemoveAliasProposal extends CorrectionProposal {
     private RemoveAliasProposal(IFile file, Declaration dec, 
             TextFileChange change) {
         super("Remove alias of '" + dec.getName() + "'", 
-                change, REMOVE_CORR);
+                change, null, REMOVE_CORR);
     }
     
     static void addRemoveAliasProposal(Tree.ImportMemberOrType imt,  

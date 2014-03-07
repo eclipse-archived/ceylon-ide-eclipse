@@ -19,17 +19,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerEx
 
 class ConvertToGetterProposal extends CorrectionProposal {
     
-    private final int offset; 
-    
     ConvertToGetterProposal(Declaration dec, int offset, 
             TextChange change) {
-        super("Convert '" + dec.getName() + "' to getter", change);
-        this.offset=offset;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
+        super("Convert '" + dec.getName() + "' to getter", 
+                change, new Point(offset, 0));
     }
     
     static void addConvertToGetterProposal(IDocument doc,

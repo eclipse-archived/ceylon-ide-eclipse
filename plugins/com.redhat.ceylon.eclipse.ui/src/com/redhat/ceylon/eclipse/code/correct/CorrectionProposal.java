@@ -41,9 +41,10 @@ class CorrectionProposal
     private static final NullChange COMPUTING_CHANGE = 
             new NullChange("ChangeCorrectionProposal computing...");
     
-    private Change fChange;
-    private String fName;
-    private Image fImage;
+    private Change change;
+    private final String name;
+    private final Image image;
+    private final Point selection;
 
     /**
      * Constructs a change correction proposal.
@@ -55,13 +56,14 @@ class CorrectionProposal
      * @param image the image that is displayed for this proposal or <code>null</code> if no image
      *            is desired
      */
-    public CorrectionProposal(String name, Change change, Image image) {
+    public CorrectionProposal(String name, Change change, Point selection, Image image) {
         if (name == null) {
             throw new IllegalArgumentException("Name must not be null");
         }
-        fName= name;
-        fChange= change;
-        fImage= image;
+        this.name= name;
+        this.change= change;
+        this.image= image;
+        this.selection= selection;
     }
 
     /**
@@ -72,8 +74,8 @@ class CorrectionProposal
      *            if the change will be created by implementors of {@link #createChange()}.
      * @param relevance The relevance of this proposal.
      */
-    public CorrectionProposal(String name, Change change) {
-        this(name, change, MINOR_CHANGE);
+    public CorrectionProposal(String name, Change change, Point selection) {
+        this(name, change, selection, MINOR_CHANGE);
     }
 
     @Override
@@ -137,24 +139,15 @@ class CorrectionProposal
      * @return the name of the proposal
      */
     public String getName() {
-        return fName;
+        return name;
     }
 
     public Image getImage() {
-        return fImage;
+        return image;
     }
 
     public Point getSelection(IDocument document) {
-        return null;
-    }
-
-    /**
-     * Sets the proposal's image or <code>null</code> if no image is desired.
-     *
-     * @param image the desired image.
-     */
-    public void setImage(Image image) {
-        fImage= image;
+        return selection;
     }
 
     /**
@@ -177,7 +170,7 @@ class CorrectionProposal
             do {
                 boolean computing;
                 synchronized (this) {
-                    computing= fChange == COMPUTING_CHANGE;
+                    computing= change == COMPUTING_CHANGE;
                 }
                 if (computing) {
                     try {
@@ -196,36 +189,36 @@ class CorrectionProposal
                     }
                 } else {
                     synchronized (this) {
-                        if (fChange == COMPUTING_CHANGE) {
+                        if (change == COMPUTING_CHANGE) {
                             continue;
-                        } else if (fChange != null) {
-                            return fChange;
+                        } else if (change != null) {
+                            return change;
                         } else {
-                            fChange= COMPUTING_CHANGE;
+                            change= COMPUTING_CHANGE;
                         }
                     }
                     Change change= createChange();
                     synchronized (this) {
-                        fChange= change;
+                        this.change= change;
                     }
                     return change;
                 }
             } while (System.currentTimeMillis() < end);
             
             synchronized (this) {
-                if (fChange == COMPUTING_CHANGE) {
+                if (change == COMPUTING_CHANGE) {
                     return null; //failed
                 }
             }
             
         } else {
             synchronized (this) {
-                if (fChange == null) {
-                    fChange= createChange();
+                if (change == null) {
+                    change= createChange();
                 }
             }
         }
-        return fChange;
+        return change;
     }
 
     /**
@@ -240,18 +233,6 @@ class CorrectionProposal
      */
     protected Change createChange() throws CoreException {
         return new NullChange();
-    }
-
-    /**
-     * Sets the display name.
-     *
-     * @param name the name to set
-     */
-    public void setDisplayName(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("Name must not be null");
-        }
-        fName= name;
     }
 
 }

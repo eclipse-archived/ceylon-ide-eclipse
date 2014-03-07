@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -13,16 +12,8 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 class FixAliasProposal extends CorrectionProposal {
     
-    private final int offset; 
-    
     FixAliasProposal(int offset, TextChange change) {
-        super("Change = to =>", change);
-        this.offset=offset;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
+        super("Change = to =>", change, new Point(offset, 0));
     }
     
     static void addFixAliasProposal(Collection<ICompletionProposal> proposals, 

@@ -29,22 +29,11 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateEnumProposal extends CorrectionProposal {
     
-    private final int offset;
-    private final int length;
-    
     CreateEnumProposal(String def, String desc, Image image, 
             int offset, TextFileChange change) {
-        super(desc, change, image);
-        int loc = def.indexOf("{}")+1;
-        length = 0;
-        this.offset = offset + loc;
+        super(desc, change, new Point(offset, 0), image);
     }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
-    }
-    
+        
     static IDocument getDocument(TextFileChange change) {
         try {
             return change.getCurrentDocument(null);
@@ -126,7 +115,7 @@ class CreateEnumProposal extends CorrectionProposal {
         change.setEdit(new InsertEdit(offset, s));
         proposals.add(new CreateEnumProposal(def, 
                 "Create enumerated " + desc, 
-                image, offset, change));
+                image, offset + def.indexOf("{}")+1, change));
     }
 
         private static void addCreateEnumProposal(Collection<ICompletionProposal> proposals,
