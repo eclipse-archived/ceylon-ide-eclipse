@@ -610,7 +610,7 @@
             id="com.redhat.ceylon.eclipse.ui.action.changeParameters"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Change parameters of selected function or class"
-            name="Change Parameters"/>
+            name="Change Parameter List"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.collectParameters"
             categoryId="com.redhat.ceylon.eclipse.ui"
