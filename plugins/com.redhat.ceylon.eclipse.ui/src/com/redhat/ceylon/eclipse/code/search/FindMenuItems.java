@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
@@ -15,7 +14,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
@@ -71,8 +69,7 @@ public class FindMenuItems extends CompoundContributionItem {
                                 DECS),
                 new Separator(),
                 new DynamicMenuItem("org.eclipse.search.ui.performTextSearchWorkspace",
-                        "Find Text in Workspace", 
-                        editor instanceof ITextEditor && getSelection((ITextEditor)editor).getLength()>0)
+                        "Find Text in Workspace", true)
         };
     }
 
