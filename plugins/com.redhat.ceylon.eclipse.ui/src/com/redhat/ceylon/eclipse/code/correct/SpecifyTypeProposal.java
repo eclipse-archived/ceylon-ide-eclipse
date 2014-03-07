@@ -18,9 +18,11 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
@@ -33,16 +35,114 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class SpecifyTypeProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
+
+    private class TypeProposal implements ICompletionProposal, 
+            ICompletionProposalExtension2 {
+        
+        private final ProducedType type;
+        private final int offset;
+        private final String text;
+
+        private TypeProposal(int offset, ProducedType type) {
+            this.type = type;
+            this.offset = offset;
+            this.text = type.getProducedTypeName(rootNode.getUnit());
+        }
+
+        @Override
+        public void apply(IDocument document) {
+            try {
+                final DocumentChange change = 
+                        new DocumentChange("Specify Type", document);
+                change.setEdit(new MultiTextEdit());
+                HashSet<Declaration> decs = 
+                        new HashSet<Declaration>();
+                importType(decs, type, rootNode);
+                int il = applyImports(change, decs, rootNode, document);
+                change.addEdit(new ReplaceEdit(offset,
+                        getCurrentLength(document), text));
+                change.perform(new NullProgressMonitor());
+                selection = new Point(offset+il, text.length());
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private int getCurrentLength(IDocument document) 
+                throws BadLocationException {
+            int length = 0;
+            for (int i=offset;
+                    i<document.getLength(); 
+                    i++) {
+                if (Character.isWhitespace(document.getChar(i))) {
+                    break;
+                }
+                length++;
+            }
+            return length;
+        }
+        
+        @Override
+        public Point getSelection(IDocument document) {
+            return selection;
+        }
+
+        @Override
+        public void apply(ITextViewer viewer, char trigger, int stateMask,
+                int offset) {
+            apply(viewer.getDocument());
+        }
+
+        @Override
+        public void selected(ITextViewer viewer, boolean smartToggle) {}
+
+        @Override
+        public void unselected(ITextViewer viewer) {}
+
+        @Override
+        public boolean validate(IDocument document, int offset,
+                DocumentEvent event) {
+            try {
+                String prefix = document.get(this.offset, 
+                        offset-this.offset);
+                return text.startsWith(prefix);
+            }
+            catch (BadLocationException e) {
+                return false;
+            }
+        }
+
+        @Override
+        public String getAdditionalProposalInfo() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayString() {
+            return text;
+        }
+
+        @Override
+        public Image getImage() {
+            return getImageForDeclaration(type.getDeclaration());
+        }
+
+        @Override
+        public IContextInformation getContextInformation() {
+            return null;
+        }
+    }
 
     private final ProducedType infType;
     private final String desc;
@@ -68,7 +168,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
         if (editor==null) {
 //            final TextChange change = 
 //                    new TextFileChange("Specify Type", file); 
-            final DocumentChange change = 
+            DocumentChange change = 
                     new DocumentChange("Specify Type", document);
             change.setEdit(new MultiTextEdit());
             try {
@@ -78,55 +178,30 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                 String typeName = infType.getProducedTypeName(rootNode.getUnit());
                 change.addEdit(new ReplaceEdit(offset, length, typeName));
                 change.perform(new NullProgressMonitor());
-                selection = new Point(offset+il, offset+il+typeName.length());
+                selection = new Point(offset+il, typeName.length());
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
         }
         else {
-            final DocumentChange change = 
-                    new DocumentChange("Specify Type", document);
-            change.setEdit(new MultiTextEdit());
-            final LinkedModeModel linkedModeModel = new LinkedModeModel();
-            CeylonParseController cpc = editor.getParseController();
-            final Tree.CompilationUnit rootNode = cpc.getRootNode();
-            Unit unit = rootNode.getUnit();
+            LinkedModeModel linkedModeModel = new LinkedModeModel();
             List<ProducedType> supertypes = infType.getSupertypes();
+            TypeDeclaration td = infType.getDeclaration();
+            if (td instanceof UnionType || 
+                    td instanceof IntersectionType) {
+                supertypes.add(0, infType);
+            }
+            int size = supertypes.size();
             ICompletionProposal[] proposals = 
-                    new ICompletionProposal[supertypes.size()];
-            for (int i=0; i<supertypes.size(); i++) {
-                final ProducedType type = supertypes.get(i);
-                final String typeName = type.getProducedTypeName(unit);
-                Image image = getImageForDeclaration(type.getDeclaration());
-                proposals[i] = new LinkedModeCompletionProposal(offset, 
-                        typeName, 0, image) {
-                    @Override
-                    public void apply(IDocument document) {
-                        try {
-                            IRegion region = getCurrentRegion(document);
-                            HashSet<Declaration> decs = 
-                                    new HashSet<Declaration>();
-                            importType(decs, type, rootNode);
-                            int il = applyImports(change, decs, rootNode, document);
-                            change.addEdit(new ReplaceEdit(region.getOffset(), 
-                                    region.getLength(), typeName));
-                            change.perform(new NullProgressMonitor());
-                            selection = new Point(offset+il, offset+il+typeName.length());
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    @Override
-                    public Point getSelection(IDocument document) {
-                        return selection;
-                    }
-                };
+                    new ICompletionProposal[size];
+            for (int i=0; i<size; i++) {
+                ProducedType type = supertypes.get(i);
+                proposals[i] = new TypeProposal(offset, type);
             }
             ProposalPosition linkedPosition = 
-                    new ProposalPosition(document, offset, length, 
-                            0, proposals);
+                    new ProposalPosition(document, offset, 
+                            length, 0, proposals);
             try {
                 addLinkedPosition(linkedModeModel, linkedPosition);
                 installLinkedMode(editor, document, linkedModeModel, 

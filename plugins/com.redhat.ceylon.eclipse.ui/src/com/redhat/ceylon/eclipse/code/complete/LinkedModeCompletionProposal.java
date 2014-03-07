@@ -25,7 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 public class LinkedModeCompletionProposal 
-        implements ICompletionProposal,  ICompletionProposalExtension2 {
+        implements ICompletionProposal, ICompletionProposalExtension2 {
     
     private static final class NullProposal 
             implements ICompletionProposal, ICompletionProposalExtension2 {
@@ -165,8 +165,8 @@ public class LinkedModeCompletionProposal
     }
     
     @Override
-    public void apply(ITextViewer viewer, char trigger, int stateMask,
-            int offset) {
+    public void apply(ITextViewer viewer, char trigger, 
+            int stateMask, int offset) {
         apply(viewer.getDocument());
     }
     
@@ -190,7 +190,8 @@ public class LinkedModeCompletionProposal
         }
     }
     
-    private static final Pattern IDPATTERN = Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
+    private static final Pattern IDPATTERN = 
+            Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
     
     public static ICompletionProposal[] getNameProposals(int offset, 
             int seq, String name) {
