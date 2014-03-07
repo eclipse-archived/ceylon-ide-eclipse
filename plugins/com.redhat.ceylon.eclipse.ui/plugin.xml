@@ -530,7 +530,7 @@
             id="com.redhat.ceylon.eclipse.ui.action.openDeclarationInHierarchy"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open toplevel declaration in hierarchy view"
-            name="Open in Hierarchy"/>
+            name="Open in Type Hierarchy View"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -1161,7 +1161,7 @@
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
             <command
-                  label="&amp;Open in Hierarchy..." 
+                  label="&amp;Open in Type Hierarchy View..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclarationInHierarchy"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclarationInHierarchy"/>
             <separator

@@ -17,7 +17,7 @@ public class OpenDeclarationInHierarchyAction extends Action {
     private final IEditorPart editor;
     
     public OpenDeclarationInHierarchyAction(IEditorPart editor) {
-        this("Open in Hierarchy...", editor);
+        this("Open in Type Hierarchy View...", editor);
     }
     
     public OpenDeclarationInHierarchyAction(String text, IEditorPart editor) {
@@ -33,7 +33,7 @@ public class OpenDeclarationInHierarchyAction extends Action {
         Shell shell = CeylonPlugin.getInstance().getWorkbench()
                 .getActiveWorkbenchWindow().getShell();
         OpenCeylonDeclarationDialog dialog = new OpenCeylonDeclarationDialog(shell, editor);
-        dialog.setTitle("Open in Hierarchy");
+        dialog.setTitle("Open in Type Hierarchy View");
         dialog.setMessage("Select a Ceylon declaration to open:");
         if (editor instanceof ITextEditor) {
             dialog.setInitialPattern(EditorUtil.getSelectionText((ITextEditor) editor));
