@@ -7,10 +7,7 @@ import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.g
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_CHANGE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_COMPOSITE_CHANGE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_IMPORT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MOVE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_RENAME;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REORDER;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -52,17 +49,14 @@ public abstract class AbstractRefactoring extends Refactoring {
     public static ImageDescriptor CHANGE = imageRegistry.getDescriptor(CEYLON_CHANGE);
     public static ImageDescriptor COMP_CHANGE = imageRegistry.getDescriptor(CEYLON_COMPOSITE_CHANGE);
     public static ImageDescriptor MOVE = imageRegistry.getDescriptor(CEYLON_MOVE);
-    public static ImageDescriptor REORDER = imageRegistry.getDescriptor(CEYLON_REORDER);
-    public static ImageDescriptor RENAME = imageRegistry.getDescriptor(CEYLON_RENAME);
-    public static ImageDescriptor IMPORT = imageRegistry.getDescriptor(CEYLON_IMPORT);
     
-    IProject project;
-    IFile sourceFile;
+    final IProject project;
+    final IFile sourceFile;
+    final List<CommonToken> tokens;
+    final IDocument document;
+    final CeylonEditor editor;
+    final Tree.CompilationUnit rootNode;
     Node node;
-    Tree.CompilationUnit rootNode;
-    List<CommonToken> tokens;
-    IDocument document;
-    CeylonEditor editor;
    
     /*public AbstractRefactoring(IQuickFixInvocationContext context) {
         sourceFile = context.getModel().getFile();
@@ -78,7 +72,7 @@ public abstract class AbstractRefactoring extends Refactoring {
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             this.editor = ce;
-            this.document = ce.getDocumentProvider().getDocument(editor.getEditorInput());
+            document = ce.getDocumentProvider().getDocument(editor.getEditorInput());
             project = EditorUtil.getProject(editor);
             CeylonParseController cpc = ce.getParseController();
             tokens = cpc.getTokens();
@@ -88,6 +82,19 @@ public abstract class AbstractRefactoring extends Refactoring {
                 sourceFile = EditorUtil.getFile(input);
                 node = findNode(rootNode, getSelection(editor));
             }
+            else {
+                sourceFile = null;
+                node = null;
+            }
+        }
+        else {
+            this.editor = null;
+            document = null;
+            tokens = null;
+            rootNode = null;
+            sourceFile = null;
+            node = null;
+            project = null;
         }
     }
     
