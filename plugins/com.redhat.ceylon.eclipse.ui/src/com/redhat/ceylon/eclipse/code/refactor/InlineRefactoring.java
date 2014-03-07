@@ -2,8 +2,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createFatalErrorStatus;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -42,6 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class InlineRefactoring extends AbstractRefactoring {
     
@@ -51,7 +50,7 @@ public class InlineRefactoring extends AbstractRefactoring {
 
     public InlineRefactoring(ITextEditor editor) {
         super(editor);
-        declaration = getReferencedDeclaration(node);
+        declaration = Nodes.getReferencedDeclaration(node);
     }
     
     boolean isReference() {
@@ -289,7 +288,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                             tfc.addEdit(new DeleteEdit(imt.getStartIndex(), 
                                     imt.getStopIndex()-imt.getStartIndex()+1));
                             //...along with a comma before or after
-                            int ti = getTokenIndexAtCharacter(tokens, imt.getStartIndex());
+                            int ti = Nodes.getTokenIndexAtCharacter(tokens, imt.getStartIndex());
                             CommonToken prev = tokens.get(ti-1);
                             if (prev.getChannel()==CommonToken.HIDDEN_CHANNEL) {
                                 prev = tokens.get(ti-2);
@@ -383,7 +382,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             Tree.CompilationUnit declarationUnit, Tree.Term term, 
             List<CommonToken> declarationTokens, Tree.CompilationUnit pu, 
             List<CommonToken> tokens, TextChange tfc) {
-        String template = toString(term, declarationTokens);
+        String template = Nodes.toString(term, declarationTokens);
         int templateStart = term.getStartIndex();
         if (declarationNode instanceof Tree.AnyAttribute) {
             inlineAttributeReferences(pu, template, tfc);
@@ -493,7 +492,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     if (!first) result.append(", ");
                     first = false;
                 }
-                result.append(AbstractRefactoring.toString(arg, 
+                result.append(Nodes.toString(arg, 
                         tokens));
                 found = true;
             }
@@ -514,7 +513,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 Tree.Term argTerm = ((Tree.SpecifiedArgument) arg).getSpecifierExpression()
                                 .getExpression().getTerm();
                 result//.append(template.substring(start,it.getStartIndex()-templateStart))
-                    .append(AbstractRefactoring.toString(argTerm, tokens) );
+                    .append(Nodes.toString(argTerm, tokens) );
                 //start = it.getStopIndex()-templateStart+1;
                 found=true;
             }
@@ -529,7 +528,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 if (first) result.append(" ");
                 if (!first) result.append(", ");
                 first=false;
-                result.append(AbstractRefactoring.toString(pa, tokens));
+                result.append(Nodes.toString(pa, tokens));
             }
             if (!first) result.append(" ");
             result.append("}");

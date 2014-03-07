@@ -13,7 +13,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
+import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
@@ -33,7 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.util.Escaping;
 
 
 public class EnterAliasLinkedMode extends RefactorLinkedMode {
@@ -179,7 +179,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         String newName = getNewNameFromNamePosition();
         return !getOriginalName().equals(newName) &&
                 newName.matches("^\\w(\\w|\\d)*$") &&
-                !CeylonTokenColorer.keywords.contains(newName);
+                !Escaping.KEYWORDS.contains(newName);
     }
 
     @Override

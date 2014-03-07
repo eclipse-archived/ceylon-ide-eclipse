@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
@@ -14,15 +13,16 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ConditionList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ControlClause;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class SelectEnclosingAction extends Action {
     private CeylonEditor fEditor;
@@ -172,7 +172,7 @@ class SelectEnclosingAction extends Action {
         int startOffset = selection.getOffset();
         int endOffset = startOffset + selection.getLength() - 1;
         CompilationUnit rootNode = pc.getRootNode();
-        Node curNode= findNode(rootNode, startOffset, endOffset);
+        Node curNode= Nodes.findNode(rootNode, startOffset, endOffset);
         if (curNode!=null) {
             EnclosingVisitor ev = new EnclosingVisitor(curNode, 
                     startOffset, endOffset);

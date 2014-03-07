@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 class AetherRepositoryDialog extends Dialog {
 
@@ -112,7 +112,7 @@ class AetherRepositoryDialog extends Dialog {
         
         errorImage = new Label(errorDisplay, SWT.NONE);
         errorImage.setVisible(false);
-        errorImage.setImage(CeylonLabelProvider.ERROR);
+        errorImage.setImage(CeylonResources.ERROR);
         
         errorText = new Text(errorDisplay, SWT.READ_ONLY | SWT.WRAP);
         errorText.setVisible(false);

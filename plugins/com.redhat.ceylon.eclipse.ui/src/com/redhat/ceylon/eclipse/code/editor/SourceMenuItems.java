@@ -4,20 +4,12 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.isContextMenu;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_COMMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_CORRECTION;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE_IMPORT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CORRECT_INDENT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.FORMAT_BLOCK;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.QUICK_ASSIST;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.REMOVE_COMMENT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.SHIFT_LEFT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.SHIFT_RIGHT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TERMINATE_STATEMENT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.TOGGLE_COMMENT;
 
 import java.util.Arrays;
 
@@ -25,6 +17,7 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
@@ -32,21 +25,25 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.code.refactor.DeleteRefactoringAction;
 import com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class SourceMenuItems extends CompoundContributionItem {
     
-    public static ImageDescriptor CORRECTION = imageRegistry.getDescriptor(CEYLON_CORRECTION);
-    public static ImageDescriptor TERMINATE = imageRegistry.getDescriptor(TERMINATE_STATEMENT);
-    public static ImageDescriptor FORMAT = imageRegistry.getDescriptor(FORMAT_BLOCK);
-    public static ImageDescriptor ADD = imageRegistry.getDescriptor(ADD_COMMENT);
-    public static ImageDescriptor REMOVE = imageRegistry.getDescriptor(REMOVE_COMMENT);
-    public static ImageDescriptor TOGGLE = imageRegistry.getDescriptor(TOGGLE_COMMENT);
-    public static ImageDescriptor CORRECT = imageRegistry.getDescriptor(CORRECT_INDENT);
-    public static ImageDescriptor LEFT = imageRegistry.getDescriptor(SHIFT_LEFT);
-    public static ImageDescriptor RIGHT = imageRegistry.getDescriptor(SHIFT_RIGHT);
-    public static ImageDescriptor FIX = imageRegistry.getDescriptor(QUICK_ASSIST);
-    public static ImageDescriptor DELETE = imageRegistry.getDescriptor(CEYLON_DELETE);
-    public static ImageDescriptor DELETE_IMPORT = imageRegistry.getDescriptor(CEYLON_DELETE_IMPORT);
+    private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
+            .getImageRegistry();
+    
+    private static ImageDescriptor CORRECTION = imageRegistry.getDescriptor(CEYLON_CORRECTION);
+    private static ImageDescriptor TERMINATE = imageRegistry.getDescriptor(TERMINATE_STATEMENT);
+    private static ImageDescriptor FIX = imageRegistry.getDescriptor(QUICK_ASSIST);
+    private static ImageDescriptor DELETE = imageRegistry.getDescriptor(CEYLON_DELETE);
+    private static ImageDescriptor DELETE_IMPORT = imageRegistry.getDescriptor(CEYLON_DELETE_IMPORT);
+//    private static ImageDescriptor FORMAT = imageRegistry.getDescriptor(FORMAT_BLOCK);
+//    private static ImageDescriptor ADD = imageRegistry.getDescriptor(ADD_COMMENT);
+//    private static ImageDescriptor REMOVE = imageRegistry.getDescriptor(REMOVE_COMMENT);
+//    private static ImageDescriptor TOGGLE = imageRegistry.getDescriptor(TOGGLE_COMMENT);
+//    private static ImageDescriptor CORRECT = imageRegistry.getDescriptor(CORRECT_INDENT);
+//    private static ImageDescriptor LEFT = imageRegistry.getDescriptor(SHIFT_LEFT);
+//    private static ImageDescriptor RIGHT = imageRegistry.getDescriptor(SHIFT_RIGHT);
     
     public SourceMenuItems() {}
     
@@ -118,7 +115,7 @@ public class SourceMenuItems extends CompoundContributionItem {
                 new DynamicMenuItem(PLUGIN_ID + ".editor.removeBlockComment", 
                         "Re&move Block Comment", 
                         true)
-            };
+        };
     }
 
 }

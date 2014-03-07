@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterText;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -27,7 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.util.FindUtils;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ChangeRefiningTypeProposal {
 
@@ -58,7 +58,7 @@ public class ChangeRefiningTypeProposal {
     static void addChangeRefiningParametersProposal(IFile file,
             CompilationUnit cu, Collection<ICompletionProposal> proposals,
             Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) FindUtils.findStatement(cu, node);
+        Tree.Declaration decNode = (Tree.Declaration) Nodes.findStatement(cu, node);
         Tree.ParameterList list;
         if (decNode instanceof Tree.AnyMethod) {
             list = ((Tree.AnyMethod) decNode).getParameterLists().get(0);

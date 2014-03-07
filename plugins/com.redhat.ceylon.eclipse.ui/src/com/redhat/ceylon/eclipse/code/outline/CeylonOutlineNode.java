@@ -13,10 +13,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getNodeDecorationAttributes;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static java.lang.System.identityHashCode;
 
 import java.util.ArrayList;
@@ -37,8 +35,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonOutlineNode implements IAdaptable {
     
@@ -122,8 +120,8 @@ public class CeylonOutlineNode implements IAdaptable {
         }
         if (category==DEFAULT_CATEGORY) {
             //span of the "identifying" node
-            startOffset = CeylonSourcePositionLocator.getStartOffset(treeNode);
-            endOffset = CeylonSourcePositionLocator.getEndOffset(treeNode);
+            startOffset = Nodes.getStartOffset(treeNode);
+            endOffset = Nodes.getEndOffset(treeNode);
         }
         if (treeNode!=null && 
                 !(treeNode instanceof PackageNode)) {
@@ -133,7 +131,7 @@ public class CeylonOutlineNode implements IAdaptable {
         }
         label = getStyledLabelForNode(treeNode);
         imageKey = getImageKeyForNode(treeNode);
-        decorations = getNodeDecorationAttributes(treeNode);
+        decorations = CeylonLabelProvider.getNodeDecorationAttributes(treeNode);
     }
 
     void addChild(CeylonOutlineNode child) {   
@@ -189,7 +187,7 @@ public class CeylonOutlineNode implements IAdaptable {
             IEditorPart currentEditor = EditorUtil.getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {
                 CeylonEditor ce = (CeylonEditor) currentEditor;
-                Node node = findNode(ce.getParseController().getRootNode(), startOffset);
+                Node node = Nodes.findNode(ce.getParseController().getRootNode(), startOffset);
                 if (node!=null && 
                         node.getStartIndex()==realStartOffset && 
                         node.getStopIndex()+1==realEndOffset) {
@@ -205,9 +203,9 @@ public class CeylonOutlineNode implements IAdaptable {
             IEditorPart currentEditor = EditorUtil.getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {
                 CeylonEditor ce = (CeylonEditor) currentEditor;
-                Node node = findNode(ce.getParseController().getRootNode(), startOffset);
+                Node node = Nodes.findNode(ce.getParseController().getRootNode(), startOffset);
                 if (node!=null) {
-                    return getNodeDecorationAttributes(node);
+                    return CeylonLabelProvider.getNodeDecorationAttributes(node);
                 }
             }
         }

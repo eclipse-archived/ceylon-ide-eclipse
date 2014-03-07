@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendImportStatement;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
 import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.runOperation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;

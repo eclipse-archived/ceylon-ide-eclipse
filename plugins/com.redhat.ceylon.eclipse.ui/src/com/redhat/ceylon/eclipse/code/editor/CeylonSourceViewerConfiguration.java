@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
@@ -59,6 +57,7 @@ import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
     
@@ -466,7 +465,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         @Override
         public Object getInformation2(ITextViewer textViewer, IRegion subject) {
             Node selectedNode = getSelectedNode();
-            Declaration declaration = getReferencedDeclaration(selectedNode);
+            Declaration declaration = Nodes.getReferencedDeclaration(selectedNode);
             if (declaration==null) {
                 FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
                 fcv.visit(getParseController().getRootNode());
@@ -482,7 +481,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         private Node getSelectedNode() {
             CeylonParseController cpc = getParseController();
             return cpc.getRootNode()==null ? null : 
-                findNode(cpc.getRootNode(), getSelection(editor));
+                Nodes.findNode(cpc.getRootNode(), getSelection(editor));
         }
     }
 

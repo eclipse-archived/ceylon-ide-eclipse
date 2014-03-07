@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
@@ -23,6 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ShowInHierarchyAction extends Action implements IObjectActionDelegate {
     
@@ -43,7 +43,7 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
                     project = parseController.getProject();
                     CompilationUnit rootNode = parseController.getRootNode();
                     if (rootNode!=null) {
-                        Node node = findNode(rootNode, on.getStartOffset());
+                        Node node = Nodes.findNode(rootNode, on.getStartOffset());
                         if (node instanceof Tree.Declaration) {
                             declaration = ((Tree.Declaration) node).getDeclarationModel();
                             action.setEnabled(isValidSelection());

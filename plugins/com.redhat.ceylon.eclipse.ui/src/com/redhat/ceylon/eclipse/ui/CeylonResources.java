@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.graphics.Image;
+
 public interface CeylonResources {
     
     public static final String CEYLON_FILE = "ceylon_file";
@@ -92,8 +95,8 @@ public interface CeylonResources {
     
     public static final String CEYLON_LOCAL_NAME = "local_name";
     
-    public static final String ERROR = "ceylon_error";
-    public static final String WARNING = "ceylon_warning";
+    public static final String CEYLON_ERROR = "ceylon_error";
+    public static final String CEYLON_WARNING = "ceylon_warning";
     
     public static final String PROJECT_MODE = "project_mode";
     public static final String FOLDER_MODE = "folder_mode";
@@ -111,4 +114,55 @@ public interface CeylonResources {
     public static final String TOGGLE_COMMENT = "toggle_comment";
     public static final String CORRECT_INDENT = "correct_indent";
     
+    public static final ImageRegistry imageRegistry = CeylonPlugin.getInstance()
+            .getImageRegistry();
+    
+    public static final Image FILE = imageRegistry.get(CEYLON_FILE);
+    public static final Image FOLDER = imageRegistry.get(CEYLON_FOLDER);
+    public static final Image ALIAS = imageRegistry.get(CEYLON_ALIAS);
+    public static final Image CLASS = imageRegistry.get(CEYLON_CLASS);
+    public static final Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
+    public static final Image LOCAL_CLASS = imageRegistry.get(CEYLON_LOCAL_CLASS);
+    public static final Image LOCAL_INTERFACE = imageRegistry.get(CEYLON_LOCAL_INTERFACE);
+    public static final Image METHOD = imageRegistry.get(CEYLON_METHOD);
+    public static final Image ATTRIBUTE = imageRegistry.get(CEYLON_ATTRIBUTE);
+    public static final Image LOCAL_METHOD = imageRegistry.get(CEYLON_LOCAL_METHOD);
+    public static final Image LOCAL_ATTRIBUTE = imageRegistry.get(CEYLON_LOCAL_ATTRIBUTE);
+    public static final Image PARAMETER = imageRegistry.get(CEYLON_PARAMETER);
+    public static final Image PARAMETER_METHOD = imageRegistry.get(CEYLON_PARAMETER_METHOD);
+    public static final Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
+    public static final Image ARCHIVE = imageRegistry.get(CEYLON_ARCHIVE);
+    public static final Image VERSION = imageRegistry.get(MODULE_VERSION);
+    public static final Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
+    public static final Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
+    public static final Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
+    public static final Image MINOR_CHANGE = imageRegistry.get(CEYLON_CORRECTION);
+    public static final Image CHANGE = imageRegistry.get(CEYLON_CHANGE);
+    public static final Image COMPOSITE_CHANGE = imageRegistry.get(CEYLON_COMPOSITE_CHANGE);
+    public static final Image RENAME = imageRegistry.get(CEYLON_RENAME);
+    public static final Image REORDER = imageRegistry.get(CEYLON_REORDER);
+    public static final Image MOVE = imageRegistry.get(CEYLON_MOVE);
+    public static final Image ADD = imageRegistry.get(CEYLON_ADD);
+    public static final Image ADD_CORR = imageRegistry.get(CEYLON_ADD_CORRECTION);
+    public static final Image REMOVE_CORR = imageRegistry.get(CEYLON_REMOVE_CORRECTION);
+    public static final Image LOCAL_NAME = imageRegistry.get(CEYLON_LOCAL_NAME);
+    public static final Image MULTIPLE_TYPES_IMAGE = imageRegistry.get(MULTIPLE_TYPES);
+    public static final Image REPO = imageRegistry.get(RUNTIME_OBJ);
+
+    public static final Image ERROR = imageRegistry.get(CEYLON_ERROR);
+    public static final Image WARNING = imageRegistry.get(CEYLON_WARNING);
+
+    //decorations
+    public static final String WARNING_IMAGE = "warning.gif";
+    public static final String ERROR_IMAGE = "error.gif";
+    public static final String REFINES_IMAGE = "over_tiny_co.gif";
+    public static final String IMPLEMENTS_IMAGE = "implm_tiny_co.gif";
+    public static final String FINAL_IMAGE = "final_co.gif";
+    public static final String ABSTRACT_IMAGE = "abstract_co.gif";
+    public static final String VARIABLE_IMAGE = "volatile_co.gif";
+    public static final String ANNOTATION_IMAGE = "annotation_tsk.gif";
+    public static final String ENUM_IMAGE = "enum_tsk.gif";
+    public static final String ALIAS_IMAGE = "linked_co.gif";
+    public static final String DEPRECATED_IMAGE = "deprecated.gif";
+
 }

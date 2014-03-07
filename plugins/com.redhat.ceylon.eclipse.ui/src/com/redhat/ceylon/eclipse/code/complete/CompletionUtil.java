@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYL
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.VERSION_STYLER;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
@@ -37,8 +36,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
+import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CompletionUtil {
 
@@ -238,7 +237,7 @@ public class CompletionUtil {
                 result.append(token, TYPE_ID_STYLER);
             }
             else if (isLowerCase(token.charAt(0))) {
-                if (CeylonTokenColorer.keywords.contains(token)) {
+                if (Escaping.KEYWORDS.contains(token)) {
                     result.append(token, KW_STYLER);
                 }
                 else if (token.contains(".")) {
@@ -258,7 +257,7 @@ public class CompletionUtil {
     }
 
     public static String getInitalValueDescription(Declaration dec, CeylonParseController cpc) {
-        Node refnode = getReferencedNode(dec, cpc);
+        Node refnode = Nodes.getReferencedNode(dec, cpc);
         if (refnode instanceof Tree.AttributeDeclaration) {
             Tree.SpecifierOrInitializerExpression sie = 
                     ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
@@ -276,7 +275,7 @@ public class CompletionUtil {
                         }
                     }
                     else if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
-                        return " = " + AbstractRefactoring.toString(term, cpc.getTokens());
+                        return " = " + Nodes.toString(term, cpc.getTokens());
                     }
                     return " = ...";
                 }

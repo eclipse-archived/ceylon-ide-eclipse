@@ -50,6 +50,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring {
     
@@ -259,7 +260,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             newName = result.getDeclarationModel().getName();
         }
         else {
-            newName = guessName(node);
+            newName = Nodes.guessName(node);
             if ("it".equals(newName)) {
                 newName = "do";
             }

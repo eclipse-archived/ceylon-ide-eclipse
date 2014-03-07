@@ -20,13 +20,13 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSearchResult extends AbstractTextSearchResult
         implements IEditorMatchAdapter, IFileMatchAdapter {
     
-    private static final ImageDescriptor IMAGE = CeylonLabelProvider.imageRegistry
-                    .getDescriptor(CEYLON_SEARCH_RESULTS);
+    private static final ImageDescriptor IMAGE = CeylonPlugin.getInstance()
+            .getImageRegistry().getDescriptor(CEYLON_SEARCH_RESULTS);
     
     ISearchQuery query;
     

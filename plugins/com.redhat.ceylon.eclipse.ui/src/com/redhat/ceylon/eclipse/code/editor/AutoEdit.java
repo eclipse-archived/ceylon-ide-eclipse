@@ -18,8 +18,6 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getPreferences;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIterator;
 import static java.lang.Character.isWhitespace;
 
 import java.util.Iterator;
@@ -34,6 +32,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class AutoEdit extends Indents {
@@ -413,7 +412,7 @@ class AutoEdit extends Indents {
     }
     
     private int getTokenTypeOfCharacterAtOffset(int offset) {
-        int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
+        int tokenIndex = Nodes.getTokenIndexAtCharacter(tokens, offset);
         if (tokenIndex>=0) {
             CommonToken token = tokens.get(tokenIndex);
             return token.getType();
@@ -453,7 +452,7 @@ class AutoEdit extends Indents {
                     }
                 }
                 else {
-                    int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
+                    int tokenIndex = Nodes.getTokenIndexAtCharacter(tokens, offset);
                     if (tokenIndex>=0) {
                         CommonToken token = tokens.get(tokenIndex);
                         if (token.getStartIndex()<offset) {
@@ -976,7 +975,7 @@ class AutoEdit extends Indents {
 
     private int parenCount(int start, int end) {
         int count=0;
-        for (Iterator<CommonToken> it = getTokenIterator(getTokens(), 
+        for (Iterator<CommonToken> it = Nodes.getTokenIterator(getTokens(), 
                 new Region(start, end-start)); it.hasNext();) {
             int type = it.next().getType();
             if (type==CeylonLexer.RPAREN) {
@@ -1010,7 +1009,7 @@ class AutoEdit extends Indents {
     }
     
     private CommonToken getPreviousNonHiddenToken(int offset) {
-        int index = getTokenIndexAtCharacter(tokens, offset);
+        int index = Nodes.getTokenIndexAtCharacter(tokens, offset);
         if (index<0) index=-index;
         for (; index>=0; index--) {
             CommonToken token = getTokens().get(index);
@@ -1023,7 +1022,7 @@ class AutoEdit extends Indents {
     }
     
     private CommonToken getNextNonHiddenToken(int offset, int end) {
-        int index = getTokenIndexAtCharacter(tokens, offset);
+        int index = Nodes.getTokenIndexAtCharacter(tokens, offset);
         if (index<0) index=1-index;
         int size = getTokens().size();
         for (; index<size; index++) {

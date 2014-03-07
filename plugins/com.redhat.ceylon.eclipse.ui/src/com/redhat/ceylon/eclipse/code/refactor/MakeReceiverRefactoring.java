@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.FindUtils.getContainer;
+import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;

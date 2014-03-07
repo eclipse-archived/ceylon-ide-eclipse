@@ -66,7 +66,6 @@ import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.api.VisibilityType;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
-import com.redhat.ceylon.compiler.loader.model.LazyPackage;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
 import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;

@@ -17,7 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
     
@@ -51,7 +51,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                 if (param.getModel().equals(p.getModel())) {
                     found = true;
                     result.append("{ ")
-                        .append(AbstractRefactoring.toString(sa, tokens))
+                        .append(Nodes.toString(sa, tokens))
                         .append(" }");
                 }
             }
@@ -66,7 +66,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                         Tree.SpecifiedArgument sna = (Tree.SpecifiedArgument) na;
                         Tree.SpecifierExpression se = sna.getSpecifierExpression();
                         if (se!=null && se.getExpression()!=null) {
-                            result.append(AbstractRefactoring.toString(se.getExpression(), tokens));
+                            result.append(Nodes.toString(se.getExpression(), tokens));
                         }
                         break;
                     }
@@ -75,15 +75,15 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                         if (ma.getDeclarationModel().isDeclaredVoid()) {
                             result.append("void ");
                             for (Tree.ParameterList pl: ma.getParameterLists()) {
-                                result.append(AbstractRefactoring.toString(pl, tokens));
+                                result.append(Nodes.toString(pl, tokens));
                             }
                             if (ma.getBlock()!=null) {
                                 result.append(" ")
-                                    .append(AbstractRefactoring.toString(ma.getBlock(), tokens));
+                                    .append(Nodes.toString(ma.getBlock(), tokens));
                             }
                             if (ma.getSpecifierExpression()!=null) {
                                 result.append(" ")
-                                    .append(AbstractRefactoring.toString(ma.getSpecifierExpression(), tokens));
+                                    .append(Nodes.toString(ma.getSpecifierExpression(), tokens));
                             }
                         }
                     }

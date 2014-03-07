@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getNodeDecorationAttributes;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getNodeDecorationAttributes;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
 
 import org.eclipse.core.resources.IFile;

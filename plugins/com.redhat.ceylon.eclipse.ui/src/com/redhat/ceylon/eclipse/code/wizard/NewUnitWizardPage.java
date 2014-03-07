@@ -47,9 +47,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Escaping;
 
 public class NewUnitWizardPage extends WizardPage {
 
@@ -702,7 +702,7 @@ public class NewUnitWizardPage extends WizardPage {
     private static final String KEYWORDS;
     static {
         StringBuilder sb = new StringBuilder();
-        for (String kw: CeylonTokenColorer.keywords) {
+        for (String kw: Escaping.KEYWORDS) {
             sb.append(kw).append('|');
         }
         sb.setLength(sb.length()-1);

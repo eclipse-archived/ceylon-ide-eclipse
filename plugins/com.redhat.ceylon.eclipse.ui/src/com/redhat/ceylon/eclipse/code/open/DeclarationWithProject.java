@@ -4,7 +4,7 @@ import org.eclipse.core.resources.IProject;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
-public class DeclarationWithProject {
+class DeclarationWithProject {
     
     DeclarationWithProject(Declaration dec, IProject project, String path) {
         this.dec = dec;

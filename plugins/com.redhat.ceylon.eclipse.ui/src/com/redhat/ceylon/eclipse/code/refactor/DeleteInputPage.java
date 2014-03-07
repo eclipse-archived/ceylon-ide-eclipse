@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoFile;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -26,6 +26,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.search.CeylonElement;
 import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.code.search.CeylonViewerComparator;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class DeleteInputPage extends UserInputWizardPage {
     public DeleteInputPage(String name) {
@@ -150,7 +151,7 @@ public class DeleteInputPage extends UserInputWizardPage {
 
     private void addWarning(Table table, String text) {
         TableItem item = new TableItem(table, SWT.NONE);
-        item.setImage(CeylonLabelProvider.WARNING);
+        item.setImage(CeylonResources.WARNING);
         item.setText(text);
     }
     

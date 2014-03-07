@@ -2,11 +2,10 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodePath;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -40,8 +39,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class CodePopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
@@ -78,7 +77,7 @@ final class CodePopup extends PopupDialog
         this.editor = editor;
         create();
         
-        Color color = CeylonTokenColorer.getCurrentThemeColor("code");
+        Color color = getCurrentThemeColor("code");
         getShell().setBackground(color);
         setBackgroundColor(color);
 
@@ -226,9 +225,9 @@ final class CodePopup extends PopupDialog
     public void setInput(Object input) {
         CeylonParseController epc = editor.getParseController();
         IRegion r = editor.getSelection();
-        Node node = findNode(epc.getRootNode(), r.getOffset(), 
+        Node node = Nodes.findNode(epc.getRootNode(), r.getOffset(), 
                 r.getOffset()+r.getLength());
-        referencedNode = getReferencedNode(node, epc);
+        referencedNode = Nodes.getReferencedNode(node, epc);
         if (referencedNode==null) return;
         IPath path = getNodePath(referencedNode, epc.getProject(), epc.getTypeChecker());
         ei = getEditorInput(path);

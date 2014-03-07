@@ -1,10 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REORDER;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -15,7 +10,6 @@ import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -34,6 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ChangeParametersRefactoring extends AbstractRefactoring {
     
@@ -88,8 +83,6 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     private final Declaration declaration;
     private final List<Parameter> parameters;
 
-    public static ImageDescriptor REORDER = imageRegistry.getDescriptor(CEYLON_REORDER);
-    
     public Node getNode() {
         return node;
     }
@@ -101,7 +94,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     public ChangeParametersRefactoring(ITextEditor editor) {
         super(editor);
         if (rootNode!=null) {
-            Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);
+            Declaration refDec = Nodes.getReferencedExplicitDeclaration(node, rootNode);
             if (refDec instanceof Functional) {
                 refDec = refDec.getRefinedDeclaration();
                 List<ParameterList> pls = ((Functional) refDec).getParameterLists();
@@ -271,8 +264,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         }
         sb.setLength(sb.length()-2);
         sb.append(")");
-        return new ReplaceEdit(getNodeStartOffset(list), 
-                getNodeLength(list), 
+        return new ReplaceEdit(Nodes.getNodeStartOffset(list), 
+                Nodes.getNodeLength(list), 
                 sb.toString());
     }
     

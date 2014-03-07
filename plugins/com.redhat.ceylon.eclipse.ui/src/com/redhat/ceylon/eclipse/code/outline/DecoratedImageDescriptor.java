@@ -11,7 +11,6 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.DECORATIONS;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_RIGHT;
 import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
@@ -72,8 +71,8 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 
     /**
      * Sets the descriptors adornments. Valid values are: {@link #ABSTRACT}, {@link #FINAL},
-     * {@link #SYNCHRONIZED}, {@link #STATIC}, {@link #RUNNABLE}, {@link #WARNING}, 
-     * {@link #ERROR}, {@link #OVERRIDES}, {@link #IMPLEMENTS}, {@link #CONSTRUCTOR},
+     * {@link #SYNCHRONIZED}, {@link #STATIC}, {@link #RUNNABLE}, {@link #CEYLON_WARNING}, 
+     * {@link #CEYLON_ERROR}, {@link #OVERRIDES}, {@link #IMPLEMENTS}, {@link #CONSTRUCTOR},
      * {@link #DEPRECATED}, {@link #VOLATILE}, {@link #TRANSIENT} or any combination of those.
      * 
      * @param adornments the image descriptors adornments
@@ -198,7 +197,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 
     private void drawUnderlay() {
         Point pos= new Point(getSize().x, 0);
-        for(DecorationDescriptor d: DECORATIONS) {
+        for(DecorationDescriptor d: CeylonLabelProvider.DECORATIONS) {
             if (d.getQuadrant()==UNDERLAY && d.hasDecoration(fFlags)) {
                 addUnderlayImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
             }
@@ -207,7 +206,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 
     private void drawTopRight() {
         Point pos= new Point(getSize().x, 0);
-        for(DecorationDescriptor d: DECORATIONS) {
+        for(DecorationDescriptor d: CeylonLabelProvider.DECORATIONS) {
             if (d.getQuadrant()==TOP_RIGHT && d.hasDecoration(fFlags)) {
                 addTopRightImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
             }
@@ -216,7 +215,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 
     private void drawTopLeft() {
         Point pos= new Point(0, 0);
-        for(DecorationDescriptor d: DECORATIONS) {
+        for(DecorationDescriptor d: CeylonLabelProvider.DECORATIONS) {
             if (d.getQuadrant()==TOP_LEFT && d.hasDecoration(fFlags)) {
                 addTopLeftImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
             }
@@ -237,7 +236,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 //          flags &= ~d.mask;
 //      }
 
-        for(DecorationDescriptor d: DECORATIONS) {
+        for(DecorationDescriptor d: CeylonLabelProvider.DECORATIONS) {
             if (d.getQuadrant()==BOTTOM_RIGHT && d.hasDecoration(fFlags)) {
                 addBottomRightImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
             }
@@ -246,7 +245,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
 
     private void drawBottomLeft() {
         Point pos= new Point(0, getSize().y);
-        for (DecorationDescriptor d: DECORATIONS) {
+        for (DecorationDescriptor d: CeylonLabelProvider.DECORATIONS) {
             if (d.getQuadrant()==BOTTOM_LEFT && d.hasDecoration(fFlags)) {
                 addBottomLeftImage(imageRegistry.getDescriptor(d.getImageKey()), pos);
             }

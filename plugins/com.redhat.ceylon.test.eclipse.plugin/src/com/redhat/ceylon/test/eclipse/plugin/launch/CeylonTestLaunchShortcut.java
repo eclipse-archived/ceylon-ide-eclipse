@@ -50,10 +50,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 
@@ -192,7 +192,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
             return;
         }        
 
-        Node node = CeylonSourcePositionLocator.findNode(cu, (ITextSelection) selection);
+        Node node = Nodes.findNode(cu, (ITextSelection) selection);
         FindContainerVisitor fcv = new FindContainerVisitor(node);
         fcv.visit(cu);
         node = fcv.getDeclaration();

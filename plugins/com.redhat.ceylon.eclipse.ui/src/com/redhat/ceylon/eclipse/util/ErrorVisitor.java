@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
@@ -69,7 +68,7 @@ public abstract class ErrorVisitor extends Visitor {
 //                    continue;
 //                }
                 AnalysisMessage analysisMessage = (AnalysisMessage) error;
-                Node errorNode = getIdentifyingNode(analysisMessage.getTreeNode());
+                Node errorNode = Nodes.getIdentifyingNode(analysisMessage.getTreeNode());
                 if (errorNode == null) {
                     errorNode = analysisMessage.getTreeNode();
                 }

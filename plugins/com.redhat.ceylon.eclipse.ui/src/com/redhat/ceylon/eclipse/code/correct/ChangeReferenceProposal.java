@@ -7,9 +7,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshte
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ChangeReferenceProposal extends CorrectionProposal 
         implements ICompletionProposalExtension {
@@ -61,7 +60,7 @@ class ChangeReferenceProposal extends CorrectionProposal
                     !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                 OccurrenceLocation ol = 
                         getOccurrenceLocation(cu, 
-                                findNode(cu, problem.getOffset()));
+                                Nodes.findNode(cu, problem.getOffset()));
                 if (ol!=IMPORT) {
                     List<InsertEdit> ies = 
                             importEdits(cu, Collections.singleton(dec), 
@@ -107,7 +106,7 @@ class ChangeReferenceProposal extends CorrectionProposal
     static void addChangeReferenceProposals(Tree.CompilationUnit cu, 
             Node node, ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, IFile file) {
-        String brokenName = getIdentifyingNode(node).getText();
+        String brokenName = Nodes.getIdentifyingNode(node).getText();
         if (brokenName.isEmpty()) return;
         for (DeclarationWithProximity dwp: 
             getProposals(node, node.getScope(), cu).values()) {

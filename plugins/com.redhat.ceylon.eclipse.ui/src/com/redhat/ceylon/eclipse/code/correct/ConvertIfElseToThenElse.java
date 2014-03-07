@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,7 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
-import com.redhat.ceylon.eclipse.util.FindUtils;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertIfElseToThenElse extends CorrectionProposal {
     
@@ -221,9 +219,9 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
                 Matcher m = Pattern.compile("(\\s*)\\w+").matcher(prevLine);
                 if (m.find()) {
                     int whitespaceLen = m.group(1).length();
-                    Node node = findNode(cu, lineInfo.getOffset() + whitespaceLen, 
+                    Node node = Nodes.findNode(cu, lineInfo.getOffset() + whitespaceLen, 
                             lineInfo.getOffset() + whitespaceLen + 1);
-                    return FindUtils.findStatement(cu, node);
+                    return Nodes.findStatement(cu, node);
                 }
             }
         } catch (BadLocationException e) {

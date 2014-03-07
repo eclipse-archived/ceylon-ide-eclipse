@@ -4,9 +4,8 @@ import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getSupertypeProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.styleProposal;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
-import static com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring.guessName;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findStatement;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
+import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 
 import java.util.Collection;
 import java.util.List;
@@ -37,6 +36,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalExtension6 {
     
@@ -171,7 +171,7 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
                 currentOffset>stopIndex+1) {
                 return;
             }
-            name = guessName(expression);
+            name = Nodes.guessName(expression);
             offset = expanse.getStartIndex();
             type = resultType==null ? 
                     null : node.getUnit().denotableType(resultType);

@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.performChange;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 

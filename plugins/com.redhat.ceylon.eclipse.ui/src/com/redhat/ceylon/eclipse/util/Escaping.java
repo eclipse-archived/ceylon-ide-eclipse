@@ -1,22 +1,23 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
+import static java.util.Arrays.asList;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 
 public class Escaping {
 
     public static String escape(String suggestedName) {
-        if (keywords.contains(suggestedName)) {
+        if (KEYWORDS.contains(suggestedName)) {
             return "\\i" + suggestedName;
         }
         else {
@@ -30,7 +31,7 @@ public class Escaping {
         for (int i=0; i<path.size(); i++) {
             String pathPart = path.get(i);
             if (!pathPart.isEmpty()) {
-                if (CeylonTokenColorer.keywords.contains(pathPart)) {
+                if (KEYWORDS.contains(pathPart)) {
                     pathPart = "\\i" + pathPart;
                 }
                 sb.append(pathPart);
@@ -54,8 +55,7 @@ public class Escaping {
         }
         char c = alias.charAt(0);
         if (d instanceof TypedDeclaration &&
-                (isUpperCase(c) || 
-                        keywords.contains(alias))) {
+                (isUpperCase(c) || KEYWORDS.contains(alias))) {
             return "\\i" + alias;
         }
         else if (d instanceof TypeDeclaration &&
@@ -66,5 +66,12 @@ public class Escaping {
             return alias;
         }
     }
+
+    public static final Set<String> KEYWORDS = new LinkedHashSet<String>(asList("import", "assert",
+        "alias", "class", "interface", "object", "given", "value", "assign", "void", "function", 
+        "assembly", "module", "package", "of", "extends", "satisfies", "abstracts", "in", "out", 
+        "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", 
+        "try", "catch", "finally", "this", "outer", "super", "is", "exists", "nonempty", "then",
+        "dynamic", "new", "let"));
 
 }

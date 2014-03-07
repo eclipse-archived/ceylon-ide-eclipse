@@ -2,9 +2,6 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.compiler.typechecker.analyzer.Util.getLastExecutableStatement;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.addTaskAnnotation;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findScope;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
@@ -29,6 +26,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 /**
  * Responsible for adding refinement annotations to the 
@@ -174,8 +172,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             RefinementAnnotation ra = new RefinementAnnotation(
                     "refines " + dec.getQualifiedNameString(), //never actually displayed 
                     refined, line.getToken().getLine());
-            model.addAnnotation(ra, new Position(getStartOffset(that), 
-                    getLength(that)));
+            model.addAnnotation(ra, new Position(Nodes.getStartOffset(that), 
+                    Nodes.getLength(that)));
         }
     }
     
@@ -189,7 +187,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         public void selectionChanged(SelectionChangedEvent event) {
             final CeylonParseController cpc = editor.getParseController();
             if (cpc.getRootNode()==null) return;
-            Node node = findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
+            Node node = Nodes.findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
             if (node!=null) {
                 editor.setHighlightRange(node.getStartIndex(), 
                         node.getStopIndex()-node.getStartIndex()+1, false);

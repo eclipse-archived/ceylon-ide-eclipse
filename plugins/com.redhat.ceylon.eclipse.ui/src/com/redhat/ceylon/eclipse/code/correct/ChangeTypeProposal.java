@@ -8,7 +8,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findStatement;
+import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 
 import java.util.Collection;
 import java.util.HashSet;

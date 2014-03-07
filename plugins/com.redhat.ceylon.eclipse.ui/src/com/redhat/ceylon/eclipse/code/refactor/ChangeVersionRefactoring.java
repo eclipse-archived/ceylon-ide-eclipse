@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ChangeVersionRefactoring extends AbstractRefactoring {
     
@@ -162,7 +161,7 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
     }
     
     protected void renameNode(TextChange tfc, Node node, Tree.CompilationUnit root) {
-        Node identifyingNode = getIdentifyingNode(node);
+        Node identifyingNode = Nodes.getIdentifyingNode(node);
         tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex()+1, 
                 identifyingNode.getText().length()-2, newVersion));
     }

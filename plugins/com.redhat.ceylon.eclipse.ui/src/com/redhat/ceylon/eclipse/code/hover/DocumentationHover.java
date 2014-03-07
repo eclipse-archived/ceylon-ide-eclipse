@@ -17,6 +17,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPara
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitalValueDescription;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
@@ -24,22 +25,13 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.CHARS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.COMMENTS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.IDENTIFIERS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.KEYWORDS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.NUMBERS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.PACKAGES;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.STRINGS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.TYPES;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getCurrentThemeColor;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
+import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
+import static com.redhat.ceylon.eclipse.util.Highlights.NUMBERS;
+import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static java.lang.Character.codePointCount;
 import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
@@ -51,34 +43,23 @@ import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD_DISABLED;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultInformationControl;
@@ -96,11 +77,9 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.osgi.framework.Bundle;
 
 import com.github.rjeschke.txtmark.BlockEmitter;
 import com.github.rjeschke.txtmark.Configuration;
@@ -135,7 +114,6 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnonymousAnnotation;
@@ -147,16 +125,16 @@ import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 
 public class DocumentationHover 
@@ -304,7 +282,7 @@ public class DocumentationHover
             else if (location.startsWith("stp:")) {
                 close(control);
                 CompilationUnit rn = editor.getParseController().getRootNode();
-                Node node = findNode(rn, Integer.parseInt(location.substring(4)));
+                Node node = Nodes.findNode(rn, Integer.parseInt(location.substring(4)));
                 SpecifyTypeProposal.createProposal(rn, node, editor)
                         .apply(editor.getParseController().getDocument());
             }
@@ -441,7 +419,7 @@ public class DocumentationHover
     
     static void gotoDeclaration(CeylonEditor editor, Referenceable model) {
         CeylonParseController cpc = editor.getParseController();
-        Node refNode = getReferencedNode(model, cpc);
+        Node refNode = Nodes.getReferencedNode(model, cpc);
         if (refNode!=null) {
             gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
         }
@@ -455,11 +433,6 @@ public class DocumentationHover
         control.dispose();
     }
     
-    /**
-     * The style sheet (css).
-     */
-    private static String fgStyleSheet;
-
     /**
      * The hover control creator.
      */
@@ -554,7 +527,7 @@ public class DocumentationHover
             if (selection!=null && 
                 selection.getOffset()<=hoffset &&
                 selection.getOffset()+selection.getLength()>=hoffset) {
-                Node node = findNode(rn, selection.getOffset(),
+                Node node = Nodes.findNode(rn, selection.getOffset(),
                         selection.getOffset()+selection.getLength()-1);
                 
                 if (node instanceof Tree.Expression) {
@@ -566,7 +539,7 @@ public class DocumentationHover
                             editor.getParseController().getProject());
                 }
             }
-            Node node = findNode(rn, hoffset);
+            Node node = Nodes.findNode(rn, hoffset);
             if (node instanceof Tree.ImportPath) {
                 Referenceable r = ((Tree.ImportPath) node).getModel();
                 if (r!=null) {
@@ -583,7 +556,7 @@ public class DocumentationHover
                         editor.getParseController().getProject());
             }
             else {
-                return getHoverInfo(getReferencedDeclaration(node), 
+                return getHoverInfo(Nodes.getReferencedDeclaration(node), 
                         null, editor, node);
             }
         }
@@ -594,14 +567,14 @@ public class DocumentationHover
         ProducedType t = ((Tree.LocalModifier) node).getTypeModel();
         if (t==null) return null;
         StringBuilder buffer = new StringBuilder();
-        HTMLPrinter.insertPageProlog(buffer, 0, DocumentationHover.getStyleSheet());
-        addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
-                16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + "</tt></b>", 
+        HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
+        HTML.addImageAndLabel(buffer, null, HTML.fileUrl("types.gif").toExternalForm(), 
+                16, 16, "<b><tt>" + HTML.highlightLine(t.getProducedTypeName()) + "</tt></b>", 
                 20, 4);
         buffer.append("<hr/>");
         if (!t.containsUnknowns()) {
             buffer.append("One quick assist available:<br/>");
-            addImageAndLabel(buffer, null, fileUrl("correction_change.gif").toExternalForm(), 
+            HTML.addImageAndLabel(buffer, null, HTML.fileUrl("correction_change.gif").toExternalForm(), 
                     16, 16, "<a href=\"stp:" + node.getStartIndex() + "\">Specify explicit type</a>", 
                     20, 4);
         }
@@ -622,10 +595,10 @@ public class DocumentationHover
 //            e.printStackTrace();
 //        }
         StringBuilder buffer = new StringBuilder();
-        HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
+        HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
         String desc = node instanceof Tree.Literal ? "literal" : "expression";
-        addImageAndLabel(buffer, null, fileUrl("types.gif").toExternalForm(), 
-                16, 16, "<b><tt>" + highlightLine(t.getProducedTypeName()) + 
+        HTML.addImageAndLabel(buffer, null, HTML.fileUrl("types.gif").toExternalForm(), 
+                16, 16, "<b><tt>" + HTML.highlightLine(t.getProducedTypeName()) + 
                 "</tt> "+desc+"</b>", 
                 20, 4);
         if (node instanceof Tree.StringLiteral) {
@@ -678,10 +651,10 @@ public class DocumentationHover
         }
         if (selectedText!=null) {
             buffer.append("<hr/>").append("Two quick assists available:<br/>");
-            addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
+            HTML.addImageAndLabel(buffer, null, HTML.fileUrl("change.png").toExternalForm(), 
                     16, 16, "<a href=\"exv:\">Extract value</a>", 
                     20, 4);
-            addImageAndLabel(buffer, null, fileUrl("change.png").toExternalForm(), 
+            HTML.addImageAndLabel(buffer, null, HTML.fileUrl("change.png").toExternalForm(), 
                     16, 16, "<a href=\"exf:\">Extract function</a>", 
                     20, 4);
             buffer.append("<br/>");
@@ -883,7 +856,7 @@ public class DocumentationHover
         }
     }
 
-    public static String getBaseURL(IJavaElement element, boolean isBinary) 
+    private static String getBaseURL(IJavaElement element, boolean isBinary) 
             throws JavaModelException {
         if (isBinary) {
             // Source attachment usually does not include Javadoc resources
@@ -926,7 +899,7 @@ public class DocumentationHover
         addPackageDocumentation(cpc, pack, buffer);
         addAdditionalPackageInfo(buffer, mod);
         addPackageMembers(buffer, pack);
-        insertPageProlog(buffer, 0, getStyleSheet());
+        insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addPageEpilog(buffer);
         return buffer.toString();
         
@@ -952,7 +925,7 @@ public class DocumentationHover
                     16, 16, "<tt><a " + link(dec) + ">" + 
                     dec.getName() + "</a></tt>", 20, 2);*/
                 buffer.append("<tt><a ")
-                    .append(link(dec))
+                    .append(HTML.link(dec))
                     .append(">")
                     .append(dec.getName())
                     .append("</a></tt>");
@@ -975,10 +948,10 @@ public class DocumentationHover
 
     private static void addMainPackageDescription(Package pack,
             StringBuilder buffer) {
-        addImageAndLabel(buffer, pack, 
-                fileUrl(getIcon(pack)).toExternalForm(), 
+        HTML.addImageAndLabel(buffer, pack, 
+                HTML.fileUrl(getIcon(pack)).toExternalForm(), 
                 16, 16, 
-                "<b><tt>" + highlightLine(description(pack)) +"</tt></b>", 
+                "<b><tt>" + HTML.highlightLine(description(pack)) +"</tt></b>", 
                 20, 4);
         buffer.append("<hr/>");
     }
@@ -986,9 +959,9 @@ public class DocumentationHover
     private static Module addPackageModuleInfo(Package pack,
             StringBuilder buffer) {
         Module mod = pack.getModule();
-        addImageAndLabel(buffer, mod, fileUrl(getIcon(mod)).toExternalForm(), 
+        HTML.addImageAndLabel(buffer, mod, HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
-                "in module&nbsp;&nbsp;<tt><a " + link(mod) + ">" + 
+                "in module&nbsp;&nbsp;<tt><a " + HTML.link(mod) + ">" + 
                         getLabel(mod) +"</a></tt>", 
                 20, 2);
         return mod;
@@ -1026,10 +999,10 @@ public class DocumentationHover
             String version, String doc) {
         StringBuilder buffer= new StringBuilder();
         
-        addImageAndLabel(buffer, null, 
-                fileUrl("jar_l_obj.gif").toExternalForm(), 
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
                 16, 16, 
-                "<b><tt>" + highlightLine(description(name, version)) + "</tt></b>",
+                "<b><tt>" + HTML.highlightLine(description(name, version)) + "</tt></b>",
                 20, 4);
         buffer.append("<hr/>");
         
@@ -1037,7 +1010,7 @@ public class DocumentationHover
             buffer.append(markdown(doc, null, null));
         }
                 
-        insertPageProlog(buffer, 0, getStyleSheet());
+        insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addPageEpilog(buffer);
         return buffer.toString();
         
@@ -1047,17 +1020,16 @@ public class DocumentationHover
         return "module " + name + " \"" + version + "\"";
     }
 
-    public static String getDocumentationFor(CeylonParseController cpc, 
+    private static String getDocumentationFor(CeylonParseController cpc, 
             Module mod) {
         StringBuilder buffer = new StringBuilder();
         addMainModuleDescription(mod, buffer);
         addAdditionalModuleInfo(buffer, mod);
         addModuleDocumentation(cpc, mod, buffer);
         addModuleMembers(buffer, mod);
-        insertPageProlog(buffer, 0, getStyleSheet());
+        insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addPageEpilog(buffer);
         return buffer.toString();
-        
     }
 
     private static void addAdditionalModuleInfo(StringBuilder buffer, 
@@ -1075,10 +1047,10 @@ public class DocumentationHover
 
     private static void addMainModuleDescription(Module mod,
             StringBuilder buffer) {
-        addImageAndLabel(buffer, mod, 
-                fileUrl(getIcon(mod)).toExternalForm(), 
+        HTML.addImageAndLabel(buffer, mod, 
+                HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
-                "<b><tt>" + highlightLine(description(mod)) + "</tt></b>", 
+                "<b><tt>" + HTML.highlightLine(description(mod)) + "</tt></b>", 
                 20, 4);
         buffer.append("<hr/>");
     }
@@ -1122,7 +1094,7 @@ public class DocumentationHover
                     16, 16, "<tt><a " + link(dec) + ">" + 
                     dec.getName() + "</a></tt>", 20, 2);*/
                 buffer.append("<tt><a ")
-                    .append(link(pack))
+                    .append(HTML.link(pack))
                     .append(">")
                     .append(pack.getNameAsString())
                     .append("</a></tt>");
@@ -1142,11 +1114,11 @@ public class DocumentationHover
         return getDocumentationFor(cpc, dec, null);
     }
     
-    public static String getDocumentationFor(CeylonParseController cpc, 
+    private static String getDocumentationFor(CeylonParseController cpc, 
             Declaration dec, Node node) {
         if (dec==null) return null;
         StringBuilder buffer = new StringBuilder();
-        insertPageProlog(buffer, 0, getStyleSheet());
+        insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addMainDescription(buffer, dec, node, cpc);
         addContainerInfo(dec, node, buffer);
         boolean hasDoc = addDoc(cpc, dec, node, buffer);
@@ -1168,12 +1140,12 @@ public class DocumentationHover
 
     private static void addMainDescription(StringBuilder buffer,
             Declaration dec, Node node, CeylonParseController cpc) {
-        addImageAndLabel(buffer, dec, 
-                fileUrl(getIcon(dec)).toExternalForm(), 
+        HTML.addImageAndLabel(buffer, dec, 
+                HTML.fileUrl(getIcon(dec)).toExternalForm(), 
                 16, 16, 
                 "<b><tt>" + 
                 (dec.isDeprecated() ? "<s>":"") + 
-                highlightLine(description(dec, node, cpc)) + 
+                HTML.highlightLine(description(dec, node, cpc)) + 
                 (dec.isDeprecated() ? "</s>":"") + 
                 "</tt></b>", 
                 20, 4);
@@ -1202,7 +1174,7 @@ public class DocumentationHover
                         /*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
                               16, 16, "<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>", 20, 2);*/
                         buffer.append("<tt><a ")
-                            .append(link(mem))
+                            .append(HTML.link(mem))
                             .append(">")
                             .append(mem.getName()) 
                             .append("</a></tt>");
@@ -1251,10 +1223,10 @@ public class DocumentationHover
             ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
             ProducedType sup = getQualifyingType(node, outer).getSupertype(superclass);
             String qualifyingType = sup.getProducedTypeName();
-            addImageAndLabel(buffer, rd, 
-                    fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
+            HTML.addImageAndLabel(buffer, rd, 
+                    HTML.fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
                     16, 16, 
-                    "refines&nbsp;&nbsp;<tt><a " + link(rd) + ">" + 
+                    "refines&nbsp;&nbsp;<tt><a " + HTML.link(rd) + ">" + 
                             rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
                             convertToHTMLContent(qualifyingType) + 
                             "</tt>", 
@@ -1262,7 +1234,7 @@ public class DocumentationHover
             buffer.append("</p>");
             if (!hasDoc) {
                 Tree.Declaration refnode2 = 
-                        (Tree.Declaration) getReferencedNode(rd, cpc);
+                        (Tree.Declaration) Nodes.getReferencedNode(rd, cpc);
                 if (refnode2!=null) {
                     appendDocAnnotationContent(refnode2.getAnnotationList(), 
                             buffer, resolveScope(rd));
@@ -1284,19 +1256,19 @@ public class DocumentationHover
                         String def = getDefaultValueDescription(p, cpc);
                         StringBuilder doc = new StringBuilder();
                         Tree.Declaration refNode = 
-                                (Tree.Declaration) getReferencedNode(p.getModel(), cpc);
+                                (Tree.Declaration) Nodes.getReferencedNode(p.getModel(), cpc);
                         if (refNode!=null) {
                             appendDocAnnotationContent(refNode.getAnnotationList(), 
                                     doc, resolveScope(dec));
                         }
                         ProducedType type = ptr.getTypedParameter(p).getFullType();
                         if (type==null) type = new UnknownType(dec.getUnit()).getType();
-                        addImageAndLabel(buffer, p.getModel(), 
-                                fileUrl("methpro_obj.gif").toExternalForm(),
+                        HTML.addImageAndLabel(buffer, p.getModel(), 
+                                HTML.fileUrl("methpro_obj.gif").toExternalForm(),
                                 16, 16, 
-                                "accepts&nbsp;&nbsp;<tt><a " + link(type.getDeclaration()) + ">" + 
+                                "accepts&nbsp;&nbsp;<tt><a " + HTML.link(type.getDeclaration()) + ">" + 
                                         convertToHTMLContent(type.getProducedTypeName()) + 
-                                        "</a>&nbsp;<a " + link(p.getModel()) + ">"+ p.getName() +
+                                        "</a>&nbsp;<a " + HTML.link(p.getModel()) + ">"+ p.getName() +
                                         convertToHTMLContent(params.toString()) + "</a>" + 
                                         convertToHTMLContent(def) + "</tt>" + doc, 
                                 20, 2);
@@ -1324,7 +1296,7 @@ public class DocumentationHover
                 for (ProducedType pt: list) {
                     if (pt.getDeclaration() instanceof ClassOrInterface || 
                             pt.getDeclaration() instanceof TypeParameter) {
-                        buf.append("<a " + link(pt.getDeclaration()) + ">" + 
+                        buf.append("<a " + HTML.link(pt.getDeclaration()) + ">" + 
                                 convertToHTMLContent(pt.getProducedTypeName()) +"</a>");
                     }
                     else {
@@ -1334,8 +1306,8 @@ public class DocumentationHover
                 }
                 buf.setLength(buf.length()-1);
                 buf.append("</tt>");
-                addImageAndLabel(buffer, ret.getDeclaration(), 
-                        fileUrl("stepreturn_co.gif").toExternalForm(), 
+                HTML.addImageAndLabel(buffer, ret.getDeclaration(), 
+                        HTML.fileUrl("stepreturn_co.gif").toExternalForm(), 
                         16, 16, buf.toString(), 20, 2);
                 buffer.append("</p>");
             }
@@ -1356,7 +1328,7 @@ public class DocumentationHover
     private static boolean addDoc(CeylonParseController cpc, 
             Declaration dec, Node node, StringBuilder buffer) {
         boolean hasDoc = false;
-        Node rn = getReferencedNode(dec, cpc);
+        Node rn = Nodes.getReferencedNode(dec, cpc);
         if (rn instanceof Tree.Declaration) {
             Tree.Declaration refnode = (Tree.Declaration) rn;
             appendDeprecatedAnnotationContent(refnode.getAnnotationList(), 
@@ -1382,18 +1354,18 @@ public class DocumentationHover
             Declaration pd = 
                     ((MethodOrValue) dec).getInitializerParameter()
                             .getDeclaration();
-            addImageAndLabel(buffer, pd, 
-                    fileUrl(getIcon(pd)).toExternalForm(),
+            HTML.addImageAndLabel(buffer, pd, 
+                    HTML.fileUrl(getIcon(pd)).toExternalForm(),
                     16, 16, 
-                    "parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + 
+                    "parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
                             pd.getName() +"</a></tt>", 20, 2);
         }
         else if (dec instanceof TypeParameter) {
             Declaration pd = ((TypeParameter) dec).getDeclaration();
-            addImageAndLabel(buffer, pd, 
-                    fileUrl(getIcon(pd)).toExternalForm(),
+            HTML.addImageAndLabel(buffer, pd, 
+                    HTML.fileUrl(getIcon(pd)).toExternalForm(),
                     16, 16, 
-                    "type parameter of&nbsp;&nbsp;<tt><a " + link(pd) + ">" + 
+                    "type parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
                             pd.getName() +"</a></tt>", 
                     20, 2);
         }
@@ -1403,10 +1375,10 @@ public class DocumentationHover
                 ProducedType qt = getQualifyingType(node, outer);
                 if (qt!=null) {
                     String qualifyingType = qt.getProducedTypeName();
-                    addImageAndLabel(buffer, outer, 
-                            fileUrl(getIcon(outer)).toExternalForm(), 
+                    HTML.addImageAndLabel(buffer, outer, 
+                            HTML.fileUrl(getIcon(outer)).toExternalForm(), 
                             16, 16, 
-                            "member of&nbsp;&nbsp;<tt><a " + link(outer) + ">" + 
+                            "member of&nbsp;&nbsp;<tt><a " + HTML.link(outer) + ">" + 
                                     convertToHTMLContent(qualifyingType) + "</a></tt>", 20, 2);
                 }
             }
@@ -1418,17 +1390,17 @@ public class DocumentationHover
                     label = "in default package";
                 }
                 else {
-                    label = "in package&nbsp;&nbsp;<tt><a " + link(pack) + ">" + 
+                    label = "in package&nbsp;&nbsp;<tt><a " + HTML.link(pack) + ">" + 
                             getPackageLabel(dec) +"</a></tt>";
                 }
-                addImageAndLabel(buffer, pack, 
-                        fileUrl(getIcon(pack)).toExternalForm(), 
+                HTML.addImageAndLabel(buffer, pack, 
+                        HTML.fileUrl(getIcon(pack)).toExternalForm(), 
                         16, 16, label, 20, 2);
                 Module mod = pack.getModule();
-                addImageAndLabel(buffer, mod, 
-                        fileUrl(getIcon(mod)).toExternalForm(), 
+                HTML.addImageAndLabel(buffer, mod, 
+                        HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                         16, 16, 
-                        "in module&nbsp;&nbsp;<tt><a " + link(mod) + ">" + 
+                        "in module&nbsp;&nbsp;<tt><a " + HTML.link(mod) + ">" + 
                                 getModuleLabel(dec) +"</a></tt>", 
                         20, 2);
             }
@@ -1449,7 +1421,7 @@ public class DocumentationHover
         return outer.getType();
     }
 
-    public static void appendExtraActions(Declaration dec, 
+    private static void appendExtraActions(Declaration dec, 
             StringBuilder buffer) {
         buffer.append("<hr/>");
         String unitName = null;
@@ -1462,45 +1434,45 @@ public class DocumentationHover
             unitName = dec.getUnit().getFilename();
         }
                 
-        addImageAndLabel(buffer, null, 
-                fileUrl("unit.gif").toExternalForm(), 
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("unit.gif").toExternalForm(), 
                 16, 16, 
-                "<a href='dec:" + declink(dec) + 
+                "<a href='dec:" + HTML.declink(dec) + 
                         "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
                         unitName + "</tt>", 
                 20, 2);
         //}
         buffer.append("<hr/>");
-        addImageAndLabel(buffer, null, 
-                fileUrl("search_ref_obj.png").toExternalForm(), 
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("search_ref_obj.png").toExternalForm(), 
                 16, 16, 
-                "<a href='ref:" + declink(dec) + 
+                "<a href='ref:" + HTML.declink(dec) + 
                         "'>find references</a> to&nbsp;&nbsp;<tt>" +
                         dec.getName() + "</tt>",
                 20, 2);
         if (dec instanceof ClassOrInterface) {
-            addImageAndLabel(buffer, null, 
-                    fileUrl("search_decl_obj.png").toExternalForm(), 
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("search_decl_obj.png").toExternalForm(), 
                     16, 16, 
-                    "<a href='sub:" + declink(dec) + 
+                    "<a href='sub:" + HTML.declink(dec) + 
                             "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
                             dec.getName() + "</tt>",
                     20, 2);
         }
         if (dec instanceof Value) {
-            addImageAndLabel(buffer, null, 
-                    fileUrl("search_ref_obj.png").toExternalForm(), 
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("search_ref_obj.png").toExternalForm(), 
                     16, 16, 
-                    "<a href='ass:" + declink(dec) + 
+                    "<a href='ass:" + HTML.declink(dec) + 
                             "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
                             dec.getName() + "</tt>", 
                     20, 2);
         }
         if (dec.isFormal()||dec.isDefault()) {
-            addImageAndLabel(buffer, null, 
-                    fileUrl("search_decl_obj.png").toExternalForm(), 
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("search_decl_obj.png").toExternalForm(), 
                     16, 16, 
-                    "<a href='act:" + declink(dec) + 
+                    "<a href='act:" + HTML.declink(dec) + 
                             "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
                             dec.getName() + "</tt>", 
                     20, 2);
@@ -1512,10 +1484,10 @@ public class DocumentationHover
             ProducedType sup = ((Class) dec).getExtendedType();
             if (sup!=null) {
                 buffer.append("<p>");
-                addImageAndLabel(buffer, sup.getDeclaration(), 
-                        fileUrl("super_co.gif").toExternalForm(), 
+                HTML.addImageAndLabel(buffer, sup.getDeclaration(), 
+                        HTML.fileUrl("super_co.gif").toExternalForm(), 
                         16, 16, 
-                        "extends <tt><a " + link(sup.getDeclaration()) + ">" + 
+                        "extends <tt><a " + HTML.link(sup.getDeclaration()) + ">" + 
                                 convertToHTMLContent(sup.getProducedTypeName()) +"</a></tt>", 
                         20, 2);
                 buffer.append("</p>");
@@ -1527,10 +1499,10 @@ public class DocumentationHover
             if (!sts.isEmpty()) {
                 buffer.append("<p>");
                 for (ProducedType td: sts) {
-                    addImageAndLabel(buffer, td.getDeclaration(), 
-                            fileUrl("super_co.gif").toExternalForm(), 
+                    HTML.addImageAndLabel(buffer, td.getDeclaration(), 
+                            HTML.fileUrl("super_co.gif").toExternalForm(), 
                             16, 16, 
-                            "satisfies <tt><a " + link(td.getDeclaration()) + ">" + 
+                            "satisfies <tt><a " + HTML.link(td.getDeclaration()) + ">" + 
                                     convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 
                             20, 2);
                     //extraBreak = true;
@@ -1541,11 +1513,11 @@ public class DocumentationHover
             if (cts!=null) {
                 buffer.append("<p>");
                 for (ProducedType td: cts) {
-                    addImageAndLabel(buffer, td.getDeclaration(), 
-                            fileUrl("sub_co.gif").toExternalForm(), 
+                    HTML.addImageAndLabel(buffer, td.getDeclaration(), 
+                            HTML.fileUrl("sub_co.gif").toExternalForm(), 
                             16, 16, 
                             (td.getDeclaration().isSelfType() ? "has self type" : "has case") + 
-                            " <tt><a " + link(td.getDeclaration()) + ">" + 
+                            " <tt><a " + HTML.link(td.getDeclaration()) + ">" + 
                             convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 
                             20, 2);
                     //extraBreak = true;
@@ -1595,39 +1567,6 @@ public class DocumentationHover
         return result;
     }
     
-    static String getAddress(Referenceable model) {
-        if (model==null) return null;
-        return "dec:" + declink(model);
-    }
-    
-    private static String link(Referenceable model) {
-        return "href='doc:" + declink(model) + "'";
-    }
-    
-    private static String declink(Referenceable model) {
-        if (model instanceof Package) {
-            Package p = (Package) model;
-            return declink(p.getModule()) + ":" + p.getNameAsString();
-        }
-        if (model instanceof Module) {
-            return  ((Module) model).getNameAsString();
-        }
-        else if (model instanceof Declaration) {
-            String result = ":" + ((Declaration) model).getName();
-            Scope container = ((Declaration) model).getContainer();
-            if (container instanceof Referenceable) {
-                return declink((Referenceable) container)
-                        + result;
-            }
-            else {
-                return result;
-            }
-        }
-        else {
-           return "";
-        }
-    }
-
     private static void appendJavadoc(Declaration model, IProject project,
             StringBuilder buffer, Node node) {
         IJavaProject jp = JavaCore.create(project);
@@ -1725,8 +1664,8 @@ public class DocumentationHover
                                             if (dec.isClassOrInterfaceMember()) {
                                                 dn = ((ClassOrInterface) dec.getContainer()).getName() + "." + dn;
                                             }
-                                            addImageAndLabel(documentation, dec, fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
-                                                    "see <tt><a "+link(dec)+">"+dn+"</a></tt>", 20, 2);
+                                            HTML.addImageAndLabel(documentation, dec, HTML.fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
+                                                    "see <tt><a "+HTML.link(dec)+">"+dn+"</a></tt>", 20, 2);
                                         }
                                     }
                                 }
@@ -1769,8 +1708,8 @@ public class DocumentationHover
                                                         + "." + dn;
                                             }
                                         }
-                                        addImageAndLabel(documentation, dec, fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
-                                                "throws <tt><a "+link(dec)+">"+dn+"</a></tt>" + 
+                                        HTML.addImageAndLabel(documentation, dec, HTML.fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
+                                                "throws <tt><a "+HTML.link(dec)+">"+dn+"</a></tt>" + 
                                                         markdown(text, linkScope, annotationList.getUnit()), 20, 2);
                                     }
                                 }
@@ -1780,121 +1719,6 @@ public class DocumentationHover
                 }
             }
         }
-    }
-    
-    public static URL fileUrl(String icon) {
-        try {
-            return FileLocator.toFileURL(FileLocator.find(CeylonPlugin.getInstance().getBundle(), 
-                    new Path("icons/").append(icon), null));
-        } 
-        catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Returns the Javadoc hover style sheet with the current Javadoc font from the preferences.
-     * @return the updated style sheet
-     * @since 3.4
-     */
-    public static String getStyleSheet() {
-        if (fgStyleSheet == null)
-            fgStyleSheet = loadStyleSheet();
-        //Color c = CeylonTokenColorer.getCurrentThemeColor("docHover");
-        //String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
-        String css= fgStyleSheet;// + "body { background-color: #" + color+ " }";
-        if (css != null) {
-            FontData fontData= JFaceResources.getFontRegistry()
-                    .getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
-            css= HTMLPrinter.convertTopLevelFont(css, fontData);
-        }
-        return css;
-    }
-
-    /**
-     * Loads and returns the Javadoc hover style sheet.
-     * @return the style sheet, or <code>null</code> if unable to load
-     * @since 3.4
-     */
-    public static String loadStyleSheet() {
-        Bundle bundle= Platform.getBundle(JavaPlugin.getPluginId());
-        URL styleSheetURL= bundle.getEntry("/JavadocHoverStyleSheet.css"); 
-        if (styleSheetURL != null) {
-            BufferedReader reader= null;
-            try {
-                reader= new BufferedReader(new InputStreamReader(styleSheetURL.openStream()));
-                StringBuilder buffer= new StringBuilder(1500);
-                String line= reader.readLine();
-                while (line != null) {
-                    buffer.append(line);
-                    buffer.append('\n');
-                    line= reader.readLine();
-                }
-                return buffer.toString();
-            } catch (IOException ex) {
-                JavaPlugin.log(ex);
-                return ""; 
-            } finally {
-                try {
-                    if (reader != null)
-                        reader.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-        return null;
-    }
-
-    public static void addImageAndLabel(StringBuilder buf, Referenceable model, String imageSrcPath, 
-            int imageWidth, int imageHeight, String label, int labelLeft, int labelTop) {
-        buf.append("<div style='word-wrap: break-word; position: relative; "); 
-        
-        if (imageSrcPath != null) {
-            buf.append("margin-left: ").append(labelLeft).append("px; ");  
-            buf.append("padding-top: ").append(labelTop).append("px; ");  
-        }
-
-        buf.append("'>"); 
-        if (imageSrcPath != null) {
-            if (model!=null) {
-                buf.append("<a ").append(link(model)).append(">");  
-            }
-            addImage(buf, imageSrcPath, imageWidth, imageHeight,
-                    labelLeft);
-            if (model!=null) {
-                buf.append("</a>"); 
-            }
-        }
-        
-        buf.append(label);
-        
-        buf.append("</div>"); 
-    }
-
-    public static void addImage(StringBuilder buf, String imageSrcPath, 
-            int imageWidth, int imageHeight, int labelLeft) {
-        StringBuilder imageStyle= new StringBuilder("border:none; position: absolute; "); 
-        imageStyle.append("width: ").append(imageWidth).append("px; ");  
-        imageStyle.append("height: ").append(imageHeight).append("px; ");  
-        imageStyle.append("left: ").append(- labelLeft - 1).append("px; ");  
-
-        // hack for broken transparent PNG support in IE 6, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=223900 :
-        buf.append("<!--[if lte IE 6]><![if gte IE 5.5]>\n"); 
-        //String tooltip= element == null ? "" : "alt='" + "Open Declaration" + "' ";   
-        buf.append("<span ").append("style=\"").append(imageStyle)  
-                .append("filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='")
-                .append(imageSrcPath).append("')\"></span>\n");  
-        buf.append("<![endif]><![endif]-->\n"); 
-
-        buf.append("<!--[if !IE]>-->\n"); 
-        buf.append("<img ").append("style='").append(imageStyle).append("' src='")
-                .append(imageSrcPath).append("'/>\n");    
-        buf.append("<!--<![endif]-->\n"); 
-        buf.append("<!--[if gte IE 7]>\n"); 
-        buf.append("<img ").append("style='").append(imageStyle).append("' src='")
-                .append(imageSrcPath).append("'/>\n");    
-        buf.append("<![endif]-->\n"); 
     }
     
     private static String markdown(String text, final Scope linkScope, final Unit unit) {
@@ -1974,7 +1798,7 @@ public class DocumentationHover
         }
     
         if (decl != null) {
-            String href = link(decl);
+            String href = HTML.link(decl);
             return href;
         }
         else {
@@ -2023,7 +1847,7 @@ public class DocumentationHover
                 }
                 String highlighted;
                 if (meta == null || meta.length() == 0 || "ceylon".equals(meta)) {
-                    highlighted = highlightLine(code.toString());
+                    highlighted = HTML.highlightLine(code.toString());
                 }
                 else {
                     highlighted = code.toString();
@@ -2035,70 +1859,6 @@ public class DocumentationHover
 
     }
 
-    public static String highlightLine(String line) {
-        String kwc = toHex(getCurrentThemeColor(KEYWORDS));
-        String tc = toHex(getCurrentThemeColor(TYPES));
-        String ic = toHex(getCurrentThemeColor(IDENTIFIERS));
-        String sc = toHex(getCurrentThemeColor(STRINGS));
-        String nc = toHex(getCurrentThemeColor(NUMBERS));
-        String cc = toHex(getCurrentThemeColor(CHARS));
-        String pc = toHex(getCurrentThemeColor(PACKAGES));
-        String lcc = toHex(getCurrentThemeColor(COMMENTS));
-        CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(line));
-        Token token;
-        boolean inPackageName = false;
-        StringBuilder result = new StringBuilder();
-        while ((token=lexer.nextToken()).getType()!=CeylonLexer.EOF) {
-            String s = convertToHTMLContent(token.getText());
-            int type = token.getType();
-            if (type!=CeylonLexer.LIDENTIFIER &&
-                type!=CeylonLexer.MEMBER_OP) {
-                inPackageName = false;
-            }
-            else if (inPackageName) {
-                result.append("<span style='color:"+pc+"'>").append(s).append("</span>");
-                continue;
-            }
-            switch (type) {
-            case CeylonLexer.FLOAT_LITERAL:
-            case CeylonLexer.NATURAL_LITERAL:
-                result.append("<span style='color:"+nc+"'>").append(s).append("</span>");
-                break;
-            case CeylonLexer.CHAR_LITERAL:
-                result.append("<span style='color:"+cc+"'>").append(s).append("</span>");
-                break;
-            case CeylonLexer.STRING_LITERAL:
-            case CeylonLexer.STRING_START:
-            case CeylonLexer.STRING_MID:
-            case CeylonLexer.VERBATIM_STRING:
-                result.append("<span style='color:"+sc+"'>").append(s).append("</span>");
-                break;
-            case CeylonLexer.UIDENTIFIER:
-                result.append("<span style='color:"+tc+"'>").append(s).append("</span>");
-                break;
-            case CeylonLexer.LIDENTIFIER:
-                result.append("<span style='color:"+ic+"'>").append(s).append("</span>");
-                break;
-            case CeylonLexer.MULTI_COMMENT:
-            case CeylonLexer.LINE_COMMENT:
-                result.append("<span style='color:"+lcc+"'>").append(s).append("</span>");
-                break;
-            case CeylonLexer.IMPORT:
-            case CeylonLexer.PACKAGE:
-            case CeylonLexer.MODULE:
-                inPackageName = true; //then fall through!
-            default:
-                if (CeylonTokenColorer.keywords.contains(s)) {
-                    result.append("<span style='color:"+kwc+"'>").append(s).append("</span>");
-                }
-                else {
-                    result.append(s);
-                }
-            }
-        }
-        return result.toString();
-    }
-    
     /**
      * Creates the "enriched" control.
      */

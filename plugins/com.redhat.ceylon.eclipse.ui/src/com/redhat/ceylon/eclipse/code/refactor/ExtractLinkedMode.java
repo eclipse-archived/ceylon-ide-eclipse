@@ -16,7 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.util.Escaping;
 
 public abstract class ExtractLinkedMode extends RefactorLinkedMode {
 
@@ -52,7 +52,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     public boolean isEnabled() {
         String newName = getNewNameFromNamePosition();
         return newName.matches("^\\w(\\w|\\d)*$") &&
-                !CeylonTokenColorer.keywords.contains(newName);
+                !Escaping.KEYWORDS.contains(newName);
     }
     
     protected abstract int getNameOffset();

@@ -17,7 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class FormatBlockAction extends Action {
     private final CeylonEditor editor;
@@ -72,7 +72,7 @@ final class FormatBlockAction extends Action {
                 builder.append(delim);
                 for (Tree.Statement st: body.getStatements()) {
                     builder.append(indent)
-                    .append(AbstractRefactoring.toString(st, pc.getTokens()))
+                    .append(Nodes.toString(st, pc.getTokens()))
                     .append(delim);
                 }
                 builder.append(bodyIndent);
@@ -86,13 +86,13 @@ final class FormatBlockAction extends Action {
             if (!body.getNamedArguments().isEmpty()) {
                 for (Tree.NamedArgument st: body.getNamedArguments()) {
                     builder.append(indent)
-                    .append(AbstractRefactoring.toString(st, pc.getTokens()))
+                    .append(Nodes.toString(st, pc.getTokens()))
                     .append(delim);
                 }
             }
             if (body.getSequencedArgument()!=null) {
                 builder.append(indent)
-                .append(AbstractRefactoring.toString(body.getSequencedArgument(), 
+                .append(Nodes.toString(body.getSequencedArgument(), 
                         pc.getTokens()))
                 .append(delim);
             }
@@ -109,14 +109,14 @@ final class FormatBlockAction extends Action {
             if (!body.getImportMemberOrTypes().isEmpty()) {
                 for (Tree.ImportMemberOrType st: body.getImportMemberOrTypes()) {
                     builder.append(indent)
-                    .append(AbstractRefactoring.toString(st, pc.getTokens()))
+                    .append(Nodes.toString(st, pc.getTokens()))
                     .append(",")
                     .append(delim);
                 }
             }
             if (body.getImportWildcard()!=null) {
                 builder.append(indent)
-                .append(AbstractRefactoring.toString(body.getImportWildcard(), 
+                .append(Nodes.toString(body.getImportWildcard(), 
                         pc.getTokens()))
                 .append(delim);
             }

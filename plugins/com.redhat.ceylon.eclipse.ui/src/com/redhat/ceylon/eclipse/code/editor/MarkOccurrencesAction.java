@@ -1,9 +1,5 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
@@ -48,6 +44,7 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 /**
  * Action class that implements the "Mark Occurrences" mode. This action contains a number of
@@ -198,7 +195,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             // a parse error
             return;
         }
-        Node selectedNode = findNode(root, offset, offset+length-1);
+        Node selectedNode = Nodes.findNode(root, offset, offset+length-1);
         try {
             List<Node> occurrences = getOccurrencesOf(parseController, selectedNode);
             List<Node> assignments = getAssignmentsOf(parseController, selectedNode);
@@ -322,7 +319,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         int i= 0;
         for (Iterator<Node> iter=refs.iterator(); iter.hasNext(); i++) {
             Node node = iter.next();
-            positions[i] = new Position(getStartOffset(node), getLength(node));
+            positions[i] = new Position(Nodes.getStartOffset(node), Nodes.getLength(node));
         }
         return positions;
     }
@@ -435,7 +432,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
                 return Collections.emptyList();
             }
 
-            Declaration declaration = getReferencedExplicitDeclaration(node, root);
+            Declaration declaration = Nodes.getReferencedExplicitDeclaration(node, root);
             if (declaration==null) {
                 return Collections.emptyList();
             }
@@ -464,7 +461,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             return Collections.emptyList();
         }
 
-        Declaration declaration = getReferencedExplicitDeclaration(node, root);
+        Declaration declaration = Nodes.getReferencedExplicitDeclaration(node, root);
         if (declaration==null) {
             return Collections.emptyList();
         }

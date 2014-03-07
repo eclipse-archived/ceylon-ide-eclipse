@@ -1,9 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getColoring;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getInterpolationColoring;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.getMemberColoring;
+import static com.redhat.ceylon.eclipse.util.Highlights.getColoring;
+import static com.redhat.ceylon.eclipse.util.Highlights.getInterpolationColoring;
+import static com.redhat.ceylon.eclipse.util.Highlights.getMemberColoring;
 
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +28,7 @@ import org.eclipse.swt.custom.StyleRange;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class PresentationDamageRepairer implements IPresentationDamager, 
         IPresentationRepairer {
@@ -55,7 +55,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
                     event.getLength());
         }
         
-        int i = getTokenIndexAtCharacter(tokens, event.getOffset()-1);
+        int i = Nodes.getTokenIndexAtCharacter(tokens, event.getOffset()-1);
         if (i<0) i=-i;
         CommonToken t = tokens.get(i);
         if (isWithinExistingToken(event, t)) {
