@@ -18,7 +18,7 @@ import com.redhat.ceylon.eclipse.util.Indents;
 class ConvertStringProposal extends CorrectionProposal {
 
     private ConvertStringProposal(String name, Change change) {
-        super(name, change);
+        super(name, change, null);
     }
 
     static void addConvertToVerbatimProposal(Collection<ICompletionProposal> proposals,

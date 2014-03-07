@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -23,16 +22,8 @@ import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
 class ConvertToNamedArgumentsProposal extends CorrectionProposal {
     
-    private final int offset; 
-    
     public ConvertToNamedArgumentsProposal(int offset, Change change) {
-        super("Convert to named arguments", change);
-        this.offset=offset;
-    }
-
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
+        super("Convert to named arguments", change, new Point(offset, 0));
     }
     
     public static void addConvertToNamedArgumentsProposal(Collection<ICompletionProposal> proposals, 

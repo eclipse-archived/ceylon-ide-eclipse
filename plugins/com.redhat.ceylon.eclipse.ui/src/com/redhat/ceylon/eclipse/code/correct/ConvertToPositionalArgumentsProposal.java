@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -22,19 +21,10 @@ import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 
 class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
     
-    private final int offset; 
-    
-    public ConvertToPositionalArgumentsProposal(int offset, 
-            Change change) {
-        super("Convert to positional arguments", change);
-        this.offset=offset;
+    public ConvertToPositionalArgumentsProposal(int offset, Change change) {
+        super("Convert to positional arguments", change, new Point(offset, 0));
     }
 
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
-    }
-    
     public static void addConvertToPositionalArgumentsProposal(Collection<ICompletionProposal> proposals, 
             IFile file, Tree.CompilationUnit cu, CeylonEditor editor, int currentOffset) {
         Tree.NamedArgumentList nal = 

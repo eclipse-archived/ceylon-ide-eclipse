@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Point;
@@ -16,20 +15,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class AddParenthesesProposal extends CorrectionProposal {
     
-    private final int offset; 
-    
     AddParenthesesProposal(Declaration dec, int offset, 
             TextFileChange change) {
         super("Add empty parameter list to '" + dec.getName() + "'" + 
                 (dec.getContainer() instanceof TypeDeclaration?
                         "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
-                        change);
-        this.offset=offset;
-    }
-
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
+                        change, new Point(offset, 0));
     }
 
     static void addAddParenthesesProposal(ProblemLocation problem, IFile file,

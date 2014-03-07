@@ -22,7 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 class VerboseRefinementProposal extends CorrectionProposal {
 
     private VerboseRefinementProposal(Change change) {
-        super("Convert to verbose refinement", change);
+        super("Convert to verbose refinement", change, null);
     }
 
     static void addVerboseRefinementProposal(

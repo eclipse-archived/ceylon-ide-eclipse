@@ -114,16 +114,9 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
         return false;
     }
 
-    private final int offset;
-
     private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, int offset, String declName) {
-        super("Add throws annotation to '" + declName + "'", change);
-        this.offset = offset;
+        super("Add throws annotation to '" + declName + "'", change, new Point(offset, 0));
     }
     
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
-    }
 
 }

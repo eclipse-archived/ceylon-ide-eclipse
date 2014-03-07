@@ -23,7 +23,7 @@ class RenameDescriptorProposal {
         TextFileChange change = new TextFileChange("Rename", file);
 //        DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());
         change.setEdit(new ReplaceEdit(problem.getOffset(), problem.getLength(), pn));
-        proposals.add(new CorrectionProposal("Rename to '" + pn + "'", change, CHANGE));
+        proposals.add(new CorrectionProposal("Rename to '" + pn + "'", change, null, CHANGE));
     }
     
 }

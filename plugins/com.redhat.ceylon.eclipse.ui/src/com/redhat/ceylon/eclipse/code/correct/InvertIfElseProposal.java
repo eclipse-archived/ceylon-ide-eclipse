@@ -37,16 +37,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class InvertIfElseProposal extends CorrectionProposal {
     
-    private final int offset;
-    
     InvertIfElseProposal(int offset, TextChange change) {
-        super("Invert if-else", change);
-        this.offset=offset;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
+        super("Invert if-else", change, new Point(offset, 0));
     }
     
     static void addReverseIfElseProposal(IDocument doc,

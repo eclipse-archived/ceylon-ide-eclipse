@@ -21,16 +21,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class ConvertToBlockProposal extends CorrectionProposal {
     
-    private final int offset; 
-    
     ConvertToBlockProposal(int offset, TextChange change) {
-        super("Convert => to block", change);
-        this.offset=offset;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
+        super("Convert => to block", change, new Point(offset, 0));
     }
     
     static void addConvertToBlockProposal(IDocument doc,

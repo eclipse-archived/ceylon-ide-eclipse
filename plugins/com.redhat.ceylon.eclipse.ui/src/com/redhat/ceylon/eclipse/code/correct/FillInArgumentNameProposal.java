@@ -17,7 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 class FillInArgumentNameProposal extends CorrectionProposal {
 
     public FillInArgumentNameProposal(String name, Change change) {
-        super("Fill in argument name '" + name + "'", change);
+        super("Fill in argument name '" + name + "'", change, null);
     }
 
     static void addFillInArgumentNameProposal(Collection<ICompletionProposal> proposals, 

@@ -35,27 +35,19 @@ import com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation;
 class ChangeReferenceProposal extends CorrectionProposal 
         implements ICompletionProposalExtension {
     
-    private final int offset;
-    private final int length;
-    
-    private ChangeReferenceProposal(ProblemLocation problem, IFile file, String name, 
-            String pkg, Declaration dec, int dist, TextFileChange change) {
+    private ChangeReferenceProposal(ProblemLocation problem, 
+            String name, String pkg, TextFileChange change) {
         super("Change reference to '" + name + "'" + pkg, change, 
-                MINOR_CHANGE/*CeylonLabelProvider.getImage(dec)*/);
-        offset = problem.getOffset();
-        length = name.length();
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
+                new Point(problem.getOffset(), name.length()), 
+                MINOR_CHANGE);
     }
     
     static void addChangeReferenceProposal(ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file,
             String brokenName, DeclarationWithProximity dwp, int dist,
             Tree.CompilationUnit cu) {
-        TextFileChange change = new TextFileChange("Change Reference", file);
+        TextFileChange change = 
+                new TextFileChange("Change Reference", file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
         Declaration dec = dwp.getDeclaration();
@@ -82,8 +74,8 @@ class ChangeReferenceProposal extends CorrectionProposal
         }
         change.addEdit(new ReplaceEdit(problem.getOffset(), 
                 brokenName.length(), dwp.getName())); //Note: don't use problem.getLength() because it's wrong from the problem list
-        proposals.add(new ChangeReferenceProposal(problem, file, 
-                dwp.getName(), pkg, dec, dist, change));
+        proposals.add(new ChangeReferenceProposal(problem, 
+                dwp.getName(), pkg, change));
     }
 
     protected static boolean isInPackage(Tree.CompilationUnit cu,
@@ -111,22 +103,22 @@ class ChangeReferenceProposal extends CorrectionProposal
     public int getContextInformationPosition() {
         return -1;
     }
-    
-    static void addChangeReferenceProposals(Tree.CompilationUnit cu, Node node, 
-            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
-            IFile file) {
-          String brokenName = getIdentifyingNode(node).getText();
-          if (brokenName.isEmpty()) return;
-          for (DeclarationWithProximity dwp: 
-                  getProposals(node, node.getScope(), cu).values()) {
-              int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
-              //TODO: would it be better to just sort by dist, and
-              //      then select the 3 closest possibilities?
-              if (dist<=brokenName.length()/3+1) {
-                  addChangeReferenceProposal(problem, proposals, file, 
-                          brokenName, dwp, dist, cu);
-              }
-          }
+
+    static void addChangeReferenceProposals(Tree.CompilationUnit cu, 
+            Node node, ProblemLocation problem, 
+            Collection<ICompletionProposal> proposals, IFile file) {
+        String brokenName = getIdentifyingNode(node).getText();
+        if (brokenName.isEmpty()) return;
+        for (DeclarationWithProximity dwp: 
+            getProposals(node, node.getScope(), cu).values()) {
+            int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
+            //TODO: would it be better to just sort by dist, and
+            //      then select the 3 closest possibilities?
+            if (dist<=brokenName.length()/3+1) {
+                addChangeReferenceProposal(problem, proposals, file, 
+                        brokenName, dwp, dist, cu);
+            }
+        }
     }
-    
+
 }

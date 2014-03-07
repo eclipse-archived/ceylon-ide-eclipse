@@ -28,20 +28,10 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateObjectProposal extends CorrectionProposal {
     
-    private final int offset;
-    private final int length;
-    
     CreateObjectProposal(ProducedType type, int offset, int length, 
             IFile file, TextChange change) {
         super("Create instance of '" + type.getProducedTypeName() + "'", 
-                change);
-        this.offset=offset;
-        this.length=length;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
+                change, new Point(offset, length));
     }
     
     static void addCreateObjectProposal(IDocument doc, Tree.CompilationUnit cu,

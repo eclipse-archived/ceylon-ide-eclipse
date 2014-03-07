@@ -30,19 +30,11 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class SplitDeclarationProposal extends CorrectionProposal {
     
-    private final int offset; 
-    
-    SplitDeclarationProposal(Declaration dec, int offset, 
-            TextChange change) {
-        super("Split declaration of '" + dec.getName() + "'", change);
-        this.offset=offset;
+    SplitDeclarationProposal(Declaration dec, int offset, TextChange change) {
+        super("Split declaration of '" + dec.getName() + "'", change,
+                new Point(offset, 0));
     }
     
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
-    }
-
     static void addSplitDeclarationProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.TypedDeclaration decNode) {

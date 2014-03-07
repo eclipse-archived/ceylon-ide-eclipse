@@ -10,6 +10,7 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -45,10 +46,11 @@ public class ChangeRefiningTypeProposal {
                 ProducedType t = pr.getType();
                 String type = t.getProducedTypeName(decNode.getUnit());
                 TextFileChange change = new TextFileChange("Change Type", file);
-                change.setEdit(new ReplaceEdit(node.getStartIndex(), 
-                        node.getStopIndex()-node.getStartIndex()+1, 
-                        type));
-                proposals.add(new CorrectionProposal("Change type to '" + type + "'", change));
+                int offset = node.getStartIndex();
+                int length = node.getStopIndex()-offset+1;
+                change.setEdit(new ReplaceEdit(offset, length, type));
+                proposals.add(new CorrectionProposal("Change type to '" + type + "'", 
+                        change, new Point(offset, length)));
             }
         }
     }
@@ -117,7 +119,8 @@ public class ChangeRefiningTypeProposal {
                 change.addEdit(new InsertEdit(offset, buf.toString()));
             }
             if (change.getEdit().hasChildren()) {
-                proposals.add(new CorrectionProposal("Change parameter list", change));
+                proposals.add(new CorrectionProposal("Change parameter list", 
+                        change, null));
             }
         }
     }

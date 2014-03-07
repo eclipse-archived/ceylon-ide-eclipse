@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.IMPORT;
 import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
@@ -43,7 +44,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ImportProposals {
@@ -105,9 +105,9 @@ public class ImportProposals {
             change.addEdit(new ReplaceEdit(id.getStartIndex(), brokenName.length(), 
                     proposedName));
         }*/
-        return new CorrectionProposal("Add import of '" + proposedName + "'" + 
-                " in package " + declaration.getUnit().getPackage().getNameAsString(), 
-                change, CeylonLabelProvider.IMPORT);
+        String description = "Add import of '" + proposedName + "'" + 
+                " in package " + declaration.getUnit().getPackage().getNameAsString();
+        return new CorrectionProposal(description, change, null, IMPORT);
     }
     
     public static List<InsertEdit> importEdits(Tree.CompilationUnit cu,

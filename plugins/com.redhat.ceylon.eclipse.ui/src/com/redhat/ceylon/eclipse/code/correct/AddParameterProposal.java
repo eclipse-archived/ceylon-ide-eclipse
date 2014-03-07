@@ -33,20 +33,11 @@ import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
 class AddParameterProposal extends CorrectionProposal {
     
-    private final int offset; 
-    
-    AddParameterProposal(Declaration dec, int offset, 
-            TextChange change) {
+    AddParameterProposal(Declaration dec, int offset, TextChange change) {
         super("Add to parameter list of '" + dec.getName() + "'", 
-                change, ADD);
-        this.offset=offset;
+                change, new Point(offset, 0), ADD);
     }
     
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
-    }
-
     static void addParameterProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.TypedDeclaration decNode, Tree.SpecifierOrInitializerExpression sie,

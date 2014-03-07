@@ -87,7 +87,8 @@ public class ConvertGetterToMethodProposal extends CorrectionProposal {
     }
 
     private ConvertGetterToMethodProposal(Change change, Value getter) {
-        super("Convert getter '" + getter.getName() + "' to method", change, CHANGE);
+        super("Convert getter '" + getter.getName() + "' to method", 
+                change, null, CHANGE);
     }
 
 }

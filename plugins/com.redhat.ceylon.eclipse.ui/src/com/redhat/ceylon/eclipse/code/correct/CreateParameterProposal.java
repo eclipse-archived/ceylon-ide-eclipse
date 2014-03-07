@@ -47,7 +47,7 @@ class CreateParameterProposal extends CorrectionProposal {
     
     CreateParameterProposal(String def, String desc, 
             Image image, int offset, TextFileChange change) {
-        super(desc, change, image);
+        super(desc, change, null, image);
         int loc = def.indexOf("= nothing");
         if (loc<0) {
             loc = def.indexOf("= ");

@@ -7,7 +7,6 @@ import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Point;
@@ -25,7 +24,6 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class RemoveAnnotionProposal extends CorrectionProposal {
     
-    private final int offset; 
     private final Declaration dec;
     private final String annotation;
     
@@ -34,15 +32,9 @@ class RemoveAnnotionProposal extends CorrectionProposal {
         super("Make '" + dec.getName() + "' non-" + annotation + " " +
             (dec.getContainer() instanceof TypeDeclaration ?
                     "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
-                    change);
-        this.offset=offset;
+                    change, new Point(offset, 0));
         this.dec = dec;
         this.annotation = annotation;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
     }
     
     @Override

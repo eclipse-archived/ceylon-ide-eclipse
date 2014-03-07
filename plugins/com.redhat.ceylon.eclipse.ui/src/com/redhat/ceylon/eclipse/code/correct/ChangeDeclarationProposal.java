@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Point;
@@ -15,19 +14,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class ChangeDeclarationProposal extends CorrectionProposal {
     
-    private final int offset;
-    private final int length;
-    
-    ChangeDeclarationProposal(String kw, CommonToken token, 
+    ChangeDeclarationProposal(String kw, int offset, 
             TextFileChange change) {
-        super("Change declaration to '" + kw + "'", change);
-        this.offset=token.getStartIndex();
-        this.length=kw.length();
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
+        super("Change declaration to '" + kw + "'", change,
+                new Point(offset, kw.length()));
     }
     
     static void addChangeDeclarationProposal(ProblemLocation problem, IFile file,
@@ -46,8 +36,9 @@ class ChangeDeclarationProposal extends CorrectionProposal {
             return;
         }
         TextFileChange change = new TextFileChange("Change Declaration", file);
-        change.setEdit(new ReplaceEdit(token.getStartIndex(), token.getText().length(), 
-                keyword));
-        proposals.add(new ChangeDeclarationProposal(keyword, token, change));
+        change.setEdit(new ReplaceEdit(token.getStartIndex(), 
+                token.getText().length(), keyword));
+        proposals.add(new ChangeDeclarationProposal(keyword, 
+                token.getStartIndex(), change));
     }
 }

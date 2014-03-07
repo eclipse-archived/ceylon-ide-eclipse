@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Point;
@@ -450,24 +449,18 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
     }
 
-    private final TextFileChange change;
     private final TypeDeclaration typeParam;
     private final String missingSatisfiedTypeText;
 
     private AddSatisfiesProposal(TypeDeclaration typeParam, 
             String description, String missingSatisfiedTypeText, 
             TextFileChange change) {
-        super(description, change);
-        this.change = change;
+        super(description, change, 
+                new Point(change.getEdit().getOffset(), 0));
         this.typeParam = typeParam;
         this.missingSatisfiedTypeText = missingSatisfiedTypeText;
     }
     
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(change.getEdit().getOffset(), 0);
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof AddSatisfiesProposal) {

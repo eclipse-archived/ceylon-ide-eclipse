@@ -17,16 +17,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class ConvertToSpecifierProposal extends CorrectionProposal {
     
-    private final int offset; 
-    
     ConvertToSpecifierProposal(int offset, TextChange change) {
-        super("Convert block to =>", change);
-        this.offset=offset;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, 0);
+        super("Convert block to =>", change, new Point(offset, 0));
     }
     
     static void addConvertToSpecifierProposal(IDocument doc,

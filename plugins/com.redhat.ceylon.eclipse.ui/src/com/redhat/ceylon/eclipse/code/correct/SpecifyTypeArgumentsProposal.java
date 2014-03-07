@@ -16,7 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
 
     SpecifyTypeArgumentsProposal(String type, TextFileChange change) {
-        super("Specify explicit type arguments '" + type + "'", change);
+        super("Specify explicit type arguments '" + type + "'", change, null);
     }
     
     static void addSpecifyTypeArgumentsProposal(Tree.CompilationUnit cu, Node node,

@@ -27,20 +27,10 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateLocalSubtypeProposal extends CorrectionProposal {
     
-    private final int offset;
-    private final int length;
-    
     CreateLocalSubtypeProposal(ProducedType type, int offset, int length, 
             IFile file, TextChange change) {
         super("Create subtype of '" + type.getProducedTypeName() + "'", 
-                change);
-        this.offset=offset;
-        this.length=length;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
+                change, new Point(offset, length));
     }
     
     static void addCreateLocalSubtypeProposal(IDocument doc, Tree.CompilationUnit cu,
