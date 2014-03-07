@@ -652,7 +652,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     return new ParameterContextInformation(declaration, 
                             producedReference, getUnit(), 
                             pls.get(0), argListOffset, includeDefaulted, 
-                            namedInvocation, !isParameterInfo());
+                            namedInvocation /*!isParameterInfo()*/);
                 }
             }
         }
@@ -726,7 +726,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                     infos.add(new ParameterContextInformation(declaration, 
                                             mte.getTarget(), rootNode.getUnit(), 
                                             pls.get(0), al.getStartIndex(), 
-                                            true, al instanceof Tree.NamedArgumentList, false));
+                                            true, al instanceof Tree.NamedArgumentList /*false*/));
                                 }
                             }
                         }
@@ -780,21 +780,21 @@ class InvocationCompletionProposal extends CompletionProposal {
         private final int argumentListOffset;
         private final Unit unit;
         private final boolean includeDefaulted;
-        private final boolean inLinkedMode;
+//        private final boolean inLinkedMode;
         private final boolean namedInvocation;
         
         private ParameterContextInformation(Declaration declaration,
                 ProducedReference producedReference, Unit unit,
                 ParameterList parameterList, int argumentListOffset, 
-                boolean includeDefaulted, boolean namedInvocation, 
-                boolean inLinkedMode) {
+                boolean includeDefaulted, boolean namedInvocation) {
+//                boolean inLinkedMode
             this.declaration = declaration;
             this.producedReference = producedReference;
             this.unit = unit;
             this.parameterList = parameterList;
             this.argumentListOffset = argumentListOffset;
             this.includeDefaulted = includeDefaulted;
-            this.inLinkedMode = inLinkedMode;
+//            this.inLinkedMode = inLinkedMode;
             this.namedInvocation = namedInvocation;
         }
         
