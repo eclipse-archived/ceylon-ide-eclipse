@@ -1138,13 +1138,13 @@
    
    <extension
          point="org.eclipse.ui.menus">
-      <menuContribution
+      <!--menuContribution
             locationURI="menu:window?before=additions">
             <command
                   label="Quick Switch Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"
                   id="com.redhat.ceylon.eclipse.ui.menu.openEditorDropDown"/>
-      </menuContribution>
+      </menuContribution-->
       <menuContribution
             locationURI="menu:navigate?before=open.ext">
             <separator
@@ -1263,26 +1263,35 @@
                       <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
                   </with>
               </visibleWhen>
-            <dynamic id="source"
-                  class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
-            <separator
-                  name="sep4" 
-                  visible="true"/>
-            <command 
+            <menu label="Show">
+              <command 
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
                   icon="icons/outline_co.gif"
                   label="Quick &amp;Outline"/>
-            <command 
+              <command 
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
                   icon="icons/class_hi.gif"
                   label="Quick &amp;Hierarchy"/>
-            <command 
+              <command 
                   id="showCode"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.code"
                   icon="icons/source.gif"
                   label="&amp;Peek Definition"/>
+              <separator
+                  name="sep5" 
+                  visible="true"/>
+              <command
+                  label="Quick Switch Editor" 
+                  commandId="org.eclipse.ui.window.openEditorDropDown"
+                  id="com.redhat.ceylon.eclipse.ui.menu.openEditorDropDown"/>
+            </menu>
+            <separator
+                  name="sep4" 
+                  visible="true"/>
+            <dynamic id="source"
+                  class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
           </menu>
       </menuContribution>
       <menuContribution
@@ -1318,41 +1327,46 @@
             <separator
                   visible="true"
                   name="sep4"/>
-            <dynamic id="selectedDeclaration"
-                      class="com.redhat.ceylon.eclipse.code.open.SelectedDeclarationMenuItems"/>
-            <separator
-                  visible="true"
-                  name="sep7"/>
-            <command 
+            <menu label="Show">
+              <command 
                   id="showOutline"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
                   icon="icons/outline_co.gif"
                   label="Quick &amp;Outline"/>
-            <command 
+              <command 
                   id="showHierarchy"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
                   icon="icons/class_hi.gif"
                   label="Quick &amp;Hierarchy"/>
-            <command 
+              <command 
                   id="showCode"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.code"
                   icon="icons/source.gif"
                   label="&amp;Peek Definition"/>
-            <separator
+              <separator
                   visible="true"
-                  name="sep9"/>
-            <command
+                  name="sep8"/>
+              <command
                   id="openEditorDropDown"
                   label="Quick Switch Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"/>
-            <command
+            </menu>
+            <menu
+                  label="Navigate">
+              <dynamic id="selectedDeclaration"
+                      class="com.redhat.ceylon.eclipse.code.open.SelectedDeclarationMenuItems"/>
+              <separator
+                  visible="true"
+                  name="sep7"/>
+              <command
                   label="Go to Line..."
                   commandId="org.eclipse.ui.edit.text.goto.line"
                   id="gotoLine"/>
-            <command
+              <command
                   id="gotoMatchingFence"
                   label="Go To Matching Bracket"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"/>
+            </menu>
       </menuContribution>
       <menuContribution
          locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
