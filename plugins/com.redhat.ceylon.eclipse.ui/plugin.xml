@@ -1126,7 +1126,7 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="menu:window">
+            locationURI="menu:window?before=additions">
             <command
                   label="Quick Switch to Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"
@@ -1328,6 +1328,14 @@
                   id="openEditorDropDown"
                   label="Quick Switch to Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"/>
+            <command
+                  label="Go to Line..."
+                  commandId="org.eclipse.ui.edit.text.goto.line"
+                  id="gotoLine"/>
+            <command
+                  id="gotoMatchingFence"
+                  label="Go To Matching Bracket"
+                  commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"/>
       </menuContribution>
       <menuContribution
          locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
