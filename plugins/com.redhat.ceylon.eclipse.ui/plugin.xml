@@ -1126,6 +1126,13 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
+            locationURI="menu:window">
+            <command
+                  label="Quick Switch to Editor" 
+                  commandId="org.eclipse.ui.window.openEditorDropDown"
+                  id="com.redhat.ceylon.eclipse.ui.menu.openEditorDropDown"/>
+      </menuContribution>
+      <menuContribution
             locationURI="menu:navigate?before=open.ext">
             <separator
                   visible="true"
@@ -1284,6 +1291,8 @@
                   class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
             <dynamic id="refactor"
                   class="com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems"/>
+            <dynamic id="new"
+                  class="com.redhat.ceylon.eclipse.code.editor.NewMenuItems"/>
             <separator
                   visible="true"
                   name="sep5"/>
@@ -1312,6 +1321,13 @@
                   commandId="com.redhat.ceylon.eclipse.ui.editor.code"
                   icon="icons/source.gif"
                   label="Show Code"/>
+            <separator
+                  visible="true"
+                  name="sep9"/>
+            <command
+                  id="openEditorDropDown"
+                  label="Quick Switch to Editor" 
+                  commandId="org.eclipse.ui.window.openEditorDropDown"/>
       </menuContribution>
       <menuContribution
          locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
