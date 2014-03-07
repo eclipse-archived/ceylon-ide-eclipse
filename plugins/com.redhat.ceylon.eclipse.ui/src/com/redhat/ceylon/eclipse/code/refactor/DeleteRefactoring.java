@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedExplicitDeclaration;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class DeleteRefactoring extends AbstractRefactoring {
     
@@ -142,7 +142,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
     public DeleteRefactoring(ITextEditor editor) {
         super(editor);
         if (rootNode!=null) {
-            declarationToDelete = getReferencedExplicitDeclaration(node, rootNode);
+            declarationToDelete = Nodes.getReferencedExplicitDeclaration(node, rootNode);
             if (declarationToDelete!=null) {
                 refinedDeclaration = declarationToDelete.getRefinedDeclaration();
             }

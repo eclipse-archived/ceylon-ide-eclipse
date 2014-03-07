@@ -77,7 +77,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.test.eclipse.TestElement;
 import com.redhat.ceylon.test.eclipse.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
@@ -349,7 +349,7 @@ public class TestsPanel extends Composite {
 		if (project != null) {
 			Referenceable pkgOrDecl = CeylonTestUtil.getPackageOrDeclaration(project, testElement.getQualifiedName());
 			if (pkgOrDecl instanceof Declaration) {
-				CeylonSourcePositionLocator.gotoDeclaration((Declaration) pkgOrDecl, project);
+				Navigation.gotoDeclaration((Declaration) pkgOrDecl, project);
 			}
 		}
 	}

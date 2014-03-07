@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeEndOffset;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findToplevelStatement;
+import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 
 import java.util.ArrayList;
@@ -32,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CollectParametersRefactoring extends AbstractRefactoring {
     
@@ -263,9 +262,9 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             for (Tree.NamedArgument na: nas) {
                 if (models.contains(na.getParameter().getModel())) {
                     int fromOffset = results.isEmpty() ? 
-                            getNodeStartOffset(na) : 
-                            getNodeEndOffset(prev);
-                    int toOffset = getNodeEndOffset(na);
+                            Nodes.getNodeStartOffset(na) : 
+                            Nodes.getNodeEndOffset(prev);
+                    int toOffset = Nodes.getNodeEndOffset(na);
                     tfc.addEdit(new DeleteEdit(fromOffset, 
                             toOffset-fromOffset));
                     results.add(na);
@@ -279,7 +278,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                     builder.append(toString(na)).append(" ");
                 }
                 builder.append("};");
-                tfc.addEdit(new InsertEdit(getNodeStartOffset(results.get(0)), 
+                tfc.addEdit(new InsertEdit(Nodes.getNodeStartOffset(results.get(0)), 
                         builder.toString()));
             }
         }
@@ -363,8 +362,8 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 allDefaulted = false;
             }
         }
-        int startOffset = getNodeStartOffset(ps.get(firstParam));
-        int endOffset = getNodeEndOffset(ps.get(lastParam));
+        int startOffset = Nodes.getNodeStartOffset(ps.get(firstParam));
+        int endOffset = Nodes.getNodeEndOffset(ps.get(lastParam));
         String text = newName + " " + paramName;
         if (allDefaulted) {
             text += " = " + newName + "()";

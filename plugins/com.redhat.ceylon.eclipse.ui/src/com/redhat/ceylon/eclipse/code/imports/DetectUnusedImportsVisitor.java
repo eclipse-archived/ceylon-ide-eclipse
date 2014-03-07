@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
-import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
+import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 
 import java.util.Iterator;
 import java.util.List;

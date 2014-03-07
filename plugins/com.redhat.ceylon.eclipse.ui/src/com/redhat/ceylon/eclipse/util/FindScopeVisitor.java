@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.parse;
+package com.redhat.ceylon.eclipse.util;
 
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;

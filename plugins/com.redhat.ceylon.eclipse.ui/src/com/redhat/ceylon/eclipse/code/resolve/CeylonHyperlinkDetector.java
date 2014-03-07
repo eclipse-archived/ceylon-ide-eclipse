@@ -1,9 +1,6 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -13,6 +10,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 /**
  * Provides a method to detect hyperlinks originating from a
@@ -64,14 +62,14 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             return null;
         }
         else {
-            Node node = findNode(pc.getRootNode(), region.getOffset(), 
+            Node node = Nodes.findNode(pc.getRootNode(), region.getOffset(), 
                     region.getOffset()+region.getLength());
-            Node id = getIdentifyingNode(node);
+            Node id = Nodes.getIdentifyingNode(node);
             if (node==null) {
                 return null;
             }
             else {
-                Node r = getReferencedNode(node, pc);
+                Node r = Nodes.getReferencedNode(node, pc);
                 if (r==null) {
                     return null;
                 }

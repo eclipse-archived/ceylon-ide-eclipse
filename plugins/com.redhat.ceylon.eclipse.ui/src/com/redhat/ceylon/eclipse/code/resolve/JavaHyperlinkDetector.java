@@ -1,8 +1,5 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 
@@ -26,6 +23,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
@@ -81,14 +79,14 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
             return null;
         }
         else {
-            Node node = findNode(pc.getRootNode(), region.getOffset(), 
+            Node node = Nodes.findNode(pc.getRootNode(), region.getOffset(), 
                     region.getOffset()+region.getLength());
             if (node==null) {
                 return null;
             }
             else {
-                Node id = getIdentifyingNode(node);
-                Declaration dec = getReferencedDeclaration(node);
+                Node id = Nodes.getIdentifyingNode(node);
+                Declaration dec = Nodes.getReferencedDeclaration(node);
                 if (dec==null) {
                     return null;
                 }

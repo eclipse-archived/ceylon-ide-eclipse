@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.bindings.keys.KeyStroke;
@@ -20,7 +21,6 @@ import org.eclipse.swt.widgets.Tree;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends TreeViewPopup {
@@ -51,7 +51,7 @@ public class HierarchyPopup extends TreeViewPopup {
     public HierarchyPopup(CeylonEditor editor, Shell parent, int shellStyle, 
             int treeStyle) {
         super(parent, shellStyle, treeStyle, editor,
-                CeylonTokenColorer.getCurrentThemeColor("hierarchy"));
+                getCurrentThemeColor("hierarchy"));
     }
     
     /*@Override

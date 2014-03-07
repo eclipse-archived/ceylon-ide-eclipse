@@ -2,10 +2,7 @@ package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedModel;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -22,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class OpenSelectedDeclarationHandler extends AbstractHandler {
     
@@ -37,7 +35,7 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
                 return null;
             }
             else {
-                return findNode(ast, textSel.getOffset());
+                return Nodes.findNode(ast, textSel.getOffset());
             }
         }
     }
@@ -45,7 +43,7 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
         return super.isEnabled() && editor instanceof CeylonEditor &&
-                getReferencedModel(getSelectedNode(getSelection((ITextEditor) editor)))!=null;
+                Nodes.getReferencedModel(getSelectedNode(getSelection((ITextEditor) editor)))!=null;
     }
     
     @Override
@@ -54,10 +52,10 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             Node node = getSelectedNode(getSelection((ITextEditor)ce));
-            Referenceable r = getReferencedModel(node);
+            Referenceable r = Nodes.getReferencedModel(node);
             if (r!=null) {
                 CeylonParseController cpc = ce.getParseController();
-                Node refNode = getReferencedNode(r, cpc);
+                Node refNode = Nodes.getReferencedNode(r, cpc);
                 IProject project = cpc.getProject();
                 if (refNode!=null) {
                     gotoNode(refNode, project, cpc.getTypeChecker());

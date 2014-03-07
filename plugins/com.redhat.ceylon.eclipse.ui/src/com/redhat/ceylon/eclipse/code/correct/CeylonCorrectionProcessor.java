@@ -74,15 +74,13 @@ import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addTypi
 import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.VerboseRefinementProposal.addVerboseRefinementProposal;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findArgument;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findDeclaration;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findImport;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findStatement;
+import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
+import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,6 +120,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 
 public class CeylonCorrectionProcessor extends QuickAssistAssistant 
@@ -361,7 +360,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (file==null) return;
         IProject project = file.getProject();
         TypeChecker tc = getProjectTypeChecker(project);
-        Node node = findNode(cu, problem.getOffset(), 
+        Node node = Nodes.findNode(cu, problem.getOffset(), 
                     problem.getOffset() + problem.getLength());
         switch ( problem.getProblemId() ) {
         case 100:
@@ -554,7 +553,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
         Tree.CompilationUnit cu = editor.getParseController().getRootNode();
         if (cu!=null) {
-            Node node = findNode(cu, context.getOffset(), 
+            Node node = Nodes.findNode(cu, context.getOffset(), 
                     context.getOffset() + context.getLength());
             int currentOffset = editor.getSelection().getOffset();
             
@@ -623,7 +622,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             IProject project, Tree.Declaration decNode, IDocument doc, int offset) {
         if (decNode!=null) {
             try {
-                Node in = getIdentifyingNode(decNode);
+                Node in = Nodes.getIdentifyingNode(decNode);
                 if (in==null ||
                         doc.getLineOfOffset(in.getStartIndex())!=
                                 doc.getLineOfOffset(offset)) {

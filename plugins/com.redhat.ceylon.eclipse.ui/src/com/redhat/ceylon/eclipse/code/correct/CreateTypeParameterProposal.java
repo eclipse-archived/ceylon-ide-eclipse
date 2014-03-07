@@ -1,10 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,6 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class CreateTypeParameterProposal extends CorrectionProposal {
     
@@ -124,7 +124,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         }
         else {
             paramDef = "<" + brokenName + ">";
-            offset = getIdentifyingNode(decl).getStopIndex()+1;
+            offset = Nodes.getIdentifyingNode(decl).getStopIndex()+1;
         }
         
         class FindTypeParameterConstraintVisitor extends Visitor {

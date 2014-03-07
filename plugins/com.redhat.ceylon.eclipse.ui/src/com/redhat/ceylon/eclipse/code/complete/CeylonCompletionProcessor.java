@@ -81,9 +81,6 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.complete.TypeArgumentListCompletions.addTypeArgumentListProposal;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 import static java.lang.Character.isDigit;
@@ -136,6 +133,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
@@ -252,7 +251,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         //adjust the token to account for unclosed blocks
         //we search for the first non-whitespace/non-comment
         //token to the left of the caret
-        int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
+        int tokenIndex = Nodes.getTokenIndexAtCharacter(tokens, offset);
         if (tokenIndex<0) tokenIndex = -tokenIndex;
         CommonToken adjustedToken = adjust(tokenIndex, offset, tokens);
         int tt = adjustedToken.getType();
@@ -484,10 +483,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     private static Node getTokenNode(int adjustedStart, int adjustedEnd,
             int tokenType, Tree.CompilationUnit rn, int offset) {
-        Node node = findNode(rn, adjustedStart, adjustedEnd);
+        Node node = Nodes.findNode(rn, adjustedStart, adjustedEnd);
         if (node instanceof Tree.StringLiteral && 
                 !((Tree.StringLiteral) node).getDocLinks().isEmpty()) {
-            node = findNode(node, offset, offset);
+            node = Nodes.findNode(node, offset, offset);
         }
         if (tokenType==RBRACE || tokenType==SEMICOLON) {
             //We are to the right of a } or ;
@@ -533,7 +532,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 type==UIDENTIFIER ||
                 type==AIDENTIFIER ||
                 type==PIDENTIFIER ||
-                keywords.contains(token.getText());
+                Escaping.KEYWORDS.contains(token.getText());
     }
     
     private static ICompletionProposal[] constructCompletions(final int offset, 

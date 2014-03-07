@@ -11,7 +11,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.util.Escaping;
 
 public class CollectParametersInputPage extends UserInputWizardPage {
     
@@ -48,7 +48,7 @@ public class CollectParametersInputPage extends UserInputWizardPage {
             setErrorMessage("Not a legal Ceylon identifier");
             setPageComplete(false);
         }
-        else if (CeylonTokenColorer.keywords.contains(name)) {
+        else if (Escaping.KEYWORDS.contains(name)) {
             setErrorMessage("'" + name + "' is a Ceylon keyword");
             setPageComplete(false);
         }

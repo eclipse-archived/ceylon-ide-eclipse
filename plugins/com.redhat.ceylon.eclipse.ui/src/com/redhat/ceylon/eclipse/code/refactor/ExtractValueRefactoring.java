@@ -2,9 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findStatement;
+import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
@@ -27,6 +25,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ExtractValueRefactoring extends AbstractRefactoring {
     
@@ -38,7 +37,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     
     public ExtractValueRefactoring(ITextEditor editor) {
         super(editor);
-        newName = guessName(node);
+        newName = Nodes.guessName(node);
     }
     
     @Override
@@ -124,10 +123,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         String text = dec + getDefaultLineDelimiter(doc) + getIndent(statement, doc);
         Integer start = statement.getStartIndex();
         tfc.addEdit(new InsertEdit(start, text));
-        tfc.addEdit(new ReplaceEdit(getNodeStartOffset(node), getNodeLength(node), newName));
+        tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), Nodes.getNodeLength(node), newName));
         typeRegion = new Region(start, typeDec.length());
         decRegion = new Region(start+typeDec.length()+1, newName.length());
-        refRegion = new Region(getNodeStartOffset(node)+text.length()+il, newName.length());
+        refRegion = new Region(Nodes.getNodeStartOffset(node)+text.length()+il, newName.length());
     }
     
     public boolean canBeInferred() {

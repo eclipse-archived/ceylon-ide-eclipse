@@ -1,11 +1,10 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.INTERFACE;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findDeclaration;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.ATTRIBUTE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.INTERFACE;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
@@ -25,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateEnumProposal extends CorrectionProposal {
@@ -46,7 +46,7 @@ class CreateEnumProposal extends CorrectionProposal {
     static void addCreateEnumProposal(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {
-            Node idn = getIdentifyingNode(node);
+            Node idn = Nodes.getIdentifyingNode(node);
             if (idn==null) return;
             String brokenName = idn.getText();
             if (brokenName.isEmpty()) return;

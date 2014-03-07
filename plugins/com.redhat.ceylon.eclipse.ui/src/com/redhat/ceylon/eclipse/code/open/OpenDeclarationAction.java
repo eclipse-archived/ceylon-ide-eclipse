@@ -10,7 +10,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
-import com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -49,7 +49,7 @@ public class OpenDeclarationAction extends Action {
     private void gotoDeclaration(DeclarationWithProject dwp) {
         IProject project = dwp.getProject();
         Declaration dec = dwp.getDeclaration();
-        CeylonSourcePositionLocator.gotoDeclaration(dec, project, editor);
+        Navigation.gotoDeclaration(dec, project, editor);
     }
 
 }

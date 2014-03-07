@@ -23,7 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.correct.CreateSubtypeInNewUnitProposal.CreateSubtype;
-import com.redhat.ceylon.eclipse.util.FindUtils;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateObjectProposal extends CorrectionProposal {
@@ -37,7 +37,7 @@ class CreateObjectProposal extends CorrectionProposal {
     static void addCreateObjectProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
             Node node) {
-        Tree.Statement statement = FindUtils.findStatement(cu, node);
+        Tree.Statement statement = Nodes.findStatement(cu, node);
         if (statement!=null) {
             ProducedType type = CreateSubtypeInNewUnitProposal.getType(cu, node);
             if (type!=null && CreateSubtypeInNewUnitProposal.proposeSubtype(type)) {

@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -21,6 +20,7 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Escaping;
 
 public class KeywordCompletionProposal extends CompletionProposal {
     
@@ -59,7 +59,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
             }
         }
         else if (!prefix.isEmpty() && ol!=CATCH && ol!=CASE) {
-            for (String keyword: ol==EXPRESSION ? expressionKeywords : keywords) {
+            for (String keyword: ol==EXPRESSION ? expressionKeywords : Escaping.KEYWORDS) {
                 if (keyword.startsWith(prefix)) {
                     addKeywordProposal(offset, prefix, result, keyword);
                 }

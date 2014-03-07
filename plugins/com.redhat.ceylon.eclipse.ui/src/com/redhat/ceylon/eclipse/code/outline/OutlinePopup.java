@@ -13,6 +13,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -36,7 +37,6 @@ import org.eclipse.swt.widgets.Widget;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class OutlinePopup extends TreeViewPopup {
@@ -148,7 +148,7 @@ public class OutlinePopup extends TreeViewPopup {
     public OutlinePopup(CeylonEditor editor, Shell parent, 
             int shellStyle, int treeStyle) {
         super(parent, shellStyle, treeStyle, editor,
-                CeylonTokenColorer.getCurrentThemeColor("outline"));
+                getCurrentThemeColor("outline"));
         setTitleText("Outline of " + editor.getEditorInput().getName());
     }
 

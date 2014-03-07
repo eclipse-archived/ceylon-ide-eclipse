@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.LaunchHelper.getTopLevelDisplayName;
@@ -43,7 +42,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.FindUtils;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
 
@@ -238,8 +237,8 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                 if (cu!=null) {
                     ISelection selection = ce.getSelectionProvider().getSelection();
                     if (selection instanceof ITextSelection) {
-                        Node node = FindUtils.findToplevelStatement(cu, 
-                                findNode(cu, (ITextSelection) selection));
+                        Node node = Nodes.findToplevelStatement(cu, 
+                                Nodes.findNode(cu, (ITextSelection) selection));
                         if (node instanceof Tree.AnyMethod) {
                             Method method = 
                                     ((Tree.AnyMethod) node).getDeclarationModel();
@@ -343,8 +342,8 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                 Tree.CompilationUnit cu = cpc.getRootNode();
                 if (cu!=null) {
                     ITextSelection selection = EditorUtil.getSelectionFromThread(ce);
-                    Node node = FindUtils.findToplevelStatement(cu, 
-                            findNode(cu,selection));
+                    Node node = Nodes.findToplevelStatement(cu, 
+                            Nodes.findNode(cu,selection));
                     if (node instanceof Tree.AnyMethod) {
                         Method method = 
                                 ((Tree.AnyMethod) node).getDeclarationModel();

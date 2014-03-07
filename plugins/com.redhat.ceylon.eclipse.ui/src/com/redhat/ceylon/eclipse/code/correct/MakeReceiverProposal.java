@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.COMPOSITE_CHANGE;
-import static com.redhat.ceylon.eclipse.util.FindUtils.getContainer;
+import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 
 import java.util.Collection;
 

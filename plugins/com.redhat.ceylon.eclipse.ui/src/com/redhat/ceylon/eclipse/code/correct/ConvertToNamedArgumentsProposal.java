@@ -18,7 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertToNamedArgumentsProposal extends CorrectionProposal {
     
@@ -58,7 +58,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                             .append(" = [");
                         sequencedArgs=true;
                     }
-                    result.append(AbstractRefactoring.toString(arg, tokens));
+                    result.append(Nodes.toString(arg, tokens));
                 }
                 else {
                     if (sequencedArgs) {
@@ -78,16 +78,16 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                                 }
                                 result.append(param.getName());
                                 for (Tree.ParameterList pl: fa.getParameterLists()) {
-                                    result.append(AbstractRefactoring.toString(pl, tokens));
+                                    result.append(Nodes.toString(pl, tokens));
                                 }
                                 if (fa.getBlock()!=null) {
                                     result.append(" ")
-                                        .append(AbstractRefactoring.toString(fa.getBlock(), tokens))
+                                        .append(Nodes.toString(fa.getBlock(), tokens))
                                         .append(" ");
                                 }
                                 else if (fa.getExpression()!=null) {
                                     result.append(" => ")
-                                        .append(AbstractRefactoring.toString(fa.getExpression(), tokens))
+                                        .append(Nodes.toString(fa.getExpression(), tokens))
                                         .append("; ");
                                 }
                                 continue;
@@ -95,7 +95,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                             if (++i==args.size() && 
                                     term instanceof Tree.SequenceEnumeration) {
                                 Tree.SequenceEnumeration se = (Tree.SequenceEnumeration) term;
-                                result.append(AbstractRefactoring.toString(se.getSequencedArgument(), tokens))
+                                result.append(Nodes.toString(se.getSequencedArgument(), tokens))
                                     .append(" ");
                                 continue;
                             }
@@ -103,7 +103,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                     }
                     result.append(param.getName())
                         .append(" = ")
-                        .append(AbstractRefactoring.toString(arg, tokens))
+                        .append(Nodes.toString(arg, tokens))
                         .append("; ");
                 }
             }

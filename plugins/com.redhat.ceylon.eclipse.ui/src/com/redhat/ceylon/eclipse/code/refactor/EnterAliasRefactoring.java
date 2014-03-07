@@ -1,15 +1,12 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.imageRegistry;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_IMPORT;
-import static com.redhat.ceylon.eclipse.util.FindUtils.findImport;
-import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
+import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
+import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -28,7 +25,6 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
     
     private String newName;
     private Tree.ImportMemberOrType element;
-    public static ImageDescriptor IMPORT = imageRegistry.getDescriptor(CEYLON_IMPORT);
     
     public Tree.ImportMemberOrType getElement() {
         return element;

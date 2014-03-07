@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 /**
  * A simple input dialog for soliciting an input string from the user.
@@ -189,7 +189,7 @@ public class InputDialog extends Dialog {
         
         errorImage = new Label(errorDisplay, SWT.NONE);
         errorImage.setVisible(false);
-        errorImage.setImage(CeylonLabelProvider.ERROR);
+        errorImage.setImage(CeylonResources.ERROR);
         
         errorMessageText = new Text(errorDisplay, SWT.READ_ONLY | SWT.WRAP);
         errorMessageText.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL

@@ -4,9 +4,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescrip
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.ASSIGNMENT_ANNOTATION;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.OCCURRENCE_ANNOTATION;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.addImageAndLabel;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.fileUrl;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.loadStyleSheet;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertTopLevelFont;
@@ -44,6 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
+import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 
 public class AnnotationUtils {
@@ -256,12 +254,12 @@ public class AnnotationUtils {
         }
         else if (message instanceof CeylonInitializerAnnotation) {
             text = message.getText();
-            icon = fileUrl("information.gif");
+            icon = HTML.fileUrl("information.gif");
         }
         else if (message instanceof RefinementAnnotation) {
             Declaration dec = ((RefinementAnnotation) message).getDeclaration();
             icon = dec.isFormal() ? 
-                    fileUrl("implm_co.gif") : fileUrl("over_co.gif");
+                    HTML.fileUrl("implm_co.gif") : HTML.fileUrl("over_co.gif");
             text = "refines&nbsp;&nbsp;<tt>" + 
                     convertToHTMLContent(getDescriptionFor(dec)) + 
                     "</tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt><b>" + 
@@ -285,15 +283,15 @@ public class AnnotationUtils {
         else if (message!=null) {
             if (SEARCH_ANNOTATION_TYPE.equals(message.getType())) {
                 text = "<b>Search result</b>";
-                icon = fileUrl("find_obj.gif");
+                icon = HTML.fileUrl("find_obj.gif");
             }
             else if (TODO_ANNOTATION_TYPE.equals(message.getType())) {
                 text = "<b>Task</b><p>" + message.getText() + "</p>";
-                icon = fileUrl("tasks_tsk.gif");
+                icon = HTML.fileUrl("tasks_tsk.gif");
             }
         }
         if (icon!=null) {
-            addImageAndLabel(buffer, null, icon.toExternalForm(), 
+            HTML.addImageAndLabel(buffer, null, icon.toExternalForm(), 
                     16, 16, text, 20, 2);
         }
     }
@@ -303,10 +301,10 @@ public class AnnotationUtils {
             return null;
         }
         if (severity.intValue()==SEVERITY_ERROR) {
-            return fileUrl("error_obj.gif");
+            return HTML.fileUrl("error_obj.gif");
         }
         else if (severity.intValue()==SEVERITY_WARNING) {
-            return fileUrl("warning_obj.gif");
+            return HTML.fileUrl("warning_obj.gif");
         }
         else {
             return null;
@@ -330,8 +328,8 @@ public class AnnotationUtils {
     public static String formatMultipleMessages(List<Annotation> messages) {
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, getStyleSheet());
-        addImageAndLabel(buffer, null, 
-                fileUrl("errorwarning_tab.gif").toExternalForm(),
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("errorwarning_tab.gif").toExternalForm(),
                 16, 16, "Multiple messages at this line:", 20, 2);
         buffer.append("<hr/>");
         for (Annotation message: messages) {
@@ -345,7 +343,7 @@ public class AnnotationUtils {
 
     public static String getStyleSheet() {
         if (fgStyleSheet == null) {
-            fgStyleSheet = loadStyleSheet();
+            fgStyleSheet = HTML.loadStyleSheet();
         }
         //Color c = CeylonTokenColorer.getCurrentThemeColor("messageHover");
         //String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());

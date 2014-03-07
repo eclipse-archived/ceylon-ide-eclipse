@@ -1,14 +1,12 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getStartOffset;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 abstract class TargetNavigationAction extends Action {
     protected CeylonEditor fEditor;
@@ -43,14 +41,14 @@ abstract class TargetNavigationAction extends Action {
     public void run() {
         IRegion selection= fEditor.getSelection();
         CeylonParseController pc= fEditor.getParseController();
-        Object curNode= findNode(pc.getRootNode(), selection.getOffset(), 
+        Object curNode= Nodes.findNode(pc.getRootNode(), selection.getOffset(), 
                 selection.getOffset() + selection.getLength() - 1);
         if (curNode == null || selection.getOffset() == 0) {
             curNode= pc.getRootNode();
         }
         Object prev= getNavTarget(curNode, pc.getRootNode());
         if (prev instanceof Node) {
-            fEditor.selectAndReveal(getStartOffset((Node)prev), 0);
+            fEditor.selectAndReveal(Nodes.getStartOffset((Node)prev), 0);
         }
     }
 }

@@ -28,8 +28,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class AddParameterProposal extends CorrectionProposal {
     
@@ -79,7 +79,7 @@ class AddParameterProposal extends CorrectionProposal {
                     def = " = nothing";
                 }
                 else {
-                    def = AbstractRefactoring.toString(sie, 
+                    def = Nodes.toString(sie, 
                               editor.getParseController().getTokens());
                     int start = sie.getStartIndex();
                     try {

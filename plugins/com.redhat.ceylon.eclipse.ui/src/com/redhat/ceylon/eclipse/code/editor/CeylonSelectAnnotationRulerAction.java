@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getCompilationUnit;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 
 import java.util.Iterator;
@@ -17,6 +15,7 @@ import org.eclipse.ui.texteditor.SelectMarkerRulerAction;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonSelectAnnotationRulerAction extends SelectMarkerRulerAction {
     
@@ -50,9 +49,9 @@ public class CeylonSelectAnnotationRulerAction extends SelectMarkerRulerAction {
                 if (ra.getLine()==line) {
                     Declaration dec = ra.getDeclaration();
                     CeylonParseController cpc = editor.getParseController();
-                    CompilationUnit cu = getCompilationUnit(dec, cpc);
+                    CompilationUnit cu = Nodes.getCompilationUnit(dec, cpc);
                     if (cu!=null) {
-                        gotoNode(getReferencedNode(dec, cu), 
+                        gotoNode(Nodes.getReferencedNode(dec, cu), 
                                 cpc.getProject(),
                                 cpc.getTypeChecker());
                     }

@@ -1,10 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.IMPORT;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
-import static com.redhat.ceylon.eclipse.util.FindUtils.getAbstraction;
+import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.ArrayList;
@@ -44,6 +43,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ImportProposals {
@@ -52,7 +52,7 @@ public class ImportProposals {
             Collection<ICompletionProposal> proposals, IFile file) {
         if (node instanceof Tree.BaseMemberOrTypeExpression ||
                 node instanceof Tree.SimpleType) {
-            Node id = getIdentifyingNode(node);
+            Node id = Nodes.getIdentifyingNode(node);
             String brokenName = id.getText();
             Module module = cu.getUnit().getPackage().getModule();
             for (Declaration decl: findImportCandidates(module, brokenName, cu)) {

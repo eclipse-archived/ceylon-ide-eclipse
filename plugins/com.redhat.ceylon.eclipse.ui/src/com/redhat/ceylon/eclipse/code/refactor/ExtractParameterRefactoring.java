@@ -2,8 +2,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -32,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ExtractParameterRefactoring extends AbstractRefactoring {
     
@@ -85,7 +84,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         
     public ExtractParameterRefactoring(ITextEditor editor) {
         super(editor);
-        newName = guessName(node);
+        newName = Nodes.guessName(node);
         FindFunctionVisitor ffv = new FindFunctionVisitor(node);
         ffv.visit(rootNode);
         methodOrClass = ffv.getDefinitionNode();
@@ -168,8 +167,8 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         }
         String text;
         try {
-            text = doc.get(getNodeStartOffset(node),
-                    getNodeLength(node));
+            text = doc.get(Nodes.getNodeStartOffset(node),
+                    Nodes.getNodeLength(node));
         }
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -228,10 +227,10 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         Integer start = pl.getStopIndex();
         String dectext = (pl.getParameters().isEmpty()?"":", ") + decl;
         tfc.addEdit(new InsertEdit(start, dectext));
-        tfc.addEdit(new ReplaceEdit(getNodeStartOffset(node), getNodeLength(node), call));
+        tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), Nodes.getNodeLength(node), call));
         int buffer = pl.getParameters().isEmpty()?0:2;
         decRegion = new Region(start+typeDec.length()+buffer+1, newName.length());
-        refRegion = new Region(getNodeStartOffset(node)+dectext.length()+il, call.length());
+        refRegion = new Region(Nodes.getNodeStartOffset(node)+dectext.length()+il, call.length());
         typeRegion = new Region(start+buffer, typeDec.length());
     }
 

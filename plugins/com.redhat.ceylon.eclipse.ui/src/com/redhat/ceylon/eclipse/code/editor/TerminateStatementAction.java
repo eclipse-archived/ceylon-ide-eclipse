@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getTokenIndexAtCharacter;
 import static java.lang.Math.min;
 
 import java.util.List;
@@ -30,6 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MethodDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class TerminateStatementAction extends Action {
     private final CeylonEditor editor;
@@ -602,7 +602,7 @@ final class TerminateStatementAction extends Action {
     }
 
     private boolean skipToken(List<CommonToken> tokens, int offset) {
-        int ti = getTokenIndexAtCharacter(tokens, offset);
+        int ti = Nodes.getTokenIndexAtCharacter(tokens, offset);
         if (ti<0) ti=-ti;
         int type = tokens.get(ti).getType();
         return type==CeylonLexer.WS ||

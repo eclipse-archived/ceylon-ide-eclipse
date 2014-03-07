@@ -1,13 +1,9 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.addImageAndLabel;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.fileUrl;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverInfo;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getStyleSheet;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.internalGetHoverInfo;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
@@ -47,12 +43,14 @@ import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
 import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class DocumentationView extends ViewPart {
     
@@ -169,7 +167,7 @@ public class DocumentationView extends ViewPart {
         }
         else if (location.startsWith("stp:")) {
             CompilationUnit rn = editor.getParseController().getRootNode();
-            Node node = findNode(rn, Integer.parseInt(location.substring(4)));
+            Node node = Nodes.findNode(rn, Integer.parseInt(location.substring(4)));
             SpecifyTypeProposal.createProposal(rn, node, editor)
                     .apply(editor.getParseController().getDocument());
         }
@@ -206,9 +204,9 @@ public class DocumentationView extends ViewPart {
 
     private void clear() {
         StringBuilder buffer = new StringBuilder();
-        HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
-        addImageAndLabel(buffer, null, 
-                fileUrl("information.gif").toExternalForm(), 
+        HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("information.gif").toExternalForm(), 
                 16, 16, "<i>Nothing selected in Ceylon editor.</i>", 20, 2);
 //            buffer.append("<p>Nothing selected.</p>");
         HTMLPrinter.addPageProlog(buffer);

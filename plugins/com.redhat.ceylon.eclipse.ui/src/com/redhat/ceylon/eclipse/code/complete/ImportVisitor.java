@@ -18,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 final class ImportVisitor extends Visitor {
+    
     private final String prefix;
     private final CommonToken token;
     private final int offset;

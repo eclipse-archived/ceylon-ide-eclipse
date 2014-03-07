@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
@@ -38,7 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
-import com.redhat.ceylon.eclipse.util.FindUtils;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class CreateProposal extends CorrectionProposal {
     
@@ -198,7 +197,7 @@ class CreateProposal extends CorrectionProposal {
     static void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg) {
         //if (!fsv.isToplevel()) {
-        Tree.Statement statement = FindUtils.findStatement(dg.rootNode, dg.node);
+        Tree.Statement statement = Nodes.findStatement(dg.rootNode, dg.node);
         if (statement!=null) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (unit.getUnit().equals(dg.rootNode.getUnit())) {
@@ -213,7 +212,7 @@ class CreateProposal extends CorrectionProposal {
 
     static void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg) {
-        Tree.Statement statement = FindUtils.findToplevelStatement(dg.rootNode, dg.node);
+        Tree.Statement statement = Nodes.findToplevelStatement(dg.rootNode, dg.node);
         if (statement!=null) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (unit.getUnit().equals(dg.rootNode.getUnit())) {
@@ -229,7 +228,7 @@ class CreateProposal extends CorrectionProposal {
             Collection<ICompletionProposal> proposals, IProject project,
             IFile file) {
         Tree.MemberOrTypeExpression smte = (Tree.MemberOrTypeExpression) node;
-        String brokenName = getIdentifyingNode(node).getText();
+        String brokenName = Nodes.getIdentifyingNode(node).getText();
         if (!brokenName.isEmpty()) {
             DefinitionGenerator dg = DefinitionGenerator.create(brokenName, smte, cu);
             if (dg!=null) {

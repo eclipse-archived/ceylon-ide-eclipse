@@ -1,11 +1,8 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeEndOffset;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeLength;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodePath;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getNodeStartOffset;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -35,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 public class ModuleImportUtil {
@@ -251,11 +249,11 @@ public class ModuleImportUtil {
             ImportPath ip = im.getImportPath();
             if (ip!=null && 
                     formatPath(ip.getIdentifiers()).equals(moduleName)) {
-                int startOffset = getNodeStartOffset(im);
-                int length = getNodeLength(im);
+                int startOffset = Nodes.getNodeStartOffset(im);
+                int length = Nodes.getNodeLength(im);
                 //TODO: handle whitespace for first import in list
                 if (prev!=null) {
-                    int endOffset = getNodeEndOffset(prev);
+                    int endOffset = Nodes.getNodeEndOffset(prev);
                     length += startOffset-endOffset;
                     startOffset = endOffset;
                 }
@@ -274,7 +272,7 @@ public class ModuleImportUtil {
             ImportPath ip = im.getImportPath();
             if (ip!=null && 
                     formatPath(ip.getIdentifiers()).equals(moduleName)) {
-                int startOffset = getNodeStartOffset(im);
+                int startOffset = Nodes.getNodeStartOffset(im);
                 return new InsertEdit(startOffset, "shared ");
             }
         }

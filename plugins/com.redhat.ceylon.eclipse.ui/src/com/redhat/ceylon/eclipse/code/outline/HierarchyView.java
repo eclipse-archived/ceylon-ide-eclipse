@@ -2,15 +2,13 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUPERTYPES;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
@@ -70,6 +68,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class HierarchyView extends ViewPart {
 
@@ -444,8 +443,8 @@ public class HierarchyView extends ViewPart {
 
     public void focusOnSelection(CeylonEditor editor) {
         CeylonParseController cpc = editor.getParseController();
-        Node node = findNode(cpc.getRootNode(), editor.getSelection().getOffset());
-        Declaration dec = getReferencedDeclaration(node);
+        Node node = Nodes.findNode(cpc.getRootNode(), editor.getSelection().getOffset());
+        Declaration dec = Nodes.getReferencedDeclaration(node);
         focusOn(cpc.getProject(), dec);
     }
 

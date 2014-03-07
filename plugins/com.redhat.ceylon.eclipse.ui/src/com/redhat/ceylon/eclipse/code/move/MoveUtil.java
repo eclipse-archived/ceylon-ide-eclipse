@@ -5,8 +5,8 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.performChange;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 

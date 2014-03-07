@@ -7,6 +7,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
+import com.redhat.ceylon.eclipse.code.html.HTML;
 
 /**
  * Browser input for Javadoc hover.
@@ -33,7 +34,7 @@ class CeylonBrowserInput extends BrowserInput {
         super(previous);
         Assert.isNotNull(html);
         this.html = html;
-        this.address = DocumentationHover.getAddress(model);
+        this.address = HTML.getAddress(model);
         if (model instanceof Module) {
             moduleName = model.getNameAsString();
             name = moduleName;

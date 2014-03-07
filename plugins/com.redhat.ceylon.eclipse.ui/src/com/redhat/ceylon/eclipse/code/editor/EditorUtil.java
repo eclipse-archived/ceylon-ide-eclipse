@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.findNode;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.HashMap;
@@ -54,6 +53,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class EditorUtil {
     
@@ -194,7 +194,7 @@ public class EditorUtil {
         }
         ITextSelection selection = (ITextSelection) 
                 editor.getSelectionProvider().getSelection();
-        return findNode(cpc.getRootNode(), selection);
+        return Nodes.findNode(cpc.getRootNode(), selection);
     }
     
     public static void performChange(IEditorPart activeEditor, 

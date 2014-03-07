@@ -1,9 +1,7 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getActivePage;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonSourcePositionLocator.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.code.resolve.CeylonReferenceResolver.getReferencedNode;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
@@ -28,6 +26,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 
@@ -56,7 +55,7 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
                         IEditorInput editorInput = getEditorInput(p.findMember(pu.getUnitFile().getPath()));
                         try {
                             CeylonEditor editor = (CeylonEditor) getActivePage().openEditor(editorInput, EDITOR_ID);
-                            int offset = getIdentifyingNode(getReferencedNode(d, pu.getCompilationUnit())).getStartIndex();
+                            int offset = Nodes.getIdentifyingNode(Nodes.getReferencedNode(d, pu.getCompilationUnit())).getStartIndex();
                             editor.selectAndReveal(offset, 0);
                         } 
                         catch (PartInitException e) {

@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.keywords;
-import static com.redhat.ceylon.eclipse.util.FindUtils.getContainer;
+import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -39,7 +38,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.FindUtils;
+import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class MoveOutRefactoring extends AbstractRefactoring {
     
@@ -111,7 +111,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         CompositeChange cc = new CompositeChange(getName());
         
         Declaration dec = declaration.getDeclarationModel();
-        Tree.TypeDeclaration owner = (Tree.TypeDeclaration) FindUtils.getContainer(rootNode, dec);
+        Tree.TypeDeclaration owner = (Tree.TypeDeclaration) Nodes.getContainer(rootNode, dec);
 
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
@@ -268,7 +268,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         }
         String name = owner.getIdentifier().getText();
         String paramName = Character.toLowerCase(name.charAt(0))+name.substring(1);
-        if (keywords.contains(paramName)) {
+        if (Escaping.KEYWORDS.contains(paramName)) {
             return "it";
         }
         return paramName;

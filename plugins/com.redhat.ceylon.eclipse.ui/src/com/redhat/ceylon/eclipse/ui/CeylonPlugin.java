@@ -1,16 +1,5 @@
 package com.redhat.ceylon.eclipse.ui;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ABSTRACT_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ALIAS_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ANNOTATION_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.DEPRECATED_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ENUM_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.ERROR_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.FINAL_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.IMPLEMENTS_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.REFINES_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.VARIABLE_IMAGE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.WARNING_IMAGE;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
@@ -342,8 +331,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(RUNTIME_OBJ, image("runtime_obj.gif"));
         reg.put(CEYLON_LOCAL_NAME, image("localvariable_obj.gif"));
         reg.put(MULTIPLE_TYPES, image("types.gif"));
-        reg.put(ERROR, image("error_obj.gif"));
-        reg.put(WARNING, image("warning_obj.gif"));
+        reg.put(CEYLON_ERROR, image("error_obj.gif"));
+        reg.put(CEYLON_WARNING, image("warning_obj.gif"));
         
         reg.put(WARNING_IMAGE, image(WARNING_IMAGE));
         reg.put(ERROR_IMAGE, image(ERROR_IMAGE));

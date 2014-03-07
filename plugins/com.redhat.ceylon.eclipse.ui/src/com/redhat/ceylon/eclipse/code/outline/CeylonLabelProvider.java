@@ -3,14 +3,18 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelDecorator.getDecorationAttributes;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.ANNOTATIONS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.IDENTIFIERS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.KEYWORDS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.PACKAGES;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.STRINGS;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.TYPES;
-import static com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer.color;
+import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
+import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
+import static com.redhat.ceylon.eclipse.util.Highlights.IDENTIFIERS;
+import static com.redhat.ceylon.eclipse.util.Highlights.KEYWORDS;
+import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGES;
+import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
+import static com.redhat.ceylon.eclipse.util.Highlights.TYPES;
+import static com.redhat.ceylon.eclipse.util.Highlights.color;
+import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
+import static org.eclipse.jface.viewers.IDecoration.BOTTOM_RIGHT;
+import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
+import static org.eclipse.jface.viewers.IDecoration.TOP_RIGHT;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
@@ -20,7 +24,10 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -28,8 +35,8 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
@@ -43,6 +50,7 @@ import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
@@ -52,15 +60,18 @@ import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.eclipse.code.search.CeylonElement;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
 
 /**
  * Styled Label Provider which can be used to provide labels for Ceylon elements.
@@ -79,44 +90,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     private Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
     
-    public static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
-            .getImageRegistry();
-    
-    public static Image FILE = imageRegistry.get(CEYLON_FILE);
-    public static Image FOLDER = imageRegistry.get(CEYLON_FOLDER);
-    public static Image ALIAS = imageRegistry.get(CEYLON_ALIAS);
-    public static Image CLASS = imageRegistry.get(CEYLON_CLASS);
-    public static Image INTERFACE = imageRegistry.get(CEYLON_INTERFACE);
-    public static Image LOCAL_CLASS = imageRegistry.get(CEYLON_LOCAL_CLASS);
-    public static Image LOCAL_INTERFACE = imageRegistry.get(CEYLON_LOCAL_INTERFACE);
-    public static Image METHOD = imageRegistry.get(CEYLON_METHOD);
-    public static Image ATTRIBUTE = imageRegistry.get(CEYLON_ATTRIBUTE);
-    public static Image LOCAL_METHOD = imageRegistry.get(CEYLON_LOCAL_METHOD);
-    public static Image LOCAL_ATTRIBUTE = imageRegistry.get(CEYLON_LOCAL_ATTRIBUTE);
-    public static Image PARAMETER = imageRegistry.get(CEYLON_PARAMETER);
-    public static Image PARAMETER_METHOD = imageRegistry.get(CEYLON_PARAMETER_METHOD);
-    public static Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
-    public static Image ARCHIVE = imageRegistry.get(CEYLON_ARCHIVE);
-    public static Image VERSION = imageRegistry.get(MODULE_VERSION);
-    public static Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
-    public static Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
-    public static Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
-    public static Image MINOR_CHANGE = imageRegistry.get(CEYLON_CORRECTION);
-    public static Image CHANGE = imageRegistry.get(CEYLON_CHANGE);
-    public static Image COMPOSITE_CHANGE = imageRegistry.get(CEYLON_COMPOSITE_CHANGE);
-    public static Image RENAME = imageRegistry.get(CEYLON_RENAME);
-    public static Image REORDER = imageRegistry.get(CEYLON_REORDER);
-    public static Image MOVE = imageRegistry.get(CEYLON_MOVE);
-    public static Image ADD = imageRegistry.get(CEYLON_ADD);
-    public static Image ADD_CORR = imageRegistry.get(CEYLON_ADD_CORRECTION);
-    public static Image REMOVE_CORR = imageRegistry.get(CEYLON_REMOVE_CORRECTION);
-    public static Image LOCAL_NAME = imageRegistry.get(CEYLON_LOCAL_NAME);
-    public static Image MULTIPLE_TYPES_IMAGE = imageRegistry.get(MULTIPLE_TYPES);
-    public static Image REPO = imageRegistry.get(RUNTIME_OBJ);
-
-    public static Image ERROR = imageRegistry.get(CeylonResources.ERROR);
-    public static Image WARNING = imageRegistry.get(CeylonResources.WARNING);
-
     private static ColorRegistry colorRegistry = PlatformUI.getWorkbench()
             .getThemeManager().getCurrentTheme().getColorRegistry();
     
@@ -179,14 +152,42 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     };
     
     private final boolean includePackage;
-    
+
+    private final static int WARNING = 1 << 2;
+    private final static int ERROR = 1 << 3;
+    private final static int REFINES = 1 << 4;
+    private final static int IMPLEMENTS = 1 << 5;
+    private final static int FORMAL = 1 << 6;
+    private final static int ABSTRACT = 1 << 7;
+    private final static int VARIABLE = 1 << 8;
+    private final static int ANNOTATION = 1 << 9;
+    private final static int ENUM = 1 << 10;
+    private final static int ALIAS = 1 << 11;
+    private final static int DEPRECATED = 1 << 12;
+    //private final static int FINAL = 1 << 13;
+
+    static final DecorationDescriptor[] DECORATIONS = new DecorationDescriptor[] {
+        new DecorationDescriptor(WARNING, WARNING_IMAGE, BOTTOM_LEFT),
+        new DecorationDescriptor(ERROR, ERROR_IMAGE, BOTTOM_LEFT),
+        new DecorationDescriptor(REFINES, REFINES_IMAGE, BOTTOM_RIGHT),
+        new DecorationDescriptor(IMPLEMENTS, IMPLEMENTS_IMAGE, BOTTOM_RIGHT),
+        new DecorationDescriptor(FORMAL, FINAL_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(ABSTRACT, ABSTRACT_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(VARIABLE, VARIABLE_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ANNOTATION, ANNOTATION_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ENUM, ENUM_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ALIAS, ALIAS_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(DEPRECATED, DEPRECATED_IMAGE, IDecoration.UNDERLAY)
+        //new DecorationDescriptor(FINAL, CeylonPlugin.getInstance().image("..."), TOP_RIGHT)
+    };
+
     public CeylonLabelProvider(boolean includePackage) {
         this.includePackage = includePackage;
     }
     
     private static Image getDecoratedImage(Object element, String key) {
         if (key==null) return null;
-        int flags = getDecorationAttributes(element);
+        int flags = CeylonLabelProvider.getDecorationAttributes(element);
         ImageDescriptor descriptor = imageRegistry.getDescriptor(key);
         String decoratedKey = key+'#'+flags;
         Image image = imageRegistry.get(decoratedKey);
@@ -697,12 +698,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             for (Tree.Parameter p: pl.getParameters()) {
                 if (p!=null) {
                     if (p instanceof Tree.ParameterDeclaration) {
-                        Tree.TypedDeclaration td = ((Tree.ParameterDeclaration) p).getTypedDeclaration();
+                        Tree.TypedDeclaration td = 
+                                ((Tree.ParameterDeclaration) p).getTypedDeclaration();
                         label.append(type(td.getType(), td))
                             .append(" ")
                             .append(name(td.getIdentifier()), ID_STYLER);
                         if (p instanceof Tree.FunctionalParameterDeclaration) {
-                            for (Tree.ParameterList ipl: ((Tree.MethodDeclaration) td).getParameterLists()) {
+                            for (Tree.ParameterList ipl: 
+                                ((Tree.MethodDeclaration) td).getParameterLists()) {
                                 parameters(ipl, label);
                             }
                         }
@@ -787,6 +790,162 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         cell.setStyleRanges(styledText.getStyleRanges());
         cell.setImage(getImage(element));
         super.update(cell);
+    }
+
+    public static int getDecorationAttributes(Object entity) {
+        if (entity instanceof IProject) {
+            //TODO: add a Ceylon decoration to the project icon!
+        }
+        if (entity instanceof IResource) {
+            int sev = getMaxProblemMarkerSeverity((IResource) entity, IResource.DEPTH_ONE);
+            switch (sev) {
+            case IMarker.SEVERITY_ERROR:
+                return ERROR;
+            case IMarker.SEVERITY_WARNING:
+                return WARNING;
+            default: 
+                return 0;
+            }
+        }
+        if (entity instanceof CeylonOutlineNode) {
+            return ((CeylonOutlineNode) entity).getDecorations();
+        }
+        if (entity instanceof CeylonElement) {
+            return ((CeylonElement) entity).getDecorations();
+        }
+        if (entity instanceof Declaration) {
+            return getDecorationAttributes((Declaration) entity);
+        }
+        if (entity instanceof Node) {
+            return getNodeDecorationAttributes((Node) entity);
+        }
+        return 0;
+    }
+
+    public static int getNodeDecorationAttributes(Node node) {
+        int result = 0;
+        if (node instanceof Tree.Declaration || node instanceof Tree.Import) {
+            ErrorCollectionVisitor ev = new ErrorCollectionVisitor(node, true);
+            node.visit(ev);
+            boolean warnings=false;
+            boolean errors=false;
+            for (Message m: ev.getErrors()) {
+                if (m instanceof UsageWarning) {
+                    warnings = true;
+                }
+                else {
+                    errors = true;
+                }
+            }
+            if (errors) {
+                result |= ERROR;
+            }
+            else if (warnings) {
+                result |= WARNING;
+            }
+            if (node instanceof Tree.Declaration) {
+                Tree.Declaration dec = (Tree.Declaration) node;
+                result |= getDecorationAttributes(dec.getDeclarationModel());
+            }
+        }
+        else if (node instanceof Tree.SpecifierStatement) {
+            Tree.Term bme = ((Tree.SpecifierStatement) node).getBaseMemberExpression();
+            Declaration d;
+            if (bme instanceof Tree.BaseMemberExpression) {
+                d = ((Tree.BaseMemberExpression) bme).getDeclaration();
+            }
+            else if (bme instanceof Tree.ParameterizedExpression) {
+                Tree.Primary primary = ((Tree.ParameterizedExpression) bme).getPrimary();
+                d = ((Tree.BaseMemberExpression) primary).getDeclaration();
+            }
+            else {
+                 throw new RuntimeException("unexpected node type");
+            }
+            if (d!=null) {
+                Declaration r = getRefinedDeclaration(d);
+                if (r!=null) {
+                    result |= r.isFormal() ? IMPLEMENTS : REFINES;
+                }
+            }
+        }
+        return result;
+    }
+
+    private static int getDecorationAttributes(Declaration model) {
+            if (model == null) {
+                return 0;
+            }
+            
+            int result = 0;
+            if (model.isDeprecated()) {
+                result |= CeylonLabelProvider.DEPRECATED;
+            }
+            if (model.isFormal()) {
+                result |= CeylonLabelProvider.FORMAL;
+            }
+            if (model.isAnnotation()) {
+                result |= CeylonLabelProvider.ANNOTATION;
+            }
+            if ((model instanceof Value) && ((Value) model).isVariable()) {
+                result |= CeylonLabelProvider.VARIABLE;
+            }
+            if (model instanceof Class && ((Class) model).isAbstract()) {
+                result |= CeylonLabelProvider.ABSTRACT;
+            }
+    //        if (model instanceof Class && ((Class) model).isFinal()) {
+            //            result |= FINAL;
+            //        }
+            if (model instanceof TypeDeclaration) {
+                TypeDeclaration td = (TypeDeclaration) model;
+                if(td.getCaseTypeDeclarations()!=null) {
+                    result |= CeylonLabelProvider.ENUM;
+                }
+                if (td.isAlias()) {
+                    result |= CeylonLabelProvider.ALIAS;
+                }
+            }
+            if (model.isActual()) {
+                Declaration refined = getRefinedDeclaration(model);
+                if (refined!=null) {
+                    result |= refined.isFormal() ? CeylonLabelProvider.IMPLEMENTS : CeylonLabelProvider.REFINES;
+                }
+            }
+            return result;
+        }
+
+    /**
+     * Returns the maximum problem marker severity for the given resource, and, if
+     * depth is IResource.DEPTH_INFINITE, its children. The return value will be
+     * one of IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING, IMarker.SEVERITY_INFO
+     * or 0, indicating that no problem markers exist on the given resource.
+     * @param depth TODO
+     */
+    static int getMaxProblemMarkerSeverity(IResource res, int depth) {
+        if (res == null || !res.isAccessible())
+            return 0;
+    
+        boolean hasWarnings= false; // if resource has errors, will return error image immediately
+        IMarker[] markers= null;
+        try {
+            markers= res.findMarkers(IMarker.PROBLEM, true, depth);
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+        if (markers == null)
+            return 0; // don't know - say no errors/warnings/infos
+    
+        for (int i= 0; i < markers.length; i++) {
+            IMarker m= markers[i];
+            int priority= m.getAttribute(IMarker.SEVERITY, -1);
+            if (priority == IMarker.SEVERITY_WARNING) {
+                hasWarnings= true;
+            } 
+            else if (priority == IMarker.SEVERITY_ERROR) {
+                return IMarker.SEVERITY_ERROR;
+            }
+        }
+        return hasWarnings ? IMarker.SEVERITY_WARNING : 0;
     }
 
     private static String getRefinementIconKey(Declaration dec) {

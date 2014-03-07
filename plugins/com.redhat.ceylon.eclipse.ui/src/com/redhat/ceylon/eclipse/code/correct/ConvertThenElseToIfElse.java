@@ -26,8 +26,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueModifier;
-import com.redhat.ceylon.eclipse.code.refactor.AbstractRefactoring;
 import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertThenElseToIfElse extends CorrectionProposal {
     
@@ -121,7 +121,7 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
                         thenTerm = leftTermStr;
                         test = "exists " + leftTermStr;            
                     } else  {
-                        String id = AbstractRefactoring.guessName(leftTerm);
+                        String id = Nodes.guessName(leftTerm);
                         test = "exists " + id + " = " + leftTermStr;
                         thenTerm = id;
                     }    

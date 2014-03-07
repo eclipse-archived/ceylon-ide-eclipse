@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.parse.CeylonTokenColorer;
+import com.redhat.ceylon.eclipse.util.Escaping;
 
 public class MoveOutInputPage extends UserInputWizardPage {
     public MoveOutInputPage(String name) {
@@ -80,7 +80,7 @@ public class MoveOutInputPage extends UserInputWizardPage {
             setErrorMessage("Not a legal Ceylon identifier");
             setPageComplete(false);
         }
-        else if (CeylonTokenColorer.keywords.contains(name)) {
+        else if (Escaping.KEYWORDS.contains(name)) {
             setErrorMessage("'" + name + "' is a Ceylon keyword");
             setPageComplete(false);
         }
