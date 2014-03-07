@@ -49,21 +49,42 @@ abstract class FindSearchQuery implements ISearchQuery {
         //List<PhasedUnit> units = Ceylon Builder.getUnits(project);
         //if (units==null) units = CeylonBuilder.getUnits();
         //List<PhasedUnit> units = getUnits();
+        int work = 0;
         Set<String> searchedArchives = new HashSet<String>();
         for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
-            findInUnits(tc.getPhasedUnits());
+            work+=1;
             for (Module m : tc.getContext().getModules().getListOfModules()) {
                 if (m instanceof JDTModule) {
                     JDTModule module = (JDTModule) m;
-                    String archivePath = null;
-                    if (module.isCeylonArchive() && module.getArtifact() != null && 
-                            !searchedArchives.contains(archivePath = module.getArtifact().getAbsolutePath())) {
-                        findInUnits(module.getPhasedUnits());
-                        searchedArchives.add(archivePath);
+                    if (module.isCeylonArchive() && module.getArtifact() != null) { 
+                        String archivePath = module.getArtifact().getAbsolutePath();
+                        if (!searchedArchives.contains(archivePath)) {
+                            work++;
+                        }
                     }
                 }
             }
         }
+        monitor.beginTask("Searching for " + labelString() + " '" + name + "'", work);
+        searchedArchives = new HashSet<String>();
+        for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
+            findInUnits(tc.getPhasedUnits());
+            monitor.worked(1);
+            for (Module m : tc.getContext().getModules().getListOfModules()) {
+                if (m instanceof JDTModule) {
+                    JDTModule module = (JDTModule) m;
+                    if (module.isCeylonArchive() && module.getArtifact() != null) { 
+                        String archivePath = module.getArtifact().getAbsolutePath();
+                        if (!searchedArchives.contains(archivePath)) {
+                            findInUnits(module.getPhasedUnits());
+                            searchedArchives.add(archivePath);
+                            monitor.worked(1);
+                        }
+                    }
+                }
+            }
+        }
+        monitor.done();
         referencedDeclaration = null;
         return Status.OK_STATUS;
     }
