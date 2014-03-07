@@ -78,7 +78,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         editor!=null && new MoveOutRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.COMP_CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.makeReceiver", 
-                        "Make &Receiver...",
+                        "Make R&eceiver...",
                         editor!=null && new MakeReceiverRefactoringAction(editor).isEnabled(),
                         AbstractRefactoring.COMP_CHANGE),
                 new Separator(),
