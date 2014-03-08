@@ -121,6 +121,12 @@ public class RecentFilesPopup extends PopupDialog {
             }
         }
         list.setInput(files);
+        if (files.isEmpty()) {
+            filterText.setMessage("no files");
+        }
+        else {
+            list.setSelection(new StructuredSelection(files.get(0)));
+        }
         return list.getControl();
     }
     
@@ -175,6 +181,10 @@ public class RecentFilesPopup extends PopupDialog {
             @Override
             public void modifyText(ModifyEvent e) {
                 list.refresh();
+                Object elem = list.getElementAt(0);
+                if (elem!=null) {
+                    list.setSelection(new StructuredSelection(elem));
+                }
             }
         });
 
