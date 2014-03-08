@@ -47,7 +47,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
@@ -310,11 +309,6 @@ public abstract class TreeViewPopup extends PopupDialog
         });
 
         return filterText;
-    }
-
-    protected void createHorizontalSeparator(Composite parent) {
-        Label separator= new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL | SWT.LINE_DOT);
-        separator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     }
 
     protected void updateStatusFieldText() {
