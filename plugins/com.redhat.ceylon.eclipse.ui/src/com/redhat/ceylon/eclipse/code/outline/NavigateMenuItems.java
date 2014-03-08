@@ -3,10 +3,6 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIERARCHY;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LAST_EDIT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.NEXT_ANN;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PREV_ANN;
@@ -29,9 +25,7 @@ public class NavigateMenuItems extends CompoundContributionItem {
     
     private static final ImageRegistry imageRegistry = CeylonPlugin.getInstance()
             .getImageRegistry();
-    private static final ImageDescriptor OUTLINE = imageRegistry.getDescriptor(CEYLON_OUTLINE);
-    private static final ImageDescriptor HIERARCHY = imageRegistry.getDescriptor(CEYLON_HIERARCHY);
-    private static final ImageDescriptor CODE = imageRegistry.getDescriptor(CEYLON_SOURCE);
+    
     private static final ImageDescriptor EDIT = imageRegistry.getDescriptor(LAST_EDIT);
     private static final ImageDescriptor NEXT = imageRegistry.getDescriptor(NEXT_ANN);
     private static final ImageDescriptor PREV = imageRegistry.getDescriptor(PREV_ANN);
@@ -62,14 +56,7 @@ public class NavigateMenuItems extends CompoundContributionItem {
         boolean enabled= TextEditorPlugin.getDefault().getLastEditPosition() != null;
         IContributionItem[] items = new SelectedDeclarationMenuItems().getContributionItems();
         return new IContributionItem[] {
-                items[0], items[1],
-                new Separator(),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.showOutline", 
-                        "Quick &Outline", true, OUTLINE),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.hierarchy", 
-                        "Quick &Hierarchy", true, HIERARCHY),
-                new DynamicMenuItem(PLUGIN_ID + ".editor.code", 
-                        "&Peek Definition", true, CODE),
+                items[0], items[1], items[2], items[3], items[4], items[5],
                 new Separator(),
                 new DynamicMenuItem("org.eclipse.ui.navigate.next", 
                         "Next Annotation", true, NEXT),
