@@ -13,7 +13,9 @@ public class RecentFilesHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         Shell shell = CeylonPlugin.getInstance().getWorkbench()
                 .getActiveWorkbenchWindow().getShell();
-        new RecentFilesPopup(shell).open();
+        RecentFilesPopup popup = new RecentFilesPopup(shell);
+        popup.open();
+        popup.setFocus();
         return null;
     }
 
