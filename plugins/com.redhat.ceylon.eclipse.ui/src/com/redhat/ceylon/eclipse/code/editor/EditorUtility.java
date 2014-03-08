@@ -4,6 +4,9 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -20,8 +23,11 @@ import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
@@ -376,28 +382,28 @@ public class EditorUtility {
      * 
      * @return an array of all dirty editor parts.
      */
-//    private static IEditorPart[] getDirtyEditors() {
-//        Set<IEditorInput> inputs= new HashSet<IEditorInput>();
-//        List<IEditorPart> result= new ArrayList<IEditorPart>(0);
-//        IWorkbench workbench= PlatformUI.getWorkbench();
-//        IWorkbenchWindow[] windows= workbench.getWorkbenchWindows();
-//        for(int i= 0; i < windows.length; i++) {
-//            IWorkbenchPage[] pages= windows[i].getPages();
-//            for(int x= 0; x < pages.length; x++) {
-//                IEditorPart[] editors= pages[x].getDirtyEditors();
-//                for(int z= 0; z < editors.length; z++) {
-//                    IEditorPart ep= editors[z];
-//                    IEditorInput input= ep.getEditorInput();
-//                    if (!inputs.contains(input)) {
-//                        inputs.add(input);
-//                        result.add(ep);
-//                    }
-//                }
-//            }
-//        }
-//        return result.toArray(new IEditorPart[result.size()]);
-//    }
-    
+    static IEditorPart[] getDirtyEditors() {
+        Set<IEditorInput> inputs= new HashSet<IEditorInput>();
+        List<IEditorPart> result= new ArrayList<IEditorPart>(0);
+        IWorkbench workbench= PlatformUI.getWorkbench();
+        IWorkbenchWindow[] windows= workbench.getWorkbenchWindows();
+        for(int i= 0; i < windows.length; i++) {
+            IWorkbenchPage[] pages= windows[i].getPages();
+            for(int x= 0; x < pages.length; x++) {
+                IEditorPart[] editors= pages[x].getDirtyEditors();
+                for(int z= 0; z < editors.length; z++) {
+                    IEditorPart ep= editors[z];
+                    IEditorInput input= ep.getEditorInput();
+                    if (!inputs.contains(input)) {
+                        inputs.add(input);
+                        result.add(ep);
+                    }
+                }
+            }
+        }
+        return result.toArray(new IEditorPart[result.size()]);
+    }
+
     public static IDocument getDocument(Object input) {
         IEditorInput ei = getEditorInput(input);
         try {

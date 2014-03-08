@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getActivePage;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getDirtyEditors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
@@ -53,7 +56,17 @@ public class RecentFilesPopup extends PopupDialog {
         layout.marginBottom = 2;
         parent.setLayout(layout);
         list = new TableViewer(parent, SWT.NO_TRIM|SWT.SINGLE|SWT.FULL_SELECTION);
-        list.setLabelProvider(new StorageLabelProvider());
+        list.setLabelProvider(new StorageLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                for (IEditorPart part: EditorUtility.getDirtyEditors()) {
+                    if (getFile(part.getEditorInput())==element) {
+                        return "*" + super.getText(element);
+                    }
+                }
+                return super.getText(element);
+            }
+        });
         list.setContentProvider(ArrayContentProvider.getInstance());
         list.getTable().setCursor(new Cursor(getShell().getDisplay(), SWT.CURSOR_HAND));
         list.getTable().addListener(SWT.MouseMove, new Listener() {
@@ -88,7 +101,15 @@ public class RecentFilesPopup extends PopupDialog {
                 go();
             }
         });
-        list.setInput(recents);
+        List<IFile> files = new ArrayList<IFile>(recents);
+        for (IEditorPart part: getDirtyEditors()) {
+            IFile file = getFile(part.getEditorInput());
+            if (file!=null) {
+                files.remove(file);
+                files.add(0, file);
+            }
+        }
+        list.setInput(files);
         return list.getControl();
     }
     
