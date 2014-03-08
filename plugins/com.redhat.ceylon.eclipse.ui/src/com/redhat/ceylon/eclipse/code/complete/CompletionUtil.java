@@ -230,7 +230,7 @@ public class CompletionUtil {
     }
 
     public static void styleProposal(StyledString result, String string) {
-        StringTokenizer tokens = new StringTokenizer(string, " ()<>", true);
+        StringTokenizer tokens = new StringTokenizer(string, " ()<>.*+?,{}[]", true);
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
             if (isUpperCase(token.charAt(0))) {
