@@ -539,7 +539,7 @@
        <command
             id="com.redhat.ceylon.eclipse.ui.action.switchToRecent"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Switch to recently opened editor"
+            description="Open recently edited file"
             name="Recently Edited Files"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.welcome"
@@ -1168,7 +1168,7 @@
                   commandId="org.eclipse.ui.window.openEditorDropDown"
                   id="com.redhat.ceylon.eclipse.ui.menu.openEditorDropDown"/>
             <command
-                  label="Recently Edited Files" 
+                  label="Recently Edited &amp;Files" 
                   commandId="com.redhat.ceylon.eclipse.ui.action.switchToRecent"
                   id="com.redhat.ceylon.eclipse.ui.menu.switchToRecent"/>
       </menuContribution>
@@ -1319,7 +1319,7 @@
                   label="Quick &amp;Switch Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"/>
             <command
-                  label="&amp;Recently Edited Files" 
+                  label="Recently Edited &amp;Files" 
                   commandId="com.redhat.ceylon.eclipse.ui.action.switchToRecent"
                   id="com.redhat.ceylon.eclipse.ui.menu.switchToRecent"/>
             </menu>
