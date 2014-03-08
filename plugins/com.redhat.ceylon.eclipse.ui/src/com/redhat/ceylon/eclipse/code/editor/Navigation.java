@@ -100,7 +100,7 @@ public class Navigation {
     }
     
     public static void gotoFile(IFile file, int offset, int length) {
-        IWorkbenchPage page = EditorUtil.getActivePage();
+        IWorkbenchPage page = getActivePage();
         IEditorInput input = new FileEditorInput(file);
         if (input!=null) {
             IEditorPart part = page.findEditor(input);
@@ -118,7 +118,9 @@ public class Navigation {
                     return;
                 }
             }
-            editor.selectAndReveal(offset, length);
+            if (offset>=0) {
+                editor.selectAndReveal(offset, length);
+            }
             page.activate(editor);
         }
     }
