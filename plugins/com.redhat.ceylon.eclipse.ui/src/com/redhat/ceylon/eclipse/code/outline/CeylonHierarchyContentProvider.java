@@ -331,11 +331,11 @@ public final class CeylonHierarchyContentProvider
         if (isShowingRefinements()) {
             switch (getMode()) {
             case HIERARCHY:
-                return "Refinement hierarchy of '" + description + "'";
+                return "Quick Hierarchy - refinement hierarchy of '" + description + "'";
             case SUPERTYPES:
-                return "Supertypes generalizing '" + description + "'";
+                return "Quick Hierarchy - generalizations of '" + description + "'";
             case SUBTYPES:
-                return "Subtypes refining '" + description + "'";
+                return "Quick Hierarchy - refinements '" + description + "'";
             default:
                 throw new RuntimeException();
             }
@@ -343,11 +343,11 @@ public final class CeylonHierarchyContentProvider
         else {
             switch (getMode()) {
             case HIERARCHY:
-                return "Type hierarchy of '" + description + "'";
+                return "Quick Hierarchy - type hierarchy of '" + description + "'";
             case SUPERTYPES:
-                return "Supertypes of '" + description + "'";
+                return "Quick Hierarchy - supertypes of '" + description + "'";
             case SUBTYPES:
-                return "Subtypes of '" + description + "'";
+                return "Quick Hierarchy - subtypes of '" + description + "'";
             default:
                 throw new RuntimeException();
             }

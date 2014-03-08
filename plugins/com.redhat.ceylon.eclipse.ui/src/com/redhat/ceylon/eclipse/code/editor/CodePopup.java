@@ -7,11 +7,15 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
+import java.util.StringTokenizer;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -19,15 +23,22 @@ import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInformationControlExtension3;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -39,6 +50,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -72,6 +84,8 @@ final class CodePopup extends PopupDialog
     Node referencedNode;
     CeylonParseController pc = new CeylonParseController();
     
+    private StyledText titleLabel;
+
     CodePopup(Shell parent, int shellStyle, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true,
                 true, null, KEY + " to open editor");
@@ -125,13 +139,53 @@ final class CodePopup extends PopupDialog
         return popupLayoutFactory;
     }
     
+    protected StyledString styleTitle(final StyledText title) {
+        StyledString result = new StyledString();
+        StringTokenizer tokens = 
+                new StringTokenizer(title.getText(), "-", false);
+        styleDescription(title, result, tokens.nextToken());
+        result.append("-");
+        CompletionUtil.styleProposal(result, tokens.nextToken());
+        return result;
+    }
+
+    protected void styleDescription(final StyledText title, StyledString result,
+            String desc) {
+        final FontData[] fontDatas = title.getFont().getFontData();
+        for (int i = 0; i < fontDatas.length; i++) {
+            fontDatas[i].setStyle(SWT.BOLD);
+        }
+        result.append(desc, new Styler() {
+            @Override
+            public void applyStyles(TextStyle textStyle) {
+                textStyle.font=new Font(title.getDisplay(), fontDatas);
+            }
+        });
+    }
+
     @Override
     protected Control createTitleControl(Composite parent) {
-        getPopupLayout().copy().numColumns(3).applyTo(parent);
+        getPopupLayout().copy().numColumns(3).spacing(6, 6).applyTo(parent);
         Label iconLabel = new Label(parent, SWT.NONE);
         iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SOURCE));
         getShell().addKeyListener(new GotoListener());
-        return super.createTitleControl(parent);
+        titleLabel = new StyledText(parent, SWT.NONE);
+        titleLabel.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                titleLabel.setStyleRanges(styleTitle(titleLabel).getStyleRanges());
+            }
+        });
+        titleLabel.setEditable(false);
+        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
+            .grab(true,false).span(1, 1).applyTo(titleLabel);
+        return null;
+    }
+    
+    @Override
+    protected void setTitleText(String text) {
+        if (titleLabel!=null)
+            titleLabel.setText(text);
     }
     
     /*@Override
@@ -270,7 +324,7 @@ final class CodePopup extends PopupDialog
         }*/
         if (referencedNode instanceof Tree.Declaration) {
             Declaration model = ((Tree.Declaration) referencedNode).getDeclarationModel();
-            setTitleText("Declaration of " + getDescriptionFor(model));
+            setTitleText("Peek Definition - " + getDescriptionFor(model));
         }
     }
 
@@ -297,4 +351,16 @@ final class CodePopup extends PopupDialog
     public CeylonParseController getParseController() {
         return pc;
     }
+
+    @Override
+    protected IDialogSettings getDialogSettings() {
+        String sectionName= "com.redhat.ceylon.eclipse.ui.PeekDefinition";
+        IDialogSettings dialogSettings = CeylonPlugin.getInstance()
+                .getDialogSettings();
+        IDialogSettings settings= dialogSettings.getSection(sectionName);
+        if (settings == null)
+            settings= dialogSettings.addNewSection(sectionName);
+        return settings;
+    }
+
 }

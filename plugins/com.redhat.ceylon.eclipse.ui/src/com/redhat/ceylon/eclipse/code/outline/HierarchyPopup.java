@@ -4,10 +4,14 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
+import java.util.StringTokenizer;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Image;
@@ -19,6 +23,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
+import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -121,10 +126,23 @@ public class HierarchyPopup extends TreeViewPopup {
         return contentProvider.getDescription();
     }
 
-    
+    @Override
+    protected StyledString styleTitle(final StyledText title) {
+        StyledString result = new StyledString();
+        StringTokenizer tokens = 
+                new StringTokenizer(title.getText(), "-'", false);
+        styleDescription(title, result, tokens.nextToken());
+        result.append("-");
+        result.append(tokens.nextToken());
+        result.append("'");
+        CompletionUtil.styleProposal(result, tokens.nextToken());
+        result.append("'");
+        return result;
+    }
+
     @Override
     protected Control createTitleControl(Composite parent) {
-        getPopupLayout().copy().numColumns(3).applyTo(parent);
+        getPopupLayout().copy().numColumns(3).spacing(6, 6).applyTo(parent);
         iconLabel = new Label(parent, SWT.NONE);
         //label.setImage(CeylonPlugin.getInstance().image("class_hi.gif").createImage());
         updateIcon();
@@ -146,7 +164,7 @@ public class HierarchyPopup extends TreeViewPopup {
     
     @Override
     protected String getId() {
-        return "org.eclipse.jdt.internal.ui.typehierarchy.QuickHierarchy";
+        return "com.redhat.ceylon.eclipse.ui.QuickHierarchy";
     }
 
     @Override
