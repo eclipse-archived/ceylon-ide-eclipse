@@ -91,7 +91,7 @@ final class CodePopup extends PopupDialog
 
     @Override
     protected Control createDialogArea(Composite parent) {
-        int styles= SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION;
+        int styles= SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.FULL_SELECTION;
         viewer = new CeylonSourceViewer(editor, parent, null, null, false, styles);
         viewer.setEditable(false);
         StyledText textWidget = viewer.getTextWidget();

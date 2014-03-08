@@ -175,7 +175,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         @Override
         public IInformationControl createInformationControl(Shell parent) {
             return new HierarchyPopup(editor, parent, 
-                    SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+                    SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL);
         }
     }
 
@@ -348,7 +348,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         @Override
         public IInformationControl createInformationControl(Shell parent) {
             return new OutlinePopup(editor, parent, 
-                    SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+                    SWT.RESIZE, SWT.V_SCROLL | SWT.H_SCROLL);
         }
     }
 
