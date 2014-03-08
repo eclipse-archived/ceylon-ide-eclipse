@@ -59,16 +59,16 @@ public class NavigateMenuItems extends CompoundContributionItem {
                 items[0], items[1], items[2], items[3], items[4], items[5],
                 new Separator(),
                 new DynamicMenuItem("org.eclipse.ui.navigate.next", 
-                        "Next Annotation", true, NEXT),
+                        "Ne&xt Annotation", true, NEXT),
                 new DynamicMenuItem("org.eclipse.ui.navigate.previous", 
-                        "Previous Annotation", true, PREV),
+                        "Pre&vious Annotation", true, PREV),
                 new Separator(),
                 new DynamicMenuItem("org.eclipse.ui.edit.text.gotoLastEditPosition", 
-                        "Last Edit Location", enabled, EDIT),
+                        "Last Edit Lo&cation", enabled, EDIT),
                 new DynamicMenuItem("org.eclipse.ui.edit.text.goto.line", 
-                        "Go to Line...", true),
+                        "&Go to Line...", true),
                 new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence", 
-                        "Go To Matching Bracket", true)
+                        "Go to &Matching Bracket", true)
         };
     }
 

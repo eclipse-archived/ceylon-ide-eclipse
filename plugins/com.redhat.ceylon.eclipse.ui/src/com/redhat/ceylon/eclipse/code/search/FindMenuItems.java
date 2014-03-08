@@ -56,20 +56,20 @@ public class FindMenuItems extends CompoundContributionItem {
                         editor==null ? false : new FindReferencesAction(editor).isEnabled(), 
                                 REFS),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findAssignments", 
-                        "Find Assignments",
+                        "Find &Assignments",
                         editor==null ? false : new FindAssignmentsAction(editor).isEnabled(), 
                                 REFS),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findRefinements", 
-                        "Find Refinements",
+                        "Find Re&finements",
                         editor==null ? false : new FindRefinementsAction(editor).isEnabled(), 
                                 DECS),
                 new DynamicMenuItem(PLUGIN_ID + ".action.findSubtypes", 
-                        "Find Subtypes",
+                        "Find &Subtypes",
                         editor==null ? false : new FindSubtypesAction(editor).isEnabled(), 
                                 DECS),
                 new Separator(),
                 new DynamicMenuItem("org.eclipse.search.ui.performTextSearchWorkspace",
-                        "Find Text in Workspace", true)
+                        "Find &Text in Workspace", true)
         };
     }
 

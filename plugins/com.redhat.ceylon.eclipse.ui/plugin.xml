@@ -1151,7 +1151,7 @@
       <menuContribution
             locationURI="menu:window?before=additions">
             <command
-                  label="Quick Switch Editor" 
+                  label="Quick &amp;Switch Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"
                   id="com.redhat.ceylon.eclipse.ui.menu.openEditorDropDown"/>
       </menuContribution>
@@ -1166,7 +1166,7 @@
                   icon="icons/openrsrc.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openResource"/>
             <command
-                  label="Open &amp;Ceylon Declaration..." 
+                  label="Open Ce&amp;ylon Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
@@ -1254,7 +1254,7 @@
             locationURI="menu:navigate?after=additions">
             <command
                   id="gotoMatchingFence"
-                  label="Go To &amp;Matching Bracket"
+                  label="Go to &amp;Matching Bracket"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence">
               <visibleWhen>
                   <with variable="activeEditorId">
@@ -1312,22 +1312,22 @@
                   label="Edit">
             <command 
                   commandId="org.eclipse.ui.edit.undo"
-                  label="Undo"/>
+                  label="&amp;Undo"/>
             <command 
                   commandId="org.eclipse.ui.edit.redo"
-                  label="Redo"/>
+                  label="&amp;Redo"/>
             <separator 
                   visible="true"
                   name="sep2"/>
             <command 
                   commandId="org.eclipse.ui.edit.cut"
-                  label="Cut"/>
+                  label="Cu&amp;t"/>
             <command 
                   commandId="org.eclipse.ui.edit.copy"
-                  label="Copy"/>
+                  label="&amp;Copy"/>
             <command 
                   commandId="org.eclipse.ui.edit.paste"
-                  label="Paste"/>
+                  label="&amp;Paste"/>
             </menu>
             <dynamic id="source"
                   class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
@@ -1340,7 +1340,7 @@
                   name="sep9"/>
             <command
                   id="openEditorDropDown"
-                  label="Quick Switch Editor" 
+                  label="Quick &amp;Switch Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"/>
       </menuContribution>
       <menuContribution
