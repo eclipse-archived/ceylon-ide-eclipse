@@ -1166,12 +1166,12 @@
                   icon="icons/openrsrc.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openResource"/>
             <command
-                  label="&amp;Open Ceylon Declaration..." 
+                  label="Open &amp;Ceylon Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
             <command
-                  label="&amp;Open in Type Hierarchy View..." 
+                  label="Open in &amp;Type Hierarchy View..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclarationInHierarchy"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclarationInHierarchy"/>
             <separator
@@ -1185,24 +1185,6 @@
                   </with>
               </visibleWhen>
             </dynamic>
-            <separator
-                  visible="true"
-                  name="belowOpen"/>
-            <command 
-                  id="showOutline"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.showOutline"
-                  icon="icons/outline_co.gif"
-                  label="Quick &amp;Outline"/>
-            <command 
-                  id="showHierarchy"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.hierarchy"
-                  icon="icons/class_hi.gif"
-                  label="Quick &amp;Hierarchy"/>
-            <command 
-                  id="showCode"
-                  commandId="com.redhat.ceylon.eclipse.ui.editor.code"
-                  icon="icons/source.gif"
-                  label="&amp;Peek Definition"/>
             <separator
                   name="sep4" 
                   visible="true"/>
