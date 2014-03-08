@@ -28,7 +28,7 @@ public class SelectedDeclarationMenuItems extends CompoundContributionItem {
     }
     
     @Override
-    protected IContributionItem[] getContributionItems() {
+    public IContributionItem[] getContributionItems() {
         boolean enabled = new OpenSelectedDeclarationHandler().isEnabled();
         return new IContributionItem[] {
                 new DynamicMenuItem(PLUGIN_ID + ".action.openSelectedDeclaration", 

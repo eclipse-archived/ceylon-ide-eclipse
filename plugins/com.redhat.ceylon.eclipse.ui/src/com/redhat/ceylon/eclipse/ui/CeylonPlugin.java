@@ -311,6 +311,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(CEYLON_SUP, image("super_co.gif"));
         reg.put(CEYLON_SUB, image("sub_co.gif"));
         reg.put(CEYLON_OUTLINE, image("outline_co.gif"));
+        reg.put(CEYLON_HIERARCHY, image("class_hi.gif"));
         reg.put(CEYLON_SOURCE, image("source.gif"));
         reg.put(ELE32, image("ceylon_icon_32px.png"));
         reg.put(CEYLON_ERR, image("error_co.gif"));
@@ -360,6 +361,9 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(ADD_COMMENT, image("comment_edit.gif"));
         reg.put(TOGGLE_COMMENT, image("url.gif"));
         reg.put(CORRECT_INDENT, image("correctindent.gif"));
+        reg.put(LAST_EDIT, image("last_edit_pos.gif"));
+        reg.put(NEXT_ANN, image("next_nav.gif"));
+        reg.put(PREV_ANN, image("prev_nav.gif"));
     }
     
     private void registerProjectOpenCloseListener() {
