@@ -537,6 +537,11 @@
             description="Open search screen"
             name="Ceylon Search"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.switchToRecent"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Switch to recently opened editor"
+            name="Recently Edited Files"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.welcome"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open welcome page"
@@ -771,6 +776,9 @@
             class="com.redhat.ceylon.eclipse.ui.WelcomeAction"
             commandId="com.redhat.ceylon.eclipse.ui.action.welcome"/>
       <handler
+            class="com.redhat.ceylon.eclipse.code.editor.RecentFilesHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.switchToRecent"/>
+      <handler
             class="com.redhat.ceylon.eclipse.code.search.FindReferencesHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.findReferences"/>
       <handler
@@ -997,6 +1005,11 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M2+M3+S"/>
       
+      <key
+            sequence="M2+M3+E"
+            commandId="com.redhat.ceylon.eclipse.ui.action.switchToRecent"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            
       <!-- Refactorings -->
       <key
             sequence="M2+M3+R"
@@ -1154,6 +1167,10 @@
                   label="Quick &amp;Switch Editor" 
                   commandId="org.eclipse.ui.window.openEditorDropDown"
                   id="com.redhat.ceylon.eclipse.ui.menu.openEditorDropDown"/>
+            <command
+                  label="Recently Edited Files" 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.switchToRecent"
+                  id="com.redhat.ceylon.eclipse.ui.menu.switchToRecent"/>
       </menuContribution>
       <menuContribution
             locationURI="menu:navigate?before=open.ext">
@@ -1296,6 +1313,16 @@
             <dynamic
                   id="navigate"
                   class="com.redhat.ceylon.eclipse.code.outline.NavigateMenuItems"/>
+            <menu label="Switch">
+            <command
+                  id="openEditorDropDown"
+                  label="Quick &amp;Switch Editor" 
+                  commandId="org.eclipse.ui.window.openEditorDropDown"/>
+            <command
+                  label="&amp;Recently Edited Files" 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.switchToRecent"
+                  id="com.redhat.ceylon.eclipse.ui.menu.switchToRecent"/>
+            </menu>
      </menuContribution>
       <menuContribution
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?after=group.edit">
@@ -1338,10 +1365,6 @@
             <separator
                   visible="true"
                   name="sep9"/>
-            <command
-                  id="openEditorDropDown"
-                  label="Quick &amp;Switch Editor" 
-                  commandId="org.eclipse.ui.window.openEditorDropDown"/>
       </menuContribution>
       <menuContribution
          locationURI="menu:org.eclipse.ui.main.menu?after=navigate">

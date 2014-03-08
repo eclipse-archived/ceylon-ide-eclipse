@@ -11,6 +11,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.runtime.FileLocator;
@@ -30,12 +35,16 @@ import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.code.editor.RecentFilesPopup;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 
 
@@ -108,6 +117,29 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         addResourceFilterPreference();
         registerProjectOpenCloseListener();
         CeylonEncodingSynchronizer.getInstance().install();
+        ICommandService commandService = (ICommandService) getWorkbench().getService( ICommandService.class );
+        commandService.addExecutionListener(new IExecutionListener() {
+            public void notHandled(final String commandId, final NotHandledException exception) {}
+            public void postExecuteFailure(final String commandId, final ExecutionException exception) {}
+            public void postExecuteSuccess(final String commandId, final Object returnValue) {
+                if (commandId.equals( "org.eclipse.ui.file.save") ) {
+                    IEditorPart ed = EditorUtil.getCurrentEditor();
+                    if (ed!=null) {
+                        IFile file = EditorUtil.getFile(ed.getEditorInput());
+                        if (file!=null) {
+                            if (!RecentFilesPopup.recents.contains(file)) {
+                                RecentFilesPopup.recents.add(file);
+                                if (RecentFilesPopup.recents.size()>10) {
+                                    RecentFilesPopup.recents.remove(0);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            public void preExecute(final String commandId, final ExecutionEvent event) {}
+
+        } );
     }
     
     @Override
