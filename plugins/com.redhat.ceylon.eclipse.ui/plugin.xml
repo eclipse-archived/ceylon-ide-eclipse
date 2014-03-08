@@ -1310,6 +1310,50 @@
       </menuContribution>
       <menuContribution
             locationURI="popup:com.redhat.ceylon.eclipse.ui.editor.EditorContext?after=group.open">
+            <menu
+                  id="file"
+                  label="File">
+            <command 
+                  commandId="org.eclipse.ui.file.save"
+                  label="&amp;Save"/>
+            <command 
+                  commandId="org.eclipse.ui.file.close"
+                  label="&amp;Close"/>
+            <command 
+                  commandId="org.eclipse.ui.file.revert"
+                  label="&amp;Revert"/>
+            <separator
+                  visible="true"
+                  name="sep"/>
+            <command 
+                  commandId="org.eclipse.ui.file.properties"
+                  label="&amp;Properties"/>
+            </menu>
+            <menu
+                  id="edit"
+                  label="Edit">
+            <command 
+                  commandId="org.eclipse.ui.edit.undo"
+                  label="&amp;Undo"/>
+            <command 
+                  commandId="org.eclipse.ui.edit.redo"
+                  label="&amp;Redo"/>
+            <separator 
+                  visible="true"
+                  name="sep2"/>
+            <command 
+                  commandId="org.eclipse.ui.edit.cut"
+                  label="Cu&amp;t"/>
+            <command 
+                  commandId="org.eclipse.ui.edit.copy"
+                  label="&amp;Copy"/>
+            <command 
+                  commandId="org.eclipse.ui.edit.paste"
+                  label="&amp;Paste"/>
+            </menu>
+            <separator
+                  visible="true"
+                  name="sep0"/>
             <dynamic
                   id="navigate"
                   class="com.redhat.ceylon.eclipse.code.outline.NavigateMenuItems"/>
@@ -1334,28 +1378,6 @@
             <separator
                   visible="true"
                   name="sep4"/>
-            <menu
-                  id="edit"
-                  label="Edit">
-            <command 
-                  commandId="org.eclipse.ui.edit.undo"
-                  label="&amp;Undo"/>
-            <command 
-                  commandId="org.eclipse.ui.edit.redo"
-                  label="&amp;Redo"/>
-            <separator 
-                  visible="true"
-                  name="sep2"/>
-            <command 
-                  commandId="org.eclipse.ui.edit.cut"
-                  label="Cu&amp;t"/>
-            <command 
-                  commandId="org.eclipse.ui.edit.copy"
-                  label="&amp;Copy"/>
-            <command 
-                  commandId="org.eclipse.ui.edit.paste"
-                  label="&amp;Paste"/>
-            </menu>
             <dynamic id="source"
                   class="com.redhat.ceylon.eclipse.code.editor.SourceMenuItems"/>
             <dynamic id="refactor"

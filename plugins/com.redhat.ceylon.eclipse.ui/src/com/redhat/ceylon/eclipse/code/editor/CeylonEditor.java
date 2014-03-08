@@ -274,6 +274,8 @@ public class CeylonEditor extends TextEditor {
     @Override
     protected void editorContextMenuAboutToShow(IMenuManager menu) {
         super.editorContextMenuAboutToShow(menu);
+        menu.remove(ITextEditorActionConstants.SAVE);
+        menu.remove(ITextEditorActionConstants.REVERT);
         menu.remove(ITextEditorActionConstants.SHIFT_LEFT);
         menu.remove(ITextEditorActionConstants.SHIFT_RIGHT);
         menu.remove(ITextEditorActionConstants.QUICK_ASSIST);    
