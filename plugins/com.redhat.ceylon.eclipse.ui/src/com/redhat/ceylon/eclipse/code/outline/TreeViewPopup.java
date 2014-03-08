@@ -13,12 +13,15 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static org.eclipse.ui.IWorkbenchCommandConstants.WINDOW_SHOW_VIEW_MENU;
 
+import java.util.StringTokenizer;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension;
@@ -26,8 +29,11 @@ import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInformationControlExtension3;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusListener;
@@ -41,8 +47,11 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -111,6 +120,8 @@ public abstract class TreeViewPopup extends PopupDialog
      */
     private int treeStyle;
 
+    private StyledText titleLabel;
+
     /**
      * The initially selected type.
      * @since 3.5
@@ -142,8 +153,6 @@ public abstract class TreeViewPopup extends PopupDialog
         }*/
         this.treeStyle= treeStyle;
         // Title and status text must be set to get the title label created, so force empty values here.
-        if (hasHeader())
-            setTitleText("");
         setInfoText("");
 
         // Create all controls early to preserve the life cycle of the original implementation.
@@ -279,20 +288,7 @@ public abstract class TreeViewPopup extends PopupDialog
     protected TreeViewer getTreeViewer() {
         return treeViewer;
     }
-
-    /**
-     * Returns <code>true</code> if the control has a header, <code>false</code> otherwise.
-     * <p>
-     * The default is to return <code>false</code>.
-     * </p>
-     *
-     * @return <code>true</code> if the control has a header
-     */
-    protected boolean hasHeader() {
-        // default is to have no header
-        return true;
-    }
-
+    
     protected Text getFilterText() {
         return filterText;
     }
@@ -679,15 +675,17 @@ public abstract class TreeViewPopup extends PopupDialog
      */
     @Override
     protected Control createTitleMenuArea(Composite parent) {
-        viewMenuButtonComposite= (Composite) super.createTitleMenuArea(parent);
-
+        viewMenuButtonComposite = 
+                (Composite) super.createTitleMenuArea(parent);
+//        getPopupLayout().copy().numColumns(4).applyTo(viewMenuButtonComposite);
+//        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true,
+//                false).applyTo(viewMenuButtonComposite);
+//        viewMenuButtonComposite.layout(true);
+        
         // If there is a header, then the filter text must be created
         // underneath the title and menu area.
-
-        if (hasHeader()) {
-            filterText= createFilterText(parent);
-        }
-
+        filterText= createFilterText(parent);
+        
         // Create show view menu action
         showViewMenuAction= new Action("showViewMenu") { //$NON-NLS-1$
             /*
@@ -704,6 +702,29 @@ public abstract class TreeViewPopup extends PopupDialog
         return viewMenuButtonComposite;
     }
 
+    protected StyledString styleTitle(final StyledText title) {
+        StyledString result = new StyledString();
+        StringTokenizer tokens = 
+                new StringTokenizer(title.getText(), "-", false);
+        styleDescription(title, result, tokens.nextToken());
+        result.append("-").append(tokens.nextToken());
+        return result;
+    }
+
+    protected void styleDescription(final StyledText title, StyledString result,
+            String desc) {
+        final FontData[] fontDatas = title.getFont().getFontData();
+        for (int i = 0; i < fontDatas.length; i++) {
+            fontDatas[i].setStyle(SWT.BOLD);
+        }
+        result.append(desc, new Styler() {
+            @Override
+            public void applyStyles(TextStyle textStyle) {
+                textStyle.font=new Font(title.getDisplay(), fontDatas);
+            }
+        });
+    }
+
     /*
      * Overridden to insert the filter text into the title control
      * if there is no header specified.
@@ -711,21 +732,39 @@ public abstract class TreeViewPopup extends PopupDialog
      */
     @Override
     protected Control createTitleControl(Composite parent) {
-        if (hasHeader()) {
-            return super.createTitleControl(parent);
-        }
-        filterText= createFilterText(parent);
+        titleLabel = new StyledText(parent, SWT.NONE);
+        titleLabel.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                titleLabel.setStyleRanges(styleTitle(titleLabel).getStyleRanges());
+            }
+        });
+        titleLabel.setEditable(false);
+        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
+            .grab(true,false).span(1, 1).applyTo(titleLabel);
+//        filterText = createFilterText(parent);
         return filterText;
     }
-
+    
+    @Override
+    protected void setTitleText(String text) {
+        if (titleLabel!=null)
+            titleLabel.setText(text);
+    }
+    
     @Override
     protected void setTabOrder(Composite composite) {
-        if (hasHeader()) {
-            composite.setTabList(new Control[] { filterText, treeViewer.getTree() });
-        } else {
-            viewMenuButtonComposite.setTabList(new Control[] { filterText });
-            composite.setTabList(new Control[] { viewMenuButtonComposite, treeViewer.getTree() });
-        }
+//        composite.setTabList(new Control[] { 
+//                filterText.getParent(), 
+//                treeViewer.getTree() 
+//        });
+//        filterText.getParent().setTabList(new Control[]{ filterText });
+//        if (hasHeader()) {
+        composite.setTabList(new Control[] { filterText, treeViewer.getTree() });
+//        } else {
+//            viewMenuButtonComposite.setTabList(new Control[] { filterText });
+//            composite.setTabList(new Control[] { viewMenuButtonComposite, treeViewer.getTree() });
+//        }
     }
     
     @Override

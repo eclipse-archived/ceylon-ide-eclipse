@@ -12,7 +12,6 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import org.eclipse.jface.action.Action;
@@ -38,6 +37,7 @@ import org.eclipse.swt.widgets.Widget;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class OutlinePopup extends TreeViewPopup {
     
@@ -149,7 +149,7 @@ public class OutlinePopup extends TreeViewPopup {
             int treeStyle) {
         super(shell, shellStyle, treeStyle, editor,
                 getCurrentThemeColor("outline"));
-        setTitleText("Outline of '" + editor.getEditorInput().getName() + "'");
+        setTitleText("Quick Outline - " + editor.getEditorInput().getName());
     }
 
     @Override
@@ -176,14 +176,15 @@ public class OutlinePopup extends TreeViewPopup {
     
     @Override
     protected String getId() {
-        return "org.eclipse.jdt.internal.ui.text.QuickOutline";
+        return "com.redhat.ceylon.eclipse.ui.QuickOutline";
     }
 
     @Override
     protected Control createTitleControl(Composite parent) {
-        getPopupLayout().copy().numColumns(3).applyTo(parent);
+        getPopupLayout().copy().numColumns(3).spacing(6, 6).applyTo(parent);
         Label label = new Label(parent, SWT.NONE);
-        label.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_OUTLINE));
+        label.setImage(CeylonPlugin.getInstance().getImageRegistry()
+                .get(CeylonResources.CEYLON_OUTLINE));
         return super.createTitleControl(parent);
     }
     
