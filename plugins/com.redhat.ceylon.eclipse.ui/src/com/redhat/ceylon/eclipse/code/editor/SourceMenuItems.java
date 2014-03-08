@@ -75,7 +75,7 @@ public class SourceMenuItems extends CompoundContributionItem {
     private IContributionItem[] getItems(IEditorPart editor) {
         return new IContributionItem[] {
                 new DynamicMenuItem(PLUGIN_ID + ".action.cleanImports", 
-                        "Organi&ze Imports", 
+                        "&Organize Imports", 
                         new CleanImportsHandler().isEnabled(), DELETE_IMPORT),
                 new DynamicMenuItem(PLUGIN_ID + ".action.delete", 
                         "Safe &Delete...",
