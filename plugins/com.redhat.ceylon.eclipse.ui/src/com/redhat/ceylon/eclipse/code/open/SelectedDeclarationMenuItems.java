@@ -39,10 +39,10 @@ public class SelectedDeclarationMenuItems extends CompoundContributionItem {
         boolean enabled = new OpenSelectedDeclarationHandler().isEnabled();
         return new IContributionItem[] {
                 new DynamicMenuItem(PLUGIN_ID + ".action.openSelectedDeclaration", 
-                        "Go To Selected &Declaration",
+                        "Go to Selected &Declaration",
                         enabled, GOTO_IMAGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.showInHierarchyView", 
-                        "&Show In Type Hierarchy View",
+                        "&Show in Type Hierarchy View",
                         enabled, HIERARCHY_IMAGE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.showOutline", 
