@@ -44,6 +44,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
@@ -154,7 +155,20 @@ public abstract class TreeViewPopup extends PopupDialog
         // Status field text can only be computed after widgets are created.
         setInfoText(getStatusFieldText());
     }
-
+    
+    protected Control createContents(Composite parent) {
+        Composite composite = (Composite) super.createContents(parent);
+        Control[] children = composite.getChildren();
+        GridLayout layout = (GridLayout) composite.getLayout();
+        layout.verticalSpacing=8;
+        layout.marginLeft=8;
+        layout.marginRight=8;
+        layout.marginTop=8;
+        layout.marginBottom=8;
+        children[children.length-2].setVisible(false);
+        return composite;
+    }
+    
     /**
      * Create the main content for this information control.
      *
