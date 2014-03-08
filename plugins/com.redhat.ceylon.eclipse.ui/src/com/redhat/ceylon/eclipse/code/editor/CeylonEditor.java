@@ -133,6 +133,7 @@ import ceylon.language.StringBuilder;
 
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
+import com.redhat.ceylon.eclipse.code.outline.NavigateMenuItems;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
@@ -276,6 +277,10 @@ public class CeylonEditor extends TextEditor {
         menu.remove(ITextEditorActionConstants.SHIFT_LEFT);
         menu.remove(ITextEditorActionConstants.SHIFT_RIGHT);
         menu.remove(ITextEditorActionConstants.QUICK_ASSIST);    
+        menu.remove(ITextEditorActionConstants.CUT);
+        menu.remove(ITextEditorActionConstants.COPY);
+        menu.remove(ITextEditorActionConstants.PASTE);
+        menu.remove(ITextEditorActionConstants.UNDO);
     }
     
     protected void createActions() {
@@ -870,11 +875,25 @@ public class CeylonEditor extends TextEditor {
     private IHandlerActivation fSourceQuickAccessHandlerActivation;
     private IHandlerActivation fFindQuickAccessHandlerActivation;
     private IHandlerActivation fRefactorQuickAccessHandlerActivation;
+    private IHandlerActivation fNavigateQuickAccessHandlerActivation;
     private IHandlerService fHandlerService;
 
     public static final String REFACTOR_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu";
+    public static final String NAVIGATE_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.navigateQuickMenu";
     public static final String FIND_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.findQuickMenu";
     public static final String SOURCE_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.sourceQuickMenu";
+    
+    private class NavigateQuickAccessAction extends QuickMenuAction {
+        public NavigateQuickAccessAction() {
+            super(NAVIGATE_MENU_ID);
+        }
+        protected void fillMenu(IMenuManager menu) {
+            IContributionItem[] cis = new NavigateMenuItems().getContributionItems();
+            for (IContributionItem ci: cis) {
+                menu.add(ci);
+            }
+        }
+    }
     
     private class RefactorQuickAccessAction extends QuickMenuAction {
         public RefactorQuickAccessAction() {
@@ -915,6 +934,9 @@ public class CeylonEditor extends TextEditor {
     private void installQuickAccessAction() {
         fHandlerService= (IHandlerService) getSite().getService(IHandlerService.class);
         if (fHandlerService != null) {
+            QuickMenuAction navigateQuickAccessAction= new NavigateQuickAccessAction();
+            fNavigateQuickAccessHandlerActivation= fHandlerService.activateHandler(navigateQuickAccessAction.getActionDefinitionId(), 
+                            new ActionHandler(navigateQuickAccessAction));
             QuickMenuAction refactorQuickAccessAction= new RefactorQuickAccessAction();
             fRefactorQuickAccessHandlerActivation= fHandlerService.activateHandler(refactorQuickAccessAction.getActionDefinitionId(), 
                     new ActionHandler(refactorQuickAccessAction));
@@ -929,6 +951,7 @@ public class CeylonEditor extends TextEditor {
     
     protected void uninstallQuickAccessAction() {
         if (fHandlerService != null) {
+            fHandlerService.deactivateHandler(fNavigateQuickAccessHandlerActivation); 
             fHandlerService.deactivateHandler(fRefactorQuickAccessHandlerActivation); 
             fHandlerService.deactivateHandler(fFindQuickAccessHandlerActivation); 
             fHandlerService.deactivateHandler(fSourceQuickAccessHandlerActivation); 

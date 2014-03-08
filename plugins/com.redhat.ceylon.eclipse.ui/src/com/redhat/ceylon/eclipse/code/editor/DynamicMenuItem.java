@@ -10,6 +10,7 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 
 public class DynamicMenuItem extends CommandContributionItem {
+    
     private boolean enabled;
     
     public DynamicMenuItem(String id, String label, boolean enabled) {
