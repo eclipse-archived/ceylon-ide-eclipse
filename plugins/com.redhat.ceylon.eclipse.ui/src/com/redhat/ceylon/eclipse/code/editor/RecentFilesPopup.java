@@ -14,10 +14,14 @@ import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Cursor;
@@ -56,6 +60,13 @@ public class RecentFilesPopup extends PopupDialog {
         layout.marginBottom = 2;
         parent.setLayout(layout);
         list = new TableViewer(parent, SWT.NO_TRIM|SWT.SINGLE|SWT.FULL_SELECTION);
+        list.setFilters(new ViewerFilter[] {new ViewerFilter() {
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                return ((IFile) element).getName().toLowerCase()
+                        .startsWith(filterText.getText().toLowerCase());
+            }
+        }});
         list.setLabelProvider(new StorageLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -84,7 +95,7 @@ public class RecentFilesPopup extends PopupDialog {
             public void keyReleased(KeyEvent e) {}
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.character=='\r') {
+                if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) { // Enter key
                     go();
                 }
             }
@@ -137,6 +148,7 @@ public class RecentFilesPopup extends PopupDialog {
 
     protected Text createFilterText(Composite parent) {
         filterText= new Text(parent, SWT.NONE);
+        filterText.setMessage("type filter text");
         Dialog.applyDialogFont(filterText);
 
         GridData data= new GridData(GridData.FILL_HORIZONTAL);
@@ -147,7 +159,7 @@ public class RecentFilesPopup extends PopupDialog {
         filterText.addKeyListener(new KeyListener() {
             public void keyPressed(KeyEvent e) {
                 if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) // Enter key
-//                    gotoSelectedElement();
+                    go();
                 if (e.keyCode == SWT.ARROW_DOWN)
                     list.getTable().setFocus();
                 if (e.keyCode == SWT.ARROW_UP)
@@ -157,6 +169,12 @@ public class RecentFilesPopup extends PopupDialog {
             }
             public void keyReleased(KeyEvent e) {
                 // do nothing
+            }
+        });
+        filterText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                list.refresh();
             }
         });
 

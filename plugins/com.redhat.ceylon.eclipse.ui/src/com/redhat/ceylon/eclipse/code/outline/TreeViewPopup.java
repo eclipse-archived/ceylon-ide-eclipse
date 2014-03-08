@@ -285,6 +285,7 @@ public abstract class TreeViewPopup extends PopupDialog
 
     protected Text createFilterText(Composite parent) {
         filterText= new Text(parent, SWT.NONE);
+        filterText.setMessage("type filter text");
         Dialog.applyDialogFont(filterText);
 
         GridData data= new GridData(GridData.FILL_HORIZONTAL);
