@@ -145,11 +145,11 @@ public class OutlinePopup extends TreeViewPopup {
         }
     }
 
-    public OutlinePopup(CeylonEditor editor, Shell parent, 
-            int shellStyle, int treeStyle) {
-        super(parent, shellStyle, treeStyle, editor,
+    public OutlinePopup(CeylonEditor editor, Shell shell, int shellStyle, 
+            int treeStyle) {
+        super(shell, shellStyle, treeStyle, editor,
                 getCurrentThemeColor("outline"));
-        setTitleText("Outline of " + editor.getEditorInput().getName());
+        setTitleText("Outline of '" + editor.getEditorInput().getName() + "'");
     }
 
     @Override

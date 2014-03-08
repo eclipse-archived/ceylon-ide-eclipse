@@ -48,9 +48,9 @@ public class HierarchyPopup extends TreeViewPopup {
     private CeylonHierarchyContentProvider contentProvider;
     private Label iconLabel;
     
-    public HierarchyPopup(CeylonEditor editor, Shell parent, int shellStyle, 
+    public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle, 
             int treeStyle) {
-        super(parent, shellStyle, treeStyle, editor,
+        super(shell, shellStyle, treeStyle, editor, 
                 getCurrentThemeColor("hierarchy"));
     }
     
