@@ -169,8 +169,10 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             Tree.StatementOrArgument that, Node line, Declaration dec) {
         Declaration refined = getRefinedDeclaration(dec);
         if (refined!=null) {
-            RefinementAnnotation ra = new RefinementAnnotation(
-                    "refines " + dec.getQualifiedNameString(), //never actually displayed 
+            Declaration container = (Declaration) dec.getContainer();
+            String description = 
+                    "refines " + container.getName(that.getUnit()) + "." + dec.getName();
+            RefinementAnnotation ra = new RefinementAnnotation(description,  
                     refined, line.getToken().getLine());
             model.addAnnotation(ra, new Position(Nodes.getStartOffset(that), 
                     Nodes.getLength(that)));

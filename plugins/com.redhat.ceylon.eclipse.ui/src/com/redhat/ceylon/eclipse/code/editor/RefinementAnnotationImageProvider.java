@@ -19,8 +19,8 @@ public class RefinementAnnotationImageProvider implements IAnnotationImageProvid
     
     @Override
     public Image getManagedImage(Annotation annotation) {
-        return ((RefinementAnnotation) annotation).getDeclaration().isFormal() ? 
-                FORMAL : DEFAULT;
+        RefinementAnnotation ra = (RefinementAnnotation) annotation;
+        return ra.getDeclaration().isFormal() ? FORMAL : DEFAULT;
     }
     
     @Override
