@@ -6,7 +6,6 @@ import java.util.Comparator;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IRewriteTarget;

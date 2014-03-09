@@ -8,6 +8,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
+import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 
@@ -36,8 +37,10 @@ public class AnnotationIterator implements Iterator<Annotation> {
         while (iterator.hasNext()) {
             Annotation next = (Annotation) iterator.next();
             if (!next.isMarkedDeleted()) {
+                //TODO: rethink this condition!
                 if (allAnnotations || 
                         next instanceof CeylonAnnotation || 
+                        next instanceof RefinementAnnotation ||
                         isProblemMarkerAnnotation(next)) {
                     nextAnnotation = next;
                     return;

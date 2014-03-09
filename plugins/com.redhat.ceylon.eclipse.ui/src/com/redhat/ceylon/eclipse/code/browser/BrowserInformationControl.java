@@ -18,12 +18,8 @@ import java.util.Iterator;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.action.ToolBarManager;
-
-import com.redhat.ceylon.eclipse.code.html.HTML2TextReader;
-import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
-
+import org.eclipse.jface.internal.text.html.BrowserInformationControlInput;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IDelayedInputChangeProvider;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInputChangedListener;
@@ -49,6 +45,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
+
+import com.redhat.ceylon.eclipse.code.hover.AbstractInformationControl;
+import com.redhat.ceylon.eclipse.code.html.HTML2TextReader;
+import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 
 
 /**
