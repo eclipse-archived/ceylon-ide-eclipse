@@ -8,6 +8,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 
 /**
@@ -15,70 +16,63 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
  */
 public class AnnotationIterator implements Iterator<Annotation> {
 
-    private Iterator<Annotation> fIterator;
-    private Annotation fNext;
-    private boolean fReturnAllAnnotations;
-
-
+    private Iterator<Annotation> iterator;
+    private Annotation nextAnnotation;
+    private boolean allAnnotations;
+    
     /**
      * Returns a new JavaAnnotationIterator.
      * @param parent the parent iterator to iterate over annotations
      * @param returnAllAnnotations whether to return all annotations or just problem annotations
      */
-    public AnnotationIterator(Iterator<Annotation> parent, boolean returnAllAnnotations) {
-        fReturnAllAnnotations= returnAllAnnotations;
-        fIterator= parent;
+    public AnnotationIterator(Iterator<Annotation> parent, 
+            boolean returnAllAnnotations) {
+        allAnnotations = returnAllAnnotations;
+        iterator = parent;
         skip();
     }
 
     private void skip() {
-        while (fIterator.hasNext()) {
-            Annotation next= (Annotation) fIterator.next();
-
-            if (next.isMarkedDeleted())
-                continue;
-
-            if (fReturnAllAnnotations || next instanceof CeylonAnnotation || 
-                    isProblemMarkerAnnotation(next)) {
-                fNext= next;
-                return;
+        while (iterator.hasNext()) {
+            Annotation next = (Annotation) iterator.next();
+            if (!next.isMarkedDeleted()) {
+                if (allAnnotations || 
+                        next instanceof CeylonAnnotation || 
+                        isProblemMarkerAnnotation(next)) {
+                    nextAnnotation = next;
+                    return;
+                }
             }
         }
-        fNext= null;
+        nextAnnotation = null;
     }
 
     private static boolean isProblemMarkerAnnotation(Annotation annotation) {
         if (!(annotation instanceof MarkerAnnotation))
             return false;
         try {
-            return ((MarkerAnnotation)annotation).getMarker().isSubtypeOf(IMarker.PROBLEM);
+            MarkerAnnotation ma = (MarkerAnnotation) annotation;
+            return ma.getMarker().isSubtypeOf(IMarker.PROBLEM) &&
+                    !ma.getMarker().getType().equals(CeylonBuilder.PROBLEM_MARKER_ID);
         } 
         catch (CoreException e) {
             return false;
         }
     }
-
-    /*
-     * @see Iterator#hasNext()
-     */
+    
     public boolean hasNext() {
-        return fNext != null;
+        return nextAnnotation != null;
     }
-
-    /*
-     * @see Iterator#next()
-     */
+    
     public Annotation next() {
         try {
-            return fNext;
-        } finally {
+            return nextAnnotation;
+        }
+        finally {
             skip();
         }
     }
-
-    /*
-     * @see Iterator#remove()
-     */
+    
     public void remove() {
         throw new UnsupportedOperationException();
     }

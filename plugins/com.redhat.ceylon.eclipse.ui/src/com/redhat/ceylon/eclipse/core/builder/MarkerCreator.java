@@ -44,7 +44,7 @@ public class MarkerCreator extends ErrorVisitor {
                 ERROR_CODE_KEY,
                 IMarker.SOURCE_ID
             };
-        Object[] values= new Object[] {
+        Object[] values = new Object[] {
                 startLine, 
                 startOffset, endOffset+1, 
                 message.getMessage(), 

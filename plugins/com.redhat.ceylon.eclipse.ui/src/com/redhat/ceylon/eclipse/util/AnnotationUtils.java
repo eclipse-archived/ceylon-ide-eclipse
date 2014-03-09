@@ -347,7 +347,7 @@ public class AnnotationUtils {
         }
         //Color c = CeylonTokenColorer.getCurrentThemeColor("messageHover");
         //String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
-        String css= fgStyleSheet; //+ "body { background-color: #" + color + " }";
+        String css= fgStyleSheet + "body { padding: 5px; } hr { padding: 2px; border:0; }"; //+ "body { background-color: #" + color + " }";
         if (css!=null) {
             css = convertTopLevelFont(css, getFontRegistry()
                     .getFontData(APPEARANCE_JAVADOC_FONT)[0]);
