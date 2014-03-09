@@ -15,6 +15,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
+import org.eclipse.jface.bindings.TriggerSequence;
+import org.eclipse.jface.bindings.keys.KeySequence;
+import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -34,6 +37,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringCore;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Control;
@@ -46,6 +50,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
@@ -349,6 +354,44 @@ public class EditorUtil {
         LinkedPositionGroup linkedPositionGroup = new LinkedPositionGroup();
         linkedPositionGroup.addPosition(linkedPosition);
         linkedModeModel.addGroup(linkedPositionGroup);
+    }
+
+    /**
+     * WARNING: only works in workbench window context!
+     */
+    public static TriggerSequence getCommandBinding(String actionName) {
+        if (actionName==null) {
+            return null;
+        }
+        else {
+            IBindingService bindingService= (IBindingService) getWorkbench()
+                    .getAdapter(IBindingService.class);
+            if (bindingService == null) {
+                return null;
+            }
+            else {
+                return bindingService.getBestActiveBindingFor(actionName);
+            }
+        }
+    }
+
+    public static boolean triggersBinding(KeyEvent e, TriggerSequence commandBinding) {
+        if (commandBinding==null) return false;
+        char character = e.character;
+        boolean ctrlDown = (e.stateMask & SWT.CTRL) != 0;
+        if (ctrlDown && e.character != e.keyCode && e.character < 0x20
+                && (e.keyCode & SWT.KEYCODE_BIT) == 0) {
+            character += 0x40;
+        }
+        // do not process modifier keys
+        if ((e.keyCode & (~SWT.MODIFIER_MASK)) == 0) {
+            return false;
+        }
+        // if there is a character, use it. if no character available,
+        // try with key code
+        KeyStroke ks = KeyStroke.getInstance(e.stateMask,
+                character != 0 ? Character.toUpperCase(character) : e.keyCode);
+        return commandBinding.startsWith(KeySequence.getInstance(ks), true);
     }
 
 }

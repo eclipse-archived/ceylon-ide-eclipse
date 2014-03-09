@@ -1,14 +1,14 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCommandBinding;
 import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.ui.keys.IBindingService;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
@@ -24,7 +24,8 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
     
     public RefactorLinkedMode(CeylonEditor editor) {
         super(editor);
-        openDialogKeyBinding = getOpenDialogBinding(getActionName());
+        TriggerSequence binding = getCommandBinding(getActionName());
+        openDialogKeyBinding = binding==null ? "" : binding.format();
     }
     
     protected abstract String getActionName();
@@ -95,27 +96,6 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
         setName(getNewNameFromNamePosition());
         revertChanges();
         linkedModeModel.exit(NONE);
-    }
-    
-
-    /**
-     * WARNING: only works in workbench window context!
-     */
-    private static String getOpenDialogBinding(String actionName) {
-        if (actionName==null) {
-            return "";
-        }
-        else {
-            IBindingService bindingService= (IBindingService) getWorkbench()
-                    .getAdapter(IBindingService.class);
-            if (bindingService == null) {
-                return "";
-            }
-            else {
-                String binding= bindingService.getBestActiveBindingFormattedFor(actionName);
-                return binding == null ? "" : binding;
-            }
-        }
     }
     
 }
