@@ -4,6 +4,7 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIERARCHY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 
@@ -27,6 +28,7 @@ public class SelectedDeclarationMenuItems extends CompoundContributionItem {
     private static final ImageDescriptor OUTLINE = imageRegistry.getDescriptor(CEYLON_OUTLINE);
     private static final ImageDescriptor HIERARCHY = imageRegistry.getDescriptor(CEYLON_HIERARCHY);
     private static final ImageDescriptor CODE = imageRegistry.getDescriptor(CEYLON_SOURCE);
+    private static final ImageDescriptor REFS = imageRegistry.getDescriptor(CEYLON_REFS);
 
     public SelectedDeclarationMenuItems() {}
     
@@ -49,6 +51,8 @@ public class SelectedDeclarationMenuItems extends CompoundContributionItem {
                         "Quick &Outline", true, OUTLINE),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.hierarchy", 
                         "Quick &Hierarchy", true, HIERARCHY),
+                new DynamicMenuItem(PLUGIN_ID + ".editor.findReferences", 
+                        "Quick &Find References", true, REFS),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.code", 
                         "&Peek Definition", true, CODE),
         };

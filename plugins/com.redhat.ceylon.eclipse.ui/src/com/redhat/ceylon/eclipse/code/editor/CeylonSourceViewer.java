@@ -90,6 +90,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
     public static final int SHOW_DEFINITION= 56;
 
     /**
+     * Text operation code for requesting the references for the current input.
+     */
+    public static final int SHOW_REFERENCES= 59;
+
+    /**
      * Text operation code for toggling the commenting of a selected range of text, or the current line.
      */
     public static final int TOGGLE_COMMENT= 54;
@@ -117,7 +122,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
     private IInformationPresenter outlinePresenter;
     private IInformationPresenter structurePresenter;
     private IInformationPresenter hierarchyPresenter;
-    private IInformationPresenter codePresenter;
+    private IInformationPresenter definitionPresenter;
+    private IInformationPresenter referencesPresenter;
     private IAutoEditStrategy autoEditStrategy;
     private CeylonEditor editor;
 
@@ -136,7 +142,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
         case SHOW_HIERARCHY:
             return hierarchyPresenter!=null;
         case SHOW_DEFINITION:
-            return codePresenter!=null;
+            return definitionPresenter!=null;
+        case SHOW_REFERENCES:
+            return referencesPresenter!=null;
         case SHOW_IN_HIERARCHY_VIEW:
             return true;
         case ADD_BLOCK_COMMENT: //TODO: check if something is selected! 
@@ -171,8 +179,12 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 hierarchyPresenter.showInformation();
             return;
         case SHOW_DEFINITION:
-            if (codePresenter!=null)
-                codePresenter.showInformation();
+            if (definitionPresenter!=null)
+                definitionPresenter.showInformation();
+            return;
+        case SHOW_REFERENCES:
+            if (referencesPresenter!=null)
+                referencesPresenter.showInformation();
             return;
         case SHOW_IN_HIERARCHY_VIEW:
             try {
@@ -621,9 +633,14 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 hierarchyPresenter.install(this);
             }
             
-            codePresenter = svc.getCodePresenter(this);
-            if (codePresenter!=null) {
-                codePresenter.install(this);
+            definitionPresenter = svc.getDefinitionPresenter(this);
+            if (definitionPresenter!=null) {
+                definitionPresenter.install(this);
+            }
+            
+            referencesPresenter = svc.getReferencesPresenter(this);
+            if (referencesPresenter!=null) {
+                referencesPresenter.install(this);
             }
             
             autoEditStrategy = new CeylonAutoEditStrategy();

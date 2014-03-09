@@ -83,6 +83,8 @@ public interface EditorActionIds {
 
     public static final String SHOW_CEYLON_HIERARCHY = PLUGIN_ID + ".editor.hierarchy";
 
+    public static final String SHOW_CEYLON_REFERENCES = PLUGIN_ID + ".editor.findReferences";
+
     public static final String SHOW_IN_CEYLON_HIERARCHY_VIEW = PLUGIN_ID + ".action.showInHierarchyView";
 
 }
