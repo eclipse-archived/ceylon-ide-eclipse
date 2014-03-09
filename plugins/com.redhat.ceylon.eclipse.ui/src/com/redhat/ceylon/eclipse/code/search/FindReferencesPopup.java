@@ -60,7 +60,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -71,24 +70,6 @@ public final class FindReferencesPopup extends PopupDialog
         implements IInformationControl, IInformationControlExtension2,
                    IInformationControlExtension3 {
     
-    private final class GotoListener implements KeyListener {
-        @Override
-        public void keyReleased(KeyEvent e) {}
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if (e.character == 0x1B) // ESC
-                dispose();
-            if (EditorUtil.triggersBinding(e, getCommandBinding())) {
-                e.doit=false;
-                dispose();
-//                gotoNode(referencedNode, 
-//                        editor.getParseController().getProject(), 
-//                        editor.getParseController().getTypeChecker());
-            }
-        }
-    }
-
     protected Text filterText;
     
     public TableViewer viewer;
@@ -264,7 +245,7 @@ public final class FindReferencesPopup extends PopupDialog
         getPopupLayout().copy().numColumns(3).spacing(6, 6).applyTo(parent);
         Label iconLabel = new Label(parent, SWT.NONE);
         iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_REFS));
-        getShell().addKeyListener(new GotoListener());
+//        getShell().addKeyListener(new GotoListener());
         titleLabel = new StyledText(parent, SWT.NONE);
         titleLabel.addModifyListener(new ModifyListener() {
             @Override
