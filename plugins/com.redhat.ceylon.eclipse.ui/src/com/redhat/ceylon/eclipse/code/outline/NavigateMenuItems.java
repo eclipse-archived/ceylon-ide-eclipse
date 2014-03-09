@@ -56,7 +56,7 @@ public class NavigateMenuItems extends CompoundContributionItem {
         boolean enabled= TextEditorPlugin.getDefault().getLastEditPosition() != null;
         IContributionItem[] items = new SelectedDeclarationMenuItems().getContributionItems();
         return new IContributionItem[] {
-                items[0], items[1], items[2], items[3], items[4], items[5],
+                items[0], items[1], items[2], items[3], items[4], items[5], items[6],
                 new Separator(),
                 new DynamicMenuItem("org.eclipse.ui.navigate.next", 
                         "Ne&xt Annotation", true, NEXT),
