@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
+import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
@@ -22,6 +23,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -44,18 +46,32 @@ public class HierarchyPopup extends TreeViewPopup {
                 update();
                 e.doit=false;
             }
+            if (EditorUtil.triggersBinding(e, hierarchyBinding)) {
+                IProject project = editor.getParseController().getProject();
+                try {
+                    showHierarchyView().focusOn(project, 
+                            contentProvider.getDeclaration(project));
+                    close();
+                }
+                catch (PartInitException e1) {
+                    e1.printStackTrace();
+                }
+            }
         }
     }
     
     private CeylonHierarchyLabelProvider labelProvider;
     private CeylonHierarchyContentProvider contentProvider;
     private Label iconLabel;
+    private TriggerSequence hierarchyBinding;
     
     public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle, 
             int treeStyle) {
         super(shell, shellStyle, treeStyle, 
                 "com.redhat.ceylon.eclipse.ui.editor.hierarchy",
                 editor, getCurrentThemeColor("hierarchy"));
+        hierarchyBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.action.showInHierarchyView");
+        setInfoText(getStatusFieldText());
     }
     
     /*@Override
@@ -80,7 +96,7 @@ public class HierarchyPopup extends TreeViewPopup {
         labelProvider = new CeylonHierarchyLabelProvider() {
             @Override
             String getViewInterfacesShortcut() {
-                return " (" + getCommandBinding() + " to view)";
+                return " (" + getCommandBinding().format() + " to view)";
             }
             @Override
             IProject getProject() {
@@ -111,13 +127,15 @@ public class HierarchyPopup extends TreeViewPopup {
     protected String getStatusFieldText() {
         TriggerSequence binding = getCommandBinding();
         if (binding==null) return "";
+        String viewHint = hierarchyBinding==null ? "" :
+                hierarchyBinding.format() + " to show in hierarchy view - ";
         switch (contentProvider.getMode()) {
         case SUBTYPES:
-            return binding.format() + " to show hierarchy";
+            return viewHint + binding.format() + " to show hierarchy";
         case SUPERTYPES:
-            return binding.format() + " to show subtypes";
+            return viewHint + binding.format() + " to show subtypes";
         case HIERARCHY:
-            return binding.format() + " to show supertypes";
+            return viewHint + binding.format() + " to show supertypes";
         default:
             throw new RuntimeException();
         }
