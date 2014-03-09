@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.inferType;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -71,54 +71,68 @@ class AddParameterProposal extends CorrectionProposal {
             FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(decNode);
             fcv.visit(cu);
             Tree.Declaration container = fcv.getDeclaration();
+            Tree.ParameterList pl;
             if (container instanceof Tree.ClassDefinition) {
-                ParameterList pl = 
-                        ((Tree.ClassDefinition) container).getParameterList();
-                String def;
-                if (sie==null) {
-                    def = " = nothing";
+                pl = ((Tree.ClassDefinition) container).getParameterList();
+                if (pl==null) {
+                    return;
+                }
+            }
+            else if (container instanceof Tree.MethodDefinition) {
+                List<Tree.ParameterList> pls = 
+                        ((Tree.MethodDefinition) container).getParameterLists();
+                if (pls.isEmpty()) {
+                    return;
+                }
+                pl = pls.get(0);
+            }
+            else {
+                return;
+            }
+            String def;
+            if (sie==null) {
+                def = " = nothing";
+            }
+            else {
+                def = Nodes.toString(sie, 
+                        editor.getParseController().getTokens());
+                int start = sie.getStartIndex();
+                try {
+                    if (doc.get(start-1,1).equals(" ")) {
+                        start--;
+                        def = " " + def;
+                    }
+                } 
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
+                if (params!=null) def = " = " + params + def;
+                change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
+            }
+            String param = (pl.getParameters().isEmpty() ? "" : ", ") + 
+                    dec.getName() + def;
+            Integer offset = pl.getStopIndex();
+            change.addEdit(new InsertEdit(offset, param));
+            Type type = decNode.getType();
+            int shift=0;
+            if (type instanceof Tree.LocalModifier) {
+                Integer typeOffset = type.getStartIndex();
+                ProducedType infType = inferType(cu, type);
+                String explicitType;
+                if (infType==null) {
+                    explicitType = "Object";
                 }
                 else {
-                    def = Nodes.toString(sie, 
-                              editor.getParseController().getTokens());
-                    int start = sie.getStartIndex();
-                    try {
-                        if (doc.get(start-1,1).equals(" ")) {
-                            start--;
-                            def = " " + def;
-                        }
-                    } 
-                    catch (BadLocationException e) {
-                        e.printStackTrace();
-                    }
-                    if (params!=null) def = " = " + params + def;
-                    change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
+                    explicitType = infType.getProducedTypeName();
+                    HashSet<Declaration> decs = new HashSet<Declaration>();
+                    importType(decs, infType, cu);
+                    shift = applyImports(change, decs, cu, doc);
                 }
-                String param = (pl.getParameters().isEmpty() ? "" : ", ") + 
-                        dec.getName() + def;
-                Integer offset = pl.getStopIndex();
-                change.addEdit(new InsertEdit(offset, param));
-                Type type = decNode.getType();
-                int shift=0;
-                if (type instanceof Tree.LocalModifier) {
-                    Integer typeOffset = type.getStartIndex();
-                    ProducedType infType = inferType(cu, type);
-                    String explicitType;
-                    if (infType==null) {
-                        explicitType = "Object";
-                    }
-                    else {
-                        explicitType = infType.getProducedTypeName();
-                        HashSet<Declaration> decs = new HashSet<Declaration>();
-                        importType(decs, infType, cu);
-                        shift = applyImports(change, decs, cu, doc);
-                    }
-                    change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), 
-                            explicitType));
-                }
-                proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
-                        offset+param.length()+shift, change));
+                change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), 
+                        explicitType));
             }
+            proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
+                    offset+param.length()+shift, change));
         }
     }
     
