@@ -200,6 +200,7 @@ class AnnotationInformationControl extends AbstractInformationControl
         layout.marginHeight = 15;
         layout.marginWidth = 15;
         layout.horizontalSpacing = 4;
+        layout.marginRight = 5;
         composite.setLayout(layout);
 
         Annotation[] annotations = getAnnotationInfo()
