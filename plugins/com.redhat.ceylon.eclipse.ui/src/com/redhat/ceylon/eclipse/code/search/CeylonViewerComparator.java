@@ -9,7 +9,7 @@ public class CeylonViewerComparator extends ViewerComparator {
         if (e1 instanceof CeylonSearchMatch) {
             e1 = ((CeylonSearchMatch) e1).getElement();
         }
-        if (e1 instanceof CeylonSearchMatch) {
+        if (e2 instanceof CeylonSearchMatch) {
             e2 = ((CeylonSearchMatch) e2).getElement();
         }
         if (e1 instanceof CeylonElement && e2 instanceof CeylonElement) {
