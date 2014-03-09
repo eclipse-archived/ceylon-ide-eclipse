@@ -1,30 +1,30 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.bindings.TriggerSequence;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInformationControlExtension3;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeListener;
@@ -33,29 +33,41 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextStyle;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
-final class PeekDefinitionPopup extends PopupDialog 
+public final class FindReferencesPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
                    IInformationControlExtension3 {
     
@@ -70,17 +82,18 @@ final class PeekDefinitionPopup extends PopupDialog
             if (EditorUtil.triggersBinding(e, getCommandBinding())) {
                 e.doit=false;
                 dispose();
-                gotoNode(referencedNode, 
-                        editor.getParseController().getProject(), 
-                        editor.getParseController().getTypeChecker());
+//                gotoNode(referencedNode, 
+//                        editor.getParseController().getProject(), 
+//                        editor.getParseController().getTypeChecker());
             }
         }
     }
 
-    ISourceViewer viewer;
+    protected Text filterText;
+    
+    public TableViewer viewer;
+    
     CeylonEditor editor;
-    Node referencedNode;
-    CeylonParseController pc = new CeylonParseController();
     
     private StyledText titleLabel;
 
@@ -90,18 +103,20 @@ final class PeekDefinitionPopup extends PopupDialog
         return commandBinding;
     }
     
-    PeekDefinitionPopup(Shell parent, int shellStyle, CeylonEditor editor) {
+    public FindReferencesPopup(Shell parent, int shellStyle, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true,
                 true, null, null);
+        setTitleText("Quick Find References");
         this.editor = editor;
-        commandBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.editor.code");
-        if (commandBinding!=null) {
-            setInfoText(commandBinding.format() + " to open editor");
-        }
+        //TODO: cycle through the various kinds of Find query?
+//        commandBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.editor.findReferences");
+//        if (commandBinding!=null) {
+//            setInfoText(commandBinding.format() + " to open editor");
+//        }
         
         create();
         
-        Color color = getCurrentThemeColor("code");
+        Color color = getCurrentThemeColor("outline");
         getShell().setBackground(color);
         setBackgroundColor(color);
 
@@ -123,21 +138,93 @@ final class PeekDefinitionPopup extends PopupDialog
         layout.marginTop=8;
         layout.marginBottom=8;
         children[children.length-2].setVisible(false);
+        viewer.getTable().setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         return composite;
     }
     
     @Override
     protected Control createDialogArea(Composite parent) {
-        int styles= SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.FULL_SELECTION;
-        viewer = new CeylonSourceViewer(editor, parent, null, null, false, styles);
-        viewer.setEditable(false);
-        StyledText textWidget = viewer.getTextWidget();
-        textWidget.setFont(getEditorWidget(editor).getFont());
-        textWidget.setBackground(getEditorWidget(editor).getBackground());
-        textWidget.addKeyListener(new GotoListener());
-        return textWidget;
+        viewer = new TableViewer(parent, SWT.FLAT);
+//        GridData data = new GridData();
+//        viewer.getTable().setLayoutData(new GridData());
+        viewer.setContentProvider(ArrayContentProvider.getInstance());
+        viewer.setLabelProvider(new CeylonLabelProvider(true) {
+            @Override
+            public StyledString getStyledText(Object element) {
+                return super.getStyledText(((CeylonSearchMatch) element).getElement());
+            }
+            @Override
+            public Image getImage(Object element) {
+                return super.getImage(((CeylonSearchMatch) element).getElement());
+            }
+        });
+        installFilter();
+        viewer.addFilter(new ViewerFilter() {
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                CeylonSearchMatch match = (CeylonSearchMatch) element;
+                String filter = filterText.getText().toLowerCase();
+                String[] split = match.getElement().getLabel().getString().split(" ");
+                return split.length>1 && split[1].toLowerCase().startsWith(filter) ||
+                        match.getElement().getPackageLabel()
+                            .toLowerCase().startsWith(filter) ||
+                        match.getElement().getFile().getName().toString()
+                            .toLowerCase().startsWith(filter);
+            }
+        });
+//        viewer.getTable().addSelectionListener(new SelectionListener() {
+//            public void widgetSelected(SelectionEvent e) {
+//                // do nothing
+//            }
+//            public void widgetDefaultSelected(SelectionEvent e) {
+//                gotoSelectedElement();
+//            }
+//        });
+        viewer.getTable().setCursor(new Cursor(getShell().getDisplay(), SWT.CURSOR_HAND));
+        viewer.getTable().addListener(SWT.MouseMove, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                Rectangle bounds = event.getBounds();
+                TableItem item = viewer.getTable().getItem(new Point(bounds.x, bounds.y));
+                if (item!=null) {
+                    viewer.setSelection(new StructuredSelection(item.getData()));
+                }
+            }
+        });
+        viewer.getTable().addKeyListener(new KeyListener() {
+            @Override
+            public void keyReleased(KeyEvent e) {}
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) { // Enter key
+                    gotoSelectedElement();
+                }
+            }
+        });
+        viewer.getTable().addMouseListener(new MouseListener() {
+            @Override
+            public void mouseUp(MouseEvent e) {
+                gotoSelectedElement();
+            }
+            @Override
+            public void mouseDown(MouseEvent e) {}
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                gotoSelectedElement();
+            }
+        });
+
+        return viewer.getControl();
     }
     
+    protected void gotoSelectedElement() {
+        Object elem = ((StructuredSelection) viewer.getSelection()).getFirstElement();
+        if (elem instanceof CeylonSearchMatch) {
+            CeylonSearchMatch match = (CeylonSearchMatch) elem;
+            gotoFile(match.getElement().getFile(), match.getOffset(), match.getLength());
+        }
+    }
+
     private static GridLayoutFactory popupLayoutFactory;
     protected static GridLayoutFactory getPopupLayout() {
         if (popupLayoutFactory == null) {
@@ -176,7 +263,7 @@ final class PeekDefinitionPopup extends PopupDialog
     protected Control createTitleControl(Composite parent) {
         getPopupLayout().copy().numColumns(3).spacing(6, 6).applyTo(parent);
         Label iconLabel = new Label(parent, SWT.NONE);
-        iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SOURCE));
+        iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_REFS));
         getShell().addKeyListener(new GotoListener());
         titleLabel = new StyledText(parent, SWT.NONE);
         titleLabel.addModifyListener(new ModifyListener() {
@@ -191,10 +278,71 @@ final class PeekDefinitionPopup extends PopupDialog
         return null;
     }
     
+    protected Text createFilterText(Composite parent) {
+        filterText= new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
+        filterText.setMessage("type filter text");
+        Dialog.applyDialogFont(filterText);
+
+        GridData data = new GridData(GridData.FILL_HORIZONTAL);
+        data.horizontalAlignment = GridData.FILL;
+        data.verticalAlignment = GridData.CENTER;
+        filterText.setLayoutData(data);
+
+        filterText.addKeyListener(new KeyListener() {
+            public void keyPressed(KeyEvent e) {
+                if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) // Enter key
+                    gotoSelectedElement();
+                if (e.keyCode == SWT.ARROW_DOWN)
+                    viewer.getTable().setFocus();
+                if (e.keyCode == SWT.ARROW_UP)
+                    viewer.getTable().setFocus();
+                if (e.character == 0x1B) // ESC
+                    dispose();
+            }
+            public void keyReleased(KeyEvent e) {
+                // do nothing
+            }
+        });
+        
+        return filterText;
+    }
+
     @Override
     protected void setTitleText(String text) {
-        if (titleLabel!=null)
+        if (titleLabel!=null) {
             titleLabel.setText(text);
+        }
+    }
+    
+    private void installFilter() {
+        filterText.setText("");
+        filterText.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                String text = ((Text) e.widget).getText();
+                setMatcherString(text, true);
+            }
+        });
+    }
+
+    protected void setMatcherString(String pattern, boolean update) {
+        /*if (pattern.length() == 0) {
+            fPatternMatcher= null;
+        } else {
+            fPatternMatcher= new JavaElementPrefixPatternMatcher(pattern);
+        }*/
+
+        if (update) {
+            viewer.getControl().setRedraw(false);
+            viewer.refresh();
+            viewer.getControl().setRedraw(true);
+        }
+    }
+
+    @Override
+    protected Control createTitleMenuArea(Composite parent) {
+        Control result = super.createTitleMenuArea(parent);
+        filterText = createFilterText(parent);
+        return result;
     }
     
     /*@Override
@@ -243,6 +391,7 @@ final class PeekDefinitionPopup extends PopupDialog
 
     public void setFocus() {
         getShell().forceFocus();
+        filterText.setFocus();
     }
 
     public void addFocusListener(FocusListener listener) {
@@ -283,58 +432,39 @@ final class PeekDefinitionPopup extends PopupDialog
     public void setVisible(boolean visible) {
         if (visible) {
             open();
-        } else {
+        }
+        else {
             saveDialogBounds(getShell());
             getShell().setVisible(false);
         }
     }
 
     public final void dispose() {
-        docProvider.disconnect(ei);
-        ei = null;
         close();
     }
-
-    IDocumentProvider docProvider = new SourceArchiveDocumentProvider();
-    IEditorInput ei;
     
     @Override
     public void setInput(Object input) {
-        CeylonParseController epc = editor.getParseController();
-        IRegion r = editor.getSelection();
-        Node node = Nodes.findNode(epc.getRootNode(), r.getOffset(), 
-                r.getOffset()+r.getLength());
-        referencedNode = Nodes.getReferencedNode(node, epc);
-        if (referencedNode==null) return;
-        IPath path = getNodePath(referencedNode, epc.getProject(), epc.getTypeChecker());
-        ei = getEditorInput(path);
-        IDocument doc;
-        try {
-            docProvider.connect(ei);
-            doc = docProvider.getDocument(ei);
-        } 
-        catch (CoreException e) {
-            e.printStackTrace();
-            return;
+        CeylonParseController pc = editor.getParseController();
+//        IProject project = getProject(editor);
+        Declaration declaration = 
+                Nodes.getReferencedExplicitDeclaration(getSelectedNode(editor), 
+                        pc.getRootNode());
+        setTitleText("Quick Find References - " + declaration.getName(pc.getRootNode().getUnit()));
+        List<CeylonSearchMatch> list = new ArrayList<CeylonSearchMatch>();
+        for (PhasedUnit pu: pc.getTypeChecker().getPhasedUnits().getPhasedUnits()) {
+            FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+            frv.visit(pu.getCompilationUnit());
+            for (Node node: frv.getNodes()) {
+                FindContainerVisitor fcv = new FindContainerVisitor(node);
+                pu.getCompilationUnit().visit(fcv);
+                Tree.StatementOrArgument c = fcv.getStatementOrArgument();
+                if (c!=null) {
+                    list.add(new CeylonSearchMatch(c, pu.getUnitFile(), node));
+                }
+            }
         }
-        viewer.setDocument(doc);
-        viewer.setVisibleRegion(referencedNode.getStartIndex(), 
-                referencedNode.getStopIndex()-referencedNode.getStartIndex()+1);
-        pc.initialize(path, epc.getProject(), null);
-        pc.parse(doc, new NullProgressMonitor(), null);
-        /*try {
-            int lines = doc.getLineOfOffset(refDec.getStopIndex())-
-                        doc.getLineOfOffset(refDec.getStartIndex())+1;
-            setSize(getShell().getBounds().width, 
-                    viewer.getTextWidget().getLineHeight()*lines);
-        } 
-        catch (BadLocationException e) {
-            e.printStackTrace();
-        }*/
-        if (referencedNode instanceof Tree.Declaration) {
-            Declaration model = ((Tree.Declaration) referencedNode).getDeclarationModel();
-            setTitleText("Peek Definition - " + getDescriptionFor(model));
-        }
+        viewer.setInput(list);
     }
 
     @Override
@@ -356,17 +486,13 @@ final class PeekDefinitionPopup extends PopupDialog
     public Rectangle computeTrim() {
         return getShell().computeTrim(0, 0, 0, 0);
     }
-
-    public CeylonParseController getParseController() {
-        return pc;
-    }
-
+    
     @Override
     protected IDialogSettings getDialogSettings() {
-        String sectionName= "com.redhat.ceylon.eclipse.ui.PeekDefinition";
+        String sectionName = "com.redhat.ceylon.eclipse.ui.FindReferences";
         IDialogSettings dialogSettings = CeylonPlugin.getInstance()
                 .getDialogSettings();
-        IDialogSettings settings= dialogSettings.getSection(sectionName);
+        IDialogSettings settings = dialogSettings.getSection(sectionName);
         if (settings == null)
             settings= dialogSettings.addNewSection(sectionName);
         return settings;

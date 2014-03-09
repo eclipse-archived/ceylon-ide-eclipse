@@ -559,8 +559,13 @@
        <command
             id="com.redhat.ceylon.eclipse.ui.editor.code"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Show popup code view"
-            name="Peek"/>
+            description="Show popup definition view"
+            name="Peek Definition"/>
+       <command
+            id="com.redhat.ceylon.eclipse.ui.editor.findReferences"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Show popup references view"
+            name="Quick Find References"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.showInHierarchyView"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -896,6 +901,11 @@
       <key
             sequence="M1+P"
             commandId="com.redhat.ceylon.eclipse.ui.editor.code"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            sequence="M1+G"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.findReferences"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
             

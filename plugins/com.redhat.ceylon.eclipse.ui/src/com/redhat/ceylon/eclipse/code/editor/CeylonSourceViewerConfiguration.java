@@ -56,6 +56,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
+import com.redhat.ceylon.eclipse.code.search.FindReferencesPopup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -326,9 +327,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return CeylonPlugin.getInstance().getDialogSettings(); 
     }
     
-    public IInformationPresenter getCodePresenter(ISourceViewer sourceViewer) {
+    public IInformationPresenter getDefinitionPresenter(ISourceViewer sourceViewer) {
         if (editor==null) return null;
-        InformationPresenter presenter = new InformationPresenter(new CodePresenterControlCreator(editor));
+        InformationPresenter presenter = new InformationPresenter(new DefinitionPresenterControlCreator(editor));
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new OutlineInformationProvider(getParseController()), 
@@ -336,6 +337,19 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setSizeConstraints(40, 10, true, false);
         presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
                 "code_presenter_bounds"), true, true);
+        return presenter;
+    }
+    
+    public IInformationPresenter getReferencesPresenter(ISourceViewer sourceViewer) {
+        if (editor==null) return null;
+        InformationPresenter presenter = new InformationPresenter(new ReferencesPresenterControlCreator(editor));
+        presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+        presenter.setAnchor(ANCHOR_GLOBAL);
+        presenter.setInformationProvider(new OutlineInformationProvider(getParseController()), 
+                DEFAULT_CONTENT_TYPE);
+        presenter.setSizeConstraints(40, 10, true, false);
+        presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
+                "refs_presenter_bounds"), true, true);
         return presenter;
     }
     
@@ -352,10 +366,10 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         }
     }
 
-    private static final class CodePopupSourceViewerConfiguration 
+    private static final class PopupSourceViewerConfiguration 
             extends CeylonSourceViewerConfiguration {
         private final PeekDefinitionPopup popup;
-        private CodePopupSourceViewerConfiguration(CeylonEditor editor,
+        private PopupSourceViewerConfiguration(CeylonEditor editor,
                 PeekDefinitionPopup popup) {
             super(editor);
             this.popup = popup;
@@ -367,21 +381,33 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         }
     }
     
-    private static final class CodePresenterControlCreator 
+    private static final class DefinitionPresenterControlCreator 
             implements IInformationControlCreator {
         private CeylonEditor editor;
-        private CodePresenterControlCreator(CeylonEditor editor) {
+        private DefinitionPresenterControlCreator(CeylonEditor editor) {
             this.editor = editor;
         }
         @Override
         public IInformationControl createInformationControl(Shell parent) {
             PeekDefinitionPopup popup = 
-                    new PeekDefinitionPopup(parent, SWT.RESIZE, editor);
-            popup.viewer.configure(new CodePopupSourceViewerConfiguration(editor, popup));
+                    new PeekDefinitionPopup(parent, SWT.NONE, editor);
+            popup.viewer.configure(new PopupSourceViewerConfiguration(editor, popup));
             return popup;
         }
     }
     
+    private static final class ReferencesPresenterControlCreator 
+            implements IInformationControlCreator {
+        private CeylonEditor editor;
+        private ReferencesPresenterControlCreator(CeylonEditor editor) {
+            this.editor = editor;
+        }
+        @Override
+        public IInformationControl createInformationControl(Shell parent) {
+            return new FindReferencesPopup(parent, SWT.NONE, editor);
+        }
+    }
+
     private static final class CompletionListener 
             implements ICompletionListener {
         private CeylonEditor editor;
@@ -441,7 +467,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     
     public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer) {
         if (editor==null) return null;
-        InformationPresenter presenter = new InformationPresenter(new OutlinePresenterControlCreator(editor));
+        InformationPresenter presenter = 
+                new InformationPresenter(new OutlinePresenterControlCreator(editor));
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new OutlineInformationProvider(getParseController()), 
@@ -488,7 +515,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
     public IInformationPresenter getHierarchyPresenter(ISourceViewer sourceViewer) {
         if (editor==null) return null;
-        InformationPresenter presenter = new InformationPresenter(new HierarchyPresenterControlCreator(editor));
+        InformationPresenter presenter = 
+                new InformationPresenter(new HierarchyPresenterControlCreator(editor));
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new HierarchyInformationProvider(), 

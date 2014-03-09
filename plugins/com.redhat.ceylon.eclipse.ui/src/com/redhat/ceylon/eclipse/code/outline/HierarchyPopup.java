@@ -96,7 +96,8 @@ public class HierarchyPopup extends TreeViewPopup {
         labelProvider = new CeylonHierarchyLabelProvider() {
             @Override
             String getViewInterfacesShortcut() {
-                return " (" + getCommandBinding().format() + " to view)";
+                TriggerSequence binding = getCommandBinding();
+                return binding==null ? "" : " (" + binding.format() + " to view)";
             }
             @Override
             IProject getProject() {
