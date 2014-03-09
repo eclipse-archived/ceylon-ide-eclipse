@@ -50,8 +50,9 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     }
     
     private static void addProposal(Collection<ICompletionProposal> proposals, 
-            String def, String name, Image image, Declaration dec, PhasedUnit unit,
-            Tree.Declaration decNode, int offset, String constraints) {
+            boolean wasNotGeneric, String def, String name, Image image, 
+            Declaration dec, PhasedUnit unit, Tree.Declaration decNode, 
+            int offset, String constraints) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
@@ -68,8 +69,9 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         }
         String desc = "Add type parameter '" + name + "'" + 
                 " to '" + dec.getName() + "'";
+        int off = wasNotGeneric?1:2;
         proposals.add(new CreateTypeParameterProposal(desc, 
-                image, offset+il+1, name.length(), change));
+                image, offset+il+off, name.length(), change));
     }
 
     private static int getConstraintLoc(Tree.Declaration decNode) {
@@ -181,7 +183,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         
         for (PhasedUnit unit : getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
-                addProposal(proposals, 
+                addProposal(proposals, paramList==null,
                         paramDef, brokenName, ADD, d, unit, 
                         decl, offset, constraints);
                 break;
