@@ -273,6 +273,7 @@ public class AnnotationHover
 
     @Override
     public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
+        //TODO: implement to get hover in overview ruler!!
         return null;
     }
     
