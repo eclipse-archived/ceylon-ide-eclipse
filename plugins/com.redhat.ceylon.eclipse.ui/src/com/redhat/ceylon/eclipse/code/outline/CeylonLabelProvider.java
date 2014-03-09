@@ -530,24 +530,40 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (n instanceof Tree.AttributeSetterDefinition) {
             Tree.AttributeSetterDefinition ai = (Tree.AttributeSetterDefinition) n;
             return new StyledString("assign ", KW_STYLER)
-            .append(name(ai.getIdentifier()), ID_STYLER);
+                    .append(name(ai.getIdentifier()), ID_STYLER);
         }
-        else if (n instanceof Tree.TypedDeclaration) {
+        else if (n instanceof Tree.AnyMethod) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
-            Tree.Type tt = td.getType();
-            StyledString label = new StyledString();
-            label.append(type(tt, td))
-                .append(" ")
-                .append(name(td.getIdentifier()), ID_STYLER);
-            if (n instanceof Tree.AnyMethod) {
-                Tree.AnyMethod am = (Tree.AnyMethod) n;
-                parameters(am.getTypeParameterList(), label);
-                for (Tree.ParameterList pl: am.getParameterLists()) { 
-                    parameters(pl, label);
-                }
+            StyledString label = new StyledString("function ", KW_STYLER)
+                    .append(name(td.getIdentifier()), ID_STYLER);
+            Tree.AnyMethod am = (Tree.AnyMethod) n;
+            parameters(am.getTypeParameterList(), label);
+            for (Tree.ParameterList pl: am.getParameterLists()) { 
+                parameters(pl, label);
             }
             return label;
         }
+        else if (n instanceof Tree.TypedDeclaration) {
+            Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
+            return new StyledString("value ", KW_STYLER)
+                    .append(name(td.getIdentifier()), ID_STYLER);
+        }
+//        else if (n instanceof Tree.TypedDeclaration) {
+//            Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
+//            Tree.Type tt = td.getType();
+//            StyledString label = new StyledString();
+//            label.append(type(tt, td))
+//                .append(" ")
+//                .append(name(td.getIdentifier()), ID_STYLER);
+//            if (n instanceof Tree.AnyMethod) {
+//                Tree.AnyMethod am = (Tree.AnyMethod) n;
+//                parameters(am.getTypeParameterList(), label);
+//                for (Tree.ParameterList pl: am.getParameterLists()) { 
+//                    parameters(pl, label);
+//                }
+//            }
+//            return label;
+//        }
         else if (n instanceof Tree.CompilationUnit) {
             Tree.CompilationUnit ai = (Tree.CompilationUnit) n;
             if (ai.getUnit()==null) {
@@ -584,14 +600,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.Import i = (Tree.Import) n;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString(toPath(p), QUALIFIER_STYLER);
+                return new StyledString("import ", KW_STYLER)
+                        .append(toPath(p), QUALIFIER_STYLER);
             }
         }
         else if (n instanceof Tree.ImportModule) {
             Tree.ImportModule i = (Tree.ImportModule) n;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString(toPath(p), QUALIFIER_STYLER);
+                return new StyledString("import ", KW_STYLER)
+                        .append(toPath(p), QUALIFIER_STYLER);
             }
             Tree.QuotedLiteral ql = i.getQuotedLiteral();
             if (ql!=null) {
