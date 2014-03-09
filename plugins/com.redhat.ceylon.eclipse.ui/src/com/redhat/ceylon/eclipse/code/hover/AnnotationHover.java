@@ -141,9 +141,11 @@ public class AnnotationHover
     private IInformationControlCreator fPresenterControlCreator;
     
     private final CeylonEditor editor;
+    private final boolean rulerHover;
     
-    public AnnotationHover(CeylonEditor editor) {
+    public AnnotationHover(CeylonEditor editor, boolean rulerHover) {
         this.editor = editor;
+        this.rulerHover = rulerHover;
     }
     
     @Override
@@ -179,7 +181,7 @@ public class AnnotationHover
 
         Map<Annotation,Position> annotationPositions = 
                 new LinkedHashMap<Annotation, Position>();
-        Iterator<Annotation> iter = new AnnotationIterator(parent);
+        Iterator<Annotation> iter = new AnnotationIterator(parent, rulerHover);
         while (iter.hasNext()) {
             Annotation a = (Annotation) iter.next();
             Position p = model.getPosition(a);

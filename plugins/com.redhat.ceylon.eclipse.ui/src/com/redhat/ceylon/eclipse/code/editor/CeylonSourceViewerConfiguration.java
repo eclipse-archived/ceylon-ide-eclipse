@@ -213,11 +213,11 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public AnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
-        return new AnnotationHover(editor);
+        return new AnnotationHover(editor, true);
     }
 
     public AnnotationHover getOverviewRulerAnnotationHover(ISourceViewer sourceViewer) {
-        return new AnnotationHover(editor);
+        return new AnnotationHover(editor, true);
     }
 
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {

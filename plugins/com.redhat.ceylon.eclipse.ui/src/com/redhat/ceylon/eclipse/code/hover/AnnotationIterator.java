@@ -19,14 +19,17 @@ public class AnnotationIterator implements Iterator<Annotation> {
 
     private Iterator<Annotation> iterator;
     private Annotation nextAnnotation;
+    private boolean includeRefinementAnnotations;
     
     /**
      * Returns a new JavaAnnotationIterator.
      * @param parent the parent iterator to iterate over annotations
      * @param returnAllAnnotations whether to return all annotations or just problem annotations
      */
-    public AnnotationIterator(Iterator<Annotation> parent) {
-        iterator = parent;
+    public AnnotationIterator(Iterator<Annotation> parent,
+            boolean includeRefinementAnnotations) {
+        this.iterator = parent;
+        this.includeRefinementAnnotations = includeRefinementAnnotations;
         skip();
     }
 
@@ -36,7 +39,8 @@ public class AnnotationIterator implements Iterator<Annotation> {
             if (!next.isMarkedDeleted()) {
                 //TODO: rethink this condition!
                 if (next instanceof CeylonAnnotation || 
-                    next instanceof RefinementAnnotation ||
+                    includeRefinementAnnotations &&
+                        next instanceof RefinementAnnotation ||
                     isProblemMarkerAnnotation(next)) {
                     nextAnnotation = next;
                     return;
