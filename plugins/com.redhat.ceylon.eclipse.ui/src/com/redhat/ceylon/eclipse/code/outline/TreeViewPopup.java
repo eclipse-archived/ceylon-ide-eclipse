@@ -94,11 +94,10 @@ public abstract class TreeViewPopup extends PopupDialog
     
     protected CeylonEditor editor;
     
-    /** The control's text widget */
     protected Text filterText;
-    /** The control's tree widget */
+    
     private TreeViewer treeViewer;
-    /** The current string matcher */
+    
     //protected JavaElementPrefixPatternMatcher fPatternMatcher;
 
     /**
@@ -113,8 +112,6 @@ public abstract class TreeViewPopup extends PopupDialog
 
     /**
      * Field for tree style since it must be remembered by the instance.
-     *
-     * @since 3.2
      */
     private int treeStyle;
 
@@ -143,7 +140,7 @@ public abstract class TreeViewPopup extends PopupDialog
         if (invokingCommandId != null) {
             commandBinding = EditorUtil.getCommandBinding(invokingCommandId);
         }
-        this.treeStyle= treeStyle;
+        this.treeStyle = treeStyle;
         // Title and status text must be set to get the title label created, so force empty values here.
         setInfoText("");
 
@@ -166,6 +163,7 @@ public abstract class TreeViewPopup extends PopupDialog
         layout.marginRight=8;
         layout.marginTop=8;
         layout.marginBottom=8;
+//        children[2].setVisible(false);
         children[children.length-2].setVisible(false);
         return composite;
     }
@@ -179,17 +177,18 @@ public abstract class TreeViewPopup extends PopupDialog
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        treeViewer= createTreeViewer(parent, treeStyle);
+        treeViewer = createTreeViewer(parent, treeStyle);
         treeViewer.setAutoExpandLevel(getDefaultLevel());
         //fTreeViewer.setUseHashlookup(true);
 
         //fCustomFiltersActionGroup= new CustomFiltersActionGroup(getId(), fTreeViewer);
 
-        final Tree tree= treeViewer.getTree();
+        final Tree tree = treeViewer.getTree();
         tree.addKeyListener(new KeyListener() {
             public void keyPressed(KeyEvent e)  {
-                if (e.character == 0x1B) // ESC
+                if (e.character == 0x1B) {// ESC
                     dispose();
+                }
             }
             public void keyReleased(KeyEvent e) {
                 // do nothing
@@ -206,10 +205,10 @@ public abstract class TreeViewPopup extends PopupDialog
         });
 
         tree.addMouseMoveListener(new MouseMoveListener()     {
-            TreeItem fLastItem= null;
+            TreeItem fLastItem = null;
             public void mouseMove(MouseEvent e) {
                 if (tree.equals(e.getSource())) {
-                    Object o= tree.getItem(new Point(e.x, e.y));
+                    Object o = tree.getItem(new Point(e.x, e.y));
                     if (fLastItem == null ^ o == null) {
                         tree.setCursor(o == null ? null : 
                             tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
@@ -217,27 +216,30 @@ public abstract class TreeViewPopup extends PopupDialog
                     if (o instanceof TreeItem) {
                         Rectangle clientArea = tree.getClientArea();
                         if (!o.equals(fLastItem)) {
-                            fLastItem= (TreeItem)o;
+                            fLastItem = (TreeItem)o;
                             tree.setSelection(new TreeItem[] { fLastItem });
-                        } else if (e.y - clientArea.y < tree.getItemHeight() / 4) {
+                        }
+                        else if (e.y - clientArea.y < tree.getItemHeight() / 4) {
                             // Scroll up
-                            Point p= tree.toDisplay(e.x, e.y);
-                            Item item= treeViewer.scrollUp(p.x, p.y);
+                            Point p = tree.toDisplay(e.x, e.y);
+                            Item item = treeViewer.scrollUp(p.x, p.y);
                             if (item instanceof TreeItem) {
-                                fLastItem= (TreeItem)item;
-                                tree.setSelection(new TreeItem[] { fLastItem });
-                            }
-                        } else if (clientArea.y + clientArea.height - e.y < tree.getItemHeight() / 4) {
-                            // Scroll down
-                            Point p= tree.toDisplay(e.x, e.y);
-                            Item item= treeViewer.scrollDown(p.x, p.y);
-                            if (item instanceof TreeItem) {
-                                fLastItem= (TreeItem)item;
+                                fLastItem = (TreeItem)item;
                                 tree.setSelection(new TreeItem[] { fLastItem });
                             }
                         }
-                    } else if (o == null) {
-                        fLastItem= null;
+                        else if (clientArea.y + clientArea.height - e.y < tree.getItemHeight() / 4) {
+                            // Scroll down
+                            Point p = tree.toDisplay(e.x, e.y);
+                            Item item = treeViewer.scrollDown(p.x, p.y);
+                            if (item instanceof TreeItem) {
+                                fLastItem = (TreeItem)item;
+                                tree.setSelection(new TreeItem[] { fLastItem });
+                            }
+                        }
+                    }
+                    else if (o == null) {
+                        fLastItem = null;
                     }
                 }
             }
@@ -246,18 +248,14 @@ public abstract class TreeViewPopup extends PopupDialog
         tree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseUp(MouseEvent e) {
-
-                if (tree.getSelectionCount() < 1)
-                    return;
-
-                if (e.button != 1)
-                    return;
-
-                if (tree.equals(e.getSource())) {
-                    Object o= tree.getItem(new Point(e.x, e.y));
-                    TreeItem selection= tree.getSelection()[0];
-                    if (selection.equals(o))
+                if (tree.getSelectionCount()>=0 && 
+                        e.button==1 &&
+                        tree.equals(e.getSource())) {
+                    Object o = tree.getItem(new Point(e.x, e.y));
+                    TreeItem selection = tree.getSelection()[0];
+                    if (selection.equals(o)) {
                         gotoSelectedElement();
+                    }
                 }
             }
         });
@@ -290,9 +288,9 @@ public abstract class TreeViewPopup extends PopupDialog
         filterText.setMessage("type filter text");
         Dialog.applyDialogFont(filterText);
 
-        GridData data= new GridData(GridData.FILL_HORIZONTAL);
-        data.horizontalAlignment= GridData.FILL;
-        data.verticalAlignment= GridData.CENTER;
+        GridData data = new GridData(GridData.FILL_HORIZONTAL);
+        data.horizontalAlignment = GridData.FILL;
+        data.verticalAlignment = GridData.CENTER;
         filterText.setLayoutData(data);
 
         filterText.addKeyListener(new KeyListener() {
@@ -326,7 +324,7 @@ public abstract class TreeViewPopup extends PopupDialog
         filterText.setText("");
         filterText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                String text= ((Text) e.widget).getText();
+                String text = ((Text) e.widget).getText();
                 setMatcherString(text, true);
             }
         });
@@ -393,7 +391,7 @@ public abstract class TreeViewPopup extends PopupDialog
     protected void selectFirstMatch() {
         //Object selectedElement= fTreeViewer.testFindItem(fInitiallySelectedType);
         TreeItem element;
-        final Tree tree= treeViewer.getTree();
+        final Tree tree = treeViewer.getTree();
         /*if (selectedElement instanceof TreeItem)
             element= findElement(new TreeItem[] { (TreeItem)selectedElement });
         else*/
@@ -402,8 +400,10 @@ public abstract class TreeViewPopup extends PopupDialog
         if (element != null) {
             tree.setSelection(element);
             tree.showItem(element);
-        } else
+        }
+        else {
             treeViewer.setSelection(StructuredSelection.EMPTY);
+        }
     }
 
     private TreeItem findElement(TreeItem[] items) {
@@ -514,7 +514,8 @@ public abstract class TreeViewPopup extends PopupDialog
     public void setVisible(boolean visible) {
         if (visible) {
             open();
-        } else {
+        }
+        else {
             removeHandlerAndKeyBindingSupport();
             saveDialogBounds(getShell());
             getShell().setVisible(false);
@@ -533,8 +534,8 @@ public abstract class TreeViewPopup extends PopupDialog
 
     public void widgetDisposed(DisposeEvent event) {
         removeHandlerAndKeyBindingSupport();
-        treeViewer= null;
-        filterText= null;
+        treeViewer = null;
+        filterText = null;
     }
     
     protected void addHandlerAndKeyBindingSupport() {
@@ -550,14 +551,16 @@ public abstract class TreeViewPopup extends PopupDialog
     
     protected void removeHandlerAndKeyBindingSupport() {
         // Remove handler submission
-        if (showViewMenuHandlerSubmission != null)
+        if (showViewMenuHandlerSubmission != null) {
             PlatformUI.getWorkbench().getCommandSupport()
                 .removeHandlerSubmission(showViewMenuHandlerSubmission);
+        }
 
     }
     
     public boolean hasContents() {
-        return treeViewer != null && treeViewer.getInput() != null;
+        return treeViewer != null && 
+                treeViewer.getInput() != null;
     }
     
     public void setSizeConstraints(int maxWidth, int maxHeight) {
@@ -582,8 +585,10 @@ public abstract class TreeViewPopup extends PopupDialog
          * the call to constrainShellSize in PopupDialog.open will still ensure that the shell is
          * entirely visible.
          */
-        if (!getPersistLocation() || getDialogSettings() == null)
+        if (!getPersistLocation() || 
+                getDialogSettings() == null) {
             getShell().setLocation(location);
+        }
     }
 
     public void setSize(int width, int height) {
@@ -625,12 +630,13 @@ public abstract class TreeViewPopup extends PopupDialog
     
     @Override
     protected IDialogSettings getDialogSettings() {
-        String sectionName= getId();
+        String sectionName = getId();
         IDialogSettings dialogSettings = CeylonPlugin.getInstance()
                 .getDialogSettings();
-        IDialogSettings settings= dialogSettings.getSection(sectionName);
-        if (settings == null)
-            settings= dialogSettings.addNewSection(sectionName);
+        IDialogSettings settings = dialogSettings.getSection(sectionName);
+        if (settings == null) {
+            settings = dialogSettings.addNewSection(sectionName);
+        }
         return settings;
     }
     
@@ -640,10 +646,11 @@ public abstract class TreeViewPopup extends PopupDialog
                 (Composite) super.createTitleMenuArea(parent);
         // the filter text must be created
         // underneath the title and menu area.
-        filterText= createFilterText(parent);
+        filterText = createFilterText(parent);
         
         // Create show view menu action
-        showViewMenuAction= new Action("showViewMenu") { //$NON-NLS-1$
+        showViewMenuAction = 
+                new Action("showViewMenu") {
             @Override
             public void run() {
                 showDialogMenu();
@@ -667,7 +674,7 @@ public abstract class TreeViewPopup extends PopupDialog
     protected void styleDescription(final StyledText title, StyledString result,
             String desc) {
         final FontData[] fontDatas = title.getFont().getFontData();
-        for (int i = 0; i < fontDatas.length; i++) {
+        for (int i=0; i<fontDatas.length; i++) {
             fontDatas[i].setStyle(SWT.BOLD);
         }
         result.append(desc, new Styler() {
@@ -696,8 +703,9 @@ public abstract class TreeViewPopup extends PopupDialog
     
     @Override
     protected void setTitleText(String text) {
-        if (titleLabel!=null)
+        if (titleLabel!=null) {
             titleLabel.setText(text);
+        }
     }
     
     @Override
