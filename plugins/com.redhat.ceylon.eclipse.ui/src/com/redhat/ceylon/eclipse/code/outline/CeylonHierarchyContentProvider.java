@@ -51,6 +51,10 @@ public final class CeylonHierarchyContentProvider
     CeylonHierarchyContentProvider(IWorkbenchPartSite site) {
         this.site = site;
     }
+    
+    Declaration getDeclaration(IProject project) {
+        return subtypesRoot.getDeclaration(project);
+    }
 
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
@@ -67,8 +71,11 @@ public final class CeylonHierarchyContentProvider
                         name.equals("ceylon.language::Basic") ||
                         name.equals("ceylon.language::Identifiable");
                 description = declaration.getName();//getDescriptionFor(declaration);
-                if (isShowingRefinements() && declaration.isClassOrInterfaceMember()) {
-                    description = ((ClassOrInterface) declaration.getContainer()).getName() + '.' + description;
+                if (isShowingRefinements() && 
+                        declaration.isClassOrInterfaceMember()) {
+                    ClassOrInterface classOrInterface = 
+                            (ClassOrInterface) declaration.getContainer();
+                    description = classOrInterface.getName() + '.' + description;
                 }
                 try {
                     site.getWorkbenchWindow().run(true, true, 
@@ -127,8 +134,10 @@ public final class CeylonHierarchyContentProvider
             }
         }
         else if (parentElement instanceof CeylonHierarchyNode) {
-            List<CeylonHierarchyNode> children = ((CeylonHierarchyNode) parentElement).getChildren();
-            CeylonHierarchyNode[] array = children.toArray(new CeylonHierarchyNode[children.size()]);
+            List<CeylonHierarchyNode> children = 
+                    ((CeylonHierarchyNode) parentElement).getChildren();
+            CeylonHierarchyNode[] array = 
+                    children.toArray(new CeylonHierarchyNode[children.size()]);
             Arrays.sort(array);
             return array;
         }
@@ -199,17 +208,20 @@ public final class CeylonHierarchyContentProvider
         }
         
         @Override
-        public void run(IProgressMonitor monitor) throws InvocationTargetException,
-                InterruptedException {
+        public void run(IProgressMonitor monitor) 
+                throws InvocationTargetException,
+                       InterruptedException {
             
             monitor.beginTask("Building hierarchy", 100000);
             
             Unit unit = declaration.getUnit();
             Module currentModule = unit.getPackage().getModule();
-            List<TypeChecker> tcs = getTypeChecker(project, currentModule.getNameAsString());
+            List<TypeChecker> tcs = getTypeChecker(project, 
+                    currentModule.getNameAsString());
             Set<Module> allModules = new HashSet<Module>();
             for (TypeChecker tc: tcs) {
-                ModuleManager moduleManager = tc.getPhasedUnits().getModuleManager();
+                ModuleManager moduleManager = 
+                        tc.getPhasedUnits().getModuleManager();
                 allModules.addAll(moduleManager.getCompiledModules());
                 allModules.add(currentModule);
             }
@@ -229,7 +241,8 @@ public final class CeylonHierarchyContentProvider
 //                }
             }
     
-            subtypesOfAllTypes.put(declaration, getSubtypePathNode(declaration));
+            subtypesOfAllTypes.put(declaration, 
+                    getSubtypePathNode(declaration));
             
             Declaration dec = declaration;
             Declaration superDec;
@@ -242,13 +255,15 @@ public final class CeylonHierarchyContentProvider
                         getSubtypePathNode(superDec).setNonUnique(true);
                     }
                 }
-                else if (declaration instanceof TypedDeclaration){
+                else if (declaration instanceof TypedDeclaration) {
                     superDec = getRefinedDeclaration(dec);
                     if (superDec!=null) {
-                        List<Declaration> directlyInheritedMembers = ((TypeDeclaration)dec.getContainer())
-                                .getInheritedMembers(dec.getName());
+                        List<Declaration> directlyInheritedMembers = 
+                                ((TypeDeclaration)dec.getContainer())
+                                        .getInheritedMembers(dec.getName());
                         if (!directlyInheritedMembers.contains(superDec)) {
-                            CeylonHierarchyNode n = new CeylonHierarchyNode(superDec);
+                            CeylonHierarchyNode n = 
+                                    new CeylonHierarchyNode(superDec);
                             n.setMultiple(true);
                             n.addChild(getSubtypePathNode(dec));
                             getSubtypePathNode(superDec).addChild(n);
@@ -287,11 +302,13 @@ public final class CeylonHierarchyContentProvider
                                 try {
                                     if (declaration instanceof TypeDeclaration) {
                                         TypeDeclaration td = (TypeDeclaration) d;
-                                        ClassOrInterface etd = td.getExtendedTypeDeclaration();
+                                        ClassOrInterface etd = 
+                                                td.getExtendedTypeDeclaration();
                                         if (etd!=null) {
                                             add(td, etd);
                                         }
-                                        for (TypeDeclaration std: td.getSatisfiedTypeDeclarations()) {
+                                        for (TypeDeclaration std: 
+                                            td.getSatisfiedTypeDeclarations()) {
                                             add(td, std);
                                         }
                                     }
@@ -299,9 +316,12 @@ public final class CeylonHierarchyContentProvider
                                         TypeDeclaration td = (TypeDeclaration) d;
                                         //TODO: keep the directly refined declarations in the model
                                         //      (get the typechecker to set this up)
-                                        Declaration mem = td.getDirectMember(declaration.getName(), null, false);
+                                        Declaration mem = 
+                                                td.getDirectMember(declaration.getName(), 
+                                                        null, false);
                                         if (mem!=null) {
-                                            for (Declaration id: td.getInheritedMembers(declaration.getName())) {
+                                            for (Declaration id: 
+                                                td.getInheritedMembers(declaration.getName())) {
                                                 add(mem, id);
                                             }
                                         }                               
