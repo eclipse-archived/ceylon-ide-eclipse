@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -67,7 +67,7 @@ final class CodePopup extends PopupDialog
         public void keyPressed(KeyEvent e) {
             if (e.character == 0x1B) // ESC
                 dispose();
-            if (e.character == 'p' && (e.stateMask&SWT.MOD1)!=0) {
+            if (EditorUtil.triggersBinding(e, getCommandBinding())) {
                 e.doit=false;
                 dispose();
                 gotoNode(referencedNode, 
@@ -77,8 +77,6 @@ final class CodePopup extends PopupDialog
         }
     }
 
-    static final String KEY = KeyStroke.getInstance(SWT.MOD1, 'P').format();
-
     ISourceViewer viewer;
     CeylonEditor editor;
     Node referencedNode;
@@ -86,10 +84,19 @@ final class CodePopup extends PopupDialog
     
     private StyledText titleLabel;
 
+    private TriggerSequence commandBinding;
+    
+    protected TriggerSequence getCommandBinding() {
+        return commandBinding;
+    }
+    
     CodePopup(Shell parent, int shellStyle, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true,
-                true, null, KEY + " to open editor");
+                true, null, null);
         this.editor = editor;
+        commandBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.editor.code");
+        setInfoText(commandBinding.format() + " to open editor");
+        
         create();
         
         Color color = getCurrentThemeColor("code");

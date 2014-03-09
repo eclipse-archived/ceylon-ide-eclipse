@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -25,20 +25,18 @@ import org.eclipse.swt.widgets.Tree;
 
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends TreeViewPopup {
-    
-    private static final String KEY = KeyStroke.getInstance(SWT.MOD1, 'T').format();
-    private static final String VIEW_INTERFACES = " (" + KEY + " to view)";
     
     private final class ChangeViewListener implements KeyListener {
         @Override
         public void keyReleased(KeyEvent e) {}
         @Override
         public void keyPressed(KeyEvent e) {
-            if (e.character == 't' && (e.stateMask&SWT.MOD1)!=0) {
+            if (EditorUtil.triggersBinding(e, getCommandBinding())) {
                 contentProvider.setMode(contentProvider.getMode().next());
                 updateStatusFieldText();
                 updateTitle();
@@ -55,8 +53,9 @@ public class HierarchyPopup extends TreeViewPopup {
     
     public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle, 
             int treeStyle) {
-        super(shell, shellStyle, treeStyle, editor, 
-                getCurrentThemeColor("hierarchy"));
+        super(shell, shellStyle, treeStyle, 
+                "com.redhat.ceylon.eclipse.ui.editor.hierarchy",
+                editor, getCurrentThemeColor("hierarchy"));
     }
     
     /*@Override
@@ -81,7 +80,7 @@ public class HierarchyPopup extends TreeViewPopup {
         labelProvider = new CeylonHierarchyLabelProvider() {
             @Override
             String getViewInterfacesShortcut() {
-                return VIEW_INTERFACES;
+                return " (" + getCommandBinding() + " to view)";
             }
             @Override
             IProject getProject() {
@@ -110,13 +109,15 @@ public class HierarchyPopup extends TreeViewPopup {
     
     @Override
     protected String getStatusFieldText() {
+        TriggerSequence binding = getCommandBinding();
+        if (binding==null) return "";
         switch (contentProvider.getMode()) {
         case SUBTYPES:
-            return KEY + " to show hierarchy";
+            return binding.format() + " to show hierarchy";
         case SUPERTYPES:
-            return KEY + " to show subtypes";
+            return binding.format() + " to show subtypes";
         case HIERARCHY:
-            return KEY + " to show supertypes";
+            return binding.format() + " to show supertypes";
         default:
             throw new RuntimeException();
         }

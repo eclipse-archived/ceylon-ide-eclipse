@@ -18,6 +18,7 @@ import java.util.StringTokenizer;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
@@ -67,6 +68,7 @@ import org.eclipse.ui.commands.HandlerSubmission;
 import org.eclipse.ui.commands.Priority;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
@@ -98,8 +100,6 @@ public abstract class TreeViewPopup extends PopupDialog
     private TreeViewer treeViewer;
     /** The current string matcher */
     //protected JavaElementPrefixPatternMatcher fPatternMatcher;
-    //private ICommand fInvokingCommand;
-    //private KeySequence[] fInvokingCommandKeySequences;
 
     /**
      * Fields that support the dialog menu
@@ -107,9 +107,7 @@ public abstract class TreeViewPopup extends PopupDialog
      * @since 3.2 - now appended to framework menu
      */
     private Composite viewMenuButtonComposite;
-
-    //private CustomFiltersActionGroup fCustomFiltersActionGroup;
-
+    
     private IAction showViewMenuAction;
     private HandlerSubmission showViewMenuHandlerSubmission;
 
@@ -122,12 +120,12 @@ public abstract class TreeViewPopup extends PopupDialog
 
     private StyledText titleLabel;
 
-    /**
-     * The initially selected type.
-     * @since 3.5
-     */
-    //protected IType fInitiallySelectedType;
-
+    private TriggerSequence commandBinding;
+    
+    protected TriggerSequence getCommandBinding() {
+        return commandBinding;
+    }
+    
     /**
      * Creates a tree information control with the given shell as parent. The given
      * styles are applied to the shell and the tree widget.
@@ -139,18 +137,12 @@ public abstract class TreeViewPopup extends PopupDialog
      * @param showStatusField <code>true</code> iff the control has a status field at the bottom
      */
     public TreeViewPopup(Shell parent, int shellStyle, int treeStyle, 
-            /*String invokingCommandId,*/ CeylonEditor editor, Color color) {
+            String invokingCommandId, CeylonEditor editor, Color color) {
         super(parent, shellStyle, true, true, false, true, true, null, null);
         this.editor = editor;
-        /*if (invokingCommandId != null) {
-            ICommandManager commandManager= PlatformUI.getWorkbench().getCommandSupport().getCommandManager();
-            fInvokingCommand= commandManager.getCommand(invokingCommandId);
-            if (fInvokingCommand != null && !fInvokingCommand.isDefined())
-                fInvokingCommand= null;
-            else
-                // Pre-fetch key sequence - do not change because scope will change later.
-                getInvokingCommandKeySequences();
-        }*/
+        if (invokingCommandId != null) {
+            commandBinding = EditorUtil.getCommandBinding(invokingCommandId);
+        }
         this.treeStyle= treeStyle;
         // Title and status text must be set to get the title label created, so force empty values here.
         setInfoText("");
@@ -504,13 +496,7 @@ public abstract class TreeViewPopup extends PopupDialog
     protected void fillViewMenu(IMenuManager viewMenu) {
         //fCustomFiltersActionGroup.fillViewMenu(viewMenu);
     }
-
-    /*
-     * Overridden to call the old framework method.
-     *
-     * @see org.eclipse.jface.dialogs.PopupDialog#fillDialogMenu(IMenuManager)
-     * @since 3.2
-     */
+    
     @Override
     protected void fillDialogMenu(IMenuManager dialogMenu) {
         super.fillDialogMenu(dialogMenu);
@@ -636,27 +622,7 @@ public abstract class TreeViewPopup extends PopupDialog
     public void removeFocusListener(FocusListener listener) {
         getShell().removeFocusListener(listener);
     }
-
-    /*final protected ICommand getInvokingCommand() {
-        return fInvokingCommand;
-    }
-
-    final protected KeySequence[] getInvokingCommandKeySequences() {
-        if (fInvokingCommandKeySequences == null) {
-            if (getInvokingCommand() != null) {
-                List<IKeySequenceBinding> list= getInvokingCommand().getKeySequenceBindings();
-                if (!list.isEmpty()) {
-                    fInvokingCommandKeySequences= new KeySequence[list.size()];
-                    for (int i= 0; i < fInvokingCommandKeySequences.length; i++) {
-                        fInvokingCommandKeySequences[i]= list.get(i).getKeySequence();
-                    }
-                    return fInvokingCommandKeySequences;
-                }
-            }
-        }
-        return fInvokingCommandKeySequences;
-    }*/
-
+    
     @Override
     protected IDialogSettings getDialogSettings() {
         String sectionName= getId();
@@ -667,30 +633,17 @@ public abstract class TreeViewPopup extends PopupDialog
             settings= dialogSettings.addNewSection(sectionName);
         return settings;
     }
-
-    /*
-     * Overridden to insert the filter text into the title and menu area.
-     *
-     * @since 3.2
-     */
+    
     @Override
     protected Control createTitleMenuArea(Composite parent) {
         viewMenuButtonComposite = 
                 (Composite) super.createTitleMenuArea(parent);
-//        getPopupLayout().copy().numColumns(4).applyTo(viewMenuButtonComposite);
-//        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true,
-//                false).applyTo(viewMenuButtonComposite);
-//        viewMenuButtonComposite.layout(true);
-        
-        // If there is a header, then the filter text must be created
+        // the filter text must be created
         // underneath the title and menu area.
         filterText= createFilterText(parent);
         
         // Create show view menu action
         showViewMenuAction= new Action("showViewMenu") { //$NON-NLS-1$
-            /*
-             * @see org.eclipse.jface.action.Action#run()
-             */
             @Override
             public void run() {
                 showDialogMenu();
@@ -725,11 +678,6 @@ public abstract class TreeViewPopup extends PopupDialog
         });
     }
 
-    /*
-     * Overridden to insert the filter text into the title control
-     * if there is no header specified.
-     * @since 3.2
-     */
     @Override
     protected Control createTitleControl(Composite parent) {
         titleLabel = new StyledText(parent, SWT.NONE);
@@ -754,17 +702,7 @@ public abstract class TreeViewPopup extends PopupDialog
     
     @Override
     protected void setTabOrder(Composite composite) {
-//        composite.setTabList(new Control[] { 
-//                filterText.getParent(), 
-//                treeViewer.getTree() 
-//        });
-//        filterText.getParent().setTabList(new Control[]{ filterText });
-//        if (hasHeader()) {
         composite.setTabList(new Control[] { filterText, treeViewer.getTree() });
-//        } else {
-//            viewMenuButtonComposite.setTabList(new Control[] { filterText });
-//            composite.setTabList(new Control[] { viewMenuButtonComposite, treeViewer.getTree() });
-//        }
     }
     
     @Override

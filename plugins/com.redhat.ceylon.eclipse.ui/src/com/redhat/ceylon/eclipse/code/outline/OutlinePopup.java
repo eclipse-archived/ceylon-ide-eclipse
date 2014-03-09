@@ -147,8 +147,9 @@ public class OutlinePopup extends TreeViewPopup {
 
     public OutlinePopup(CeylonEditor editor, Shell shell, int shellStyle, 
             int treeStyle) {
-        super(shell, shellStyle, treeStyle, editor,
-                getCurrentThemeColor("outline"));
+        super(shell, shellStyle, treeStyle, 
+                "com.redhat.ceylon.eclipse.ui.editor.showOutline",
+                editor, getCurrentThemeColor("outline"));
         setTitleText("Quick Outline - " + editor.getEditorInput().getName());
     }
 
