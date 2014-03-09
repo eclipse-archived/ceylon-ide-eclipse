@@ -35,6 +35,8 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
@@ -45,6 +47,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -240,10 +243,12 @@ public final class ReferencesPopup extends PopupDialog
             }
         });
     }
-
+    
+    private boolean includeImports = false;
+    
     @Override
     protected Control createTitleControl(Composite parent) {
-        getPopupLayout().copy().numColumns(3).spacing(6, 6).applyTo(parent);
+        getPopupLayout().copy().numColumns(4).spacing(6, 6).applyTo(parent);
         Label iconLabel = new Label(parent, SWT.NONE);
         iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_REFS));
 //        getShell().addKeyListener(new GotoListener());
@@ -257,6 +262,17 @@ public final class ReferencesPopup extends PopupDialog
         titleLabel.setEditable(false);
         GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
             .grab(true,false).span(1, 1).applyTo(titleLabel);
+        Button button = new Button(parent, SWT.CHECK);
+        button.setText("include imports");
+        button.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                includeImports = !includeImports;
+                setInput(null);
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
         return null;
     }
     
@@ -432,7 +448,8 @@ public final class ReferencesPopup extends PopupDialog
         Declaration declaration = 
                 Nodes.getReferencedExplicitDeclaration(getSelectedNode(editor), 
                         pc.getRootNode());
-        setTitleText("Quick Find References - references to '" + declaration.getName(pc.getRootNode().getUnit()) + "'");
+        setTitleText("Quick Find References - references to '" + 
+                        declaration.getName(pc.getRootNode().getUnit()) + "'");
         List<CeylonSearchMatch> list = new ArrayList<CeylonSearchMatch>();
         for (PhasedUnit pu: pc.getTypeChecker().getPhasedUnits().getPhasedUnits()) {
             FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
@@ -442,7 +459,11 @@ public final class ReferencesPopup extends PopupDialog
                 pu.getCompilationUnit().visit(fcv);
                 Tree.StatementOrArgument c = fcv.getStatementOrArgument();
                 if (c!=null) {
-                    list.add(new CeylonSearchMatch(c, pu.getUnitFile(), node));
+                    if (includeImports || 
+                            !(c instanceof Tree.Import) && 
+                            !(c instanceof Tree.ImportModule)) {
+                        list.add(new CeylonSearchMatch(c, pu.getUnitFile(), node));
+                    }
                 }
             }
         }
