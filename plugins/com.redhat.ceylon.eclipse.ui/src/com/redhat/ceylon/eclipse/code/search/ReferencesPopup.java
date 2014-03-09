@@ -111,15 +111,12 @@ public final class ReferencesPopup extends PopupDialog
 
     protected Control createContents(Composite parent) {
         Composite composite = (Composite) super.createContents(parent);
-        Control[] children = composite.getChildren();
         GridLayout layout = (GridLayout) composite.getLayout();
         layout.verticalSpacing=8;
         layout.marginLeft=8;
         layout.marginRight=8;
         layout.marginTop=8;
         layout.marginBottom=8;
-        children[children.length-2].setVisible(false);
-        viewer.getTable().setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         return composite;
     }
     
