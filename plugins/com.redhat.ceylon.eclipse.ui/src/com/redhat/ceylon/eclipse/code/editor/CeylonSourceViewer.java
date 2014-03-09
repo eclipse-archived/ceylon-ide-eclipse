@@ -87,7 +87,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
     /**
      * Text operation code for requesting the code for the current input.
      */
-    public static final int SHOW_CODE= 56;
+    public static final int SHOW_DEFINITION= 56;
 
     /**
      * Text operation code for toggling the commenting of a selected range of text, or the current line.
@@ -135,7 +135,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             return structurePresenter!=null;
         case SHOW_HIERARCHY:
             return hierarchyPresenter!=null;
-        case SHOW_CODE:
+        case SHOW_DEFINITION:
             return codePresenter!=null;
         case SHOW_IN_HIERARCHY_VIEW:
             return true;
@@ -170,7 +170,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             if (hierarchyPresenter!=null)
                 hierarchyPresenter.showInformation();
             return;
-        case SHOW_CODE:
+        case SHOW_DEFINITION:
             if (codePresenter!=null)
                 codePresenter.showInformation();
             return;

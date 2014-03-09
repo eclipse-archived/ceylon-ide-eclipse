@@ -379,7 +379,7 @@ public class CeylonEditor extends TextEditor {
         setAction(EditorActionIds.SHOW_IN_CEYLON_HIERARCHY_VIEW, action);
 
         action= new TextOperationAction(bundle, "ShowCode.", this, 
-                CeylonSourceViewer.SHOW_CODE, true);
+                CeylonSourceViewer.SHOW_DEFINITION, true);
         action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_CODE);
         setAction(EditorActionIds.SHOW_CEYLON_CODE, action);
         

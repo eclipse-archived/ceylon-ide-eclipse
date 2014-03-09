@@ -55,7 +55,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
-final class CodePopup extends PopupDialog 
+final class PeekDefinitionPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
                    IInformationControlExtension3 {
     
@@ -90,7 +90,7 @@ final class CodePopup extends PopupDialog
         return commandBinding;
     }
     
-    CodePopup(Shell parent, int shellStyle, CeylonEditor editor) {
+    PeekDefinitionPopup(Shell parent, int shellStyle, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true,
                 true, null, null);
         this.editor = editor;
@@ -107,7 +107,7 @@ final class CodePopup extends PopupDialog
         setForegroundColor(getEditorWidget(editor).getForeground());
     }
 
-    public StyledText getEditorWidget(CeylonEditor editor) {
+    private StyledText getEditorWidget(CeylonEditor editor) {
         return editor.getCeylonSourceViewer().getTextWidget();
     }
 

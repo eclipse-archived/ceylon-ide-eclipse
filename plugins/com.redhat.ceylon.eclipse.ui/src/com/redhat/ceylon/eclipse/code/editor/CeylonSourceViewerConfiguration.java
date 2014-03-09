@@ -342,7 +342,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     private static final class OutlinePresenterControlCreator implements
             IInformationControlCreator {
         private CeylonEditor editor;
-        OutlinePresenterControlCreator(CeylonEditor editor) {
+        private OutlinePresenterControlCreator(CeylonEditor editor) {
             this.editor = editor;
         }
         @Override
@@ -354,9 +354,9 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
 
     private static final class CodePopupSourceViewerConfiguration 
             extends CeylonSourceViewerConfiguration {
-        private final CodePopup popup;
+        private final PeekDefinitionPopup popup;
         private CodePopupSourceViewerConfiguration(CeylonEditor editor,
-                CodePopup popup) {
+                PeekDefinitionPopup popup) {
             super(editor);
             this.popup = popup;
         }
@@ -370,14 +370,15 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     private static final class CodePresenterControlCreator 
             implements IInformationControlCreator {
         private CeylonEditor editor;
-        CodePresenterControlCreator(CeylonEditor editor) {
+        private CodePresenterControlCreator(CeylonEditor editor) {
             this.editor = editor;
         }
         @Override
         public IInformationControl createInformationControl(Shell parent) {
-            final CodePopup pop = new CodePopup(parent, SWT.RESIZE, editor);
-            pop.viewer.configure(new CodePopupSourceViewerConfiguration(editor, pop));
-            return pop;
+            PeekDefinitionPopup popup = 
+                    new PeekDefinitionPopup(parent, SWT.RESIZE, editor);
+            popup.viewer.configure(new CodePopupSourceViewerConfiguration(editor, popup));
+            return popup;
         }
     }
     
