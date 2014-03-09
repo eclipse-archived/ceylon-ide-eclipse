@@ -906,17 +906,17 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
-            sequence="M1+G"
+            sequence="M1+M2+U A"
             commandId="com.redhat.ceylon.eclipse.ui.action.findAssignments"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
-            sequence="M1+M2+U"
+            sequence="M1+M2+U R"
             commandId="com.redhat.ceylon.eclipse.ui.action.findRefinements"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
-            sequence="M1+U"
+            sequence="M1+M2+U S"
             commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
