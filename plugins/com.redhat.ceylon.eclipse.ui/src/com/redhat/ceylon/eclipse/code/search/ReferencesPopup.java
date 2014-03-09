@@ -468,6 +468,9 @@ public final class ReferencesPopup extends PopupDialog
             }
         }
         viewer.setInput(list);
+        if (!list.isEmpty()) {
+            viewer.setSelection(new StructuredSelection(viewer.getElementAt(0)), true);
+        }
     }
 
     @Override
