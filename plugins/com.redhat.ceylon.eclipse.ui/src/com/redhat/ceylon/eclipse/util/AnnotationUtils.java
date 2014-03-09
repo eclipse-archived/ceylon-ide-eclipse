@@ -1,20 +1,9 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.ASSIGNMENT_ANNOTATION;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.OCCURRENCE_ANNOTATION;
-import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
-import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
-import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertTopLevelFont;
-import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
-import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
-import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
-import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
-import static org.eclipse.jface.resource.JFaceResources.getFontRegistry;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -36,12 +24,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
-import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
-import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
-import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 
 public class AnnotationUtils {
@@ -63,24 +46,7 @@ public class AnnotationUtils {
         sAnnotationTypesToFilter.add(ASSIGNMENT_ANNOTATION);
         sAnnotationTypesToFilter.add(ProjectionAnnotation.TYPE);
     }
-
-    /**
-     * @return a nicely-formatted plain text string for the given set of annotations
-     */
-    public static String formatAnnotationList(List<Annotation> annotations) {
-        if (annotations == null || annotations.isEmpty()) {
-            return null;
-        }
-        else {
-            if (annotations.size()==1) {
-                return formatSingleMessage(annotations.get(0));
-            }
-            else {
-                return formatMultipleMessages(annotations);
-            }
-        }
-    }
-
+    
     /**
      * @return true, if the given Annotation and Position are redundant, 
      * given the annotation information in the given Map
@@ -240,121 +206,7 @@ public class AnnotationUtils {
         return !sAnnotationTypesToFilter.contains(annotation.getType());
     }
     
-//    public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
-//        return formatAnnotationList(getAnnotationsForLine(sourceViewer, lineNumber));
-//    }
-
-    public static void addMessageImageAndLabel(Annotation message,
-            StringBuilder buffer) {
-        URL icon = null;
-        String text = null;
-        if (message instanceof CeylonAnnotation) {
-            text = convertToHTMLContent(message.getText());
-            icon = getProblemIcon(((CeylonAnnotation) message).getSeverity());
-        }
-        else if (message instanceof CeylonInitializerAnnotation) {
-            text = message.getText();
-            icon = HTML.fileUrl("information.gif");
-        }
-        else if (message instanceof RefinementAnnotation) {
-            Declaration dec = ((RefinementAnnotation) message).getDeclaration();
-            icon = dec.isFormal() ? 
-                    HTML.fileUrl("implm_co.gif") : HTML.fileUrl("over_co.gif");
-            text = "refines&nbsp;&nbsp;<tt>" + 
-                    convertToHTMLContent(getDescriptionFor(dec)) + 
-                    "</tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt><b>" + 
-                    ((TypeDeclaration) dec.getContainer()).getName() + 
-                    "</b></tt>";
-        }
-        else if (message instanceof MarkerAnnotation) {
-            try {
-                Integer sev = (Integer)((MarkerAnnotation) message).getMarker()
-                        .getAttribute(IMarker.SEVERITY);
-                icon = getProblemIcon(sev);
-                String msg = (String)((MarkerAnnotation) message).getMarker()
-                        .getAttribute(IMarker.MESSAGE);
-                text = "[Backend error] " + 
-                        convertToHTMLContent(msg).replace("\n", "<br/>");
-            } 
-            catch (CoreException e) {
-                e.printStackTrace();
-            }
-        }
-        else if (message!=null) {
-            if (SEARCH_ANNOTATION_TYPE.equals(message.getType())) {
-                text = "<b>Search result</b>";
-                icon = HTML.fileUrl("find_obj.gif");
-            }
-            else if (TODO_ANNOTATION_TYPE.equals(message.getType())) {
-                text = "<b>Task</b><p>" + message.getText() + "</p>";
-                icon = HTML.fileUrl("tasks_tsk.gif");
-            }
-        }
-        if (icon!=null) {
-            HTML.addImageAndLabel(buffer, null, icon.toExternalForm(), 
-                    16, 16, text, 20, 2);
-        }
-    }
-
-    public static URL getProblemIcon(Integer severity) {
-        if (severity==null) {
-            return null;
-        }
-        if (severity.intValue()==SEVERITY_ERROR) {
-            return HTML.fileUrl("error_obj.gif");
-        }
-        else if (severity.intValue()==SEVERITY_WARNING) {
-            return HTML.fileUrl("warning_obj.gif");
-        }
-        else {
-            return null;
-        }
-    }
-
-    /**
-     * Formats a message as HTML text.
-     */
-    public static String formatSingleMessage(Annotation message) {
-        StringBuilder buffer= new StringBuilder();
-        insertPageProlog(buffer, 0, getStyleSheet());
-        addMessageImageAndLabel(message, buffer);
-        addPageEpilog(buffer);
-        return buffer.toString();
-    }
-
-    /**
-     * Formats several messages as HTML text.
-     */
-    public static String formatMultipleMessages(List<Annotation> messages) {
-        StringBuilder buffer = new StringBuilder();
-        insertPageProlog(buffer, 0, getStyleSheet());
-        HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("errorwarning_tab.gif").toExternalForm(),
-                16, 16, "Multiple messages at this line:", 20, 2);
-        buffer.append("<hr/>");
-        for (Annotation message: messages) {
-            addMessageImageAndLabel(message, buffer);
-        }
-        addPageEpilog(buffer);
-        return buffer.toString();
-    }
     
-    private static String fgStyleSheet;
-
-    public static String getStyleSheet() {
-        if (fgStyleSheet == null) {
-            fgStyleSheet = HTML.loadStyleSheet();
-        }
-        //Color c = CeylonTokenColorer.getCurrentThemeColor("messageHover");
-        //String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
-        String css= fgStyleSheet + "body { padding: 5px; } hr { padding: 2px; border:0; }"; //+ "body { background-color: #" + color + " }";
-        if (css!=null) {
-            css = convertTopLevelFont(css, getFontRegistry()
-                    .getFontData(APPEARANCE_JAVADOC_FONT)[0]);
-        }
-        return css;
-    }
-
 }
 
 /**
