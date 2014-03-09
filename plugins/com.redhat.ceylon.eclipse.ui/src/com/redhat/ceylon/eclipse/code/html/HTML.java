@@ -66,7 +66,7 @@ public class HTML {
         }
         //Color c = CeylonTokenColorer.getCurrentThemeColor("docHover");
         //String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
-        String css= fgStyleSheet;// + "body { background-color: #" + color+ " }";
+        String css= fgStyleSheet + "body { padding: 15px; } hr { padding: 2px; border:0; }";// + "body { background-color: #" + color+ " }";
         if (css != null) {
             FontData fontData= JFaceResources.getFontRegistry()
                     .getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
