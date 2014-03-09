@@ -39,12 +39,14 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+
 
 /**
  * Abstract super class for annotation hovers.
  *
  */
-public abstract class AbstractAnnotationHover 
+public class AnnotationHover 
         implements ITextHover, ITextHoverExtension, ITextHoverExtension2, 
                    IAnnotationHover, IAnnotationHoverExtension {
 
@@ -134,15 +136,16 @@ public abstract class AbstractAnnotationHover
     //private final IPreferenceStore fStore= CeylonPlugin.getInstance().getPreferenceStore();
     private final DefaultMarkerAnnotationAccess fAnnotationAccess = 
             new DefaultMarkerAnnotationAccess();
-    private final boolean fAllAnnotations;
 
     private IInformationControlCreator fHoverControlCreator;
     private IInformationControlCreator fPresenterControlCreator;
     
-    public AbstractAnnotationHover(boolean allAnnotations) {
-        fAllAnnotations = allAnnotations;
+    private final CeylonEditor editor;
+    
+    public AnnotationHover(CeylonEditor editor) {
+        this.editor = editor;
     }
-
+    
     @Override
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         return null;
@@ -173,13 +176,12 @@ public abstract class AbstractAnnotationHover
         else {
             parent = model.getAnnotationIterator();
         }
-        Iterator<Annotation> e = 
-                new AnnotationIterator(parent, fAllAnnotations);
 
         Map<Annotation,Position> annotationPositions = 
                 new LinkedHashMap<Annotation, Position>();
-        while (e.hasNext()) {
-            Annotation a = (Annotation) e.next();
+        Iterator<Annotation> iter = new AnnotationIterator(parent);
+        while (iter.hasNext()) {
+            Annotation a = (Annotation) iter.next();
             Position p = model.getPosition(a);
             int l = fAnnotationAccess.getLayer(a);
             //TODO: make higher-layer annotations suppress lower-layer ones
@@ -204,7 +206,7 @@ public abstract class AbstractAnnotationHover
     
     protected AnnotationInfo createAnnotationInfo(ITextViewer textViewer, 
             Map<Annotation,Position> annotationPositions) {
-        return new AnnotationInfo(annotationPositions, textViewer);
+        return new AnnotationInfo(editor, annotationPositions, textViewer);
     }
     
     @Override

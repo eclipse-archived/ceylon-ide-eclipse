@@ -96,14 +96,16 @@ class AnnotationInformationControl extends AbstractInformationControl
     @Override
     public void setFocus() {
         super.setFocus();
-        if (fFocusControl != null)
+        if (fFocusControl != null) {
             fFocusControl.setFocus();
+        }
     }
 
     @Override
     public final void setVisible(boolean visible) {
-        if (!visible)
+        if (!visible) {
             disposeDeferredCreatedContent();
+        }
         super.setVisible(visible);
     }
 
@@ -132,9 +134,10 @@ class AnnotationInformationControl extends AbstractInformationControl
         Point preferedSize = 
                 getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 
-        Point constrains= getSizeConstraints();
-        if (constrains == null)
+        Point constrains = getSizeConstraints();
+        if (constrains == null) {
             return preferedSize;
+        }
 
         int trimWidth = getShell().computeTrim(0, 0, 0, 0).width;
         Point constrainedSize = 
@@ -186,8 +189,8 @@ class AnnotationInformationControl extends AbstractInformationControl
         control.setFont(font);
 
         if (control instanceof Composite) {
-            Control[] children= ((Composite) control).getChildren();
-            for (int i= 0; i < children.length; i++) {
+            Control[] children = ((Composite) control).getChildren();
+            for (int i=0; i<children.length; i++) {
                 setColorAndFont(children[i], foreground, background, font);
             }
         }
@@ -228,7 +231,8 @@ class AnnotationInformationControl extends AbstractInformationControl
 
             StyledText text = 
                     new StyledText(composite, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
-            GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+            GridData data = 
+                    new GridData(SWT.FILL, SWT.FILL, true, true);
             text.setLayoutData(data);
             String annotationText = annotation.getText();
             if (annotationText != null) {
@@ -300,7 +304,7 @@ class AnnotationInformationControl extends AbstractInformationControl
             gridData1.widthHint = 0;
             indent.setLayoutData(gridData1);
 
-            links[i]= createCompletionProposalLink(composite, proposals[i]);
+            links[i] = createCompletionProposalLink(composite, proposals[i]);
         }
 
         scrolledComposite.setContent(composite);
@@ -327,10 +331,10 @@ class AnnotationInformationControl extends AbstractInformationControl
             gridData.heightHint = contentSize.y - scrollBarHeight;
         }
 
-        fFocusControl= links[0];
-        for (int i= 0; i < links.length; i++) {
-            final int index= i;
-            final Link link= links[index];
+        fFocusControl = links[0];
+        for (int i=0; i<links.length; i++) {
+            final int index = i;
+            final Link link = links[index];
             link.addKeyListener(new KeyListener() {
                 @Override
                 public void keyPressed(KeyEvent e) {
@@ -378,9 +382,9 @@ class AnnotationInformationControl extends AbstractInformationControl
 
     private Link createCompletionProposalLink(Composite parent,
             final ICompletionProposal proposal) {
-        Label proposalImage= new Label(parent, SWT.NONE);
+        Label proposalImage = new Label(parent, SWT.NONE);
         proposalImage.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        Image image= proposal.getImage();
+        Image image = proposal.getImage();
         if (image != null) {
             proposalImage.setImage(image);
             proposalImage.addMouseListener(new MouseListener() {
@@ -397,7 +401,7 @@ class AnnotationInformationControl extends AbstractInformationControl
             });
         }
 
-        Link proposalLink= new Link(parent, SWT.WRAP);
+        Link proposalLink = new Link(parent, SWT.WRAP);
         proposalLink.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         proposalLink.setText("<a>" + proposal.getDisplayString() + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
         proposalLink.addSelectionListener(new SelectionAdapter() {
@@ -418,8 +422,8 @@ class AnnotationInformationControl extends AbstractInformationControl
             IDocument document = viewer.getDocument();
 
             if (viewer instanceof ITextViewerExtension) {
-                ITextViewerExtension extension= (ITextViewerExtension) viewer;
-                target= extension.getRewriteTarget();
+                ITextViewerExtension extension = (ITextViewerExtension) viewer;
+                target = extension.getRewriteTarget();
             }
 
             if (target != null)
@@ -435,12 +439,13 @@ class AnnotationInformationControl extends AbstractInformationControl
                 p.apply(document);
 //            }
 
-            Point selection= p.getSelection(document);
+            Point selection = p.getSelection(document);
             if (selection != null) {
                 viewer.setSelectedRange(selection.x, selection.y);
                 viewer.revealRange(selection.x, selection.y);
             }
-        } finally {
+        }
+        finally {
             if (target != null)
                 target.endCompoundChange();
         }
