@@ -333,6 +333,7 @@ public final class ReferencesPopup extends PopupDialog
             viewer.getControl().setRedraw(false);
             viewer.refresh();
             viewer.getControl().setRedraw(true);
+            selectFirst();
         }
     }
 
@@ -468,8 +469,13 @@ public final class ReferencesPopup extends PopupDialog
             }
         }
         viewer.setInput(list);
-        if (!list.isEmpty()) {
-            viewer.setSelection(new StructuredSelection(viewer.getElementAt(0)), true);
+        selectFirst();
+    }
+
+    private void selectFirst() {
+        Object firstElem = viewer.getElementAt(0);
+        if (firstElem!=null) {
+            viewer.setSelection(new StructuredSelection(firstElem), true);
         }
     }
 
