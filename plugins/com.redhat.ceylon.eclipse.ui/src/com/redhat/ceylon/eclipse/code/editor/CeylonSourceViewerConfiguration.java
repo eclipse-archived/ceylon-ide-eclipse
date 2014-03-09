@@ -56,7 +56,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
-import com.redhat.ceylon.eclipse.code.search.FindReferencesPopup;
+import com.redhat.ceylon.eclipse.code.search.ReferencesPopup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -404,7 +404,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         }
         @Override
         public IInformationControl createInformationControl(Shell parent) {
-            return new FindReferencesPopup(parent, SWT.NONE, editor);
+            return new ReferencesPopup(parent, SWT.NONE, editor);
         }
     }
 

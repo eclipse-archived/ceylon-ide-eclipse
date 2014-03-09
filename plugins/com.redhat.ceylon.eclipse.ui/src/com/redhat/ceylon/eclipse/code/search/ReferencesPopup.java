@@ -66,7 +66,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
-public final class FindReferencesPopup extends PopupDialog 
+public final class ReferencesPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
                    IInformationControlExtension3 {
     
@@ -84,7 +84,7 @@ public final class FindReferencesPopup extends PopupDialog
         return commandBinding;
     }
     
-    public FindReferencesPopup(Shell parent, int shellStyle, CeylonEditor editor) {
+    public ReferencesPopup(Shell parent, int shellStyle, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true,
                 true, null, null);
         setTitleText("Quick Find References");
@@ -219,10 +219,13 @@ public final class FindReferencesPopup extends PopupDialog
     protected StyledString styleTitle(final StyledText title) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(title.getText(), "-", false);
+                new StringTokenizer(title.getText(), "-'", false);
         styleDescription(title, result, tokens.nextToken());
         result.append("-");
+        result.append(tokens.nextToken());
+        result.append("'");
         CompletionUtil.styleProposal(result, tokens.nextToken());
+        result.append("'");
         return result;
     }
 
@@ -431,7 +434,7 @@ public final class FindReferencesPopup extends PopupDialog
         Declaration declaration = 
                 Nodes.getReferencedExplicitDeclaration(getSelectedNode(editor), 
                         pc.getRootNode());
-        setTitleText("Quick Find References - " + declaration.getName(pc.getRootNode().getUnit()));
+        setTitleText("Quick Find References - references to '" + declaration.getName(pc.getRootNode().getUnit()) + "'");
         List<CeylonSearchMatch> list = new ArrayList<CeylonSearchMatch>();
         for (PhasedUnit pu: pc.getTypeChecker().getPhasedUnits().getPhasedUnits()) {
             FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
