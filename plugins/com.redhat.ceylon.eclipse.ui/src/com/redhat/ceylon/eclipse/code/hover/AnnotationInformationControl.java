@@ -26,6 +26,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -41,6 +42,8 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
+
+import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 
 /**
  * The annotation information control shows informations about a given
@@ -131,8 +134,8 @@ class AnnotationInformationControl extends AbstractInformationControl
 
     @Override
     public Point computeSizeHint() {
-        Point preferedSize = 
-                getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        Point preferedSize = getShell()
+                .computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 
         Point constrains = getSizeConstraints();
         if (constrains == null) {
@@ -140,8 +143,8 @@ class AnnotationInformationControl extends AbstractInformationControl
         }
 
         int trimWidth = getShell().computeTrim(0, 0, 0, 0).width;
-        Point constrainedSize = 
-                getShell().computeSize(constrains.x - trimWidth, SWT.DEFAULT, true);
+        Point constrainedSize = getShell()
+                .computeSize(constrains.x - trimWidth, SWT.DEFAULT, true);
 
         int width = Math.min(preferedSize.x, constrainedSize.x);
         int height = Math.max(preferedSize.y, constrainedSize.y);
@@ -228,18 +231,32 @@ class AnnotationInformationControl extends AbstractInformationControl
                             new Rectangle(0, 0, 16, 16));
                 }
             });
-
-            StyledText text = 
-                    new StyledText(composite, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
+            
             GridData data = 
                     new GridData(SWT.FILL, SWT.FILL, true, true);
-            text.setLayoutData(data);
-            String annotationText = annotation.getText();
-            if (annotationText != null) {
-                text.setText(Character.toUpperCase(annotationText.charAt(0)) +
-                        annotationText.substring(1));
+            if (annotation instanceof RefinementAnnotation) {
+                Link link = new Link(composite, SWT.NONE);
+                String text = annotation.getText().replaceFirst(" ", " <a>") + "</a>";
+                link.setText(text);
+                link.addSelectionListener(new SelectionListener() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ((RefinementAnnotation) annotation).gotoRefinedDeclaration(getAnnotationInfo().getEditor());
+                    }
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {}
+                });
             }
-            
+            else {
+                StyledText text = 
+                        new StyledText(composite, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
+                text.setLayoutData(data);
+                String annotationText = annotation.getText();
+                if (annotationText != null) {
+                    text.setText(Character.toUpperCase(annotationText.charAt(0)) +
+                            annotationText.substring(1));
+                }
+            }
         }
     }
 
