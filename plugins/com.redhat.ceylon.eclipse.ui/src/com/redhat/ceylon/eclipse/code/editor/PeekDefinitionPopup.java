@@ -77,10 +77,10 @@ final class PeekDefinitionPopup extends PopupDialog
         }
     }
 
-    ISourceViewer viewer;
-    CeylonEditor editor;
-    Node referencedNode;
-    CeylonParseController pc = new CeylonParseController();
+    private ISourceViewer viewer;
+    private final CeylonEditor editor;
+    private Node referencedNode;
+    private CeylonParseController pc = new CeylonParseController();
     
     private StyledText titleLabel;
 
