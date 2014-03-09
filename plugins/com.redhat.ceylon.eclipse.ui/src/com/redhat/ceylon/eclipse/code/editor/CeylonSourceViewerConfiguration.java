@@ -45,8 +45,8 @@ import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor;
 import com.redhat.ceylon.eclipse.code.correct.CeylonCorrectionProcessor;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
-import com.redhat.ceylon.eclipse.code.hover.CeylonAnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
+import com.redhat.ceylon.eclipse.code.hover.ProblemHover;
 import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineBuilder;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyInput;
@@ -211,12 +211,12 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return quickAssist;
     }
 
-    public CeylonAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
-        return new CeylonAnnotationHover();
+    public ProblemHover getAnnotationHover(ISourceViewer sourceViewer) {
+        return new ProblemHover(editor);
     }
 
-    public CeylonAnnotationHover getOverviewRulerAnnotationHover(ISourceViewer sourceViewer) {
-        return new CeylonAnnotationHover();
+    public ProblemHover getOverviewRulerAnnotationHover(ISourceViewer sourceViewer) {
+        return new ProblemHover(editor);
     }
 
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {

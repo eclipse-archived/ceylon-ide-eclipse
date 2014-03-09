@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.JFaceResources;
@@ -10,8 +13,6 @@ import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.ICompletionProposalExtension;
-import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -60,14 +61,14 @@ class AnnotationInformationControl extends AbstractInformationControl
     AnnotationInformationControl(Shell parentShell, 
             String statusFieldText) {
         super(parentShell, statusFieldText);
-        fMarkerAnnotationAccess= new DefaultMarkerAnnotationAccess();
+        fMarkerAnnotationAccess = new DefaultMarkerAnnotationAccess();
         create();
     }
 
     AnnotationInformationControl(Shell parentShell, 
             ToolBarManager toolBarManager) {
         super(parentShell, toolBarManager);
-        fMarkerAnnotationAccess= new DefaultMarkerAnnotationAccess();
+        fMarkerAnnotationAccess = new DefaultMarkerAnnotationAccess();
         create();
     }
 
@@ -79,7 +80,7 @@ class AnnotationInformationControl extends AbstractInformationControl
     @Override
     public void setInput(Object input) {
         Assert.isLegal(input instanceof AnnotationInfo);
-        fInput= (AnnotationInfo)input;
+        fInput = (AnnotationInfo) input;
         disposeDeferredCreatedContent();
         deferredCreateContent();
     }
@@ -108,8 +109,8 @@ class AnnotationInformationControl extends AbstractInformationControl
     }
 
     protected void disposeDeferredCreatedContent() {
-        Control[] children= fParent.getChildren();
-        for (int i= 0; i < children.length; i++) {
+        Control[] children = fParent.getChildren();
+        for (int i=0; i<children.length; i++) {
             children[i].dispose();
         }
         ToolBarManager toolBarManager= getToolBarManager();
@@ -119,27 +120,29 @@ class AnnotationInformationControl extends AbstractInformationControl
 
     @Override
     protected void createContent(Composite parent) {
-        fParent= parent;
-        GridLayout layout= new GridLayout(1, false);
-        layout.verticalSpacing= 0;
-        layout.marginWidth= 0;
-        layout.marginHeight= 0;
+        fParent = parent;
+        GridLayout layout = new GridLayout(1, false);
+        layout.verticalSpacing = 0;
+        layout.marginWidth = 0;
+        layout.marginHeight = 0;
         fParent.setLayout(layout);
     }
 
     @Override
     public Point computeSizeHint() {
-        Point preferedSize= getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        Point preferedSize = 
+                getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 
         Point constrains= getSizeConstraints();
         if (constrains == null)
             return preferedSize;
 
-        int trimWidth= getShell().computeTrim(0, 0, 0, 0).width;
-        Point constrainedSize= getShell().computeSize(constrains.x - trimWidth, SWT.DEFAULT, true);
+        int trimWidth = getShell().computeTrim(0, 0, 0, 0).width;
+        Point constrainedSize = 
+                getShell().computeSize(constrains.x - trimWidth, SWT.DEFAULT, true);
 
-        int width= Math.min(preferedSize.x, constrainedSize.x);
-        int height= Math.max(preferedSize.y, constrainedSize.y);
+        int width = Math.min(preferedSize.x, constrainedSize.x);
+        int height = Math.max(preferedSize.y, constrainedSize.y);
 
         return new Point(width, height);
     }
@@ -149,11 +152,11 @@ class AnnotationInformationControl extends AbstractInformationControl
      * is called after the input has been set.
      */
     protected void fillToolbar() {
-        ToolBarManager toolBarManager= getToolBarManager();
-        if (toolBarManager == null)
-            return;
-        fInput.fillToolBar(toolBarManager, this);
-        toolBarManager.update(true);
+        ToolBarManager toolBarManager = getToolBarManager();
+        if (toolBarManager != null) {
+            fInput.fillToolBar(toolBarManager, this);
+            toolBarManager.update(true);
+        }
     }
 
     /**
@@ -163,18 +166,22 @@ class AnnotationInformationControl extends AbstractInformationControl
     protected void deferredCreateContent() {
         fillToolbar();
 
-        createAnnotationInformation(fParent, getAnnotationInfo().annotation);
-        setColorAndFont(fParent, fParent.getForeground(), fParent.getBackground(), 
+        createAnnotationInformation(fParent);
+        setColorAndFont(fParent, fParent.getForeground(), 
+                fParent.getBackground(), 
                 JFaceResources.getDialogFont());
 
-        ICompletionProposal[] proposals= getAnnotationInfo().getCompletionProposals();
-        if (proposals.length > 0)
+        ICompletionProposal[] proposals = 
+                getAnnotationInfo().getCompletionProposals();
+        if (proposals.length > 0) {
             createCompletionProposalsControl(fParent, proposals);
+        }
 
         fParent.layout(true);
     }
 
-    private void setColorAndFont(Control control, Color foreground, Color background, Font font) {
+    private void setColorAndFont(Control control, Color foreground, 
+            Color background, Font font) {
         control.setForeground(foreground);
         control.setBackground(background);
         control.setFont(font);
@@ -187,108 +194,137 @@ class AnnotationInformationControl extends AbstractInformationControl
         }
     }
 
-    private void createAnnotationInformation(Composite parent, final Annotation annotation) {
-        Composite composite= new Composite(parent, SWT.NONE);
+    private void createAnnotationInformation(Composite parent) {
+        Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-        GridLayout layout= new GridLayout(2, false);
-        layout.marginHeight= 15;
-        layout.marginWidth= 15;
-        layout.horizontalSpacing= 0;
+        GridLayout layout = new GridLayout(2, false);
+        layout.marginHeight = 15;
+        layout.marginWidth = 15;
+        layout.horizontalSpacing = 4;
         composite.setLayout(layout);
 
-        final Canvas canvas= new Canvas(composite, SWT.NO_FOCUS);
-        GridData gridData= new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
-        gridData.widthHint= 17;
-        gridData.heightHint= 16;
-        canvas.setLayoutData(gridData);
-        canvas.addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e) {
-                e.gc.setFont(null);
-                fMarkerAnnotationAccess.paint(annotation, e.gc, canvas, new Rectangle(0, 0, 16, 16));
-            }
-        });
+        Annotation[] annotations = getAnnotationInfo()
+                .getAnnotationPositions().keySet()
+                .toArray(new Annotation[0]);
+        Arrays.sort(annotations, createAnnotationComparator());
+        for (final Annotation annotation: annotations) {
+            
+            final Canvas canvas = 
+                    new Canvas(composite, SWT.NO_FOCUS);
+            GridData gridData = 
+                    new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
+            gridData.widthHint = 17;
+            gridData.heightHint = 16;
+            canvas.setLayoutData(gridData);
+            
+            canvas.addPaintListener(new PaintListener() {
+                @Override
+                public void paintControl(PaintEvent e) {
+                    e.gc.setFont(null);
+                    fMarkerAnnotationAccess.paint(annotation, e.gc, canvas, 
+                            new Rectangle(0, 0, 16, 16));
+                }
+            });
 
-        StyledText text= new StyledText(composite, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
-        GridData data= new GridData(SWT.FILL, SWT.FILL, true, true);
-        text.setLayoutData(data);
-        String annotationText= annotation.getText();
-        if (annotationText != null)
-            text.setText(annotationText);
+            StyledText text = 
+                    new StyledText(composite, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
+            GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+            text.setLayoutData(data);
+            String annotationText = annotation.getText();
+            if (annotationText != null) {
+                text.setText(Character.toUpperCase(annotationText.charAt(0)) +
+                        annotationText.substring(1));
+            }
+            
+        }
     }
 
-    private void createCompletionProposalsControl(Composite parent, ICompletionProposal[] proposals) {
-        Composite composite= new Composite(parent, SWT.NONE);
+    Comparator<Annotation> createAnnotationComparator() {
+        return new AnnotationComparator();
+    }
+
+    private void createCompletionProposalsControl(Composite parent, 
+            ICompletionProposal[] proposals) {
+        Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        GridLayout layout2= new GridLayout(1, false);
-        layout2.marginHeight= 0;
-        layout2.marginWidth= 10;
-        layout2.verticalSpacing= 2;
+        GridLayout layout2 = new GridLayout(1, false);
+        layout2.marginHeight = 0;
+        layout2.marginWidth = 10;
+        layout2.verticalSpacing = 2;
         composite.setLayout(layout2);
 
-//        Label separator= new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
-//        GridData gridData= new GridData(SWT.FILL, SWT.CENTER, true, false);
+//        Label separator = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
+//        GridData gridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
 //        separator.setLayoutData(gridData);
 
-        Label quickFixLabel= new Label(composite, SWT.NONE);
-        GridData layoutData= new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-        layoutData.horizontalIndent= 4;
+        Label quickFixLabel = new Label(composite, SWT.NONE);
+        GridData layoutData = 
+                new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        layoutData.horizontalIndent = 4;
         quickFixLabel.setLayoutData(layoutData);
         String text;
         if (proposals.length == 1) {
-            text= "1 quick fix available:";
-        } else {
-            text= proposals.length + " quick fixes available:";
+            text = "1 quick fix available:";
+        }
+        else {
+            text = proposals.length + " quick fixes available:";
         }
         quickFixLabel.setText(text);
 
-        setColorAndFont(composite, parent.getForeground(), parent.getBackground(), 
+        setColorAndFont(composite, parent.getForeground(), 
+                parent.getBackground(), 
                 JFaceResources.getDialogFont());
         createCompletionProposalsList(composite, proposals);
     }
 
-    private void createCompletionProposalsList(Composite parent, ICompletionProposal[] proposals) {
-        final ScrolledComposite scrolledComposite= new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
-        GridData gridData= new GridData(SWT.FILL, SWT.FILL, true, true);
+    private void createCompletionProposalsList(Composite parent, 
+            ICompletionProposal[] proposals) {
+        final ScrolledComposite scrolledComposite = 
+                new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         scrolledComposite.setLayoutData(gridData);
         scrolledComposite.setExpandVertical(false);
         scrolledComposite.setExpandHorizontal(false);
 
-        Composite composite= new Composite(scrolledComposite, SWT.NONE);
+        Composite composite = new Composite(scrolledComposite, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        GridLayout layout= new GridLayout(3, false);
-        layout.verticalSpacing= 2;
+        GridLayout layout = new GridLayout(3, false);
+        layout.verticalSpacing = 2;
         composite.setLayout(layout);
 
-        final Link[] links= new Link[proposals.length];
-        for (int i= 0; i < proposals.length; i++) {
-            Label indent= new Label(composite, SWT.NONE);
-            GridData gridData1= new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-            gridData1.widthHint= 0;
+        final Link[] links = new Link[proposals.length];
+        for (int i=0; i<proposals.length; i++) {
+            Label indent = new Label(composite, SWT.NONE);
+            GridData gridData1 = 
+                    new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+            gridData1.widthHint = 0;
             indent.setLayoutData(gridData1);
 
             links[i]= createCompletionProposalLink(composite, proposals[i]);
         }
 
         scrolledComposite.setContent(composite);
-        setColorAndFont(scrolledComposite, parent.getForeground(), parent.getBackground(), 
+        setColorAndFont(scrolledComposite, parent.getForeground(), 
+                parent.getBackground(), 
                 JFaceResources.getDialogFont());
 
-        Point contentSize= composite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        Point contentSize = composite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         composite.setSize(contentSize);
 
-        Point constraints= getSizeConstraints();
+        Point constraints = getSizeConstraints();
         if (constraints != null && contentSize.x < constraints.x) {
-            ScrollBar horizontalBar= scrolledComposite.getHorizontalBar();
+            ScrollBar horizontalBar = scrolledComposite.getHorizontalBar();
 
             int scrollBarHeight;
             if (horizontalBar == null) {
-                Point scrollSize= scrolledComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                scrollBarHeight= scrollSize.y - contentSize.y;
-            } else {
-                scrollBarHeight= horizontalBar.getSize().y;
+                Point scrollSize = 
+                        scrolledComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                scrollBarHeight = scrollSize.y - contentSize.y;
             }
-            gridData.heightHint= contentSize.y - scrollBarHeight;
+            else {
+                scrollBarHeight = horizontalBar.getSize().y;
+            }
+            gridData.heightHint = contentSize.y - scrollBarHeight;
         }
 
         fFocusControl= links[0];
@@ -320,17 +356,18 @@ class AnnotationInformationControl extends AbstractInformationControl
             link.addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
-                    int currentPosition= scrolledComposite.getOrigin().y;
-                    int hight= scrolledComposite.getSize().y;
-                    int linkPosition= link.getLocation().y;
+                    int currentPosition = scrolledComposite.getOrigin().y;
+                    int hight = scrolledComposite.getSize().y;
+                    int linkPosition = link.getLocation().y;
                     if (linkPosition < currentPosition) {
-                        if (linkPosition < 10)
+                        if (linkPosition < 10) {
                             linkPosition= 0;
-
+                        }
                         scrolledComposite.setOrigin(0, linkPosition);
                     } 
                     else if (linkPosition + 20 > currentPosition + hight) {
-                        scrolledComposite.setOrigin(0, linkPosition - hight + link.getSize().y);
+                        scrolledComposite.setOrigin(0, 
+                                linkPosition - hight + link.getSize().y);
                     }
                 }
                 @Override
@@ -339,7 +376,8 @@ class AnnotationInformationControl extends AbstractInformationControl
         }
     }
 
-    private Link createCompletionProposalLink(Composite parent, final ICompletionProposal proposal) {
+    private Link createCompletionProposalLink(Composite parent,
+            final ICompletionProposal proposal) {
         Label proposalImage= new Label(parent, SWT.NONE);
         proposalImage.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         Image image= proposal.getImage();
@@ -353,7 +391,7 @@ class AnnotationInformationControl extends AbstractInformationControl
                 @Override
                 public void mouseUp(MouseEvent e) {
                     if (e.button == 1) {
-                        apply(proposal, fInput.viewer, fInput.position.offset);
+                        apply(proposal, fInput.getViewer());
                     }
                 }
             });
@@ -365,20 +403,19 @@ class AnnotationInformationControl extends AbstractInformationControl
         proposalLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                apply(proposal, fInput.viewer, fInput.position.offset);
+                apply(proposal, fInput.getViewer());
             }
         });
-
         return proposalLink;
     }
 
-    private void apply(ICompletionProposal p, ITextViewer viewer, int offset) {
+    private void apply(ICompletionProposal p, ITextViewer viewer/*, int offset*/) {
         //Focus needs to be in the text viewer, otherwise linked mode does not work
         dispose();
 
-        IRewriteTarget target= null;
+        IRewriteTarget target = null;
         try {
-            IDocument document= viewer.getDocument();
+            IDocument document = viewer.getDocument();
 
             if (viewer instanceof ITextViewerExtension) {
                 ITextViewerExtension extension= (ITextViewerExtension) viewer;
@@ -388,15 +425,15 @@ class AnnotationInformationControl extends AbstractInformationControl
             if (target != null)
                 target.beginCompoundChange();
 
-            if (p instanceof ICompletionProposalExtension2) {
-                ICompletionProposalExtension2 e= (ICompletionProposalExtension2) p;
-                e.apply(viewer, (char) 0, SWT.NONE, offset);
-            } else if (p instanceof ICompletionProposalExtension) {
-                ICompletionProposalExtension e= (ICompletionProposalExtension) p;
-                e.apply(document, (char) 0, offset);
-            } else {
+//            if (p instanceof ICompletionProposalExtension2) {
+//                ICompletionProposalExtension2 e= (ICompletionProposalExtension2) p;
+//                e.apply(viewer, (char) 0, SWT.NONE, offset);
+//            } else if (p instanceof ICompletionProposalExtension) {
+//                ICompletionProposalExtension e= (ICompletionProposalExtension) p;
+//                e.apply(document, (char) 0, offset);
+//            } else {
                 p.apply(document);
-            }
+//            }
 
             Point selection= p.getSelection(document);
             if (selection != null) {

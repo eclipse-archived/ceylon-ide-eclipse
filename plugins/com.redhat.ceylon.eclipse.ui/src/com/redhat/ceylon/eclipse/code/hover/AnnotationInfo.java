@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import java.util.Map;
+
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.ITextViewer;
@@ -17,14 +19,12 @@ import com.redhat.ceylon.eclipse.code.hover.AbstractAnnotationHover.ConfigureAnn
  */
 class AnnotationInfo {
     
-    public final Annotation annotation;
-    public final Position position;
-    public final ITextViewer viewer;
+    private final Map<Annotation,Position> annotationPositions;
+    private final ITextViewer viewer;
 
-    AnnotationInfo(Annotation annotation, Position position, ITextViewer textViewer) {
-        this.annotation= annotation;
-        this.position= position;
-        this.viewer= textViewer;
+    AnnotationInfo(Map<Annotation,Position> annotationPositions, ITextViewer textViewer) {
+        this.annotationPositions = annotationPositions;
+        this.viewer = textViewer;
     }
 
     /**
@@ -44,7 +44,15 @@ class AnnotationInfo {
      * @param infoControl the information control
      */
     void fillToolBar(ToolBarManager manager, IInformationControl infoControl) {
-        ConfigureAnnotationsAction configureAnnotationsAction= new ConfigureAnnotationsAction(annotation, infoControl);
-        manager.add(configureAnnotationsAction);
+        Annotation first = annotationPositions.keySet().iterator().next();
+        manager.add(new ConfigureAnnotationsAction(first, infoControl));
+    }
+
+    Map<Annotation,Position> getAnnotationPositions() {
+        return annotationPositions;
+    }
+
+    ITextViewer getViewer() {
+        return viewer;
     }
 }

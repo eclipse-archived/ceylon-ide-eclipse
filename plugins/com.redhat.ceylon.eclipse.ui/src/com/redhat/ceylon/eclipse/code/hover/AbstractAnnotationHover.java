@@ -5,11 +5,14 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN_DIS;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IInformationControlExtension4;
@@ -21,9 +24,13 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationHover;
+import org.eclipse.jface.text.source.IAnnotationHoverExtension;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension2;
+import org.eclipse.jface.text.source.ILineRange;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.LineRange;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -36,26 +43,29 @@ import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 /**
  * Abstract super class for annotation hovers.
  *
- * @since 3.0
  */
 public abstract class AbstractAnnotationHover 
-        implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
+        implements ITextHover, ITextHoverExtension, ITextHoverExtension2, 
+                   IAnnotationHover, IAnnotationHoverExtension {
 
     /**
      * Creates the "enriched" control.
      */
-    private static final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
+    private static final class PresenterControlCreator 
+            extends AbstractReusableInformationControlCreator {
         @Override
         public IInformationControl doCreateInformationControl(Shell parent) {
-            return new AnnotationInformationControl(parent, new ToolBarManager(SWT.FLAT));
+            return new AnnotationInformationControl(parent, 
+                    new ToolBarManager(SWT.FLAT));
         }
     }
 
-    private static final class HoverControlCreator extends AbstractReusableInformationControlCreator {
+    private static final class HoverControlCreator 
+            extends AbstractReusableInformationControlCreator {
         private final IInformationControlCreator fPresenterControlCreator;
 
         public HoverControlCreator(IInformationControlCreator presenterControlCreator) {
-            fPresenterControlCreator= presenterControlCreator;
+            fPresenterControlCreator = presenterControlCreator;
         }
 
         @Override
@@ -70,11 +80,13 @@ public abstract class AbstractAnnotationHover
 
         @Override
         public boolean canReuse(IInformationControl control) {
-            if (!super.canReuse(control))
+            if (!super.canReuse(control)) {
                 return false;
+            }
 
-            if (control instanceof IInformationControlExtension4)
+            if (control instanceof IInformationControlExtension4) {
                 ((IInformationControlExtension4) control).setStatusText("F2 for focus");
+            }
 
             return true;
         }
@@ -83,7 +95,6 @@ public abstract class AbstractAnnotationHover
     /**
      * Action to configure the annotation preferences.
      *
-     * @since 3.4
      */
     static final class ConfigureAnnotationsAction extends Action {
 
@@ -102,12 +113,16 @@ public abstract class AbstractAnnotationHover
 
         @Override
         public void run() {
-            Shell shell= PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 
-            Object data= null;
-            AnnotationPreference preference= getAnnotationPreference(fAnnotation);
-            if (preference != null)
+            Object data;
+            AnnotationPreference preference = getAnnotationPreference(fAnnotation);
+            if (preference != null) {
                 data= preference.getPreferenceLabel();
+            }
+            else {
+                data = null;
+            }
 
             fInfoControl.dispose(); //FIXME: should have protocol to hide, rather than dispose
             PreferencesUtil.createPreferenceDialogOn(shell, 
@@ -117,7 +132,8 @@ public abstract class AbstractAnnotationHover
     }
 
     //private final IPreferenceStore fStore= CeylonPlugin.getInstance().getPreferenceStore();
-    private final DefaultMarkerAnnotationAccess fAnnotationAccess= new DefaultMarkerAnnotationAccess();
+    private final DefaultMarkerAnnotationAccess fAnnotationAccess = 
+            new DefaultMarkerAnnotationAccess();
     private final boolean fAllAnnotations;
 
     private IInformationControlCreator fHoverControlCreator;
@@ -150,53 +166,60 @@ public abstract class AbstractAnnotationHover
 
         Iterator<Annotation> parent;
         if (model instanceof IAnnotationModelExtension2) {
-            parent = ((IAnnotationModelExtension2) model).getAnnotationIterator(hoverRegion.getOffset(), 
-                    hoverRegion.getLength()+1, true, true);
+            parent = ((IAnnotationModelExtension2) model)
+                    .getAnnotationIterator(hoverRegion.getOffset(), 
+                            hoverRegion.getLength()+1, true, true);
         }
         else {
-            parent= model.getAnnotationIterator();
+            parent = model.getAnnotationIterator();
         }
-        Iterator<Annotation> e= new AnnotationIterator(parent, fAllAnnotations);
+        Iterator<Annotation> e = 
+                new AnnotationIterator(parent, fAllAnnotations);
 
-        int layer= -1;
-        Annotation annotation= null;
-        Position position= null;
+        Map<Annotation,Position> annotationPositions = 
+                new LinkedHashMap<Annotation, Position>();
         while (e.hasNext()) {
             Annotation a = (Annotation) e.next();
             Position p = model.getPosition(a);
-            int l= fAnnotationAccess.getLayer(a);
-
-            if (l > layer && p != null && p.overlapsWith(hoverRegion.getOffset(), 
+            int l = fAnnotationAccess.getLayer(a);
+            //TODO: make higher-layer annotations suppress lower-layer ones
+            if (p != null && p.overlapsWith(hoverRegion.getOffset(), 
                     hoverRegion.getLength())) {
-                String msg= a.getText();
+                String msg = a.getText();
                 if (msg != null && msg.trim().length() > 0) {
-                    layer= l;
-                    annotation= a;
-                    position= p;
+                    if (l>=0) {
+                        annotationPositions.put(a, p);
+                    }
                 }
             }
         }
-        if (layer > -1)
-            return createAnnotationInfo(annotation, position, textViewer);
-
-        return null;
+        
+        if (!annotationPositions.isEmpty()) {
+            return createAnnotationInfo(textViewer, annotationPositions);
+        }
+        else {
+            return null;
+        }
     }
     
-    protected AnnotationInfo createAnnotationInfo(Annotation annotation, 
-            Position position, ITextViewer textViewer) {
-        return new AnnotationInfo(annotation, position, textViewer);
+    protected AnnotationInfo createAnnotationInfo(ITextViewer textViewer, 
+            Map<Annotation,Position> annotationPositions) {
+        return new AnnotationInfo(annotationPositions, textViewer);
     }
     
     @Override
     public IInformationControlCreator getHoverControlCreator() {
-        if (fHoverControlCreator == null)
-            fHoverControlCreator= new HoverControlCreator(getInformationPresenterControlCreator());
+        if (fHoverControlCreator == null) {
+            fHoverControlCreator = 
+                    new HoverControlCreator(getInformationPresenterControlCreator());
+        }
         return fHoverControlCreator;
     }
     
     private IInformationControlCreator getInformationPresenterControlCreator() {
-        if (fPresenterControlCreator == null)
-            fPresenterControlCreator= new PresenterControlCreator();
+        if (fPresenterControlCreator == null) {
+            fPresenterControlCreator = new PresenterControlCreator();
+        }
         return fPresenterControlCreator;
     }
     
@@ -212,9 +235,41 @@ public abstract class AbstractAnnotationHover
      * @return the annotation preference or <code>null</code> if none
      */
     private static AnnotationPreference getAnnotationPreference(Annotation annotation) {
-        if (annotation.isMarkedDeleted())
+        if (annotation.isMarkedDeleted()) {
             return null;
-        return EditorsUI.getAnnotationPreferenceLookup().getAnnotationPreference(annotation);
+        }
+        else {
+            return EditorsUI.getAnnotationPreferenceLookup()
+                    .getAnnotationPreference(annotation);
+        }
     }
-}
 
+    @Override
+    public boolean canHandleMouseCursor() {
+        return false;
+    }
+
+    @Override
+    public Object getHoverInfo(ISourceViewer sourceViewer,
+            ILineRange lineRange, int visibleNumberOfLines) {
+        try {
+            return getHoverInfo2(sourceViewer, sourceViewer.getDocument()
+                    .getLineInformation(lineRange.getStartLine()));
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public ILineRange getHoverLineRange(ISourceViewer viewer, int lineNumber) {
+        return new LineRange(lineNumber, 1);
+    }
+
+    @Override
+    public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
+        return null;
+    }
+    
+}
