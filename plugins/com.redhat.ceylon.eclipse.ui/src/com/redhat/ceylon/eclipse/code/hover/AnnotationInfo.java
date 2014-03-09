@@ -43,6 +43,10 @@ class AnnotationInfo {
         this.viewer = textViewer;
         this.editor = editor;
     }
+    
+    public CeylonEditor getEditor() {
+        return editor;
+    }
 
     /**
      * Create completion proposals which can resolve the given annotation at
@@ -100,7 +104,7 @@ class AnnotationInfo {
         new CeylonCorrectionProcessor(editor)
                 .collectCorrections(quickAssistContext, location, proposals);
         
-        return (ICompletionProposal[]) proposals.toArray(new ICompletionProposal[proposals.size()]);
+        return (ICompletionProposal[]) proposals.toArray(NO_PROPOSALS);
     }
 
     private ICompletionProposal[] getMarkerAnnotationFixes(MarkerAnnotation markerAnnotation, 

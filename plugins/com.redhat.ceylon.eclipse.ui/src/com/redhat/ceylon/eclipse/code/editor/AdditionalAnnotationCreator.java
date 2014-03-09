@@ -20,6 +20,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -169,13 +170,16 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             Tree.StatementOrArgument that, Node line, Declaration dec) {
         Declaration refined = getRefinedDeclaration(dec);
         if (refined!=null) {
-            Declaration container = (Declaration) dec.getContainer();
+            Declaration container = (Declaration) refined.getContainer();
+            Unit unit = that.getUnit();
             String description = 
-                    "refines " + container.getName(that.getUnit()) + "." + dec.getName();
+                    "refines " + container.getName(unit) + 
+                    "." + refined.getName(unit);
             RefinementAnnotation ra = new RefinementAnnotation(description,  
                     refined, line.getToken().getLine());
-            model.addAnnotation(ra, new Position(Nodes.getStartOffset(that), 
-                    Nodes.getLength(that)));
+            model.addAnnotation(ra, 
+                    new Position(Nodes.getStartOffset(that), 
+                            Nodes.getLength(that)));
         }
     }
     
