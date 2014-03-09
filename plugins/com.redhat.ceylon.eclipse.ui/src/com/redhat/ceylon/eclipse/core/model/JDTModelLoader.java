@@ -678,6 +678,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     private Unit newCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
+        if (classMirror == null) {
+            return null;
+        }
         Unit unit;
         JDTClass jdtClass = (JDTClass) classMirror;
         ITypeRoot typeRoot = null;
