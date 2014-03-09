@@ -128,6 +128,7 @@ public final class ReferencesPopup extends PopupDialog
         viewer = new TableViewer(parent, SWT.FLAT);
 //        GridData data = new GridData();
 //        viewer.getTable().setLayoutData(new GridData());
+        viewer.setComparator(new CeylonViewerComparator());
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.setLabelProvider(new CeylonLabelProvider(true) {
             @Override
