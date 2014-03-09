@@ -191,8 +191,8 @@ class AnnotationInformationControl extends AbstractInformationControl
         Composite composite= new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
         GridLayout layout= new GridLayout(2, false);
-        layout.marginHeight= 2;
-        layout.marginWidth= 2;
+        layout.marginHeight= 15;
+        layout.marginWidth= 15;
         layout.horizontalSpacing= 0;
         composite.setLayout(layout);
 
@@ -222,13 +222,13 @@ class AnnotationInformationControl extends AbstractInformationControl
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         GridLayout layout2= new GridLayout(1, false);
         layout2.marginHeight= 0;
-        layout2.marginWidth= 0;
+        layout2.marginWidth= 10;
         layout2.verticalSpacing= 2;
         composite.setLayout(layout2);
 
-        Label separator= new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
-        GridData gridData= new GridData(SWT.FILL, SWT.CENTER, true, false);
-        separator.setLayoutData(gridData);
+//        Label separator= new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
+//        GridData gridData= new GridData(SWT.FILL, SWT.CENTER, true, false);
+//        separator.setLayoutData(gridData);
 
         Label quickFixLabel= new Label(composite, SWT.NONE);
         GridData layoutData= new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
