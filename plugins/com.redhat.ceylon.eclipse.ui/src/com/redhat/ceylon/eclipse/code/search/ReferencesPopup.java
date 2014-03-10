@@ -102,23 +102,14 @@ public final class ReferencesPopup extends PopupDialog
         @Override
         public void widgetSelected(SelectionEvent e) {
             treeLayout = !treeLayout;
-            if (treeLayout) {
-                viewer = treeViewer;
-                treeViewer.getTree().setVisible(true);
-                tableViewer.getTable().setVisible(false);
-                ((GridData)treeViewer.getControl().getLayoutData()).exclude=false;
-                ((GridData)tableViewer.getControl().getLayoutData()).exclude=true;
-            }
-            else {
-                viewer = tableViewer;
-                treeViewer.getTree().setVisible(false);
-                tableViewer.getTable().setVisible(true);
-                ((GridData)treeViewer.getControl().getLayoutData()).exclude=true;
-                ((GridData)tableViewer.getControl().getLayoutData()).exclude=false;
-            }
+            viewer = treeLayout ? treeViewer : tableViewer;
+            treeViewer.getTree().setVisible(treeLayout);
+            tableViewer.getTable().setVisible(!treeLayout);
+            ((GridData)treeViewer.getControl().getLayoutData()).exclude=!treeLayout;
+            ((GridData)tableViewer.getControl().getLayoutData()).exclude=treeLayout;
             viewer.getControl().getParent().layout(/*true*/);
-//            viewer.getControl().redraw();
             setInput(null);
+            getDialogSettings().put("treeLayout", treeLayout);
         }
 
         @Override
@@ -215,6 +206,8 @@ public final class ReferencesPopup extends PopupDialog
     public ReferencesPopup(Shell parent, int shellStyle, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true,
                 true, null, null);
+        treeLayout = getDialogSettings().getBoolean("treeLayout");
+        includeImports = getDialogSettings().getBoolean("includeImports");
         setTitleText("Quick Find References");
         this.editor = editor;
         commandBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.editor.findReferences");
@@ -226,7 +219,7 @@ public final class ReferencesPopup extends PopupDialog
         setBackgroundColor(color);
 
         //setBackgroundColor(getEditorWidget(editor).getBackground());
-        setForegroundColor(getEditorWidget(editor).getForeground());
+        setForegroundColor(getEditorWidget(editor).getForeground());        
     }
     
     private void setIcon() {
@@ -276,14 +269,17 @@ public final class ReferencesPopup extends PopupDialog
     @Override
     protected Control createDialogArea(Composite parent) {
         treeViewer = new TreeViewer(parent, SWT.FLAT);
-        treeViewer.getTree().setVisible(false);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
-        gd.exclude = true;
-        treeViewer.getControl().setLayoutData(gd);
+        treeViewer.getTree().setVisible(treeLayout);
+        GridData gdTree = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
+        gdTree.exclude = !treeLayout;
+        treeViewer.getTree().setLayoutData(gdTree);
         treeViewer.setAutoExpandLevel(TreeViewer.ALL_LEVELS);
         tableViewer = new TableViewer(parent, SWT.FLAT);
-        tableViewer.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL));
-        viewer = tableViewer;
+        tableViewer.getTable().setVisible(!treeLayout);
+        GridData gdTable = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
+        gdTable.exclude = treeLayout;
+        tableViewer.getTable().setLayoutData(gdTable);
+        viewer = treeLayout ? treeViewer : tableViewer;
         tableViewer.setComparator(new CeylonViewerComparator() {
             @Override
             public int compare(Viewer viewer, Object e1, Object e2) {
@@ -314,10 +310,10 @@ public final class ReferencesPopup extends PopupDialog
         tableViewer.getControl().addMouseMoveListener(new MouseMoveListener() {
             @Override
             public void mouseMove(MouseEvent e) {
-                Item item = ((TableViewer) viewer).getTable()
+                Item item = tableViewer.getTable()
                             .getItem(new Point(e.x, e.y));
                 if (item!=null) {
-                    viewer.setSelection(new StructuredSelection(item.getData()));
+                    tableViewer.setSelection(new StructuredSelection(item.getData()));
                 }
             }
         });
@@ -328,6 +324,7 @@ public final class ReferencesPopup extends PopupDialog
         MouseListener clickListener = new ClickListener();
         tableViewer.getControl().addMouseListener(clickListener);
         treeViewer.getControl().addMouseListener(clickListener);
+        viewer.getControl().getParent().layout(/*true*/);
         return viewer.getControl();
     }
     
@@ -405,12 +402,13 @@ public final class ReferencesPopup extends PopupDialog
         ToolItem button = new ToolItem(toolBar, SWT.CHECK);
         button.setImage(CeylonLabelProvider.IMPORT);
         button.setToolTipText("show matches in import statements");
-        button.setSelection(false);
+        button.setSelection(includeImports);
         button.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 includeImports = !includeImports;
                 setInput(null);
+                getDialogSettings().put("includeImports", includeImports);
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -418,11 +416,11 @@ public final class ReferencesPopup extends PopupDialog
         final ToolItem button1 = new ToolItem(toolBar, SWT.CHECK);
         button1.setImage(imageRegistry.get(FLAT_MODE));
         button1.setToolTipText("flat layout");
-        button1.setSelection(true);
+        button1.setSelection(!treeLayout);
         final ToolItem button2 = new ToolItem(toolBar, SWT.CHECK);
         button2.setImage(imageRegistry.get(TREE_MODE));
         button2.setToolTipText("tree layout");
-        button2.setSelection(false);
+        button2.setSelection(treeLayout);
         button1.addSelectionListener(new ChangeLayoutListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
