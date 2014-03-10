@@ -399,6 +399,13 @@ public final class ReferencesPopup extends PopupDialog
 //        button.setImage(CeylonLabelProvider.IMPORT);
 //        button.setText("include imports");
         ToolBar toolBar = new ToolBar(parent, SWT.FLAT);
+        createImportsButton(toolBar);
+        createModeButtons(toolBar);
+        createLayoutButtons(toolBar);
+        return null;
+    }
+
+    private void createImportsButton(ToolBar toolBar) {
         ToolItem button = new ToolItem(toolBar, SWT.CHECK);
         button.setImage(CeylonLabelProvider.IMPORT);
         button.setToolTipText("show matches in import statements");
@@ -413,6 +420,54 @@ public final class ReferencesPopup extends PopupDialog
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+    }
+
+    private void createModeButtons(ToolBar toolBar) {
+        button1 = new ToolItem(toolBar, SWT.CHECK);
+        button1.setImage(REFS_IMAGE);
+        button1.setToolTipText("references");
+        button2 = new ToolItem(toolBar, SWT.CHECK);
+        button2.setImage(DECS_IMAGE);
+        button2.setToolTipText("refinements/subtypes");
+        updateButtonSelection();
+        button1.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (button1.getSelection()) {
+                    showingRefinements = false;
+                    setInput(null);
+                    button2.setSelection(false);
+                }
+                else {
+                    button1.setSelection(true);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        button2.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (button2.getSelection()) {
+                    showingRefinements = true;
+                    setInput(null);
+                    button1.setSelection(false);
+                }
+                else {
+                    button2.setSelection(true);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+    }
+    
+    private void updateButtonSelection() {
+        button2.setSelection(showingRefinements);
+        button1.setSelection(!showingRefinements);
+    }
+    
+    private void createLayoutButtons(ToolBar toolBar) {
         final ToolItem button1 = new ToolItem(toolBar, SWT.CHECK);
         button1.setImage(imageRegistry.get(FLAT_MODE));
         button1.setToolTipText("flat layout");
@@ -445,7 +500,6 @@ public final class ReferencesPopup extends PopupDialog
                 }
             }
         });
-        return null;
     }
     
     protected Text createFilterText(Composite parent) {
@@ -624,6 +678,8 @@ public final class ReferencesPopup extends PopupDialog
     private TreeViewer treeViewer;
     private TableViewer tableViewer;
     private Label icon;
+    private ToolItem button1;
+    private ToolItem button2;
     
     @Override
     public void setInput(Object input) {
@@ -745,6 +801,7 @@ public final class ReferencesPopup extends PopupDialog
         tableViewer.setInput(allMatchesList);
         selectFirst();
         setStatusText();
+        updateButtonSelection();
         setIcon();
     }
 
