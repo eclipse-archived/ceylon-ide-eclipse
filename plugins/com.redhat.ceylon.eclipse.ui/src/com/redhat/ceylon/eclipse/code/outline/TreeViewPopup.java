@@ -44,7 +44,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -57,7 +56,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
@@ -204,46 +202,7 @@ public abstract class TreeViewPopup extends PopupDialog
             }
         });
 
-        tree.addMouseMoveListener(new MouseMoveListener()     {
-            TreeItem fLastItem = null;
-            public void mouseMove(MouseEvent e) {
-                if (tree.equals(e.getSource())) {
-                    Object o = tree.getItem(new Point(e.x, e.y));
-                    if (fLastItem == null ^ o == null) {
-                        tree.setCursor(o == null ? null : 
-                            tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-                    }
-                    if (o instanceof TreeItem) {
-                        Rectangle clientArea = tree.getClientArea();
-                        if (!o.equals(fLastItem)) {
-                            fLastItem = (TreeItem)o;
-                            tree.setSelection(new TreeItem[] { fLastItem });
-                        }
-                        else if (e.y - clientArea.y < tree.getItemHeight() / 4) {
-                            // Scroll up
-                            Point p = tree.toDisplay(e.x, e.y);
-                            Item item = treeViewer.scrollUp(p.x, p.y);
-                            if (item instanceof TreeItem) {
-                                fLastItem = (TreeItem)item;
-                                tree.setSelection(new TreeItem[] { fLastItem });
-                            }
-                        }
-                        else if (clientArea.y + clientArea.height - e.y < tree.getItemHeight() / 4) {
-                            // Scroll down
-                            Point p = tree.toDisplay(e.x, e.y);
-                            Item item = treeViewer.scrollDown(p.x, p.y);
-                            if (item instanceof TreeItem) {
-                                fLastItem = (TreeItem)item;
-                                tree.setSelection(new TreeItem[] { fLastItem });
-                            }
-                        }
-                    }
-                    else if (o == null) {
-                        fLastItem = null;
-                    }
-                }
-            }
-        });
+        tree.addMouseMoveListener(new TreeViewMouseListener(treeViewer));
 
         tree.addMouseListener(new MouseAdapter() {
             @Override

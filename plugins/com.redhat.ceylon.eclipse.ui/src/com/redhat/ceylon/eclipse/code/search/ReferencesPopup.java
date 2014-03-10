@@ -47,6 +47,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -61,10 +62,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
@@ -83,6 +82,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.TreeNodeLabelProvider;
+import com.redhat.ceylon.eclipse.code.outline.TreeViewMouseListener;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
@@ -284,7 +284,14 @@ public final class ReferencesPopup extends PopupDialog
         tableViewer = new TableViewer(parent, SWT.FLAT);
         tableViewer.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL));
         viewer = tableViewer;
-        tableViewer.setComparator(new CeylonViewerComparator());
+        tableViewer.setComparator(new CeylonViewerComparator() {
+            @Override
+            public int compare(Viewer viewer, Object e1, Object e2) {
+                return super.compare(viewer, 
+                        ((TreeNode) e1).getValue(), 
+                        ((TreeNode) e2).getValue());
+            }
+        });
         tableViewer.setContentProvider(ArrayContentProvider.getInstance());
         treeViewer.setContentProvider(new TreeNodeContentProvider());
         tableViewer.setLabelProvider(new LabelProvider());
@@ -304,25 +311,17 @@ public final class ReferencesPopup extends PopupDialog
         Cursor cursor = new Cursor(getShell().getDisplay(), SWT.CURSOR_HAND);
         tableViewer.getControl().setCursor(cursor);
         treeViewer.getControl().setCursor(cursor);
-        tableViewer.getControl().addListener(SWT.MouseMove, new Listener() {
+        tableViewer.getControl().addMouseMoveListener(new MouseMoveListener() {
             @Override
-            public void handleEvent(Event event) {
-                Rectangle bounds = event.getBounds();
-                Item item;
-                if (viewer instanceof TableViewer) {
-                    item = ((TableViewer) viewer).getTable()
-                            .getItem(new Point(bounds.x, bounds.y));
-                }
-                else {
-                    //TODO!!!!!
-                    item = ((TreeViewer) viewer).getTree()
-                            .getItem(new Point(bounds.x, bounds.y));
-                }
+            public void mouseMove(MouseEvent e) {
+                Item item = ((TableViewer) viewer).getTable()
+                            .getItem(new Point(e.x, e.y));
                 if (item!=null) {
                     viewer.setSelection(new StructuredSelection(item.getData()));
                 }
             }
         });
+        treeViewer.getControl().addMouseMoveListener(new TreeViewMouseListener(treeViewer));
         ShortcutKeyListener listener = new ShortcutKeyListener();
         tableViewer.getControl().addKeyListener(listener);
         treeViewer.getControl().addKeyListener(listener);
@@ -715,16 +714,16 @@ public final class ReferencesPopup extends PopupDialog
                         moduleNode = new TreeNode(p.getModule());
                         moduleNode.setParent(root);
                         moduleNodes.put(p.getModule(), moduleNode);
-                        moduleNode.setChildren(new TreeNode[] {unitNode});
+                        moduleNode.setChildren(new TreeNode[] {packageNode});
                     }
                     else {
-                        TreeNode[] oldChildren = packageNode.getChildren();
+                        TreeNode[] oldChildren = moduleNode.getChildren();
                         TreeNode[] children = new TreeNode[oldChildren.length+1];
                         for (int i=0; i<oldChildren.length; i++) {
                             children[i] = oldChildren[i];
                         }
-                        children[oldChildren.length] = unitNode;
-                        packageNode.setChildren(children);
+                        children[oldChildren.length] = packageNode;
+                        moduleNode.setChildren(children);
                     }
                     packageNode.setParent(moduleNode);
                     packageNodes.put(p, packageNode);
