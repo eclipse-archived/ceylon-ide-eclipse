@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
@@ -150,11 +151,7 @@ public final class ReferencesPopup extends PopupDialog
 
         @Override
         public void keyPressed(KeyEvent e) {
-            if (EditorUtil.triggersBinding(e, getCommandBinding())) {
-                showingRefinements = !showingRefinements;
-                setInput(null);
-                e.doit=false;
-            }
+            triggerCommand(e);
             if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) { // Enter key
                 gotoSelectedElement();
             }
@@ -196,12 +193,9 @@ public final class ReferencesPopup extends PopupDialog
     private StyledText titleLabel;
 
     private TriggerSequence commandBinding;
+    private TriggerSequence findCommandBinding;
     
     private boolean showingRefinements = false;
-    
-    protected TriggerSequence getCommandBinding() {
-        return commandBinding;
-    }
     
     public ReferencesPopup(Shell parent, int shellStyle, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true,
@@ -210,7 +204,10 @@ public final class ReferencesPopup extends PopupDialog
         includeImports = getDialogSettings().getBoolean("includeImports");
         setTitleText("Quick Find References");
         this.editor = editor;
-        commandBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.editor.findReferences");
+        commandBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
+                ".editor.findReferences");
+        findCommandBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
+                ".action.findReferences");
         setStatusText();
         create();
         
@@ -232,6 +229,11 @@ public final class ReferencesPopup extends PopupDialog
     }
 
     private void setStatusText() {
+        StringBuilder builder = new StringBuilder();
+        if (findCommandBinding!=null) {
+            builder.append(findCommandBinding.format())
+                    .append(" to find all references");
+        }
         if (commandBinding!=null) {
             String message;
             if (showingRefinements) {
@@ -245,7 +247,13 @@ public final class ReferencesPopup extends PopupDialog
                     message = " to show refinements";
                 }
             }
-            setInfoText(commandBinding.format() + message);
+            if (builder.length()>0) {
+                builder.append(" - ");
+            }
+            builder.append(commandBinding.format()).append(message);
+        }
+        if (builder.length()>0) {
+            setInfoText(builder.toString());
         }
     }
 
@@ -516,11 +524,7 @@ public final class ReferencesPopup extends PopupDialog
 
         filterText.addKeyListener(new KeyListener() {
             public void keyPressed(KeyEvent e) {
-                if (EditorUtil.triggersBinding(e, getCommandBinding())) {
-                    showingRefinements = !showingRefinements;
-                    setInput(null);
-                    e.doit=false;
-                }
+                triggerCommand(e);
                 if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) // Enter key
                     gotoSelectedElement();
                 if (e.keyCode == SWT.ARROW_DOWN)
@@ -538,6 +542,18 @@ public final class ReferencesPopup extends PopupDialog
         return filterText;
     }
 
+    private void triggerCommand(KeyEvent e) {
+        if (EditorUtil.triggersBinding(e, commandBinding)) {
+            showingRefinements = !showingRefinements;
+            setInput(null);
+            e.doit=false;
+        }
+        else if (EditorUtil.triggersBinding(e, findCommandBinding)) {
+            showingRefinements = !showingRefinements;
+            new FindReferencesAction(editor).run();
+            e.doit=false;
+        }
+    }
     @Override
     protected void setTitleText(String text) {
         if (titleLabel!=null) {
