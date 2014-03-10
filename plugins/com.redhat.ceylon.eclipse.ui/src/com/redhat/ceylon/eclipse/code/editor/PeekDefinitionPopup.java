@@ -82,6 +82,10 @@ final class PeekDefinitionPopup extends PopupDialog
     private Node referencedNode;
     private CeylonParseController pc = new CeylonParseController();
     
+    public ISourceViewer getViewer() {
+        return viewer;
+    }
+    
     private StyledText titleLabel;
 
     private TriggerSequence commandBinding;

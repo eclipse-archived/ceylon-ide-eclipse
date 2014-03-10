@@ -6,7 +6,9 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.eclipse.jface.bindings.TriggerSequence;
@@ -59,14 +61,18 @@ import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
+import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
+import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public final class ReferencesPopup extends PopupDialog 
@@ -75,13 +81,15 @@ public final class ReferencesPopup extends PopupDialog
     
     protected Text filterText;
     
-    public TableViewer viewer;
+    private TableViewer viewer;
     
-    CeylonEditor editor;
+    private final CeylonEditor editor;
     
     private StyledText titleLabel;
 
     private TriggerSequence commandBinding;
+    
+    private boolean showingRefinements = false;
     
     protected TriggerSequence getCommandBinding() {
         return commandBinding;
@@ -92,12 +100,8 @@ public final class ReferencesPopup extends PopupDialog
                 true, null, null);
         setTitleText("Quick Find References");
         this.editor = editor;
-        //TODO: cycle through the various kinds of Find query?
-//        commandBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.editor.findReferences");
-//        if (commandBinding!=null) {
-//            setInfoText(commandBinding.format() + " to open editor");
-//        }
-        
+        commandBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.editor.findReferences");
+        setStatusText();
         create();
         
         Color color = getCurrentThemeColor("outline");
@@ -106,6 +110,24 @@ public final class ReferencesPopup extends PopupDialog
 
         //setBackgroundColor(getEditorWidget(editor).getBackground());
         setForegroundColor(getEditorWidget(editor).getForeground());
+    }
+
+    private void setStatusText() {
+        if (commandBinding!=null) {
+            String message;
+            if (showingRefinements) {
+                message = " to show references";
+            }
+            else {
+                if (type) {
+                    message = " to show subtypes";
+                }
+                else {
+                    message = " to show refinements";
+                }
+            }
+            setInfoText(commandBinding.format() + message);
+        }
     }
 
     private StyledText getEditorWidget(CeylonEditor editor) {
@@ -120,6 +142,8 @@ public final class ReferencesPopup extends PopupDialog
         layout.marginRight=8;
         layout.marginTop=8;
         layout.marginBottom=8;
+        Control[] children = composite.getChildren();
+        children[children.length-2].setVisible(false);
         return composite;
     }
     
@@ -178,6 +202,11 @@ public final class ReferencesPopup extends PopupDialog
             public void keyReleased(KeyEvent e) {}
             @Override
             public void keyPressed(KeyEvent e) {
+                if (EditorUtil.triggersBinding(e, getCommandBinding())) {
+                    showingRefinements = !showingRefinements;
+                    setInput(null);
+                    e.doit=false;
+                }
                 if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) { // Enter key
                     gotoSelectedElement();
                 }
@@ -269,6 +298,7 @@ public final class ReferencesPopup extends PopupDialog
             public void widgetSelected(SelectionEvent e) {
                 includeImports = !includeImports;
                 setInput(null);
+                setStatusText();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -288,6 +318,11 @@ public final class ReferencesPopup extends PopupDialog
 
         filterText.addKeyListener(new KeyListener() {
             public void keyPressed(KeyEvent e) {
+                if (EditorUtil.triggersBinding(e, getCommandBinding())) {
+                    showingRefinements = !showingRefinements;
+                    setInput(null);
+                    e.doit=false;
+                }
                 if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) // Enter key
                     gotoSelectedElement();
                 if (e.keyCode == SWT.ARROW_DOWN)
@@ -442,6 +477,8 @@ public final class ReferencesPopup extends PopupDialog
         close();
     }
     
+    private boolean type;
+    
     @Override
     public void setInput(Object input) {
         CeylonParseController pc = editor.getParseController();
@@ -449,13 +486,44 @@ public final class ReferencesPopup extends PopupDialog
         Declaration declaration = 
                 Nodes.getReferencedExplicitDeclaration(getSelectedNode(editor), 
                         pc.getRootNode());
-        setTitleText("Quick Find References - references to '" + 
+        type = declaration instanceof TypeDeclaration;
+        String message;
+        if (showingRefinements) {
+            if (type) {
+                message = "refinements of";
+            }
+            else {
+                message = "subtypes of";
+            }
+        } else {
+            message = "references to";
+        }
+        setTitleText("Quick Find References - " + message + " '" + 
                         declaration.getName(pc.getRootNode().getUnit()) + "'");
         List<CeylonSearchMatch> list = new ArrayList<CeylonSearchMatch>();
         for (PhasedUnit pu: pc.getTypeChecker().getPhasedUnits().getPhasedUnits()) {
-            FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-            frv.visit(pu.getCompilationUnit());
-            for (Node node: frv.getNodes()) {
+            Set<Node> nodes;
+            if (showingRefinements) {
+                if (type) {
+                    FindSubtypesVisitor frv = new FindSubtypesVisitor(
+                            (TypeDeclaration) declaration);
+                    frv.visit(pu.getCompilationUnit());
+                    nodes = new HashSet<Node>(frv.getDeclarationNodes());
+                }
+                else {
+                    FindRefinementsVisitor frv = new FindRefinementsVisitor(
+                            declaration);
+                    frv.visit(pu.getCompilationUnit());
+                    nodes = new HashSet<Node>(frv.getDeclarationNodes());
+                }
+            }
+            else {
+                FindReferencesVisitor frv = new FindReferencesVisitor(
+                        declaration);
+                frv.visit(pu.getCompilationUnit());
+                nodes = frv.getNodes();
+            }
+            for (Node node: nodes) {
                 FindContainerVisitor fcv = new FindContainerVisitor(node);
                 pu.getCompilationUnit().visit(fcv);
                 Tree.StatementOrArgument c = fcv.getStatementOrArgument();
@@ -470,6 +538,7 @@ public final class ReferencesPopup extends PopupDialog
         }
         viewer.setInput(list);
         selectFirst();
+        setStatusText();
     }
 
     private void selectFirst() {
