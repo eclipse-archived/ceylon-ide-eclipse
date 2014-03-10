@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
@@ -20,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInformationControlExtension3;
@@ -50,6 +52,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextStyle;
@@ -90,6 +93,10 @@ public final class ReferencesPopup extends PopupDialog
         implements IInformationControl, IInformationControlExtension2,
                    IInformationControlExtension3 {
     
+    private static final ImageRegistry imageRegistry = CeylonPlugin.getInstance().getImageRegistry();
+    private static final Image REFS_IMAGE = imageRegistry.get(CEYLON_REFS);
+    private static final Image DECS_IMAGE = imageRegistry.get(CEYLON_DECS);
+
     public static final class LabelProvider extends TreeNodeLabelProvider {
         @Override
         public Object unwrap(Object element) {
@@ -192,6 +199,15 @@ public final class ReferencesPopup extends PopupDialog
 
         //setBackgroundColor(getEditorWidget(editor).getBackground());
         setForegroundColor(getEditorWidget(editor).getForeground());
+    }
+    
+    private void setIcon() {
+        if (showingRefinements) {
+            icon.setImage(DECS_IMAGE);
+        }
+        else {
+            icon.setImage(REFS_IMAGE);
+        }
     }
 
     private void setStatusText() {
@@ -342,8 +358,8 @@ public final class ReferencesPopup extends PopupDialog
     @Override
     protected Control createTitleControl(Composite parent) {
         getPopupLayout().copy().numColumns(4).spacing(6, 6).applyTo(parent);
-        Label iconLabel = new Label(parent, SWT.NONE);
-        iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_REFS));
+        icon = new Label(parent, SWT.NONE);
+        icon.setImage(REFS_IMAGE);
 //        getShell().addKeyListener(new GotoListener());
         titleLabel = new StyledText(parent, SWT.NONE);
         titleLabel.addModifyListener(new ModifyListener() {
@@ -368,13 +384,12 @@ public final class ReferencesPopup extends PopupDialog
             public void widgetSelected(SelectionEvent e) {
                 includeImports = !includeImports;
                 setInput(null);
-                setStatusText();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         ToolItem button2 = new ToolItem(toolBar, SWT.CHECK);
-        button2.setImage(CeylonPlugin.getInstance().getImageRegistry().get(TREE_MODE));
+        button2.setImage(imageRegistry.get(TREE_MODE));
         button2.setToolTipText("tree layout");
         button2.setSelection(false);
         button2.addSelectionListener(new SelectionListener() {
@@ -398,7 +413,6 @@ public final class ReferencesPopup extends PopupDialog
                 viewer.getControl().getParent().layout(true);
                 viewer.getControl().redraw();
                 setInput(null);
-                setStatusText();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -581,6 +595,7 @@ public final class ReferencesPopup extends PopupDialog
 
     private TreeViewer treeViewer;
     private TableViewer tableViewer;
+    private Label icon;
     
     @Override
     public void setInput(Object input) {
@@ -702,6 +717,7 @@ public final class ReferencesPopup extends PopupDialog
         tableViewer.setInput(allMatchesList);
         selectFirst();
         setStatusText();
+        setIcon();
     }
 
     private void selectFirst() {
