@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
@@ -96,6 +97,33 @@ public final class ReferencesPopup extends PopupDialog
     private static final ImageRegistry imageRegistry = CeylonPlugin.getInstance().getImageRegistry();
     private static final Image REFS_IMAGE = imageRegistry.get(CEYLON_REFS);
     private static final Image DECS_IMAGE = imageRegistry.get(CEYLON_DECS);
+
+    public class ChangeLayoutListener implements SelectionListener {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            treeLayout = !treeLayout;
+            if (treeLayout) {
+                viewer = treeViewer;
+                treeViewer.getTree().setVisible(true);
+                tableViewer.getTable().setVisible(false);
+                ((GridData)treeViewer.getControl().getLayoutData()).exclude=false;
+                ((GridData)tableViewer.getControl().getLayoutData()).exclude=true;
+            }
+            else {
+                viewer = tableViewer;
+                treeViewer.getTree().setVisible(false);
+                tableViewer.getTable().setVisible(true);
+                ((GridData)treeViewer.getControl().getLayoutData()).exclude=true;
+                ((GridData)tableViewer.getControl().getLayoutData()).exclude=false;
+            }
+            viewer.getControl().getParent().layout(/*true*/);
+//            viewer.getControl().redraw();
+            setInput(null);
+        }
+
+        @Override
+        public void widgetDefaultSelected(SelectionEvent e) {}
+    }
 
     public static final class LabelProvider extends TreeNodeLabelProvider {
         @Override
@@ -388,34 +416,37 @@ public final class ReferencesPopup extends PopupDialog
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-        ToolItem button2 = new ToolItem(toolBar, SWT.CHECK);
+        final ToolItem button1 = new ToolItem(toolBar, SWT.CHECK);
+        button1.setImage(imageRegistry.get(FLAT_MODE));
+        button1.setToolTipText("flat layout");
+        button1.setSelection(true);
+        final ToolItem button2 = new ToolItem(toolBar, SWT.CHECK);
         button2.setImage(imageRegistry.get(TREE_MODE));
         button2.setToolTipText("tree layout");
         button2.setSelection(false);
-        button2.addSelectionListener(new SelectionListener() {
+        button1.addSelectionListener(new ChangeLayoutListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                treeLayout = !treeLayout;
-                if (treeLayout) {
-                    viewer = treeViewer;
-                    treeViewer.getTree().setVisible(true);
-                    tableViewer.getTable().setVisible(false);
-                    ((GridData)treeViewer.getControl().getLayoutData()).exclude=false;
-                    ((GridData)tableViewer.getControl().getLayoutData()).exclude=true;
+                if (button1.getSelection()) {
+                    super.widgetSelected(e);
+                    button2.setSelection(false);
                 }
                 else {
-                    viewer = tableViewer;
-                    treeViewer.getTree().setVisible(false);
-                    tableViewer.getTable().setVisible(true);
-                    ((GridData)treeViewer.getControl().getLayoutData()).exclude=true;
-                    ((GridData)tableViewer.getControl().getLayoutData()).exclude=false;
+                    button1.setSelection(true);
                 }
-                viewer.getControl().getParent().layout(true);
-                viewer.getControl().redraw();
-                setInput(null);
             }
+        });
+        button2.addSelectionListener(new ChangeLayoutListener() {
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
+            public void widgetSelected(SelectionEvent e) {
+                if (button2.getSelection()) {
+                    super.widgetSelected(e);
+                    button1.setSelection(false);
+                }
+                else {
+                    button2.setSelection(true);
+                }
+            }
         });
         return null;
     }
