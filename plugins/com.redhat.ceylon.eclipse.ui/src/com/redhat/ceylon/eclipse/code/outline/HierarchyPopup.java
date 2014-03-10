@@ -1,8 +1,12 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
+import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
+import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUPERTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import java.util.StringTokenizer;
@@ -15,6 +19,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -22,6 +28,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PartInitException;
 
@@ -40,10 +48,7 @@ public class HierarchyPopup extends TreeViewPopup {
         public void keyPressed(KeyEvent e) {
             if (EditorUtil.triggersBinding(e, getCommandBinding())) {
                 contentProvider.setMode(contentProvider.getMode().next());
-                updateStatusFieldText();
-                updateTitle();
-                updateIcon();
-                update();
+                switchMode();
                 e.doit=false;
             }
             if (EditorUtil.triggersBinding(e, hierarchyBinding)) {
@@ -64,6 +69,9 @@ public class HierarchyPopup extends TreeViewPopup {
     private CeylonHierarchyContentProvider contentProvider;
     private Label iconLabel;
     private TriggerSequence hierarchyBinding;
+    private ToolItem button1;
+    private ToolItem button2;
+    private ToolItem button3;
     
     public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle, 
             int treeStyle) {
@@ -74,6 +82,13 @@ public class HierarchyPopup extends TreeViewPopup {
         setInfoText(getStatusFieldText());
     }
     
+    private void switchMode() {
+        updateStatusFieldText();
+        updateTitle();
+        updateIcon();
+        updateButtonSelection();
+        update();
+    }
     /*@Override
     protected void adjustBounds() {
         Rectangle bounds = getShell().getBounds();
@@ -162,11 +177,70 @@ public class HierarchyPopup extends TreeViewPopup {
 
     @Override
     protected Control createTitleControl(Composite parent) {
-        getPopupLayout().copy().numColumns(3).spacing(6, 6).applyTo(parent);
+        getPopupLayout().copy().numColumns(4).spacing(6, 6).applyTo(parent);
         iconLabel = new Label(parent, SWT.NONE);
-        //label.setImage(CeylonPlugin.getInstance().image("class_hi.gif").createImage());
+        Control result = super.createTitleControl(parent);
         updateIcon();
-        return super.createTitleControl(parent);
+        ToolBar toolBar = new ToolBar(parent, SWT.FLAT);
+        button1 = new ToolItem(toolBar, SWT.CHECK);
+        button1.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_HIER));
+        button1.setToolTipText("hierarchy view");
+        button2 = new ToolItem(toolBar, SWT.CHECK);
+        button2.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SUP));
+        button2.setToolTipText("supertypes/generalizations view");
+        button3 = new ToolItem(toolBar, SWT.CHECK);
+        button3.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SUB));
+        button3.setToolTipText("subtypes/refinements view");
+        updateButtonSelection();
+        button1.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (button1.getSelection()) {
+                    contentProvider.setMode(HIERARCHY);
+                    switchMode();
+                }
+                else {
+                    button1.setSelection(true);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        button2.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (button2.getSelection()) {
+                    contentProvider.setMode(SUPERTYPES);
+                    switchMode();
+                }
+                else {
+                    button2.setSelection(true);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        button3.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (button3.getSelection()) {
+                    contentProvider.setMode(SUBTYPES);
+                    switchMode();
+                }
+                else {
+                    button3.setSelection(true);
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        return result;
+    }
+
+    private void updateButtonSelection() {
+        button1.setSelection(contentProvider==null || contentProvider.getMode()==HIERARCHY);
+        button2.setSelection(contentProvider!=null && contentProvider.getMode()==SUPERTYPES);
+        button3.setSelection(contentProvider!=null && contentProvider.getMode()==SUBTYPES);
     }
 
     public void updateTitle() {
