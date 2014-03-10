@@ -188,23 +188,23 @@ public class HierarchyPopup extends TreeViewPopup {
     protected Control createTitleControl(Composite parent) {
         getPopupLayout().copy().numColumns(4).spacing(6, 6).applyTo(parent);
         iconLabel = new Label(parent, SWT.NONE);
-        Control result = super.createTitleControl(parent);
+        super.createTitleControl(parent);
         updateIcon();
         createModeButtons(parent);
-        return result;
+        return null;
     }
 
     private void createModeButtons(Composite parent) {
         ToolBar toolBar = new ToolBar(parent, SWT.FLAT);
         button1 = new ToolItem(toolBar, SWT.CHECK);
         button1.setImage(HIER_IMAGE);
-        button1.setToolTipText("hierarchy view");
+        button1.setToolTipText("Show Hierarchy");
         button2 = new ToolItem(toolBar, SWT.CHECK);
         button2.setImage(SUP_IMAGE);
-        button2.setToolTipText("supertypes/generalizations view");
+        button2.setToolTipText("Show Supertypes/Generalizations");
         button3 = new ToolItem(toolBar, SWT.CHECK);
         button3.setImage(SUB_IMAGE);
-        button3.setToolTipText("subtypes/refinements view");
+        button3.setToolTipText("Show Subtypes/Refinements");
         updateButtonSelection();
         button1.addSelectionListener(new SelectionListener() {
             @Override

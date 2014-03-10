@@ -283,7 +283,7 @@ public class HierarchyView extends ViewPart {
         ToolBar toolBar = new ToolBar(viewForm, SWT.NONE);
         ToolItem toolItem = new ToolItem(toolBar, SWT.CHECK);
         toolItem.setImage(INHERITED_IMAGE);
-        toolItem.setToolTipText("Show inherited members");
+        toolItem.setToolTipText("Show Inherited Members");
         toolItem.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -295,7 +295,7 @@ public class HierarchyView extends ViewPart {
         });
         toolItem = new ToolItem(toolBar, SWT.CHECK);
         toolItem.setImage(SORT_IMAGE);
-        toolItem.setToolTipText("Sort members by declaring type");
+        toolItem.setToolTipText("Sort Members by Declaring Type");
         final MemberSorter sorter = new MemberSorter();
         tableViewer.setSorter(sorter);
         toolItem.addSelectionListener(new SelectionListener() {

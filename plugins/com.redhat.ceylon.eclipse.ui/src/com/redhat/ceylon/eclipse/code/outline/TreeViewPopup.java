@@ -654,10 +654,12 @@ public abstract class TreeViewPopup extends PopupDialog
             }
         });
         titleLabel.setEditable(false);
-        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-            .grab(true,false).span(1, 1).applyTo(titleLabel);
-//        filterText = createFilterText(parent);
-        return filterText;
+        GridDataFactory.fillDefaults()
+            .align(SWT.FILL, SWT.CENTER)
+            .grab(true,false)
+            .span(1, 1)
+            .applyTo(titleLabel);
+        return null;
     }
     
     @Override
