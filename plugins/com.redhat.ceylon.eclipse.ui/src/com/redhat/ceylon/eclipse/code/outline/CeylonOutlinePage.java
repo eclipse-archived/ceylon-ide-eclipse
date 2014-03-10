@@ -14,7 +14,9 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,7 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.DecoratingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DecorationContext;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -66,13 +69,19 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class CeylonOutlinePage extends ContentOutlinePage 
         implements TreeLifecycleListener, CaretListener {
     
-    private static final String OUTLINE_POPUP_MENU_ID = PLUGIN_ID + 
-            ".outline.popupMenu";
+    private static final ImageRegistry imageRegistry = 
+            CeylonPlugin.getInstance().getImageRegistry();
+
+    private static final String OUTLINE_POPUP_MENU_ID = 
+            PLUGIN_ID + ".outline.popupMenu";
     
-    private static final ImageDescriptor PUBLIC = CeylonPlugin.getInstance().image("public_co.gif");
-    private static final ImageDescriptor ALPHA = CeylonPlugin.getInstance().image("alphab_sort_co.gif");
+    private static final ImageDescriptor PUBLIC = 
+            imageRegistry.getDescriptor(CEYLON_METHOD);
+    private static final ImageDescriptor ALPHA = 
+            imageRegistry.getDescriptor(SORT_ALPHA);
     
-    private final ITreeContentProvider contentProvider = new OutlineContentProvider();
+    private final ITreeContentProvider contentProvider = 
+            new OutlineContentProvider();
     private StyledCellLabelProvider labelProvider;
     private CeylonParseController parseController;
     private CeylonSourceViewer sourceViewer;
@@ -219,11 +228,11 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
     private class ExpandAllAction extends Action {
 
-        public ExpandAllAction() {
+        private ExpandAllAction() {
             super("Expand All");
             setToolTipText("Expand All");
             
-            ImageDescriptor desc = CeylonPlugin.getInstance().getImageRegistry()
+            ImageDescriptor desc = imageRegistry
                     .getDescriptor(EXPAND_ALL);
             setHoverImageDescriptor(desc);
             setImageDescriptor(desc);
@@ -239,13 +248,14 @@ public class CeylonOutlinePage extends ContentOutlinePage
         
     }
 
-    private static final ViewerComparator fElementComparator = new ViewerComparator() {
+    private static final ViewerComparator fElementComparator = 
+            new ViewerComparator() {
         @Override
         public int compare(Viewer viewer, Object e1, Object e2) {
             CeylonOutlineNode t1 = (CeylonOutlineNode) e1;
             CeylonOutlineNode t2 = (CeylonOutlineNode) e2;
-            int cat1= t1.getCategory();
-            int cat2= t2.getCategory();
+            int cat1 = t1.getCategory();
+            int cat2 = t2.getCategory();
             if (cat1 == cat2) {
                 return t1.getIdentifier().compareTo(t2.getIdentifier());
             }
@@ -253,7 +263,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
         }
     };
     
-    private static final ViewerComparator fPositionComparator = new ViewerComparator() {
+    private static final ViewerComparator fPositionComparator = 
+            new ViewerComparator() {
         @Override
         public int compare(Viewer viewer, Object e1, Object e2) {
             CeylonOutlineNode t1 = (CeylonOutlineNode) e1;
@@ -264,16 +275,16 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
     private class LexicalSortingAction extends Action {
         
-        public LexicalSortingAction() {
+        private LexicalSortingAction() {
             setText("Sort");
-            setToolTipText("Sort by name");
+            setToolTipText("Sort by Name");
             setDescription("Sort entries lexically by name");
             
             this.setHoverImageDescriptor(ALPHA);
             this.setImageDescriptor(ALPHA); 
             
             boolean checked = CeylonPlugin.getInstance().getPreferenceStore()
-                    .getBoolean("LexicalSortingAction.isChecked");
+                    .getBoolean("sortOutlineViewByName");
             valueChanged(checked, false);
         }
 
@@ -294,7 +305,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
             if (store) {
                 CeylonPlugin.getInstance().getPreferenceStore()
-                        .setValue("LexicalSortingAction.isChecked", on);
+                        .setValue("sortOutlineViewByName", on);
             }
         }
     }
@@ -309,15 +320,15 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private class HideNonSharedAction extends Action {
         
         public HideNonSharedAction() {
-            setText("Hide non-shared");
-            setToolTipText("Hide non-shared members");
-            setDescription("Hide non-shared members");
+            setText("Hide Unshared");
+            setToolTipText("Hide Unhared Declarations");
+            setDescription("Hide unshared declarations");
             
             setHoverImageDescriptor(PUBLIC);
             setImageDescriptor(PUBLIC); 
             
             boolean checked = CeylonPlugin.getInstance().getPreferenceStore()
-                    .getBoolean("HideNonSharedAction.isChecked");
+                    .getBoolean("hideNonSharedInOutlineView");
             valueChanged(checked, false);
         }
 
@@ -343,7 +354,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             
             if (store) {
                 CeylonPlugin.getInstance().getPreferenceStore()
-                        .setValue("HideNonSharedAction.isChecked", on);
+                        .setValue("hideNonSharedInOutlineView", on);
             }
         }
     }
@@ -414,7 +425,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         OutlineNodeVisitor(int offset) {
             this.offset = offset;
             hideNonshared = CeylonPlugin.getInstance().getPreferenceStore()
-                    .getBoolean("HideNonSharedAction.isChecked");
+                    .getBoolean("hideNonSharedInOutlineView");
         }
         List<CeylonOutlineNode> result = new ArrayList<CeylonOutlineNode>();
         private CeylonOutlineNode getParent() {

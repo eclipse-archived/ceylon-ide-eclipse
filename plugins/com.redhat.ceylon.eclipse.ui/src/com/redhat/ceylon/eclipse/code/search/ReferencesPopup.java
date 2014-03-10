@@ -389,7 +389,10 @@ public final class ReferencesPopup extends PopupDialog
     
     @Override
     protected Control createTitleControl(Composite parent) {
-        getPopupLayout().copy().numColumns(4).spacing(6, 6).applyTo(parent);
+        getPopupLayout().copy()
+            .numColumns(4)
+            .spacing(6, 6)
+            .applyTo(parent);
         icon = new Label(parent, SWT.NONE);
         icon.setImage(REFS_IMAGE);
 //        getShell().addKeyListener(new GotoListener());
@@ -401,8 +404,11 @@ public final class ReferencesPopup extends PopupDialog
             }
         });
         titleLabel.setEditable(false);
-        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-            .grab(true,false).span(1, 1).applyTo(titleLabel);
+        GridDataFactory.fillDefaults()
+            .align(SWT.FILL, SWT.CENTER)
+            .grab(true,false)
+            .span(1, 1)
+            .applyTo(titleLabel);
 //        Button button = new Button(parent, SWT.TOGGLE);
 //        button.setImage(CeylonLabelProvider.IMPORT);
 //        button.setText("include imports");
@@ -418,7 +424,7 @@ public final class ReferencesPopup extends PopupDialog
     private void createImportsButton(ToolBar toolBar) {
         ToolItem button = new ToolItem(toolBar, SWT.CHECK);
         button.setImage(CeylonLabelProvider.IMPORT);
-        button.setToolTipText("show matches in import statements");
+        button.setToolTipText("Show Matches in Import Statements");
         button.setSelection(includeImports);
         button.addSelectionListener(new SelectionListener() {
             @Override
@@ -435,10 +441,10 @@ public final class ReferencesPopup extends PopupDialog
     private void createModeButtons(ToolBar toolBar) {
         button1 = new ToolItem(toolBar, SWT.CHECK);
         button1.setImage(REFS_IMAGE);
-        button1.setToolTipText("references");
+        button1.setToolTipText("Show References");
         button2 = new ToolItem(toolBar, SWT.CHECK);
         button2.setImage(DECS_IMAGE);
-        button2.setToolTipText("refinements/subtypes");
+        button2.setToolTipText("Show Refinements/Subtypes");
         updateButtonSelection();
         button1.addSelectionListener(new SelectionListener() {
             @Override
@@ -480,11 +486,11 @@ public final class ReferencesPopup extends PopupDialog
     private void createLayoutButtons(ToolBar toolBar) {
         final ToolItem button1 = new ToolItem(toolBar, SWT.CHECK);
         button1.setImage(imageRegistry.get(FLAT_MODE));
-        button1.setToolTipText("flat layout");
+        button1.setToolTipText("Flat Layout");
         button1.setSelection(!treeLayout);
         final ToolItem button2 = new ToolItem(toolBar, SWT.CHECK);
         button2.setImage(imageRegistry.get(TREE_MODE));
-        button2.setToolTipText("tree layout");
+        button2.setToolTipText("Tree Layout");
         button2.setSelection(treeLayout);
         button1.addSelectionListener(new ChangeLayoutListener() {
             @Override

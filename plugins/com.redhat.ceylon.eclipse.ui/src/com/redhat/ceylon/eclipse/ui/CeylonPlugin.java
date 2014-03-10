@@ -396,6 +396,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(LAST_EDIT, image("last_edit_pos.gif"));
         reg.put(NEXT_ANN, image("next_nav.gif"));
         reg.put(PREV_ANN, image("prev_nav.gif"));
+        reg.put(SORT_ALPHA, image("alphab_sort_co.gif"));
     }
     
     private void registerProjectOpenCloseListener() {
