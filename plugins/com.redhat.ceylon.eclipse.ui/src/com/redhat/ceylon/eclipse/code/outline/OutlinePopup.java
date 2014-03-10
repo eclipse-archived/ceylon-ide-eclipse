@@ -12,6 +12,7 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import org.eclipse.jface.action.Action;
@@ -148,7 +149,7 @@ public class OutlinePopup extends TreeViewPopup {
     public OutlinePopup(CeylonEditor editor, Shell shell, int shellStyle, 
             int treeStyle) {
         super(shell, shellStyle, treeStyle, 
-                "com.redhat.ceylon.eclipse.ui.editor.showOutline",
+                PLUGIN_ID + ".editor.showOutline",
                 editor, getCurrentThemeColor("outline"));
         setTitleText("Quick Outline - " + editor.getEditorInput().getName());
     }
