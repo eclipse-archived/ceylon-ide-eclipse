@@ -3,11 +3,14 @@ package com.redhat.ceylon.eclipse.code.search;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -21,10 +24,14 @@ import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInformationControlExtension3;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeNode;
+import org.eclipse.jface.viewers.TreeNodeContentProvider;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
@@ -43,7 +50,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextStyle;
@@ -52,24 +58,27 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.outline.TreeNodeLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
@@ -81,9 +90,80 @@ public final class ReferencesPopup extends PopupDialog
         implements IInformationControl, IInformationControlExtension2,
                    IInformationControlExtension3 {
     
+    public static final class LabelProvider extends TreeNodeLabelProvider {
+        @Override
+        public Object unwrap(Object element) {
+            Object unwrapped = super.unwrap(element);
+            if (unwrapped instanceof CeylonSearchMatch) {
+                return ((CeylonSearchMatch) unwrapped).getElement();
+            }
+            else {
+                return unwrapped;
+            }
+        }
+    }
+
+    public final class ClickListener implements MouseListener {
+        @Override
+        public void mouseUp(MouseEvent e) {
+            gotoSelectedElement();
+        }
+
+        @Override
+        public void mouseDown(MouseEvent e) {}
+
+        @Override
+        public void mouseDoubleClick(MouseEvent e) {
+            gotoSelectedElement();
+        }
+    }
+
+    public final class ShortcutKeyListener implements KeyListener {
+        @Override
+        public void keyReleased(KeyEvent e) {}
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (EditorUtil.triggersBinding(e, getCommandBinding())) {
+                showingRefinements = !showingRefinements;
+                setInput(null);
+                e.doit=false;
+            }
+            if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) { // Enter key
+                gotoSelectedElement();
+            }
+        }
+    }
+
+    public final class Filter extends ViewerFilter {
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            TreeNode treeNode = (TreeNode) element;
+            Object value = treeNode.getValue();
+            if (value instanceof CeylonSearchMatch) {
+                CeylonSearchMatch match = (CeylonSearchMatch) value;
+                String filter = filterText.getText().toLowerCase();
+                String[] split = match.getElement().getLabel().getString().split(" ");
+                return split.length>1 && split[1].toLowerCase().startsWith(filter) ||
+                        match.getElement().getPackageLabel()
+                            .toLowerCase().startsWith(filter) ||
+                        match.getElement().getFile().getName().toString()
+                            .toLowerCase().startsWith(filter);
+            }
+            else {
+                for (TreeNode child: treeNode.getChildren()) {
+                    if (select(viewer, element, child)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
     protected Text filterText;
     
-    private TableViewer viewer;
+    private ColumnViewer viewer;
     
     private final CeylonEditor editor;
     
@@ -151,35 +231,24 @@ public final class ReferencesPopup extends PopupDialog
     
     @Override
     protected Control createDialogArea(Composite parent) {
-        viewer = new TableViewer(parent, SWT.FLAT);
-//        GridData data = new GridData();
-//        viewer.getTable().setLayoutData(new GridData());
-        viewer.setComparator(new CeylonViewerComparator());
-        viewer.setContentProvider(ArrayContentProvider.getInstance());
-        viewer.setLabelProvider(new CeylonLabelProvider(true) {
-            @Override
-            public StyledString getStyledText(Object element) {
-                return super.getStyledText(((CeylonSearchMatch) element).getElement());
-            }
-            @Override
-            public Image getImage(Object element) {
-                return super.getImage(((CeylonSearchMatch) element).getElement());
-            }
-        });
+        treeViewer = new TreeViewer(parent, SWT.FLAT);
+        treeViewer.getTree().setVisible(false);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
+        gd.exclude = true;
+        treeViewer.getControl().setLayoutData(gd);
+        treeViewer.setAutoExpandLevel(TreeViewer.ALL_LEVELS);
+        tableViewer = new TableViewer(parent, SWT.FLAT);
+        tableViewer.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL));
+        viewer = tableViewer;
+        tableViewer.setComparator(new CeylonViewerComparator());
+        tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+        treeViewer.setContentProvider(new TreeNodeContentProvider());
+        tableViewer.setLabelProvider(new LabelProvider());
+        treeViewer.setLabelProvider(new LabelProvider());
         installFilter();
-        viewer.addFilter(new ViewerFilter() {
-            @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element) {
-                CeylonSearchMatch match = (CeylonSearchMatch) element;
-                String filter = filterText.getText().toLowerCase();
-                String[] split = match.getElement().getLabel().getString().split(" ");
-                return split.length>1 && split[1].toLowerCase().startsWith(filter) ||
-                        match.getElement().getPackageLabel()
-                            .toLowerCase().startsWith(filter) ||
-                        match.getElement().getFile().getName().toString()
-                            .toLowerCase().startsWith(filter);
-            }
-        });
+        ViewerFilter filter = new Filter();
+        tableViewer.addFilter(filter);
+        treeViewer.addFilter(filter);
 //        viewer.getTable().addSelectionListener(new SelectionListener() {
 //            public void widgetSelected(SelectionEvent e) {
 //                // do nothing
@@ -188,53 +257,45 @@ public final class ReferencesPopup extends PopupDialog
 //                gotoSelectedElement();
 //            }
 //        });
-        viewer.getTable().setCursor(new Cursor(getShell().getDisplay(), SWT.CURSOR_HAND));
-        viewer.getTable().addListener(SWT.MouseMove, new Listener() {
+        Cursor cursor = new Cursor(getShell().getDisplay(), SWT.CURSOR_HAND);
+        tableViewer.getControl().setCursor(cursor);
+        treeViewer.getControl().setCursor(cursor);
+        tableViewer.getControl().addListener(SWT.MouseMove, new Listener() {
             @Override
             public void handleEvent(Event event) {
                 Rectangle bounds = event.getBounds();
-                TableItem item = viewer.getTable().getItem(new Point(bounds.x, bounds.y));
+                Item item;
+                if (viewer instanceof TableViewer) {
+                    item = ((TableViewer) viewer).getTable()
+                            .getItem(new Point(bounds.x, bounds.y));
+                }
+                else {
+                    //TODO!!!!!
+                    item = ((TreeViewer) viewer).getTree()
+                            .getItem(new Point(bounds.x, bounds.y));
+                }
                 if (item!=null) {
                     viewer.setSelection(new StructuredSelection(item.getData()));
                 }
             }
         });
-        viewer.getTable().addKeyListener(new KeyListener() {
-            @Override
-            public void keyReleased(KeyEvent e) {}
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (EditorUtil.triggersBinding(e, getCommandBinding())) {
-                    showingRefinements = !showingRefinements;
-                    setInput(null);
-                    e.doit=false;
-                }
-                if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) { // Enter key
-                    gotoSelectedElement();
-                }
-            }
-        });
-        viewer.getTable().addMouseListener(new MouseListener() {
-            @Override
-            public void mouseUp(MouseEvent e) {
-                gotoSelectedElement();
-            }
-            @Override
-            public void mouseDown(MouseEvent e) {}
-            @Override
-            public void mouseDoubleClick(MouseEvent e) {
-                gotoSelectedElement();
-            }
-        });
-
+        ShortcutKeyListener listener = new ShortcutKeyListener();
+        tableViewer.getControl().addKeyListener(listener);
+        treeViewer.getControl().addKeyListener(listener);
+        MouseListener clickListener = new ClickListener();
+        tableViewer.getControl().addMouseListener(clickListener);
+        treeViewer.getControl().addMouseListener(clickListener);
         return viewer.getControl();
     }
     
     protected void gotoSelectedElement() {
-        Object elem = ((StructuredSelection) viewer.getSelection()).getFirstElement();
-        if (elem instanceof CeylonSearchMatch) {
-            CeylonSearchMatch match = (CeylonSearchMatch) elem;
-            gotoFile(match.getElement().getFile(), match.getOffset(), match.getLength());
+        Object node = ((StructuredSelection) viewer.getSelection()).getFirstElement();
+        if (node!=null) {
+            Object elem = ((TreeNode) node).getValue();
+            if (elem instanceof CeylonSearchMatch) {
+                CeylonSearchMatch match = (CeylonSearchMatch) elem;
+                gotoFile(match.getElement().getFile(), match.getOffset(), match.getLength());
+            }
         }
     }
 
@@ -276,6 +337,7 @@ public final class ReferencesPopup extends PopupDialog
     }
     
     private boolean includeImports = false;
+    private boolean treeLayout = false;
     
     @Override
     protected Control createTitleControl(Composite parent) {
@@ -311,6 +373,36 @@ public final class ReferencesPopup extends PopupDialog
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+        ToolItem button2 = new ToolItem(toolBar, SWT.CHECK);
+        button2.setImage(CeylonPlugin.getInstance().getImageRegistry().get(TREE_MODE));
+        button2.setToolTipText("tree layout");
+        button2.setSelection(false);
+        button2.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                treeLayout = !treeLayout;
+                if (treeLayout) {
+                    viewer = treeViewer;
+                    treeViewer.getTree().setVisible(true);
+                    tableViewer.getTable().setVisible(false);
+                    ((GridData)treeViewer.getControl().getLayoutData()).exclude=false;
+                    ((GridData)tableViewer.getControl().getLayoutData()).exclude=true;
+                }
+                else {
+                    viewer = tableViewer;
+                    treeViewer.getTree().setVisible(false);
+                    tableViewer.getTable().setVisible(true);
+                    ((GridData)treeViewer.getControl().getLayoutData()).exclude=true;
+                    ((GridData)tableViewer.getControl().getLayoutData()).exclude=false;
+                }
+                viewer.getControl().getParent().layout(true);
+                viewer.getControl().redraw();
+                setInput(null);
+                setStatusText();
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
         return null;
     }
     
@@ -334,9 +426,9 @@ public final class ReferencesPopup extends PopupDialog
                 if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) // Enter key
                     gotoSelectedElement();
                 if (e.keyCode == SWT.ARROW_DOWN)
-                    viewer.getTable().setFocus();
+                    viewer.getControl().setFocus();
                 if (e.keyCode == SWT.ARROW_UP)
-                    viewer.getTable().setFocus();
+                    viewer.getControl().setFocus();
                 if (e.character == 0x1B) // ESC
                     dispose();
             }
@@ -486,6 +578,9 @@ public final class ReferencesPopup extends PopupDialog
     }
     
     private boolean type;
+
+    private TreeViewer treeViewer;
+    private TableViewer tableViewer;
     
     @Override
     public void setInput(Object input) {
@@ -508,16 +603,23 @@ public final class ReferencesPopup extends PopupDialog
         }
         setTitleText("Quick Find References - " + message + " '" + 
                         declaration.getName(pc.getRootNode().getUnit()) + "'");
-        List<CeylonSearchMatch> list = new ArrayList<CeylonSearchMatch>();
+        TreeNode root = new TreeNode(new Object());
+        Map<Package,TreeNode> packageNodes = new HashMap<Package,TreeNode>();
+        Map<Module,TreeNode> moduleNodes = new HashMap<Module,TreeNode>();
+        List<TreeNode> allMatchesList = new ArrayList<TreeNode>();
+        List<TreeNode> allUnitsList = new ArrayList<TreeNode>();
         for (PhasedUnit pu: pc.getTypeChecker()
                 .getPhasedUnits()
                 .getPhasedUnits()) {
-            CompilationUnit cu = pu.getCompilationUnit();
+            Tree.CompilationUnit cu = pu.getCompilationUnit();
             if (pu.getUnit().equals(pc.getRootNode().getUnit()) &&
                     editor.isDirty()) {
                 //search in the current dirty editor
                 cu = pc.getRootNode();
             }
+            Unit u = cu.getUnit();
+            TreeNode unitNode = new TreeNode(u);
+            List<TreeNode> unitList = new ArrayList<TreeNode>();
             Set<Node> nodes;
             if (showingRefinements) {
                 if (type) {
@@ -547,18 +649,76 @@ public final class ReferencesPopup extends PopupDialog
                     if (includeImports || 
                             !(c instanceof Tree.Import) && 
                             !(c instanceof Tree.ImportModule)) {
-                        list.add(new CeylonSearchMatch(c, pu.getUnitFile(), node));
+                        CeylonSearchMatch match = new CeylonSearchMatch(c, pu.getUnitFile(), node);
+                        TreeNode matchNode = new TreeNode(match);
+                        matchNode.setParent(unitNode);
+                        allMatchesList.add(matchNode);
+                        unitList.add(matchNode);
                     }
                 }
             }
+            if (!unitList.isEmpty()) {
+                allUnitsList.add(unitNode);
+                unitNode.setChildren(unitList.toArray(new TreeNode[0]));
+                Package p = u.getPackage();
+                TreeNode packageNode = packageNodes.get(p);
+                if (packageNode==null) {
+                    packageNode = new TreeNode(p);
+                    TreeNode moduleNode = moduleNodes.get(p.getModule());
+                    if (moduleNode==null) {
+                        moduleNode = new TreeNode(p.getModule());
+                        moduleNode.setParent(root);
+                        moduleNodes.put(p.getModule(), moduleNode);
+                        moduleNode.setChildren(new TreeNode[] {unitNode});
+                    }
+                    else {
+                        TreeNode[] oldChildren = packageNode.getChildren();
+                        TreeNode[] children = new TreeNode[oldChildren.length+1];
+                        for (int i=0; i<oldChildren.length; i++) {
+                            children[i] = oldChildren[i];
+                        }
+                        children[oldChildren.length] = unitNode;
+                        packageNode.setChildren(children);
+                    }
+                    packageNode.setParent(moduleNode);
+                    packageNodes.put(p, packageNode);
+                    packageNode.setChildren(new TreeNode[] {unitNode});
+                }
+                else {
+                    TreeNode[] oldChildren = packageNode.getChildren();
+                    TreeNode[] children = new TreeNode[oldChildren.length+1];
+                    for (int i=0; i<oldChildren.length; i++) {
+                        children[i] = oldChildren[i];
+                    }
+                    children[oldChildren.length] = unitNode;
+                    packageNode.setChildren(children);
+                }
+                unitNode.setParent(packageNode);
+            }
         }
-        viewer.setInput(list);
+        root.setChildren(moduleNodes.values().toArray(new TreeNode[0]));
+//        root.setChildren(allUnitsList.toArray(new TreeNode[0]));
+        treeViewer.setInput(root.getChildren());
+        tableViewer.setInput(allMatchesList);
         selectFirst();
         setStatusText();
     }
 
     private void selectFirst() {
-        Object firstElem = viewer.getElementAt(0);
+        Object firstElem;
+        if (viewer instanceof TableViewer) {
+            firstElem = ((TableViewer) viewer).getElementAt(0);
+        }
+        else {
+            org.eclipse.swt.widgets.Tree tree = ((TreeViewer) viewer).getTree();
+            if (tree.getItemCount()>0) {
+                firstElem = tree.getItem(0).getData();
+            }
+            else {
+                firstElem = null;
+            }
+            
+        }
         if (firstElem!=null) {
             viewer.setSelection(new StructuredSelection(firstElem), true);
         }
