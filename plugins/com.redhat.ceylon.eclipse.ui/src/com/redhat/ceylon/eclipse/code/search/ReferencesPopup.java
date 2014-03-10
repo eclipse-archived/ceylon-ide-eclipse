@@ -703,7 +703,7 @@ public final class ReferencesPopup extends PopupDialog
             message = "references to";
         }
         setTitleText("Quick Find References - " + message + " '" + 
-                        declaration.getName(pc.getRootNode().getUnit()) + "'");
+                        declaration.getName(pc.getRootNode().getUnit()) + "' in project source");
         TreeNode root = new TreeNode(new Object());
         Map<Package,TreeNode> packageNodes = new HashMap<Package,TreeNode>();
         Map<Module,TreeNode> moduleNodes = new HashMap<Module,TreeNode>();
