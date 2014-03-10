@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -18,6 +19,9 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -46,28 +50,31 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
     }
     
     public Declaration getDeclaration(IProject project) {
+        //first handle the case of new declarations 
+        //defined in a dirty editor
+        IEditorPart part = EditorUtil.getCurrentEditor();
+        if (part instanceof CeylonEditor && part.isDirty()) {
+            CompilationUnit rootNode = ((CeylonEditor) part).getParseController()
+                    .getRootNode();
+            if (rootNode!=null && rootNode.getUnit()!=null) {
+                Unit unit = rootNode.getUnit();
+                if (unit.getPackage().getNameAsString().equals(packageName)) {
+                    Declaration result = getDeclarationInUnit(qualifiedName, unit);
+                    if (result!=null) {
+                        return result;
+                    }
+                }
+            }
+        }
         TypeChecker tc = getTypeChecker(project, moduleName).get(0);
         Package pack = getModelLoader(tc)
                 .getLoadedModule(moduleName)
                 .getPackage(packageName);
         for (Unit unit: pack.getUnits()) {
             if (unit.getFilename().equals(unitName)) {
-                for (Declaration d: unit.getDeclarations()) {
-                    String qn = d.getQualifiedNameString();
-                    if (qn.equals(qualifiedName)) {
-                        return d;
-                    }
-                    else if (qualifiedName.startsWith(qn)) {
-                        //TODO: I have to do this because of the
-                        //      shortcut refinement syntax, but
-                        //      I guess that's really a bug in
-                        //      the typechecker!
-                        for (Declaration m: d.getMembers()) {
-                            if (m.getQualifiedNameString().equals(qualifiedName)) {
-                                return m;
-                            }
-                        }
-                    }
+                Declaration result = getDeclarationInUnit(qualifiedName, unit);
+                if (result!=null) {
+                    return result;
                 }
             }
         }
@@ -78,6 +85,27 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
                 return d;
             }
             else if (qualifiedName.startsWith(qn)) {
+                for (Declaration m: d.getMembers()) {
+                    if (m.getQualifiedNameString().equals(qualifiedName)) {
+                        return m;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    static Declaration getDeclarationInUnit(String qualifiedName, Unit unit) {
+        for (Declaration d: unit.getDeclarations()) {
+            String qn = d.getQualifiedNameString();
+            if (qn.equals(qualifiedName)) {
+                return d;
+            }
+            else if (qualifiedName.startsWith(qn)) {
+                //TODO: I have to do this because of the
+                //      shortcut refinement syntax, but
+                //      I guess that's really a bug in
+                //      the typechecker!
                 for (Declaration m: d.getMembers()) {
                     if (m.getQualifiedNameString().equals(qualifiedName)) {
                         return m;

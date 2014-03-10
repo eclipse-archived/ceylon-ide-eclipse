@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyNode.getDeclarationInUnit;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyNode.getTypeChecker;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 
@@ -17,6 +18,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -26,8 +28,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public final class CeylonHierarchyContentProvider 
         implements ITreeContentProvider {
@@ -291,6 +296,8 @@ public final class CeylonHierarchyContentProvider
             
             if (monitor.isCanceled()) return;
             
+            IEditorPart part = site.getPage().getActiveEditor();
+            
             int ps = packages.size();
             for (Package p: packages) { //workaround CME
                 int ms = p.getMembers().size();
@@ -298,7 +305,9 @@ public final class CeylonHierarchyContentProvider
                 for (Unit u: p.getUnits()) {
                     try {
                         for (Declaration d: u.getDeclarations()) {
-                            if (d instanceof ClassOrInterface) {
+                            d = replaceWithCurrentEditorDeclaration(part, p, d); //TODO: not enough to catch *new* subtypes in the dirty editor
+                            if (d instanceof ClassOrInterface || 
+                                    d instanceof TypeParameter) {
                                 try {
                                     if (declaration instanceof TypeDeclaration) {
                                         TypeDeclaration td = (TypeDeclaration) d;
@@ -343,6 +352,26 @@ public final class CeylonHierarchyContentProvider
                 if (monitor.isCanceled()) return;
             }
             monitor.done();
+        }
+
+        private Declaration replaceWithCurrentEditorDeclaration(IEditorPart part, 
+                Package p, Declaration d) {
+            if (part instanceof CeylonEditor && part.isDirty()) {
+                CompilationUnit rootNode = ((CeylonEditor) part).getParseController()
+                        .getRootNode();
+                if (rootNode!=null && 
+                        rootNode.getUnit()!=null) {
+                    Unit un = rootNode.getUnit();
+                    if (un.getPackage().equals(p)) {
+                        Declaration result = 
+                                getDeclarationInUnit(d.getQualifiedNameString(), un);
+                        if (result!=null) {
+                            return result;
+                        }
+                    }
+                }
+            }
+            return d;
         }
         
     }
