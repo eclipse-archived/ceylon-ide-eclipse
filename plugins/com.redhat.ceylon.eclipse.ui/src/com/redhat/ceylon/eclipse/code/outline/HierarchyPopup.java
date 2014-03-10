@@ -13,6 +13,7 @@ import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.bindings.TriggerSequence;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -41,6 +42,12 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyPopup extends TreeViewPopup {
     
+    private static final ImageRegistry imageRegistry = 
+            CeylonPlugin.getInstance().getImageRegistry();
+    private static final Image SUB_IMAGE = imageRegistry.get(CEYLON_SUB);
+    private static final Image SUP_IMAGE = imageRegistry.get(CEYLON_SUP);
+    private static final Image HIER_IMAGE = imageRegistry.get(CEYLON_HIER);
+
     private final class ChangeViewListener implements KeyListener {
         @Override
         public void keyReleased(KeyEvent e) {}
@@ -181,15 +188,20 @@ public class HierarchyPopup extends TreeViewPopup {
         iconLabel = new Label(parent, SWT.NONE);
         Control result = super.createTitleControl(parent);
         updateIcon();
+        createModeButtons(parent);
+        return result;
+    }
+
+    private void createModeButtons(Composite parent) {
         ToolBar toolBar = new ToolBar(parent, SWT.FLAT);
         button1 = new ToolItem(toolBar, SWT.CHECK);
-        button1.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_HIER));
+        button1.setImage(HIER_IMAGE);
         button1.setToolTipText("hierarchy view");
         button2 = new ToolItem(toolBar, SWT.CHECK);
-        button2.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SUP));
+        button2.setImage(SUP_IMAGE);
         button2.setToolTipText("supertypes/generalizations view");
         button3 = new ToolItem(toolBar, SWT.CHECK);
-        button3.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SUB));
+        button3.setImage(SUB_IMAGE);
         button3.setToolTipText("subtypes/refinements view");
         updateButtonSelection();
         button1.addSelectionListener(new SelectionListener() {
@@ -234,7 +246,6 @@ public class HierarchyPopup extends TreeViewPopup {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-        return result;
     }
 
     private void updateButtonSelection() {
@@ -253,7 +264,7 @@ public class HierarchyPopup extends TreeViewPopup {
     private Image getIcon() {
         String img = contentProvider==null ? 
                 CEYLON_HIER : contentProvider.getMode().image();
-        return CeylonPlugin.getInstance().getImageRegistry().get(img);
+        return imageRegistry.get(img);
     }
     
     @Override
