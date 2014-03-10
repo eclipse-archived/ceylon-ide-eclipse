@@ -399,9 +399,11 @@ public final class ReferencesPopup extends PopupDialog
 //        button.setImage(CeylonLabelProvider.IMPORT);
 //        button.setText("include imports");
         ToolBar toolBar = new ToolBar(parent, SWT.FLAT);
-        createImportsButton(toolBar);
         createModeButtons(toolBar);
+        new ToolItem(toolBar, SWT.SEPARATOR);
         createLayoutButtons(toolBar);
+        new ToolItem(toolBar, SWT.SEPARATOR);
+        createImportsButton(toolBar);
         return null;
     }
 
