@@ -391,7 +391,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         public IInformationControl createInformationControl(Shell parent) {
             PeekDefinitionPopup popup = 
                     new PeekDefinitionPopup(parent, SWT.NONE, editor);
-            popup.viewer.configure(new PopupSourceViewerConfiguration(editor, popup));
+            popup.getViewer().configure(new PopupSourceViewerConfiguration(editor, popup));
             return popup;
         }
     }

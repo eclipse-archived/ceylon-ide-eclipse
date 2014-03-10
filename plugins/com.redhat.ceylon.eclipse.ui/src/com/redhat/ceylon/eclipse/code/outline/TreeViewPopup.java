@@ -156,13 +156,13 @@ public abstract class TreeViewPopup extends PopupDialog
     
     protected Control createContents(Composite parent) {
         Composite composite = (Composite) super.createContents(parent);
-        Control[] children = composite.getChildren();
         GridLayout layout = (GridLayout) composite.getLayout();
         layout.verticalSpacing=8;
         layout.marginLeft=8;
         layout.marginRight=8;
         layout.marginTop=8;
         layout.marginBottom=8;
+        Control[] children = composite.getChildren();
 //        children[2].setVisible(false);
         children[children.length-2].setVisible(false);
         return composite;
