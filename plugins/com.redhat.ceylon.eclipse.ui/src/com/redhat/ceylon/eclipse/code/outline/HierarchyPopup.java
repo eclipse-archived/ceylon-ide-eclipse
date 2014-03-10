@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUPERTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
@@ -83,9 +84,10 @@ public class HierarchyPopup extends TreeViewPopup {
     public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle, 
             int treeStyle) {
         super(shell, shellStyle, treeStyle, 
-                "com.redhat.ceylon.eclipse.ui.editor.hierarchy",
+                PLUGIN_ID + ".editor.hierarchy",
                 editor, getCurrentThemeColor("hierarchy"));
-        hierarchyBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.action.showInHierarchyView");
+        hierarchyBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
+                ".action.showInHierarchyView");
         setInfoText(getStatusFieldText());
     }
     

@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescrip
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
@@ -98,7 +99,8 @@ final class PeekDefinitionPopup extends PopupDialog
         super(parent, shellStyle, true, true, false, true,
                 true, null, null);
         this.editor = editor;
-        commandBinding = EditorUtil.getCommandBinding("com.redhat.ceylon.eclipse.ui.editor.code");
+        commandBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
+                ".editor.code");
         if (commandBinding!=null) {
             setInfoText(commandBinding.format() + " to open editor");
         }
