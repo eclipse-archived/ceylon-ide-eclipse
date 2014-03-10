@@ -490,10 +490,10 @@ public final class ReferencesPopup extends PopupDialog
         String message;
         if (showingRefinements) {
             if (type) {
-                message = "refinements of";
+                message = "subtypes of";
             }
             else {
-                message = "subtypes of";
+                message = "refinements of";
             }
         } else {
             message = "references to";
