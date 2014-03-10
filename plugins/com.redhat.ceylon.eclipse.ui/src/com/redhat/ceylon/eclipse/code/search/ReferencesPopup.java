@@ -65,6 +65,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
@@ -508,31 +509,39 @@ public final class ReferencesPopup extends PopupDialog
         setTitleText("Quick Find References - " + message + " '" + 
                         declaration.getName(pc.getRootNode().getUnit()) + "'");
         List<CeylonSearchMatch> list = new ArrayList<CeylonSearchMatch>();
-        for (PhasedUnit pu: pc.getTypeChecker().getPhasedUnits().getPhasedUnits()) {
+        for (PhasedUnit pu: pc.getTypeChecker()
+                .getPhasedUnits()
+                .getPhasedUnits()) {
+            CompilationUnit cu = pu.getCompilationUnit();
+            if (pu.getUnit().equals(pc.getRootNode().getUnit()) &&
+                    editor.isDirty()) {
+                //search in the current dirty editor
+                cu = pc.getRootNode();
+            }
             Set<Node> nodes;
             if (showingRefinements) {
                 if (type) {
                     FindSubtypesVisitor frv = new FindSubtypesVisitor(
                             (TypeDeclaration) declaration);
-                    frv.visit(pu.getCompilationUnit());
+                    frv.visit(cu);
                     nodes = new HashSet<Node>(frv.getDeclarationNodes());
                 }
                 else {
                     FindRefinementsVisitor frv = new FindRefinementsVisitor(
                             declaration);
-                    frv.visit(pu.getCompilationUnit());
+                    frv.visit(cu);
                     nodes = new HashSet<Node>(frv.getDeclarationNodes());
                 }
             }
             else {
                 FindReferencesVisitor frv = new FindReferencesVisitor(
                         declaration);
-                frv.visit(pu.getCompilationUnit());
+                frv.visit(cu);
                 nodes = frv.getNodes();
             }
             for (Node node: nodes) {
                 FindContainerVisitor fcv = new FindContainerVisitor(node);
-                pu.getCompilationUnit().visit(fcv);
+                cu.visit(fcv);
                 Tree.StatementOrArgument c = fcv.getStatementOrArgument();
                 if (c!=null) {
                     if (includeImports || 
