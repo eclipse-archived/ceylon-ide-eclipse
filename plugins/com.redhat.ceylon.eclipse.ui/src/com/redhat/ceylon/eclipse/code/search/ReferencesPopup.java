@@ -712,6 +712,9 @@ public final class ReferencesPopup extends PopupDialog
         Declaration declaration = 
                 Nodes.getReferencedExplicitDeclaration(getSelectedNode(editor), 
                         pc.getRootNode());
+        if (declaration==null) {
+            return;
+        }
         type = declaration instanceof TypeDeclaration;
         String message;
         if (showingRefinements) {
