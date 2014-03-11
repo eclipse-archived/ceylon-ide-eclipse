@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LIDENTIFIER;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -471,9 +473,24 @@ public class Nodes {
         StringBuilder exp = new StringBuilder();
         for (Iterator<CommonToken> ti = getTokenIterator(theTokens, region); 
                 ti.hasNext();) {
-            exp.append(ti.next().getText());
+            CommonToken token = ti.next();
+            int type = token.getType();
+            String text = token.getText();
+            if (type==LIDENTIFIER &&
+                    getTokenLength(token)>text.length()) {
+                exp.append("\\i");
+            }
+            else if (type==UIDENTIFIER &&
+                    getTokenLength(token)>text.length()) {
+                exp.append("\\I"); 
+            }
+            exp.append(text);
         }
         return exp.toString();
+    }
+
+    private static int getTokenLength(CommonToken token) {
+        return token.getStopIndex()-token.getStartIndex()+1;
     }
 
     public static String guessName(Node node) {
