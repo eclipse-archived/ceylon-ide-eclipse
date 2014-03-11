@@ -243,7 +243,7 @@ public abstract class TreeViewPopup extends PopupDialog
     }
 
     protected Text createFilterText(Composite parent) {
-        filterText= new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
+        filterText = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         filterText.setMessage("type filter text");
         Dialog.applyDialogFont(filterText);
 
