@@ -13,8 +13,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
@@ -55,7 +55,7 @@ public class OutlinePopup extends TreeViewPopup {
     
     private static final Image OUTLINE = imageRegistry.get(CEYLON_OUTLINE);
     private static final Image SORT = imageRegistry.get(SORT_ALPHA);
-    private static final Image PUBLIC = imageRegistry.get(CEYLON_METHOD);
+    private static final Image PUBLIC = imageRegistry.get(HIDE_PRIVATE);
     
     private CeylonOutlineContentProvider outlineContentProvider;
     private OutlineSorter outlineSorter;
@@ -176,7 +176,7 @@ public class OutlinePopup extends TreeViewPopup {
             setToolTipText("Hide Unhared Declarations");
             setDescription("Hide unshared declarations");
             
-            setImageDescriptor(imageRegistry.getDescriptor(CEYLON_METHOD)); 
+            setImageDescriptor(imageRegistry.getDescriptor(HIDE_PRIVATE)); 
             
             boolean checked = getDialogSettings().getBoolean("hideNonShared");
             valueChanged(checked, false);
