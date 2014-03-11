@@ -87,6 +87,7 @@ public interface CeylonResources {
     
     public static final String BUILDER = "builder";
     public static final String MODULE_VERSION = "module_version";
+    public static final String HIDE_PRIVATE = "hide_private";
     public static final String EXPAND_ALL = "expandall";
     public static final String PAGING = "paging";
     public static final String SHOW_DOC = "show_doc";

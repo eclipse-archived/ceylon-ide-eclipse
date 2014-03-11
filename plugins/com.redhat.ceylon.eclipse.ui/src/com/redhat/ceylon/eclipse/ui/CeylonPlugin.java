@@ -357,6 +357,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(CONFIG_ANN, image("configure_annotations.gif"));
         reg.put(CONFIG_ANN_DIS, image("configure_annotations_disabled.gif"));
         reg.put(MODULE_VERSION, image("module_version.gif"));
+        reg.put(HIDE_PRIVATE, image("hideprivate.gif"));
         reg.put(EXPAND_ALL, image("expandall.gif"));
         reg.put(PAGING, image("paging.gif"));
         reg.put(SHOW_DOC, image("show_doc.gif"));

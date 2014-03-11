@@ -14,8 +14,8 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_METHOD;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
 
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             PLUGIN_ID + ".outline.popupMenu";
     
     private static final ImageDescriptor PUBLIC = 
-            imageRegistry.getDescriptor(CEYLON_METHOD);
+            imageRegistry.getDescriptor(HIDE_PRIVATE);
     private static final ImageDescriptor ALPHA = 
             imageRegistry.getDescriptor(SORT_ALPHA);
     
