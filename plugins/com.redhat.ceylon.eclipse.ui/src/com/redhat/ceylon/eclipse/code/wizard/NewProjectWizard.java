@@ -203,9 +203,9 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                     ceylonOutString.substring(1);
         }
         IPath ceylonOut = Path.fromOSString(ceylonOutString);
-        IPath javaOut = secondPage.getBuildPathsBlock()
-                .getJavaOutputLocation();
-        return !ceylonOut.isPrefixOf(javaOut) && 
+        IPath javaOut = secondPage.getJavaOutputLocation();
+        return javaOut==null || 
+        		!ceylonOut.isPrefixOf(javaOut) && 
                 !javaOut.isPrefixOf(ceylonOut);
     }
 
