@@ -354,7 +354,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
 
     private static String getLocation(DeclarationWithProject dwp) {
         IProject project = dwp.getProject();
-        if (dwp.getPath()!=null) {
+        if (project!=null && dwp.getPath()!=null) {
             IResource r = project.isOpen() ? 
                     project.findMember(dwp.getPath()) : null;
             //if the project is closed or for some other reason
