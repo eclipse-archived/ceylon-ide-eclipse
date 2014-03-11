@@ -347,7 +347,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new OutlineInformationProvider(getParseController()), 
                 DEFAULT_CONTENT_TYPE);
-        presenter.setSizeConstraints(40, 10, true, false);
+        presenter.setSizeConstraints(80, 10, true, false);
         presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
                 "refs_presenter_bounds"), true, true);
         return presenter;
