@@ -535,7 +535,13 @@ public class CeylonBuildPathsBlock {
      *  @return Returns the current output location. Note that the path returned must not be valid.
      */
     public IPath getJavaOutputLocation() {
-        return new Path(fJavaBuildPathDialogField.getText()).makeAbsolute();
+        String text = fJavaBuildPathDialogField.getText();
+        if (text.isEmpty()) {
+        	return null;
+        }
+        else {
+        	return new Path(text).makeAbsolute();
+        }
     }
 
     /**
