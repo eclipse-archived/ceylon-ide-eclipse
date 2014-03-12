@@ -316,8 +316,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         for (IProject project: CeylonBuilder.getProjects()) {
             TypeChecker tc = CeylonBuilder.getProjectTypeChecker(project);
-            Set<Module> modules = tc.getPhasedUnits().getModuleManager()
-                    .getCompiledModules();
+            Set<Module> modules = new HashSet<Module>(tc.getPhasedUnits().getModuleManager()
+                    .getCompiledModules());
+            modules.add(tc.getContext().getModules().getLanguageModule());
             
             List<Package> packages = new LinkedList<Package>();
             
