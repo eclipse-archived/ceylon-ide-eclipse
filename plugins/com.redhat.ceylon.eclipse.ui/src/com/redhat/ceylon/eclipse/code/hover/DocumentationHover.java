@@ -951,7 +951,9 @@ public class DocumentationHover
         HTML.addImageAndLabel(buffer, pack, 
                 HTML.fileUrl(getIcon(pack)).toExternalForm(), 
                 16, 16, 
-                "<b><tt>" + HTML.highlightLine(description(pack)) +"</tt></b>", 
+                "<tt style='font-size:102%'>" + 
+                HTML.highlightLine(description(pack)) +
+                "</tt>", 
                 20, 4);
         buffer.append("<hr/>");
     }
@@ -1050,7 +1052,9 @@ public class DocumentationHover
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
-                "<b><tt>" + HTML.highlightLine(description(mod)) + "</tt></b>", 
+                "<tt style='font-size:102%'>" + 
+                HTML.highlightLine(description(mod)) + 
+                "</tt>", 
                 20, 4);
         buffer.append("<hr/>");
     }
