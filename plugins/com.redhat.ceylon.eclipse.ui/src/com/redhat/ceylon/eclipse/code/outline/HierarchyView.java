@@ -45,9 +45,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ViewForm;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
@@ -222,7 +225,21 @@ public class HierarchyView extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         setContentDescription("");
-        SashForm sash = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
+        final SashForm sash = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
+        sash.addControlListener(new ControlListener() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                Rectangle bounds = sash.getBounds();
+                if (bounds.height>bounds.width) {
+                    sash.setOrientation(SWT.VERTICAL);
+                }
+                else {
+                    sash.setOrientation(SWT.HORIZONTAL);
+                }
+            }
+            @Override
+            public void controlMoved(ControlEvent e) {}
+        });
         createMainToolBar();
         createTreeMenu(createTree(sash));
         createTableMenu(createTable(sash));
