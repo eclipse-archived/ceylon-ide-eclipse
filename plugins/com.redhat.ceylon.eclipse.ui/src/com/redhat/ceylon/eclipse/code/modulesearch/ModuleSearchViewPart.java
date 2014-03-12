@@ -713,10 +713,15 @@ public class ModuleSearchViewPart extends ViewPart {
     public static String getModuleDoc(ModuleVersionNode versionNode) {
         StringBuilder docBuilder = new StringBuilder();
         HTMLPrinter.insertPageProlog(docBuilder, 0, docForegroundColor, docBackgroundColor, docStyleSheet);
-        
+
         if (versionNode != null) {
-            HTML.addImageAndLabel(docBuilder, null, HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
-                    16, 16, "<b><tt>" + HTML.highlightLine(description(versionNode)) +"</tt></b>", 20, 4);
+            HTML.addImageAndLabel(docBuilder, null, 
+                    HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
+                    16, 16, 
+                    "<tt style='font-size:102%'>" + 
+                    HTML.highlightLine(description(versionNode)) +
+                    "</tt>", 
+                    20, 4);
             docBuilder.append("<hr/>");
             
             if (versionNode.isFilled()) {
