@@ -3,12 +3,14 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.runOperation;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
+import com.redhat.ceylon.eclipse.code.editor.RecentFilesPopup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class NewUnitWizard extends Wizard implements INewWizard {
@@ -35,9 +37,11 @@ public class NewUnitWizard extends Wizard implements INewWizard {
                         page.getPackageFragment(), page.getUnitName(),
                         page.isIncludePreamble(), getDeclarationText());
         if (runOperation(op, getContainer())) {
-            BasicNewResourceWizard.selectAndReveal(op.getFile(), 
+            IFile file = op.getFile();
+            RecentFilesPopup.addToHistory(file);
+            BasicNewResourceWizard.selectAndReveal(file, 
                     workbench.getActiveWorkbenchWindow());
-            gotoLocation(op.getFile().getFullPath(), 0);
+            gotoLocation(file.getFullPath(), 0);
             return true;
         }
         else {
