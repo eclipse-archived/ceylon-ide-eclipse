@@ -8,7 +8,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
-import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import java.util.StringTokenizer;
 
@@ -84,8 +83,7 @@ public class HierarchyPopup extends TreeViewPopup {
     public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle, 
             int treeStyle) {
         super(shell, shellStyle, treeStyle, 
-                PLUGIN_ID + ".editor.hierarchy",
-                editor, getCurrentThemeColor("hierarchy"));
+                PLUGIN_ID + ".editor.hierarchy", editor);
         hierarchyBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
                 ".action.showInHierarchyView");
         setInfoText(getStatusFieldText());
