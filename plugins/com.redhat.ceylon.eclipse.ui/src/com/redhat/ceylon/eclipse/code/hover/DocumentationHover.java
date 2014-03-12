@@ -1143,11 +1143,11 @@ public class DocumentationHover
         HTML.addImageAndLabel(buffer, dec, 
                 HTML.fileUrl(getIcon(dec)).toExternalForm(), 
                 16, 16, 
-                "<b><tt>" + 
+                "<tt style='font-size:102%'>" + 
                 (dec.isDeprecated() ? "<s>":"") + 
                 HTML.highlightLine(description(dec, node, cpc)) + 
                 (dec.isDeprecated() ? "</s>":"") + 
-                "</tt></b>", 
+                "</tt>", 
                 20, 4);
         buffer.append("<hr/>");
     }
