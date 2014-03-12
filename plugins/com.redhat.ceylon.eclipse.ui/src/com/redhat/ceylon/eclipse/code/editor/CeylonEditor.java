@@ -36,6 +36,7 @@ import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.GROUP_RULERS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
@@ -152,11 +153,13 @@ import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
  */
 public class CeylonEditor extends TextEditor {
     
-    private static final Pattern TRAILING_WS = Pattern.compile("[ \\t]+$", Pattern.MULTILINE);
+    private static final Pattern TRAILING_WS = 
+            Pattern.compile("[ \\t]+$", Pattern.MULTILINE);
 
-    public static final String MESSAGE_BUNDLE = "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
+    public static final String MESSAGE_BUNDLE = 
+            "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
 
-    private static final int REPARSE_SCHEDULE_DELAY = 100;
+    private static final int REPARSE_SCHEDULE_DELAY = 200;
 
     //preference keys
     public final static String MATCHING_BRACKET = "matchingBrackets";
@@ -182,9 +185,12 @@ public class CeylonEditor extends TextEditor {
     private LinkedModeModel linkedMode;
     private Object linkedModeOwner;
     
-    private MarkerAnnotationUpdater markerAnnotationUpdater = new MarkerAnnotationUpdater(this);
-    private ProjectionAnnotationManager projectionAnnotationManager = new ProjectionAnnotationManager(this);
-    private AnnotationCreator annotationCreator = new AnnotationCreator(this);
+    private MarkerAnnotationUpdater markerAnnotationUpdater = 
+            new MarkerAnnotationUpdater(this);
+    private ProjectionAnnotationManager projectionAnnotationManager = 
+            new ProjectionAnnotationManager(this);
+    private AnnotationCreator annotationCreator = 
+            new AnnotationCreator(this);
     
     ToggleFoldingRunner fFoldingRunner;
     
@@ -506,13 +512,14 @@ public class CeylonEditor extends TextEditor {
             final ISourceViewer viewer= getSourceViewer();
             final IDocument document= viewer.getDocument();
             try {
-                fIterator.setText((CharacterIterator)new DocumentCharacterIterator(document));
+                fIterator.setText((CharacterIterator) new DocumentCharacterIterator(document));
                 int position= widgetOffset2ModelOffset(viewer, viewer.getTextWidget().getCaretOffset());
                 if (position == -1)
                     return;
 
                 int next= findNextPosition(position);
-                if (isBlockSelectionModeEnabled() && document.getLineOfOffset(next) != document.getLineOfOffset(position)) {
+                if (isBlockSelectionModeEnabled() && 
+                        document.getLineOfOffset(next) != document.getLineOfOffset(position)) {
                     super.run(); // may navigate into virtual white space
                 } else if (next != BreakIterator.DONE) {
                     setCaretPosition(next);
@@ -543,13 +550,16 @@ public class CeylonEditor extends TextEditor {
             IDocument document= viewer.getDocument();
             LinkedModeModel model= LinkedModeModel.getModel(document, position);
             if (model != null && next != BreakIterator.DONE) {
-                LinkedPosition linkedPosition= model.findPosition(new LinkedPosition(document, position, 0));
+                LinkedPosition linkedPosition= 
+                        model.findPosition(new LinkedPosition(document, position, 0));
                 if (linkedPosition != null) {
-                    int linkedPositionEnd= linkedPosition.getOffset() + linkedPosition.getLength();
+                    int linkedPositionEnd= 
+                            linkedPosition.getOffset() + linkedPosition.getLength();
                     if (position != linkedPositionEnd && linkedPositionEnd < next)
                         next= linkedPositionEnd;
                 } else {
-                    LinkedPosition nextLinkedPosition= model.findPosition(new LinkedPosition(document, next, 0));
+                    LinkedPosition nextLinkedPosition= 
+                            model.findPosition(new LinkedPosition(document, next, 0));
                     if (nextLinkedPosition != null) {
                         int nextLinkedPositionOffset= nextLinkedPosition.getOffset();
                         if (position != nextLinkedPositionOffset && nextLinkedPositionOffset < next)
@@ -707,7 +717,7 @@ public class CeylonEditor extends TextEditor {
             final ISourceViewer viewer= getSourceViewer();
             final IDocument document= viewer.getDocument();
             try {
-                fIterator.setText((CharacterIterator)new DocumentCharacterIterator(document));
+                fIterator.setText((CharacterIterator) new DocumentCharacterIterator(document));
                 int position= widgetOffset2ModelOffset(viewer, viewer.getTextWidget().getCaretOffset());
                 if (position == -1)
                     return;
@@ -746,15 +756,18 @@ public class CeylonEditor extends TextEditor {
             IDocument document= viewer.getDocument();
             LinkedModeModel model= LinkedModeModel.getModel(document, position);
             if (model != null && previous != BreakIterator.DONE) {
-                LinkedPosition linkedPosition= model.findPosition(new LinkedPosition(document, position, 0));
+                LinkedPosition linkedPosition= 
+                        model.findPosition(new LinkedPosition(document, position, 0));
                 if (linkedPosition != null) {
                     int linkedPositionOffset= linkedPosition.getOffset();
                     if (position != linkedPositionOffset && previous < linkedPositionOffset)
                         previous= linkedPositionOffset;
                 } else {
-                    LinkedPosition previousLinkedPosition= model.findPosition(new LinkedPosition(document, previous, 0));
+                    LinkedPosition previousLinkedPosition= 
+                            model.findPosition(new LinkedPosition(document, previous, 0));
                     if (previousLinkedPosition != null) {
-                        int previousLinkedPositionEnd= previousLinkedPosition.getOffset() + previousLinkedPosition.getLength();
+                        int previousLinkedPositionEnd= 
+                                previousLinkedPosition.getOffset() + previousLinkedPosition.getLength();
                         if (position != previousLinkedPositionEnd && previous < previousLinkedPositionEnd)
                             previous= previousLinkedPositionEnd;
                     }
@@ -946,17 +959,21 @@ public class CeylonEditor extends TextEditor {
         fHandlerService= (IHandlerService) getSite().getService(IHandlerService.class);
         if (fHandlerService != null) {
             QuickMenuAction navigateQuickAccessAction= new NavigateQuickAccessAction();
-            fNavigateQuickAccessHandlerActivation= fHandlerService.activateHandler(navigateQuickAccessAction.getActionDefinitionId(), 
+            fNavigateQuickAccessHandlerActivation= 
+                    fHandlerService.activateHandler(navigateQuickAccessAction.getActionDefinitionId(), 
                             new ActionHandler(navigateQuickAccessAction));
             QuickMenuAction refactorQuickAccessAction= new RefactorQuickAccessAction();
-            fRefactorQuickAccessHandlerActivation= fHandlerService.activateHandler(refactorQuickAccessAction.getActionDefinitionId(), 
-                    new ActionHandler(refactorQuickAccessAction));
+            fRefactorQuickAccessHandlerActivation= 
+                    fHandlerService.activateHandler(refactorQuickAccessAction.getActionDefinitionId(), 
+                            new ActionHandler(refactorQuickAccessAction));
             QuickMenuAction findQuickAccessAction= new FindQuickAccessAction();
-            fFindQuickAccessHandlerActivation= fHandlerService.activateHandler(findQuickAccessAction.getActionDefinitionId(), 
-                    new ActionHandler(findQuickAccessAction));
+            fFindQuickAccessHandlerActivation= 
+                    fHandlerService.activateHandler(findQuickAccessAction.getActionDefinitionId(), 
+                            new ActionHandler(findQuickAccessAction));
             QuickMenuAction sourceQuickAccessAction= new SourceQuickAccessAction();
-            fSourceQuickAccessHandlerActivation= fHandlerService.activateHandler(sourceQuickAccessAction.getActionDefinitionId(), 
-                    new ActionHandler(sourceQuickAccessAction));
+            fSourceQuickAccessHandlerActivation= 
+                    fHandlerService.activateHandler(sourceQuickAccessAction.getActionDefinitionId(), 
+                            new ActionHandler(sourceQuickAccessAction));
         }
     }
     
@@ -995,7 +1012,8 @@ public class CeylonEditor extends TextEditor {
      * @param msg message to be set
      */
     protected void setStatusLineErrorMessage(String msg) {
-        IEditorStatusLine statusLine= (IEditorStatusLine) getAdapter(IEditorStatusLine.class);
+        IEditorStatusLine statusLine= (IEditorStatusLine) 
+                getAdapter(IEditorStatusLine.class);
         if (statusLine != null)
             statusLine.setMessage(true, msg, null);
     }
@@ -1007,7 +1025,8 @@ public class CeylonEditor extends TextEditor {
      * @since 3.0
      */
     protected void setStatusLineMessage(String msg) {
-        IEditorStatusLine statusLine= (IEditorStatusLine) getAdapter(IEditorStatusLine.class);
+        IEditorStatusLine statusLine= (IEditorStatusLine) 
+                getAdapter(IEditorStatusLine.class);
         if (statusLine != null)
             statusLine.setMessage(false, msg, null);
     }
@@ -1029,7 +1048,8 @@ public class CeylonEditor extends TextEditor {
             //that a IURIEditorInput is a source
             //archive there
             if (sourceArchiveDocumentProvider==null) {
-                sourceArchiveDocumentProvider = new SourceArchiveDocumentProvider();
+                sourceArchiveDocumentProvider = 
+                        new SourceArchiveDocumentProvider();
             }
             return sourceArchiveDocumentProvider;
         }
@@ -1059,7 +1079,8 @@ public class CeylonEditor extends TextEditor {
         /*((IContextService) getSite().getService(IContextService.class))
                 .activateContext(PLUGIN_ID + ".context");*/
         
-        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        ITheme currentTheme = 
+                getWorkbench().getThemeManager().getCurrentTheme();
         currentTheme.getColorRegistry().addListener(colorChangeListener);
         updateFontAndCaret();
         currentTheme.getFontRegistry().addListener(fontChangeListener);
@@ -1080,7 +1101,8 @@ public class CeylonEditor extends TextEditor {
         parseController.initialize(filePath, project, annotationCreator);
     }
     
-    private IProblemChangedListener editorIconUpdater = new IProblemChangedListener() {
+    private IProblemChangedListener editorIconUpdater = 
+            new IProblemChangedListener() {
         @Override
         public void problemsChanged(IResource[] changedResources, boolean isMarkerChange) {
             if (isMarkerChange) {
@@ -1108,7 +1130,8 @@ public class CeylonEditor extends TextEditor {
         }
     };
     
-    private IDocumentListener documentListener = new IDocumentListener() {
+    private IDocumentListener documentListener = 
+            new IDocumentListener() {
         public void documentAboutToBeChanged(DocumentEvent event) {}
         public void documentChanged(DocumentEvent event) {
             synchronized (CeylonEditor.this) {
@@ -1120,7 +1143,8 @@ public class CeylonEditor extends TextEditor {
         }
     };
     
-    private IResourceChangeListener buildListener = new IResourceChangeListener() {
+    private IResourceChangeListener buildListener = 
+            new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event) {
             if (event.getBuildKind()!=CLEAN_BUILD) {
                 scheduleParsing();
@@ -1134,7 +1158,8 @@ public class CeylonEditor extends TextEditor {
      * underlying resource gets moved or renamed. We need to see when the editor 
      * input changes, so we can watch the new document.
      */
-    private IPropertyListener editorInputPropertyListener = new IPropertyListener() {
+    private IPropertyListener editorInputPropertyListener = 
+            new IPropertyListener() {
         public void propertyChanged(Object source, int propId) {
             if (source == CeylonEditor.this && propId == IEditorPart.PROP_INPUT) {
                 IDocument oldDoc = getParseController().getDocument();
@@ -1151,7 +1176,8 @@ public class CeylonEditor extends TextEditor {
         }
     };
     
-    private IResourceChangeListener moveListener = new IResourceChangeListener() {
+    private IResourceChangeListener moveListener = 
+            new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event) {
             if (parseController==null) return;
             IProject project = parseController.getProject();
@@ -1176,7 +1202,8 @@ public class CeylonEditor extends TextEditor {
         }
     };
     
-    private IProblemChangedListener annotationUpdater = new IProblemChangedListener() {
+    private IProblemChangedListener annotationUpdater = 
+            new IProblemChangedListener() {
         public void problemsChanged(IResource[] changedResources, 
                 boolean isMarkerChange) {
             // Remove annotations that were resolved by changes to 
@@ -1217,11 +1244,14 @@ public class CeylonEditor extends TextEditor {
     private void installProjectionSupport() {
         final CeylonSourceViewer sourceViewer = getCeylonSourceViewer();
         
-        projectionSupport = new ProjectionSupport(sourceViewer, getAnnotationAccess(), getSharedColors());
-        MarkerAnnotationPreferences markerAnnotationPreferences = (MarkerAnnotationPreferences) getAdapter(MarkerAnnotationPreferences.class);
+        projectionSupport = 
+                new ProjectionSupport(sourceViewer, getAnnotationAccess(), getSharedColors());
+        MarkerAnnotationPreferences markerAnnotationPreferences = 
+                (MarkerAnnotationPreferences) getAdapter(MarkerAnnotationPreferences.class);
         if (markerAnnotationPreferences != null) {
             @SuppressWarnings("unchecked")
-            List<AnnotationPreference> annPrefs = markerAnnotationPreferences.getAnnotationPreferences();
+            List<AnnotationPreference> annPrefs = 
+                    markerAnnotationPreferences.getAnnotationPreferences();
             for (Iterator<AnnotationPreference> e = annPrefs.iterator(); e.hasNext();) {
                 Object annotationType = e.next().getAnnotationType();
                 if (annotationType instanceof String) {
@@ -1465,7 +1495,8 @@ public class CeylonEditor extends TextEditor {
             boolean normalizeWs, boolean normalizeNl, boolean stripTrailingWs) {
         DocumentRewriteSession rewriteSession= null;
         if (doc instanceof IDocumentExtension4) {
-            rewriteSession = ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+            rewriteSession = 
+                    ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
         }
         
         Point range = viewer.getSelectedRange();
