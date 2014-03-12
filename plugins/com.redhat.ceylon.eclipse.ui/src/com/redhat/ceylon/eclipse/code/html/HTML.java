@@ -23,8 +23,6 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.ui.PreferenceConstants;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.FontData;
 import org.osgi.framework.Bundle;
 
@@ -34,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
@@ -64,15 +63,11 @@ public class HTML {
         if (fgStyleSheet == null) {
             fgStyleSheet = loadStyleSheet();
         }
-        //Color c = CeylonTokenColorer.getCurrentThemeColor("docHover");
-        //String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
-        String css= fgStyleSheet + "body { padding: 15px; } hr { padding: 2px; border:0; }  ";// + "body { background-color: #" + color+ " }";
-        FontData fontData= JFaceResources.getFontRegistry()
-        		.getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
-        FontData fontData2= JFaceResources.getFontRegistry()
-        		.getFontData("com.redhat.ceylon.eclipse.ui.editorFont")[0];
-        css = HTMLPrinter.convertTopLevelFont(css, fontData);
-        return css + " tt, pre, code { font-family: '" + fontData2.getName()  + "', monospace }";
+        String css = fgStyleSheet + "body { padding: 15px; } hr { padding: 2px; border:0; }";
+        FontData textFontData= CeylonEditor.getHoverFont().getFontData()[0];
+        FontData monospaceFontData = CeylonEditor.getEditorFont().getFontData()[0];
+        css = HTMLPrinter.convertTopLevelFont(css, textFontData);
+        return css + " tt, pre, code { font-family: '" + monospaceFontData.getName()  + "', monospace }";
     }
 
     /**

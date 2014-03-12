@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 
 /**
@@ -174,7 +175,7 @@ class AnnotationInformationControl extends AbstractInformationControl
         createAnnotationInformation(fParent);
         setColorAndFont(fParent, fParent.getForeground(), 
                 fParent.getBackground(), 
-                JFaceResources.getDialogFont());
+                CeylonEditor.getHoverFont());
 
         ICompletionProposal[] proposals = 
                 getAnnotationInfo().getCompletionProposals();
@@ -294,7 +295,7 @@ class AnnotationInformationControl extends AbstractInformationControl
 
         setColorAndFont(composite, parent.getForeground(), 
                 parent.getBackground(), 
-                JFaceResources.getDialogFont());
+                CeylonEditor.getHoverFont());
         createCompletionProposalsList(composite, proposals);
     }
 

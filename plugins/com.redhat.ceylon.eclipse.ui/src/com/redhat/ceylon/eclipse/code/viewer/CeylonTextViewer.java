@@ -33,7 +33,7 @@ class CeylonTextViewer extends Viewer {
 
         sourceViewer.setEditable(false);
         
-        Font font = CeylonEditor.getFont();
+        Font font = CeylonEditor.getEditorFont();
         if (font!=null) {
             sourceViewer.getTextWidget().setFont(font);
         }
