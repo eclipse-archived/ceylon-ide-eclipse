@@ -122,7 +122,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
             public void notHandled(final String commandId, final NotHandledException exception) {}
             public void postExecuteFailure(final String commandId, final ExecutionException exception) {}
             public void postExecuteSuccess(final String commandId, final Object returnValue) {
-                if (commandId.equals( "org.eclipse.ui.file.save") ) {
+                if (commandId.equals("org.eclipse.ui.file.save")) {
                     IEditorPart ed = EditorUtil.getCurrentEditor();
                     if (ed!=null) {
                         IFile file = EditorUtil.getFile(ed.getEditorInput());
