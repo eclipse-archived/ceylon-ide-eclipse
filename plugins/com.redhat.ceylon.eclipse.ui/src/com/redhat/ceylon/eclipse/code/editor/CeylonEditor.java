@@ -14,6 +14,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.STRIP_TRAILING_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.configCompletionPopup;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
@@ -51,6 +52,7 @@ import java.text.CharacterIterator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
@@ -150,6 +152,8 @@ import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
  */
 public class CeylonEditor extends TextEditor {
     
+    private static final Pattern TRAILING_WS = Pattern.compile("[ \\t]+$", Pattern.MULTILINE);
+
     public static final String MESSAGE_BUNDLE = "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
 
     private static final int REPARSE_SCHEDULE_DELAY = 100;
@@ -1441,6 +1445,7 @@ public class CeylonEditor extends TextEditor {
         boolean normalizeWs = prefs.getBoolean(NORMALIZE_WS) &&
                 prefs.getBoolean(EDITOR_SPACES_FOR_TABS);
         boolean normalizeNl = prefs.getBoolean(NORMALIZE_NL);
+        boolean stripTrailingWs = prefs.getBoolean(STRIP_TRAILING_WS);
         boolean cleanImports = prefs.getBoolean(CLEAN_IMPORTS);
         if (cleanImports) {
             try {
@@ -1450,14 +1455,14 @@ public class CeylonEditor extends TextEditor {
                 e.printStackTrace();
             }
         }
-        if (normalizeWs || normalizeNl) {
-            normalize(viewer, doc, normalizeWs, normalizeNl);
+        if (normalizeWs || normalizeNl || stripTrailingWs) {
+            normalize(viewer, doc, normalizeWs, normalizeNl, stripTrailingWs);
         }
         super.doSave(progressMonitor);
     }
 
     private static void normalize(CeylonSourceViewer viewer, IDocument doc,
-            boolean normalizeWs, boolean normalizeNl) {
+            boolean normalizeWs, boolean normalizeNl, boolean stripTrailingWs) {
         DocumentRewriteSession rewriteSession= null;
         if (doc instanceof IDocumentExtension4) {
             rewriteSession = ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
@@ -1468,15 +1473,16 @@ public class CeylonEditor extends TextEditor {
         int modelLength = range.y;
         try {
             String text = doc.get();
-            String normalized = normalize(text, doc, normalizeWs, normalizeNl);
+            String normalized = normalize(text, doc, normalizeWs, normalizeNl, 
+                    stripTrailingWs);
             if (!normalized.equals(text)) {
                 StyledText widget = viewer.getTextWidget();
                 Point selection = widget.getSelectionRange();
                 StyledTextContent content = widget.getContent();
                 int offset = normalize(content.getTextRange(0, selection.x), 
-                        doc, normalizeWs, normalizeNl).length();
+                        doc, normalizeWs, normalizeNl, stripTrailingWs).length();
                 int length = normalize(content.getTextRange(selection.x, selection.y), 
-                        doc, normalizeWs, normalizeNl).length();
+                        doc, normalizeWs, normalizeNl, stripTrailingWs).length();
                 modelOffset = viewer.widgetOffset2ModelOffset(offset);
                 modelLength = viewer.widgetOffset2ModelOffset(offset+length)-modelOffset;
                 new ReplaceEdit(0, text.length(), normalized).apply(doc);
@@ -1494,7 +1500,11 @@ public class CeylonEditor extends TextEditor {
     }
 
     private static String normalize(String text, IDocument doc, 
-            boolean normalizeWs, boolean normalizeNl) {
+            boolean normalizeWs, boolean normalizeNl, 
+            boolean stripTrailingWs) {
+        if (stripTrailingWs) {
+            text = TRAILING_WS.matcher(text).replaceAll("");
+        }
         if (normalizeWs) {
             text = text.replace("\t", getDefaultIndent());
         }

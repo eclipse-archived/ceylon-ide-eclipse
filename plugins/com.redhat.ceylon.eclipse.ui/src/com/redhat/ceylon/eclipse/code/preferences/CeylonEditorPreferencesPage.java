@@ -23,6 +23,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.STRIP_TRAILING_WS;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndentWithSpaces;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
@@ -72,6 +73,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor pasteCorrectIndent;
     BooleanFieldEditor normalizeWs;
     BooleanFieldEditor normalizeNl;
+    BooleanFieldEditor stripTrailingWs;
     BooleanFieldEditor cleanImports;
     BooleanFieldEditor autoFoldImports;
     BooleanFieldEditor autoFoldComments;
@@ -103,6 +105,7 @@ public class CeylonEditorPreferencesPage
         pasteCorrectIndent.store();
         normalizeWs.store();
         normalizeNl.store();
+        stripTrailingWs.store();
         cleanImports.store();
         autoFoldImports.store();
         autoFoldComments.store();
@@ -133,6 +136,7 @@ public class CeylonEditorPreferencesPage
         pasteCorrectIndent.loadDefault();
         normalizeWs.loadDefault();
         normalizeNl.loadDefault();
+        stripTrailingWs.loadDefault();
         cleanImports.loadDefault();
         autoFoldImports.loadDefault();
         autoFoldComments.loadDefault();
@@ -433,6 +437,11 @@ public class CeylonEditorPreferencesPage
                 parent);
         normalizeNl.load();
         addField(normalizeNl);
+        stripTrailingWs = new BooleanFieldEditor(STRIP_TRAILING_WS, 
+                "Strip trailing whitespace",
+                parent);
+        stripTrailingWs.load();
+        addField(stripTrailingWs);
         cleanImports = new BooleanFieldEditor(CLEAN_IMPORTS, 
                 "Clean imports",
                 parent);
