@@ -1974,56 +1974,6 @@
         </description>
     </colorDefinition>
 
-    <colorDefinition
-        categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.outline" 
-        label="Outline popup background"
-        value="COLOR_INFO_BACKGROUND">
-        <description>
-            Background color for outline popup control. (Takes effect after closing Ceylon editor.)
-        </description>
-    </colorDefinition>
-
-    <colorDefinition
-        categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.hierarchy" 
-        label="Hierarchy popup background"
-        value="COLOR_INFO_BACKGROUND">
-        <description>
-            Background color for hierarchy popup control. (Takes effect after closing Ceylon editor.)
-        </description>
-    </colorDefinition>
-
-    <colorDefinition
-        categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.code" 
-        label="Code popup background"
-        value="COLOR_INFO_BACKGROUND">
-        <description>
-            Background color for code popup control. (Takes effect after closing Ceylon editor.)
-        </description>
-    </colorDefinition>
-
-    <!--colorDefinition
-        categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.docHover" 
-        label="Documentation hover background"
-        value="245,246,206">
-        <description>
-            Background color for documentation hover information control. (Takes effect after closing Ceylon editor.)
-        </description>
-    </colorDefinition>
-
-    <colorDefinition
-        categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.messageHover" 
-        label="Message hover background"
-        value="248,224,230">
-        <description>
-            Background color for message hover information control. (Takes effect after closing Ceylon editor.)
-        </description>
-    </colorDefinition-->
-
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.editorFont" 

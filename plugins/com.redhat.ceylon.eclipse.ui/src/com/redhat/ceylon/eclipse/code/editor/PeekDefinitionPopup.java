@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
-import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import java.util.StringTokenizer;
 
@@ -107,9 +106,9 @@ final class PeekDefinitionPopup extends PopupDialog
         
         create();
         
-        Color color = getCurrentThemeColor("code");
-        getShell().setBackground(color);
-        setBackgroundColor(color);
+        Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+        getShell().setBackground(bg);
+        setBackgroundColor(bg);
 
         //setBackgroundColor(getEditorWidget(editor).getBackground());
         setForegroundColor(getEditorWidget(editor).getForeground());

@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
-import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -211,9 +210,9 @@ public final class ReferencesPopup extends PopupDialog
         setStatusText();
         create();
         
-        Color color = getCurrentThemeColor("outline");
-        getShell().setBackground(color);
-        setBackgroundColor(color);
+        Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+        getShell().setBackground(bg);
+        setBackgroundColor(bg);
 
         //setBackgroundColor(getEditorWidget(editor).getBackground());
         setForegroundColor(getEditorWidget(editor).getForeground());        

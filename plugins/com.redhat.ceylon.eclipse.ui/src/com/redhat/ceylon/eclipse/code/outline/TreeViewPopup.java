@@ -132,7 +132,7 @@ public abstract class TreeViewPopup extends PopupDialog
      * @param showStatusField <code>true</code> iff the control has a status field at the bottom
      */
     public TreeViewPopup(Shell parent, int shellStyle, int treeStyle, 
-            String invokingCommandId, CeylonEditor editor, Color color) {
+            String invokingCommandId, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true, true, null, null);
         this.editor = editor;
         if (invokingCommandId != null) {
@@ -145,8 +145,9 @@ public abstract class TreeViewPopup extends PopupDialog
         // Create all controls early to preserve the life cycle of the original implementation.
         create();
         
-        getShell().setBackground(color);
-        setBackgroundColor(color);
+        Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+        getShell().setBackground(bg);
+        setBackgroundColor(bg);
 
         // Status field text can only be computed after widgets are created.
         setInfoText(getStatusFieldText());
