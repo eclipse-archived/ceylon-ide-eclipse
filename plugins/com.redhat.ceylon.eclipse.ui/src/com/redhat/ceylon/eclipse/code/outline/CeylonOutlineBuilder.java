@@ -101,6 +101,7 @@ public class CeylonOutlineBuilder extends Visitor {
     private Stack<CeylonOutlineNode> itemStack = new Stack<CeylonOutlineNode>();
     
     public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
+        if (cpc==null) return null;
         IFile file = cpc.getProject()==null || cpc.getPath()==null ? null :
                 cpc.getProject().getFile(cpc.getPath());
         Tree.CompilationUnit rootNode = cpc.getRootNode();
