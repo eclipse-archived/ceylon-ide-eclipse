@@ -1378,21 +1378,27 @@ public class CeylonEditor extends TextEditor {
     IPropertyChangeListener fontChangeListener = new IPropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
-            if (event.getProperty().equals(TEXT_FONT_PREFERENCE)) {
+            if (event.getProperty().equals(EDITOR_FONT_PREFERENCE)) {
                 updateFontAndCaret();
             }
         }
     };
     
-    private static final String TEXT_FONT_PREFERENCE = PLUGIN_ID + ".editorFont";
+    private static final String EDITOR_FONT_PREFERENCE = PLUGIN_ID + ".editorFont";
+    private static final String HOVER_FONT_PREFERENCE = PLUGIN_ID + ".hoverFont";
     
-    public static Font getFont() {
-        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        return currentTheme.getFontRegistry().get(TEXT_FONT_PREFERENCE);
+    public static Font getEditorFont() {
+        ITheme currentTheme = getWorkbench().getThemeManager().getCurrentTheme();
+        return currentTheme.getFontRegistry().get(EDITOR_FONT_PREFERENCE);
+    }
+    
+    public static Font getHoverFont() {
+        ITheme currentTheme = getWorkbench().getThemeManager().getCurrentTheme();
+        return currentTheme.getFontRegistry().get(HOVER_FONT_PREFERENCE);
     }
     
     private void updateFontAndCaret() {
-        getSourceViewer().getTextWidget().setFont(getFont());
+        getSourceViewer().getTextWidget().setFont(getEditorFont());
         try {
             Method updateCaretMethod = AbstractTextEditor.class.getDeclaredMethod("updateCaret");
             updateCaretMethod.setAccessible(true);

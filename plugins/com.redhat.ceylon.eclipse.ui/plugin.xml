@@ -1980,7 +1980,16 @@
         label="Ceylon Editor Text Font"
         defaultsTo="org.eclipse.jface.textfont">
         <description>
-            Font for displaying code in the Ceylon editor
+            Font for displaying code in the Ceylon editor and documentation hover
+        </description>
+    </fontDefinition>
+    <fontDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.hoverFont" 
+        label="Ceylon Hover Text Font"
+        defaultsTo="org.eclipse.jface.dialogfont">
+        <description>
+            Font for displaying text in the Ceylon documentation hover
         </description>
     </fontDefinition>
     <colorDefinition
