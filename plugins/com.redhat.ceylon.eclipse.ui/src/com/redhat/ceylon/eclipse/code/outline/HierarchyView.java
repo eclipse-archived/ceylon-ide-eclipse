@@ -222,7 +222,7 @@ public class HierarchyView extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         setContentDescription("");
-        SashForm sash = new SashForm(parent, SWT.VERTICAL);
+        SashForm sash = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         createMainToolBar();
         createTreeMenu(createTree(sash));
         createTableMenu(createTable(sash));
@@ -277,7 +277,7 @@ public class HierarchyView extends ViewPart {
     public Table createTable(SashForm sash) {
         ViewForm viewForm = new ViewForm(sash, SWT.FLAT);
         GridData vfgd = new GridData(GridData.FILL_BOTH);
-        tableViewer = new TableViewer(viewForm);
+        tableViewer = new TableViewer(viewForm, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
         viewForm.setContent(tableViewer.getTable());
         title = new CLabel(viewForm, SWT.NONE);
         ToolBar toolBar = new ToolBar(viewForm, SWT.NONE);
