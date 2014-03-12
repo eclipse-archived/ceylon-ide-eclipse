@@ -66,13 +66,13 @@ public class HTML {
         }
         //Color c = CeylonTokenColorer.getCurrentThemeColor("docHover");
         //String color = toHexString(c.getRed()) + toHexString(c.getGreen()) + toHexString(c.getBlue());
-        String css= fgStyleSheet + "body { padding: 15px; } hr { padding: 2px; border:0; }";// + "body { background-color: #" + color+ " }";
-        if (css != null) {
-            FontData fontData= JFaceResources.getFontRegistry()
-                    .getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
-            css= HTMLPrinter.convertTopLevelFont(css, fontData);
-        }
-        return css;
+        String css= fgStyleSheet + "body { padding: 15px; } hr { padding: 2px; border:0; }  ";// + "body { background-color: #" + color+ " }";
+        FontData fontData= JFaceResources.getFontRegistry()
+        		.getFontData(PreferenceConstants.APPEARANCE_JAVADOC_FONT)[0];
+        FontData fontData2= JFaceResources.getFontRegistry()
+        		.getFontData("com.redhat.ceylon.eclipse.ui.editorFont")[0];
+        css = HTMLPrinter.convertTopLevelFont(css, fontData);
+        return css + " tt, pre, code { font-family: '" + fontData2.getName()  + "', monospace }";
     }
 
     /**
