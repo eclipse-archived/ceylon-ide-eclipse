@@ -225,14 +225,14 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     Tree.SpecifierOrInitializerExpression sie = 
                             att.getSpecifierOrInitializerExpression();
                     if (sie!=null) {
-                        defaultArgs[order.get(i)] = sie.getExpression();
+                        defaultArgs[order.indexOf(i)] = sie.getExpression();
                     }
                 }
                 if (p instanceof Tree.InitializerParameter) {
                     Tree.SpecifierExpression se = 
                             ((Tree.InitializerParameter)p).getSpecifierExpression();
                     if (se!=null) {
-                        defaultArgs[order.get(i)] = se.getExpression();
+                        defaultArgs[order.indexOf(i)] = se.getExpression();
                     }
                 }
             }
@@ -251,7 +251,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             for (int i=0; i<parameters.size(); i++) {
                 Parameter p = parameters.get(i);
                 if (!p.isDefaulted()) {
-                    int newLoc = order.get(i);
+                    int newLoc = order.indexOf(i);
                     if (newLoc>requiredParams) {
                         requiredParams = newLoc;
                     }
@@ -261,10 +261,20 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             root.visit(fiv);
             for (Tree.PositionalArgumentList pal: fiv.getResults()) {
                 List<Tree.PositionalArgument> pas = pal.getPositionalArguments();
-                Tree.PositionalArgument[] args = 
-                        new Tree.PositionalArgument[Math.max(requiredParams+1, pas.size())];
+                int existingArgs=0;
                 for (int i=0; i<pas.size(); i++) {
-                    args[order.get(i)] = pas.get(i);
+                    Parameter p = pas.get(i).getParameter();
+                    if (p!=null) {
+                        int newLoc = order.indexOf(i);
+                        if (newLoc>existingArgs) {
+                            existingArgs = newLoc;
+                        }
+                    }
+                }
+                Tree.PositionalArgument[] args = 
+                        new Tree.PositionalArgument[Math.max(requiredParams+1, existingArgs+1)];
+                for (int i=0; i<pas.size(); i++) {
+                    args[order.indexOf(i)] = pas.get(i);
                 }
                 tfc.addEdit(reorderEdit(pal, args, defaultArgs));
             }
@@ -294,7 +304,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 int size = ps.size();
                 Tree.Parameter[] params = new Tree.Parameter[size];
                 for (int i=0; i<size; i++) {
-                    params[order.get(i)] = ps.get(i);
+                    params[order.indexOf(i)] = ps.get(i);
                 }
                 tfc.addEdit(reorderEdit(pl, params, null));
             }
@@ -306,7 +316,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 int size = ps.size();
                 Tree.Parameter[] params = new Tree.Parameter[size];
                 for (int i=0; i<size; i++) {
-                    params[order.get(i)] = ps.get(i);
+                    params[order.indexOf(i)] = ps.get(i);
                 }
                 tfc.addEdit(reorderEdit(pl, params, defaultArgs));
             }
