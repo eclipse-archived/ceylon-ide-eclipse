@@ -205,4 +205,15 @@ public class RecentFilesPopup extends PopupDialog {
         filterText.setFocus();
     }
 
+    public static void addToHistory(IFile file) {
+        if (file!=null) {
+            if (!recents.contains(file)) {
+                recents.add(file);
+                if (recents.size()>10) {
+                    recents.remove(0);
+                }
+            }
+        }
+    }
+
 }

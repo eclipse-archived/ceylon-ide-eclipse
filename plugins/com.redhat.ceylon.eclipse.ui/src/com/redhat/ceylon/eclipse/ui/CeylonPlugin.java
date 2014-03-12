@@ -15,7 +15,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.runtime.FileLocator;
@@ -125,15 +124,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                 if (commandId.equals("org.eclipse.ui.file.save")) {
                     IEditorPart ed = EditorUtil.getCurrentEditor();
                     if (ed!=null) {
-                        IFile file = EditorUtil.getFile(ed.getEditorInput());
-                        if (file!=null) {
-                            if (!RecentFilesPopup.recents.contains(file)) {
-                                RecentFilesPopup.recents.add(file);
-                                if (RecentFilesPopup.recents.size()>10) {
-                                    RecentFilesPopup.recents.remove(0);
-                                }
-                            }
-                        }
+                        RecentFilesPopup.addToHistory(EditorUtil.getFile(ed.getEditorInput()));
                     }
                 }
             }
