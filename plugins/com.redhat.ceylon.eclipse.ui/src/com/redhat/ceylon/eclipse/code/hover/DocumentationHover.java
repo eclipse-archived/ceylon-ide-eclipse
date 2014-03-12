@@ -569,7 +569,7 @@ public class DocumentationHover
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
         HTML.addImageAndLabel(buffer, null, HTML.fileUrl("types.gif").toExternalForm(), 
-                16, 16, "<b><tt>" + HTML.highlightLine(t.getProducedTypeName()) + "</tt></b>", 
+                16, 16, "<tt>" + HTML.highlightLine(t.getProducedTypeName()) + "</tt>", 
                 20, 4);
         buffer.append("<hr/>");
         if (!t.containsUnknowns()) {
@@ -598,8 +598,8 @@ public class DocumentationHover
         HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
         String desc = node instanceof Tree.Literal ? "literal" : "expression";
         HTML.addImageAndLabel(buffer, null, HTML.fileUrl("types.gif").toExternalForm(), 
-                16, 16, "<b><tt>" + HTML.highlightLine(t.getProducedTypeName()) + 
-                "</tt> "+desc+"</b>", 
+                16, 16, "<tt>" + HTML.highlightLine(t.getProducedTypeName()) + 
+                "</tt> "+desc+"", 
                 20, 4);
         if (node instanceof Tree.StringLiteral) {
             buffer.append( "<hr/>")
@@ -1004,7 +1004,9 @@ public class DocumentationHover
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
                 16, 16, 
-                "<b><tt>" + HTML.highlightLine(description(name, version)) + "</tt></b>",
+                "<tt style='font-size:102%'>" + 
+                HTML.highlightLine(description(name, version)) + 
+                "</tt></b>",
                 20, 4);
         buffer.append("<hr/>");
         
