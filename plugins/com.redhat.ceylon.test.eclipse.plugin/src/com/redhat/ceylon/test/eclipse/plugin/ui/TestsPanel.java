@@ -281,6 +281,7 @@ public class TestsPanel extends Composite {
 
     private void automaticRevealLastStarted() {
         if (currentTestRun != null &&
+                currentTestRun.isRunning() &&
                 lastStartedTestElement != null &&
                 !scrollLockAction.isChecked()) {
             viewer.reveal(createTreePath(lastStartedTestElement));
@@ -341,6 +342,17 @@ public class TestsPanel extends Composite {
         if (testElement != null) {
             viewer.reveal(createTreePath(testElement));
             viewer.setSelection(new StructuredSelection(testElement), true);
+        }
+    }
+    
+    public void moveToFirstFailure() {
+        synchronized (TestRun.acquireLock(currentTestRun)) {
+            if (currentTestRun == null) {
+                return;
+            }
+            NextFailureVisitor nfv = new NextFailureVisitor(null);
+            nfv.visitElements(currentTestRun.getRoot());
+            moveTo(nfv.next);
         }
     }
     

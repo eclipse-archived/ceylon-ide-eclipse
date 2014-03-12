@@ -196,6 +196,16 @@ public class TestRunViewPart extends ViewPart {
                     setCurrentTestRun(null);
                 }
             }
+            @Override
+            public void testRunFinished(TestRun testRun) {
+                if (testRun == currentTestRun) {
+                    getDisplay().asyncExec(new Runnable() {
+                        public void run() {
+                            testsPanel.moveToFirstFailure();
+                        }
+                    });
+                }
+            }
         };
 
         TestRunContainer testRunContainer = CeylonTestPlugin.getDefault().getModel();
