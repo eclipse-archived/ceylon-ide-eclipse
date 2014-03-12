@@ -107,6 +107,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorInput;
@@ -1080,7 +1081,7 @@ public class CeylonEditor extends TextEditor {
                 .activateContext(PLUGIN_ID + ".context");*/
         
         ITheme currentTheme = 
-                getWorkbench().getThemeManager().getCurrentTheme();
+                getTheme();
         currentTheme.getColorRegistry().addListener(colorChangeListener);
         updateFontAndCaret();
         currentTheme.getFontRegistry().addListener(fontChangeListener);
@@ -1387,14 +1388,32 @@ public class CeylonEditor extends TextEditor {
     private static final String EDITOR_FONT_PREFERENCE = PLUGIN_ID + ".editorFont";
     private static final String HOVER_FONT_PREFERENCE = PLUGIN_ID + ".hoverFont";
     
-    public static Font getEditorFont() {
-        ITheme currentTheme = getWorkbench().getThemeManager().getCurrentTheme();
-        return currentTheme.getFontRegistry().get(EDITOR_FONT_PREFERENCE);
+    private static ITheme getTheme() {
+        return getWorkbench().getThemeManager().getCurrentTheme();
     }
-    
+
+    private static class GetFont implements Runnable {
+        private Font result;
+        private final String pref;
+        private GetFont(String pref) {
+            this.pref = pref;
+        }
+        @Override
+        public void run() {
+            result = getTheme().getFontRegistry().get(pref);
+        }
+    } 
+
+    public static Font getEditorFont() {
+        GetFont gf = new GetFont(EDITOR_FONT_PREFERENCE);
+        Display.getDefault().syncExec(gf);
+        return gf.result;
+    }
+
     public static Font getHoverFont() {
-        ITheme currentTheme = getWorkbench().getThemeManager().getCurrentTheme();
-        return currentTheme.getFontRegistry().get(HOVER_FONT_PREFERENCE);
+        GetFont gf = new GetFont(HOVER_FONT_PREFERENCE);
+        Display.getDefault().syncExec(gf);
+        return gf.result;
     }
     
     private void updateFontAndCaret() {
