@@ -3,9 +3,9 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.defaultValue;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ATTRIBUTE;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.CLASS;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.METHOD;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_CLASS;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_METHOD;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.ArrayList;
@@ -144,18 +144,18 @@ class DefinitionGenerator {
                 String supertype = isVoid ? "" : supertypeDeclaration(returnType);
                 String desc = "class '" + brokenName + params + supertype + "'";
                 return new DefinitionGenerator(brokenName, node, rootNode, 
-                        desc, CLASS, returnType, paramTypes);
+                        desc, LOCAL_CLASS, returnType, paramTypes);
             }
             else {
                 String desc = "function '" + brokenName + params + "'";
                 return new DefinitionGenerator(brokenName, node, rootNode, 
-                        desc, METHOD, returnType, paramTypes);
+                        desc, LOCAL_METHOD, returnType, paramTypes);
             }
         }
         else if (!isUpperCase) {
             String desc = "value '" + brokenName + "'";
             return new DefinitionGenerator(brokenName, node, rootNode, 
-                    desc, ATTRIBUTE, returnType, null);
+                    desc, LOCAL_ATTRIBUTE, returnType, null);
         }
         else {
             return null;
