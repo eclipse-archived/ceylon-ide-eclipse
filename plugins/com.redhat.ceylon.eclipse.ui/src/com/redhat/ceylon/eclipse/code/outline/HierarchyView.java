@@ -24,6 +24,7 @@ import java.util.Collection;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -90,15 +91,22 @@ public class HierarchyView extends ViewPart {
     private TreeViewer treeViewer;
     private TableViewer tableViewer;
     
-    private ModeAction hierarchyAction;
-    private ModeAction supertypesAction;
-    private ModeAction subtypesAction;
+    private ModeAction hierarchyAction =
+            new ModeAction("Hierarchy", "Switch to hierarchy mode", 
+                    CEYLON_HIER, HIERARCHY);
+    private ModeAction supertypesAction = 
+            new ModeAction("Supertypes", "Switch to supertypes mode", 
+                    CEYLON_SUP, SUPERTYPES);
+    private ModeAction subtypesAction =
+            new ModeAction("Subtypes", "Switch to subtypes mode", 
+                            CEYLON_SUB, SUBTYPES);
     
     private IProject project;
     
     private CLabel title;
     
     private boolean showInherited;
+    private ViewForm viewForm;
     
     void toggle() {
         showInherited=!showInherited;
@@ -225,31 +233,49 @@ public class HierarchyView extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         setContentDescription("");
-        final SashForm sash = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
+        final SashForm sash = new SashForm(parent, SWT.HORIZONTAL | SWT.SMOOTH);
         sash.addControlListener(new ControlListener() {
             @Override
             public void controlResized(ControlEvent e) {
                 Rectangle bounds = sash.getBounds();
+                IToolBarManager toolBarManager = 
+                        getViewSite().getActionBars().getToolBarManager();
                 if (bounds.height>bounds.width) {
-                    sash.setOrientation(SWT.VERTICAL);
+                    if (sash.getOrientation()!=SWT.VERTICAL) {
+                        sash.setOrientation(SWT.VERTICAL);
+                        createMainToolBar(toolBarManager);
+                        toolBarManager.update(false);
+                        viewForm.setTopLeft(null);
+                    }
                 }
                 else {
-                    sash.setOrientation(SWT.HORIZONTAL);
+                    if (sash.getOrientation()!=SWT.HORIZONTAL) {
+                        sash.setOrientation(SWT.HORIZONTAL);
+                        toolBarManager.removeAll();
+                        toolBarManager.update(false);
+                        ToolBarManager tbm = new ToolBarManager(SWT.NONE);
+                        createMainToolBar(tbm);
+                        tbm.createControl(viewForm);
+                        viewForm.setTopLeft(tbm.getControl());
+                    }
                 }
+                getViewSite().getActionBars().updateActionBars();
             }
             @Override
             public void controlMoved(ControlEvent e) {}
         });
-        createMainToolBar();
+        
         createTreeMenu(createTree(sash));
         createTableMenu(createTable(sash));
     }
 
-    public Tree createTree(SashForm sash) {
-        final Tree tree = new Tree(sash, SWT.SINGLE);
+    private Tree createTree(SashForm sash) {
+        viewForm = new ViewForm(sash, SWT.FLAT);
+        final Tree tree = new Tree(viewForm, SWT.SINGLE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
+        viewForm.setContent(tree);
         treeViewer = new TreeViewer(tree);
         contentProvider = new CeylonHierarchyContentProvider(getSite());
         labelProvider = new CeylonHierarchyLabelProvider() {
@@ -291,10 +317,12 @@ public class HierarchyView extends ViewPart {
         return tree;
     }
 
-    public Table createTable(SashForm sash) {
+    private Table createTable(SashForm sash) {
         ViewForm viewForm = new ViewForm(sash, SWT.FLAT);
-        GridData vfgd = new GridData(GridData.FILL_BOTH);
         tableViewer = new TableViewer(viewForm, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+//        gd.heightHint = tableViewer.getTable().getItemHeight() * 12;
+        tableViewer.getTable().setLayoutData(gd);
         viewForm.setContent(tableViewer.getTable());
         title = new CLabel(viewForm, SWT.NONE);
         ToolBar toolBar = new ToolBar(viewForm, SWT.NONE);
@@ -327,7 +355,6 @@ public class HierarchyView extends ViewPart {
         viewForm.setTopRight(toolBar);
         viewForm.setTopLeft(title);
         viewForm.setTopCenter(title);
-        tableViewer.getTable().setLayoutData(vfgd);
         membersLabelProvider=new MembersLabelProvider();
         membersContentProvider=new MembersContentProvider();
         tableViewer.setLabelProvider(membersLabelProvider);
@@ -343,21 +370,14 @@ public class HierarchyView extends ViewPart {
         return tableViewer.getTable();
     }
 
-    public void createMainToolBar() {
-        IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
-        tbm.add(hierarchyAction=new ModeAction("Hierarchy", 
-                "Switch to hierarchy mode", 
-                        CEYLON_HIER, HIERARCHY));
-        tbm.add(supertypesAction=new ModeAction("Supertypes", 
-                "Switch to supertypes mode", 
-                        CEYLON_SUP, SUPERTYPES));
-        tbm.add(subtypesAction=new ModeAction("Subtypes", 
-                "Switch to subtypes mode", 
-                        CEYLON_SUB, SUBTYPES));
-        updateActions(HIERARCHY);
+    private void createMainToolBar(IToolBarManager tbm) {
+        tbm.add(hierarchyAction);
+        tbm.add(supertypesAction);
+        tbm.add(subtypesAction);
+        updateActions(contentProvider.getMode());
     }
 
-    public void createTreeMenu(final Tree tree) {
+    private void createTreeMenu(final Tree tree) {
         Menu menu = new Menu(tree);
         MenuItem item = new MenuItem(menu, SWT.PUSH);
         item.setText("Focus on Selection");
@@ -394,7 +414,7 @@ public class HierarchyView extends ViewPart {
         });
     }
 
-    public void createTableMenu(final Table table) {
+    private void createTableMenu(final Table table) {
         Menu menu = new Menu(table);
         MenuItem item = new MenuItem(menu, SWT.PUSH);
         item.setText("Focus on Selection");
@@ -440,7 +460,7 @@ public class HierarchyView extends ViewPart {
         subtypesAction.setChecked(mode==SUBTYPES);
     }
 
-    protected void update() {
+    private void update() {
         setDescription((Declaration) tableViewer.getInput());
         treeViewer.getControl().setRedraw(false);
         // refresh viewer to re-filter
