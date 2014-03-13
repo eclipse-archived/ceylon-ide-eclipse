@@ -7,8 +7,8 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.util.Collection;
@@ -281,7 +281,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
 
     @Override
     public Image getImage() {
-        return MINOR_CHANGE;
+        return REVEAL;
     }
 
     @Override
