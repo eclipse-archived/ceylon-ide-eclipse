@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrIn
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ADD;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
@@ -37,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
@@ -156,7 +156,7 @@ class CreateParameterProposal extends CorrectionProposal {
                 String paramDesc = "parameter '" + dg.brokenName + "'";
                 for (PhasedUnit unit : getUnits(project)) {
                     if (unit.getUnit().equals(dg.rootNode.getUnit())) {
-                        addCreateParameterProposal(proposals, paramDef, paramDesc, ADD, 
+                        addCreateParameterProposal(proposals, paramDef, paramDesc, CeylonPlugin.ADD_CORR, 
                                 decl.getDeclarationModel(), unit, decl, paramList, dg.returnType);
                         break;
                     }
@@ -269,7 +269,7 @@ class CreateParameterProposal extends CorrectionProposal {
                             def = ", " + def;
                         }
                         addCreateParameterProposal(proposals, def, desc, 
-                                ADD, typeDec, unit, decNode, paramList, t);
+                                CeylonPlugin.ADD_CORR, typeDec, unit, decNode, paramList, t);
                         break;
                     }
                 }
@@ -292,7 +292,7 @@ class CreateParameterProposal extends CorrectionProposal {
                             pdef = ", " + pdef;
                         }
                         addCreateParameterAndAttributeProposal(proposals, pdef, 
-                                adef, desc, ADD, typeDec, unit, decNode, 
+                                adef, desc, CeylonPlugin.ADD_CORR, typeDec, unit, decNode, 
                                 paramList, body, t);
                     }
                 }
