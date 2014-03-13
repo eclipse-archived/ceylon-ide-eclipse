@@ -1630,8 +1630,8 @@ public class CeylonEditor extends TextEditor {
     }
     
     public String getSelectionText() {
-        IRegion sel= getSelection();
-        IDocument document= getDocumentProvider().getDocument(getEditorInput());
+        IRegion sel = getSelection();
+        IDocument document = getDocumentProvider().getDocument(getEditorInput());
         try {
             return document.get(sel.getOffset(), sel.getLength());
         } 

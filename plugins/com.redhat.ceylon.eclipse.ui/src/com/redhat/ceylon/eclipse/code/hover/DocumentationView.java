@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDeclarationHover;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverInfo;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.internalGetHoverInfo;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
@@ -16,11 +16,14 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.browser.VisibilityWindowListener;
+import org.eclipse.swt.browser.WindowEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -31,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.part.ViewPart;
 
@@ -43,6 +47,7 @@ import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
 import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
@@ -129,9 +134,27 @@ public class DocumentationView extends ViewPart {
         menuItem.setText("Open Declaration");
         control.setMenu(menu);
 
-        update(null, -1, -1);
+        updateWithCurrentEditor();
+        
+        control.addVisibilityWindowListener(new VisibilityWindowListener() {
+            @Override
+            public void show(WindowEvent event) {
+                updateWithCurrentEditor();
+            }
+            @Override
+            public void hide(WindowEvent event) {}
+        });
     }
 
+    private void updateWithCurrentEditor() {
+        IEditorPart part = EditorUtil.getCurrentEditor();
+        if (part instanceof CeylonEditor) {
+            CeylonEditor editor = (CeylonEditor) part;
+            IRegion selection = editor.getSelection();
+            editor.getSelectionText();
+            update(editor, selection.getOffset(), selection.getLength());
+        }
+    }
     //TODO: big copy/paste from DocumentationHover.handleLink
     private void handleLink(String location) {
         if (location.startsWith("dec:")) {
@@ -187,9 +210,9 @@ public class DocumentationView extends ViewPart {
             clear();
         }
         else {
-            info = internalGetHoverInfo(editor, 
+            info = getDeclarationHover(editor, 
                     new Region(offset, length));
-            if (info!=null && info.getAddress()!=null) {
+            if (info!=null && info.getHtml()!=null) {
                 control.setText(info.getHtml());
                 back.update();
                 forward.update();

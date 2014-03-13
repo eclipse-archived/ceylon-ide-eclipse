@@ -17,6 +17,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPara
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitalValueDescription;
+import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectionFromThread;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
@@ -124,7 +125,6 @@ import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
 import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -517,13 +517,26 @@ public class DocumentationHover
 
     static CeylonBrowserInput internalGetHoverInfo(final CeylonEditor editor, 
             IRegion hoverRegion) {
-        if (editor==null || editor.getSelectionProvider()==null) return null;
+        if (editor==null || editor.getSelectionProvider()==null) {
+            return null;
+        }
+        CeylonBrowserInput result = getExpressionHover(editor, hoverRegion);
+        if (result==null) {
+            result = getDeclarationHover(editor, hoverRegion);
+        }
+        return result;
+    }
+
+    static CeylonBrowserInput getExpressionHover(CeylonEditor editor, 
+            IRegion hoverRegion) {
         CeylonParseController parseController = editor.getParseController();
-        if (parseController==null) return null;
+        if (parseController==null) {
+            return null;
+        }
         Tree.CompilationUnit rn = parseController.getRootNode();
         if (rn!=null) {
             int hoffset = hoverRegion.getOffset();
-            ITextSelection selection = EditorUtil.getSelectionFromThread(editor);
+            ITextSelection selection = getSelectionFromThread(editor);
             if (selection!=null && 
                 selection.getOffset()<=hoffset &&
                 selection.getOffset()+selection.getLength()>=hoffset) {
@@ -538,12 +551,35 @@ public class DocumentationHover
                             editor.getCeylonSourceViewer().getDocument(),
                             editor.getParseController().getProject());
                 }
+                else {
+                    return null;
+                }
             }
-            Node node = Nodes.findNode(rn, hoffset);
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
+        }
+    }
+
+    static CeylonBrowserInput getDeclarationHover(CeylonEditor editor,
+            IRegion hoverRegion) {
+        CeylonParseController parseController = editor.getParseController();
+        if (parseController==null) {
+            return null;
+        }
+        Tree.CompilationUnit rootNode = parseController.getRootNode();
+        if (rootNode!=null) {
+            Node node = Nodes.findNode(rootNode, hoverRegion.getOffset());
             if (node instanceof Tree.ImportPath) {
                 Referenceable r = ((Tree.ImportPath) node).getModel();
                 if (r!=null) {
                     return getHoverInfo(r, null, editor, node);
+                }
+                else {
+                    return null;
                 }
             }
             else if (node instanceof Tree.LocalModifier) {
@@ -560,7 +596,9 @@ public class DocumentationHover
                         null, editor, node);
             }
         }
-        return null;
+        else {
+            return null;
+        }
     }
 
     private static CeylonBrowserInput getInferredTypeHoverInfo(Node node, IProject project) {
@@ -1348,8 +1386,9 @@ public class DocumentationHover
             appendSeeAnnotationContent(refnode.getAnnotationList(), 
                     buffer);
         }
-        
-        appendJavadoc(dec, cpc.getProject(), buffer, node);
+        else {
+            appendJavadoc(dec, cpc.getProject(), buffer, node);
+        }
         return hasDoc;
     }
 
