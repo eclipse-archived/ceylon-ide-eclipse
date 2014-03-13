@@ -281,7 +281,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
             return null;
         }
     }
-        
+    
     @Override
     protected void initializeImageRegistry(ImageRegistry reg) {
         reg.put(CEYLON_PROJECT, image("prj_obj.gif"));
@@ -312,11 +312,11 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(CEYLON_OPEN_DECLARATION, image("opentype.gif"));
         reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.gif"));
         reg.put(CEYLON_CORRECTION, image("correction_change.gif"));
-        reg.put(CEYLON_DELETE_IMPORT, image("correction_delete_import.png"));
+        reg.put(CEYLON_DELETE_IMPORT, image("correction_delete_import.gif"));
         reg.put(CEYLON_CHANGE, image("change.png"));
         reg.put(CEYLON_COMPOSITE_CHANGE, image("composite_change.png"));
         reg.put(CEYLON_RENAME, image("correction_rename.png"));
-        reg.put(CEYLON_DELETE, image("delete_obj.gif"));
+        reg.put(CEYLON_DELETE, image("delete_edit.gif"));
         reg.put(CEYLON_MOVE, image("file_change.png"));
         reg.put(CEYLON_ADD, image("add_obj.gif"));
         reg.put(CEYLON_REORDER, image("order_obj.gif"));
