@@ -311,7 +311,8 @@ final class PeekDefinitionPopup extends PopupDialog
                 r.getOffset()+r.getLength());
         referencedNode = Nodes.getReferencedNode(node, epc);
         if (referencedNode==null) return;
-        IPath path = getNodePath(referencedNode, epc.getProject(), epc.getTypeChecker());
+        IPath path = getNodePath(referencedNode, 
+                epc.getProject(), epc.getTypeChecker());
         ei = getEditorInput(path);
         IDocument doc;
         try {
@@ -325,6 +326,9 @@ final class PeekDefinitionPopup extends PopupDialog
         viewer.setDocument(doc);
         viewer.setVisibleRegion(referencedNode.getStartIndex(), 
                 referencedNode.getStopIndex()-referencedNode.getStartIndex()+1);
+        //CeylonParseController treats files with full paths subtly
+        //differently to files with relative paths, so make the
+        //path relative
         if (epc.getProject().getLocation().isPrefixOf(path)) {
             path = path.makeRelativeTo(epc.getProject().getLocation());
         }

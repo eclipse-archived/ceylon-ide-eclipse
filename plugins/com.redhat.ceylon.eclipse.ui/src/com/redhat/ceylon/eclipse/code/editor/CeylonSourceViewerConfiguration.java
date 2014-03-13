@@ -257,6 +257,13 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         }
     }
     
+    /**
+     * The PeekDefinitionPopup shares the editor that it is
+     * servicing, but it has its own CeylonParseController
+     * for the file it is actually displaying. Therefore, 
+     * the hyperlink detector must be redirected to that
+     * parse controller.
+     */
     private static final class PopupSourceViewerConfiguration 
             extends CeylonSourceViewerConfiguration {
         private final PeekDefinitionPopup popup;
