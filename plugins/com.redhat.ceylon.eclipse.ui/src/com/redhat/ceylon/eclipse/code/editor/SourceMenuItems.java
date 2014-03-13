@@ -5,9 +5,9 @@ import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenu
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.isContextMenu;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_CORRECTION;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE_IMPORT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REVEAL;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.QUICK_ASSIST;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TERMINATE_STATEMENT;
 
@@ -32,7 +32,7 @@ public class SourceMenuItems extends CompoundContributionItem {
     private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
             .getImageRegistry();
     
-    private static ImageDescriptor CORRECTION = imageRegistry.getDescriptor(CEYLON_CORRECTION);
+    private static ImageDescriptor REVEAL = imageRegistry.getDescriptor(CEYLON_REVEAL);
     private static ImageDescriptor TERMINATE = imageRegistry.getDescriptor(TERMINATE_STATEMENT);
     private static ImageDescriptor FIX = imageRegistry.getDescriptor(QUICK_ASSIST);
     private static ImageDescriptor DELETE = imageRegistry.getDescriptor(CEYLON_DELETE);
@@ -82,7 +82,7 @@ public class SourceMenuItems extends CompoundContributionItem {
                         editor!=null && new DeleteRefactoringAction(editor).isEnabled(), DELETE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.revealInferredType", 
                         "Reveal Inferred &Types",
-                        editor!=null && new RevealInferredTypeHandler().isEnabled(), CORRECTION),
+                        editor!=null && new RevealInferredTypeHandler().isEnabled(), REVEAL),
                 new Separator(),
                 new DynamicMenuItem(ITextEditorActionDefinitionIds.QUICK_ASSIST, 
                         "&Quick Fix/Assist", 
