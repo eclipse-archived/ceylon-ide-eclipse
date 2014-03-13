@@ -372,7 +372,8 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
     private ProjectionAnnotation foldIfNecessary(Node node) {
         CommonToken token = (CommonToken) node.getToken();
         CommonToken endToken = (CommonToken) node.getEndToken();
-        if (endToken.getLine()-token.getLine()>0) {
+        if (token!=null && endToken!=null &&
+                endToken.getLine()-token.getLine()>0) {
             return makeAnnotation(token, endToken);
         }
         else {
