@@ -31,7 +31,7 @@ public class CeylonOutlineContentProvider
 
     @Override
     public boolean hasChildren(Object element) {
-        Object[] children= getChildren(element);
+        Object[] children = getChildren(element);
         return children!=null && children.length > 0;
     }
     
