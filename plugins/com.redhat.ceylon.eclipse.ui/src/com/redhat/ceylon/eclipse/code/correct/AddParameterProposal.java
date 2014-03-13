@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.inferType;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -35,7 +35,7 @@ class AddParameterProposal extends CorrectionProposal {
     
     AddParameterProposal(Declaration dec, int offset, TextChange change) {
         super("Add to parameter list of '" + dec.getName() + "'", 
-                change, new Point(offset, 0), ADD);
+                change, new Point(offset, 0), CeylonPlugin.ADD_CORR);
     }
     
     static void addParameterProposal(IDocument doc, Tree.CompilationUnit cu,
