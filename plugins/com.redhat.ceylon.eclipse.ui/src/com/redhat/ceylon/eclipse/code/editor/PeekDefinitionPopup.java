@@ -325,6 +325,9 @@ final class PeekDefinitionPopup extends PopupDialog
         viewer.setDocument(doc);
         viewer.setVisibleRegion(referencedNode.getStartIndex(), 
                 referencedNode.getStopIndex()-referencedNode.getStartIndex()+1);
+        if (epc.getProject().getLocation().isPrefixOf(path)) {
+            path = path.makeRelativeTo(epc.getProject().getLocation());
+        }
         pc.initialize(path, epc.getProject(), null);
         pc.parse(doc, new NullProgressMonitor(), null);
         /*try {
