@@ -43,13 +43,11 @@ import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.SWTError;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.RTFTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.text.edits.InsertEdit;
@@ -356,18 +354,18 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }*/
     
     private void addBlockComment() {
-        IDocument doc= this.getDocument();
-        DocumentRewriteSession rewriteSession= null;
-        Point p= this.getSelectedRange();
+        IDocument doc = this.getDocument();
+        DocumentRewriteSession rewriteSession = null;
+        Point p = this.getSelectedRange();
 
         if (doc instanceof IDocumentExtension4) {
             rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
         }
 
         try {
-            final int selStart= p.x;
-            final int selLen= p.y;
-            final int selEnd= selStart + selLen;
+            final int selStart = p.x;
+            final int selLen = p.y;
+            final int selEnd = selStart+selLen;
             doc.replace(selStart, 0, "/*");
             doc.replace(selEnd+2, 0, "*/");
         } 
@@ -383,9 +381,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
     
     private void removeBlockComment() {
-        IDocument doc= this.getDocument();
-        DocumentRewriteSession rewriteSession= null;
-        Point p= this.getSelectedRange();
+        IDocument doc = this.getDocument();
+        DocumentRewriteSession rewriteSession = null;
+        Point p = this.getSelectedRange();
 
         if (doc instanceof IDocumentExtension4) {
             IDocumentExtension4 extension= (IDocumentExtension4) doc;
@@ -393,16 +391,16 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
 
         try {
-            final int selStart= p.x;
-            final int selLen= p.y;
-            final int selEnd= selStart + selLen;
+            final int selStart = p.x;
+            final int selLen = p.y;
+            final int selEnd = selStart+selLen;
             String text = doc.get();
             int open = text.indexOf("/*", selStart);
             if (open>selEnd) open = -1;
             if (open<0) {
                 open = text.lastIndexOf("/*", selStart);
             }
-            int close=-1;
+            int close = -1;
             if (open>=0) {
                 close = text.indexOf("*/", open);
             }
@@ -411,9 +409,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 doc.replace(open, 2, "");
                 doc.replace(close-2, 2, "");
             }
-        } catch (BadLocationException e) {
+        }
+        catch (BadLocationException e) {
             e.printStackTrace();
-        } finally {
+        }
+        finally {
             if (doc instanceof IDocumentExtension4) {
                 ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
             }
@@ -422,50 +422,53 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
     
     private void doToggleComment() {
-        IDocument doc= this.getDocument();
-        DocumentRewriteSession rewriteSession= null;
-        Point p= this.getSelectedRange();
-        final String lineCommentPrefix= "//";
+        IDocument doc = this.getDocument();
+        DocumentRewriteSession rewriteSession = null;
+        Point p = this.getSelectedRange();
+        final String lineCommentPrefix = "//";
 
         if (doc instanceof IDocumentExtension4) {
             rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
         }
 
         try {
-            final int selStart= p.x;
-            final int selLen= p.y;
-            final int selEnd= selStart + selLen;
+            final int selStart = p.x;
+            final int selLen = p.y;
+            final int selEnd = selStart+selLen;
             final int startLine= doc.getLineOfOffset(selStart);
             int endLine= doc.getLineOfOffset(selEnd);
 
-            if (selLen > 0 && lookingAtLineEnd(doc, selEnd))
+            if (selLen>0 && lookingAtLineEnd(doc, selEnd))
                 endLine--;
 
-            boolean linesAllHaveCommentPrefix= linesHaveCommentPrefix(doc, lineCommentPrefix, startLine, endLine);
-            boolean useCommonLeadingSpace= true; // take from a preference?
-            int leadingSpaceToUse= useCommonLeadingSpace ? calculateLeadingSpace(doc, startLine, endLine) : 0;
+            boolean linesAllHaveCommentPrefix = linesHaveCommentPrefix(doc, lineCommentPrefix, startLine, endLine);
+            boolean useCommonLeadingSpace = true; // take from a preference?
+            int leadingSpaceToUse = useCommonLeadingSpace ? calculateLeadingSpace(doc, startLine, endLine) : 0;
 
-            for(int line= startLine; line <= endLine; line++) {
-                int lineStart= doc.getLineOffset(line);
-                int lineEnd= lineStart + doc.getLineLength(line) - 1;
+            for(int line = startLine; line<=endLine; line++) {
+                int lineStart = doc.getLineOffset(line);
+                int lineEnd = lineStart+doc.getLineLength(line)-1;
 
                 if (linesAllHaveCommentPrefix) {
                     // remove the comment prefix from each line, wherever it occurs in the line
-                    int offset= lineStart;
-                    while (Character.isWhitespace(doc.getChar(offset)) && offset < lineEnd) {
+                    int offset = lineStart;
+                    while (Character.isWhitespace(doc.getChar(offset)) && offset<lineEnd) {
                         offset++;
                     }
                     // The first non-whitespace characters *must* be the single-line comment prefix
                     doc.replace(offset, lineCommentPrefix.length(), "");
-                } else {
+                }
+                else {
                     // add the comment prefix to each line, after however many spaces leadingSpaceToAdd indicates
-                    int offset= lineStart + leadingSpaceToUse;
+                    int offset = lineStart+leadingSpaceToUse;
                     doc.replace(offset, 0, lineCommentPrefix);
                 }
             }
-        } catch (BadLocationException e) {
+        }
+        catch (BadLocationException e) {
             e.printStackTrace();
-        } finally {
+        }
+        finally {
             if (doc instanceof IDocumentExtension4) {
                 ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
             }
@@ -475,19 +478,20 @@ public class CeylonSourceViewer extends ProjectionViewer {
 
     private int calculateLeadingSpace(IDocument doc, int startLine, int endLine) {
         try {
-            int result= Integer.MAX_VALUE;
-            for(int line= startLine; line <= endLine; line++) {
-                int lineStart= doc.getLineOffset(line);
-                int lineEnd= lineStart + doc.getLineLength(line) - 1;
-                int offset= lineStart;
+            int result = Integer.MAX_VALUE;
+            for(int line = startLine; line <= endLine; line++) {
+                int lineStart = doc.getLineOffset(line);
+                int lineEnd = lineStart + doc.getLineLength(line) - 1;
+                int offset = lineStart;
                 while (Character.isWhitespace(doc.getChar(offset)) && offset < lineEnd) {
                     offset++;
                 }
-                int leadingSpaces= offset - lineStart;
-                result= Math.min(result, leadingSpaces);
+                int leadingSpaces = offset - lineStart;
+                result = Math.min(result, leadingSpaces);
             }
             return result;
-        } catch (BadLocationException e) {
+        }
+        catch (BadLocationException e) {
             return 0;
         }
     }
@@ -557,20 +561,18 @@ public class CeylonSourceViewer extends ProjectionViewer {
         
         int endOffset = selStart+selLen-1;
         // Indent each line using the AutoEditStrategy
-        for (int line= startLine; line <= endLine; line++) {
-            int lineStartOffset= doc.getLineOffset(line);
+        for (int line = startLine; line<=endLine; line++) {
+            int lineStartOffset = doc.getLineOffset(line);
 
             // Replace the existing indentation with the desired indentation.
             // Use the language-specific AutoEditStrategy, which requires a DocumentCommand.
-            DocumentCommand cmd= new DocumentCommand() { };
-            cmd.offset= lineStartOffset;
-            cmd.length= 0;
-            cmd.text= Character.toString('\t');
-            cmd.doit= true;
-            cmd.shiftsCaret= false;
-//              boolean saveMode= fAutoEditStrategy.setFixMode(true);
+            DocumentCommand cmd = new DocumentCommand() { };
+            cmd.offset = lineStartOffset;
+            cmd.length = 0;
+            cmd.text = Character.toString('\t');
+            cmd.doit = true;
+            cmd.shiftsCaret = false;
             autoEditStrategy.customizeDocumentCommand(doc, cmd);
-//              fAutoEditStrategy.setFixMode(saveMode);
             doc.replace(cmd.offset, cmd.length, cmd.text);
             endOffset += cmd.text.length()-cmd.length;
         }
@@ -578,11 +580,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
 
     private boolean lookingAtLineEnd(IDocument doc, int pos) {
-        String[] legalLineTerms= doc.getLegalLineDelimiters();
+        String[] legalLineTerms = doc.getLegalLineDelimiters();
         try {
             for(String lineTerm: legalLineTerms) {
-                int len= lineTerm.length();
-                if (pos > len && doc.get(pos - len, len).equals(lineTerm)) {
+                int len = lineTerm.length();
+                if (pos>len && doc.get(pos-len,len).equals(lineTerm)) {
                     return true;
                 }
             }
@@ -598,15 +600,17 @@ public class CeylonSourceViewer extends ProjectionViewer {
          * Prevent access to colors disposed in unconfigure(), see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=53641
          * https://bugs.eclipse.org/bugs/show_bug.cgi?id=86177
          */
-        StyledText textWidget= getTextWidget();
-        if (textWidget != null && !textWidget.isDisposed()) {
-            Color foregroundColor= textWidget.getForeground();
-            if (foregroundColor != null && foregroundColor.isDisposed())
-                textWidget.setForeground(null);
-            Color backgroundColor= textWidget.getBackground();
-            if (backgroundColor != null && backgroundColor.isDisposed())
-                textWidget.setBackground(null);
-        }
+//        StyledText textWidget = getTextWidget();
+//        if (textWidget != null && !textWidget.isDisposed()) {
+//            Color foregroundColor = textWidget.getForeground();
+//            if (foregroundColor != null && foregroundColor.isDisposed()) {
+//                textWidget.setForeground(null);
+//            }
+//            Color backgroundColor = textWidget.getBackground();
+//            if (backgroundColor != null && backgroundColor.isDisposed()) {
+//                textWidget.setBackground(null);
+//            }
+//        }
         
         super.configure(configuration);
         
