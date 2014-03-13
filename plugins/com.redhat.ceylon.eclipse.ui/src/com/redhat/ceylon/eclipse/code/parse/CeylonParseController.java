@@ -246,8 +246,8 @@ public class CeylonParseController {
                             if (stager!=null) {
                                 stager.afterStage(FOR_OUTLINE, monitor);
                                 stager.afterStage(TYPE_ANALYSIS, monitor);
-                                return;
                             }
+                            return;
                         }
                     }
                 }
