@@ -25,6 +25,8 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.ui.IEditorInput;
@@ -53,7 +55,7 @@ import com.redhat.ceylon.eclipse.util.Nodes;
  * "mark occurrences" service.
  */
 public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, 
-        CaretListener, TreeLifecycleListener {
+        CaretListener, ISelectionChangedListener, TreeLifecycleListener {
     /**
      * The ID for the kind of annotations created for "mark occurrences"
      */
@@ -136,12 +138,17 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             int offset = activeEditor.getCeylonSourceViewer()
                     .widgetOffset2ModelOffset(event.caretOffset);
             int length = 0;
-            IRegion selection = activeEditor.getSelection();
-            if (selection.getLength()>0) {
-                offset = selection.getOffset();
-                length = selection.getLength();
-            }
             recomputeAnnotationsForSelection(offset, length, document);
+        }
+    }
+    
+    @Override
+    public void selectionChanged(SelectionChangedEvent event) {
+        if (!activeEditor.isBackgroundParsingPaused() &&
+                !activeEditor.isBlockSelectionModeEnabled() &&
+                !activeEditor.isInLinkedMode()) {
+            ITextSelection selection = (ITextSelection) event.getSelection();
+            recomputeAnnotationsForSelection(selection.getOffset(), selection.getLength(), document);
         }
     }
 
@@ -166,6 +173,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         if (document!=null) {
             activeEditor.getCeylonSourceViewer().getTextWidget()
                     .addCaretListener(this);
+            activeEditor.getCeylonSourceViewer().getSelectionProvider()
+                    .addSelectionChangedListener(this);
         }
         activeEditor.addModelListener(this);
     }
@@ -174,6 +183,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         if (activeEditor!=null) {
             activeEditor.getCeylonSourceViewer().getTextWidget()
                     .removeCaretListener(this);
+            activeEditor.getCeylonSourceViewer().getSelectionProvider()
+                    .removeSelectionChangedListener(this);
             activeEditor.removeModelListener(this);
         }
     }
