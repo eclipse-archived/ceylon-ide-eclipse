@@ -209,16 +209,14 @@ public class OutlinePopup extends TreeViewPopup {
         }
     }
     
-    public OutlinePopup(CeylonEditor editor, Shell shell, int shellStyle, 
-            int treeStyle) {
-        super(shell, shellStyle, treeStyle, 
-                PLUGIN_ID + ".editor.showOutline", editor);
+    public OutlinePopup(CeylonEditor editor, Shell shell, int shellStyle) {
+        super(shell, shellStyle, PLUGIN_ID + ".editor.showOutline", editor);
         setTitleText("Quick Outline - " + editor.getEditorInput().getName());
     }
 
     @Override
-    protected TreeViewer createTreeViewer(Composite parent, int style) {
-        Tree tree= new Tree(parent, SWT.SINGLE | (style & ~SWT.MULTI));
+    protected TreeViewer createTreeViewer(Composite parent) {
+        Tree tree= new Tree(parent, SWT.SINGLE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
@@ -226,13 +224,13 @@ public class OutlinePopup extends TreeViewPopup {
         lexicalSortingAction = new LexicalSortingAction(treeViewer);
         hideNonSharedAction = new HideNonSharedAction(treeViewer);
         outlineContentProvider = new CeylonOutlineContentProvider();
-        labelProvider= new CeylonLabelProvider(true);
+        labelProvider = new CeylonLabelProvider(true);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new OutlineNamePatternFilter(filterText));
         //    fSortByDefiningTypeAction= new SortByDefiningTypeAction(treeViewer);
         //    fShowOnlyMainTypeAction= new ShowOnlyMainTypeAction(treeViewer);
         treeViewer.setContentProvider(outlineContentProvider);
-        outlineSorter= new OutlineSorter();
+        outlineSorter = new OutlineSorter();
         treeViewer.setSorter(outlineSorter);
         treeViewer.setAutoExpandLevel(getDefaultLevel());
         //treeViewer.getTree().addKeyListener(getKeyAdapter());
@@ -285,12 +283,9 @@ public class OutlinePopup extends TreeViewPopup {
     
     @Override
     public void setInput(Object information) {
-        if (information == null || information instanceof String) {
-            inputChanged(null, null);
-        }
-        else {
-            inputChanged(information, information);
-        }
+        CeylonOutlineNode info = 
+                new CeylonOutlineBuilder().buildTree(editor.getParseController());
+        inputChanged(info, info);
     }
 
     @Override

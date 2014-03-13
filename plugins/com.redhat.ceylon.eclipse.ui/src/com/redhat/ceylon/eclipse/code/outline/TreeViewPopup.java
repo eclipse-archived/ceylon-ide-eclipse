@@ -108,11 +108,6 @@ public abstract class TreeViewPopup extends PopupDialog
     private IAction showViewMenuAction;
     private HandlerSubmission showViewMenuHandlerSubmission;
 
-    /**
-     * Field for tree style since it must be remembered by the instance.
-     */
-    private int treeStyle;
-
     private StyledText titleLabel;
 
     private TriggerSequence commandBinding;
@@ -131,14 +126,13 @@ public abstract class TreeViewPopup extends PopupDialog
      * @param invokingCommandId the id of the command that invoked this control or <code>null</code>
      * @param showStatusField <code>true</code> iff the control has a status field at the bottom
      */
-    public TreeViewPopup(Shell parent, int shellStyle, int treeStyle, 
+    public TreeViewPopup(Shell parent, int shellStyle,
             String invokingCommandId, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true, true, null, null);
         this.editor = editor;
         if (invokingCommandId != null) {
             commandBinding = EditorUtil.getCommandBinding(invokingCommandId);
         }
-        this.treeStyle = treeStyle;
         // Title and status text must be set to get the title label created, so force empty values here.
         setInfoText("");
 
@@ -176,7 +170,7 @@ public abstract class TreeViewPopup extends PopupDialog
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        treeViewer = createTreeViewer(parent, treeStyle);
+        treeViewer = createTreeViewer(parent);
         treeViewer.setAutoExpandLevel(getDefaultLevel());
         //fTreeViewer.setUseHashlookup(true);
 
@@ -226,7 +220,7 @@ public abstract class TreeViewPopup extends PopupDialog
         return treeViewer.getControl();
     }
 
-    protected abstract TreeViewer createTreeViewer(Composite parent, int style);
+    protected abstract TreeViewer createTreeViewer(Composite parent);
 
     /**
      * Returns the name of the dialog settings section.

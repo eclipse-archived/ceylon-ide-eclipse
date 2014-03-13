@@ -197,8 +197,7 @@ public class EditorUtil {
         if (cpc==null || cpc.getRootNode()==null) {
             return null;
         }
-        ITextSelection selection = (ITextSelection) 
-                editor.getSelectionProvider().getSelection();
+        ITextSelection selection = getSelection(editor);
         return Nodes.findNode(cpc.getRootNode(), selection);
     }
     

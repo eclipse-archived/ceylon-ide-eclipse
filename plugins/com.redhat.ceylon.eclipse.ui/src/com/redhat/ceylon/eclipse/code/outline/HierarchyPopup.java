@@ -34,11 +34,15 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class HierarchyPopup extends TreeViewPopup {
     
@@ -80,10 +84,8 @@ public class HierarchyPopup extends TreeViewPopup {
     private ToolItem button2;
     private ToolItem button3;
     
-    public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle, 
-            int treeStyle) {
-        super(shell, shellStyle, treeStyle, 
-                PLUGIN_ID + ".editor.hierarchy", editor);
+    public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle) {
+        super(shell, shellStyle, PLUGIN_ID + ".editor.hierarchy", editor);
         hierarchyBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
                 ".action.showInHierarchyView");
         setInfoText(getStatusFieldText());
@@ -108,8 +110,8 @@ public class HierarchyPopup extends TreeViewPopup {
     }*/
     
     @Override
-    protected TreeViewer createTreeViewer(Composite parent, int style) {
-        final Tree tree = new Tree(parent, SWT.SINGLE | (style & ~SWT.MULTI));
+    protected TreeViewer createTreeViewer(Composite parent) {
+        final Tree tree = new Tree(parent, SWT.SINGLE);
         GridData gd= new GridData(GridData.FILL_BOTH);
         gd.heightHint= tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
@@ -274,18 +276,28 @@ public class HierarchyPopup extends TreeViewPopup {
 
     @Override
     public void setInput(Object information) {
-        if (!(information instanceof HierarchyInput)) {
-            inputChanged(null, null);
+        HierarchyInput info = getInformation();
+        inputChanged(info, info);
+        updateTitle();
+    }
+    
+    private HierarchyInput getInformation() {
+        Node selectedNode = EditorUtil.getSelectedNode(editor);
+        Declaration declaration = Nodes.getReferencedDeclaration(selectedNode);
+        if (declaration==null) {
+            FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
+            fcv.visit(editor.getParseController().getRootNode());
+            com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument node = fcv.getStatementOrArgument();
+            if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
+                declaration = ((com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node).getDeclarationModel();
+            }
+        }
+        if (declaration==null) {
+            return null;
         }
         else {
-            HierarchyInput rn = (HierarchyInput) information;
-            if (rn.declaration==null) {
-                inputChanged(null, null);
-            }
-            else {
-                inputChanged(information, information);
-                updateTitle();
-            }
+            return new HierarchyInput(declaration, 
+                    editor.getParseController().getProject());
         }
     }
     
