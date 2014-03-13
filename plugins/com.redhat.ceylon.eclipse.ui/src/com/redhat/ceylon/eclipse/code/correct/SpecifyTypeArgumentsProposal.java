@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
 
 import java.util.Collection;
 
@@ -16,7 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
 
     SpecifyTypeArgumentsProposal(String type, TextFileChange change) {
-        super("Specify explicit type arguments '" + type + "'", change, null);
+        super("Specify explicit type arguments '" + type + "'", change, null, REVEAL);
     }
     
     static void addSpecifyTypeArgumentsProposal(Tree.CompilationUnit cu, Node node,
