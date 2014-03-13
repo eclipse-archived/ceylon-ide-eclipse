@@ -210,13 +210,17 @@ public class DocumentationView extends ViewPart {
             clear();
         }
         else {
-            info = getDeclarationHover(editor, 
+            CeylonBrowserInput newInfo = getDeclarationHover(editor, 
                     new Region(offset, length));
-            if (info!=null && info.getHtml()!=null) {
-                control.setText(info.getHtml());
-                back.update();
-                forward.update();
-                openDeclarationAction.setEnabled(true);
+            if (newInfo!=null && newInfo.getHtml()!=null) {
+                if (info==null || 
+                        !info.getHtml().equals(newInfo.getHtml())) {
+                    info = newInfo;
+                    control.setText(info.getHtml());
+                    back.update();
+                    forward.update();
+                    openDeclarationAction.setEnabled(true);
+                }
             }
             else if (this.editor!=editor) {
                 clear();
