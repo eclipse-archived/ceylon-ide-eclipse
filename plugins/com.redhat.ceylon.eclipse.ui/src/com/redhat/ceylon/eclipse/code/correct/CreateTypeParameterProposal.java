@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -29,7 +30,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -184,7 +184,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         for (PhasedUnit unit : getUnits(project)) {
             if (unit.getUnit().equals(cu.getUnit())) {
                 addProposal(proposals, paramList==null,
-                        paramDef, brokenName, CeylonPlugin.ADD_CORR, 
+                        paramDef, brokenName, ADD_CORR, 
                         d, unit, decl, offset, constraints);
                 break;
             }
