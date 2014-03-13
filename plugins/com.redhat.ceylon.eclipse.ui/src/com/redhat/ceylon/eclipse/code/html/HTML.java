@@ -63,7 +63,7 @@ public class HTML {
         if (fgStyleSheet == null) {
             fgStyleSheet = loadStyleSheet();
         }
-        String css = fgStyleSheet + "body { padding: 15px; } hr { padding: 2px; border:0; }";
+        String css = fgStyleSheet + "body { padding: 15px; } hr { padding: 2px; border:0; filter: alpha(opacity=0); }";
         FontData textFontData= CeylonEditor.getHoverFont().getFontData()[0];
         FontData monospaceFontData = CeylonEditor.getEditorFont().getFontData()[0];
         css = HTMLPrinter.convertTopLevelFont(css, textFontData);
