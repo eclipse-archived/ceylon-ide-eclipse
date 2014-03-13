@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -22,7 +23,10 @@ class FindInvocationVisitor extends Visitor {
         Expression e = that.getExpression();
         if (e!=null && node==e.getTerm()) {
             result=current;
-            parameter=that.getParameter().getModel();
+            Parameter p = that.getParameter();
+            if (p!=null) {
+                parameter=p.getModel();
+            }
         }
         super.visit(that);
     }
