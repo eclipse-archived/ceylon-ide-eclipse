@@ -416,15 +416,17 @@ public class DocumentationHover
             gotoDeclaration(editor, getLinkedModel(editor, input.getAddress()));
         }
     }
-    
+
     static void gotoDeclaration(CeylonEditor editor, Referenceable model) {
-        CeylonParseController cpc = editor.getParseController();
-        Node refNode = Nodes.getReferencedNode(model, cpc);
-        if (refNode!=null) {
-            gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
-        }
-        else if (model instanceof Declaration) {
-            gotoJavaNode((Declaration) model, cpc);
+        if (model!=null) {
+            CeylonParseController cpc = editor.getParseController();
+            Node refNode = Nodes.getReferencedNode(model, cpc);
+            if (refNode!=null) {
+                gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
+            }
+            else if (model instanceof Declaration) {
+                gotoJavaNode((Declaration) model, cpc);
+            }
         }
     }
     
@@ -468,6 +470,9 @@ public class DocumentationHover
     }
 
     public static Referenceable getLinkedModel(CeylonEditor editor, String location) {
+        if (location==null) {
+            return null;
+        }
         TypeChecker tc = editor.getParseController().getTypeChecker();
         String[] bits = location.split(":");
         JDTModelLoader modelLoader = getModelLoader(tc);
