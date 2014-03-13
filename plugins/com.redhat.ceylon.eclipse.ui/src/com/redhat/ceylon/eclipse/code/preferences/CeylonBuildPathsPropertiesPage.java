@@ -31,15 +31,16 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonBuildPathsPropertiesPage extends PropertyPage implements IStatusChangeListener {
     
     public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.paths";
 
-    private static final String PAGE_SETTINGS= "BuildPathsPropertyPage";
-    private static final String INDEX= "pageIndex";
+    private static final String PAGE_SETTINGS = "BuildPathsPropertyPage";
+    private static final String INDEX = "pageIndex";
     
-    private boolean fBlockOnApply= false;
+    private boolean fBlockOnApply = false;
     
     private CeylonBuildPathsBlock fBuildPathsBlock;
 
@@ -105,10 +106,10 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
     }
 
     private IDialogSettings getSettings() {
-        IDialogSettings javaSettings= JavaPlugin.getDefault().getDialogSettings();
-        IDialogSettings pageSettings= javaSettings.getSection(PAGE_SETTINGS);
+        IDialogSettings javaSettings = CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings pageSettings = javaSettings.getSection(PAGE_SETTINGS);
         if (pageSettings == null) {
-            pageSettings= javaSettings.addNewSection(PAGE_SETTINGS);
+            pageSettings = javaSettings.addNewSection(PAGE_SETTINGS);
             pageSettings.put(INDEX, 1);
         }
         return pageSettings;
@@ -117,9 +118,9 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
     @Override
     public boolean okToLeave() {
         if (fBuildPathsBlock != null && fBuildPathsBlock.hasChangesInDialog()) {
-            String title= PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_title;
-            String message= PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_message;
-            String[] buttonLabels= new String[] {
+            String title = PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_title;
+            String message = PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_message;
+            String[] buttonLabels = new String[] {
                     PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_button_save,
                     PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_button_discard,
                     PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_button_ignore
