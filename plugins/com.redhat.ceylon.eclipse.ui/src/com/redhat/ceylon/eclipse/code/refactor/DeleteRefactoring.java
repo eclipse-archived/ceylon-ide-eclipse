@@ -20,6 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
@@ -293,15 +294,47 @@ public class DeleteRefactoring extends AbstractRefactoring {
             final TextChange tfc, Tree.CompilationUnit cu) {
         tfc.setEdit(new MultiTextEdit());
         new Visitor() {
+        	@Override
             public void visit(Tree.Declaration that) {
-                super.visit(that);
                 Declaration d = that.getDeclarationModel();
                 if (d.equals(declarationToDelete) ||
                         (deleteRefinements &&
                                 d.refines(declarationToDelete))) {
                     tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
                             that.getStopIndex()-that.getStartIndex()+1));
+                    return;
                 }
+                super.visit(that);
+            }
+        	@Override
+            public void visit(Tree.ParameterList that) {
+                List<Tree.Parameter> parameters = that.getParameters();
+				for (int i=0; i<parameters.size(); i++) {
+					Tree.Parameter param = parameters.get(i);
+					if (param instanceof Tree.ParameterDeclaration) {
+						Declaration d = param.getParameterModel().getModel();
+						if (d.equals(declarationToDelete)) {
+							int start, stop;
+							if (i>0) {
+								Tree.Parameter previous = parameters.get(i-1);
+								start = previous.getStopIndex()+1;
+								stop = param.getStopIndex()+1;
+							}
+							else if (i<parameters.size()-1) {
+								Parameter next = parameters.get(i+1);
+								start = param.getStartIndex();
+								stop = next.getStartIndex();
+							}
+							else {
+								start = param.getStartIndex();
+								stop = param.getStopIndex()+1;
+							}
+							tfc.addEdit(new DeleteEdit(start, stop-start));
+							return;
+						}
+					}
+				}
+                super.visit(that);
             }
         }.visit(cu);
         if (tfc.getEdit().hasChildren()) {
