@@ -81,6 +81,31 @@ public class DeleteRefactoring extends AbstractRefactoring {
             }
             super.visit(that);
         }
+        @Override
+        public void visit(Tree.AnyClass that) {
+        	super.visit(that);
+        	handleParameterRefinement(that);
+        }
+        @Override
+        public void visit(Tree.AnyMethod that) {
+        	super.visit(that);
+        	handleParameterRefinement(that);
+        }
+		private void handleParameterRefinement(Tree.Declaration that) {
+			Declaration declaration = getDeclaration();
+			if (declaration.isParameter()) {
+				Declaration parameterized = (Declaration) declaration.getContainer();
+				Declaration current = that.getDeclarationModel();
+				if (!parameterized.equals(current)) {
+					if (parameterized.getRefinedDeclaration().equals(current)) {
+						getNodes().add(that);
+					}
+					if (current.getRefinedDeclaration().equals(parameterized)) {
+						getNodes().add(that);
+					}
+				}
+			}
+		}
     }
     
     //TODO: copy/pasted from RenameRefactoring!
