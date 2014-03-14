@@ -54,6 +54,7 @@ public class DeleteInputPage extends UserInputWizardPage {
 //        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
         
         final Button et = new Button(result, SWT.CHECK);
+        et.setEnabled(dec.isShared() && dec.isClassOrInterfaceMember());
         et.setText("Also delete refinements");
         
         Composite composite = new Composite(result, SWT.NONE);
@@ -130,7 +131,7 @@ public class DeleteInputPage extends UserInputWizardPage {
                     " usages of '" + name + "'");
         }
         int refinements = refactoring.countRefinements();
-        if (dec.isActual() && rdec!=null && !rdec.equals(dec)) {
+        if (/*dec.isActual() &&*/ rdec!=null && !rdec.equals(dec)) {
             if (rdec.isFormal() && !dec.isFormal()) {
                 addWarning(table, "This declaration refines formal member '" + 
                         rdec.getName() + "' declared by '" +
