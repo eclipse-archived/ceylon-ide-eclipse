@@ -1301,8 +1301,14 @@ public class DocumentationHover
                     buffer.append("<p>");
                     for (Parameter p: pl.getParameters()) {
                         StringBuilder params = new StringBuilder();
-                        appendParametersDescription(p.getModel(), params, cpc);
-                        String def = getDefaultValueDescription(p, cpc);
+                        String def;
+                        if (p.getModel()!=null) {
+                        	appendParametersDescription(p.getModel(), params, cpc);
+                        	def = getDefaultValueDescription(p, cpc);
+                        }
+                        else {
+                        	def = "";
+                        }
                         StringBuilder doc = new StringBuilder();
                         Tree.Declaration refNode = 
                                 (Tree.Declaration) Nodes.getReferencedNode(p.getModel(), cpc);
