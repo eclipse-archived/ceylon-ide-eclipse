@@ -1328,30 +1328,69 @@
             <toolbar
                   label="Ceylon New Wizards"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.ceylon.new">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="com.redhat.ceylon.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
             <command
                   label="New Ceylon Source File..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.newUnit"
                   icon="icons/newunit_wiz.gif"
                   tooltip="New Ceylon Source File"
-                  id="com.redhat.ceylon.eclipse.ui.toolbar.newUnit"/>
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.newUnit">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="com.redhat.ceylon.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
+            </command>
             <command
                   label="New Ceylon Package..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.newPackage"
                   icon="icons/newpack_wiz.gif"
                   tooltip="New Ceylon Package"
-                  id="com.redhat.ceylon.eclipse.ui.toolbar.newPackage"/>
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.newPackage">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="com.redhat.ceylon.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
+            </command>
             <command
                   label="New Ceylon Module..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.newModule"
                   icon="icons/newmod_wiz.gif"
                   tooltip="New Ceylon Module"
-                  id="com.redhat.ceylon.eclipse.ui.toolbar.newModule"/>
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.newModule">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="com.redhat.ceylon.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
+            </command>
             <command
                   label="New Ceylon Project..."
                   commandId="com.redhat.ceylon.eclipse.ui.action.newProject"
                   icon="icons/newprj_wiz.gif"
                   tooltip="New Ceylon Project"
-                  id="com.redhat.ceylon.eclipse.ui.toolbar.newProject"/>
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.newProject">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="com.redhat.ceylon.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
+            </command>
             </toolbar>
       </menuContribution>
       <menuContribution
