@@ -664,7 +664,11 @@ public class JDTModelLoader extends AbstractModelLoader {
                     for (Package p : jdtModule.getPackages()) {
                         if (p.getNameAsString().equals(jdtModule.getNameAsString())) {
                             if (p.getUnit() == null) {
-                                p.setUnit(newCompiledUnit((LazyPackage) p, lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".package_")));
+                                ClassMirror packageClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".package_");
+                                // some modules do not declare their main package, because they don't have any declaration to share
+                                // there, for example, so this can be null
+                                if(packageClassMirror != null)
+                                    p.setUnit(newCompiledUnit((LazyPackage) p, packageClassMirror));
                             }
                         }
                         if (jdtModule.getUnit() == null) {
