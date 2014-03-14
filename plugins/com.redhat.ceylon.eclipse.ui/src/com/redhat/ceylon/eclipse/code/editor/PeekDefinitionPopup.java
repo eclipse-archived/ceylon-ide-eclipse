@@ -17,6 +17,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension2;
@@ -313,25 +314,37 @@ final class PeekDefinitionPopup extends PopupDialog
         if (referencedNode==null) return;
         IPath path = getNodePath(referencedNode, 
                 epc.getProject(), epc.getTypeChecker());
-        ei = getEditorInput(path);
-        IDocument doc;
-        try {
-            docProvider.connect(ei);
-            doc = docProvider.getDocument(ei);
-        } 
-        catch (CoreException e) {
-            e.printStackTrace();
-            return;
-        }
-        viewer.setDocument(doc);
-        viewer.setVisibleRegion(referencedNode.getStartIndex(), 
-                referencedNode.getStopIndex()-referencedNode.getStartIndex()+1);
         //CeylonParseController treats files with full paths subtly
         //differently to files with relative paths, so make the
         //path relative
         if (epc.getProject()!=null && 
                 epc.getProject().getLocation().isPrefixOf(path)) {
             path = path.makeRelativeTo(epc.getProject().getLocation());
+        }
+        IDocument doc;
+        if (path.equals(epc.getPath())) {
+            doc = epc.getDocument();
+        }
+        else {
+            ei = getEditorInput(path);
+            try {
+                docProvider.connect(ei);
+                doc = docProvider.getDocument(ei);
+            } 
+            catch (CoreException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+        viewer.setDocument(doc);
+        try {
+            IRegion firstLine = doc.getLineInformationOfOffset(referencedNode.getStartIndex());
+            IRegion lastLine = doc.getLineInformationOfOffset(referencedNode.getStopIndex());
+            viewer.setVisibleRegion(firstLine.getOffset(), 
+                    lastLine.getOffset()+lastLine.getLength()-firstLine.getOffset());
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
         }
         pc.initialize(path, epc.getProject(), null);
         pc.parse(doc, new NullProgressMonitor(), null);
