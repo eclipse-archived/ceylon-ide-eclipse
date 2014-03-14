@@ -360,7 +360,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new DummyInformationProvider(), 
                 DEFAULT_CONTENT_TYPE);
-        presenter.setSizeConstraints(40, 10, true, false);
+        presenter.setSizeConstraints(50, 10, true, false);
         presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
                 "outline_presenter_bounds"), true, true);
         return presenter;
@@ -374,7 +374,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new DummyInformationProvider(), 
                 DEFAULT_CONTENT_TYPE);
-        presenter.setSizeConstraints(40, 10, true, false);
+        presenter.setSizeConstraints(80, 15, true, false);
         presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
                 "hierarchy_presenter_bounds"), true, true);
         return presenter;
@@ -387,7 +387,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         presenter.setAnchor(ANCHOR_GLOBAL);
         presenter.setInformationProvider(new DummyInformationProvider(), 
                 DEFAULT_CONTENT_TYPE);
-        presenter.setSizeConstraints(40, 10, true, false);
+        presenter.setSizeConstraints(80, 25, true, false);
         presenter.setRestoreInformationControlBounds(getOrCreateSection(getSettings(),
                 "code_presenter_bounds"), true, true);
         return presenter;
