@@ -688,6 +688,11 @@
              name="New Ceylon Module"/>
        <command
              categoryId="com.redhat.ceylon.eclipse.ui"
+             description="Create a new Ceylon project"
+             id="com.redhat.ceylon.eclipse.ui.action.newProject"
+             name="New Ceylon Project"/>
+       <command
+             categoryId="com.redhat.ceylon.eclipse.ui"
              description="Open refactor quick menu"
              id="com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu"
              name="Refactor Menu"/>
@@ -859,14 +864,29 @@
             class="com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.revealInferredType"/>
       <handler
-            class="com.redhat.ceylon.eclipse.code.wizard.NewUnitHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.newUnit"/>
+            commandId="com.redhat.ceylon.eclipse.ui.action.newUnit">
+            <class class="com.redhat.ceylon.eclipse.code.wizard.NewHandler">
+                <parameter name="wizardId" value="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
+            </class>
+      </handler>
       <handler
-            class="com.redhat.ceylon.eclipse.code.wizard.NewPackageHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.newPackage"/>
+            commandId="com.redhat.ceylon.eclipse.ui.action.newPackage">
+            <class class="com.redhat.ceylon.eclipse.code.wizard.NewHandler">
+                <parameter name="wizardId" value="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
+            </class>
+      </handler>
       <handler
-            class="com.redhat.ceylon.eclipse.code.wizard.NewModuleHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.newModule"/>
+            commandId="com.redhat.ceylon.eclipse.ui.action.newModule">
+            <class class="com.redhat.ceylon.eclipse.code.wizard.NewHandler">
+                <parameter name="wizardId" value="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
+            </class>
+      </handler>
+      <handler
+            commandId="com.redhat.ceylon.eclipse.ui.action.newProject">
+            <class class="com.redhat.ceylon.eclipse.code.wizard.NewHandler">
+                <parameter name="wizardId" value="com.redhat.ceylon.eclipse.ui.newProjectWizard"/>
+            </class>
+      </handler>
    </extension>
    
    <extension
@@ -972,6 +992,11 @@
       <key
             sequence="Ctrl+Alt+N M"
             commandId="com.redhat.ceylon.eclipse.ui.action.newModule"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.wizardContext"/>
+      <key
+            sequence="Ctrl+Alt+N N"
+            commandId="com.redhat.ceylon.eclipse.ui.action.newProject"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.wizardContext"/>
       
@@ -1321,6 +1346,12 @@
                   icon="icons/newmod_wiz.gif"
                   tooltip="New Ceylon Module"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.newModule"/>
+            <command
+                  label="New Ceylon Project..."
+                  commandId="com.redhat.ceylon.eclipse.ui.action.newProject"
+                  icon="icons/newprj_wiz.gif"
+                  tooltip="New Ceylon Project"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.newProject"/>
             </toolbar>
       </menuContribution>
       <menuContribution
