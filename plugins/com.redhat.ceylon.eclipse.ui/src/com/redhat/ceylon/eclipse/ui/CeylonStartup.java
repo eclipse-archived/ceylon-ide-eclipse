@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.swt.widgets.Display;
@@ -15,17 +16,25 @@ import org.eclipse.ui.contexts.IContextService;
 public class CeylonStartup implements IStartup {
 
     private static final class WindowListener implements IWindowListener {
-        IContextActivation contextActivation = null;
+        IContextActivation contextActivation1 = null;
+        IContextActivation contextActivation2 = null;
 
         public void updateContext(IPerspectiveDescriptor perspective) {
             IContextService service = (IContextService) getWorkbench().getActiveWorkbenchWindow()
                     .getService(IContextService.class);
             // in case of previous crash, perspective may be null
-            if (perspective != null && perspective.getId() != null && perspective.getId().equals("com.redhat.ceylon.eclipse.ui.perspective")) {
-                contextActivation = service.activateContext("com.redhat.ceylon.eclipse.ui.perspectiveContext");
+            if (perspective != null && perspective.getId() != null && 
+                    perspective.getId().equals(PLUGIN_ID + ".perspective")) {
+                contextActivation1 = service.activateContext(PLUGIN_ID + ".perspectiveContext");
+                contextActivation2 = service.activateContext(PLUGIN_ID + ".wizardContext");
             }
-            else if (contextActivation!=null) {
-                service.deactivateContext(contextActivation);
+            else {
+                if (contextActivation1!=null) {
+                    service.deactivateContext(contextActivation1);
+                }
+                if (contextActivation2!=null) {
+                    service.deactivateContext(contextActivation2);
+                }
             }
         }
 

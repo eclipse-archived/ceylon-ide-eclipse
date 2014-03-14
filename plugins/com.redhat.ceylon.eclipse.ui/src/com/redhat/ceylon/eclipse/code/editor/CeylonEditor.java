@@ -894,7 +894,7 @@ public class CeylonEditor extends TextEditor {
     }
 
     protected void initializeKeyBindingScopes() {
-        setKeyBindingScopes(new String[] { PLUGIN_ID + ".context" });
+        setKeyBindingScopes(new String[] { PLUGIN_ID + ".context", PLUGIN_ID + ".wizardContext" });
     }
 
     private IHandlerActivation fSourceQuickAccessHandlerActivation;

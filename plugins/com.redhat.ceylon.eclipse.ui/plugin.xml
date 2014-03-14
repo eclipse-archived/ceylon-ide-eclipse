@@ -673,6 +673,21 @@
              name="Reveal Inferred Types"/>
        <command
              categoryId="com.redhat.ceylon.eclipse.ui"
+             description="Create a new Ceylon source file"
+             id="com.redhat.ceylon.eclipse.ui.action.newUnit"
+             name="New Ceylon Source File"/>
+       <command
+             categoryId="com.redhat.ceylon.eclipse.ui"
+             description="Create a new Ceylon package"
+             id="com.redhat.ceylon.eclipse.ui.action.newPackage"
+             name="New Ceylon Package"/>
+       <command
+             categoryId="com.redhat.ceylon.eclipse.ui"
+             description="Create a new Ceylon module"
+             id="com.redhat.ceylon.eclipse.ui.action.newModule"
+             name="New Ceylon Module"/>
+       <command
+             categoryId="com.redhat.ceylon.eclipse.ui"
              description="Open refactor quick menu"
              id="com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu"
              name="Refactor Menu"/>
@@ -842,8 +857,16 @@
             commandId="com.redhat.ceylon.eclipse.ui.action.convertToClass"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.revealInferredType">
-      </handler>
+            commandId="com.redhat.ceylon.eclipse.ui.action.revealInferredType"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.wizard.NewUnitHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.newUnit"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.wizard.NewPackageHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.newPackage"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.wizard.NewModuleHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.newModule"/>
    </extension>
    
    <extension
@@ -855,9 +878,13 @@
             description="Editing Ceylon Source"/>
       <context
             id="com.redhat.ceylon.eclipse.ui.perspectiveContext"
-            name="Working In Ceylon Perspective" 
+            name="Working in Ceylon Perspective" 
             parentId="org.eclipse.ui.contexts.window" 
-            description="Working In Ceylon Perspective"/>
+            description="Working in Ceylon Perspective"/>
+      <context
+            id="com.redhat.ceylon.eclipse.ui.wizardContext"
+            name="Working in Ceylon Perspective or Editing Ceylon Source"
+            description="Working in Ceylon Perspective or Editing Ceylon Source"/>
    </extension>
             
    <!-- Platform-independent key binding -->
@@ -930,7 +957,24 @@
             commandId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
-                        
+      
+      <!-- New Wizards -->
+      <key
+            sequence="Ctrl+Alt+N F"
+            commandId="com.redhat.ceylon.eclipse.ui.action.newUnit"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.wizardContext"/>
+      <key
+            sequence="Ctrl+Alt+N P"
+            commandId="com.redhat.ceylon.eclipse.ui.action.newPackage"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.wizardContext"/>
+      <key
+            sequence="Ctrl+Alt+N M"
+            commandId="com.redhat.ceylon.eclipse.ui.action.newModule"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.wizardContext"/>
+      
       <!-- Source actions -->
       <key
             sequence="M1+M2+O"
@@ -1228,8 +1272,8 @@
       <menuContribution
             locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
             <toolbar
-                  label="Ceylon"
-                  id="com.redhat.ceylon.eclipse.ui.toolbar.ceylon">
+                  label="Ceylon Open Dialogs"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.ceylon.open">
             <command
                   label="Open Resource..." 
                   commandId="org.eclipse.ui.navigate.openResource"
@@ -1252,6 +1296,31 @@
                         name="org.eclipse.ui.views.showView.viewId"
                         value="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
             </command>
+            </toolbar>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
+            <toolbar
+                  label="Ceylon New Wizards"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.ceylon.new">
+            <command
+                  label="New Ceylon Source File..." 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.newUnit"
+                  icon="icons/newunit_wiz.gif"
+                  tooltip="New Ceylon Source File"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.newUnit"/>
+            <command
+                  label="New Ceylon Package..." 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.newPackage"
+                  icon="icons/newpack_wiz.gif"
+                  tooltip="New Ceylon Package"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.newPackage"/>
+            <command
+                  label="New Ceylon Module..." 
+                  commandId="com.redhat.ceylon.eclipse.ui.action.newModule"
+                  icon="icons/newmod_wiz.gif"
+                  tooltip="New Ceylon Module"
+                  id="com.redhat.ceylon.eclipse.ui.toolbar.newModule"/>
             </toolbar>
       </menuContribution>
       <menuContribution
