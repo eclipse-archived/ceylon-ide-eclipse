@@ -4,8 +4,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionDelegate;
@@ -20,12 +18,7 @@ public class NewProjectAction extends ActionDelegate {
                 .findWizard(PLUGIN_ID + ".newProjectWizard");
         if (descriptor!=null) {
             try {
-                NewProjectWizard wizard = (NewProjectWizard) descriptor.createWizard();
-                wizard.init(wb, null);
-                WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
-                        wizard);
-                wd.setTitle(wizard.getWindowTitle());
-                wd.open();
+                WizardUtil.startWizard(wb, descriptor);
                 wb.showPerspective(PLUGIN_ID + ".perspective", 
                         wb.getActiveWorkbenchWindow());
             }
