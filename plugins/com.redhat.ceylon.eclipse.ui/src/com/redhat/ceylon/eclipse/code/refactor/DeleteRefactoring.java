@@ -302,18 +302,19 @@ public class DeleteRefactoring extends AbstractRefactoring {
         tfc.setEdit(new MultiTextEdit());
         new Visitor() {
 			private void deleteArg(final TextChange tfc, Node that,
-					Declaration d) {
+					Declaration d, int start, int stop) {
 				if (deleteRefinements &&
 						d.equals(declarationToDelete)) {
-					tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
-							that.getStopIndex()-that.getStartIndex()+1));
+					tfc.addEdit(new DeleteEdit(start, stop-start));
 				}
 			}
         	@Override
             public void visit(Tree.NamedArgument that) {
         		Parameter parameter = that.getParameter();
         		if (parameter!=null) {
-        			deleteArg(tfc, that, parameter.getModel());
+        			deleteArg(tfc, that, parameter.getModel(),
+        					that.getStartIndex(), 
+        					that.getStopIndex()+1);
         			super.visit(that);
         		}
         	}
@@ -321,17 +322,37 @@ public class DeleteRefactoring extends AbstractRefactoring {
             public void visit(Tree.SequencedArgument that) {
         		Parameter parameter = that.getParameter();
         		if (parameter!=null) {
-        			deleteArg(tfc, that, parameter.getModel());
+        			deleteArg(tfc, that, parameter.getModel(),
+        					that.getStartIndex(), 
+        					that.getStopIndex()+1);
         			super.visit(that);
         		}
         	}
         	@Override
-            public void visit(Tree.PositionalArgument that) {
-        		Parameter parameter = that.getParameter();
-        		if (parameter!=null) {
-        			deleteArg(tfc, that, parameter.getModel());
-        			super.visit(that);
+            public void visit(Tree.PositionalArgumentList that) {
+        		List<Tree.PositionalArgument> args = that.getPositionalArguments();
+        		for (int i=0; i<args.size(); i++) {
+        			Tree.PositionalArgument arg = args.get(i);
+					Parameter parameter = arg.getParameter();
+        			if (parameter!=null) {
+        				int start, stop;
+        				if (i>0) {
+        					start = args.get(i-1).getStopIndex()+1;
+        					stop = arg.getStopIndex()+1;
+        				}
+        				else if (i<args.size()-1) {
+        					start = arg.getStartIndex();
+        					stop = args.get(i+1).getStartIndex();
+        				}
+        				else {
+        					start = arg.getStartIndex();
+        					stop = arg.getStopIndex()+1;
+        				}
+        				deleteArg(tfc, that, parameter.getModel(),
+        						start, stop);
+        			}
         		}
+				super.visit(that);
         	}
         	@Override
             public void visit(Tree.Declaration that) {
