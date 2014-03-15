@@ -46,24 +46,24 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 return false;
             }
             else if (ref.equals(declaration)) {
-            	if (!declaration.isActual() || 
-            			declaration.equals(refinedDeclaration)) {
-            		return true;
-            	}
-            	else {
-            		if (declaration instanceof TypedDeclaration &&
-            				refinedDeclaration instanceof TypedDeclaration) {
-            			//if it's a reference to a refining method or value
-            			//we can safely delete unless it refines the return type
-            			ProducedType type = ((TypedDeclaration) declaration).getType();
-            			ProducedType refinedType = ((TypedDeclaration) refinedDeclaration).getType();
-						return type!=null && refinedType!=null && 
-								!type.isExactly(refinedType);
-            		}
-            		else {
-            			return true;
-            		}
-            	}
+                if (!declaration.isActual() || 
+                        declaration.equals(refinedDeclaration)) {
+                    return true;
+                }
+                else {
+                    if (declaration instanceof TypedDeclaration &&
+                            refinedDeclaration instanceof TypedDeclaration) {
+                        //if it's a reference to a refining method or value
+                        //we can safely delete unless it refines the return type
+                        ProducedType type = ((TypedDeclaration) declaration).getType();
+                        ProducedType refinedType = ((TypedDeclaration) refinedDeclaration).getType();
+                        return type!=null && refinedType!=null && 
+                                !type.isExactly(refinedType);
+                    }
+                    else {
+                        return true;
+                    }
+                }
             }
             else {
                 return deleteRefinements &&
@@ -82,19 +82,19 @@ public class DeleteRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.NamedArgument that) {
             if (!deleteRefinements &&
-            		isReference(that.getParameter())) {
+                    isReference(that.getParameter())) {
                 getNodes().add(that);
             }
             else {
-            	//the supertype doesn't test deleteRefinements
-            	getNodes().remove(that);
+                //the supertype doesn't test deleteRefinements
+                getNodes().remove(that);
             }
             super.visit(that);
         }
         @Override
         public void visit(Tree.PositionalArgument that) {
             if (!deleteRefinements &&
-            		isReference(that.getParameter())) {
+                    isReference(that.getParameter())) {
                 getNodes().add(that);
             }
             super.visit(that);
@@ -102,38 +102,38 @@ public class DeleteRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.SequencedArgument that) {
             if (!deleteRefinements &&
-            		isReference(that.getParameter())) {
+                    isReference(that.getParameter())) {
                 getNodes().add(that);
             }
             super.visit(that);
         }
         @Override
         public void visit(Tree.AnyClass that) {
-        	super.visit(that);
-        	handleParameterRefinement(that);
+            super.visit(that);
+            handleParameterRefinement(that);
         }
         @Override
         public void visit(Tree.AnyMethod that) {
-        	super.visit(that);
-        	handleParameterRefinement(that);
+            super.visit(that);
+            handleParameterRefinement(that);
         }
-		private void handleParameterRefinement(Tree.Declaration that) {
-			Declaration declaration = getDeclaration();
-			if (declaration.isParameter()) {
-				Declaration parameterized = (Declaration) declaration.getContainer();
-				Declaration current = that.getDeclarationModel();
-				if (!parameterized.equals(current)) {
-					if (parameterized.getRefinedDeclaration().equals(current)) {
-						getNodes().add(that);
-					}
-					if (current.getRefinedDeclaration().equals(parameterized)) {
-						getNodes().add(that);
-					}
-				}
-			}
-		}
-	    @Override
-	    public void visit(Tree.Import that) {}
+        private void handleParameterRefinement(Tree.Declaration that) {
+            Declaration declaration = getDeclaration();
+            if (declaration.isParameter()) {
+                Declaration parameterized = (Declaration) declaration.getContainer();
+                Declaration current = that.getDeclarationModel();
+                if (!parameterized.equals(current)) {
+                    if (parameterized.getRefinedDeclaration().equals(current)) {
+                        getNodes().add(that);
+                    }
+                    if (current.getRefinedDeclaration().equals(parameterized)) {
+                        getNodes().add(that);
+                    }
+                }
+            }
+        }
+        @Override
+        public void visit(Tree.Import that) {}
     }
     
     //TODO: copy/pasted from RenameRefactoring!
@@ -321,60 +321,60 @@ public class DeleteRefactoring extends AbstractRefactoring {
             final TextChange tfc, Tree.CompilationUnit cu) {
         tfc.setEdit(new MultiTextEdit());
         new Visitor() {
-			private void deleteArg(final TextChange tfc, Node that,
-					Declaration d, int start, int stop) {
-				if (deleteRefinements &&
-						d.equals(declarationToDelete)) {
-					tfc.addEdit(new DeleteEdit(start, stop-start));
-				}
-			}
-        	@Override
+            private void deleteArg(final TextChange tfc, Node that,
+                    Declaration d, int start, int stop) {
+                if (deleteRefinements &&
+                        d.equals(declarationToDelete)) {
+                    tfc.addEdit(new DeleteEdit(start, stop-start));
+                }
+            }
+            @Override
             public void visit(Tree.NamedArgument that) {
-        		Parameter parameter = that.getParameter();
-        		if (parameter!=null) {
-        			deleteArg(tfc, that, parameter.getModel(),
-        					that.getStartIndex(), 
-        					that.getStopIndex()+1);
-        			super.visit(that);
-        		}
-        	}
-        	@Override
+                Parameter parameter = that.getParameter();
+                if (parameter!=null) {
+                    deleteArg(tfc, that, parameter.getModel(),
+                            that.getStartIndex(), 
+                            that.getStopIndex()+1);
+                    super.visit(that);
+                }
+            }
+            @Override
             public void visit(Tree.SequencedArgument that) {
-        		Parameter parameter = that.getParameter();
-        		if (parameter!=null) {
-        			deleteArg(tfc, that, parameter.getModel(),
-        					that.getStartIndex(), 
-        					that.getStopIndex()+1);
-        			super.visit(that);
-        		}
-        	}
-        	@Override
+                Parameter parameter = that.getParameter();
+                if (parameter!=null) {
+                    deleteArg(tfc, that, parameter.getModel(),
+                            that.getStartIndex(), 
+                            that.getStopIndex()+1);
+                    super.visit(that);
+                }
+            }
+            @Override
             public void visit(Tree.PositionalArgumentList that) {
-        		List<Tree.PositionalArgument> args = that.getPositionalArguments();
-        		for (int i=0; i<args.size(); i++) {
-        			Tree.PositionalArgument arg = args.get(i);
-					Parameter parameter = arg.getParameter();
-        			if (parameter!=null) {
-        				int start, stop;
-        				if (i>0) {
-        					start = args.get(i-1).getStopIndex()+1;
-        					stop = arg.getStopIndex()+1;
-        				}
-        				else if (i<args.size()-1) {
-        					start = arg.getStartIndex();
-        					stop = args.get(i+1).getStartIndex();
-        				}
-        				else {
-        					start = arg.getStartIndex();
-        					stop = arg.getStopIndex()+1;
-        				}
-        				deleteArg(tfc, that, parameter.getModel(),
-        						start, stop);
-        			}
-        		}
-				super.visit(that);
-        	}
-        	@Override
+                List<Tree.PositionalArgument> args = that.getPositionalArguments();
+                for (int i=0; i<args.size(); i++) {
+                    Tree.PositionalArgument arg = args.get(i);
+                    Parameter parameter = arg.getParameter();
+                    if (parameter!=null) {
+                        int start, stop;
+                        if (i>0) {
+                            start = args.get(i-1).getStopIndex()+1;
+                            stop = arg.getStopIndex()+1;
+                        }
+                        else if (i<args.size()-1) {
+                            start = arg.getStartIndex();
+                            stop = args.get(i+1).getStartIndex();
+                        }
+                        else {
+                            start = arg.getStartIndex();
+                            stop = arg.getStopIndex()+1;
+                        }
+                        deleteArg(tfc, that, parameter.getModel(),
+                                start, stop);
+                    }
+                }
+                super.visit(that);
+            }
+            @Override
             public void visit(Tree.Declaration that) {
                 Declaration d = that.getDeclarationModel();
                 if (d.equals(declarationToDelete) ||
@@ -386,76 +386,76 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 }
                 super.visit(that);
             }
-        	@Override
+            @Override
             public void visit(Tree.ParameterList that) {
                 List<Tree.Parameter> parameters = that.getParameters();
-				for (int i=0; i<parameters.size(); i++) {
-					Tree.Parameter param = parameters.get(i);
-					if (param instanceof Tree.ParameterDeclaration) {
-						Declaration d = param.getParameterModel().getModel();
-						if (d.equals(declarationToDelete)) {
-							int start, stop;
-							if (i>0) {
-								Tree.Parameter previous = parameters.get(i-1);
-								start = previous.getStopIndex()+1;
-								stop = param.getStopIndex()+1;
-							}
-							else if (i<parameters.size()-1) {
-								Tree.Parameter next = parameters.get(i+1);
-								start = param.getStartIndex();
-								stop = next.getStartIndex();
-							}
-							else {
-								start = param.getStartIndex();
-								stop = param.getStopIndex()+1;
-							}
-							tfc.addEdit(new DeleteEdit(start, stop-start));
-							return;
-						}
-					}
-				}
+                for (int i=0; i<parameters.size(); i++) {
+                    Tree.Parameter param = parameters.get(i);
+                    if (param instanceof Tree.ParameterDeclaration) {
+                        Declaration d = param.getParameterModel().getModel();
+                        if (d.equals(declarationToDelete)) {
+                            int start, stop;
+                            if (i>0) {
+                                Tree.Parameter previous = parameters.get(i-1);
+                                start = previous.getStopIndex()+1;
+                                stop = param.getStopIndex()+1;
+                            }
+                            else if (i<parameters.size()-1) {
+                                Tree.Parameter next = parameters.get(i+1);
+                                start = param.getStartIndex();
+                                stop = next.getStartIndex();
+                            }
+                            else {
+                                start = param.getStartIndex();
+                                stop = param.getStopIndex()+1;
+                            }
+                            tfc.addEdit(new DeleteEdit(start, stop-start));
+                            return;
+                        }
+                    }
+                }
                 super.visit(that);
-        	}
-        	@Override
-        	public void visit(Tree.Import that) {
-        		Tree.ImportMemberOrTypeList list = that.getImportMemberOrTypeList();
-        		if (list!=null && list.getImportMemberOrTypes().size()==1) {
-        			Tree.ImportMemberOrType imp = list.getImportMemberOrTypes().get(0);
-        			Declaration d = imp.getDeclarationModel();
-					if (d.equals(declarationToDelete)) {
-						tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
-								that.getStopIndex()-that.getStartIndex()+1));
-						return;
-					}
-        		}
-        		super.visit(that);
-        	}
-        	@Override
+            }
+            @Override
+            public void visit(Tree.Import that) {
+                Tree.ImportMemberOrTypeList list = that.getImportMemberOrTypeList();
+                if (list!=null && list.getImportMemberOrTypes().size()==1) {
+                    Tree.ImportMemberOrType imp = list.getImportMemberOrTypes().get(0);
+                    Declaration d = imp.getDeclarationModel();
+                    if (d.equals(declarationToDelete)) {
+                        tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
+                                that.getStopIndex()-that.getStartIndex()+1));
+                        return;
+                    }
+                }
+                super.visit(that);
+            }
+            @Override
             public void visit(Tree.ImportMemberOrTypeList that) {
                 List<Tree.ImportMemberOrType> imports = that.getImportMemberOrTypes();
-				for (int i=0; i<imports.size(); i++) {
-					Tree.ImportMemberOrType imp = imports.get(i);
-					Declaration d = imp.getDeclarationModel();
-					if (d.equals(declarationToDelete)) {
-						int start, stop;
-						if (i>0) {
-							Tree.ImportMemberOrType previous = imports.get(i-1);
-							start = previous.getStopIndex()+1;
-							stop = imp.getStopIndex()+1;
-						}
-						else if (i<imports.size()-1) {
-							Tree.ImportMemberOrType next = imports.get(i+1);
-							start = imp.getStartIndex();
-							stop = next.getStartIndex();
-						}
-						else {
-							start = imp.getStartIndex();
-							stop = imp.getStopIndex()+1;
-						}
-						tfc.addEdit(new DeleteEdit(start, stop-start));
-						return;
-					}
-				}
+                for (int i=0; i<imports.size(); i++) {
+                    Tree.ImportMemberOrType imp = imports.get(i);
+                    Declaration d = imp.getDeclarationModel();
+                    if (d.equals(declarationToDelete)) {
+                        int start, stop;
+                        if (i>0) {
+                            Tree.ImportMemberOrType previous = imports.get(i-1);
+                            start = previous.getStopIndex()+1;
+                            stop = imp.getStopIndex()+1;
+                        }
+                        else if (i<imports.size()-1) {
+                            Tree.ImportMemberOrType next = imports.get(i+1);
+                            start = imp.getStartIndex();
+                            stop = next.getStartIndex();
+                        }
+                        else {
+                            start = imp.getStartIndex();
+                            stop = imp.getStopIndex()+1;
+                        }
+                        tfc.addEdit(new DeleteEdit(start, stop-start));
+                        return;
+                    }
+                }
                 super.visit(that);
             }
         }.visit(cu);
