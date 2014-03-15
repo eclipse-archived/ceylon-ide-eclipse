@@ -19,6 +19,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -44,8 +46,24 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 return false;
             }
             else if (ref.equals(declaration)) {
-                return !declaration.isActual() || 
-                        declaration.equals(refinedDeclaration); //TODO: should check that it doesn't refine the return type
+            	if (!declaration.isActual() || 
+            			declaration.equals(refinedDeclaration)) {
+            		return true;
+            	}
+            	else {
+            		if (declaration instanceof TypedDeclaration &&
+            				refinedDeclaration instanceof TypedDeclaration) {
+            			//if it's a reference to a refining method or value
+            			//we can safely delete unless it refines the return type
+            			ProducedType type = ((TypedDeclaration) declaration).getType();
+            			ProducedType refinedType = ((TypedDeclaration) refinedDeclaration).getType();
+						return type!=null && refinedType!=null && 
+								!type.isExactly(refinedType);
+            		}
+            		else {
+            			return true;
+            		}
+            	}
             }
             else {
                 return deleteRefinements &&
