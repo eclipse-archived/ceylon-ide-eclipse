@@ -374,16 +374,25 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 }
                 super.visit(that);
             }
-            @Override
-            public void visit(Tree.Declaration that) {
-                Declaration d = that.getDeclarationModel();
-                if (d.equals(declarationToDelete) ||
+			private void deleteDec(final TextChange tfc, Node that,
+					Declaration d) {
+				if (d.equals(declarationToDelete) ||
                         (deleteRefinements &&
                                 d.refines(declarationToDelete))) {
                     tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
                             that.getStopIndex()-that.getStartIndex()+1));
-                    return;
                 }
+			}
+            @Override
+            public void visit(Tree.Declaration that) {
+                deleteDec(tfc, that, that.getDeclarationModel());
+                super.visit(that);
+            }
+            @Override
+            public void visit(Tree.SpecifierStatement that) {
+            	if (that.getRefinement()) {
+            		deleteDec(tfc, that, that.getDeclaration());
+            	}
                 super.visit(that);
             }
             @Override
