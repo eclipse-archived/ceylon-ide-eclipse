@@ -18,9 +18,9 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
@@ -63,21 +63,28 @@ public class DeleteRefactoring extends AbstractRefactoring {
         }
         @Override
         public void visit(Tree.NamedArgument that) {
-            if (isReference(that.getParameter())) {
+            if (!deleteRefinements &&
+            		isReference(that.getParameter())) {
                 getNodes().add(that);
+            }
+            else {
+            	//the supertype doesn't test deleteRefinements
+            	getNodes().remove(that);
             }
             super.visit(that);
         }
         @Override
         public void visit(Tree.PositionalArgument that) {
-            if (isReference(that.getParameter())) {
+            if (!deleteRefinements &&
+            		isReference(that.getParameter())) {
                 getNodes().add(that);
             }
             super.visit(that);
         }
         @Override
         public void visit(Tree.SequencedArgument that) {
-            if (isReference(that.getParameter())) {
+            if (!deleteRefinements &&
+            		isReference(that.getParameter())) {
                 getNodes().add(that);
             }
             super.visit(that);
@@ -294,6 +301,38 @@ public class DeleteRefactoring extends AbstractRefactoring {
             final TextChange tfc, Tree.CompilationUnit cu) {
         tfc.setEdit(new MultiTextEdit());
         new Visitor() {
+			private void deleteArg(final TextChange tfc, Node that,
+					Declaration d) {
+				if (deleteRefinements &&
+						d.equals(declarationToDelete)) {
+					tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
+							that.getStopIndex()-that.getStartIndex()+1));
+				}
+			}
+        	@Override
+            public void visit(Tree.NamedArgument that) {
+        		Parameter parameter = that.getParameter();
+        		if (parameter!=null) {
+        			deleteArg(tfc, that, parameter.getModel());
+        			super.visit(that);
+        		}
+        	}
+        	@Override
+            public void visit(Tree.SequencedArgument that) {
+        		Parameter parameter = that.getParameter();
+        		if (parameter!=null) {
+        			deleteArg(tfc, that, parameter.getModel());
+        			super.visit(that);
+        		}
+        	}
+        	@Override
+            public void visit(Tree.PositionalArgument that) {
+        		Parameter parameter = that.getParameter();
+        		if (parameter!=null) {
+        			deleteArg(tfc, that, parameter.getModel());
+        			super.visit(that);
+        		}
+        	}
         	@Override
             public void visit(Tree.Declaration that) {
                 Declaration d = that.getDeclarationModel();
@@ -321,7 +360,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
 								stop = param.getStopIndex()+1;
 							}
 							else if (i<parameters.size()-1) {
-								Parameter next = parameters.get(i+1);
+								Tree.Parameter next = parameters.get(i+1);
 								start = param.getStartIndex();
 								stop = next.getStartIndex();
 							}

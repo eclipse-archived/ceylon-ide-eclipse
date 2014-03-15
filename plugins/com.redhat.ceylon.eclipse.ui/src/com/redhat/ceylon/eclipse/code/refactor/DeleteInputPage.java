@@ -54,8 +54,8 @@ public class DeleteInputPage extends UserInputWizardPage {
 //        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
         
         final Button et = new Button(result, SWT.CHECK);
-        et.setEnabled(dec.isShared() && dec.isClassOrInterfaceMember());
-        et.setText("Also delete refinements");
+        et.setEnabled(dec.isShared() && dec.isClassOrInterfaceMember() || dec.isParameter());
+        et.setText("Also delete arguments/refinements");
         
         Composite composite = new Composite(result, SWT.NONE);
         GridData cgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
