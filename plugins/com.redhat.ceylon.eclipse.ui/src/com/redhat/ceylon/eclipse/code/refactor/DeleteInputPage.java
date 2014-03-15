@@ -148,7 +148,18 @@ public class DeleteInputPage extends UserInputWizardPage {
             addWarning(table, "There are " + refinements + 
                     " refinements of member '" + name + "'");
         }
+        if (isPublic(dec)) {
+        	addWarning(table, "This declaration is visible outside of the module '" +
+        			dec.getUnit().getPackage().getModule().getNameAsString() + "'");
+        }
     }
+
+	private static boolean isPublic(Declaration dec) {
+		return dec.isShared() && dec.getUnit().getPackage().isShared() && 
+        		(dec.isToplevel() || 
+        				dec.isClassOrInterfaceMember() && 
+        				isPublic((Declaration)dec.getContainer()));
+	}
 
     private void addWarning(Table table, String text) {
         TableItem item = new TableItem(table, SWT.NONE);
