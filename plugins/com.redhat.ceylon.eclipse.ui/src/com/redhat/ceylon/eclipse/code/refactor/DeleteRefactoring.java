@@ -114,6 +114,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
 				}
 			}
 		}
+	    @Override
+	    public void visit(Tree.Import that) {}
     }
     
     //TODO: copy/pasted from RenameRefactoring!
@@ -392,6 +394,48 @@ public class DeleteRefactoring extends AbstractRefactoring {
 							tfc.addEdit(new DeleteEdit(start, stop-start));
 							return;
 						}
+					}
+				}
+                super.visit(that);
+        	}
+        	@Override
+        	public void visit(Tree.Import that) {
+        		Tree.ImportMemberOrTypeList list = that.getImportMemberOrTypeList();
+        		if (list!=null && list.getImportMemberOrTypes().size()==1) {
+        			Tree.ImportMemberOrType imp = list.getImportMemberOrTypes().get(0);
+        			Declaration d = imp.getDeclarationModel();
+					if (d.equals(declarationToDelete)) {
+						tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
+								that.getStopIndex()-that.getStartIndex()+1));
+						return;
+					}
+        		}
+        		super.visit(that);
+        	}
+        	@Override
+            public void visit(Tree.ImportMemberOrTypeList that) {
+                List<Tree.ImportMemberOrType> imports = that.getImportMemberOrTypes();
+				for (int i=0; i<imports.size(); i++) {
+					Tree.ImportMemberOrType imp = imports.get(i);
+					Declaration d = imp.getDeclarationModel();
+					if (d.equals(declarationToDelete)) {
+						int start, stop;
+						if (i>0) {
+							Tree.ImportMemberOrType previous = imports.get(i-1);
+							start = previous.getStopIndex()+1;
+							stop = imp.getStopIndex()+1;
+						}
+						else if (i<imports.size()-1) {
+							Tree.ImportMemberOrType next = imports.get(i+1);
+							start = imp.getStartIndex();
+							stop = next.getStartIndex();
+						}
+						else {
+							start = imp.getStartIndex();
+							stop = imp.getStopIndex()+1;
+						}
+						tfc.addEdit(new DeleteEdit(start, stop-start));
+						return;
 					}
 				}
                 super.visit(that);
