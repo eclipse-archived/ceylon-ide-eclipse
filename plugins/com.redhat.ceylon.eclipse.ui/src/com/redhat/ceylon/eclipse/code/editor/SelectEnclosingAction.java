@@ -6,6 +6,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ArgumentList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
@@ -14,6 +15,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ConditionList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ControlClause;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
@@ -21,11 +24,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 class SelectEnclosingAction extends Action {
-    private CeylonEditor fEditor;
+    private CeylonEditor editor;
 
     public SelectEnclosingAction() {
         this(null);
@@ -37,149 +38,154 @@ class SelectEnclosingAction extends Action {
         setEditor(editor);
     }
 
-    public void setEditor(ITextEditor editor) {
+    private void setEditor(ITextEditor editor) {
         if (editor instanceof CeylonEditor) {
-            fEditor= (CeylonEditor) editor;
+            this.editor = (CeylonEditor) editor;
         } 
         else {
-            fEditor= null;
+            this.editor = null;
         }
-        setEnabled(fEditor!=null);
+        setEnabled(this.editor!=null);
     }
     
-    private static class EnclosingVisitor extends Visitor {
-        private Node node;
-        private Node current;
+    private static class EnclosingVisitor extends Visitor implements NaturalVisitor {
         private Node result;
         private int startOffset; 
         private int endOffset;
-        private EnclosingVisitor(Node node, 
-                int startOffset, int endOffset) {
-            this.node = node;
+        private EnclosingVisitor(int startOffset, int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
         }
         private boolean expandsSelection(Node that) {
-            return that.getStartIndex()<startOffset ||
-                    that.getStopIndex()>endOffset;
-        }
-        @Override
-        public void visitAny(Node that) {
-            if (that==node) {
-                result = current;
+            Integer nodeStart = that.getStartIndex();
+            Integer nodeStop = that.getStopIndex();
+            if (nodeStart!=null && nodeStop!=null) {
+                return nodeStart<startOffset && nodeStop+1>=endOffset ||
+                        nodeStart<=startOffset && nodeStop+1>endOffset;
             }
             else {
-                super.visitAny(that);
+                return false;
             }
         }
         @Override
         public void visit(CompilationUnit that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(Body that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(ArgumentList that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(ParameterList that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(ControlClause that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(ConditionList that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(Condition that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(Type that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
+        }
+        @Override
+        public void visit(Identifier that) {
+            if (expandsSelection(that)) {
+                result = that;
+            }
+            super.visit(that);
         }
         @Override
         public void visit(Term that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(ImportMemberOrTypeList that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
+        }
+        @Override
+        public void visit(ImportMemberOrType that) {
+            if (expandsSelection(that)) {
+                result = that;
+            }
+            super.visit(that);
         }
         @Override
         public void visit(SpecifierOrInitializerExpression that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(Expression that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
         @Override
         public void visit(StatementOrArgument that) {
-            Node oc = current;
-            if (expandsSelection(that)) current = that;
+            if (expandsSelection(that)) {
+                result = that;
+            }
             super.visit(that);
-            current = oc;
         }
     }
 
     @Override
     public void run() {
-        IRegion selection= fEditor.getSelection();
-        CeylonParseController pc= fEditor.getParseController();
+        IRegion selection = editor.getSelection();
         int startOffset = selection.getOffset();
-        int endOffset = startOffset + selection.getLength() - 1;
-        CompilationUnit rootNode = pc.getRootNode();
-        Node curNode= Nodes.findNode(rootNode, startOffset, endOffset);
-        if (curNode!=null) {
-            EnclosingVisitor ev = new EnclosingVisitor(curNode, 
-                    startOffset, endOffset);
+        int endOffset = startOffset + selection.getLength();
+        CompilationUnit rootNode = editor.getParseController().getRootNode();
+        if (rootNode!=null) {
+            EnclosingVisitor ev = new EnclosingVisitor(startOffset, endOffset);
             ev.visit(rootNode);
             Node result = ev.result;
             if (result!=null) {
-                fEditor.selectAndReveal(result.getStartIndex(), 
+                editor.selectAndReveal(result.getStartIndex(), 
                         result.getStopIndex()-result.getStartIndex()+1);
             }
         }

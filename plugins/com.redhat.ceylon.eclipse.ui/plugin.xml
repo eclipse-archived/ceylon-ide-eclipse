@@ -773,14 +773,14 @@
             name="Format Block"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Select the innermost enclosing construct"
+            description="Select the innermost enclosing word or construct"
             id="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
-            name="Select Enclosing"/>
+            name="Expand Selection"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Restore the previous selection"
             id="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-            name="Restore Previous Selection"/>
+            name="Unexpand Selection"/>
    </extension>
    
    <extension
@@ -1150,7 +1150,7 @@
             find="M1+M2" replace="M1+M4" 
             platforms="cocoa,carbon"/>
       <sequenceModifier
-            find="M2+M3" replace="M2+M4"
+            find="M2+M3" replace="M2+M3+M4"
             platforms="cocoa,carbon"/>
       
       <!-- Edit actions -->
@@ -1398,7 +1398,7 @@
             <command 
                   id="selectEnclosing"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
-                  label="Select &amp;Enclosing">
+                  label="&amp;Expand Selection">
               <visibleWhen>
                   <with variable="activeEditorId">
                       <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
@@ -1408,7 +1408,7 @@
             <command 
                   id="restorePrevious"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-                  label="Restore Pre&amp;vious Selection">
+                  label="Unexpand Se&amp;lection">
               <visibleWhen>
                   <with variable="activeEditorId">
                       <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
