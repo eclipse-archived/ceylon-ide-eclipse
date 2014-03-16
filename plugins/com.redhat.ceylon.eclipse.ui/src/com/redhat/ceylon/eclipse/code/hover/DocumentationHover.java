@@ -18,7 +18,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescrip
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitalValueDescription;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectionFromThread;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
@@ -27,12 +27,12 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabe
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
-import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
 import static com.redhat.ceylon.eclipse.util.Highlights.NUMBERS;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static java.lang.Character.codePointCount;
 import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
@@ -53,9 +53,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 import org.eclipse.jdt.ui.JavaUI;
@@ -250,7 +248,7 @@ public class DocumentationHover
                 Referenceable target = getLinkedModel(editor, location);
                 if (target!=null) {
                     close(control); //FIXME: should have protocol to hide, rather than dispose
-                    gotoDeclaration(editor, target);
+                    gotoDeclaration(target, editor);
                 }
             }
             else if (location.startsWith("doc:")) {
@@ -413,23 +411,10 @@ public class DocumentationHover
         public void run() {
             close(fInfoControl); //FIXME: should have protocol to hide, rather than dispose
             CeylonBrowserInput input = (CeylonBrowserInput) fInfoControl.getInput();
-            gotoDeclaration(editor, getLinkedModel(editor, input.getAddress()));
+            gotoDeclaration(getLinkedModel(editor, input.getAddress()), editor);
         }
     }
 
-    static void gotoDeclaration(CeylonEditor editor, Referenceable model) {
-        if (model!=null) {
-            CeylonParseController cpc = editor.getParseController();
-            Node refNode = Nodes.getReferencedNode(model, cpc);
-            if (refNode!=null) {
-                gotoNode(refNode, cpc.getProject(), cpc.getTypeChecker());
-            }
-            else if (model instanceof Declaration) {
-                gotoJavaNode((Declaration) model, cpc);
-            }
-        }
-    }
-    
     private static void close(BrowserInformationControl control) {
         control.notifyDelayedInputChange(null);
         control.dispose();
@@ -1283,7 +1268,7 @@ public class DocumentationHover
             buffer.append("</p>");
             if (!hasDoc) {
                 Tree.Declaration refnode2 = 
-                        (Tree.Declaration) Nodes.getReferencedNode(rd, cpc);
+                        (Tree.Declaration) getReferencedNode(rd, cpc);
                 if (refnode2!=null) {
                     appendDocAnnotationContent(refnode2.getAnnotationList(), 
                             buffer, resolveScope(rd));
@@ -1311,7 +1296,7 @@ public class DocumentationHover
                         }
                         StringBuilder doc = new StringBuilder();
                         Tree.Declaration refNode = 
-                                (Tree.Declaration) Nodes.getReferencedNode(p.getModel(), cpc);
+                                (Tree.Declaration) getReferencedNode(p.getModel(), cpc);
                         if (refNode!=null) {
                             appendDocAnnotationContent(refNode.getAnnotationList(), 
                                     doc, resolveScope(dec));
@@ -1383,7 +1368,7 @@ public class DocumentationHover
     private static boolean addDoc(CeylonParseController cpc, 
             Declaration dec, Node node, StringBuilder buffer) {
         boolean hasDoc = false;
-        Node rn = Nodes.getReferencedNode(dec, cpc);
+        Node rn = getReferencedNode(dec, cpc);
         if (rn instanceof Tree.Declaration) {
             Tree.Declaration refnode = (Tree.Declaration) rn;
             appendDeprecatedAnnotationContent(refnode.getAnnotationList(), 
@@ -1622,17 +1607,14 @@ public class DocumentationHover
         }*/
         return result;
     }
-    
+
     private static void appendJavadoc(Declaration model, IProject project,
             StringBuilder buffer, Node node) {
-        IJavaProject jp = JavaCore.create(project);
-        if (jp!=null) {
-            try {
-                appendJavadoc(getJavaElement(model, jp, node), buffer);
-            }
-            catch (JavaModelException jme) {
-                jme.printStackTrace();
-            }
+        try {
+            appendJavadoc(getJavaElement(model), buffer);
+        }
+        catch (JavaModelException jme) {
+            jme.printStackTrace();
         }
     }
 

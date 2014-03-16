@@ -332,7 +332,8 @@ public class Nodes {
 
     public static Node getReferencedNode(Referenceable dec, 
             CeylonParseController controller) {
-        return getReferencedNode(dec, getCompilationUnit(dec, controller));
+        return getReferencedNode(dec, 
+                getCompilationUnit(dec, controller));
     }
 
     public static Referenceable getReferencedModel(Node node) {

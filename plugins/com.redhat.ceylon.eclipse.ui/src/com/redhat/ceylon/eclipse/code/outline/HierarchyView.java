@@ -223,7 +223,7 @@ public class HierarchyView extends ViewPart {
     
     private void gotoCeylonOrJavaDeclaration(Declaration dec) {
         if (dec.getUnit() instanceof JavaClassFile) { //TODO: is this right?!
-            gotoJavaNode(dec, project);
+            gotoJavaNode(dec);
         }
         else {
             gotoDeclaration(dec, project);

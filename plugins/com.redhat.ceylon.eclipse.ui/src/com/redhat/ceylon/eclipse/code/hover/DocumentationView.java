@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.hover;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDeclarationHover;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverInfo;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
@@ -48,6 +47,7 @@ import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
@@ -160,7 +160,7 @@ public class DocumentationView extends ViewPart {
         if (location.startsWith("dec:")) {
             Referenceable target = getLinkedModel(editor, location);
             if (target!=null) {
-                gotoDeclaration(editor, target);
+                Navigation.gotoDeclaration(target, editor);
             }
         }
         else if (location.startsWith("doc:")) {
@@ -329,7 +329,7 @@ public class DocumentationView extends ViewPart {
         }
         @Override
         public void run() {
-            gotoDeclaration(editor, getLinkedModel(editor, info.getAddress()));
+            Navigation.gotoDeclaration(getLinkedModel(editor, info.getAddress()), editor);
         }
     }
     

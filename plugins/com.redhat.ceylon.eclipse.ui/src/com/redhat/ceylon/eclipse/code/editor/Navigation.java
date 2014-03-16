@@ -3,9 +3,9 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
+import static com.redhat.ceylon.eclipse.util.Nodes.getCompilationUnit;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
 
 import org.eclipse.core.resources.IFile;
@@ -19,8 +19,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -45,41 +45,42 @@ public class Navigation {
                 CeylonParseController cpc = ce.getParseController();
                 IProject ep = cpc.getProject();
                 if (ep != null && ep.equals(project)) {
-                    Node node = Nodes.getReferencedNode(d, Nodes.getCompilationUnit(d, cpc));
+                    Node node = getReferencedNode(d, getCompilationUnit(d, cpc));
                     if (node != null) {
-                        gotoNode(node, project, cpc.getTypeChecker());
+                        gotoNode(node);
                         return;
                     }
                 }
             }
             if (d.getUnit() instanceof CeylonUnit) {
                 CeylonUnit ceylonUnit = (CeylonUnit) d.getUnit();
-                Node node = Nodes.getReferencedNode(d, ceylonUnit.getCompilationUnit());
+                Node node = getReferencedNode(d, ceylonUnit.getCompilationUnit());
                 if (node != null) {
-                    gotoNode(node, project, getProjectTypeChecker(project));
+                    gotoNode(node);
                 }
                 else if (ceylonUnit instanceof CeylonBinaryUnit) {
                     CeylonBinaryUnit binaryUnit = (CeylonBinaryUnit) ceylonUnit;
                     if (isJavaLikeFileName(binaryUnit.getSourceRelativePath())) {
-                        gotoJavaNode(d, null, project);
+                        gotoJavaNode(d);
                     }
                 }
             }
             else {
-                gotoJavaNode(d, null, project);
+                gotoJavaNode(d);
             }
         }
         else {
             //it's coming from the "unversioned" JDK module, which
             //we don't display multiple choices for, so just pick
             //the first available project
-            gotoJavaNode(d, null, getProjects().iterator().next());
+            gotoJavaNode(d);
         }
     }
     
-    public static void gotoNode(Node node, IProject project, TypeChecker tc) {
-        gotoLocation(getNodePath(node, project, tc), 
-                Nodes.getStartOffset(node), Nodes.getLength(node));
+    public static void gotoNode(Node node) {
+        gotoLocation(getNodePath(node), 
+                Nodes.getStartOffset(node), 
+                Nodes.getLength(node));
     }
 
     public static void gotoLocation(IPath path, int offset) {
@@ -133,7 +134,7 @@ public class Navigation {
 //                project.equals(((IResourceAware)unit).getProjectResource());
 //    }
 
-    public static IPath getNodePath(Node node, IProject project, TypeChecker tc) {
+    public static IPath getNodePath(Node node) {
         Unit unit = node.getUnit();
         
         if (unit instanceof IResourceAware) {
@@ -150,6 +151,25 @@ public class Navigation {
         }
         
         return null;
+    }
+
+    public static void gotoDeclaration(Referenceable model, 
+            CeylonEditor editor) {
+        gotoDeclaration(model, editor.getParseController());
+    }
+
+    public static void gotoDeclaration(Referenceable model,
+            CeylonParseController controller) {
+        if (model!=null) {
+            Node refNode = getReferencedNode(model, 
+                    controller);
+            if (refNode!=null) {
+                gotoNode(refNode);
+            }
+            else if (model instanceof Declaration) {
+                gotoJavaNode((Declaration) model);
+            }
+        }
     }
     
 }
