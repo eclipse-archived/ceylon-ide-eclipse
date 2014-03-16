@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.inferType;
@@ -10,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -24,27 +26,36 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 class AddParameterProposal extends CorrectionProposal {
     
-    AddParameterProposal(Declaration dec, int offset, TextChange change) {
-        super("Add to parameter list of '" + dec.getName() + "'", 
+	private AddParameterProposal(Declaration d, Declaration dec, 
+			int offset, TextChange change) {
+        super("Add '" + d.getName() + "' to parameter list of '" + dec.getName() + "'", 
                 change, new Point(offset, 0), ADD_CORR);
     }
     
-    static void addParameterProposal(IDocument doc, Tree.CompilationUnit cu,
+    private static void addParameterProposal(Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
-            Tree.TypedDeclaration decNode, Tree.SpecifierOrInitializerExpression sie,
-            CeylonEditor editor) {
+            Tree.TypedDeclaration decNode, Tree.SpecifierOrInitializerExpression sie) {
         MethodOrValue dec = (MethodOrValue) decNode.getDeclarationModel();
         if (dec==null) return;
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
+            TextChange change = new TextFileChange("Add Parameter", file);
+            change.setEdit(new MultiTextEdit());
+            IDocument doc;
+			try {
+				doc = change.getCurrentDocument(null);
+			}
+			catch (CoreException e) {
+				e.printStackTrace();
+				return;
+			}
             //TODO: copy/pasted from SplitDeclarationProposal 
             String params = null;
             if (decNode instanceof Tree.MethodDeclaration) {
@@ -65,10 +76,8 @@ class AddParameterProposal extends CorrectionProposal {
                     }
                 }
             }
-            TextChange change = new TextFileChange("Add Parameter", file);
-//            TextChange change = new DocumentChange("Add Parameter", doc);
-            change.setEdit(new MultiTextEdit());
-            FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(decNode);
+            FindBodyContainerVisitor fcv = 
+            		new FindBodyContainerVisitor(decNode);
             fcv.visit(cu);
             Tree.Declaration container = fcv.getDeclaration();
             Tree.ParameterList pl;
@@ -91,24 +100,33 @@ class AddParameterProposal extends CorrectionProposal {
             }
             String def;
             if (sie==null) {
-                def = " = nothing";
+            	String defaultValue = 
+            			defaultValue(cu.getUnit(), dec.getType());
+            	if (decNode instanceof Tree.MethodDeclaration) {
+            		def = " => " + defaultValue;
+            	}
+            	else {
+            		def = " = " + defaultValue;
+            	}
             }
             else {
-                def = Nodes.toString(sie, 
-                        editor.getParseController().getTokens());
-                int start = sie.getStartIndex();
+            	int start;
                 try {
-                    if (doc.get(start-1,1).equals(" ")) {
+                	def = doc.get(sie.getStartIndex(), 
+                			sie.getStopIndex()-sie.getStartIndex()+1);
+                	start = sie.getStartIndex();
+                    if (start>0 && doc.get(start-1,1).equals(" ")) {
                         start--;
                         def = " " + def;
                     }
                 } 
                 catch (BadLocationException e) {
                     e.printStackTrace();
+                    return;
                 }
-                if (params!=null) def = " = " + params + def;
                 change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
             }
+            if (params!=null) def = " = " + params + def;
             String param = (pl.getParameters().isEmpty() ? "" : ", ") + 
                     dec.getName() + def;
             Integer offset = pl.getStopIndex();
@@ -131,9 +149,26 @@ class AddParameterProposal extends CorrectionProposal {
                 change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), 
                         explicitType));
             }
-            proposals.add(new AddParameterProposal(container.getDeclarationModel(), 
+            proposals.add(new AddParameterProposal(dec, container.getDeclarationModel(), 
                     offset+param.length()+shift, change));
         }
     }
+
+	static void addParameterProposals(Collection<ICompletionProposal> proposals,
+			IFile file, Tree.CompilationUnit cu, Node node) {
+		if (node instanceof Tree.AttributeDeclaration) {
+	        Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) node;
+	        Tree.SpecifierOrInitializerExpression sie = 
+	                attDecNode.getSpecifierOrInitializerExpression();
+	        if (!(sie instanceof Tree.LazySpecifierExpression)) {
+	            addParameterProposal(cu, proposals, file, attDecNode, sie);
+	        }
+	    }
+	    if (node instanceof Tree.MethodDeclaration) {
+	        Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) node;
+	        Tree.SpecifierExpression sie = methDecNode.getSpecifierExpression();
+	        addParameterProposal(cu, proposals, file, methDecNode, sie);
+	    }
+	}
     
 }

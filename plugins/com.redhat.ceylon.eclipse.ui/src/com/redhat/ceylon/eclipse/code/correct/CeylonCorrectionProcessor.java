@@ -23,8 +23,9 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddInitializerProposal.addInitializerProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
-import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddParenthesesProposal.addAddParenthesesProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
@@ -71,7 +72,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowSwitchReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addSpecifyTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addTypingProposals;
-import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposal;
+import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.VerboseRefinementProposal.addVerboseRefinementProposal;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
@@ -120,8 +121,8 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonCorrectionProcessor extends QuickAssistAssistant 
         implements IQuickAssistProcessor {
@@ -487,6 +488,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 1401:
             addMakeFormalDecProposal(proposals, project, node);
             break;
+        case 1450:
+        	addMakeFormalDecProposal(proposals, project, node);
+        	addParameterProposals(proposals, file, cu, node);
+        	addInitializerProposals(proposals, file, cu, node);
+        	break;
         case 1500:
             addRemoveAnnotationDecProposal(proposals, "variable", project, node);
             break;
@@ -589,6 +595,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addDeclarationProposals(editor, proposals, doc, file, cu, 
                     declaration, currentOffset);
             
+            addSplitDeclarationProposals(proposals, doc, file, cu, declaration);
+            addParameterProposals(proposals, file, cu, declaration);
+            
             addArgumentProposals(proposals, doc, file, argument);
             addUseAliasProposal(imp, proposals, editor);
             addRenameAliasProposal(imp, proposals, editor);
@@ -670,7 +679,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    private void addDeclarationProposals(CeylonEditor editor,
+    private static void addDeclarationProposals(CeylonEditor editor,
             Collection<ICompletionProposal> proposals, IDocument doc,
             IFile file, Tree.CompilationUnit cu,
             Tree.Declaration decNode, int currentOffset) {
@@ -737,29 +746,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
         }
-        if (decNode instanceof Tree.AttributeDeclaration) {
-            Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
-            Tree.SpecifierOrInitializerExpression sie = 
-                    attDecNode.getSpecifierOrInitializerExpression();
-            if (sie!=null) {
-                addSplitDeclarationProposal(doc, cu, proposals, file, attDecNode);
-            }
-            if (!(sie instanceof Tree.LazySpecifierExpression)) {
-                addParameterProposal(doc, cu, proposals, file, attDecNode, sie, editor);
-            }
-        }
-        if (decNode instanceof Tree.MethodDeclaration) {
-            Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) decNode;
-            Tree.SpecifierExpression sie = methDecNode.getSpecifierExpression();
-            if (sie!=null) {
-                addSplitDeclarationProposal(doc, cu, proposals, file, methDecNode);
-            }
-            addParameterProposal(doc, cu, proposals, file, methDecNode, sie, editor);
-        }
         
     }
 
-    private void addArgumentProposals(Collection<ICompletionProposal> proposals, 
+	private void addArgumentProposals(Collection<ICompletionProposal> proposals, 
             IDocument doc, IFile file, Tree.StatementOrArgument node) {
         if (node instanceof Tree.MethodArgument) {
             Tree.MethodArgument ma = (Tree.MethodArgument) node;
