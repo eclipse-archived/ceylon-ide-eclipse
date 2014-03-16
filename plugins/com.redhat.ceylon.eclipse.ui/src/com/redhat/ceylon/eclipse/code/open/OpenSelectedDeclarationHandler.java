@@ -11,7 +11,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -40,8 +39,14 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
     
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
-        return super.isEnabled() && editor instanceof CeylonEditor &&
-                getReferencedModel(getSelectedNode(getSelection((ITextEditor) editor)))!=null;
+        if (super.isEnabled() && editor instanceof CeylonEditor) {
+            CeylonEditor ce = (CeylonEditor) editor;
+            return getReferencedModel(getSelectedNode(getSelection(ce)))!=null;
+        }
+        else {
+            return false;
+        }
+                
     }
     
     @Override
@@ -49,7 +54,7 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            Node node = getSelectedNode(getSelection((ITextEditor)ce));
+            Node node = getSelectedNode(getSelection(ce));
             Referenceable ref = getReferencedModel(node);
             if (ref!=null) {
                 gotoDeclaration(ref, ce);
