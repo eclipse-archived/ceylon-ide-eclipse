@@ -57,6 +57,11 @@ public final class ExtractParameterLinkedMode
     }
     
     @Override
+    protected String[] getNameProposals() {
+    	return refactoring.getNameProposals();
+    }
+    
+    @Override
     protected void addLinkedPositions(IDocument document,
             CompilationUnit rootNode, int adjust) {
         

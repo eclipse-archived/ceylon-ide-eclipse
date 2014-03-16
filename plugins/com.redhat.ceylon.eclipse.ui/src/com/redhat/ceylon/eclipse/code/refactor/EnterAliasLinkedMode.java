@@ -143,7 +143,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
             return namePosition.getContent();
         }
         catch (BadLocationException e) {
-            return getOriginalName();
+            return getInitialName();
         }
     }
     
@@ -161,11 +161,11 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         else {
             offset = alias.getStartIndex();
         }
-        String originalName = getOriginalName();
+        String originalName = getInitialName();
         namePosition = new ProposalPosition(document, offset, 
                 originalName.length(), 0,
                 getNameProposals(offset, 0, 
-                        element.getDeclarationModel().getName(),
+                        new String[]{element.getDeclarationModel().getName()},
                         originalName));
         
         linkedPositionGroup.addPosition(namePosition);
@@ -177,7 +177,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
 
     private boolean isEnabled() {
         String newName = getNewNameFromNamePosition();
-        return !getOriginalName().equals(newName) &&
+        return !getInitialName().equals(newName) &&
                 newName.matches("^\\w(\\w|\\d)*$") &&
                 !Escaping.KEYWORDS.contains(newName);
     }

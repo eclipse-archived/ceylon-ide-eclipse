@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
 import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getSupertypeProposals;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
@@ -15,6 +14,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
@@ -60,12 +60,12 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     
     protected void addNamePosition(IDocument document, 
             int offset2, int length) {
-        linkedPositionGroup = new LinkedPositionGroup();
-        namePosition =
-                new ProposalPosition(document, getNameOffset(), 
-                        getOriginalName().length(), 0,
-                        getNameProposals(getTypeOffset(), 1, 
-                                getOriginalName()));
+    	linkedPositionGroup = new LinkedPositionGroup();
+    	namePosition =
+    			new ProposalPosition(document, getNameOffset(), 
+                        getInitialName().length(), 0,
+                        LinkedModeCompletionProposal.getNameProposals(getTypeOffset(), 1, 
+                        		getNameProposals()));
         try {
             linkedPositionGroup.addPosition(namePosition);
             linkedPositionGroup.addPosition(new LinkedPosition(document, 
@@ -77,7 +77,9 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
         }
     }
     
-    protected void addTypePosition(IDocument document,
+    protected abstract String[] getNameProposals();
+
+	protected void addTypePosition(IDocument document,
             ProducedType type, int offset, int length) {
         Unit unit = editor.getParseController().getRootNode().getUnit();
         ProposalPosition linkedPosition = 
@@ -101,7 +103,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
             return namePosition.getContent();
         }
         catch (BadLocationException e) {
-            return getOriginalName();
+            return getInitialName();
         }
     }
 

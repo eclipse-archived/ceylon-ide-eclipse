@@ -47,7 +47,8 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
         private int offset;
         private int exitPos;
         private ProducedType type;
-        private String name;
+        private String initialName;
+        private String[] nameProposals;
         
         private AssignToLocalLinkedMode(IDocument document) {
             super((CeylonEditor) EditorUtil.getCurrentEditor());
@@ -78,20 +79,20 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
                 performInitialChange(document);
                 CeylonParseController cpc = editor.getParseController();
                 Unit unit = cpc.getRootNode().getUnit();
-                
+
                 ProposalPosition typePosition = 
-                        new ProposalPosition(document, offset, 5, 1, 
-                                getSupertypeProposals(offset, unit, 
-                                        type, true));
+                		new ProposalPosition(document, offset, 5, 1, 
+                				getSupertypeProposals(offset, unit, 
+                						type, true));
                 
                 ProposalPosition namePosition = 
-                        new ProposalPosition(document, offset+6, name.length(), 0, 
-                                getNameProposals(offset, 1, name));
-                
+                		new ProposalPosition(document, offset+6, initialName.length(), 0, 
+                				getNameProposals(offset, 1, nameProposals));
+
                 addLinkedPosition(linkedModeModel, typePosition);
                 addLinkedPosition(linkedModeModel, namePosition);
                 
-                enterLinkedMode(document, 2, exitPos + name.length() + 9);
+                enterLinkedMode(document, 2, exitPos + initialName.length() + 9);
                 openPopup();
             }
             catch (BadLocationException e) {
@@ -171,14 +172,15 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
                 currentOffset>stopIndex+1) {
                 return;
             }
-            name = Nodes.guessName(expression);
+            nameProposals = Nodes.guessName(expression);
+            initialName = nameProposals[0];
             offset = expanse.getStartIndex();
             type = resultType==null ? 
                     null : node.getUnit().denotableType(resultType);
             
             DocumentChange change = new DocumentChange("Assign To Local", document);
             change.setEdit(new MultiTextEdit());
-            change.addEdit(new InsertEdit(offset, "value " + name + " = "));
+            change.addEdit(new InsertEdit(offset, "value " + initialName + " = "));
             
             String terminal = expanse.getEndToken().getText();
             if (!terminal.equals(";")) {

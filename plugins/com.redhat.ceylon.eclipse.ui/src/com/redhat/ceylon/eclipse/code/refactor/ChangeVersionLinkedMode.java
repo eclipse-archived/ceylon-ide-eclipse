@@ -127,7 +127,7 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
                     throws BadLocationException {
         versionPosition = new LinkedPosition(document, 
                 version.getStartIndex()+1, 
-                getOriginalName().length(), 0);
+                getInitialName().length(), 0);
         linkedPositionGroup.addPosition(versionPosition);
         rootNode.visit(new LinkedPositionsVisitor(adjust, document, linkedPositionGroup));
     }
@@ -202,7 +202,7 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
             return versionPosition.getContent();
         }
         catch (BadLocationException e) {
-            return getOriginalName();
+            return getInitialName();
         }
     }
 
