@@ -5,6 +5,8 @@ import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJ
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
+import static com.redhat.ceylon.eclipse.util.Nodes.getCompilationUnit;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
@@ -23,7 +25,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
     
@@ -217,18 +218,15 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
         Declaration dec = getDeclaration(project);
         if (dec!=null) {
             //TODO: this is broken for Java declarations
-            Tree.CompilationUnit cu = Nodes.getCompilationUnit(dec, cpc);
+            Tree.CompilationUnit cu = getCompilationUnit(dec, cpc);
             if (cu!=null) {
-                Node refNode = Nodes.getReferencedNode(dec, cu);
+                Node refNode = getReferencedNode(dec, cu);
                 if (refNode!=null) {
-                    TypeChecker tc = cpc==null ?
-                            getProjectTypeChecker(project) :
-                            cpc.getTypeChecker();
-                    gotoNode(refNode, project, tc);
+                    gotoNode(refNode);
                 }
             }
             else {
-                gotoJavaNode(dec, project);
+                gotoJavaNode(dec);
             }
         }
     }

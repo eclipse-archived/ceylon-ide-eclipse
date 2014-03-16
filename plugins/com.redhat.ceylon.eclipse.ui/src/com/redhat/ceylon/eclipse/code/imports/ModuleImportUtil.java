@@ -4,7 +4,6 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static java.util.Collections.singletonMap;
@@ -15,6 +14,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -32,8 +32,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ModuleImportUtil {
 
@@ -94,9 +94,9 @@ public class ModuleImportUtil {
             String moduleName, String moduleVersion) {
         int offset = addModuleImports(project, target, 
                 singletonMap(moduleName, moduleVersion));
-        gotoLocation(getNodePath(
-                findPhasedUnit(project, target).getCompilationUnit(), 
-                        project, getProjectTypeChecker(project)), 
+        IPath path = getNodePath(findPhasedUnit(project, target)
+                .getCompilationUnit());
+        gotoLocation(path, 
                 offset + moduleName.length() + 
                         getDefaultIndent().length() + 10, 
                 moduleVersion.length());

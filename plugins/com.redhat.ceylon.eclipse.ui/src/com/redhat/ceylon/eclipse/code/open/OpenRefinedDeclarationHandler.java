@@ -2,9 +2,8 @@ package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -13,15 +12,15 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-public class OpenSelectedDeclarationHandler extends AbstractHandler {
+public class OpenRefinedDeclarationHandler extends AbstractHandler {
     
-    private Node getSelectedNode(ITextSelection textSel) {
+    private Tree.Declaration getSelectedNode(ITextSelection textSel) {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         CeylonParseController pc = editor.getParseController();
         if (pc==null) {
@@ -33,15 +32,28 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
                 return null;
             }
             else {
-                return findNode(ast, textSel.getOffset());
+                return findDeclaration(ast, 
+                        findNode(ast, textSel.getOffset()));
             }
         }
     }
     
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
-        return super.isEnabled() && editor instanceof CeylonEditor &&
-                getReferencedModel(getSelectedNode(getSelection((ITextEditor) editor)))!=null;
+        if (super.isEnabled() && editor instanceof CeylonEditor) {
+            Tree.Declaration decNode = 
+                    getSelectedNode(getSelection((ITextEditor) editor));
+            if (decNode==null) {
+                return false;
+            }
+            else {
+                Declaration dec = decNode.getDeclarationModel();
+                return !dec.getRefinedDeclaration().equals(dec);
+            }
+        }
+        else {
+            return false;
+        }
     }
     
     @Override
@@ -49,10 +61,12 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            Node node = getSelectedNode(getSelection((ITextEditor)ce));
-            Referenceable ref = getReferencedModel(node);
-            if (ref!=null) {
-                gotoDeclaration(ref, ce);
+            Tree.Declaration decNode = 
+                    getSelectedNode(getSelection((ITextEditor) ce));
+            if (decNode!=null) {
+                Declaration refined = 
+                        decNode.getDeclarationModel().getRefinedDeclaration();
+                Navigation.gotoDeclaration(refined, ce);
             }
         }
         return null;

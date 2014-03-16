@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -120,7 +119,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                     }
                     else {
                         try {
-                            IJavaElement element = getJavaElement(dec, jp, node);
+                            IJavaElement element = getJavaElement(dec);
                             if (element==null) {
                                 return null;
                             }
@@ -137,34 +136,23 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
             }
         }
     }
-
-    public static void gotoJavaNode(Declaration dec, CeylonParseController cpc) {
-        gotoJavaNode(dec, cpc.getProject());
-    }
     
-    public static void gotoJavaNode(Declaration dec, IProject project) {
-        gotoJavaNode(dec, null, project);
-    }
-    
-    public static void gotoJavaNode(Declaration dec, Node node, IProject project) {
-        IJavaProject jp = JavaCore.create(project);
-        if (jp!=null) {
-            try {
-                IJavaElement element = getJavaElement(dec, jp, node);
-                if (element!=null) {
-                    IEditorPart part = openInEditor(element, true);
-                    if (part!=null) {
-                        revealInEditor(part, element);
-                    }
+    public static void gotoJavaNode(Declaration dec) {
+        try {
+            IJavaElement element = getJavaElement(dec);
+            if (element!=null) {
+                IEditorPart part = openInEditor(element, true);
+                if (part!=null) {
+                    revealInEditor(part, element);
                 }
             }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public static IJavaElement getJavaElement(final Declaration dec, IJavaProject jp, Node node)
+    public static IJavaElement getJavaElement(Declaration dec)
             throws JavaModelException {
         if (dec.getUnit() instanceof IJavaModelAware) {
             return ((IJavaModelAware) dec.getUnit()).toJavaElement(dec);

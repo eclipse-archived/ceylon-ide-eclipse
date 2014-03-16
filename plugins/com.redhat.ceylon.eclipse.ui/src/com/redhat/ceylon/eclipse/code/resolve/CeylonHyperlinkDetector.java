@@ -34,8 +34,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public void open() {
-            gotoNode(node, pc.getProject(), 
-                    pc.getTypeChecker());
+            gotoNode(node);
         }
 
         @Override
