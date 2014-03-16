@@ -10,6 +10,7 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
@@ -125,21 +126,30 @@ class CorrectionUtil {
 	    if (t==null) {
 	        return "nothing";
 	    }
-	    String tn = t.getProducedTypeQualifiedName();
-	    if (tn.equals("ceylon.language::Boolean")) {
-	        return "false";
-	    }
-	    else if (tn.equals("ceylon.language::Integer")) {
-	        return "0";
-	    }
-	    else if (tn.equals("ceylon.language::Float")) {
-	        return "0.0";
-	    }
-	    else if (unit.isOptionalType(t)) {
+	    TypeDeclaration tn = t.getDeclaration();
+	    if (unit.isOptionalType(t)) {
 	        return "null";
 	    }
-	    else if (tn.equals("ceylon.language::String")) {
+	    else if (tn.equals(unit.getBooleanDeclaration())) {
+	        return "false";
+	    }
+	    else if (tn.equals(unit.getIntegerDeclaration())) {
+	        return "0";
+	    }
+	    else if (tn.equals(unit.getFloatDeclaration())) {
+	        return "0.0";
+	    }
+	    else if (tn.equals(unit.getStringDeclaration())) {
 	        return "\"\"";
+	    }
+	    else if (unit.getEmptyDeclaration().getType()
+	    		.isSubtypeOf(t)) {
+	    	if (t.getSupertype(unit.getSequentialDeclaration())==null) {
+	    		return "{}";
+	    	}
+	    	else {
+	    		return "[]";
+	    	}
 	    }
 	    else {
 	        return "nothing";
