@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.text.IRegion;
@@ -30,7 +32,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -46,6 +47,9 @@ import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 public class Nodes {
 
     private static final String[] NO_STRINGS = new String[0];
+    private static final Pattern IDPATTERN = 
+            Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
+    
 
 	public static Tree.Declaration findDeclaration(Tree.CompilationUnit cu, Node node) {
         FindDeclarationVisitor fcv = new FindDeclarationVisitor(node);
@@ -498,7 +502,7 @@ public class Nodes {
         return token.getStopIndex()-token.getStartIndex()+1;
     }
 
-    public static String[] guessName(Node node) {
+    public static String[] nameProposals(Node node) {
     	Set<String> names = new LinkedHashSet<String>();
         Node identifyingNode = node;
         if (identifyingNode instanceof Tree.Expression) {
@@ -510,11 +514,11 @@ public class Nodes {
         }
         
         if (identifyingNode instanceof Tree.QualifiedMemberOrTypeExpression) {
-            QualifiedMemberOrTypeExpression qmte = 
+        	Tree.QualifiedMemberOrTypeExpression qmte = 
             		(Tree.QualifiedMemberOrTypeExpression) identifyingNode;
 			Declaration d = qmte.getDeclaration();
             if (d!=null) {
-            	names.add(guessName(d));
+            	addNameProposals(names, d);
             }
         }
         if (identifyingNode instanceof Tree.SumOp) {
@@ -554,7 +558,7 @@ public class Nodes {
                 TypeDeclaration d = type.getDeclaration();
                 if (d instanceof ClassOrInterface || 
                     d instanceof TypeParameter) {
-                    names.add(guessName(d));
+                    addNameProposals(names, d);
                 }
             }
         }
@@ -564,15 +568,24 @@ public class Nodes {
         return names.toArray(NO_STRINGS);
     }
 
-    private static String guessName(Declaration d) {
+    private static void addNameProposals(Set<String> names, Declaration d) {
         String tn = d.getName();
         String name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
-        if (Escaping.KEYWORDS.contains(name)) {
-            return "\\i" + name;
-        }
-        else {
-            return name;
-        }
+		Matcher matcher = IDPATTERN.matcher(name);
+		while (matcher.find()) {
+			int loc = matcher.start(2);
+			String initial = name.substring(matcher.start(1), loc);
+			if (Character.isLowerCase(name.charAt(0))) {
+				initial = initial.toLowerCase();
+			}
+			String subname = initial + name.substring(loc);
+	        if (Escaping.KEYWORDS.contains(subname)) {
+	            names.add("\\i" + subname);
+	        }
+	        else {
+	            names.add(subname);
+	        }
+		}
     }
 
 }

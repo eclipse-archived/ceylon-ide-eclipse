@@ -35,7 +35,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
         if (node instanceof Tree.Term) {
             Tree.Statement statement = Nodes.findStatement(cu, node);
             if (statement instanceof Tree.SwitchStatement) {
-                String name = Nodes.guessName(node)[0];
+                String name = Nodes.nameProposals(node)[0];
                 TextFileChange change = new TextFileChange("Shadow Reference", file);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = statement.getStartIndex();
@@ -73,7 +73,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
             Tree.Variable var = (Tree.Variable) node;
             int offset = var.getIdentifier().getStartIndex();
             Tree.Term term = var.getSpecifierExpression().getExpression().getTerm();
-			String name = Nodes.guessName(term)[0];
+			String name = Nodes.nameProposals(term)[0];
             TextChange change = new TextFileChange("Shadow Reference", file);
             change.setEdit(new MultiTextEdit());
             change.addEdit(new InsertEdit(offset, name + " = "));
@@ -92,7 +92,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
             proposals.add(new ShadowReferenceProposal(offset, 1, change));
         }
         else if (node instanceof Tree.Term) {
-            String name = Nodes.guessName(node)[0];
+            String name = Nodes.nameProposals(node)[0];
             TextChange change = new TextFileChange("Shadow Reference", file);
 //            change.setEdit(new MultiTextEdit());
             Integer offset = node.getStartIndex();

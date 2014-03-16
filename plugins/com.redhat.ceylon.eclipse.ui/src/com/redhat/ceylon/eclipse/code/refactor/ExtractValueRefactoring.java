@@ -37,7 +37,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     
     public ExtractValueRefactoring(ITextEditor editor) {
         super(editor);
-        newName = Nodes.guessName(node)[0];
+        newName = Nodes.nameProposals(node)[0];
     }
     
     @Override
@@ -154,7 +154,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     }
     
 	public String[] getNameProposals() {
-		return Nodes.guessName(node);
+		return Nodes.nameProposals(node);
 	}
     
 }

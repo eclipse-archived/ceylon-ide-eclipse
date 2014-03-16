@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -192,9 +190,6 @@ public class LinkedModeCompletionProposal
         }
     }
     
-    private static final Pattern IDPATTERN = 
-            Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
-    
     public static ICompletionProposal[] getNameProposals(int offset, 
             int seq, String[] names) {
         return getNameProposals(offset, seq, names, null);
@@ -212,22 +207,11 @@ public class LinkedModeCompletionProposal
             proposedNames.add(defaultName);
         }
         for (String name: names) {
-        	if (name!=null) {
-        		Matcher matcher = IDPATTERN.matcher(name);
-        		while (matcher.find()) {
-        			int loc = matcher.start(2);
-        			String initial = name.substring(matcher.start(1), loc);
-        			if (Character.isLowerCase(name.charAt(0))) {
-        				initial = initial.toLowerCase();
-        			}
-        			String subname = initial + name.substring(loc);
-        			if (proposedNames.add(subname)) {
-        				if (defaultName==null || !defaultName.equals(subname)) {
-        					LinkedModeCompletionProposal nameProposal = 
-        							new LinkedModeCompletionProposal(offset, subname, seq);
-        					nameProposals.add(nameProposal);
-        				}
-        			}
+        	if (proposedNames.add(name)) {
+        		if (defaultName==null || !defaultName.equals(name)) {
+        			LinkedModeCompletionProposal nameProposal = 
+        					new LinkedModeCompletionProposal(offset, name, seq);
+        			nameProposals.add(nameProposal);
         		}
         	}
         }
