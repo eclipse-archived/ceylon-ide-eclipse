@@ -16,7 +16,7 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
     
     private String initialName;
 
-    protected String getOriginalName() {
+    protected String getInitialName() {
         return initialName;
     }
     

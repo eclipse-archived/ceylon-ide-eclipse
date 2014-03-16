@@ -121,7 +121,7 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
                         thenTerm = leftTermStr;
                         test = "exists " + leftTermStr;            
                     } else  {
-                        String id = Nodes.guessName(leftTerm);
+                        String id = Nodes.guessName(leftTerm)[0];
                         test = "exists " + id + " = " + leftTermStr;
                         thenTerm = id;
                     }    

@@ -260,7 +260,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             newName = result.getDeclarationModel().getName();
         }
         else {
-            newName = Nodes.guessName(node);
+            newName = Nodes.guessName(node)[0];
             if ("it".equals(newName)) {
                 newName = "do";
             }
@@ -752,5 +752,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     ProducedType getType() {
         return returnType;
     }
+    
+	public String[] getNameProposals() {
+		return Nodes.guessName(node);
+	}
     
 }

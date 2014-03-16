@@ -6,7 +6,9 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIF
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.text.IRegion;
@@ -28,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -42,7 +45,9 @@ import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
 public class Nodes {
 
-    public static Tree.Declaration findDeclaration(Tree.CompilationUnit cu, Node node) {
+    private static final String[] NO_STRINGS = new String[0];
+
+	public static Tree.Declaration findDeclaration(Tree.CompilationUnit cu, Node node) {
         FindDeclarationVisitor fcv = new FindDeclarationVisitor(node);
         fcv.visit(cu);
         return fcv.getDeclarationNode();
@@ -493,7 +498,8 @@ public class Nodes {
         return token.getStopIndex()-token.getStartIndex()+1;
     }
 
-    public static String guessName(Node node) {
+    public static String[] guessName(Node node) {
+    	Set<String> names = new LinkedHashSet<String>();
         Node identifyingNode = node;
         if (identifyingNode instanceof Tree.Expression) {
             identifyingNode = ((Tree.Expression) identifyingNode).getTerm();
@@ -503,41 +509,69 @@ public class Nodes {
                     .getPrimary();
         }
         
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            Declaration d = ((Tree.MemberOrTypeExpression) node).getDeclaration();
+        if (identifyingNode instanceof Tree.QualifiedMemberOrTypeExpression) {
+            QualifiedMemberOrTypeExpression qmte = 
+            		(Tree.QualifiedMemberOrTypeExpression) identifyingNode;
+			Declaration d = qmte.getDeclaration();
             if (d!=null) {
-                return guessName(identifyingNode, d);
+            	names.add(guessName(d));
             }
         }
-        else if (node instanceof Tree.Term) {
+        if (identifyingNode instanceof Tree.SumOp) {
+        	names.add("sum");
+        }
+        else if (identifyingNode instanceof Tree.DifferenceOp) {
+        	names.add("difference");
+        }
+        else if (identifyingNode instanceof Tree.ProductOp) {
+        	names.add("product");
+        }
+        else if (identifyingNode instanceof Tree.QuotientOp) {
+        	names.add("ratio");
+        }
+        else if (identifyingNode instanceof Tree.RemainderOp) {
+        	names.add("remainder");
+        }
+        else if (identifyingNode instanceof Tree.UnionOp) {
+        	names.add("union");
+        }
+        else if (identifyingNode instanceof Tree.IntersectionOp) {
+        	names.add("intersection");
+        }
+        else if (identifyingNode instanceof Tree.ComplementOp) {
+        	names.add("complement");
+        }
+        else if (identifyingNode instanceof Tree.RangeOp) {
+        	names.add("range");
+        }
+        else  if (identifyingNode instanceof Tree.EntryOp) {
+        	names.add("entry");
+        }
+
+        if (identifyingNode instanceof Tree.Term) {
             ProducedType type = ((Tree.Term) node).getTypeModel();
             if (type!=null) {
                 TypeDeclaration d = type.getDeclaration();
                 if (d instanceof ClassOrInterface || 
                     d instanceof TypeParameter) {
-                    return guessName(identifyingNode, d);
+                    names.add(guessName(d));
                 }
             }
         }
-        
-        return "it";
+        if (names.isEmpty()) {
+        	names.add("it");
+        }
+        return names.toArray(NO_STRINGS);
     }
 
-    private static String guessName(Node identifyingNode, Declaration d) {
+    private static String guessName(Declaration d) {
         String tn = d.getName();
         String name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
-        if (identifyingNode instanceof Tree.BaseMemberExpression) {
-            Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) identifyingNode;
-            String id = bme.getIdentifier().getText();
-            if (name.equals(id)) {
-                return name + "2";
-            }
-        }
-        if (!Escaping.KEYWORDS.contains(name)) {
-            return name;
+        if (Escaping.KEYWORDS.contains(name)) {
+            return "\\i" + name;
         }
         else {
-            return "it";
+            return name;
         }
     }
 

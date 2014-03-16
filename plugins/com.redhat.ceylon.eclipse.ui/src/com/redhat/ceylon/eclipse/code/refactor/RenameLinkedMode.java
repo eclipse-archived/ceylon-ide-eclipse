@@ -44,7 +44,7 @@ public final class RenameLinkedMode
         
     private boolean isEnabled() {
         String newName = getNewNameFromNamePosition();
-        return !getOriginalName().equals(newName) &&
+        return !getInitialName().equals(newName) &&
                 newName.matches("^\\w(\\w|\\d)*$") &&
                 !Escaping.KEYWORDS.contains(newName);
     }
@@ -97,7 +97,7 @@ public final class RenameLinkedMode
 //                getOriginalName().length(), 0, 
 //                LinkedModeCompletionProposal.getNameProposals(offset, 0, getOriginalName()));
         namePosition = new LinkedPosition(document, offset, 
-                getOriginalName().length(), 0);
+                getInitialName().length(), 0);
         linkedPositionGroup.addPosition(namePosition);
         
         int i=1;
@@ -172,7 +172,7 @@ public final class RenameLinkedMode
             return namePosition.getContent();
         }
         catch (BadLocationException e) {
-            return getOriginalName();
+            return getInitialName();
         }
     }
 

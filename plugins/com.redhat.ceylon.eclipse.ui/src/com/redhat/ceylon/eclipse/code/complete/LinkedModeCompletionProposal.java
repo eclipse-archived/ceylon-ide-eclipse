@@ -5,7 +5,9 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImag
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -194,32 +196,40 @@ public class LinkedModeCompletionProposal
             Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
     
     public static ICompletionProposal[] getNameProposals(int offset, 
-            int seq, String name) {
-        return getNameProposals(offset, seq, name, null);
+            int seq, String[] names) {
+        return getNameProposals(offset, seq, names, null);
     }
     
     public static ICompletionProposal[] getNameProposals(int offset, 
-            int seq, String name, String defaultName) {
+            int seq, String[] names, String defaultName) {
         List<ICompletionProposal> nameProposals = 
                 new ArrayList<ICompletionProposal>();
+        Set<String> proposedNames = new HashSet<String>();
         if (defaultName!=null) {
             LinkedModeCompletionProposal nameProposal = 
                     new LinkedModeCompletionProposal(offset, defaultName, seq);
             nameProposals.add(nameProposal);
+            proposedNames.add(defaultName);
         }
-        Matcher matcher = IDPATTERN.matcher(name);
-        while (matcher.find()) {
-            int loc = matcher.start(2);
-            String initial = name.substring(matcher.start(1), loc);
-            if (Character.isLowerCase(name.charAt(0))) {
-                initial = initial.toLowerCase();
-            }
-            String subname = initial + name.substring(loc);
-            if (defaultName==null || !defaultName.equals(subname)) {
-                LinkedModeCompletionProposal nameProposal = 
-                        new LinkedModeCompletionProposal(offset, subname, seq);
-                nameProposals.add(nameProposal);
-            }
+        for (String name: names) {
+        	if (name!=null) {
+        		Matcher matcher = IDPATTERN.matcher(name);
+        		while (matcher.find()) {
+        			int loc = matcher.start(2);
+        			String initial = name.substring(matcher.start(1), loc);
+        			if (Character.isLowerCase(name.charAt(0))) {
+        				initial = initial.toLowerCase();
+        			}
+        			String subname = initial + name.substring(loc);
+        			if (proposedNames.add(subname)) {
+        				if (defaultName==null || !defaultName.equals(subname)) {
+        					LinkedModeCompletionProposal nameProposal = 
+        							new LinkedModeCompletionProposal(offset, subname, seq);
+        					nameProposals.add(nameProposal);
+        				}
+        			}
+        		}
+        	}
         }
         ICompletionProposal[] proposals = 
                 new ICompletionProposal[nameProposals.size() + 1];
