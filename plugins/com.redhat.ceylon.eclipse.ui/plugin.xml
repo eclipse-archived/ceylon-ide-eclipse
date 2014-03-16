@@ -937,7 +937,7 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
-            sequence="SHIFT+F4"
+            sequence="SHIFT+F3"
             commandId="com.redhat.ceylon.eclipse.ui.action.openRefinedDeclaration"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
