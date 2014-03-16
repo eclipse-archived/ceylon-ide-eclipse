@@ -30,12 +30,12 @@ import com.redhat.ceylon.eclipse.util.Indents;
 
 class SplitDeclarationProposal extends CorrectionProposal {
     
-    SplitDeclarationProposal(Declaration dec, int offset, TextChange change) {
+	private SplitDeclarationProposal(Declaration dec, int offset, TextChange change) {
         super("Split declaration of '" + dec.getName() + "'", change,
                 new Point(offset, 0));
     }
     
-    static void addSplitDeclarationProposal(IDocument doc, Tree.CompilationUnit cu,
+	private static void addSplitDeclarationProposal(IDocument doc, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.TypedDeclaration decNode) {
         TypedDeclaration dec = decNode.getDeclarationModel();
@@ -90,5 +90,25 @@ class SplitDeclarationProposal extends CorrectionProposal {
         }
         proposals.add(new SplitDeclarationProposal(dec, offset+il, change));
     }
+
+	static void addSplitDeclarationProposals(
+			Collection<ICompletionProposal> proposals, IDocument doc,
+			IFile file, Tree.CompilationUnit cu, Tree.Declaration decNode) {
+		if (decNode instanceof Tree.AttributeDeclaration) {
+	        Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
+	        Tree.SpecifierOrInitializerExpression sie = 
+	                attDecNode.getSpecifierOrInitializerExpression();
+	        if (sie!=null) {
+	            addSplitDeclarationProposal(doc, cu, proposals, file, attDecNode);
+	        }
+	    }
+	    if (decNode instanceof Tree.MethodDeclaration) {
+	        Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) decNode;
+	        Tree.SpecifierExpression sie = methDecNode.getSpecifierExpression();
+	        if (sie!=null) {
+	            addSplitDeclarationProposal(doc, cu, proposals, file, methDecNode);
+	        }
+	    }
+	}
     
 }

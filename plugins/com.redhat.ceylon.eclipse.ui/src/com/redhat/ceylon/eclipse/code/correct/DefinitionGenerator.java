@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
-import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.defaultValue;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_CLASS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_METHOD;

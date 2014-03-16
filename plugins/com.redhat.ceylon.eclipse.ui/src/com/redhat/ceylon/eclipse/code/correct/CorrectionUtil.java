@@ -120,5 +120,30 @@ class CorrectionUtil {
         }
         return missingSatisfiedTypesText.toString();
     }
+
+	static String defaultValue(Unit unit, ProducedType t) {
+	    if (t==null) {
+	        return "nothing";
+	    }
+	    String tn = t.getProducedTypeQualifiedName();
+	    if (tn.equals("ceylon.language::Boolean")) {
+	        return "false";
+	    }
+	    else if (tn.equals("ceylon.language::Integer")) {
+	        return "0";
+	    }
+	    else if (tn.equals("ceylon.language::Float")) {
+	        return "0.0";
+	    }
+	    else if (unit.isOptionalType(t)) {
+	        return "null";
+	    }
+	    else if (tn.equals("ceylon.language::String")) {
+	        return "\"\"";
+	    }
+	    else {
+	        return "nothing";
+	    }
+	}
     
 }

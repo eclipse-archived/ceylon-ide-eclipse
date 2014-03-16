@@ -33,7 +33,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -204,7 +203,7 @@ class CreateParameterProposal extends CorrectionProposal {
                 }
                 if (t!=null && n!=null) {
                     t = node.getUnit().denotableType(t);
-                    String dv = defaultValue(prim.getUnit(), t);
+                    String dv = CorrectionUtil.defaultValue(prim.getUnit(), t);
                     String tn = t.getProducedTypeName();
                     String def = tn + " " + n + " = " + dv;
                     String desc = "parameter '" + n +"'";
@@ -219,31 +218,6 @@ class CreateParameterProposal extends CorrectionProposal {
         }
     }
 
-    static String defaultValue(Unit unit, ProducedType t) {
-        if (t==null) {
-            return "nothing";
-        }
-        String tn = t.getProducedTypeQualifiedName();
-        if (tn.equals("ceylon.language::Boolean")) {
-            return "false";
-        }
-        else if (tn.equals("ceylon.language::Integer")) {
-            return "0";
-        }
-        else if (tn.equals("ceylon.language::Float")) {
-            return "0.0";
-        }
-        else if (unit.isOptionalType(t)) {
-            return "null";
-        }
-        else if (tn.equals("ceylon.language::String")) {
-            return "\"\"";
-        }
-        else {
-            return "nothing";
-        }
-    }
-    
     private static Tree.ParameterList getParameters(Tree.Declaration decNode) {
         if (decNode instanceof Tree.AnyClass) {
             return ((Tree.AnyClass) decNode).getParameterList();
