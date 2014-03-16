@@ -12,7 +12,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 class RestorePreviousSelectionAction extends Action {
-    private CeylonEditor fEditor;
+    private CeylonEditor editor;
     private List<IRegion> previous = new ArrayList<IRegion>();
     private boolean restoring;
 
@@ -22,7 +22,7 @@ class RestorePreviousSelectionAction extends Action {
     
     @Override
     public boolean isEnabled() {
-        return super.isEnabled() && fEditor!=null;
+        return super.isEnabled() && editor!=null;
     }
 
     public RestorePreviousSelectionAction(CeylonEditor editor) {
@@ -31,15 +31,15 @@ class RestorePreviousSelectionAction extends Action {
         setEditor(editor);
     }
 
-    public void setEditor(ITextEditor editor) {
+    private void setEditor(ITextEditor editor) {
         if (editor instanceof CeylonEditor) {
-            fEditor= (CeylonEditor) editor;
-            fEditor.getSelectionProvider()
+            this.editor = (CeylonEditor) editor;
+            this.editor.getSelectionProvider()
             .addSelectionChangedListener(new ISelectionChangedListener() {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
                     if (!restoring) {
-                        IRegion r = fEditor.getSelection();
+                        IRegion r = RestorePreviousSelectionAction.this.editor.getSelection();
                         if (r.getLength()==0) {
                             previous.clear();
                         }
@@ -53,7 +53,7 @@ class RestorePreviousSelectionAction extends Action {
             });
          } 
         else {
-            fEditor= null;
+            this.editor= null;
         }
        setEnabled(false);
     }
@@ -66,7 +66,7 @@ class RestorePreviousSelectionAction extends Action {
         if (previous.size()>0) {
             IRegion r = previous.get(previous.size()-1);
             restoring=true;
-            fEditor.selectAndReveal(r.getOffset(), r.getLength());
+            editor.selectAndReveal(r.getOffset(), r.getLength());
             restoring=false;
             setEnabled(previous.size()>1);
         }
