@@ -84,7 +84,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         
     public ExtractParameterRefactoring(ITextEditor editor) {
         super(editor);
-        newName = Nodes.guessName(node)[0];
+        newName = Nodes.nameProposals(node)[0];
         FindFunctionVisitor ffv = new FindFunctionVisitor(node);
         ffv.visit(rootNode);
         methodOrClass = ffv.getDefinitionNode();
@@ -257,7 +257,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     }
 
 	public String[] getNameProposals() {
-		return Nodes.guessName(node);
+		return Nodes.nameProposals(node);
 	}
     
 }

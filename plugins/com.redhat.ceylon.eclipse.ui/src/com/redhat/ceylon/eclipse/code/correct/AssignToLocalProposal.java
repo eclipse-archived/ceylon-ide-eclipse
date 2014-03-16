@@ -172,7 +172,7 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
                 currentOffset>stopIndex+1) {
                 return;
             }
-            nameProposals = Nodes.guessName(expression);
+            nameProposals = Nodes.nameProposals(expression);
             initialName = nameProposals[0];
             offset = expanse.getStartIndex();
             type = resultType==null ? 
