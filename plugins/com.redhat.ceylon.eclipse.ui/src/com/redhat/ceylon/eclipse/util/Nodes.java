@@ -28,6 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
@@ -525,7 +526,7 @@ public class Nodes {
             		(Tree.QualifiedMemberOrTypeExpression) identifyingNode;
 			Declaration d = qmte.getDeclaration();
             if (d!=null) {
-            	addNameProposals(names, d);
+            	addNameProposals(names, d, false);
             }
         }
         if (identifyingNode instanceof Tree.SumOp) {
@@ -561,11 +562,15 @@ public class Nodes {
 
         if (identifyingNode instanceof Tree.Term) {
             ProducedType type = ((Tree.Term) node).getTypeModel();
-            if (type!=null) {
+            if (!Util.isTypeUnknown(type)) {
                 TypeDeclaration d = type.getDeclaration();
                 if (d instanceof ClassOrInterface || 
                     d instanceof TypeParameter) {
-                    addNameProposals(names, d);
+                    addNameProposals(names, d, false);
+                }
+                if (node.getUnit().isIterableType(type)) {
+                    ProducedType iteratedType = node.getUnit().getIteratedType(type);
+                    addNameProposals(names, iteratedType.getDeclaration(), true);
                 }
             }
         }
@@ -575,8 +580,13 @@ public class Nodes {
         return names.toArray(NO_STRINGS);
     }
 
-    private static void addNameProposals(Set<String> names, Declaration d) {
-        String tn = d.getName();
+    private static void addNameProposals(Set<String> names, Declaration d,
+            boolean plural) {
+        addNameProposals(names, plural, d.getName());
+    }
+
+    public static void addNameProposals(Set<String> names, boolean plural,
+            String tn) {
         String name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
 		Matcher matcher = IDPATTERN.matcher(name);
 		while (matcher.find()) {
@@ -586,6 +596,7 @@ public class Nodes {
 				initial = initial.toLowerCase();
 			}
 			String subname = initial + name.substring(loc);
+			if (plural) subname += "s";
 	        if (Escaping.KEYWORDS.contains(subname)) {
 	            names.add("\\i" + subname);
 	        }
