@@ -59,6 +59,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
             }
         }
         else if (!prefix.isEmpty() && ol!=CATCH && ol!=CASE) {
+            //TODO: this filters out satisfies/extends in an object named arg
             for (String keyword: ol==EXPRESSION ? expressionKeywords : Escaping.KEYWORDS) {
                 if (keyword.startsWith(prefix)) {
                     addKeywordProposal(offset, prefix, result, keyword);
