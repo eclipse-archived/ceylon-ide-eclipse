@@ -2653,11 +2653,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return repositoryManager;
     }
     
-    public static Iterable<IProject> getProjects() {
+    public static Collection<IProject> getProjects() {
         return typeCheckers.keySet();
     }
 
-    public static Iterable<TypeChecker> getTypeCheckers() {
+    public static Collection<TypeChecker> getTypeCheckers() {
         return typeCheckers.values();
     }
 
