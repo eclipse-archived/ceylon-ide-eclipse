@@ -26,6 +26,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
@@ -178,12 +179,15 @@ public class ModuleImportUtil {
 
     private static PhasedUnit findPhasedUnit(IProject project, 
             Module module) {
-        String moduleFullPath = module.getUnit().getFullPath();
-        List<PhasedUnit> phasedUnits = getUnits(project);
-        for (PhasedUnit phasedUnit: phasedUnits) {
-            if (phasedUnit.getUnit().getFullPath()
-                    .equals(moduleFullPath)) {
-                return phasedUnit;
+        Unit unit = module.getUnit();
+        if (unit != null) {
+            String moduleFullPath = unit.getFullPath();
+            List<PhasedUnit> phasedUnits = getUnits(project);
+            for (PhasedUnit phasedUnit: phasedUnits) {
+                if (phasedUnit.getUnit().getFullPath()
+                        .equals(moduleFullPath)) {
+                    return phasedUnit;
+                }
             }
         }
         return null;
@@ -191,12 +195,15 @@ public class ModuleImportUtil {
 
     public static PhasedUnit findPhasedUnit(IProject project, 
             Package pkg) {
-        String moduleFullPath = pkg.getUnit().getFullPath();
-        List<PhasedUnit> phasedUnits = getUnits(project);
-        for (PhasedUnit phasedUnit: phasedUnits) {
-            if (phasedUnit.getUnit().getFullPath()
-                    .equals(moduleFullPath)) {
-                return phasedUnit;
+        Unit unit = pkg.getUnit();
+        if (unit != null) {
+            String moduleFullPath = unit.getFullPath();
+            List<PhasedUnit> phasedUnits = getUnits(project);
+            for (PhasedUnit phasedUnit: phasedUnits) {
+                if (phasedUnit.getUnit().getFullPath()
+                        .equals(moduleFullPath)) {
+                    return phasedUnit;
+                }
             }
         }
         return null;
