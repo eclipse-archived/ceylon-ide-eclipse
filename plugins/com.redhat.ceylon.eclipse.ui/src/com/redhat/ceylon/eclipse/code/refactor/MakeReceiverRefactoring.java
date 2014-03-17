@@ -182,19 +182,20 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                             if (arg.getParameter().getModel().equals(parameter)) {
                                 tfc.addEdit(new InsertEdit(p.getStartIndex(), 
                                         MakeReceiverRefactoring.this.toString(arg) + "."));
-                                int start = arg.getStartIndex();
-                                Integer end = arg.getStopIndex()+1;
+                                int start, stop;
                                 if (i>0) {
-                                    int comma = pas.get(i-1).getStopIndex()+1;
-                                    tfc.addEdit(new DeleteEdit(comma, end-comma));
+                                    start = pas.get(i-1).getStopIndex()+1;
+                                    stop = arg.getStopIndex()+1;
                                 }
                                 else if (i<pas.size()-1) {
-                                    int next = pas.get(i+1).getStartIndex();
-                                    tfc.addEdit(new DeleteEdit(start, next-start));
+                                    start = arg.getStartIndex();
+                                    stop = pas.get(i+1).getStartIndex();
                                 }
                                 else {
-                                    tfc.addEdit(new DeleteEdit(start, end-start));
+                                    start = arg.getStartIndex();
+                                    stop = arg.getStopIndex()+1;
                                 }
+                                tfc.addEdit(new DeleteEdit(start, stop-start));
                                 return; //NOTE: early exit!!!
                             }
                         }
@@ -205,7 +206,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                     }
                     if (nal!=null) {
                         List<Tree.NamedArgument> nas = nal.getNamedArguments();
-                        for (Tree.NamedArgument arg: nas) {
+                        for (int i=0; i<nas.size(); i++) {
+                            Tree.NamedArgument arg = nas.get(i);
                             Parameter param = arg.getParameter();
                             if (param!=null && param.getModel().equals(parameter)) {
                                 if (arg instanceof Tree.SpecifiedArgument) {
@@ -213,8 +215,6 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                             .getExpression();
                                     tfc.addEdit(new InsertEdit(p.getStartIndex(), 
                                             MakeReceiverRefactoring.this.toString(e) + "."));
-                                    tfc.addEdit(new DeleteEdit(arg.getStartIndex(), 
-                                            arg.getStopIndex()-arg.getStartIndex()+1));
                                 }
                                 else {
                                     String name = arg.getIdentifier().getText();
@@ -222,9 +222,21 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                             MakeReceiverRefactoring.this.toString(arg) + 
                                             getDefaultLineDelimiter(doc) + Indents.getIndent(that, doc) + 
                                             name  + "."));
-                                    tfc.addEdit(new DeleteEdit(arg.getStartIndex(), 
-                                            arg.getStopIndex()-arg.getStartIndex()+1));
                                 }
+                                int start, stop;
+                                if (i>0) {
+                                    start = nas.get(i-1).getStopIndex()+1;
+                                    stop = arg.getStopIndex()+1;
+                                }
+                                else if (i<nas.size()-1) {
+                                    start = arg.getStartIndex();
+                                    stop = nas.get(i+1).getStartIndex();
+                                }
+                                else {
+                                    start = arg.getStartIndex();
+                                    stop = arg.getStopIndex()+1;
+                                }
+                                tfc.addEdit(new DeleteEdit(start, stop-start));
                                 return; //NOTE: early exit!!
                             }
                         }
