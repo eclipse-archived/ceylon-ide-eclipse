@@ -489,6 +489,10 @@ public class JDTModule extends LazyModule {
         return isCeylonBinaryArchive() || isSourceArchive();
     }
     
+    public boolean isDefaultModule() {
+        return this.equals(moduleManager.getContext().getModules().getDefaultModule());
+    }
+    
     public boolean isProjectModule() {
         return ModuleType.PROJECT_MODULE.equals(moduleType);
     }
