@@ -312,8 +312,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
         CompositeChange change = new CompositeChange("Safe Delete");
         List<PhasedUnit> units = getAllUnits();
         if (searchInEditor()) {
-            deleteInFile(change, newDocumentChange(), 
-                    rootNode);
+            deleteInFile(change, newDocumentChange(), rootNode);
         }
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
