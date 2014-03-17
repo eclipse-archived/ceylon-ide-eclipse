@@ -662,17 +662,20 @@ public class JDTModelLoader extends AbstractModelLoader {
                 JDTModule jdtModule = (JDTModule) module;
                 if (jdtModule.isCeylonBinaryArchive()) {
                     for (Package p : jdtModule.getPackages()) {
-                        if (p.getNameAsString().equals(jdtModule.getNameAsString())) {
-                            if (p.getUnit() == null) {
-                                ClassMirror packageClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".package_");
-                                // some modules do not declare their main package, because they don't have any declaration to share
-                                // there, for example, so this can be null
-                                if(packageClassMirror != null)
-                                    p.setUnit(newCompiledUnit((LazyPackage) p, packageClassMirror));
-                            }
+                        if (p.getUnit() == null) {
+                            ClassMirror packageClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".package_");
+                            // some modules do not declare their main package, because they don't have any declaration to share
+                            // there, for example, so this can be null
+                            if(packageClassMirror != null)
+                                p.setUnit(newCompiledUnit((LazyPackage) p, packageClassMirror));
                         }
-                        if (jdtModule.getUnit() == null) {
-                            jdtModule.setUnit(getCompiledUnit((LazyPackage) p, lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".module_")));
+                        if (p.getNameAsString().equals(jdtModule.getNameAsString())) {
+                            if (jdtModule.getUnit() == null) {
+                                ClassMirror moduleClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".module_");
+                                if (moduleClassMirror != null) {
+                                    jdtModule.setUnit(newCompiledUnit((LazyPackage) p, moduleClassMirror));
+                                }
+                            }
                         }
                     }
                 }
