@@ -29,7 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 
-public class AddModuleImportProposal implements ICompletionProposal, 
+class AddModuleImportProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
     
     private final IProject project;
@@ -108,18 +108,18 @@ public class AddModuleImportProposal implements ICompletionProposal,
                 }
             }
         }
+        ModuleQuery query = new ModuleQuery(formatPath(ids), getModuleQueryType(project));
+        query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+        query.setCount(2l);
+        ModuleSearchResult msr = tc.getContext().getRepositoryManager()
+                .searchModules(query);
         for (int i=ids.size(); i>0; i--) {
             String pn = formatPath(ids.subList(0, i));
-            ModuleQuery query = new ModuleQuery(pn, getModuleQueryType(project));
-            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
-            query.setCount(2l);
-            ModuleSearchResult msr = tc.getContext().getRepositoryManager()
-                    .searchModules(query);
             ModuleDetails md = msr.getResult(pn);
             if (md!=null) {
                 proposals.add(new AddModuleImportProposal(project, unit, md));
+                break;
             }
-            if (!msr.getResults().isEmpty()) break;
         }
     }
 
