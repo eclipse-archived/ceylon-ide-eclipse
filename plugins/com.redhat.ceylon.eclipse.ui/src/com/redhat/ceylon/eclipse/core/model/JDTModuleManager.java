@@ -121,9 +121,10 @@ public class JDTModuleManager extends LazyModuleManager {
 
             //build default module (module in which packages belong to when not explicitly under a module
             final List<String> defaultModuleName = Collections.singletonList(Module.DEFAULT_MODULE_NAME);
-            final Module defaultModule = createModule(defaultModuleName, "unversioned");
+            final JDTModule defaultModule = createModule(defaultModuleName, "unversioned");
             defaultModule.setDefault(true);
             defaultModule.setAvailable(true);
+            defaultModule.setProjectModule();
             modules.getListOfModules().add(defaultModule);
             modules.setDefaultModule(defaultModule);
 
@@ -231,7 +232,7 @@ public class JDTModuleManager extends LazyModuleManager {
     }
     
     @Override
-    protected Module createModule(List<String> moduleName, String version) {
+    protected JDTModule createModule(List<String> moduleName, String version) {
         JDTModule module = null;
         String moduleNameString = Util.getName(moduleName);
         List<IPackageFragmentRoot> roots = new ArrayList<IPackageFragmentRoot>();
