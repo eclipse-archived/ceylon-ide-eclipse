@@ -8,7 +8,7 @@ public class FindBodyContainerVisitor extends Visitor {
     Node node;
     Tree.Declaration declaration;
     Tree.Declaration currentDeclaration;
-    public Tree.Declaration getDeclaration() {
+    public Tree.Declaration getDeclarationNode() {
         return declaration;
     }
     public FindBodyContainerVisitor(Node node) {
@@ -56,6 +56,7 @@ public class FindBodyContainerVisitor extends Visitor {
         super.visit(that);
         currentDeclaration = d;
     }
+    @Override
     public void visitAny(Node node) {
         if (this.node==node) {
             declaration=currentDeclaration;

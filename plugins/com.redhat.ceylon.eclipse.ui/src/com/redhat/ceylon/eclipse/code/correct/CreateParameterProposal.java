@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,7 +37,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class CreateParameterProposal extends CorrectionProposal {
@@ -137,9 +137,7 @@ class CreateParameterProposal extends CorrectionProposal {
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
             IProject project, DefinitionGenerator dg) {
         if (Character.isLowerCase(dg.brokenName.charAt(0))) {
-            FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(dg.node);
-            fcv.visit(dg.rootNode);
-            Tree.Declaration decl = fcv.getDeclaration();
+            Tree.Declaration decl = findDeclarationWithBody(dg.rootNode, dg.node);
             if (decl == null || 
                     decl.getDeclarationModel() == null || 
                     decl.getDeclarationModel().isActual()) {

@@ -57,6 +57,12 @@ public class Nodes {
         return fcv.getDeclarationNode();
     }
 
+    public static Tree.Declaration findDeclarationWithBody(Tree.CompilationUnit cu, Node node) {
+        FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(node);
+        fcv.visit(cu);
+        return fcv.getDeclarationNode();
+    }
+
     public static Tree.NamedArgument findArgument(Tree.CompilationUnit cu, Node node) {
         FindArgumentVisitor fcv = new FindArgumentVisitor(node);
         fcv.visit(cu);
