@@ -30,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.Indents;
 
 public class MakeReceiverRefactoring extends AbstractRefactoring {
     
@@ -216,7 +217,13 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                             arg.getStopIndex()-arg.getStartIndex()+1));
                                 }
                                 else {
-                                    //TODO!!!!
+                                    String name = arg.getIdentifier().getText();
+                                    tfc.addEdit(new InsertEdit(p.getStartIndex(), 
+                                            MakeReceiverRefactoring.this.toString(arg) + 
+                                            getDefaultLineDelimiter(doc) + Indents.getIndent(that, doc) + 
+                                            name  + "."));
+                                    tfc.addEdit(new DeleteEdit(arg.getStartIndex(), 
+                                            arg.getStopIndex()-arg.getStartIndex()+1));
                                 }
                                 return; //NOTE: early exit!!
                             }
