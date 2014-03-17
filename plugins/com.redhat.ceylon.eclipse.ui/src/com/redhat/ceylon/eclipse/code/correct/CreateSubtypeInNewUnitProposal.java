@@ -51,7 +51,6 @@ import com.redhat.ceylon.eclipse.code.move.CreateUnitChange;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.wizard.NewSubtypeWizardPage;
 import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
-import com.redhat.ceylon.eclipse.util.Indents;
 
 class CreateSubtypeInNewUnitProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
@@ -244,7 +243,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
                 if (pr instanceof ProducedTypedReference) {
                     def.append("    ")
                         .append(getRefinementTextFor(d, pr, unit, false, null, "", false))
-                        .append(Indents.getDefaultLineDelimiter(doc));
+                        .append(getDefaultLineDelimiter(doc));
                 }
             }
         }
@@ -277,7 +276,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
                 }
                 imports.setLength(imports.length()-2);
                 imports.append(" }")
-                        .append(Indents.getDefaultLineDelimiter(doc));
+                        .append(getDefaultLineDelimiter(doc));
             }
         }
         return new CreateSubtype(def.toString(), imports.toString(), allTypes);

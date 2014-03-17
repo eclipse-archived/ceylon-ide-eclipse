@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
@@ -10,8 +12,11 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.swt.graphics.Image;
 
@@ -24,8 +29,10 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
@@ -85,21 +92,7 @@ class DefinitionGenerator {
                 def.append(supertype).append(typeParamConstDef)
                     .append(" {").append(delim);
                 if (!isVoid) {
-                    Collection<DeclarationWithProximity> members = 
-                            returnType.getDeclaration()
-                                .getMatchingMemberDeclarations(null, "", 0)
-                                .values();
-                    for (DeclarationWithProximity dwp: members) {
-                        Declaration d = dwp.getDeclaration();
-                        if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
-                            ProducedReference pr = 
-                                    getRefinedProducedReference(returnType, d);
-                            String text = getRefinementTextFor(d, pr, node.getUnit(), 
-                                    false, null, "", false);
-                            def.append(indent).append(defIndent)
-                                .append(text).append(delim);
-                        }
-                    }
+                    appendMembers(indent, delim, def, defIndent);
                 }
                 def.append(indent).append("}");
             }
@@ -126,6 +119,53 @@ class DefinitionGenerator {
             throw new RuntimeException();
         }
         return def.toString();
+    }
+
+    private void appendMembers(String indent, String delim, StringBuffer def,
+            String defIndent) {
+        TypeDeclaration rtd = returnType.getDeclaration();
+        Set<String> ambiguousNames = new HashSet<String>();
+        Unit unit = rootNode.getUnit();
+        Collection<DeclarationWithProximity> members = 
+                rtd.getMatchingMemberDeclarations(null, "", 0).values();
+        for (DeclarationWithProximity dwp: members) {
+            Declaration dec = dwp.getDeclaration();
+            for (Declaration d: overloads(dec)) {
+                if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
+                    appendRefinementText(indent, delim, def,
+                            defIndent, d);
+                    //TODO: imports!!!!
+                    ambiguousNames.add(d.getName());
+                }
+            }
+        }
+        TypeDeclaration td = intersectionType(returnType, 
+                unit.getBasicDeclaration().getType(), //TODO: is this always correct?
+                unit).getDeclaration();
+        for (TypeDeclaration superType: td.getSuperTypeDeclarations()) {
+            for (Declaration m: superType.getMembers()) {
+                if (m.isShared()) {
+                    Declaration r = td.getMember(m.getName(), null, false);
+                    if (r==null || 
+                            !r.refines(m) && 
+//                            !r.getContainer().equals(ut) && 
+                            !ambiguousNames.add(m.getName())) {
+                        appendRefinementText(indent, delim, def,
+                                defIndent, m);
+                        //TODO: imports!!!!
+                    }
+                }
+            }
+        }
+    }
+
+    private void appendRefinementText(String indent, String delim,
+            StringBuffer def, String defIndent, Declaration d) {
+        ProducedReference pr = 
+                getRefinedProducedReference(returnType, d);
+        String text = getRefinementTextFor(d, pr, node.getUnit(), 
+                false, null, "", false);
+        def.append(indent).append(defIndent).append(text).append(delim);
     }
 
     static DefinitionGenerator create(String brokenName, 
@@ -366,7 +406,7 @@ class DefinitionGenerator {
         }
         else {
             buffer.append("(");
-            for (java.util.Map.Entry<String,ProducedType> e: parameters.entrySet()) {
+            for (Map.Entry<String,ProducedType> e: parameters.entrySet()) {
                 buffer.append(e.getValue().getProducedTypeName()).append(" ")
                         .append(e.getKey()).append(", ");
             }

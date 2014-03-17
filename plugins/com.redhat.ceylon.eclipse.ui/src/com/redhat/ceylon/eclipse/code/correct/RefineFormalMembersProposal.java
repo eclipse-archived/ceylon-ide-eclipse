@@ -41,6 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
@@ -156,35 +157,29 @@ class RefineFormalMembersProposal implements ICompletionProposal,
         StringBuilder result = new StringBuilder();
         Set<Declaration> already = new HashSet<Declaration>();
         ClassOrInterface ci = (ClassOrInterface) node.getScope();
+        Unit unit = node.getUnit();
+        Set<String> ambiguousNames = new HashSet<String>();
         for (DeclarationWithProximity dwp: 
                 getProposals(node, ci, rootNode).values()) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
                 if (d.isFormal() && 
                         ci.isInheritedFromSupertype(d)) {
-                    ProducedReference pr = getRefinedProducedReference(ci, d);
-                    String rt = getRefinementTextFor(d, pr, 
-                            node.getUnit(), isInterface, ci, indent, true);
-                    result.append(indent).append(rt).append(indent);
+                    appendRefinementText(isInterface, indent, result, ci, unit, d);
                     importSignatureTypes(d, rootNode, already);
+                    ambiguousNames.add(d.getName());
                 }
             }
         }
-        Set<String> ambiguousNames = new HashSet<String>();
-        for (TypeDeclaration superType : ci.getSuperTypeDeclarations()) {
-            for (Declaration m : superType.getMembers()) {
+        for (TypeDeclaration superType: ci.getSuperTypeDeclarations()) {
+            for (Declaration m: superType.getMembers()) {
                 if (m.isShared()) {
                     Declaration r = ci.getMember(m.getName(), null, false);
                     if (r==null || 
                             !r.refines(m) && 
                             !r.getContainer().equals(ci) && 
-                            !ambiguousNames.contains(m.getName())) {
-                        ambiguousNames.add(m.getName());
-                        ProducedReference pr = getRefinedProducedReference(ci, m);
-                        result.append(indent)
-                            .append(getRefinementTextFor(m, pr, node.getUnit(), 
-                                    false, null, indent, true))
-                            .append(indent);
+                            !ambiguousNames.add(m.getName())) {
+                        appendRefinementText(isInterface, indent, result, ci, unit, m);
                         importSignatureTypes(m, rootNode, already);
                     }
                 }
@@ -209,6 +204,15 @@ class RefineFormalMembersProposal implements ICompletionProposal,
         catch (CoreException ce) {
             throw new ExecutionException("Error cleaning imports", ce);
         }
+    }
+
+    private void appendRefinementText(boolean isInterface, String indent,
+            StringBuilder result, ClassOrInterface ci, Unit unit, 
+            Declaration member) {
+        ProducedReference pr = getRefinedProducedReference(ci, member);
+        String rtext = getRefinementTextFor(member, pr, unit, 
+                isInterface, ci, indent, true);
+        result.append(indent).append(rtext).append(indent);
     }
     
     static void addRefineFormalMembersProposal(Collection<ICompletionProposal> proposals, 
