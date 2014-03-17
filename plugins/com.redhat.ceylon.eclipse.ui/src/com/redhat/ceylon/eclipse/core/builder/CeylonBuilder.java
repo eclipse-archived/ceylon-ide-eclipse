@@ -3041,7 +3041,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static String getCeylonSystemRepo(IProject project) {
         String systemRepo = (String) getBuilderArgs(project).get("systemRepo");
-        if (systemRepo == null) {
+        if (systemRepo == null || systemRepo.isEmpty()) {
             systemRepo = "${ceylon.repo}";
         }
         return systemRepo;
