@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_CAR;
 
 import java.io.File;
@@ -284,8 +284,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         if (project!=null) {
             modules.removeAll();
             
-            List<Module> moduleList = getModulesInProject(project.getProject());
-            for (Module module: moduleList) {
+            for (Module module: getProjectDeclaredSourceModules(project.getProject())) {
                 TableItem item = new TableItem(modules, SWT.NONE);
                 item.setText(module.getNameAsString() + "/" + module.getVersion());
                 item.setImage(CeylonLabelProvider.ARCHIVE);

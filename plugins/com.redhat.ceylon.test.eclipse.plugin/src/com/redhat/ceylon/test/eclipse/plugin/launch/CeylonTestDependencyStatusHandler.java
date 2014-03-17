@@ -1,6 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.containsCeylonTestImport;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
@@ -59,7 +59,7 @@ public class CeylonTestDependencyStatusHandler implements IStatusHandler {
             IProject project = getProject(entry.getProjectName());
             switch (entry.getType()) {
             case PROJECT:
-                modules.addAll(getModulesInProject(project));
+                modules.addAll(getProjectDeclaredSourceModules(project));
                 break;
             case MODULE:
                 Module module = getModule(project, entry.getModPkgDeclName());

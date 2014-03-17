@@ -9,6 +9,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectSourceModules;
+
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
@@ -383,15 +385,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         Collection<IProject> projects = getProjects();
         for (IProject project: projects) {
-            TypeChecker tc = getProjectTypeChecker(project);
-            Set<Module> modules = 
-                    new HashSet<Module>(tc.getPhasedUnits().getModuleManager()
-                            .getCompiledModules());
-            modules.add(tc.getContext().getModules().getLanguageModule());
-            
             List<Package> packages = new LinkedList<Package>();
             
-            for (Module compiledModule: modules) {
+            for (Module compiledModule : getProjectSourceModules(project)) {
                 for (Package p: compiledModule.getAllPackages()) {
                     Module m = p.getModule();
                     if (!m.isJava() || includeJava()) {

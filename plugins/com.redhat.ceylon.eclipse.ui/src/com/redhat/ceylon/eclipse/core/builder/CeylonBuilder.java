@@ -2601,30 +2601,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeChecker.getContext().getModules();
     }
     
-    public static List<Module> getModulesInProject(IProject project) {
+    public static Collection<Module> getProjectSourceModules(IProject project) {
         List<Module> moduleList = new ArrayList<Module>();
-
-        Modules modules = getProjectModules(project);
-        if (modules != null) {
-            IJavaProject javaProject = JavaCore.create(project);
-            for (Module module : modules.getListOfModules()) {
-                if (!module.isDefault() && !module.isJava()) {
-                    try {
-                        for (IPackageFragment pkg : javaProject.getPackageFragments()) {
-                            if (pkg.getKind()==IPackageFragmentRoot.K_SOURCE) {
-                                if (!pkg.isReadOnly() && pkg.getElementName().equals(module.getNameAsString())) {
-                                    moduleList.add(module);
-                                }
-                            }
-                        }
-                    } catch (JavaModelException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-
+        moduleList.addAll(getProjectDeclaredSourceModules(project));
+        moduleList.add(getProjectModules(project).getDefaultModule());
         return moduleList;
+    }
+
+    public static Collection<Module> getProjectDeclaredSourceModules(IProject project) {
+        TypeChecker typeChecker = getProjectTypeChecker(project);
+        if (typeChecker == null) {
+            return Collections.emptyList();
+        }
+        return typeChecker.getPhasedUnits().getModuleManager().getCompiledModules();
     }
 
     public static RepositoryManager getProjectRepositoryManager(IProject project) {

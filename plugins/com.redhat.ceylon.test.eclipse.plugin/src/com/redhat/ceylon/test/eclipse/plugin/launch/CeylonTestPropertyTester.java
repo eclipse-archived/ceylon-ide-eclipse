@@ -1,8 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
-
-import java.util.List;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IFile;
@@ -39,8 +37,7 @@ public class CeylonTestPropertyTester extends PropertyTester {
 
     private boolean isProjectWithAtLeastOneTestableModule(IJavaProject javaProject) {
         IProject project = javaProject.getProject();
-        List<Module> modules = getModulesInProject(project);
-        for (Module module : modules) {
+        for (Module module : getProjectDeclaredSourceModules(project)) {
             if (CeylonTestUtil.containsCeylonTestImport(module)) {
                 return true;
             }
@@ -52,8 +49,7 @@ public class CeylonTestPropertyTester extends PropertyTester {
         IProject project = packageFragment.getJavaProject().getProject();
         String packageFragmentName = packageFragment.getElementName();
 
-        List<Module> modules = getModulesInProject(project);
-        for (Module module : modules) {
+        for (Module module : getProjectDeclaredSourceModules(project)) {
             String moduleName = module.getNameAsString();
             if (packageFragmentName.equals(moduleName) || packageFragmentName.startsWith(moduleName + ".")) {
                 return CeylonTestUtil.containsCeylonTestImport(module);

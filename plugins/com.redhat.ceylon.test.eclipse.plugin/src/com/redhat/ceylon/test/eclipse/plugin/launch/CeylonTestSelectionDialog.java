@@ -1,6 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_COMPLATE_TREE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_COMPLETE_DESCRIPTION;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProjects;
@@ -9,6 +9,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestab
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -188,7 +189,10 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
             if (parent instanceof IWorkspaceRoot) {
                 children = getProjects();
             } else if( parent instanceof IProject ) {
-                children = getModulesInProject((IProject)parent);
+                Collection<Module> modules = getProjectDeclaredSourceModules((IProject)parent);
+                List<Module> childrenModules = new ArrayList<Module>(modules.size());
+                childrenModules.addAll(modules);
+                children = childrenModules;
             } else if( parent instanceof Module) {
                 children = ((Module) parent).getPackages();
             } else if( parent instanceof Package ) {

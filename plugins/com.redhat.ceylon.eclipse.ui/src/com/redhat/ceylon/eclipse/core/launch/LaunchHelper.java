@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -148,7 +148,7 @@ public class LaunchHelper {
                 return null;
             }
             
-            for (Module module: getModulesInProject(project)) {
+            for (Module module: getProjectDeclaredSourceModules(project)) {
                 if (module.getNameAsString().equals(parts[0]) && 
                         module.getVersion().equals(parts[1])) {
                     return module;
@@ -206,13 +206,11 @@ public class LaunchHelper {
  
     static Set<Module> getModules(IProject project, boolean includeDefault) {
         Set<Module> modules = new HashSet<Module>();
-        List<Module> projectModules = CeylonBuilder.getModulesInProject(project);
-        if (projectModules==null) return Collections.emptySet();
-        for(Module module: projectModules) {
+        for(Module module: getProjectDeclaredSourceModules(project)) {
             if (module.isAvailable() 
                     && !module.getNameAsString().startsWith(Module.LANGUAGE_MODULE_NAME) && 
                     !module.isJava() ) {
-                if ((module.isDefault() && includeDefault) 
+                if ((module.isDefault() && includeDefault) // TODO : this is *never* true : the default module is not in the requested list
                         || (!module.isDefault() && 
                                 module.getPackage(module.getNameAsString()) != null)){
                     modules.add(module);

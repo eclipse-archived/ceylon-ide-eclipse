@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.modulesearch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ADD;
 
@@ -235,7 +235,7 @@ public class ModuleSearchViewPart extends ViewPart {
         private void addModuleImport(String moduleName, String moduleVersion) {
             Map<Module, IProject> moduleMap = new HashMap<Module, IProject>();
             for (IProject project : getProjects()) {
-                for (Module module : getModulesInProject(project)) {
+                for (Module module : getProjectDeclaredSourceModules(project)) {
                     moduleMap.put(module, project);
                 }
             }
