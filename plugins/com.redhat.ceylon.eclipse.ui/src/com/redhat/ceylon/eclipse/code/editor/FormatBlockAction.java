@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
@@ -132,14 +131,18 @@ final class FormatBlockAction extends Action {
         else {
             return;
         }
-        DocumentChange change = new DocumentChange("Format Block", document);
-        change.setEdit(new ReplaceEdit(bodyNode.getStartIndex()+1, 
-                bodyNode.getStopIndex()-bodyNode.getStartIndex()-1, 
-                builder.toString()));
+        String text = builder.toString();
+        int start = bodyNode.getStartIndex()+1;
+        int len = bodyNode.getStopIndex()-bodyNode.getStartIndex()-1;
         try {
-            change.perform(new NullProgressMonitor());
+            if (!document.get(start, len).equals(text)) {
+                DocumentChange change = 
+                        new DocumentChange("Format Block", document);
+                change.setEdit(new ReplaceEdit(start, len, text));
+                change.perform(new NullProgressMonitor());
+            }
         }
-        catch (CoreException e) {
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
