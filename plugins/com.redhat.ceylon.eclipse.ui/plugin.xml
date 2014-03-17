@@ -785,7 +785,7 @@
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Restore the previous selection"
             id="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-            name="Unexpand Selection"/>
+            name="Undo Expand Selection"/>
    </extension>
    
    <extension
@@ -1421,7 +1421,7 @@
             <command 
                   id="restorePrevious"
                   commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
-                  label="Unexpand Se&amp;lection">
+                  label="Undo Expand Se&amp;lection">
               <visibleWhen>
                   <with variable="activeEditorId">
                       <equals value="com.redhat.ceylon.eclipse.ui.editor"/>
