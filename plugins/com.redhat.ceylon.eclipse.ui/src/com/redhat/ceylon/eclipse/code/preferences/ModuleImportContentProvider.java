@@ -55,7 +55,7 @@ public abstract class ModuleImportContentProvider extends ModuleSearchViewConten
             List<ModuleNode> list = new ArrayList<ModuleNode>();
             TreeMap<String, String> map = new TreeMap<String, String>();
             for (IProject p: CeylonBuilder.getProjects()) {
-                for (Module m: CeylonBuilder.getModulesInProject(p)) {
+                for (Module m: CeylonBuilder.getProjectDeclaredSourceModules(p)) {
                     if (!excluded(module, m.getNameAsString())) {
                         map.put(m.getNameAsString(), m.getVersion());
                     }

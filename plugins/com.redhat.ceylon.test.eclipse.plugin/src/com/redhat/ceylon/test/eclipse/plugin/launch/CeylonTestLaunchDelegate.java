@@ -1,6 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_PORT;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
 
@@ -57,8 +57,7 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
             Module module = null;
             switch (entry.getType()) {
             case PROJECT:
-                List<Module> modules = getModulesInProject(project);
-                for (Module m : modules) {
+                for (Module m : getProjectDeclaredSourceModules(project)) {
                     if (CeylonTestUtil.containsCeylonTestImport(m)) {
                         moduleArgs.add(m.getNameAsString() + "/" + m.getVersion());
                         testArgs.add("module " + m.getNameAsString());

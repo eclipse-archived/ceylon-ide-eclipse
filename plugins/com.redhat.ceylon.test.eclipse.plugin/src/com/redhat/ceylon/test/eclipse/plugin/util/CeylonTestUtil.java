@@ -1,6 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.util;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModulesInProject;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
@@ -121,8 +121,7 @@ public class CeylonTestUtil {
     }
 
     public static Module getModule(IProject project, String moduleName) {
-        List<Module> modules = getModulesInProject(project);
-        for (Module module : modules) {
+        for (Module module : getProjectDeclaredSourceModules(project)) {
             if (module.getNameAsString().equals(moduleName)) {
                 return module;
             }
@@ -131,8 +130,7 @@ public class CeylonTestUtil {
     }
 
     public static Package getPackage(IProject project, String pkgName) {
-        List<Module> modules = getModulesInProject(project);
-        for (Module module : modules) {
+        for (Module module : getProjectDeclaredSourceModules(project)) {
             Package pkg = module.getDirectPackage(pkgName);
             if (pkg != null) {
                 return pkg;
