@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.inferType;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,7 +31,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
-import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 
 class AddParameterProposal extends CorrectionProposal {
     
@@ -76,10 +76,7 @@ class AddParameterProposal extends CorrectionProposal {
                     }
                 }
             }
-            FindBodyContainerVisitor fcv = 
-            		new FindBodyContainerVisitor(decNode);
-            fcv.visit(cu);
-            Tree.Declaration container = fcv.getDeclaration();
+            Tree.Declaration container = findDeclarationWithBody(cu, decNode);
             Tree.ParameterList pl;
             if (container instanceof Tree.ClassDefinition) {
                 pl = ((Tree.ClassDefinition) container).getParameterList();

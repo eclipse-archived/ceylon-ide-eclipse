@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -65,7 +66,7 @@ final class FormatBlockAction extends Action {
         Node bodyNode = fbv.result;
         if (bodyNode instanceof Tree.Body) {
             Tree.Body body = (Tree.Body) bodyNode;
-            String bodyIndent = getIndent(body, document);
+            String bodyIndent = getIndent(findDeclarationWithBody(rootNode, body), document);
             String indent = bodyIndent + getDefaultIndent();
             String delim = getDefaultLineDelimiter(document);
             if (!body.getStatements().isEmpty()) {

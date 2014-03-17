@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,7 +31,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class CreateTypeParameterProposal extends CorrectionProposal {
@@ -107,9 +107,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     static void addCreateTypeParameterProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Tree.CompilationUnit cu, final Tree.BaseType node, 
             String brokenName) {
-        FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(node);
-        fcv.visit(cu);
-        Tree.Declaration decl = fcv.getDeclaration();
+        Tree.Declaration decl = findDeclarationWithBody(cu, node);
         Declaration d = decl==null ? null : decl.getDeclarationModel();
         if (d == null || d.isActual() ||
                 !(d instanceof Method || d instanceof ClassOrInterface)) {
