@@ -241,23 +241,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        /*viewer.getTable().addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                int index = viewer.getTable().getSelectionIndex();
-                boolean required = !parameterModels.get(index).isDefaulted();
-                toggleButton.setText(required?"Toggle Add":"Toggle Inline");
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
-        });*/
-        
         if (parameterModels.isEmpty()) {
             toggleButton.setEnabled(false);
         }
         else {
-//            boolean required = !parameterModels.get(0).isDefaulted();
-//            toggleButton.setText(required?"Toggle Add":"Toggle Inline");
             viewer.getTable().setSelection(0);
         }
         if (parameterModels.size()<2) {
