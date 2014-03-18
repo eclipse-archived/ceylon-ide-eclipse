@@ -235,31 +235,39 @@ public class HierarchyView extends ViewPart {
         setContentDescription("");
         final SashForm sash = new SashForm(parent, SWT.HORIZONTAL | SWT.SMOOTH);
         sash.addControlListener(new ControlListener() {
+            boolean reentrant;
             @Override
             public void controlResized(ControlEvent e) {
-                Rectangle bounds = sash.getBounds();
-                IToolBarManager toolBarManager = 
-                        getViewSite().getActionBars().getToolBarManager();
-                if (bounds.height>bounds.width) {
-                    if (sash.getOrientation()!=SWT.VERTICAL) {
-                        sash.setOrientation(SWT.VERTICAL);
-                        createMainToolBar(toolBarManager);
-                        toolBarManager.update(false);
-                        viewForm.setTopLeft(null);
+                if (reentrant) return;
+                reentrant = true;
+                try {
+                    Rectangle bounds = sash.getBounds();
+                    IToolBarManager toolBarManager = 
+                            getViewSite().getActionBars().getToolBarManager();
+                    if (bounds.height>bounds.width) {
+                        if (sash.getOrientation()!=SWT.VERTICAL) {
+                            sash.setOrientation(SWT.VERTICAL);
+                            createMainToolBar(toolBarManager);
+                            toolBarManager.update(false);
+                            viewForm.setTopLeft(null);
+                        }
                     }
-                }
-                else {
-                    if (sash.getOrientation()!=SWT.HORIZONTAL) {
-                        sash.setOrientation(SWT.HORIZONTAL);
-                        toolBarManager.removeAll();
-                        toolBarManager.update(false);
-                        ToolBarManager tbm = new ToolBarManager(SWT.NONE);
-                        createMainToolBar(tbm);
-                        tbm.createControl(viewForm);
-                        viewForm.setTopLeft(tbm.getControl());
+                    else {
+                        if (sash.getOrientation()!=SWT.HORIZONTAL) {
+                            sash.setOrientation(SWT.HORIZONTAL);
+                            toolBarManager.removeAll();
+                            toolBarManager.update(false);
+                            ToolBarManager tbm = new ToolBarManager(SWT.NONE);
+                            createMainToolBar(tbm);
+                            tbm.createControl(viewForm);
+                            viewForm.setTopLeft(tbm.getControl());
+                        }
                     }
+                    getViewSite().getActionBars().updateActionBars();
                 }
-                getViewSite().getActionBars().updateActionBars();
+                finally {
+                    reentrant = false;
+                }
             }
             @Override
             public void controlMoved(ControlEvent e) {}
