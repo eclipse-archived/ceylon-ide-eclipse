@@ -95,6 +95,10 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     
     private final Declaration declaration;
     private final List<Parameter> parameters;
+    
+    public List<Parameter> getParameters() {
+        return parameters;
+    }
 
     public Node getNode() {
         return node;
