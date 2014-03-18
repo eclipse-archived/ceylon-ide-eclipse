@@ -417,10 +417,18 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             Node elem = elements[i];
             String argString = toString(elem);
             if (removeDefault[i]) {
-                argString = argString.substring(0, argString.indexOf('=')); //TODO: very fragile impl
+                int argIndex = argString.indexOf('=');
+                argString = argString.substring(0, argIndex).trim(); //TODO: very fragile impl
             }
             if (addDefault[i]) {
-                argString = argString + " = nothing";
+                if (elem instanceof Tree.FunctionalParameterDeclaration) {
+                    //TODO: this results in incorrectly-typed 
+                    //      code for void functional parameters 
+                    argString = argString + " => nothing";
+                }
+                else {
+                    argString = argString + " = nothing";
+                }
             }
             sb.append(argString).append(", ");
         }
