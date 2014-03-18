@@ -73,7 +73,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         cgd.grabExcessHorizontalSpace = true;
         cgd.grabExcessVerticalSpace = true;
         composite.setLayoutData(cgd);
-        GridLayout tableLayout = new GridLayout(3, true);
+        GridLayout tableLayout = new GridLayout(4, true);
         tableLayout.marginWidth=0;
         composite.setLayout(tableLayout);
         
@@ -86,17 +86,33 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         viewer.getTable().setHeaderVisible(true);
         viewer.getTable().setLinesVisible(true);
         GridData tgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
-        tgd.horizontalSpan=2;
+        tgd.horizontalSpan=3;
         tgd.verticalSpan=4;
         tgd.grabExcessHorizontalSpace = true;
 //        gd.grabExcessVerticalSpace = true;
         tgd.heightHint = 100;
-        tgd.widthHint = 380;
+        tgd.widthHint = 410;
         viewer.getTable().setLayoutData(tgd);
-        TableViewerColumn col0 = new TableViewerColumn(viewer, SWT.LEFT);
-        col0.getColumn().setText("Parameter");
-        col0.getColumn().setWidth(220);
-        col0.setLabelProvider(new StyledCellLabelProvider() {
+        TableViewerColumn orderCol = new TableViewerColumn(viewer, SWT.LEFT);
+        orderCol.getColumn().setText("");
+        orderCol.getColumn().setWidth(10);
+        orderCol.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                final int originalIndex = refactoring.getParameters().indexOf(element);
+                final int currentIndex = parameterModels.indexOf(element);
+                if (originalIndex==currentIndex) return "";
+                return originalIndex>currentIndex ? "\u2191" : "\u2193"; 
+            }
+            @Override
+            public Image getImage(Object element) {
+                return null;
+            }
+        });
+        TableViewerColumn sigCol = new TableViewerColumn(viewer, SWT.LEFT);
+        sigCol.getColumn().setText("Parameter");
+        sigCol.getColumn().setWidth(240);
+        sigCol.setLabelProvider(new StyledCellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 Parameter p = (Parameter) cell.getElement();
@@ -108,10 +124,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 super.update(cell);
             }
         });
-        TableViewerColumn col3 = new TableViewerColumn(viewer, SWT.LEFT);
-        col3.getColumn().setText("Optionality");
-        col3.getColumn().setWidth(70);
-        col3.setLabelProvider(new ColumnLabelProvider() {
+        TableViewerColumn optCol = new TableViewerColumn(viewer, SWT.LEFT);
+        optCol.getColumn().setText("Optionality");
+        optCol.getColumn().setWidth(70);
+        optCol.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return isDefaulted(parameterModels, (Parameter) element) ?
@@ -123,7 +139,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
         });
         final String[] options = new String[] {"required", "defaulted"};
-        col3.setEditingSupport(new EditingSupport(viewer){
+        optCol.setEditingSupport(new EditingSupport(viewer){
             @Override
             protected CellEditor getCellEditor(Object element) {
                 return new ComboBoxCellEditor(viewer.getTable(), options, SWT.FLAT);
@@ -143,10 +159,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 viewer.update(element, null);
             } 
         });
-        TableViewerColumn col1 = new TableViewerColumn(viewer, SWT.LEFT);
-        col1.getColumn().setText("Default Argument");
-        col1.getColumn().setWidth(100);
-        col1.setLabelProvider(new ColumnLabelProvider() {
+        TableViewerColumn argCol = new TableViewerColumn(viewer, SWT.LEFT);
+        argCol.getColumn().setText("Default Argument");
+        argCol.getColumn().setWidth(100);
+        argCol.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 Parameter p = (Parameter) element;
