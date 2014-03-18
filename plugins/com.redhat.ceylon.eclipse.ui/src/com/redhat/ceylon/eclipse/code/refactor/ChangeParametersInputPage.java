@@ -61,6 +61,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         
         final Table parameters = new Table(composite, SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER);
         parameters.setHeaderVisible(true);
+        parameters.setLinesVisible(true);
         GridData tgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
         tgd.horizontalSpan=2;
         tgd.verticalSpan=4;
