@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.REMOVE_CORR;
 import static org.eclipse.jface.viewers.ArrayContentProvider.getInstance;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
@@ -10,7 +12,10 @@ import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
+import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
@@ -30,7 +35,6 @@ import org.eclipse.swt.widgets.Label;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class ChangeParametersInputPage extends UserInputWizardPage {
     
@@ -38,6 +42,11 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         super(name);
     }
     
+    private boolean isDefaulted(List<Parameter> parameterModels, 
+            Parameter parameter) {
+        return getChangeParametersRefactoring().getDefaulted()
+                .get(parameterModels.indexOf(parameter));
+    }
     public void createControl(Composite parent) {
         final ChangeParametersRefactoring refactoring = 
                 getChangeParametersRefactoring();
@@ -105,13 +114,34 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         col3.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                Parameter p = (Parameter) element;
-                return p.isDefaulted() ? "defaulted" : "required"; 
+                return isDefaulted(parameterModels, (Parameter) element) ?
+                        "defaulted" : "required"; 
             }
             @Override
             public Image getImage(Object element) {
                 return null;
             }
+        });
+        final String[] options = new String[] {"required", "defaulted"};
+        col3.setEditingSupport(new EditingSupport(viewer){
+            @Override
+            protected CellEditor getCellEditor(Object element) {
+                return new ComboBoxCellEditor(viewer.getTable(), options, SWT.FLAT);
+            }
+            @Override
+            protected boolean canEdit(Object element) {
+                return true;
+            }
+            @Override
+            protected Object getValue(Object element) {
+                return isDefaulted(parameterModels, (Parameter) element) ? 1 : 0;
+            }
+            @Override
+            protected void setValue(Object element, Object value) {
+                refactoring.getDefaulted().set(parameterModels.indexOf(element), 
+                        value.equals(1));
+                viewer.update(element, null);
+            } 
         });
         TableViewerColumn col1 = new TableViewerColumn(viewer, SWT.LEFT);
         col1.getColumn().setText("Default Argument");
@@ -119,11 +149,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         col1.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                int index = parameterModels.indexOf(element);
                 Parameter p = (Parameter) element;
-                boolean def = refactoring.getDefaulted().get(index);
+                boolean def = isDefaulted(parameterModels, p);
                 if (p.isDefaulted()) {
-                    return  def ? "" : "inline default";
+                    return def ? "" : "inline default";
                 }
                 else {
                     return def ? "add default" : "";
@@ -131,14 +160,13 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             @Override
             public Image getImage(Object element) {
-                int index = parameterModels.indexOf(element);
                 Parameter p = (Parameter) element;
-                boolean def = refactoring.getDefaulted().get(index);
+                boolean def = isDefaulted(parameterModels, p);
                 if (p.isDefaulted()) {
-                    return  def ? null : CeylonResources.REMOVE_CORR;
+                    return  def ? null : REMOVE_CORR;
                 }
                 else {
-                    return def ? CeylonResources.ADD_CORR : null;
+                    return def ? ADD_CORR : null;
                 }
             }
         });
@@ -196,7 +224,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         new Label(composite, SWT.NONE);
 
         final Button toggleButton = new Button(composite, SWT.PUSH);
-        toggleButton.setText("Toggle Inline");
+        toggleButton.setText("Toggle Optionality");
         toggleButton.setLayoutData(bgd);
         toggleButton.addSelectionListener(new SelectionListener() {
             @Override
@@ -213,7 +241,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        viewer.getTable().addSelectionListener(new SelectionListener() {
+        /*viewer.getTable().addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 int index = viewer.getTable().getSelectionIndex();
@@ -222,14 +250,14 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
-        });
+        });*/
         
         if (parameterModels.isEmpty()) {
             toggleButton.setEnabled(false);
         }
         else {
-            boolean required = !parameterModels.get(0).isDefaulted();
-            toggleButton.setText(required?"Toggle Add":"Toggle Inline");
+//            boolean required = !parameterModels.get(0).isDefaulted();
+//            toggleButton.setText(required?"Toggle Add":"Toggle Inline");
             viewer.getTable().setSelection(0);
         }
         if (parameterModels.size()<2) {
