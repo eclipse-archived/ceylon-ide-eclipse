@@ -3,8 +3,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.REMOVE_CORR;
 import static org.eclipse.jface.viewers.ArrayContentProvider.getInstance;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
@@ -20,6 +18,7 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
@@ -91,7 +90,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         tgd.grabExcessHorizontalSpace = true;
 //        gd.grabExcessVerticalSpace = true;
         tgd.heightHint = 100;
-        tgd.widthHint = 410;
+        tgd.widthHint = 425;
         viewer.getTable().setLayoutData(tgd);
         TableViewerColumn orderCol = new TableViewerColumn(viewer, SWT.LEFT);
         orderCol.getColumn().setText("");
@@ -124,6 +123,34 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 super.update(cell);
             }
         });
+        TableViewerColumn diffCol = new TableViewerColumn(viewer, SWT.LEFT);
+        diffCol.getColumn().setText("");
+        diffCol.getColumn().setWidth(15);
+        diffCol.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                Parameter p = (Parameter) element;
+                boolean def = isDefaulted(parameterModels, p);
+                if (p.isDefaulted()) {
+                    return def ? "" : "\u2296";
+                }
+                else {
+                    return def ? "\u2295" : "";
+                }
+            }
+            @Override
+            public Image getImage(Object element) {
+                /*Parameter p = (Parameter) element;
+                boolean def = isDefaulted(parameterModels, p);
+                if (p.isDefaulted()) {
+                    return  def ? null : REMOVE_CORR;
+                }
+                else {
+                    return def ? ADD_CORR : null;
+                }*/
+                return null;
+            }
+        });
         TableViewerColumn optCol = new TableViewerColumn(viewer, SWT.LEFT);
         optCol.getColumn().setText("Optionality");
         optCol.getColumn().setWidth(70);
@@ -139,7 +166,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
         });
         final String[] options = new String[] {"required", "defaulted"};
-        optCol.setEditingSupport(new EditingSupport(viewer){
+        optCol.setEditingSupport(new EditingSupport(viewer) {
             @Override
             protected CellEditor getCellEditor(Object element) {
                 return new ComboBoxCellEditor(viewer.getTable(), options, SWT.FLAT);
@@ -165,26 +192,32 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         argCol.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                Parameter p = (Parameter) element;
-                boolean def = isDefaulted(parameterModels, p);
-                if (p.isDefaulted()) {
-                    return def ? "" : "inline default";
-                }
-                else {
-                    return def ? "add default" : "";
-                }
+                MethodOrValue model = ((Parameter) element).getModel();
+                return refactoring.getDefaultArgs().get(model);
+            }
+        });
+        argCol.setEditingSupport(new EditingSupport(viewer) {
+            @Override
+            protected CellEditor getCellEditor(Object element) {
+                return new TextCellEditor(viewer.getTable(), SWT.FLAT);
             }
             @Override
-            public Image getImage(Object element) {
-                Parameter p = (Parameter) element;
-                boolean def = isDefaulted(parameterModels, p);
-                if (p.isDefaulted()) {
-                    return  def ? null : REMOVE_CORR;
-                }
-                else {
-                    return def ? ADD_CORR : null;
-                }
+            protected boolean canEdit(Object element) {
+                return true;
             }
+            @Override
+            protected Object getValue(Object element) {
+                MethodOrValue model = ((Parameter) element).getModel();
+                String arg = refactoring.getDefaultArgs().get(model);
+                return arg==null ? "" : arg;
+            }
+            @Override
+            protected void setValue(Object element, Object value) {
+                MethodOrValue model = ((Parameter) element).getModel();
+                refactoring.getDefaultArgs().put(model, 
+                        (String) value);
+                viewer.update(element, null);
+            } 
         });
         
         viewer.setInput(parameterModels);
