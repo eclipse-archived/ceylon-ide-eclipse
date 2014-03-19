@@ -258,27 +258,33 @@ public class CompletionUtil {
 
     public static String getInitalValueDescription(Declaration dec, CeylonParseController cpc) {
         Node refnode = Nodes.getReferencedNode(dec, cpc);
+        Tree.SpecifierOrInitializerExpression sie = null;
+        String arrow = null;
         if (refnode instanceof Tree.AttributeDeclaration) {
-            Tree.SpecifierOrInitializerExpression sie = 
-                    ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
-            if (sie!=null) {
-                if (sie.getExpression()!=null) {
-                    Tree.Term term = sie.getExpression().getTerm();
-                    if (term instanceof Tree.Literal) {
-                        return " = " + term.getToken().getText();
-                    }
-                    else if (term instanceof Tree.BaseMemberOrTypeExpression) {
-                        Tree.BaseMemberOrTypeExpression bme = 
-                                (Tree.BaseMemberOrTypeExpression) term;
-                        if (bme.getIdentifier()!=null) {
-                            return " = " + bme.getIdentifier().getText();
-                        }
-                    }
-                    else if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
-                        return " = " + Nodes.toString(term, cpc.getTokens());
-                    }
-                    return " = ...";
+            sie = ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
+            arrow = " = ";
+        }
+        else if (refnode instanceof Tree.MethodDeclaration) {
+            sie = ((Tree.MethodDeclaration) refnode).getSpecifierExpression();
+            arrow = " => ";
+        }
+        if (sie!=null) {
+            if (sie.getExpression()!=null) {
+                Tree.Term term = sie.getExpression().getTerm();
+                if (term instanceof Tree.Literal) {
+                    return arrow + term.getToken().getText();
                 }
+                else if (term instanceof Tree.BaseMemberOrTypeExpression) {
+                    Tree.BaseMemberOrTypeExpression bme = 
+                            (Tree.BaseMemberOrTypeExpression) term;
+                    if (bme.getIdentifier()!=null) {
+                        return arrow + bme.getIdentifier().getText();
+                    }
+                }
+                else if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
+                    return arrow + Nodes.toString(term, cpc.getTokens());
+                }
+                return arrow + "...";
             }
         }
         return "";
