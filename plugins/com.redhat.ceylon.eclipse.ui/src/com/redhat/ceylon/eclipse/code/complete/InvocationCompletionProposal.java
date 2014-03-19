@@ -425,7 +425,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         int start = offset-prefix.length()+first+middle;
         int len = next-middle;
         try {
-            if (document.get(start, len).equals("{}")) {
+            if (document.get(start, len).trim().equals("{}")) {
                 start++;
                 len=0;
             }
