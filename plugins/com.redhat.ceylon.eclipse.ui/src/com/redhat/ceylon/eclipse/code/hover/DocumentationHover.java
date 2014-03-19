@@ -1584,6 +1584,9 @@ public class DocumentationHover
                 result += getInitalValueDescription(dec, cpc);
             }
         }
+        else if (dec instanceof Method) {
+            result += getInitalValueDescription(dec, cpc);
+        }
         /*else if (dec instanceof ValueParameter) {
             Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
             if (refnode instanceof Tree.ValueParameterDeclaration) {
