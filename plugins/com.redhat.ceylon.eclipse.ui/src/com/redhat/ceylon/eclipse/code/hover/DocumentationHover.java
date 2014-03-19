@@ -1805,7 +1805,7 @@ public class DocumentationHover
         String declName;
         Scope scope = null;
         int pkgSeparatorIndex = linkTarget.indexOf("::");
-        if( pkgSeparatorIndex == -1 ) {
+        if (pkgSeparatorIndex == -1) {
             declName = linkTarget;
             scope = linkScope;
         } 
@@ -1813,7 +1813,7 @@ public class DocumentationHover
             String pkgName = linkTarget.substring(0, pkgSeparatorIndex);
             declName = linkTarget.substring(pkgSeparatorIndex+2, linkTarget.length());
             Module module = resolveModule(linkScope);
-            if( module != null ) {
+            if (module != null) {
                 scope = module.getPackage(pkgName);
             }
         }
