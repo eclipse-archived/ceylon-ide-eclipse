@@ -35,7 +35,10 @@ class FindInvocationVisitor extends Visitor {
         Expression e = that.getExpression();
         if (e!=null && node==e.getTerm()) {
             result=current;
-            parameter=that.getParameter().getModel();
+            Parameter p = that.getParameter();
+            if (p!=null) {
+                parameter = p.getModel();
+            }
         }
         super.visit(that);
     }
@@ -43,7 +46,10 @@ class FindInvocationVisitor extends Visitor {
     public void visit(Tree.NamedArgument that) {
         if (node==that) {
             result=current;
-            parameter=that.getParameter().getModel();
+            Parameter p = that.getParameter();
+            if (p!=null) {
+                parameter = p.getModel();
+            }
         }
         super.visit(that);
     }
@@ -52,7 +58,7 @@ class FindInvocationVisitor extends Visitor {
         Expression e = that.getExpression();
         if (e!=null && node==e.getTerm()) {
             //result=current;
-            parameter=(TypedDeclaration)that.getDeclaration();
+            parameter = (TypedDeclaration) that.getDeclaration();
         }
         super.visit(that);
     }
@@ -64,7 +70,7 @@ class FindInvocationVisitor extends Visitor {
             if (lt instanceof Tree.BaseMemberExpression) {
                 Declaration d = ((Tree.BaseMemberExpression) lt).getDeclaration();
                 if (d instanceof TypedDeclaration) {
-                    parameter=(TypedDeclaration) d;
+                    parameter = (TypedDeclaration) d;
                 }
             }
         }
@@ -79,7 +85,7 @@ class FindInvocationVisitor extends Visitor {
             if (bme instanceof Tree.BaseMemberExpression) {
                 Declaration d = ((Tree.BaseMemberExpression) bme).getDeclaration();
                 if (d instanceof TypedDeclaration) {
-                    parameter=(TypedDeclaration) d;
+                    parameter = (TypedDeclaration) d;
                 }
             }
         }
