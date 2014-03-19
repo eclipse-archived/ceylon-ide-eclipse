@@ -31,9 +31,15 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.FunctionalParameterDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.InitializerParameter;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.MethodDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueParameterDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.resolve.FindReferencedNodeVisitor;
@@ -604,6 +610,26 @@ public class Nodes {
 	            names.add(subname);
 	        }
 		}
+    }
+
+    public static Tree.SpecifierOrInitializerExpression getDefaultArgSpecifier(
+            Tree.Parameter p) {
+        if (p instanceof Tree.ValueParameterDeclaration) {
+            Tree.AttributeDeclaration pd = (Tree.AttributeDeclaration)
+                    ((Tree.ValueParameterDeclaration) p).getTypedDeclaration();
+            return pd.getSpecifierOrInitializerExpression();
+        }
+        else if (p instanceof Tree.FunctionalParameterDeclaration) {
+            Tree.MethodDeclaration pd = (Tree.MethodDeclaration)
+                    ((Tree.FunctionalParameterDeclaration) p).getTypedDeclaration();
+            return pd.getSpecifierExpression();
+        }
+        else if (p instanceof Tree.InitializerParameter) {
+            return ((Tree.InitializerParameter) p).getSpecifierExpression();
+        }
+        else {
+            return null;
+        }
     }
 
 }
