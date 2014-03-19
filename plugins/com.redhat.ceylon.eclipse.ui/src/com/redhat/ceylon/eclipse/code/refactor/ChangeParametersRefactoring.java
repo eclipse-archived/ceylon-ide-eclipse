@@ -56,7 +56,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             Tree.Primary primary = that.getPrimary();
             if (primary instanceof Tree.MemberOrTypeExpression) {
                 if (((Tree.MemberOrTypeExpression) primary).getDeclaration()
-                        .equals(declaration)) {
+                        .refines(declaration)) {
                     Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
                     if (pal!=null) {
                         posResults.add(pal);
