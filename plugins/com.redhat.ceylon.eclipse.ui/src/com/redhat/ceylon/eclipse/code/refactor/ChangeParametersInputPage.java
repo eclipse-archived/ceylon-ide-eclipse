@@ -123,34 +123,6 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 super.update(cell);
             }
         });
-        TableViewerColumn diffCol = new TableViewerColumn(viewer, SWT.LEFT);
-        diffCol.getColumn().setText("");
-        diffCol.getColumn().setWidth(15);
-        diffCol.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                Parameter p = (Parameter) element;
-                boolean def = isDefaulted(parameterModels, p);
-                if (p.isDefaulted()) {
-                    return def ? "" : "\u2296";
-                }
-                else {
-                    return def ? "\u2295" : "";
-                }
-            }
-            @Override
-            public Image getImage(Object element) {
-                /*Parameter p = (Parameter) element;
-                boolean def = isDefaulted(parameterModels, p);
-                if (p.isDefaulted()) {
-                    return  def ? null : REMOVE_CORR;
-                }
-                else {
-                    return def ? ADD_CORR : null;
-                }*/
-                return null;
-            }
-        });
         TableViewerColumn optCol = new TableViewerColumn(viewer, SWT.LEFT);
         optCol.getColumn().setText("Optionality");
         optCol.getColumn().setWidth(70);
@@ -185,6 +157,34 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                         value.equals(1));
                 viewer.update(element, null);
             } 
+        });
+        TableViewerColumn diffCol = new TableViewerColumn(viewer, SWT.LEFT);
+        diffCol.getColumn().setText("");
+        diffCol.getColumn().setWidth(15);
+        diffCol.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                Parameter p = (Parameter) element;
+                boolean def = isDefaulted(parameterModels, p);
+                if (p.isDefaulted()) {
+                    return def ? "" : "\u2296";
+                }
+                else {
+                    return def ? "\u2295" : "";
+                }
+            }
+            @Override
+            public Image getImage(Object element) {
+                /*Parameter p = (Parameter) element;
+                boolean def = isDefaulted(parameterModels, p);
+                if (p.isDefaulted()) {
+                    return  def ? null : REMOVE_CORR;
+                }
+                else {
+                    return def ? ADD_CORR : null;
+                }*/
+                return null;
+            }
         });
         TableViewerColumn argCol = new TableViewerColumn(viewer, SWT.LEFT);
         argCol.getColumn().setText("Default Argument");
