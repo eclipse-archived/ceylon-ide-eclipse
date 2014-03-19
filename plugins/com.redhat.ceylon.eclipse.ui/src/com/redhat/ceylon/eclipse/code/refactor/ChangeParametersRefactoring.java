@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getDefaultArgSpecifier;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
-import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -210,6 +209,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
+        RefactoringStatus result = new RefactoringStatus();
         boolean foundDefaulted = false;
         for (int index=0; index<defaulted.size(); index++) {
             if (defaulted.get(index)) {
@@ -217,11 +217,24 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             }
             else {
                 if (foundDefaulted) {
-                    return createWarningStatus("defaulted parameters occur before required parameters");
+                    result.addWarning("defaulted parameters occur before required parameters");
+                    break;
                 }
             }
         }
-        return new RefactoringStatus();
+        for (int index=0; index<defaulted.size(); index++) {
+            Parameter p = parameters.get(order.get(index));
+            String arg = defaultArgs.get(p.getModel());
+            if (arg==null || arg.isEmpty()) {
+                if (defaulted.get(index)) {
+                    result.addWarning("missing default argument for " + p.getName());
+                }
+                else if (p.isDefaulted()) {
+                    result.addWarning("missing argument to inline for " + p.getName());
+                }
+            }
+        }
+        return result;
     }
 
     public CompositeChange createChange(IProgressMonitor pm) throws CoreException,
@@ -297,7 +310,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     }
                     if (!found) {
                         String argString = defaultArgs.get(param.getModel());
-                        if (argString==null) {
+                        if (argString==null || argString.isEmpty()) {
                             argString = "nothing";
                         }
                         tfc.addEdit(new InsertEdit(nal.getStopIndex(), 
@@ -372,7 +385,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             if (elem==null) {
                 Parameter p = parameters.get(order.get(i));
                 argString = defaultArgs.get(p.getModel());
-                if (argString==null) {
+                if (argString==null || argString.isEmpty()) {
                     argString = "nothing";
                 }
             }
@@ -421,6 +434,9 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 //      code for void functional parameters 
                 Parameter p = parameter.getParameterModel();
                 String argString = defaultArgs.get(p.getModel());
+                if (argString==null || argString.isEmpty()) {
+                    argString = "nothing";
+                }
                 String arrow;
                 if (parameter instanceof Tree.FunctionalParameterDeclaration) {
                     arrow = " => ";
