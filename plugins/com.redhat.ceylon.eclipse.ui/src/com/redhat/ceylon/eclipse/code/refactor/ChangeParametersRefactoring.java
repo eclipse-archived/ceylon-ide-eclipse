@@ -103,6 +103,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             new HashMap<MethodOrValue,String>();
     private final Map<MethodOrValue,String> originalDefaultArgs = 
             new HashMap<MethodOrValue,String>();
+    private final Map<MethodOrValue,String> paramLists = 
+            new HashMap<MethodOrValue,String>();
     
     public Map<MethodOrValue,String> getDefaultArgs() {
         return defaultArgs;
@@ -158,6 +160,12 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             if (sie!=null) {
                                 defaultArgs.put(p.getParameterModel().getModel(), 
                                         toString(sie.getExpression()));
+                            }
+                            if (p instanceof Tree.FunctionalParameterDeclaration) {
+                                Tree.MethodDeclaration pd = (Tree.MethodDeclaration)
+                                        ((Tree.FunctionalParameterDeclaration) p).getTypedDeclaration();
+                                paramLists.put(p.getParameterModel().getModel(), 
+                                        toString(pd.getParameterLists().get(0)));
                             }
                         }
                         originalDefaultArgs.putAll(defaultArgs);
@@ -318,9 +326,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             }
                         }
                         if (!found) {
-                            String argString = getInlinedArg(p);
                             tfc.addEdit(new InsertEdit(nal.getStopIndex(), 
-                                    p.getName() + " = " + argString + "; "));
+                                    getInlinedNamedArg(p) + "; "));
                         }
                     }
                 }
@@ -466,12 +473,30 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     }
 
     private String getInlinedArg(Parameter p) {
-        String argString;
-        argString = originalDefaultArgs.get(p.getModel());
+        String argString = originalDefaultArgs.get(p.getModel());
         if (argString==null || argString.isEmpty()) {
             argString = "nothing";
         }
+        String params = paramLists.get(p.getModel());
+        if (params!=null) {
+            argString = params + " => " + argString;
+        }
         return argString;
+    }
+    
+    private String getInlinedNamedArg(Parameter p) {
+        String argString = originalDefaultArgs.get(p.getModel());
+        if (argString==null || argString.isEmpty()) {
+            argString = "nothing";
+        }
+        String paramList = paramLists.get(p.getModel());
+        if (paramList==null) {
+            return p.getName() + " = " + argString;
+        }
+        else {
+            return "function " + p.getName() + paramList + 
+                    " => " + argString;
+        }
     }
     
     private String getNewDefaultArg(Parameter p) {
