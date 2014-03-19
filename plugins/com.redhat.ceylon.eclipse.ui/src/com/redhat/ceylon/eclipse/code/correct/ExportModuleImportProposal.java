@@ -1,7 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.styleProposal;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.IMPORT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 
 import java.util.Collection;
 import java.util.List;
@@ -75,10 +77,16 @@ public class ExportModuleImportProposal implements ICompletionProposal,
     }
 
     static void addExportModuleImportProposalForSupertypes(Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node, Tree.CompilationUnit rootNode) {
+        Unit unit = node.getUnit();
+        if (node instanceof Tree.InitializerParameter) {
+            node = getReferencedNode(getReferencedModel(node), rootNode);
+        }
+        if (node instanceof Tree.TypedDeclaration) {
+            node = ((Tree.TypedDeclaration) node).getType();
+        }
         if (node instanceof Tree.ClassOrInterface) {
             Tree.ClassOrInterface c = (Tree.ClassOrInterface) node;
-            Unit unit = node.getUnit();
             ProducedType extendedType = 
                     c.getDeclarationModel().getExtendedType();
             if (extendedType!=null) {
@@ -103,6 +111,16 @@ public class ExportModuleImportProposal implements ICompletionProposal,
                                 unit, typeArgument.getDeclaration());
                     }
                 }
+            }
+        }
+        else if (node instanceof Tree.Type) {
+            ProducedType type = ((Tree.Type) node).getTypeModel();
+            addExportModuleImportProposal(proposals, project, 
+                    unit, type.getDeclaration());
+            for (ProducedType typeArgument:
+                    type.getTypeArgumentList()) {
+                addExportModuleImportProposal(proposals, project, 
+                        unit, typeArgument.getDeclaration());
             }
         }
     }
