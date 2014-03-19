@@ -256,7 +256,7 @@ public class CompletionUtil {
         }
     }
 
-    public static String getInitalValueDescription(Declaration dec, CeylonParseController cpc) {
+    public static String getInitalValueDescription(final Declaration dec, CeylonParseController cpc) {
         Node refnode = Nodes.getReferencedNode(dec, cpc);
         Tree.SpecifierOrInitializerExpression sie = null;
         String arrow = null;
@@ -267,6 +267,22 @@ public class CompletionUtil {
         else if (refnode instanceof Tree.MethodDeclaration) {
             sie = ((Tree.MethodDeclaration) refnode).getSpecifierExpression();
             arrow = " => ";
+        }
+        if (sie==null) {
+            class FindInitializerVisitor extends Visitor {
+                Tree.SpecifierOrInitializerExpression result;
+                @Override
+                public void visit(Tree.InitializerParameter that) {
+                    super.visit(that);
+                    Declaration d = that.getParameterModel().getModel();
+                    if (d!=null && d.equals(dec)) {
+                        result = that.getSpecifierExpression();
+                    }
+                }
+            }
+            FindInitializerVisitor fiv = new FindInitializerVisitor();
+            fiv.visit(cpc.getRootNode());
+            sie = fiv.result;
         }
         if (sie!=null) {
             if (sie.getExpression()!=null) {
