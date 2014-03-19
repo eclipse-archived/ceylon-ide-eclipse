@@ -166,12 +166,17 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public String getText(Object element) {
                 Parameter p = (Parameter) element;
                 boolean def = isDefaulted(parameterModels, p);
-                if (p.isDefaulted()) {
-                    return def ? "" : "\u2296";
+                if (!def && p.isDefaulted()) {
+                    return "\u2296";
                 }
-                else {
-                    return def ? "\u2295" : "";
+                if (def && !p.isDefaulted()) {
+                    return "\u2295";
                 }
+                if (def && 
+                        refactoring.defaultHasChanged(p)) {
+                    return ">";
+                }
+                return "";
             }
             @Override
             public Image getImage(Object element) {
@@ -193,7 +198,12 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             @Override
             public String getText(Object element) {
                 MethodOrValue model = ((Parameter) element).getModel();
-                return refactoring.getDefaultArgs().get(model);
+                if (isDefaulted(parameterModels, (Parameter) element)) {
+                    return refactoring.getDefaultArgs().get(model);
+                }
+                else {
+                    return null;
+                }
             }
         });
         argCol.setEditingSupport(new EditingSupport(viewer) {
@@ -203,13 +213,18 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             @Override
             protected boolean canEdit(Object element) {
-                return true;
+                return isDefaulted(parameterModels, (Parameter) element);
             }
             @Override
             protected Object getValue(Object element) {
                 MethodOrValue model = ((Parameter) element).getModel();
-                String arg = refactoring.getDefaultArgs().get(model);
-                return arg==null ? "" : arg;
+                if (isDefaulted(parameterModels, (Parameter) element)) {
+                    String arg = refactoring.getDefaultArgs().get(model);
+                    return arg==null ? "" : arg;
+                }
+                else {
+                    return "";
+                }
             }
             @Override
             protected void setValue(Object element, Object value) {
