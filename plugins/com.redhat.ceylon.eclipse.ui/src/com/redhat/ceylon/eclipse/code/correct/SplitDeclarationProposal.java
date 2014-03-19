@@ -94,6 +94,9 @@ class SplitDeclarationProposal extends CorrectionProposal {
             else {
                 return;
             }
+            if (body.getStatements().contains(decNode)) {
+                return;
+            }
             String text = delim + indent + getDefaultIndent() +
                     typeString + " " + dec.getName() + paramsString + ";";
             if (body.getStopIndex()==body.getStartIndex()+1) {
