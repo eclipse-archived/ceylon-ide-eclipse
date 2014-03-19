@@ -437,7 +437,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addMakeSharedProposalForSupertypes(proposals, project, node);
             break;
         case 714:
-            addExportModuleImportProposalForSupertypes(proposals, project, node);
+            addExportModuleImportProposalForSupertypes(proposals, project, node, cu);
             break;
         case 800:
         case 804:
