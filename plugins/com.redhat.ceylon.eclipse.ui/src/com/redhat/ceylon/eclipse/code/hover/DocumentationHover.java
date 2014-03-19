@@ -80,11 +80,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
-import com.github.rjeschke.txtmark.BlockEmitter;
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Configuration.Builder;
 import com.github.rjeschke.txtmark.Processor;
-import com.github.rjeschke.txtmark.SpanEmitter;
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -1769,79 +1767,9 @@ public class DocumentationHover
         Builder builder = Configuration.builder().forceExtentedProfile();
         builder.setCodeBlockEmitter(new CeylonBlockEmitter());
         if (linkScope!=null) {
-            builder.setSpecialLinkEmitter(new SpanEmitter() {
-                @Override
-                public void emitSpan(StringBuilder out, String content) {
-                    String linkName;
-                    String linkTarget; 
-                    
-                    int indexOf = content.indexOf("|");
-                    if( indexOf == -1 ) {
-                        linkName = content;
-                        linkTarget = content;
-                    } else {
-                        linkName = content.substring(0, indexOf);
-                        linkTarget = content.substring(indexOf+1, content.length()); 
-                    }
-                    
-                    String href = resolveLink(linkTarget, linkScope, unit);
-                    if (href != null) {
-                        out.append("<a ").append(href).append(">");
-                    }
-                    out.append("<code>");
-                    int sep = linkName.indexOf("::");
-                    out.append(sep<0?linkName:linkName.substring(sep+2));
-                    out.append("</code>");
-                    if (href != null) {
-                        out.append("</a>");
-                    }
-                }
-            });
+            builder.setSpecialLinkEmitter(new CeylonSpanEmitter(linkScope, unit));
         }
         return Processor.process(text, builder.build());
-    }
-    
-    private static String resolveLink(String linkTarget, Scope linkScope, Unit unit) {
-        String declName;
-        Scope scope = null;
-        int pkgSeparatorIndex = linkTarget.indexOf("::");
-        if (pkgSeparatorIndex == -1) {
-            declName = linkTarget;
-            scope = linkScope;
-        } 
-        else {
-            String pkgName = linkTarget.substring(0, pkgSeparatorIndex);
-            declName = linkTarget.substring(pkgSeparatorIndex+2, linkTarget.length());
-            Module module = resolveModule(linkScope);
-            if (module != null) {
-                scope = module.getPackage(pkgName);
-            }
-        }
-        
-        if (scope==null || declName == null || "".equals(declName)) {
-            return null; // no point in continuing. Required for non-token auto-complete.
-        }
-        
-        String[] declNames = declName.split("\\.");
-        Declaration decl = scope.getMemberOrParameter(unit, declNames[0], null, false);
-        for (int i=1; i<declNames.length; i++) {
-            if (decl instanceof Scope) {
-                scope = (Scope) decl;
-                decl = scope.getMember(declNames[i], null, false);
-            }
-            else {
-                decl = null;
-                break;
-            }
-        }
-    
-        if (decl != null) {
-            String href = HTML.link(decl);
-            return href;
-        }
-        else {
-            return null;
-        }
     }
     
     private static Scope resolveScope(Declaration decl) {
@@ -1856,7 +1784,7 @@ public class DocumentationHover
         }
     }
     
-    private static Module resolveModule(Scope scope) {
+    static Module resolveModule(Scope scope) {
         if (scope == null) {
             return null;
         }
@@ -1868,35 +1796,6 @@ public class DocumentationHover
         }
     }
     
-    public static final class CeylonBlockEmitter implements BlockEmitter {
-        
-        @Override
-        public void emitBlock(StringBuilder out, List<String> lines, String meta) {
-            if (!lines.isEmpty()) {
-                out.append("<pre>");
-                /*if (meta == null || meta.length() == 0) {
-                    out.append("<pre>");
-                } else {
-                    out.append("<pre class=\"brush: ").append(meta).append("\">");
-                }*/
-                StringBuilder code = new StringBuilder();
-                for (String s: lines) {
-                    code.append(s).append('\n');
-                }
-                String highlighted;
-                if (meta == null || meta.length() == 0 || "ceylon".equals(meta)) {
-                    highlighted = HTML.highlightLine(code.toString());
-                }
-                else {
-                    highlighted = code.toString();
-                }
-                out.append(highlighted);
-                out.append("</pre>\n");
-            }
-        }
-
-    }
-
     /**
      * Creates the "enriched" control.
      */

@@ -66,11 +66,12 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
+import com.github.rjeschke.txtmark.SpanEmitter;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover.CeylonBlockEmitter;
+import com.redhat.ceylon.eclipse.code.hover.CeylonBlockEmitter;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
@@ -820,6 +821,12 @@ public class ModuleSearchViewPart extends ViewPart {
         Configuration config = Configuration.builder().
                 forceExtentedProfile().
                 setCodeBlockEmitter(new CeylonBlockEmitter()).
+                setSpecialLinkEmitter(new SpanEmitter() {
+                    @Override
+                    public void emitSpan(StringBuilder out, String content) {
+                        out.append("<code>").append(content).append("</code>");
+                    }
+                }).
                 build();
         
         return Processor.process(text, config);
