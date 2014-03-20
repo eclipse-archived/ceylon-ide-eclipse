@@ -20,11 +20,15 @@ public class CeylonElement {
     private String packageLabel;
     private StyledString label;
     private int decorations;
+    private int startOffset;
+    private int endOffset;
     
     public CeylonElement(Tree.StatementOrArgument node, 
             VirtualFile file, int line) {
         this.file = file;
         this.line = line;
+        startOffset = node.getStartIndex();
+        endOffset = node.getStopIndex()+1;
         imageKey = getImageKeyForNode(node);
         packageLabel = CeylonLabelProvider.getPackageLabel(node);
         label = getStyledLabelForNode(node);
@@ -64,6 +68,14 @@ public class CeylonElement {
         else {
             return null;
         }
+    }
+    
+    public int getStartOffset() {
+        return startOffset;
+    }
+    
+    public int getEndOffset() {
+        return endOffset;
     }
     
     @Override

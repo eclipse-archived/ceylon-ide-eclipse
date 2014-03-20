@@ -17,7 +17,9 @@ import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
@@ -27,6 +29,7 @@ import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -161,6 +164,22 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             updateGroupingActions();
         }
         this.getSite().getActionBars().updateActionBars();
+    }
+    
+    @Override
+    protected void fillContextMenu(IMenuManager mgr) {
+        super.fillContextMenu(mgr);
+        MenuManager submenu = new MenuManager("Find");
+        submenu.setActionDefinitionId(CeylonEditor.FIND_MENU_ID);
+        submenu.add(new FindReferencesAction(this, 
+                this.getViewer().getSelection()));
+        submenu.add(new FindAssignmentsAction(this, 
+                this.getViewer().getSelection()));
+        submenu.add(new FindSubtypesAction(this, 
+                this.getViewer().getSelection()));
+        submenu.add(new FindRefinementsAction(this, 
+                this.getViewer().getSelection()));
+        mgr.add(submenu);
     }
     
     private class GroupAction extends Action {

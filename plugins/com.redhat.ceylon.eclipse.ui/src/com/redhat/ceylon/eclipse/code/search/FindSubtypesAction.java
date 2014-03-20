@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -37,7 +38,15 @@ public class FindSubtypesAction extends AbstractFindAction {
         }
     }
 
-    public FindSubtypesAction() {}
+    public FindSubtypesAction() {
+        super("Find Subtypes");
+        setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");
+    }
+    
+    public FindSubtypesAction(CeylonSearchResultPage page, ISelection selection) {
+        super("Find Subtypes", page, selection);
+        setActionDefinitionId(PLUGIN_ID + ".action.findSubtypes");
+    }
     
     public FindSubtypesAction(IEditorPart editor) {
         super("Find Subtypes", editor);

@@ -9,29 +9,54 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.search.ui.NewSearchUI;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 abstract class AbstractFindAction extends Action implements IObjectActionDelegate {
     
-    private IWorkbenchPartSite site;
+    private Shell shell;
     protected Declaration declaration;
     protected IProject project;
     private ContentOutline outlineView;
     
-    AbstractFindAction() {}
+    AbstractFindAction(String name) {
+        super(name);
+    }
+    
+    AbstractFindAction(String name, CeylonSearchResultPage page, ISelection selection) {
+        super(name);
+        shell = page.getSite().getShell();
+        CeylonElement element = ((CeylonElement) ((IStructuredSelection) selection).getFirstElement());
+        if (element.getFile()!=null) {
+            Package p = CeylonBuilder.getPackage(element.getFile());
+            for (Unit unit: p.getUnits()) {
+                if (unit.getFilename().equals(element.getFile().getName())) {
+                    Tree.CompilationUnit rn = ((SourceFile) unit).getCompilationUnit();
+                    Node node = Nodes.findNode(rn, element.getStartOffset(), element.getEndOffset());
+                    if (node instanceof Tree.Declaration) {
+                        declaration = ((Tree.Declaration) node).getDeclarationModel();
+                    }
+                }
+            }
+        }
+    }
     
     @Override
     public void selectionChanged(IAction action, ISelection selection) {
@@ -66,12 +91,12 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     @Override
     public void setActivePart(IAction action, IWorkbenchPart targetPart) {
         outlineView = (ContentOutline) targetPart;
-        site = targetPart.getSite();
+        shell = targetPart.getSite().getShell();
     }
     
     AbstractFindAction(String text, IEditorPart editor) {
         super(text);
-        this.site = editor.getSite();
+        shell = editor.getSite().getShell();
         project = editor==null ? null : getProject(editor);
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
@@ -87,7 +112,7 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     
     AbstractFindAction(String text, IEditorPart editor, Declaration dec) {
         super(text);
-        this.site = editor.getSite();
+        shell = editor.getSite().getShell();
         project = editor==null ? null : getProject(editor);
         declaration = dec;
         setEnabled(true);
@@ -104,8 +129,7 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
             NewSearchUI.runQueryInBackground(createSearchQuery());
         }
         else {
-            MessageDialog.openWarning(site.getShell(), 
-                    "Ceylon Find Error", 
+            MessageDialog.openWarning(shell, "Ceylon Find Error", 
                     "No appropriate declaration name selected");
         }
     }
