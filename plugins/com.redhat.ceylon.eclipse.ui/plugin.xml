@@ -1598,8 +1598,8 @@
             id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaModule"
             modes="run, debug"
             name="Ceylon Java Application"
-            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
-            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+            sourceLocatorId="com.redhat.ceylon.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
       </launchConfigurationType>
       <launchConfigurationType
             delegate="com.redhat.ceylon.eclipse.core.launch.ModuleLaunchDelegate"
@@ -1608,8 +1608,8 @@
             id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaScriptModule"
             modes="run, debug"
             name="Ceylon JavaScript Application"
-            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
-            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+            sourceLocatorId="com.redhat.ceylon.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
       </launchConfigurationType>      
    </extension>
    <extension
@@ -2602,6 +2602,19 @@
                 class="com.redhat.ceylon.eclipse.code.search.JavaQueryParticipant">
           </queryParticipant>
     </extension>
+   <extension point="org.eclipse.debug.core.sourcePathComputers">
+   		<sourcePathComputer
+   			id="com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer"
+   			class="com.redhat.ceylon.eclipse.core.launch.CeylonSourcePathComputer">
+   		</sourcePathComputer>
+   </extension>
+   <extension point="org.eclipse.debug.core.sourceLocators">
+   		<sourceLocator
+   			id="com.redhat.ceylon.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+   			class="com.redhat.ceylon.eclipse.core.launch.CeylonSourceLookupDirector"
+   			name="Ceylon Source Lookup Director">
+   		</sourceLocator>
+   </extension>
 
     <!-- don't use this approach because Eclipse's 
          label decorators are really slow due to
