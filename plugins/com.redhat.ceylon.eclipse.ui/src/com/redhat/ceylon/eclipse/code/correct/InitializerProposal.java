@@ -12,10 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
+import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.Change;
@@ -34,25 +38,100 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
-import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 class InitializerProposal extends CorrectionProposal {
 
-    private final class InitializerValueProposal extends LinkedModeCompletionProposal {
-        private final Point point;
+    private final class InitializerValueProposal 
+            implements ICompletionProposal, ICompletionProposalExtension2 {
+        
+        private final String text;
+        private final Image image;
+        private final int offset;
 
-        private InitializerValueProposal(int offset, String text, Image image, Point point) {
-            super(offset, text, 0, image);
-            this.point = point;
+        private InitializerValueProposal(int offset, String text, Image image) {
+            this.offset = offset;
+            this.text = text;
+            this.image = image;
         }
 
-        @Override
-        protected IRegion getCurrentRegion(IDocument document)
+        protected IRegion getCurrentRegion(IDocument document) 
                 throws BadLocationException {
-            return new Region(point.x, point.y);
+            int start = offset;
+            int length = 0;
+            for (int i=offset;
+                    i<document.getLength(); 
+                    i++) {
+                char ch = document.getChar(i);
+                if (Character.isWhitespace(ch)||ch==';') {
+                    break;
+                }
+                length++;
+            }
+            return new Region(start, length);
         }
+        
+        @Override
+        public Image getImage() {
+            return image;
+        }
+        
+        @Override
+        public Point getSelection(IDocument document) {
+            return new Point(offset + text.length(), 0);
+        }
+        
+        public void apply(IDocument document) {
+            try {
+                IRegion region = getCurrentRegion(document);
+                document.replace(region.getOffset(), 
+                        region.getLength(), text);
+            } 
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        public String getDisplayString() {
+            return text;
+        }
+        
+        public String getAdditionalProposalInfo() {
+            return null;
+        }
+        
+        @Override
+        public IContextInformation getContextInformation() {
+            return null;
+        }
+        
+        @Override
+        public void apply(ITextViewer viewer, char trigger, 
+                int stateMask, int offset) {
+            apply(viewer.getDocument());
+        }
+        
+        @Override
+        public void selected(ITextViewer viewer, boolean smartToggle) {}
+        
+        @Override
+        public void unselected(ITextViewer viewer) {}
+        
+        @Override
+        public boolean validate(IDocument document, int offset, 
+                DocumentEvent event) {
+            try {
+                IRegion region = getCurrentRegion(document);
+                String prefix = document.get(region.getOffset(), 
+                        offset-region.getOffset());
+                return text.startsWith(prefix);
+            }
+            catch (BadLocationException e) {
+                return false;
+            }
+        }
+        
     }
 
     private CeylonEditor editor;
@@ -118,18 +197,17 @@ class InitializerProposal extends CorrectionProposal {
                 new ArrayList<ICompletionProposal>();
         try {
             proposals.add(new InitializerValueProposal(point.x, 
-                    document.get(point.x, point.y), null, 
-                    point));
+                    document.get(point.x, point.y), null));
         }
         catch (BadLocationException e1) {
             e1.printStackTrace();
         }
-        addValueArgumentProposals(point.x, proposals, point);
+        addValueArgumentProposals(point.x, proposals);
         return proposals.toArray(new ICompletionProposal[0]);
     }
     
     private void addValueArgumentProposals(int loc,
-            List<ICompletionProposal> props, final Point point) {
+            List<ICompletionProposal> props) {
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
                 getSortedProposedValues(scope, unit)) {
@@ -154,7 +232,7 @@ class InitializerProposal extends CorrectionProposal {
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
                             vt.isSubtypeOf(type))) {
                     props.add(new InitializerValueProposal(loc, d.getName(),
-                            getImageForDeclaration(d), point));
+                            getImageForDeclaration(d)));
                 }
             }
             if (d instanceof Class &&
@@ -175,7 +253,7 @@ class InitializerProposal extends CorrectionProposal {
                     sb.append(d.getName());
                     appendPositionalArgs(d, unit, sb, false, false);
                     props.add(new InitializerValueProposal(loc, sb.toString(),
-                            getImageForDeclaration(d), point));
+                            getImageForDeclaration(d)));
                 }
             }
         }
