@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinem
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleClass;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.styleProposal;
@@ -55,9 +56,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -257,7 +260,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
     private DocumentChange createChange(IDocument document)
             throws BadLocationException {
-        DocumentChange change = new DocumentChange("Complete Refinement", document);
+        DocumentChange change = 
+                new DocumentChange("Complete Refinement", document);
         change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs = new HashSet<Declaration>();
         Tree.CompilationUnit cu = cpc.getRootNode();
@@ -329,13 +333,14 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 continue;
             }
             if (d instanceof Value && !d.equals(declaration)) {
+                Value value = (Value) d;
                 if (d.getUnit().getPackage().getNameAsString()
                         .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    if (isIgnoredLanguageModuleValue(name)) {
+                    if (isIgnoredLanguageModuleValue(value)) {
                         continue;
                     }
                 }
-                ProducedType vt = ((Value) d).getType();
+                ProducedType vt = value.getType();
                 if (vt!=null && !vt.isNothing() &&
                     ((td instanceof TypeParameter) && 
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
@@ -343,21 +348,41 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     props.add(new NestedCompletionProposal(d, loc));
                 }
             }
-            if (d instanceof Class && 
-                    !((Class) d).isAbstract() && !d.isAnnotation()) {
-                if (d.getUnit().getPackage().getNameAsString()
-                        .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    if (isIgnoredLanguageModuleClass(name)) {
-                        continue;
+            if (d instanceof Method && !d.equals(declaration)) {
+                if (!d.isAnnotation()) {
+                    Method method = (Method) d;
+                    if (d.getUnit().getPackage().getNameAsString()
+                            .equals(Module.LANGUAGE_MODULE_NAME)) {
+                        if (isIgnoredLanguageModuleMethod(method)) {
+                            continue;
+                        }
+                    }
+                    ProducedType mt = method.getType();
+                    if (mt!=null && !mt.isNothing() &&
+                        ((td instanceof TypeParameter) && 
+                            isInBounds(((TypeParameter)td).getSatisfiedTypes(), mt) || 
+                                mt.isSubtypeOf(type))) {
+                        props.add(new NestedCompletionProposal(d, loc));
                     }
                 }
-                ProducedType ct = ((Class) d).getType();
-                if (ct!=null && !ct.isNothing() &&
-                    ((td instanceof TypeParameter) && 
-                        isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
-                            ct.getDeclaration().equals(type.getDeclaration()) ||
-                            ct.isSubtypeOf(type))) {
-                    props.add(new NestedCompletionProposal(d, loc));
+            }
+            if (d instanceof Class) {
+                Class clazz = (Class) d;
+                if (!clazz.isAbstract() && !d.isAnnotation()) {
+                    if (d.getUnit().getPackage().getNameAsString()
+                            .equals(Module.LANGUAGE_MODULE_NAME)) {
+                        if (isIgnoredLanguageModuleClass(clazz)) {
+                            continue;
+                        }
+                    }
+                    ProducedType ct = clazz.getType();
+                    if (ct!=null && !ct.isNothing() &&
+                            ((td instanceof TypeParameter) && 
+                                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
+                                    ct.getDeclaration().equals(type.getDeclaration()) ||
+                                    ct.isSubtypeOf(type))) {
+                        props.add(new NestedCompletionProposal(d, loc));
+                    }
                 }
             }
         }
@@ -417,7 +442,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         private String getText(boolean description) {
             StringBuilder sb = new StringBuilder()
                     .append(dec.getName());
-            if (dec instanceof Class) {
+            if (dec instanceof Functional) {
                 appendPositionalArgs(dec, getUnit(), 
                         sb, false, description);
             }
