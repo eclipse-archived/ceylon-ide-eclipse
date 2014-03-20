@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.inferType;
@@ -12,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -51,14 +51,7 @@ class AddParameterProposal extends InitializerProposal {
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
             TextChange change = new TextFileChange("Add Parameter", file);
             change.setEdit(new MultiTextEdit());
-            IDocument doc;
-			try {
-				doc = change.getCurrentDocument(null);
-			}
-			catch (CoreException e) {
-				e.printStackTrace();
-				return;
-			}
+            IDocument doc = getDocument(change);
             //TODO: copy/pasted from SplitDeclarationProposal 
             String params = null;
             if (decNode instanceof Tree.MethodDeclaration) {

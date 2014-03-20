@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
@@ -42,7 +41,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
                 change.addEdit(new ReplaceEdit(offset, 
                         node.getStartIndex()-offset,
                         "value " + name + " = "));
-                IDocument doc = getDocument(change);
+                IDocument doc = CorrectionUtil.getDocument(change);
                 change.addEdit(new InsertEdit(node.getStopIndex()+1, ";" + 
                         Indents.getDefaultLineDelimiter(doc) + 
                         getIndent(statement, doc) +

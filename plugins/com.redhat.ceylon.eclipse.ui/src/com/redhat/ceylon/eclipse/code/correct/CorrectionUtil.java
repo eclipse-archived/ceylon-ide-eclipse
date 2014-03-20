@@ -5,7 +5,11 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -155,5 +159,38 @@ class CorrectionUtil {
 	        return "nothing";
 	    }
 	}
+
+    static Point computeSelection(int offset, String def) {
+        int length;
+        int loc = def.indexOf("= nothing");
+        if (loc<0) loc = def.indexOf("=> nothing");
+        if (loc<0) {
+            loc = def.indexOf("= ");
+            if (loc<0) loc = def.indexOf("=> ");
+            if (loc<0) {
+                loc = def.indexOf("{")+1;
+                length=0;
+            }
+            else {
+                loc = def.indexOf(" ", loc)+1;
+                int semi = def.indexOf(";", loc);
+                length = semi<0 ? def.length()-loc:semi-loc;
+            }
+        }
+        else {
+            loc = def.indexOf(" ", loc)+1;
+            length = 7;
+        }
+        return new Point(offset + loc, length);
+    }
+
+    static IDocument getDocument(TextChange change) {
+        try {
+            return change.getCurrentDocument(null);
+        }
+        catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
+    }
     
 }

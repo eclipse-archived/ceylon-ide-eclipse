@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelection;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
@@ -18,12 +20,10 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -41,45 +41,13 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class CreateParameterProposal extends InitializerProposal {
     
-    private final int offset;
-    private final int length;
-    
     CreateParameterProposal(String def, String desc, 
             Declaration dec, ProducedType type,
             Image image, int offset, TextFileChange change,
             int exitPos) {
-        super(desc, change, dec, type, null, image, exitPos, null);
-        int loc = def.indexOf("= nothing");
-        if (loc<0) {
-            loc = def.indexOf("= ");
-            if (loc<0) {
-                loc = def.indexOf("{}")+1;
-                length=0;
-            }
-            else {
-                loc += 2;
-                length = def.length()-loc;
-            }
-        }
-        else {
-            loc += 2;
-            length=7;
-        }
-        this.offset=offset + loc;
-    }
-    
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
-    }
-    
-    static IDocument getDocument(TextFileChange change) {
-        try {
-            return change.getCurrentDocument(null);
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
+        super(desc, change, dec, type, 
+                computeSelection(offset,def), 
+                image, exitPos, null);
     }
     
     private static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 

@@ -93,7 +93,7 @@ public class ImportProposals {
     private static ICompletionProposal createImportProposal(Tree.CompilationUnit cu, 
             IFile file, Declaration declaration) {
         TextFileChange change = new TextFileChange("Add Import", file);
-        IDocument doc = CreateProposal.getDocument(change);
+        IDocument doc = CorrectionUtil.getDocument(change);
         List<InsertEdit> ies = importEdits(cu, Collections.singleton(declaration), 
                 null, null, doc);
         if (ies.isEmpty()) return null;

@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
-import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
@@ -52,7 +51,7 @@ class ChangeTypeProposal extends CorrectionProposal {
             return;
         TextFileChange change =  new TextFileChange("Change Type", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = getDocument(change);
+        IDocument doc = CorrectionUtil.getDocument(change);
         String typeName = newType.getProducedTypeName();
         int offset = node.getStartIndex();
         int length = node.getStopIndex()-offset+1;
