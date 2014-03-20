@@ -36,7 +36,7 @@ import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-public class ParameterProposal extends CorrectionProposal {
+class ParameterProposal extends CorrectionProposal {
 
     private final class DefaultArgProposal extends LinkedModeCompletionProposal {
         private final Point point;
@@ -55,10 +55,10 @@ public class ParameterProposal extends CorrectionProposal {
 
     private CeylonEditor editor;
     
-    private ProducedType type;
-    private Declaration declaration;
+    private final ProducedType type;
+    private final Declaration declaration;
     
-    public ParameterProposal(String name, Change change,
+    ParameterProposal(String name, Change change,
             Declaration declaration, ProducedType type, 
             Point selection, Image image, CeylonEditor editor) {
         super(name, change, selection, image);
