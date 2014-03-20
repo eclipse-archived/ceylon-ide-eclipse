@@ -2,6 +2,9 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleClass;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
@@ -30,6 +33,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
@@ -37,7 +41,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
-import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
@@ -231,15 +234,15 @@ class InitializerProposal extends CorrectionProposal {
                 continue;
             }
             Declaration d = dwp.getDeclaration();
-            final String name = d.getName();
             if (d instanceof Value) {
+                Value value = (Value) d;
                 if (d.getUnit().getPackage().getNameAsString()
                         .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    if (CompletionUtil.isIgnoredLanguageModuleValue(name)) {
+                    if (isIgnoredLanguageModuleValue(value)) {
                         continue;
                     }
                 }
-                ProducedType vt = ((Value) d).getType();
+                ProducedType vt = value.getType();
                 if (vt!=null && !vt.isNothing() &&
                     ((td instanceof TypeParameter) && 
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
@@ -248,25 +251,49 @@ class InitializerProposal extends CorrectionProposal {
                             getImageForDeclaration(d)));
                 }
             }
-            if (d instanceof Class &&
-                    !((Class) d).isAbstract() && !d.isAnnotation()) {
-                if (d.getUnit().getPackage().getNameAsString()
-                        .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    if (CompletionUtil.isIgnoredLanguageModuleClass(name)) {
-                        continue;
+            if (d instanceof Method) {
+                if (!d.isAnnotation()) {
+                    Method method = (Method) d;
+                    if (d.getUnit().getPackage().getNameAsString()
+                            .equals(Module.LANGUAGE_MODULE_NAME)) {
+                        if (isIgnoredLanguageModuleMethod(method)) {
+                            continue;
+                        }
+                    }
+                    ProducedType mt = method.getType();
+                    if (mt!=null && !mt.isNothing() &&
+                            ((td instanceof TypeParameter) && 
+                                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), mt) || 
+                                    mt.isSubtypeOf(type))) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(d.getName());
+                        appendPositionalArgs(d, unit, sb, false, false);
+                        props.add(new InitializerValueProposal(loc, sb.toString(),
+                                getImageForDeclaration(d)));
                     }
                 }
-                ProducedType ct = ((Class) d).getType();
-                if (ct!=null && !ct.isNothing() &&
-                    ((td instanceof TypeParameter) && 
-                        isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
-                            ct.getDeclaration().equals(type.getDeclaration()) ||
-                            ct.isSubtypeOf(type))) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(d.getName());
-                    appendPositionalArgs(d, unit, sb, false, false);
-                    props.add(new InitializerValueProposal(loc, sb.toString(),
-                            getImageForDeclaration(d)));
+            }
+            if (d instanceof Class) {
+                Class clazz = (Class) d;
+                if (!clazz.isAbstract() && !d.isAnnotation()) {
+                    if (d.getUnit().getPackage().getNameAsString()
+                            .equals(Module.LANGUAGE_MODULE_NAME)) {
+                        if (isIgnoredLanguageModuleClass(clazz)) {
+                            continue;
+                        }
+                    }
+                    ProducedType ct = clazz.getType();
+                    if (ct!=null && !ct.isNothing() &&
+                            ((td instanceof TypeParameter) && 
+                                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
+                                    ct.getDeclaration().equals(type.getDeclaration()) ||
+                                    ct.isSubtypeOf(type))) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(d.getName());
+                        appendPositionalArgs(d, unit, sb, false, false);
+                        props.add(new InitializerValueProposal(loc, sb.toString(),
+                                getImageForDeclaration(d)));
+                    }
                 }
             }
         }

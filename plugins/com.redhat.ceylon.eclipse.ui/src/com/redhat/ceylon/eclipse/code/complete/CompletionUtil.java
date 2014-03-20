@@ -19,9 +19,11 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.viewers.StyledString;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -200,14 +202,17 @@ public class CompletionUtil {
         return results;
     }
 
-    public static boolean isIgnoredLanguageModuleClass(final String name) {
+    public static boolean isIgnoredLanguageModuleClass(Class clazz) {
+        String name = clazz.getName();
         return name.equals("String") ||
                 name.equals("Integer") ||
                 name.equals("Float") ||
-                name.equals("Character");
+                name.equals("Character") ||
+                clazz.isAnnotation();
     }
 
-    public static boolean isIgnoredLanguageModuleValue(final String name) {
+    public static boolean isIgnoredLanguageModuleValue(Value value) {
+        String name = value.getName();
         return name.equals("process") ||
                 name.equals("runtime") ||
                 name.equals("system") ||
@@ -219,14 +224,26 @@ public class CompletionUtil {
                 name.equals("finished");
     }
 
+    public static boolean isIgnoredLanguageModuleMethod(Method method) {
+        String name = method.getName();
+        return name.equals("className") || 
+                name.equals("flatten") || 
+                name.equals("unflatten")|| 
+                name.equals("curry") || 
+                name.equals("uncurry") ||
+                name.equals("compose") ||
+                method.isAnnotation();
+    }
+
     static boolean isIgnoredLanguageModuleType(TypeDeclaration td) {
-        return !td.getName().equals("Object") && 
-                !td.getName().equals("Anything") &&
-                !td.getName().equals("String") &&
-                !td.getName().equals("Integer") &&
-                !td.getName().equals("Character") &&
-                !td.getName().equals("Float") &&
-                !td.getName().equals("Boolean");
+        String name = td.getName();
+        return !name.equals("Object") && 
+                !name.equals("Anything") &&
+                !name.equals("String") &&
+                !name.equals("Integer") &&
+                !name.equals("Character") &&
+                !name.equals("Float") &&
+                !name.equals("Boolean");
     }
 
     public static void styleProposal(StyledString result, String string) {
