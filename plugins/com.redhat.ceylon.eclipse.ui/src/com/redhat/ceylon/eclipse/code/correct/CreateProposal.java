@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelection;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.CreateInNewUnitProposal.addCreateToplevelProposal;
@@ -19,13 +20,11 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -44,54 +43,22 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 class CreateProposal extends InitializerProposal {
     
     
-    private static Point computeSelection(int offset, String def) {
-        int length;
-        int loc = def.indexOf("= nothing");
-        if (loc<0) loc = def.indexOf("=> nothing");
-        if (loc<0) {
-            loc = def.indexOf("= ");
-            if (loc<0) loc = def.indexOf("=> ");
-            if (loc<0) {
-                loc = def.indexOf("{")+1;
-                length=0;
-            }
-            else {
-                loc = def.indexOf(" ", loc)+1;
-                int semi = def.indexOf(";", loc);
-                length = semi<0 ? 0:semi-loc;
-            }
-        }
-        else {
-            loc = def.indexOf(" ", loc)+1;
-            length = 7;
-        }
-        return new Point(offset + loc, length);
-    }
-    
     private CreateProposal(String def, String desc, 
             Scope scope, Unit unit, ProducedType returnType,
             Image image, int offset, TextFileChange change,
             int exitPos) {
         super(desc, change, scope, unit, returnType, 
-                computeSelection(offset,def), image, exitPos, null);
+                computeSelection(offset,def), 
+                image, exitPos, null);
     }
     
-    static IDocument getDocument(TextFileChange change) {
-        try {
-            return change.getCurrentDocument(null);
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     static void addCreateMemberProposal(Collection<ICompletionProposal> proposals, 
             DefinitionGenerator dg, Declaration typeDec, PhasedUnit unit,
             Tree.Declaration decNode, Tree.Body body) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Create Member", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = getDocument(change);
+        IDocument doc = CorrectionUtil.getDocument(change);
         String indentBefore;
         String indentAfter;
         String indent;
@@ -159,7 +126,7 @@ class CreateProposal extends InitializerProposal {
         TextFileChange change = new TextFileChange(local ? 
                 "Create Local" : "Create Toplevel", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = getDocument(change);
+        IDocument doc = CorrectionUtil.getDocument(change);
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
         String delim = getDefaultLineDelimiter(doc);

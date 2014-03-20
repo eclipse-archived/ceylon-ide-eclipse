@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
-import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 
 import java.util.Collection;
@@ -39,7 +38,7 @@ class VerboseRefinementProposal extends CorrectionProposal {
                     ProducedType t = unit.denotableType(e.getTypeModel());
                     HashSet<Declaration> decs = new HashSet<Declaration>();
                     ImportProposals.importType(decs, t, cu);
-                    applyImports(change, decs, cu, getDocument(change));
+                    applyImports(change, decs, cu, CorrectionUtil.getDocument(change));
                     String type = t.getProducedTypeName(unit);
                     change.addEdit(new InsertEdit(statement.getStartIndex(), 
                             "shared actual " + type + " "));

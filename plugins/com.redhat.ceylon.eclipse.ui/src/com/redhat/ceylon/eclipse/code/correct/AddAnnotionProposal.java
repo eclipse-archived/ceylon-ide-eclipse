@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -12,7 +13,6 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -255,16 +255,7 @@ class AddAnnotionProposal extends CorrectionProposal {
     private static boolean isAnnotationOnSeparateLine(String annotation) {
         return ANNOTATIONS_ON_SEPARATE_LINE.contains(annotation);
     }
-
-    private static IDocument getDocument(TextFileChange change) {
-        try {
-            return change.getCurrentDocument(null);
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    
     static void addMakeActualDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;

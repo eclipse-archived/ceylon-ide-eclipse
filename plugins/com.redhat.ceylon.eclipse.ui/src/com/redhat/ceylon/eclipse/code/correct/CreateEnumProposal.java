@@ -1,17 +1,17 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.INTERFACE;
-import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -24,8 +24,8 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class CreateEnumProposal extends CorrectionProposal {
     
@@ -33,16 +33,7 @@ class CreateEnumProposal extends CorrectionProposal {
             int offset, TextFileChange change) {
         super(desc, change, new Point(offset, 0), image);
     }
-        
-    static IDocument getDocument(TextFileChange change) {
-        try {
-            return change.getCurrentDocument(null);
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    
     static void addCreateEnumProposal(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {

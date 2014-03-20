@@ -30,7 +30,7 @@ class FixMultilineStringIndentationProposal
         if (node instanceof Tree.StringLiteral) {
             TextFileChange change = 
                     new TextFileChange("Fix Multiline String", file);
-            IDocument doc = CreateProposal.getDocument(change);
+            IDocument doc = CorrectionUtil.getDocument(change);
             Tree.StringLiteral literal = (Tree.StringLiteral) node;
             int offset = literal.getStartIndex();
             int length = literal.getStopIndex() - 

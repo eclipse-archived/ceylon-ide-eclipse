@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -12,7 +13,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -38,15 +38,6 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     CreateTypeParameterProposal(String desc, Image image, 
             int offset, int length, TextFileChange change) {
         super(desc, change, new Point(offset, length), image);
-    }
-    
-    static IDocument getDocument(TextFileChange change) {
-        try {
-            return change.getCurrentDocument(null);
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
     }
     
     private static void addProposal(Collection<ICompletionProposal> proposals, 

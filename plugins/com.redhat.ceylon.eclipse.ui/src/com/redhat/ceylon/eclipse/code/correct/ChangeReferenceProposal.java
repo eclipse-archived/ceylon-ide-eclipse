@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshteinDistance;
-import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
@@ -48,7 +47,7 @@ class ChangeReferenceProposal extends CorrectionProposal
         TextFileChange change = 
                 new TextFileChange("Change Reference", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = getDocument(change);
+        IDocument doc = CorrectionUtil.getDocument(change);
         Declaration dec = dwp.getDeclaration();
         String pkg = "";
         if (dec.isToplevel() && 
