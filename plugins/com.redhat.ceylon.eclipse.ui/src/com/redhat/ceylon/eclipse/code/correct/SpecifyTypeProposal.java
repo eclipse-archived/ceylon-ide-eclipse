@@ -33,6 +33,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
@@ -42,6 +43,7 @@ import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
 public class SpecifyTypeProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -147,7 +149,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
     private final ProducedType infType;
     private final String desc;
     private final Tree.Type typeNode;
-    private final CeylonEditor editor;
+    private CeylonEditor editor;
     private final Tree.CompilationUnit rootNode;
     private Point selection;
     
@@ -163,9 +165,15 @@ public class SpecifyTypeProposal implements ICompletionProposal,
     
     @Override
     public void apply(IDocument document) {
-        final int offset = typeNode.getStartIndex();
-        final int length = typeNode.getStopIndex()-offset+1;
+        int offset = typeNode.getStartIndex();
+        int length = typeNode.getStopIndex()-offset+1;
         if (editor==null) {
+            IEditorPart ed = EditorUtil.getCurrentEditor();
+            if (ed instanceof CeylonEditor) {
+                editor = (CeylonEditor) ed;
+            }
+        }
+        if (typeNode instanceof Tree.LocalModifier) {
 //            final TextChange change = 
 //                    new TextFileChange("Specify Type", file); 
             DocumentChange change = 
@@ -178,13 +186,15 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                 String typeName = infType.getProducedTypeName(rootNode.getUnit());
                 change.addEdit(new ReplaceEdit(offset, length, typeName));
                 change.perform(new NullProgressMonitor());
-                selection = new Point(offset+il, typeName.length());
+                offset += il;
+                length = typeName.length();
+                selection = new Point(offset, length);
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        else {
+        if (editor!=null) {
             LinkedModeModel linkedModeModel = new LinkedModeModel();
             List<ProducedType> supertypes = infType.getSupertypes();
             TypeDeclaration td = infType.getDeclaration();

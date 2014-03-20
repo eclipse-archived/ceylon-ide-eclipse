@@ -135,9 +135,15 @@ class CreateProposal extends CorrectionProposal {
     }
 
     private static String memberKind(DefinitionGenerator dg) {
-        if (dg.desc.startsWith("function")) return "method" + dg.desc.substring(8);
-        if (dg.desc.startsWith("value")) return "attribute" + dg.desc.substring(5);
-        if (dg.desc.startsWith("class")) return "member class" + dg.desc.substring(5);
+        if (dg.desc.startsWith("function")) {
+            return "method" + dg.desc.substring(8);
+        }
+        if (dg.desc.startsWith("value")) {
+            return "attribute" + dg.desc.substring(5);
+        }
+        if (dg.desc.startsWith("class")) {
+            return "member class" + dg.desc.substring(5);
+        }
         return dg.desc;
     }
 
