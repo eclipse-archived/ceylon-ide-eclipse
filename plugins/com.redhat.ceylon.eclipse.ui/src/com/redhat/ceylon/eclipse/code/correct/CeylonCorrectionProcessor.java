@@ -490,7 +490,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 1450:
         	addMakeFormalDecProposal(proposals, project, node);
-        	addParameterProposals(proposals, file, cu, node);
+        	addParameterProposals(proposals, file, cu, node, null);
         	addInitializerProposals(proposals, file, cu, node);
         	break;
         case 1500:
@@ -596,7 +596,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     declaration, currentOffset);
             
             addSplitDeclarationProposals(proposals, doc, file, cu, declaration);
-            addParameterProposals(proposals, file, cu, declaration);
+            addParameterProposals(proposals, file, cu, declaration, editor);
             
             addArgumentProposals(proposals, doc, file, argument);
             addUseAliasProposal(imp, proposals, editor);

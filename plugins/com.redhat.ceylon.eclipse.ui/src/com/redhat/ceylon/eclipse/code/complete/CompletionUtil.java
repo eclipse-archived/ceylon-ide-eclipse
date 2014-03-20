@@ -200,14 +200,14 @@ public class CompletionUtil {
         return results;
     }
 
-    static boolean isIgnoredLanguageModuleClass(final String name) {
+    public static boolean isIgnoredLanguageModuleClass(final String name) {
         return name.equals("String") ||
                 name.equals("Integer") ||
                 name.equals("Float") ||
                 name.equals("Character");
     }
 
-    static boolean isIgnoredLanguageModuleValue(final String name) {
+    public static boolean isIgnoredLanguageModuleValue(final String name) {
         return name.equals("process") ||
                 name.equals("runtime") ||
                 name.equals("system") ||
