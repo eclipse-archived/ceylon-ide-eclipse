@@ -104,7 +104,7 @@ public class ModuleImportUtil {
     }
     
     public static void makeModuleImportShared(IProject project, Module target, 
-            String moduleName) {
+            String[] moduleNames) {
         PhasedUnit unit = findPhasedUnit(project, target);
         TextFileChange textFileChange = 
                 new TextFileChange("Make Module Import Shared", 
@@ -113,13 +113,14 @@ public class ModuleImportUtil {
         Tree.CompilationUnit compilationUnit = unit.getCompilationUnit();
         try {
             IDocument doc = textFileChange.getCurrentDocument(null);
-            for (Tree.ImportModule im: compilationUnit.getModuleDescriptors().get(0)
-                    .getImportModuleList().getImportModules()) {
-                if (im.getImportPath().getModel().getNameAsString().equals(moduleName)) {
-                    removeSharedAnnotation(textFileChange, doc, im.getAnnotationList());
-                    if (!textFileChange.getEdit().hasChildren()) {
-                        textFileChange.addEdit(new InsertEdit(im.getStartIndex(), 
-                                "shared "));
+            for (String moduleName: moduleNames) {
+                for (Tree.ImportModule im: compilationUnit.getModuleDescriptors().get(0)
+                        .getImportModuleList().getImportModules()) {
+                    if (im.getImportPath().getModel().getNameAsString().equals(moduleName)) {
+                        if (!removeSharedAnnotation(textFileChange, doc, im.getAnnotationList())) {
+                            textFileChange.addEdit(new InsertEdit(im.getStartIndex(), 
+                                    "shared "));
+                        }
                     }
                 }
             }
@@ -130,8 +131,9 @@ public class ModuleImportUtil {
         }
     }
 
-    public static void removeSharedAnnotation(TextFileChange textFileChange,
+    public static boolean removeSharedAnnotation(TextFileChange textFileChange,
             IDocument doc, Tree.AnnotationList al) throws BadLocationException {
+        boolean result = false;
         for (Tree.Annotation a: al.getAnnotations()) {
             if (((Tree.BaseMemberExpression) a.getPrimary()).getDeclaration()
                     .getName().equals("shared")) {
@@ -141,8 +143,10 @@ public class ModuleImportUtil {
                     stop++;
                 }
                 textFileChange.addEdit(new DeleteEdit(start, stop-start));
+                result = true;
             }
         }
+        return result;
     }
     
     public static int addModuleImports(IProject project, Module target, 

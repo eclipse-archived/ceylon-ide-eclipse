@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.redhat.ceylon.common.Versions;
@@ -75,7 +76,9 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         composite.setLayout(layout);
         
         moduleImportsTable = new Table(composite, 
-                SWT.CHECK | SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+                SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+        moduleImportsTable.setHeaderVisible(true);
+        moduleImportsTable.setLinesVisible(true);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan=2;
         gd.verticalSpan=4;
@@ -84,21 +87,32 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         gd.heightHint = 100;
         gd.widthHint = 250;
         moduleImportsTable.setLayoutData(gd);
+        
+        TableColumn column = new TableColumn(moduleImportsTable, SWT.NONE, 0);
+        column.setText("Module/Version");
+        column.setWidth(200);
+        TableColumn sharedColumn = new TableColumn(moduleImportsTable, SWT.NONE, 1);
+        sharedColumn.setText("Transitivity");
+        sharedColumn.setWidth(70);
 
         final TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
         item.setImage(CeylonLabelProvider.ARCHIVE);
-        item.setChecked(true);
+        item.setText(1, "shared");
         item.setText(Module.LANGUAGE_MODULE_NAME + "/" + 
                 Versions.CEYLON_VERSION_NUMBER); //TODO: is this right?
         
-        moduleImportsTable.addSelectionListener(new SelectionListener() {
+        GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
+        bgd.grabExcessHorizontalSpace=false;
+        bgd.widthHint = 50;
+        
+        Button sharedButton = new Button(composite, SWT.PUSH);
+        sharedButton.setText("Toggle Shared");
+        sharedButton.setLayoutData(bgd);
+        sharedButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (e.detail==SWT.CHECK) {
-                    TableItem it = (TableItem) e.item;
-                    if (it==item) {
-                        item.setChecked(true);
-                    }
+                for (TableItem item: moduleImportsTable.getSelection()) {
+                    item.setText(1, item.getText(1).isEmpty() ? "shared": "");
                 }
             }
             @Override
@@ -106,10 +120,7 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         });
         
         Button addButton = new Button(composite, SWT.PUSH);
-        addButton.setText("Add imports...");
-        GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
-        bgd.grabExcessHorizontalSpace=false;
-        bgd.widthHint = 50;
+        addButton.setText("Add Imports...");
         addButton.setLayoutData(bgd);
         addButton.addSelectionListener(new SelectionListener() {
             @Override
@@ -121,7 +132,7 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         });
         
         Button removeButton = new Button(composite, SWT.PUSH);
-        removeButton.setText("Remove selected");
+        removeButton.setText("Remove Selected");
         removeButton.setLayoutData(bgd);
         removeButton.addSelectionListener(new SelectionListener() {
             @Override
@@ -132,9 +143,9 @@ public abstract class ImportModulesWizardPage extends WizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        Label l = new Label(parent, SWT.NONE);
-        l.setText("(Checked modules are exported.)");
-        label.setLayoutData(lgd);
+//        Label l = new Label(parent, SWT.NONE);
+//        l.setText("(Checked modules are exported.)");
+//        label.setLayoutData(lgd);
     }
 
     private void selectAndAddModules() {
@@ -186,7 +197,7 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         for (TableItem item: moduleImportsTable.getItems()) {
             int ind = item.getText().indexOf('/');
             String name = item.getText().substring(0, ind);
-            boolean shared = item.getChecked();
+            boolean shared = !item.getText(1).isEmpty();
             if (shared && !name.equals(Module.LANGUAGE_MODULE_NAME)) {
                 result.add(name);
             }
