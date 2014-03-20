@@ -30,19 +30,22 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-class AddParameterProposal extends CorrectionProposal {
+class AddParameterProposal extends ParameterProposal {
     
 	private AddParameterProposal(Declaration d, Declaration dec, 
-			int offset, TextChange change) {
+	        ProducedType type, int offset, int len, TextChange change, 
+	        CeylonEditor editor) {
         super("Add '" + d.getName() + "' to parameter list of '" + dec.getName() + "'", 
-                change, new Point(offset, 0), ADD_CORR);
+                change, dec, type, new Point(offset, len), ADD_CORR, editor);
     }
-    
+	
     private static void addParameterProposal(Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
-            Tree.TypedDeclaration decNode, Tree.SpecifierOrInitializerExpression sie) {
+            Tree.TypedDeclaration decNode, 
+            Tree.SpecifierOrInitializerExpression sie, 
+            CeylonEditor editor) {
         MethodOrValue dec = (MethodOrValue) decNode.getDeclarationModel();
         if (dec==null) return;
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
@@ -96,9 +99,11 @@ class AddParameterProposal extends CorrectionProposal {
                 return;
             }
             String def;
+            int len;
             if (sie==null) {
             	String defaultValue = 
             			defaultValue(cu.getUnit(), dec.getType());
+            	len = defaultValue.length();
             	if (decNode instanceof Tree.MethodDeclaration) {
             		def = " => " + defaultValue;
             	}
@@ -107,6 +112,7 @@ class AddParameterProposal extends CorrectionProposal {
             	}
             }
             else {
+                len = 0;
             	int start;
                 try {
                 	def = doc.get(sie.getStartIndex(), 
@@ -123,48 +129,55 @@ class AddParameterProposal extends CorrectionProposal {
                 }
                 change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
             }
-            if (params!=null) def = " = " + params + def;
+            if (params!=null) {
+                def = " = " + params + def;
+            }
             String param = (pl.getParameters().isEmpty() ? "" : ", ") + 
                     dec.getName() + def;
             Integer offset = pl.getStopIndex();
             change.addEdit(new InsertEdit(offset, param));
-            Type type = decNode.getType();
+            Tree.Type type = decNode.getType();
             int shift=0;
+            ProducedType paramType;
             if (type instanceof Tree.LocalModifier) {
                 Integer typeOffset = type.getStartIndex();
-                ProducedType infType = inferType(cu, type);
+                paramType = inferType(cu, type); //TODO: is it really necessary to infer the type here?
                 String explicitType;
-                if (infType==null) {
+                if (paramType==null) {
                     explicitType = "Object";
+                    paramType = type.getUnit().getObjectDeclaration().getType();
                 }
                 else {
-                    explicitType = infType.getProducedTypeName();
+                    explicitType = paramType.getProducedTypeName();
                     HashSet<Declaration> decs = new HashSet<Declaration>();
-                    importType(decs, infType, cu);
+                    importType(decs, paramType, cu);
                     shift = applyImports(change, decs, cu, doc);
                 }
                 change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), 
                         explicitType));
             }
+            else {
+                paramType = type.getTypeModel();
+            }
             proposals.add(new AddParameterProposal(dec, container.getDeclarationModel(), 
-                    offset+param.length()+shift, change));
+                    paramType, offset+param.length()+shift-len, len, change, editor));
         }
     }
 
 	static void addParameterProposals(Collection<ICompletionProposal> proposals,
-			IFile file, Tree.CompilationUnit cu, Node node) {
+			IFile file, Tree.CompilationUnit cu, Node node, CeylonEditor editor) {
 		if (node instanceof Tree.AttributeDeclaration) {
 	        Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) node;
 	        Tree.SpecifierOrInitializerExpression sie = 
 	                attDecNode.getSpecifierOrInitializerExpression();
 	        if (!(sie instanceof Tree.LazySpecifierExpression)) {
-	            addParameterProposal(cu, proposals, file, attDecNode, sie);
+	            addParameterProposal(cu, proposals, file, attDecNode, sie, editor);
 	        }
 	    }
 	    if (node instanceof Tree.MethodDeclaration) {
 	        Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) node;
 	        Tree.SpecifierExpression sie = methDecNode.getSpecifierExpression();
-	        addParameterProposal(cu, proposals, file, methDecNode, sie);
+	        addParameterProposal(cu, proposals, file, methDecNode, sie, editor);
 	    }
 	}
     

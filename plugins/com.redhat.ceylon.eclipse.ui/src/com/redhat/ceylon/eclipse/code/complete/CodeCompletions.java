@@ -313,7 +313,7 @@ public class CodeCompletions {
         return result;
     }
     
-    static void appendPositionalArgs(Declaration dec,
+    public static void appendPositionalArgs(Declaration dec,
             Unit unit, StringBuilder result, boolean includeDefaulted,
             boolean descriptionOnly) {
         appendPositionalArgs(dec, dec.getReference(), 

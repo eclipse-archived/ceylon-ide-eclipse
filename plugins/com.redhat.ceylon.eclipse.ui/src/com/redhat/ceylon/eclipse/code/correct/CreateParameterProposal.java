@@ -39,14 +39,15 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
-class CreateParameterProposal extends CorrectionProposal {
+class CreateParameterProposal extends ParameterProposal {
     
     private final int offset;
     private final int length;
     
     CreateParameterProposal(String def, String desc, 
+            Declaration dec, ProducedType type,
             Image image, int offset, TextFileChange change) {
-        super(desc, change, null, image);
+        super(desc, change, dec, type, null, image, null);
         int loc = def.indexOf("= nothing");
         if (loc<0) {
             loc = def.indexOf("= ");
@@ -96,7 +97,7 @@ class CreateParameterProposal extends CorrectionProposal {
         change.addEdit(new InsertEdit(offset, def));
         proposals.add(new CreateParameterProposal(def, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
-                image, offset+il, change));
+                dec, returnType, image, offset+il, change));
     }
 
     private static void addCreateParameterAndAttributeProposal(Collection<ICompletionProposal> proposals, 
@@ -131,7 +132,7 @@ class CreateParameterProposal extends CorrectionProposal {
         change.addEdit(new InsertEdit(offset2, indent+adef+indentAfter));
         proposals.add(new CreateParameterProposal(pdef, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
-                image, offset+il, change));
+                dec, returnType, image, offset+il, change));
     }
 
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
