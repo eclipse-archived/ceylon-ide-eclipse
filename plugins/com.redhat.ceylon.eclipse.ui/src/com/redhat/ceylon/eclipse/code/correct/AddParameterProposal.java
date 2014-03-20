@@ -32,7 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-class AddParameterProposal extends ParameterProposal {
+class AddParameterProposal extends InitializerProposal {
     
 	private AddParameterProposal(Declaration d, Declaration dec, 
 	        ProducedType type, int offset, int len, TextChange change, 

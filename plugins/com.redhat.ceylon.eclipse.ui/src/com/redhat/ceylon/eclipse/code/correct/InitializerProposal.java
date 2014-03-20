@@ -28,20 +28,22 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-class ParameterProposal extends CorrectionProposal {
+class InitializerProposal extends CorrectionProposal {
 
-    private final class DefaultArgProposal extends LinkedModeCompletionProposal {
+    private final class InitializerValueProposal extends LinkedModeCompletionProposal {
         private final Point point;
 
-        private DefaultArgProposal(int offset, String text, Image image, Point point) {
+        private InitializerValueProposal(int offset, String text, Image image, Point point) {
             super(offset, text, 0, image);
             this.point = point;
         }
@@ -56,14 +58,26 @@ class ParameterProposal extends CorrectionProposal {
     private CeylonEditor editor;
     
     private final ProducedType type;
-    private final Declaration declaration;
+    private final Scope scope;
+    private final Unit unit;
     
-    ParameterProposal(String name, Change change,
+    InitializerProposal(String name, Change change,
             Declaration declaration, ProducedType type, 
             Point selection, Image image, CeylonEditor editor) {
         super(name, change, selection, image);
         this.editor = editor;
-        this.declaration = declaration;
+        this.scope = declaration.getScope();
+        this.unit = declaration.getUnit();
+        this.type = type;
+    }
+
+    InitializerProposal(String name, Change change,
+            Scope scope, Unit unit, ProducedType type, 
+            Point selection, Image image, CeylonEditor editor) {
+        super(name, change, selection, image);
+        this.editor = editor;
+        this.scope = scope;
+        this.unit = unit;
         this.type = type;
     }
 
@@ -103,7 +117,7 @@ class ParameterProposal extends CorrectionProposal {
         List<ICompletionProposal> proposals = 
                 new ArrayList<ICompletionProposal>();
         try {
-            proposals.add(new DefaultArgProposal(point.x, 
+            proposals.add(new InitializerValueProposal(point.x, 
                     document.get(point.x, point.y), null, 
                     point));
         }
@@ -118,8 +132,7 @@ class ParameterProposal extends CorrectionProposal {
             List<ICompletionProposal> props, final Point point) {
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
-                getSortedProposedValues(declaration.getScope(), 
-                        declaration.getUnit())) {
+                getSortedProposedValues(scope, unit)) {
             if (dwp.isUnimported()) {
                 //don't propose unimported stuff b/c adding
                 //imports drops us out of linked mode and
@@ -140,7 +153,7 @@ class ParameterProposal extends CorrectionProposal {
                     ((td instanceof TypeParameter) && 
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
                             vt.isSubtypeOf(type))) {
-                    props.add(new DefaultArgProposal(loc, d.getName(),
+                    props.add(new InitializerValueProposal(loc, d.getName(),
                             getImageForDeclaration(d), point));
                 }
             }
@@ -160,8 +173,8 @@ class ParameterProposal extends CorrectionProposal {
                             ct.isSubtypeOf(type))) {
                     StringBuilder sb = new StringBuilder();
                     sb.append(d.getName());
-                    appendPositionalArgs(d, declaration.getUnit(), sb, false, false);
-                    props.add(new DefaultArgProposal(loc, sb.toString(),
+                    appendPositionalArgs(d, unit, sb, false, false);
+                    props.add(new InitializerValueProposal(loc, sb.toString(),
                             getImageForDeclaration(d), point));
                 }
             }
