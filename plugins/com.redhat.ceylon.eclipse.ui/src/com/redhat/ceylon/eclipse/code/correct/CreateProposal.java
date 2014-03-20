@@ -70,9 +70,10 @@ class CreateProposal extends InitializerProposal {
     
     private CreateProposal(String def, String desc, 
             Scope scope, Unit unit, ProducedType returnType,
-            Image image, int offset, TextFileChange change) {
+            Image image, int offset, TextFileChange change,
+            int exitPos) {
         super(desc, change, scope, unit, returnType, 
-                computeSelection(offset,def), image, null);
+                computeSelection(offset,def), image, exitPos, null);
     }
     
     static IDocument getDocument(TextFileChange change) {
@@ -132,9 +133,10 @@ class CreateProposal extends InitializerProposal {
         String def = indentBefore + dg.generateShared(indent, delim) + indentAfter;
         change.addEdit(new InsertEdit(offset, def));
         String desc = "Create " + memberKind(dg) + " in '" + typeDec.getName() + "'";
+        int exitPos = dg.node.getStopIndex()+1;
         proposals.add(new CreateProposal(def, desc, 
                 body.getScope(), body.getUnit(), dg.returnType, 
-                dg.image, offset+il, change));
+                dg.image, offset+il, change, exitPos));
     }
 
     private static String memberKind(DefinitionGenerator dg) {
@@ -175,9 +177,10 @@ class CreateProposal extends InitializerProposal {
         final Scope scope = local ? 
                 statement.getScope() : 
                 cu.getUnit().getPackage();
+        int exitPos = dg.node.getStopIndex()+1;
         proposals.add(new CreateProposal(def, desc, 
                 scope, cu.getUnit(), dg.returnType, 
-                dg.image, offset+il, change));
+                dg.image, offset+il, change, exitPos));
     }
     
     static void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
