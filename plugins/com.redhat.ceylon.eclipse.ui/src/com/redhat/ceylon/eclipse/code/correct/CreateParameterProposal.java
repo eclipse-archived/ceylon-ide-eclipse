@@ -39,7 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
-class CreateParameterProposal extends ParameterProposal {
+class CreateParameterProposal extends InitializerProposal {
     
     private final int offset;
     private final int length;

@@ -32,21 +32,20 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
-class CreateProposal extends CorrectionProposal {
+class CreateProposal extends InitializerProposal {
     
-    private final int offset;
-    private final int length;
     
-    private CreateProposal(String def, String desc, Image image, 
-            int offset, TextFileChange change) {
-        super(desc, change, null, image);
+    private static Point computeSelection(int offset, String def) {
+        int length;
         int loc = def.indexOf("= nothing");
         if (loc<0) loc = def.indexOf("=> nothing");
         if (loc<0) {
@@ -66,12 +65,14 @@ class CreateProposal extends CorrectionProposal {
             loc = def.indexOf(" ", loc)+1;
             length = 7;
         }
-        this.offset = offset + loc;
+        return new Point(offset + loc, length);
     }
     
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(offset, length);
+    private CreateProposal(String def, String desc, 
+            Scope scope, Unit unit, ProducedType returnType,
+            Image image, int offset, TextFileChange change) {
+        super(desc, change, scope, unit, returnType, 
+                computeSelection(offset,def), image, null);
     }
     
     static IDocument getDocument(TextFileChange change) {
@@ -122,7 +123,7 @@ class CreateProposal extends CorrectionProposal {
             offset = statement.getStopIndex()+1;
         }
         HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
-        CompilationUnit cu = unit.getCompilationUnit();
+        Tree.CompilationUnit cu = unit.getCompilationUnit();
         importType(alreadyImported, dg.returnType, cu);
         if (dg.parameters!=null) {
             importTypes(alreadyImported, dg.parameters.values(), cu);
@@ -131,7 +132,9 @@ class CreateProposal extends CorrectionProposal {
         String def = indentBefore + dg.generateShared(indent, delim) + indentAfter;
         change.addEdit(new InsertEdit(offset, def));
         String desc = "Create " + memberKind(dg) + " in '" + typeDec.getName() + "'";
-        proposals.add(new CreateProposal(def, desc, dg.image, offset+il, change));
+        proposals.add(new CreateProposal(def, desc, 
+                body.getScope(), body.getUnit(), dg.returnType, 
+                dg.image, offset+il, change));
     }
 
     private static String memberKind(DefinitionGenerator dg) {
@@ -159,7 +162,7 @@ class CreateProposal extends CorrectionProposal {
         int offset = statement.getStartIndex();
         String delim = getDefaultLineDelimiter(doc);
         HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
-        CompilationUnit cu = unit.getCompilationUnit();
+        Tree.CompilationUnit cu = unit.getCompilationUnit();
         importType(alreadyImported, dg.returnType, cu);
         if (dg.parameters!=null) {
             importTypes(alreadyImported, dg.parameters.values(), cu);
@@ -169,7 +172,12 @@ class CreateProposal extends CorrectionProposal {
         if (!local) def += delim;
         change.addEdit(new InsertEdit(offset, def));
         String desc = (local ? "Create local " : "Create toplevel ") + dg.desc;
-        proposals.add(new CreateProposal(def, desc, dg.image, offset+il, change));
+        final Scope scope = local ? 
+                statement.getScope() : 
+                cu.getUnit().getPackage();
+        proposals.add(new CreateProposal(def, desc, 
+                scope, cu.getUnit(), dg.returnType, 
+                dg.image, offset+il, change));
     }
     
     static void addCreateMemberProposals(Collection<ICompletionProposal> proposals,

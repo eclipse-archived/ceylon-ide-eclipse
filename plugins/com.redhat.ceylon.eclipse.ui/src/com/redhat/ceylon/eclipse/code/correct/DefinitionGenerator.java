@@ -88,10 +88,14 @@ class DefinitionGenerator {
             String defIndent = getDefaultIndent();
             if (isUpperCase) {
                 String supertype = isVoid ? 
-                        "" : supertypeDeclaration(returnType);
+                        null : supertypeDeclaration(returnType);
                 def.append("class ").append(brokenName).append(typeParamDef);
                 appendParameters(parameters, def);
-                def.append(supertype).append(typeParamConstDef)
+                if (supertype!=null) {
+                    def.append(delim).append(indent).append(defIndent).append(defIndent)
+                        .append(supertype);
+                }
+                def.append(typeParamConstDef)
                     .append(" {").append(delim);
                 if (!isVoid) {
                     appendMembers(indent, delim, def, defIndent);
@@ -213,7 +217,9 @@ class DefinitionGenerator {
                 if (returnType.getSupertype(node.getUnit().getObjectDeclaration())==null) {
                     return null;
                 }
-                String supertype = isVoid ? "" : supertypeDeclaration(returnType);
+                String supertype = isVoid ? 
+                        null : supertypeDeclaration(returnType);
+                if (supertype==null) supertype = "";
                 String desc = "class '" + brokenName + params + supertype + "'";
                 return new DefinitionGenerator(brokenName, node, rootNode, 
                         desc, LOCAL_CLASS, returnType, paramTypes);
@@ -236,11 +242,11 @@ class DefinitionGenerator {
     }
 
     private static String supertypeDeclaration(ProducedType returnType) {
-        String stn = returnType.getProducedTypeName();
-        if (stn.equals("unknown")) {
-            return "";
+        if (isTypeUnknown(returnType)) {
+            return null;
         }
         else {
+            String stn = returnType.getProducedTypeName();
             if (returnType.getDeclaration() instanceof Class) {
                 return " extends " + stn + "()"; //TODO: supertype arguments!
             }
