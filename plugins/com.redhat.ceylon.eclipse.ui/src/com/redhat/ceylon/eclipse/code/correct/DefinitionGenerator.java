@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
@@ -71,7 +72,7 @@ class DefinitionGenerator {
         StringBuffer def = new StringBuffer();
         boolean isUpperCase = Character.isUpperCase(brokenName.charAt(0));
         final boolean isVoid = returnType==null;
-        String stn = isVoid ? null : returnType.getProducedTypeName();
+        Unit unit = node.getUnit();
         if (parameters!=null) {            
             List<TypeParameter> typeParams = new ArrayList<TypeParameter>();
             StringBuilder typeParamDef = new StringBuilder();
@@ -86,7 +87,8 @@ class DefinitionGenerator {
             
             String defIndent = getDefaultIndent();
             if (isUpperCase) {
-                String supertype = isVoid ? "" : supertypeDeclaration(returnType);
+                String supertype = isVoid ? 
+                        "" : supertypeDeclaration(returnType);
                 def.append("class ").append(brokenName).append(typeParamDef);
                 appendParameters(parameters, def);
                 def.append(supertype).append(typeParamConstDef)
@@ -97,23 +99,50 @@ class DefinitionGenerator {
                 def.append(indent).append("}");
             }
             else {
-                String type = isVoid ? "void" : 
-                    stn.equals("unknown") ? "function" : stn;
-                String impl = isVoid ? " {}" : 
-                        //removed because it's ugly for parameters:
-                        //delim + indent + defIndent + defIndent +
-                            " => nothing;";
-                def.append(type).append(" ").append(brokenName).append(typeParamDef);
+                if (isVoid) {
+                    def.append("void");
+                }
+                else {
+                    if (isTypeUnknown(returnType)) {
+                        def.append("function");
+                    }
+                    else {
+                        def.append(returnType.getProducedTypeName(unit));
+                    }
+                }
+                def.append(" ")
+                    .append(brokenName).append(typeParamDef);
                 appendParameters(parameters, def);
-                def.append(typeParamConstDef).append(impl);
+                def.append(typeParamConstDef);
+                if (isVoid) {
+                    def.append(" {}");
+                }
+                else {
+                    //removed because it's ugly for parameters:
+                    //delim + indent + defIndent + defIndent +
+                    def.append(" => ")
+                        .append(defaultValue(unit, returnType))
+                        .append(";");
+                }
             }
         }
         else if (!isUpperCase) {
-            String type = isVoid ? "Anything" : 
-                stn.equals("unknown") ? "value" : stn;
-            def.append(type).append(" ").append(brokenName).append(" = ")
-                    .append(defaultValue(node.getUnit(), returnType))
-                    .append(";");
+            if (isVoid) {
+                def.append("Anything");
+            }
+            else {
+                if (isTypeUnknown(returnType)) {
+                    def.append("value");
+                }
+                else {
+                    def.append(returnType.getProducedTypeName(unit));
+                }
+            }
+            def.append(" ")
+                .append(brokenName)
+                .append(" = ")
+                .append(defaultValue(unit, returnType))
+                .append(";");
         }
         else {
             throw new RuntimeException();
