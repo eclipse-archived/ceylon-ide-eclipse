@@ -36,15 +36,15 @@ class AddParameterProposal extends InitializerProposal {
     
 	private AddParameterProposal(Declaration d, Declaration dec, 
 	        ProducedType type, int offset, int len, TextChange change, 
-	        CeylonEditor editor) {
+	        int exitPos, CeylonEditor editor) {
         super("Add '" + d.getName() + "' to parameter list of '" + dec.getName() + "'", 
-                change, dec, type, new Point(offset, len), ADD_CORR, editor);
+                change, dec, type, new Point(offset, len), ADD_CORR, exitPos, editor);
     }
 	
     private static void addParameterProposal(Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.TypedDeclaration decNode, 
-            Tree.SpecifierOrInitializerExpression sie, 
+            Tree.SpecifierOrInitializerExpression sie, Node node,
             CeylonEditor editor) {
         MethodOrValue dec = (MethodOrValue) decNode.getDeclarationModel();
         if (dec==null) return;
@@ -159,8 +159,9 @@ class AddParameterProposal extends InitializerProposal {
             else {
                 paramType = type.getTypeModel();
             }
+            int exitPos = node.getStopIndex()+1;
             proposals.add(new AddParameterProposal(dec, container.getDeclarationModel(), 
-                    paramType, offset+param.length()+shift-len, len, change, editor));
+                    paramType, offset+param.length()+shift-len, len, change, exitPos, editor));
         }
     }
 
@@ -171,13 +172,13 @@ class AddParameterProposal extends InitializerProposal {
 	        Tree.SpecifierOrInitializerExpression sie = 
 	                attDecNode.getSpecifierOrInitializerExpression();
 	        if (!(sie instanceof Tree.LazySpecifierExpression)) {
-	            addParameterProposal(cu, proposals, file, attDecNode, sie, editor);
+	            addParameterProposal(cu, proposals, file, attDecNode, sie, node, editor);
 	        }
 	    }
 	    if (node instanceof Tree.MethodDeclaration) {
 	        Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) node;
 	        Tree.SpecifierExpression sie = methDecNode.getSpecifierExpression();
-	        addParameterProposal(cu, proposals, file, methDecNode, sie, editor);
+	        addParameterProposal(cu, proposals, file, methDecNode, sie, node, editor);
 	    }
 	}
     

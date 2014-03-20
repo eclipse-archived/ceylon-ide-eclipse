@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +63,8 @@ class InitializerProposal extends CorrectionProposal {
                     i<document.getLength(); 
                     i++) {
                 char ch = document.getChar(i);
-                if (Character.isWhitespace(ch)||ch==';') {
+                if (Character.isWhitespace(ch) ||
+                        ch==';'||ch==','||ch==')') {
                     break;
                 }
                 length++;
@@ -139,11 +139,14 @@ class InitializerProposal extends CorrectionProposal {
     private final ProducedType type;
     private final Scope scope;
     private final Unit unit;
+    private final int exitPos;
     
     InitializerProposal(String name, Change change,
             Declaration declaration, ProducedType type, 
-            Point selection, Image image, CeylonEditor editor) {
+            Point selection, Image image, int exitPos, 
+            CeylonEditor editor) {
         super(name, change, selection, image);
+        this.exitPos = exitPos;
         this.editor = editor;
         this.scope = declaration.getScope();
         this.unit = declaration.getUnit();
@@ -152,8 +155,10 @@ class InitializerProposal extends CorrectionProposal {
 
     InitializerProposal(String name, Change change,
             Scope scope, Unit unit, ProducedType type, 
-            Point selection, Image image, CeylonEditor editor) {
+            Point selection, Image image, int exitPos, 
+            CeylonEditor editor) {
         super(name, change, selection, image);
+        this.exitPos = exitPos;
         this.editor = editor;
         this.scope = scope;
         this.unit = unit;
@@ -162,7 +167,9 @@ class InitializerProposal extends CorrectionProposal {
 
     @Override
     public void apply(IDocument document) {
+        int lenBefore = document.getLength();
         super.apply(document);
+        int lenAfter = document.getLength();
         if (editor==null) {
             IEditorPart ed = EditorUtil.getCurrentEditor();
             if (ed instanceof CeylonEditor) {
@@ -180,8 +187,12 @@ class InitializerProposal extends CorrectionProposal {
                                     proposals);
                     try {
                         addLinkedPosition(linkedModeModel, linkedPosition);
+                        int adjustedExitPos = exitPos;
+                        if (exitPos>point.x) {
+                            adjustedExitPos += lenAfter-lenBefore;
+                        }
                         installLinkedMode(editor, document, linkedModeModel, 
-                                this, NO_STOP, -1);
+                                this, 1, adjustedExitPos);
                     } 
                     catch (BadLocationException e) {
                         e.printStackTrace();
