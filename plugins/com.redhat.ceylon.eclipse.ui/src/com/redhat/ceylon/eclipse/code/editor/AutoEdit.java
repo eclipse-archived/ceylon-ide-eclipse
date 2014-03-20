@@ -145,7 +145,8 @@ class AutoEdit extends Indents {
                 //typed character is a closing fence
                 try {
                     // skip one ahead if next char is already a closing fence
-                    if (skipClosingFence(closing)) {
+                    if (skipClosingFence(closing) &&
+                            closeOpeningFence(opening, closing)) {
                         command.text = "";
                         command.shiftsCaret = false;
                         command.caretOffset = command.offset + 1;
@@ -673,7 +674,12 @@ class AutoEdit extends Indents {
         int count = 0;
         List<CommonToken> tokens = getTokens();
         for (CommonToken tok: tokens) {
-            if (tok.getText().equals(token)) {
+            String text = tok.getText();
+            if (text.equals(token)) {
+                count++;
+            }
+            if (text.startsWith(token) &&
+                    !text.endsWith(token)) {
                 count++;
             }
         }
