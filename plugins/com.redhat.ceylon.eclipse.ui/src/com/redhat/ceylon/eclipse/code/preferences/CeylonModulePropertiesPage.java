@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.makeModuleImportShared;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.removeSharedAnnotation;
 import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
@@ -42,6 +43,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -173,7 +175,9 @@ public class CeylonModulePropertiesPage extends PropertyPage
         composite.setLayout(layout);
         
         moduleImportsTable = new Table(composite, 
-                SWT.CHECK | SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+                SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+        moduleImportsTable.setHeaderVisible(true);
+        moduleImportsTable.setLinesVisible(true);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
         gd.horizontalSpan=2;
         gd.verticalSpan=4;
@@ -182,37 +186,40 @@ public class CeylonModulePropertiesPage extends PropertyPage
         gd.heightHint = 100;
         gd.widthHint = 250;
         moduleImportsTable.setLayoutData(gd);
+        
+        TableColumn column = new TableColumn(moduleImportsTable, SWT.NONE, 0);
+        column.setText("Module/Version");
+        column.setWidth(200);
+        TableColumn sharedColumn = new TableColumn(moduleImportsTable, SWT.NONE, 1);
+        sharedColumn.setText("Transitivity");
+        sharedColumn.setWidth(70);
         for (ModuleImport mi: getModule().getImports()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
             item.setImage(CeylonLabelProvider.ARCHIVE);
             item.setText(mi.getModule().getNameAsString() + "/" + 
                     mi.getModule().getVersion());
-            item.setChecked(mi.isExport());
+            item.setText(1, mi.isExport() ? "shared" : "");
         }
-        moduleImportsTable.addSelectionListener(new SelectionListener() {
+        
+        GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
+        bgd.grabExcessHorizontalSpace=false;
+        bgd.widthHint = 50;
+        
+        Button sharedButton = new Button(composite, SWT.PUSH);
+        sharedButton.setText("Toggle Shared");
+        sharedButton.setLayoutData(bgd);
+        sharedButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (e.detail==SWT.CHECK) {
-                    TableItem item = (TableItem) e.item;
-                    String name = getModuleName(item);
-                    if (name.equals(Module.LANGUAGE_MODULE_NAME)) {
-                        item.setChecked(true);
-                    }
-                    else {
-                        ModuleImportUtil.makeModuleImportShared(project, 
-                                getModule(), name);
-                    }
-                }
+                makeShared(moduleImportsTable.getSelection());
+//                moduleImportsTable.redraw();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
         Button addButton = new Button(composite, SWT.PUSH);
-        addButton.setText("Add imports...");
-        GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
-        bgd.grabExcessHorizontalSpace=false;
-        bgd.widthHint = 50;
+        addButton.setText("Add Imports...");
         addButton.setLayoutData(bgd);
         addButton.addSelectionListener(new SelectionListener() {
             @Override
@@ -224,7 +231,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         });
         
         Button removeButton = new Button(composite, SWT.PUSH);
-        removeButton.setText("Remove selected");
+        removeButton.setText("Remove Selected");
         removeButton.setLayoutData(bgd);
         removeButton.addSelectionListener(new SelectionListener() {
             @Override
@@ -235,13 +242,31 @@ public class CeylonModulePropertiesPage extends PropertyPage
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        Label l = new Label(parent, SWT.NONE);
-        l.setText("(Checked modules are exported.)");
+//        Label l = new Label(parent, SWT.NONE);
+//        l.setText("(Checked modules are exported.)");
         
     }
 
+    private void makeShared(TableItem[] items) {
+        List<String> list = new ArrayList<String>();
+        for (TableItem item: items) {
+            String name = getModuleName(item);
+            if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
+                list.add(name);
+            }
+        }
+        makeModuleImportShared(project, getModule(), 
+                list.toArray(new String[0]));
+        for (TableItem item: items) {
+            String name = getModuleName(item);
+            if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
+                item.setText(1, item.getText(1).isEmpty() ? "shared" : "");
+            }
+        }
+    }
+    
     private void createPackagesBlock(Composite parent) {
-        Label  label = new Label(parent, SWT.NONE);
+        Label label = new Label(parent, SWT.NONE);
         label.setText("Packages:");
         
         Composite composite = new Composite(parent, SWT.NONE);
@@ -253,62 +278,51 @@ public class CeylonModulePropertiesPage extends PropertyPage
         composite.setLayout(layout);
         
         final Table packagesTable = new Table(composite, 
-                SWT.CHECK | SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+                 SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+        packagesTable.setHeaderVisible(true);
+        packagesTable.setLinesVisible(true);
         GridData gd = new GridData(FILL_HORIZONTAL);
         gd.horizontalSpan=2;
+        gd.verticalSpan=2;
         gd.grabExcessHorizontalSpace = true;
 //        gd.grabExcessVerticalSpace = true;
         gd.heightHint = 100;
         gd.widthHint = 250;
         packagesTable.setLayoutData(gd);
+        TableColumn column = new TableColumn(packagesTable, SWT.NONE, 0);
+        column.setText("Package");
+        column.setWidth(200);
+        TableColumn sharedColumn = new TableColumn(packagesTable, SWT.NONE, 1);
+        sharedColumn.setText("Visibility");
+        sharedColumn.setWidth(70);
         for (Package p: getModule().getPackages()) {
-            TableItem item = new TableItem(packagesTable, SWT.NONE);
+            TableItem item = new TableItem(packagesTable, SWT.NONE, 0);
             item.setImage(CeylonLabelProvider.PACKAGE);
             item.setText(p.getNameAsString());
-            item.setChecked(p.isShared());
+            item.setText(1, p.isShared() ? "shared" : "");
         }
-        packagesTable.addSelectionListener(new SelectionListener() {
+        
+        GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
+        bgd.grabExcessHorizontalSpace=false;
+        bgd.widthHint = 50;
+        
+        Button sharedButton = new Button(composite, SWT.PUSH);
+        sharedButton.setText("Toggle Shared");
+        sharedButton.setLayoutData(bgd);
+        sharedButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (e.detail==SWT.CHECK) {
-                    TableItem item = (TableItem) e.item;
-                    Package pkg = getModule().getPackage(item.getText());
-                    PhasedUnit phasedUnit = ModuleImportUtil.findPhasedUnit(project, pkg);
-                    if (phasedUnit==null) {
-                        item.setChecked(!item.getChecked());
-                    }
-                    else {
-                        TextFileChange textFileChange = 
-                                new TextFileChange("Make Package Import Shared", 
-                                        getFile(phasedUnit));
-                        textFileChange.setEdit(new MultiTextEdit());
-                        try {
-                            IDocument doc = textFileChange.getCurrentDocument(null);
-                            Tree.PackageDescriptor pd = phasedUnit.getCompilationUnit()
-                                    .getPackageDescriptors().get(0);
-                            if (pkg.isShared()) {
-                                removeSharedAnnotation(textFileChange, doc, pd.getAnnotationList());
-                            }
-                            else {
-                                textFileChange.addEdit(new InsertEdit(pd.getStartIndex(), "shared "));
-                            }
-                            textFileChange.perform(new NullProgressMonitor());
-                        }
-                        catch (Exception ce) {
-                            ce.printStackTrace();
-                        }
-                    }
+                for (TableItem item: packagesTable.getSelection()) {
+                    makeShared(item);
                 }
+//                packagesTable.redraw();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
         Button createPackageButton = new Button(composite, SWT.PUSH);
-        createPackageButton.setText("Create package...");
-        GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
-        bgd.grabExcessHorizontalSpace=false;
-        bgd.widthHint = 50;
+        createPackageButton.setText("Create Package...");
         createPackageButton.setLayoutData(bgd);
         createPackageButton.addSelectionListener(new SelectionListener() {
             @Override
@@ -319,21 +333,51 @@ public class CeylonModulePropertiesPage extends PropertyPage
                     TableItem item = new TableItem(packagesTable, SWT.NONE);
                     item.setImage(CeylonLabelProvider.PACKAGE);
                     item.setText(pfr.getElementName());
-                    item.setChecked(wiz.isShared());
+                    item.setText(1, wiz.isShared() ? "shared" : "");
                 }
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        Label l = new Label(parent, SWT.NONE);
-        l.setText("(Checked packages are shared.)");
+//        Label l = new Label(parent, SWT.NONE);
+//        l.setText("(Checked packages are shared.)");
         
         new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL)
                 .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     }
 
+    private void makeShared(TableItem item) {
+        Package pkg = getModule().getPackage(item.getText());
+        PhasedUnit phasedUnit = ModuleImportUtil.findPhasedUnit(project, pkg);
+        if (phasedUnit==null) {
+            item.setChecked(!item.getChecked());
+        }
+        else {
+            TextFileChange textFileChange = 
+                    new TextFileChange("Make Package Import Shared", 
+                            getFile(phasedUnit));
+            textFileChange.setEdit(new MultiTextEdit());
+            try {
+                IDocument doc = textFileChange.getCurrentDocument(null);
+                Tree.PackageDescriptor pd = phasedUnit.getCompilationUnit()
+                        .getPackageDescriptors().get(0);
+                if (pkg.isShared()) {
+                    removeSharedAnnotation(textFileChange, doc, pd.getAnnotationList());
+                }
+                else {
+                    textFileChange.addEdit(new InsertEdit(pd.getStartIndex(), "shared "));
+                }
+                textFileChange.perform(new NullProgressMonitor());
+                item.setText(1, !pkg.isShared() ? "shared" : "");
+            }
+            catch (Exception ce) {
+                ce.printStackTrace();
+            }
+        }
+    }
+    
     private void createModuleInfoBlock(Composite parent) {
         Composite composite = new Composite(parent, SWT.NONE);
         GridData cgd = new GridData(FILL_HORIZONTAL);
