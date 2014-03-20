@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 
 import java.util.Collection;
 
@@ -11,17 +12,18 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
-class AddInitializerProposal extends CorrectionProposal {
+class AddInitializerProposal extends InitializerProposal {
     
-	private AddInitializerProposal(Declaration dec, int offset, 
-			TextChange change) {
+	private AddInitializerProposal(TypedDeclaration dec, int offset, int length,
+	        TextChange change) {
         super("Add initializer to '" + dec.getName() + "'", 
-        		change, new Point(offset, 0));
+        		change, dec, dec.getType(), new Point(offset, length),
+        		MINOR_CHANGE, -1, null);
     }
     
     private static void addInitializerProposal(Tree.CompilationUnit cu,
@@ -31,18 +33,23 @@ class AddInitializerProposal extends CorrectionProposal {
         if (dec==null) return;
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
             TextChange change = new TextFileChange("Add Initializer", file);
+            int offset = decNode.getStopIndex();
         	String defaultValue = defaultValue(cu.getUnit(), dec.getType());
             String def;
+            int selectionOffset;
             if (decNode instanceof Tree.MethodDeclaration) {
 				def = " => " + defaultValue;
+				selectionOffset = offset + 4;
             }
             else {
                 def = " = " + defaultValue;
+                selectionOffset = offset + 3;
             }
             
-            Integer offset = decNode.getStopIndex();
             change.setEdit(new InsertEdit(offset, def));
-            proposals.add(new AddInitializerProposal(dec, offset+def.length(), change));
+            proposals.add(new AddInitializerProposal(dec, 
+                    selectionOffset, defaultValue.length(), 
+                    change));
         }
     }
 

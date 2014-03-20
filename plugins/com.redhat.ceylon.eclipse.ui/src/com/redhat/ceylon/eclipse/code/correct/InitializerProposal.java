@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -188,11 +189,12 @@ class InitializerProposal extends CorrectionProposal {
                     try {
                         addLinkedPosition(linkedModeModel, linkedPosition);
                         int adjustedExitPos = exitPos;
-                        if (exitPos>point.x) {
+                        if (exitPos>=0 && exitPos>point.x) {
                             adjustedExitPos += lenAfter-lenBefore;
                         }
+                        int exitSeq = exitPos>=0 ? 1 : NO_STOP;
                         installLinkedMode(editor, document, linkedModeModel, 
-                                this, 1, adjustedExitPos);
+                                this, exitSeq, adjustedExitPos);
                     } 
                     catch (BadLocationException e) {
                         e.printStackTrace();
