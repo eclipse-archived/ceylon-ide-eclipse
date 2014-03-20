@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -37,7 +38,15 @@ public class FindRefinementsAction extends AbstractFindAction {
         }
     }
 
-    public FindRefinementsAction() {}
+    public FindRefinementsAction() {
+        super("Find Refinements");
+        setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
+    }
+    
+    public FindRefinementsAction(CeylonSearchResultPage page, ISelection selection) {
+        super("Find Refinements", page, selection);
+        setActionDefinitionId(PLUGIN_ID + ".action.findRefinements");
+    }
     
     public FindRefinementsAction(IEditorPart editor) {
         super("Find Refinements", editor);

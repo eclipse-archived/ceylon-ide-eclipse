@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -33,7 +34,15 @@ public class FindReferencesAction extends AbstractFindAction {
         }
     }
 
-    public FindReferencesAction() {}
+    public FindReferencesAction() {
+        super("Find References");
+        setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
+    }
+    
+    public FindReferencesAction(CeylonSearchResultPage page, ISelection selection) {
+        super("Find References", page, selection);
+        setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
+    }
     
     public FindReferencesAction(IEditorPart editor) {
         super("Find References", editor);
