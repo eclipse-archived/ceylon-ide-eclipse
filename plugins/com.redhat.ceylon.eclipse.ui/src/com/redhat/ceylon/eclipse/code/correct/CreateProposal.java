@@ -48,23 +48,25 @@ class CreateProposal extends CorrectionProposal {
             int offset, TextFileChange change) {
         super(desc, change, null, image);
         int loc = def.indexOf("= nothing");
+        if (loc<0) loc = def.indexOf("=> nothing");
         if (loc<0) {
             loc = def.indexOf("= ");
+            if (loc<0) loc = def.indexOf("=> ");
             if (loc<0) {
                 loc = def.indexOf("{")+1;
                 length=0;
             }
             else {
-                loc += 2;
+                loc = def.indexOf(" ", loc)+1;
                 int semi = def.indexOf(";", loc);
                 length = semi<0 ? 0:semi-loc;
             }
         }
         else {
-            loc += 2;
-            length=7;
+            loc = def.indexOf(" ", loc)+1;
+            length = 7;
         }
-        this.offset=offset + loc;
+        this.offset = offset + loc;
     }
     
     @Override
