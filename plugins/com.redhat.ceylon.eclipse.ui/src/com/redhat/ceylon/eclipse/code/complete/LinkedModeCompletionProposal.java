@@ -95,12 +95,12 @@ public class LinkedModeCompletionProposal
     private final int offset;
     private int position;
     
-    public LinkedModeCompletionProposal(int offset, String text, 
+    LinkedModeCompletionProposal(int offset, String text, 
             int position) {
         this(offset, text, position, null);
     }
     
-    public LinkedModeCompletionProposal(int offset, String text, 
+    LinkedModeCompletionProposal(int offset, String text, 
             int position, Image image) {
         this.text=text;
         this.position = position;
