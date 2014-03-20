@@ -223,6 +223,14 @@ class RequiredTypeVisitor extends Visitor
     }
     
     @Override
+    public void visit(Tree.Throw that) {
+        ProducedType ort = requiredType;
+        requiredType = that.getUnit().getExceptionDeclaration().getType();
+        super.visit(that);
+        requiredType = ort;
+    }
+    
+    @Override
     public void visit(Tree.ConditionList that) {
         ProducedType ort = requiredType;
         requiredType = that.getUnit().getBooleanDeclaration().getType();
