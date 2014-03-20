@@ -12,11 +12,15 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.IFileSystem;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
+import org.eclipse.jdt.internal.ui.javaeditor.JarEntryEditorInput;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorDescriptor;
@@ -231,6 +235,13 @@ public class EditorUtility {
             IPath path= (IPath) input;
             return getEditorInput(path);
         }
+
+        if (input instanceof IJavaElement)
+            return org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.getEditorInput((IJavaElement) input);
+
+        if (JavaModelUtil.isOpenableStorage(input))
+            return new JarEntryEditorInput((IStorage)input);
+        
         return null;
     }
 

@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.debug.core.IJavaBreakpoint;
 import org.eclipse.jdt.internal.debug.ui.BreakpointUtils;
 import org.eclipse.jdt.internal.debug.ui.LocalFileStorageEditorInput;
+import org.eclipse.jdt.internal.debug.ui.ZipEntryStorageEditorInput;
 import org.eclipse.jdt.internal.launching.JavaSourceLookupDirector;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
@@ -39,10 +40,14 @@ public class CeylonSourceLookupDirector extends JavaSourceLookupDirector impleme
             return new LocalFileStorageEditorInput((LocalFileStorage)item);
         }
         if (item instanceof ZipEntryStorage) {
-            ZipEntryStorage zes = (ZipEntryStorage) item;
-            IPath archivePath = Path.fromOSString(zes.getArchive().getName() + "!");            
-            IEditorInput input = EditorUtility.getEditorInput(archivePath.append(zes.getZipEntry().getName()));
-            return input;
+            if (((ZipEntryStorage) item).getName().endsWith(".ceylon")) {
+                ZipEntryStorage zes = (ZipEntryStorage) item;
+                IPath archivePath = Path.fromOSString(zes.getArchive().getName() + "!");            
+                IEditorInput input = EditorUtility.getEditorInput(archivePath.append(zes.getZipEntry().getName()));
+                return input;
+            } else {
+                return new ZipEntryStorageEditorInput((ZipEntryStorage)item);
+            }
         }
         // for types that correspond to external files, return null so we do not
         // attempt to open a non-existing workspace file on the breakpoint (bug 184934)
@@ -52,7 +57,7 @@ public class CeylonSourceLookupDirector extends JavaSourceLookupDirector impleme
                 return null;
             }
         }
-        return org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.getEditorInput(item);
+        return EditorUtility.getEditorInput(item);
     }
 
     @Override
