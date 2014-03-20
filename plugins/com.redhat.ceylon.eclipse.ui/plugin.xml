@@ -2206,56 +2206,64 @@
                enablesFor="1"
                icon="icons/file_change.png"
                id="moveToNewUnit"
-               menubarPath="refactor"/>
+               menubarPath="refactor"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"/>
          <action
                label="Move To &amp;Source File..."
                class="com.redhat.ceylon.eclipse.code.refactor.MoveToUnitHandler"
                enablesFor="1"
                icon="icons/file_change.png"
                id="moveToUnit"
-               menubarPath="refactor"/>
+               menubarPath="refactor"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToUnit"/>
          <action
                label="&amp;Rename..."
                class="com.redhat.ceylon.eclipse.code.refactor.RenameAction"
                enablesFor="1"
                icon="icons/correction_rename.png"
                id="rename"
-               menubarPath="refactor"/>
+               menubarPath="refactor"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.rename"/>
          <action
                label="Find Refinements"
                class="com.redhat.ceylon.eclipse.code.search.FindRefinementsAction"
                enablesFor="1"
                icon="icons/search_decl_obj.png"
                id="findRefinements"
-               menubarPath="find"/>
+               menubarPath="find"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.findRefinements"/>
          <action
                label="Find Subtypes"
                class="com.redhat.ceylon.eclipse.code.search.FindSubtypesAction"
                enablesFor="1"
                icon="icons/search_decl_obj.png"
                id="findSubtypes"
-               menubarPath="find"/>
+               menubarPath="find"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.findSubtypes"/>
          <action
                label="Find Assignments"
                class="com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction"
                enablesFor="1"
                icon="icons/search_ref_obj.png"
                id="findAssignments"
-               menubarPath="find"/>
+               menubarPath="find"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.findAssignments"/>
          <action
                label="&amp;Find References"
                class="com.redhat.ceylon.eclipse.code.search.FindReferencesAction"
                enablesFor="1"
                icon="icons/search_ref_obj.png"
                id="findReferences"
-               menubarPath="find"/>
+               menubarPath="find"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.findReferences"/>
          <action
                label="Show In Type &amp;Hierarchy View"
                class="com.redhat.ceylon.eclipse.code.outline.ShowInHierarchyAction"
                enablesFor="1"
                icon="icons/class_hi_view.gif"
                id="showInHierarchy"
-               menubarPath="showIn"/>
+               menubarPath="showIn"
+               definitionId="com.redhat.ceylon.eclipse.ui.action.showInHierarchyView"/>
      </objectContribution>
      <objectContribution
            objectClass="org.eclipse.jdt.core.IJavaProject"
