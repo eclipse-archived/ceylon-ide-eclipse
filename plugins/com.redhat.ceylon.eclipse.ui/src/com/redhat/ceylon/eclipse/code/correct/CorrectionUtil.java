@@ -21,7 +21,7 @@ import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-class CorrectionUtil {
+public class CorrectionUtil {
     
     static int getLevenshteinDistance(String x, String y) {
         
@@ -184,7 +184,7 @@ class CorrectionUtil {
         return new Point(offset + loc, length);
     }
 
-    static IDocument getDocument(TextChange change) {
+    public static IDocument getDocument(TextChange change) {
         try {
             return change.getCurrentDocument(null);
         }
