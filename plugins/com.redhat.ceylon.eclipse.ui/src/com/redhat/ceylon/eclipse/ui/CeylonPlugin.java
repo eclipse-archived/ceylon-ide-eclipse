@@ -116,21 +116,26 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         addResourceFilterPreference();
         registerProjectOpenCloseListener();
         CeylonEncodingSynchronizer.getInstance().install();
-        ICommandService commandService = (ICommandService) getWorkbench().getService( ICommandService.class );
-        commandService.addExecutionListener(new IExecutionListener() {
-            public void notHandled(final String commandId, final NotHandledException exception) {}
-            public void postExecuteFailure(final String commandId, final ExecutionException exception) {}
-            public void postExecuteSuccess(final String commandId, final Object returnValue) {
-                if (commandId.equals("org.eclipse.ui.file.save")) {
-                    IEditorPart ed = EditorUtil.getCurrentEditor();
-                    if (ed!=null) {
-                        RecentFilesPopup.addToHistory(EditorUtil.getFile(ed.getEditorInput()));
+        getWorkbench().getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                ICommandService commandService = (ICommandService) getWorkbench().getService( ICommandService.class );
+                commandService.addExecutionListener(new IExecutionListener() {
+                    public void notHandled(final String commandId, final NotHandledException exception) {}
+                    public void postExecuteFailure(final String commandId, final ExecutionException exception) {}
+                    public void postExecuteSuccess(final String commandId, final Object returnValue) {
+                        if (commandId.equals("org.eclipse.ui.file.save")) {
+                            IEditorPart ed = EditorUtil.getCurrentEditor();
+                            if (ed!=null) {
+                                RecentFilesPopup.addToHistory(EditorUtil.getFile(ed.getEditorInput()));
+                            }
+                        }
                     }
-                }
-            }
-            public void preExecute(final String commandId, final ExecutionEvent event) {}
+                    public void preExecute(final String commandId, final ExecutionEvent event) {}
 
-        } );
+                } );
+            }
+        });
     }
     
     @Override
