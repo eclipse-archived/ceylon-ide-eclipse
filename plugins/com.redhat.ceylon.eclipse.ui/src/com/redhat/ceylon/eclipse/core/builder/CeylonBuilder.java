@@ -67,14 +67,20 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IOpenable;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.PackageFragment;
 
 import com.redhat.ceylon.cmr.api.ArtifactCallback;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
@@ -108,6 +114,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.context.ProducedTypeCache;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.io.impl.ZipFileVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -123,7 +130,10 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
+import com.redhat.ceylon.eclipse.core.model.IdeUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
@@ -132,6 +142,7 @@ import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
+import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
@@ -399,6 +410,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             return null;
         }
         return getModelLoader(typeChecker);
+    }
+
+    public static JDTModuleManager getProjectModuleManager(IProject project) {
+        JDTModelLoader modelLoader = getProjectModelLoader(project);
+        if (modelLoader == null) {
+            return null;
+        }
+        return modelLoader.getModuleManager();
     }
 
     public final static class BooleanHolder {
@@ -2835,6 +2854,108 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static Package getPackage(IFile file) {
         if (file.getParent() instanceof IFolder) {
             return getPackage((IFolder) file.getParent());
+        }
+        return null;
+    }    
+
+    public static Package getPackage(VirtualFile virtualFile) {
+        if (virtualFile instanceof IFileVirtualFile) {
+            return getPackage(((IFileVirtualFile)virtualFile).getFile());
+        }
+        if (virtualFile instanceof IFolderVirtualFile) {
+            return getPackage(((IFolderVirtualFile)virtualFile).getFolder());
+        }
+        String virtualPath = virtualFile.getPath();
+        if (virtualPath.contains("!/")) { // TODO : this test could be replaced by an instanceof if the ZipEntryVirtualFile was public
+            CeylonUnit ceylonUnit = getUnit(virtualFile);
+            if (ceylonUnit != null) {
+                return ceylonUnit.getPackage();
+            }
+        }
+        return null;
+    }    
+
+
+    public static SourceFile getUnit(VirtualFile virtualFile) {
+        if (virtualFile instanceof IFileVirtualFile) {
+            IFile file = ((IFileVirtualFile)virtualFile).getFile();
+            Package p = getPackage(file);
+            if (p != null) {
+                for (Unit u : p.getUnits()) {
+                    if (u instanceof SourceFile && u.getFilename().equals(file.getName())) {
+                        return (SourceFile) u;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        String virtualPath = virtualFile.getPath();
+        if (virtualPath.contains("!/")) { // TODO : this test could be replaced by an instanceof if the ZipEntryVirtualFile was public
+            for (IProject p : getProjects()) {
+                JDTModuleManager moduleManager = getProjectModuleManager(p);
+                if (moduleManager != null) {
+                    JDTModule archiveModule = moduleManager.getArchiveModuleFromSourcePath(virtualPath);
+                    ExternalPhasedUnit pu = archiveModule.getPhasedUnit(virtualFile);
+                    if (pu != null) {
+                        return pu.getUnit();
+                    }
+                }
+            }
+        }
+        return null;
+    }    
+
+    public static IResourceAware getUnit(IFile file) {
+        Package p = getPackage(file);
+        if (p != null) {
+            for (Unit u : p.getUnits()) {
+                if (u instanceof IResourceAware) {
+                    if (u.getFilename().equals(file.getName())) {
+                        return (IResourceAware) u;
+                    }
+                }
+            }
+        }
+        return null;
+    }    
+
+    public static Package getPackage(IPackageFragment packageFragment) {
+        PackageFragment pkg = (PackageFragment) packageFragment;
+        IPackageFragmentRoot root = pkg.getPackageFragmentRoot();
+        Modules projectModules = CeylonBuilder.getProjectModules(packageFragment.getJavaProject().getProject());
+        for (Module m : projectModules.getListOfModules()) {
+            if (m instanceof JDTModule && ! m.getNameAsString().equals(Module.DEFAULT_MODULE_NAME)) {
+                JDTModule module = (JDTModule) m;
+                for (IPackageFragmentRoot moduleRoot : module.getPackageFragmentRoots()) {
+                    if (root.getPath().equals(moduleRoot.getPath())) {
+                        return module.getDirectPackage(packageFragment.getElementName());
+                    }
+                }
+            }
+        }
+        JDTModule defaultModule = (JDTModule) projectModules.getDefaultModule();
+        for (IPackageFragmentRoot moduleRoot : defaultModule.getPackageFragmentRoots()) {
+            if (root.getPath().equals(moduleRoot.getPath())) {
+                return defaultModule.getDirectPackage(packageFragment.getElementName());
+            }
+        }
+        return null;
+    }
+    
+    public static IJavaModelAware getUnit(IJavaElement javaElement) {
+        IOpenable openable = javaElement.getOpenable();
+        if (openable instanceof ITypeRoot) {
+            Package p = getPackage((IPackageFragment)((ITypeRoot)openable).getParent());
+            if (p != null) {
+                for (Unit u : p.getUnits()) {
+                    if (u instanceof IJavaModelAware) {
+                        if (u.getFilename().equals(((ITypeRoot) openable).getElementName())) {
+                            return (IJavaModelAware) u;
+                        }
+                    }
+                }
+            }
         }
         return null;
     }    
