@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
-import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -16,7 +15,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -85,9 +83,6 @@ public class MoveUtil {
                         "Select a Ceylon source file for the selected declaration.");
         IFile file = getFile(editor.getEditorInput());
         if (w.open(file)) {
-            int start = node.getStartIndex();
-            int length = node.getStopIndex()-start+1;
-            String contents = document.get(start, length);
             CompositeChange change = 
                     new CompositeChange("Move to Source File");
             TextChange fc = 
@@ -95,6 +90,9 @@ public class MoveUtil {
                             w.getFile());
             fc.setEdit(new MultiTextEdit());
             IDocument doc = fc.getCurrentDocument(null);
+            int start = node.getStartIndex();
+            int length = node.getStopIndex()-start+1;
+            String contents = document.get(start, length);
             int len = doc.getLength();
             String delim = getDefaultLineDelimiter(doc);
             String text = delim + contents;
@@ -105,6 +103,8 @@ public class MoveUtil {
             PhasedUnit npu = getProjectTypeChecker(project)
                     .getPhasedUnitFromRelativePath(relpath);
             Tree.CompilationUnit ncu = npu.getCompilationUnit();
+            String original = cu.getUnit().getPackage().getNameAsString();
+            String moved = ncu.getUnit().getPackage().getNameAsString();
             Set<String> packages = new HashSet<String>();
             int il = addImportEdits(node, fc, doc, ncu, packages,
                     node.getDeclarationModel());
@@ -113,8 +113,6 @@ public class MoveUtil {
             TextChange tc = createChange(editor, document);
             tc.setEdit(new DeleteEdit(start, length));
             change.add(tc);
-            String original = cu.getUnit().getPackage().getNameAsString();
-            String moved = ncu.getUnit().getPackage().getNameAsString();
             refactorProjectImports(node, file, change, original, moved, packages);
             performChange(editor, document, change, "Move to Source File");
             gotoLocation(w.getFile().getFullPath(), len+il+delim.length());
@@ -124,18 +122,28 @@ public class MoveUtil {
     public static int addImportEdits(Tree.Declaration node, TextChange fc,
             IDocument doc, final Tree.CompilationUnit ncu, 
             final Set<String> packages, Declaration declaration) {
-        final Package p = ncu.getUnit().getPackage();
+        Package p = ncu.getUnit().getPackage();
+        Map<Declaration, String> imports = 
+                getImports(node, p.getNameAsString(), ncu, packages);
+        return applyImports(fc, imports, ncu, doc, declaration);
+    }
+
+    public static Map<Declaration, String> getImports(Tree.Declaration node,
+            final String packageName, final Tree.CompilationUnit ncu,
+            final Set<String> packages) {
         final Map<Declaration, String> imports = 
                 new HashMap<Declaration, String>();
         node.visit(new Visitor() {
             private void add(Declaration d, Tree.Identifier id) {
-                if (d!=null && id!=null && d.isToplevel() &&
-                        !d.getUnit().getPackage().equals(p) &&
-                        !d.getUnit().getPackage().getNameAsString()
-                                .equals(Module.LANGUAGE_MODULE_NAME) &&
-                        !isImported(d, ncu)) {
-                    imports.put(d, id.getText());
-                    packages.add(d.getUnit().getPackage().getNameAsString());
+                if (d!=null && id!=null) {
+                    String pn = d.getUnit().getPackage().getNameAsString();
+                    if (d.isToplevel() &&
+                            !pn.equals(packageName) &&
+                            !pn.equals(Module.LANGUAGE_MODULE_NAME) &&
+                            (ncu==null || !isImported(d, ncu))) {
+                        imports.put(d, id.getText());
+                        packages.add(pn);
+                    }
                 }
             }
             @Override
@@ -153,7 +161,7 @@ public class MoveUtil {
                 add(that.getDeclaration(), that.getIdentifier());
             }
         });
-        return applyImports(fc, imports, ncu, doc, declaration);
+        return imports;
     }
 
     public static void moveToNewUnit(CeylonEditor editor) 
@@ -189,24 +197,46 @@ public class MoveUtil {
                         suggestedUnitName);
         IFile file = getFile(editor.getEditorInput());
         if (w.open(file)) {
-            String imports = imports(node, cu.getImportList(), document);
+            CompositeChange change = 
+                    new CompositeChange("Move to New Source File");
+            String original = cu.getUnit().getPackage().getNameAsString();
+            String moved = w.getPackageFragment().getElementName();
+            String delim = getDefaultLineDelimiter(document);
+//            String importText = imports(node, cu.getImportList(), document);
+            HashSet<String> packages = new HashSet<String>();
+            Map<Declaration, String> imports = getImports(node, moved, null, packages);
+            StringBuilder sb = new StringBuilder();
+            for (String p: packages) {
+                sb.append("import ").append(p).append(" { ");
+                for (Map.Entry<Declaration, String> e: imports.entrySet()) {
+                    Declaration d = e.getKey();
+                    boolean first = true;
+                    if (d.getUnit().getPackage().getQualifiedNameString().equals(p)) {
+                        String name = d.getName();
+                        String alias = e.getValue();
+                        if (!first) sb.append(", ");
+                        if (!name.equals(alias)) {
+                            sb.append(alias).append("=");
+                        }
+                        sb.append(name);
+                        first = false;
+                    }
+                }
+                sb.append(" }").append(delim);
+            }
+            String importText = sb.toString();
             int start = node.getStartIndex();
             int length = node.getStopIndex()-start+1;
             String contents = document.get(start, length);
-            String text = imports==null ? 
+            String text = importText==null ? 
                     contents : 
-                    imports + getDefaultLineDelimiter(document) + contents;
-            CompositeChange change = 
-                    new CompositeChange("Move to New Source File");
+                    importText + delim + contents;
             change.add(new CreateUnitChange(w.getFile(), w.includePreamble(), 
                     text, w.getProject(), "Move to New Source File"));
             TextChange tc = createChange(editor, document);
             tc.setEdit(new DeleteEdit(start, length));
             change.add(tc);
-            String original = cu.getUnit().getPackage().getNameAsString();
-            String moved = w.getPackageFragment().getElementName();
-            refactorProjectImports(node, file, change, original, moved, 
-                    Collections.<String>emptySet());
+            refactorProjectImports(node, file, change, original, moved, packages);
             performChange(editor, document, change, "Move to New Source File");
             gotoLocation(w.getFile().getFullPath(), 0);
         }
