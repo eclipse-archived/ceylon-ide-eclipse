@@ -214,8 +214,10 @@ class DefinitionGenerator {
         LinkedHashMap<String, ProducedType> paramTypes = getParameters(fav);
         if (paramTypes!=null) {         
             if (isUpperCase) {
-                if (returnType.getSupertype(node.getUnit().getObjectDeclaration())==null) {
-                    return null;
+                Class od = node.getUnit().getObjectDeclaration();
+                if (returnType!=null &&
+                        returnType.getSupertype(od)==null) {
+                    returnType = null;
                 }
                 String supertype = isVoid ? 
                         null : supertypeDeclaration(returnType);
