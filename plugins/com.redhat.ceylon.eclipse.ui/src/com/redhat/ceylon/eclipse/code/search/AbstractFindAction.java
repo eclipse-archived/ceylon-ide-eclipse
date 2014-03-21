@@ -26,6 +26,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -43,16 +44,15 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     AbstractFindAction(String name, CeylonSearchResultPage page, ISelection selection) {
         super(name);
         shell = page.getSite().getShell();
-        CeylonElement element = ((CeylonElement) ((IStructuredSelection) selection).getFirstElement());
-        if (element.getFile()!=null) {
-            Package p = CeylonBuilder.getPackage(element.getFile());
-            for (Unit unit: p.getUnits()) {
-                if (unit.getFilename().equals(element.getFile().getName())) {
-                    Tree.CompilationUnit rn = ((SourceFile) unit).getCompilationUnit();
-                    Node node = Nodes.findNode(rn, element.getStartOffset(), element.getEndOffset());
-                    if (node instanceof Tree.Declaration) {
-                        declaration = ((Tree.Declaration) node).getDeclarationModel();
-                    }
+        Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+        if (firstElement instanceof CeylonElement) {
+            CeylonElement element = ((CeylonElement) firstElement);
+            if (element.getVirtualFile() != null) {
+                CeylonUnit unit = CeylonBuilder.getUnit(element.getVirtualFile());
+                Tree.CompilationUnit rn = unit.getCompilationUnit();
+                Node node = Nodes.findNode(rn, element.getStartOffset(), element.getEndOffset());
+                if (node instanceof Tree.Declaration) {
+                    declaration = ((Tree.Declaration) node).getDeclarationModel();
                 }
             }
         }
