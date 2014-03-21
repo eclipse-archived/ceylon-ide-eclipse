@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_FILE;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -33,7 +34,11 @@ public class SelectNewUnitWizard extends Wizard implements INewWizard {
     }
     
     public IProject getProject() {
-        return page.getPackageFragment().getResource().getProject();
+        return getPackageFragment().getResource().getProject();
+    }
+
+    public IPackageFragment getPackageFragment() {
+        return page.getPackageFragment();
     }
     
     public IFile getFile() {

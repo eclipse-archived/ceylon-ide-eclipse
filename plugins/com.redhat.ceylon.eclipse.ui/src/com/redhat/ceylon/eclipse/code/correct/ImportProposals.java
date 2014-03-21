@@ -329,10 +329,11 @@ public class ImportProposals {
 
     public static int applyImports(TextChange change,
             Map<Declaration,String> declarations, 
-            Tree.CompilationUnit cu, IDocument doc) {
+            Tree.CompilationUnit cu, IDocument doc,
+            Declaration declarationBeingDeleted) {
         int il=0;
         for (InsertEdit ie: importEdits(cu, declarations.keySet(), 
-                declarations.values(), null, doc)) {
+                declarations.values(), declarationBeingDeleted, doc)) {
             il+=ie.getText().length();
             change.addEdit(ie);
         }
