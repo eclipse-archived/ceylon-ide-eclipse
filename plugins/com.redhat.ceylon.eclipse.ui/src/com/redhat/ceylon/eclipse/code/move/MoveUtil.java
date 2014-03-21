@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -83,19 +84,6 @@ public class MoveUtil {
                         "Select a Ceylon source file for the selected declaration.");
         IFile file = getFile(editor.getEditorInput());
         if (w.open(file)) {
-            CompositeChange change = 
-                    new CompositeChange("Move to Source File");
-            TextChange fc = 
-                    new TextFileChange("Move to Source File", 
-                            w.getFile());
-            fc.setEdit(new MultiTextEdit());
-            IDocument doc = fc.getCurrentDocument(null);
-            int start = node.getStartIndex();
-            int length = node.getStopIndex()-start+1;
-            String contents = document.get(start, length);
-            int len = doc.getLength();
-            String delim = getDefaultLineDelimiter(doc);
-            String text = delim + contents;
             IProject project = w.getFile().getProject();
             String relpath = w.getFile().getFullPath()
                     .makeRelativeTo(w.getSourceDir().getPath())
@@ -105,17 +93,40 @@ public class MoveUtil {
             Tree.CompilationUnit ncu = npu.getCompilationUnit();
             String original = cu.getUnit().getPackage().getNameAsString();
             String moved = ncu.getUnit().getPackage().getNameAsString();
+            
+            Declaration dec = node.getDeclarationModel();
+            int start = getNodeStartOffset(node);
+            int length = getNodeLength(node);
+            
+            CompositeChange change = 
+                    new CompositeChange("Move to Source File");
+            
+            TextChange targetUnitChange = 
+                    new TextFileChange("Move to Source File", 
+                            w.getFile());
+            targetUnitChange.setEdit(new MultiTextEdit());
+            IDocument targetUnitDocument = targetUnitChange.getCurrentDocument(null);
+            String contents = document.get(start, length);
+            String delim = getDefaultLineDelimiter(targetUnitDocument);
+            String text = delim + contents;
             Set<String> packages = new HashSet<String>();
-            int il = addImportEdits(node, fc, doc, ncu, packages,
-                    node.getDeclarationModel());
-            fc.addEdit(new InsertEdit(len, text));
-            change.add(fc);
-            TextChange tc = createChange(editor, document);
-            tc.setEdit(new DeleteEdit(start, length));
-            change.add(tc);
-            refactorProjectImports(node, file, change, original, moved, packages);
+            addImportEdits(node, targetUnitChange, targetUnitDocument, 
+                    ncu, packages, dec);
+            removeImport(original, dec, ncu, targetUnitChange, packages);
+            targetUnitChange.addEdit(new InsertEdit(targetUnitDocument.getLength(), text));
+            change.add(targetUnitChange);
+            
+            TextChange originalUnitChange = createChange(editor, document);
+            originalUnitChange.setEdit(new MultiTextEdit());
+            refactorImports(node, originalUnitChange, original, moved, cu);
+            originalUnitChange.addEdit(new DeleteEdit(start, length));
+            change.add(originalUnitChange);
+            
+            refactorProjectImports(node, file, w.getFile(), change, original, moved);
+            
             performChange(editor, document, change, "Move to Source File");
-            gotoLocation(w.getFile().getFullPath(), len+il+delim.length());
+            gotoLocation(w.getFile().getFullPath(), 
+                    document.getLength()-contents.length());
         }
     }
 
@@ -128,7 +139,7 @@ public class MoveUtil {
         return applyImports(fc, imports, ncu, doc, declaration);
     }
 
-    public static Map<Declaration, String> getImports(Tree.Declaration node,
+    public static Map<Declaration,String> getImports(Tree.Declaration node,
             final String packageName, final Tree.CompilationUnit ncu,
             final Set<String> packages) {
         final Map<Declaration, String> imports = 
@@ -197,77 +208,108 @@ public class MoveUtil {
                         suggestedUnitName);
         IFile file = getFile(editor.getEditorInput());
         if (w.open(file)) {
-            CompositeChange change = 
-                    new CompositeChange("Move to New Source File");
             String original = cu.getUnit().getPackage().getNameAsString();
             String moved = w.getPackageFragment().getElementName();
+            int start = getNodeStartOffset(node);
+            int length = getNodeLength(node);
             String delim = getDefaultLineDelimiter(document);
-//            String importText = imports(node, cu.getImportList(), document);
-            HashSet<String> packages = new HashSet<String>();
-            Map<Declaration, String> imports = getImports(node, moved, null, packages);
-            StringBuilder sb = new StringBuilder();
-            for (String p: packages) {
-                sb.append("import ").append(p).append(" { ");
-                for (Map.Entry<Declaration, String> e: imports.entrySet()) {
-                    Declaration d = e.getKey();
-                    boolean first = true;
-                    if (d.getUnit().getPackage().getQualifiedNameString().equals(p)) {
-                        String name = d.getName();
-                        String alias = e.getValue();
-                        if (!first) sb.append(", ");
-                        if (!name.equals(alias)) {
-                            sb.append(alias).append("=");
-                        }
-                        sb.append(name);
-                        first = false;
-                    }
-                }
-                sb.append(" }").append(delim);
-            }
-            String importText = sb.toString();
-            int start = node.getStartIndex();
-            int length = node.getStopIndex()-start+1;
+
+            CompositeChange change = 
+                    new CompositeChange("Move to New Source File");
+            
             String contents = document.get(start, length);
-            String text = importText==null ? 
-                    contents : 
-                    importText + delim + contents;
-            change.add(new CreateUnitChange(w.getFile(), w.includePreamble(), 
-                    text, w.getProject(), "Move to New Source File"));
-            TextChange tc = createChange(editor, document);
-            tc.setEdit(new DeleteEdit(start, length));
-            change.add(tc);
-            refactorProjectImports(node, file, change, original, moved, packages);
+            //TODO: should we use this alternative when original==moved?
+//            String importText = imports(node, cu.getImportList(), document);
+            String importText = getImportText(node, moved, delim);
+            String text = importText.isEmpty() ? 
+                    contents : importText + delim + contents;
+            CreateUnitChange newUnitChange = 
+                    new CreateUnitChange(w.getFile(), w.includePreamble(), 
+                            text, w.getProject(), "Move to New Source File");
+            change.add(newUnitChange);
+            
+            TextChange originalUnitChange = createChange(editor, document);
+            originalUnitChange.setEdit(new MultiTextEdit());
+            refactorImports(node, originalUnitChange, original, moved, cu);
+            originalUnitChange.addEdit(new DeleteEdit(start, length));
+            change.add(originalUnitChange);
+            
+            refactorProjectImports(node, file, w.getFile(), change, original, moved);
+            
             performChange(editor, document, change, "Move to New Source File");
             gotoLocation(w.getFile().getFullPath(), 0);
         }
     }
 
+    public static String getImportText(Tree.Declaration node, 
+            String targetPackage, String delim) {
+        HashSet<String> packages = new HashSet<String>();
+        Map<Declaration, String> imports = 
+                getImports(node, targetPackage, null, packages);
+        StringBuilder sb = new StringBuilder();
+        for (String p: packages) {
+            sb.append("import ").append(p).append(" { ");
+            for (Map.Entry<Declaration, String> e: imports.entrySet()) {
+                Declaration d = e.getKey();
+                boolean first = true;
+                String pn = d.getUnit().getPackage()
+                        .getQualifiedNameString();
+                if (pn.equals(p)) {
+                    String name = d.getName();
+                    String alias = e.getValue();
+                    if (!first) sb.append(", ");
+                    if (!name.equals(alias)) {
+                        sb.append(alias).append("=");
+                    }
+                    sb.append(name);
+                    first = false;
+                }
+            }
+            sb.append(" }").append(delim);
+        }
+        return sb.toString();
+    }
+
     public static void refactorProjectImports(Tree.Declaration node,
-            IFile file, CompositeChange change, String original, String moved, 
-            Set<String> packages) {
-        if (!original.equals(moved)) {
-            for (PhasedUnit pu: getAllUnits(file.getProject())) {
-                IFile f = ((IFileVirtualFile) pu.getUnitFile()).getFile();
-                TextFileChange tfc = new TextFileChange("Fix Import", f);
-                tfc.setEdit(new MultiTextEdit());
-                Declaration dec = node.getDeclarationModel();
-                String pn = pu.getUnit().getPackage().getNameAsString();
-                boolean inOriginalPackage = pn.equals(original);
-                boolean inNewPackage = pn.equals(moved);
-                boolean foundOriginal = removeImport(original, dec, pu, tfc, packages);
-                if (foundOriginal && !inNewPackage || 
-                        inOriginalPackage && !inNewPackage && 
-                                isUsedInUnit(pu, dec)) {
-                    addImport(moved, dec, pu, tfc);
-                }
-                if (tfc.getEdit().hasChildren()) {
-                    change.add(tfc);
-                }
+            IFile originalFile, IFile targetFile, CompositeChange change, 
+            String originalPackage, String targetPackage) {
+        if (!originalPackage.equals(targetPackage)) {
+            for (PhasedUnit pu: getAllUnits(originalFile.getProject())) {
+//                if (!node.getUnit().equals(pu.getUnit())) {
+                    IFile file = ((IFileVirtualFile) pu.getUnitFile()).getFile();
+                    if (!file.equals(originalFile) && !file.equals(targetFile)) {
+                        TextFileChange tfc = new TextFileChange("Fix Import", file);
+                        tfc.setEdit(new MultiTextEdit());
+                        refactorImports(node, tfc, originalPackage, targetPackage, 
+                                pu.getCompilationUnit());
+                        if (tfc.getEdit().hasChildren()) {
+                            change.add(tfc);
+                        }
+                    }
+//                }
             }
         }
     }
 
-    public static boolean isUsedInUnit(PhasedUnit pu, final Declaration dec) {
+    public static void refactorImports(Tree.Declaration node, TextChange tc, 
+            String originalPackage, String targetPackage,
+            Tree.CompilationUnit cu) {
+        Declaration dec = node.getDeclarationModel();
+        String pn = cu.getUnit().getPackage().getNameAsString();
+        boolean inOriginalPackage = pn.equals(originalPackage);
+        boolean inNewPackage = pn.equals(targetPackage);
+        boolean foundOriginal = 
+                removeImport(originalPackage, dec, cu, tc, 
+                        Collections.<String>emptySet());
+        if (foundOriginal && !inNewPackage || 
+                inOriginalPackage && !inNewPackage && 
+                        isUsedInUnit(cu, dec)) {
+            addImport(targetPackage, dec, cu, tc);
+        }
+    }
+
+    public static boolean isUsedInUnit(Tree.CompilationUnit rootNode, 
+            final Declaration dec) {
         class DetectUsageVisitor extends Visitor {
             boolean detected;
             @Override
@@ -292,19 +334,19 @@ public class MoveUtil {
             }
         }
         DetectUsageVisitor duv = new DetectUsageVisitor();
-        duv.visit(pu.getCompilationUnit());
+        duv.visit(rootNode);
         boolean used = duv.detected;
         return used;
     }
 
-    public static boolean removeImport(String original, final Declaration dec,
-            PhasedUnit pu, TextFileChange tfc, Set<String> packages) {
+    public static boolean removeImport(String originalPackage, final Declaration dec,
+            Tree.CompilationUnit cu, TextChange tc, Set<String> packages) {
         boolean foundOriginal = false;
-        Tree.ImportList il = pu.getCompilationUnit().getImportList();
+        Tree.ImportList il = cu.getImportList();
         for (Tree.Import imp: il.getImports()) {
             Referenceable model = imp.getImportPath().getModel();
             if (model!=null) {
-                if (model.getNameAsString().equals(original)) {
+                if (model.getNameAsString().equals(originalPackage)) {
                     Tree.ImportMemberOrTypeList imtl = 
                             imp.getImportMemberOrTypeList();
                     if (imtl!=null) {
@@ -325,7 +367,7 @@ public class MoveUtil {
                                     length = getNodeStartOffset(imts.get(j+1))-offset;
                                 }
                                 else {
-                                    if (packages.contains(original)) { 
+                                    if (packages.contains(originalPackage)) { 
                                         //we're adding to this import statement,
                                         //so don't delete the whole import
                                         offset = getNodeStartOffset(imt);
@@ -336,7 +378,7 @@ public class MoveUtil {
                                         length = getNodeLength(imp);
                                     }
                                 }
-                                tfc.addEdit(new DeleteEdit(offset,length));
+                                tc.addEdit(new DeleteEdit(offset,length));
                                 foundOriginal = true;
                                 break;
                                 //TODO: return the alias!
@@ -350,15 +392,15 @@ public class MoveUtil {
         return foundOriginal;
     }
 
-    private static void addImport(String moved, Declaration dec, 
-            PhasedUnit pu, TextFileChange tfc) {
+    private static void addImport(String targetPackage, Declaration dec, 
+            Tree.CompilationUnit cu, TextChange tc) {
         String name = dec.getName();
         boolean foundMoved = false;
-        Tree.ImportList il = pu.getCompilationUnit().getImportList();
+        Tree.ImportList il = cu.getImportList();
         for (Tree.Import i: il.getImports()) {
             Referenceable model = i.getImportPath().getModel();
             if (model!=null) {
-                if (model.getNameAsString().equals(moved)) {
+                if (model.getNameAsString().equals(targetPackage)) {
                     Tree.ImportMemberOrTypeList imtl = 
                             i.getImportMemberOrTypeList();
                     if (imtl!=null) {
@@ -375,7 +417,7 @@ public class MoveUtil {
                             addition = ", " + name;
                         }
                         //TODO: the alias!
-                        tfc.addEdit(new InsertEdit(offset, addition));
+                        tc.addEdit(new InsertEdit(offset, addition));
                         foundMoved = true;
                     }
                     break;
@@ -383,20 +425,20 @@ public class MoveUtil {
             }
         }
         if (!foundMoved) {
-            String text = "import " + moved + " { " + name + " }" + 
-                    getDefaultLineDelimiter(getDocument(tfc));
-            tfc.addEdit(new InsertEdit(0, text));
+            String text = "import " + targetPackage + " { " + name + " }" + 
+                    getDefaultLineDelimiter(getDocument(tc));
+            tc.addEdit(new InsertEdit(0, text));
         }
     }
 
     private static TextChange createChange(CeylonEditor editor,
             IDocument document) {
         if (editor.isDirty()) {
-            return new DocumentChange("Move to New Source File", 
+            return new DocumentChange("Move from Source File", 
                     document);
         }
         else {
-            return new TextFileChange("Move to New Source File", 
+            return new TextFileChange("Move from Source File", 
                     getFile(editor.getEditorInput()));
         }
     }
