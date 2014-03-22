@@ -191,22 +191,22 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     
     void createUnitField(Composite composite) {
         
-        Label packageLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        packageLabel.setText(getUnitLabel());
+        Label unitLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        unitLabel.setText(getUnitLabel());
         GridData plgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         plgd.horizontalSpan = 1;
-        packageLabel.setLayoutData(plgd);
+        unitLabel.setLayoutData(plgd);
 
-        final Text source = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        final Text unit = new Text(composite, SWT.SINGLE | SWT.BORDER);
         GridData pgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         pgd.horizontalSpan = 2;
         pgd.grabExcessHorizontalSpace = true;
-        source.setLayoutData(pgd);
-        source.setText(getUnitName());
-        source.addModifyListener(new ModifyListener() {
+        unit.setLayoutData(pgd);
+        unit.setText(getUnitName());
+        unit.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                setUnitName(source.getText());
+                setUnitName(unit.getText());
                 if (getSourceDir()!=null && unitNameIsLegal()) {
                     try {
                         setUnit(((IFolder) getSourceDir().getCorrespondingResource())
@@ -237,12 +237,12 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
             pkg.setText(pkgName);
         }*/
         
-        Button selectPackage = new Button(composite, SWT.PUSH);
-        selectPackage.setText("Browse...");
+        Button selectUnit = new Button(composite, SWT.PUSH);
+        selectUnit.setText("Browse...");
         GridData spgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         spgd.horizontalSpan = 1;
-        selectPackage.setLayoutData(spgd);
-        selectPackage.addSelectionListener(new SelectionListener() {
+        selectUnit.setLayoutData(spgd);
+        selectUnit.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (getSourceDir()==null) {
@@ -263,7 +263,7 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
                         setUnitName(file.getFullPath()
                                 .makeRelativeTo(getSourceDir().getPath())
                                 .toPortableString());
-                        source.setText(getUnitName());
+                        unit.setText(getUnitName());
                         if (getSourceDir()!=null) {
                             setUnit(file);
                         }
