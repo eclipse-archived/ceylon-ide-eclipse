@@ -1,11 +1,11 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
@@ -70,15 +70,11 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
         
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setFont(parent.getFont());
-        
         GridLayout layout = new GridLayout();
         layout.numColumns = 4;
         composite.setLayout(layout);
-        
         createControls(composite);
-        
         setControl(composite);
-        
         Dialog.applyDialogFont(composite);
         
         setPageComplete(isComplete());
@@ -86,10 +82,10 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
 
     void createControls(Composite composite) {
         createFolderField(composite);
-        createPackageField(composite);
+        createUnitField(composite);
     }
 
-    Text createFolderField(Composite composite) {
+    void createFolderField(Composite composite) {
         Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         folderLabel.setText("Source folder: ");
         GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -111,7 +107,8 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
                 setSourceDir(folder.getText());
                 if (getSourceDir()!=null && unitNameIsLegal()) {
                     try {
-                        setUnit(((IFolder) getSourceDir().getCorrespondingResource()).getFile(getUnitName()));
+                        setUnit(((IFolder) getSourceDir().getCorrespondingResource())
+                                .getFile(getUnitName()));
                     }
                     catch (JavaModelException e1) {
                         setUnit(null);
@@ -134,7 +131,7 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
             private void setSourceDir(String folderName) {
                 try {
                     sourceDir = null;
-                    for (IJavaProject jp: JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
+                    for (IJavaProject jp: JavaCore.create(getWorkspace().getRoot())
                             .getJavaProjects()) {
                         for (IPackageFragmentRoot pfr: jp.getPackageFragmentRoots()) {
                             if (pfr.getPath().toPortableString().equals(folderName)) {
@@ -159,13 +156,14 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 IPackageFragmentRoot pfr = getSourceContainer(getShell(), 
-                        ResourcesPlugin.getWorkspace().getRoot(), getSourceDir());
+                        getWorkspace().getRoot(), getSourceDir());
                 if (pfr!=null) {
                     setSourceDir(pfr);
                     String folderName = getSourceDir().getPath().toPortableString();
                     folder.setText(folderName);
                     try {
-                        setUnit(((IFolder) getSourceDir().getCorrespondingResource()).getFile(getUnitName()));
+                        setUnit(((IFolder) getSourceDir().getCorrespondingResource())
+                                .getFile(getUnitName()));
                     }
                     catch (JavaModelException e1) {
                         setUnit(null);
@@ -189,13 +187,12 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        return folder;
     }
     
-    Text createPackageField(Composite composite) {
+    void createUnitField(Composite composite) {
         
         Label packageLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        packageLabel.setText(getPackageLabel());
+        packageLabel.setText(getUnitLabel());
         GridData plgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         plgd.horizontalSpan = 1;
         packageLabel.setLayoutData(plgd);
@@ -212,7 +209,8 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
                 setUnitName(source.getText());
                 if (getSourceDir()!=null && unitNameIsLegal()) {
                     try {
-                        setUnit(((IFolder) getSourceDir().getCorrespondingResource()).getFile(getUnitName()));
+                        setUnit(((IFolder) getSourceDir().getCorrespondingResource())
+                                .getFile(getUnitName()));
                     }
                     catch (JavaModelException e1) {
                         setUnit(null);
@@ -253,7 +251,8 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
                             getSelectSourceFolderMessage());
                 }
                 else {
-                    UnitSelectionDialog dialog = new UnitSelectionDialog(getShell(), getSourceDir());
+                    UnitSelectionDialog dialog = 
+                            new UnitSelectionDialog(getShell(), getSourceDir());
                     dialog.setMultipleSelection(false);
                     dialog.setTitle("Source File Selection");
                     dialog.setMessage("Select a source file:");
@@ -288,11 +287,10 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        return source;
     }
     
-    String getPackageLabel() {
-        return "Source File: ";
+    String getUnitLabel() {
+        return "Source file: ";
     }
 
     public void initFromSelection() {
@@ -334,7 +332,8 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
                     getSourceDir()!=null && getUnit()!=null &&
                     getUnit().exists() &&
                     ((IFolder) getSourceDir().getCorrespondingResource())
-                    .getFile(getUnit().getFullPath().makeRelativeTo(getSourceDir().getPath()))
+                    .getFile(getUnit().getFullPath()
+                            .makeRelativeTo(getSourceDir().getPath()))
                             .equals(getUnit());
         }
         catch (JavaModelException e) {
