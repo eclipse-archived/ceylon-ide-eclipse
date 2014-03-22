@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.select;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.FILE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.FILE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -19,10 +20,11 @@ import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
 public class UnitSelectionDialog extends ElementListSelectionDialog {
 
-    IPackageFragmentRoot sourceDir;
+    private IPackageFragmentRoot sourceDir;
+    private IPackageFragment packageFragment;
     
     public UnitSelectionDialog(Shell parent, //IProject project, 
-            final IPackageFragmentRoot sourceDir) {
+            final IPackageFragmentRoot sourceDir, IPackageFragment packageFragment) {
         super(parent, new ILabelProvider() {
             @Override
             public void removeListener(ILabelProviderListener listener) {}
@@ -36,9 +38,11 @@ public class UnitSelectionDialog extends ElementListSelectionDialog {
             public void addListener(ILabelProviderListener listener) {}
             @Override
             public String getText(Object element) {
-                return ((IFile) element).getFullPath()
-                        .makeRelativeTo(sourceDir.getPath())
-                        .toPortableString();
+                IFile file = (IFile) element;
+                return file.getName();
+//                return file.getFullPath()
+//                        .makeRelativeTo(sourceDir.getPath())
+//                        .toPortableString();
             }
             @Override
             public Image getImage(Object element) {
@@ -46,13 +50,17 @@ public class UnitSelectionDialog extends ElementListSelectionDialog {
             }
         });
         this.sourceDir = sourceDir;
+        this.packageFragment = packageFragment;
     }
     
     @Override
     public int open() {
         final List<IFile> elements = new ArrayList<IFile>();
         try {
-            ((IFolder) sourceDir.getCorrespondingResource()).accept(new IResourceVisitor() {
+            IFolder folder = packageFragment==null ?
+                    (IFolder) sourceDir.getCorrespondingResource() :
+                    (IFolder) packageFragment.getCorrespondingResource();
+            folder.accept(new IResourceVisitor() {
                 @Override
                 public boolean visit(IResource resource) throws CoreException {
                     if (resource instanceof IFile) {

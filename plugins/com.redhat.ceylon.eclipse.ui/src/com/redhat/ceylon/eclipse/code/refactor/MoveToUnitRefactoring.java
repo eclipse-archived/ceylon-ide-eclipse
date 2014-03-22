@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.Change;
@@ -43,6 +44,21 @@ public class MoveToUnitRefactoring extends Refactoring {
     private final IDocument document;
     private IFile targetFile; 
     private IPath targetSourceDirPath;
+    private IProject targetProject;
+    private IPackageFragment targetPackage;
+    private boolean includePreamble;
+    
+    public void setTargetPackage(IPackageFragment targetPackage) {
+        this.targetPackage = targetPackage;
+    }
+    
+    public void setTargetProject(IProject targetProject) {
+        this.targetProject = targetProject;
+    }
+    
+    public void setIncludePreamble(boolean includePreamble) {
+        this.includePreamble = includePreamble;
+    }
     
     public void setTargetFile(IFile targetFile) {
         this.targetFile = targetFile;
@@ -81,6 +97,10 @@ public class MoveToUnitRefactoring extends Refactoring {
     public String getName() {
         return "Move To Unit";
     }
+    
+    public Tree.Declaration getNode() {
+        return node;
+    }
 
     @Override
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
@@ -98,54 +118,94 @@ public class MoveToUnitRefactoring extends Refactoring {
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
-        IProject project = targetFile.getProject();
-        String relpath = targetFile.getFullPath()
-                .makeRelativeTo(targetSourceDirPath)
-                .toPortableString();
-        PhasedUnit npu = getProjectTypeChecker(project)
-                .getPhasedUnitFromRelativePath(relpath);
-        Tree.CompilationUnit ncu = npu.getCompilationUnit();
-        String original = rootNode.getUnit().getPackage().getNameAsString();
-        String moved = ncu.getUnit().getPackage().getNameAsString();
-        
-        Declaration dec = node.getDeclarationModel();
-        int start = getNodeStartOffset(node);
-        int length = getNodeLength(node);
-        
-        CompositeChange change = 
-                new CompositeChange("Move to Source File");
-        
-        TextChange targetUnitChange = 
-                new TextFileChange("Move to Source File", 
-                        targetFile);
-        targetUnitChange.setEdit(new MultiTextEdit());
-        IDocument targetUnitDocument = 
-                targetUnitChange.getCurrentDocument(null);
-        String contents;
-        try {
-            contents = document.get(start, length);
+        if (targetFile.exists()) {
+            IProject project = targetFile.getProject();
+            String relpath = targetFile.getFullPath()
+                    .makeRelativeTo(targetSourceDirPath)
+                    .toPortableString();
+            PhasedUnit npu = getProjectTypeChecker(project)
+                    .getPhasedUnitFromRelativePath(relpath);
+            Tree.CompilationUnit ncu = npu.getCompilationUnit();
+            String original = rootNode.getUnit().getPackage().getNameAsString();
+            String moved = ncu.getUnit().getPackage().getNameAsString();
+
+            Declaration dec = node.getDeclarationModel();
+            int start = getNodeStartOffset(node);
+            int length = getNodeLength(node);
+
+            CompositeChange change = 
+                    new CompositeChange("Move to Source File");
+
+            TextChange targetUnitChange = 
+                    new TextFileChange("Move to Source File", 
+                            targetFile);
+            targetUnitChange.setEdit(new MultiTextEdit());
+            IDocument targetUnitDocument = 
+                    targetUnitChange.getCurrentDocument(null);
+            String contents;
+            try {
+                contents = document.get(start, length);
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+                throw new OperationCanceledException();
+            }
+            String delim = getDefaultLineDelimiter(targetUnitDocument);
+            String text = delim + contents;
+            Set<String> packages = new HashSet<String>();
+            addImportEdits(node, targetUnitChange, targetUnitDocument, 
+                    ncu, packages, dec);
+            removeImport(original, dec, ncu, targetUnitChange, packages);
+            targetUnitChange.addEdit(new InsertEdit(targetUnitDocument.getLength(), text));
+            change.add(targetUnitChange);
+
+            TextChange originalUnitChange = createEditorChange(editor, document);
+            originalUnitChange.setEdit(new MultiTextEdit());
+            refactorImports(node, originalUnitChange, original, moved, rootNode);
+            originalUnitChange.addEdit(new DeleteEdit(start, length));
+            change.add(originalUnitChange);
+
+            refactorProjectImports(node, originalFile, targetFile, change, original, moved);
+            return change;
         }
-        catch (BadLocationException e) {
-            e.printStackTrace();
-            throw new OperationCanceledException();
+        else {
+            String original = rootNode.getUnit().getPackage().getNameAsString();
+            String moved = targetPackage.getElementName();
+            int start = getNodeStartOffset(node);
+            int length = getNodeLength(node);
+            String delim = getDefaultLineDelimiter(document);
+
+            CompositeChange change = 
+                    new CompositeChange("Move to New Source File");
+            
+            String contents;
+            try {
+                contents = document.get(start, length);
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+                throw new OperationCanceledException();
+            }
+            //TODO: should we use this alternative when original==moved?
+//            String importText = imports(node, cu.getImportList(), document);
+            String importText = getImportText(node, moved, delim);
+            String text = importText.isEmpty() ? 
+                    contents : importText + delim + contents;
+            CreateUnitChange newUnitChange = 
+                    new CreateUnitChange(targetFile, includePreamble, 
+                            text, targetProject, 
+                            "Create " + targetFile.getProjectRelativePath());
+            change.add(newUnitChange);
+            
+            TextChange originalUnitChange = createEditorChange(editor, document);
+            originalUnitChange.setEdit(new MultiTextEdit());
+            refactorImports(node, originalUnitChange, original, moved, rootNode);
+            originalUnitChange.addEdit(new DeleteEdit(start, length));
+            change.add(originalUnitChange);
+            
+            refactorProjectImports(node, originalFile, targetFile, change, original, moved);
+            return change;
         }
-        String delim = getDefaultLineDelimiter(targetUnitDocument);
-        String text = delim + contents;
-        Set<String> packages = new HashSet<String>();
-        addImportEdits(node, targetUnitChange, targetUnitDocument, 
-                ncu, packages, dec);
-        removeImport(original, dec, ncu, targetUnitChange, packages);
-        targetUnitChange.addEdit(new InsertEdit(targetUnitDocument.getLength(), text));
-        change.add(targetUnitChange);
-        
-        TextChange originalUnitChange = createEditorChange(editor, document);
-        originalUnitChange.setEdit(new MultiTextEdit());
-        refactorImports(node, originalUnitChange, original, moved, rootNode);
-        originalUnitChange.addEdit(new DeleteEdit(start, length));
-        change.add(originalUnitChange);
-        
-        refactorProjectImports(node, originalFile, targetFile, change, original, moved);
-        return change;
     }
 
 }
