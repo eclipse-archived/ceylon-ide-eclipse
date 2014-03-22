@@ -143,11 +143,11 @@ public final class RenameLinkedMode
     protected void openPreview() {
         new RenameRefactoringAction(editor) {
             @Override
-            public AbstractRefactoring createRefactoring() {
+            public Refactoring createRefactoring() {
                 return RenameLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+            public RefactoringWizard createWizard(Refactoring refactoring) {
                 return new RenameWizard((RenameRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}

@@ -46,6 +46,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         return getChangeParametersRefactoring().getDefaulted()
                 .get(parameterModels.indexOf(parameter));
     }
+    
     public void createControl(Composite parent) {
         final ChangeParametersRefactoring refactoring = 
                 getChangeParametersRefactoring();

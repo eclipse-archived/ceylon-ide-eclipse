@@ -5,25 +5,28 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
-public class DeleteRefactoringAction extends AbstractRefactoringAction {
-    public DeleteRefactoringAction(IEditorPart editor) {
-        super("Delete.", editor);
-        setActionDefinitionId(PLUGIN_ID + ".action.delete");
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+
+public class MoveToNewUnitRefactoringAction extends AbstractRefactoringAction {
+
+    public MoveToNewUnitRefactoringAction(IEditorPart editor) {
+        super("MoveToNewUnit.", editor);
+        setActionDefinitionId(PLUGIN_ID + ".action.moveDeclarationToNewUnit");
     }
     
     @Override
     public Refactoring createRefactoring() {
-        return new DeleteRefactoring(getTextEditor());
+        return new MoveToNewUnitRefactoring((CeylonEditor) getTextEditor());
     }
-    
+
     @Override
     public RefactoringWizard createWizard(Refactoring refactoring) {
-        return new DeleteWizard((AbstractRefactoring) refactoring);
+        return new MoveToNewUnitWizard(refactoring);
     }
-    
+
     @Override
     public String message() {
         return "No declaration name selected";
     }
-    
+
 }

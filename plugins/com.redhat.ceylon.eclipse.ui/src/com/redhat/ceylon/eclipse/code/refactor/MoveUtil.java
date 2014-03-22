@@ -1,13 +1,10 @@
-package com.redhat.ceylon.eclipse.code.move;
+package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.performChange;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
@@ -22,12 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -35,6 +31,9 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -47,88 +46,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
-import com.redhat.ceylon.eclipse.code.wizard.SelectUnitWizard;
+import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 
 public class MoveUtil {
-
-    public static void moveToUnit(CeylonEditor editor) 
-            throws ExecutionException {
-        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-        if (cu!=null) {
-            Node node = getSelectedNode(editor);
-            if (node instanceof Tree.Declaration) {
-                try {
-                    moveToUnit(editor, cu, (Tree.Declaration) node);
-                } 
-                catch (BadLocationException e) {
-                    e.printStackTrace();
-                }
-                catch (CoreException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private static void moveToUnit(CeylonEditor editor,
-            Tree.CompilationUnit cu, Tree.Declaration node) 
-                    throws BadLocationException,
-                           ExecutionException, 
-                           CoreException {
-        IDocument document = editor.getDocumentProvider()
-                .getDocument(editor.getEditorInput());
-        SelectUnitWizard w = 
-                new SelectUnitWizard("Move to Source File", 
-                        "Select a Ceylon source file for the selected declaration.");
-        IFile file = getFile(editor.getEditorInput());
-        if (w.open(file)) {
-            IProject project = w.getFile().getProject();
-            String relpath = w.getFile().getFullPath()
-                    .makeRelativeTo(w.getSourceDir().getPath())
-                    .toPortableString();
-            PhasedUnit npu = getProjectTypeChecker(project)
-                    .getPhasedUnitFromRelativePath(relpath);
-            Tree.CompilationUnit ncu = npu.getCompilationUnit();
-            String original = cu.getUnit().getPackage().getNameAsString();
-            String moved = ncu.getUnit().getPackage().getNameAsString();
-            
-            Declaration dec = node.getDeclarationModel();
-            int start = getNodeStartOffset(node);
-            int length = getNodeLength(node);
-            
-            CompositeChange change = 
-                    new CompositeChange("Move to Source File");
-            
-            TextChange targetUnitChange = 
-                    new TextFileChange("Move to Source File", 
-                            w.getFile());
-            targetUnitChange.setEdit(new MultiTextEdit());
-            IDocument targetUnitDocument = targetUnitChange.getCurrentDocument(null);
-            String contents = document.get(start, length);
-            String delim = getDefaultLineDelimiter(targetUnitDocument);
-            String text = delim + contents;
-            Set<String> packages = new HashSet<String>();
-            addImportEdits(node, targetUnitChange, targetUnitDocument, 
-                    ncu, packages, dec);
-            removeImport(original, dec, ncu, targetUnitChange, packages);
-            targetUnitChange.addEdit(new InsertEdit(targetUnitDocument.getLength(), text));
-            change.add(targetUnitChange);
-            
-            TextChange originalUnitChange = createChange(editor, document);
-            originalUnitChange.setEdit(new MultiTextEdit());
-            refactorImports(node, originalUnitChange, original, moved, cu);
-            originalUnitChange.addEdit(new DeleteEdit(start, length));
-            change.add(originalUnitChange);
-            
-            refactorProjectImports(node, file, w.getFile(), change, original, moved);
-            
-            performChange(editor, document, change, "Move to Source File");
-            gotoLocation(w.getFile().getFullPath(), 
-                    document.getLength()-contents.length());
-        }
-    }
 
     public static int addImportEdits(Tree.Declaration node, TextChange fc,
             IDocument doc, final Tree.CompilationUnit ncu, 
@@ -174,73 +95,7 @@ public class MoveUtil {
         });
         return imports;
     }
-
-    public static void moveToNewUnit(CeylonEditor editor) 
-            throws ExecutionException {
-        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-        if (cu!=null) {
-            Node node = getSelectedNode(editor);
-            if (node instanceof Tree.Declaration) {
-                try {
-                    moveToNewUnit(editor, cu, (Tree.Declaration) node);
-                } 
-                catch (BadLocationException e) {
-                    e.printStackTrace();
-                }
-                catch (CoreException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private static void moveToNewUnit(CeylonEditor editor,
-            Tree.CompilationUnit cu, Tree.Declaration node) 
-                    throws BadLocationException,
-                           ExecutionException, 
-                           CoreException {
-        IDocument document = editor.getDocumentProvider()
-                .getDocument(editor.getEditorInput());
-        String suggestedUnitName = node.getIdentifier().getText();
-        SelectNewUnitWizard w = 
-                new SelectNewUnitWizard("Move to New Source File", 
-                        "Create a new Ceylon source file for the selected declaration.",
-                        suggestedUnitName);
-        IFile file = getFile(editor.getEditorInput());
-        if (w.open(file)) {
-            String original = cu.getUnit().getPackage().getNameAsString();
-            String moved = w.getPackageFragment().getElementName();
-            int start = getNodeStartOffset(node);
-            int length = getNodeLength(node);
-            String delim = getDefaultLineDelimiter(document);
-
-            CompositeChange change = 
-                    new CompositeChange("Move to New Source File");
-            
-            String contents = document.get(start, length);
-            //TODO: should we use this alternative when original==moved?
-//            String importText = imports(node, cu.getImportList(), document);
-            String importText = getImportText(node, moved, delim);
-            String text = importText.isEmpty() ? 
-                    contents : importText + delim + contents;
-            CreateUnitChange newUnitChange = 
-                    new CreateUnitChange(w.getFile(), w.includePreamble(), 
-                            text, w.getProject(), "Move to New Source File");
-            change.add(newUnitChange);
-            
-            TextChange originalUnitChange = createChange(editor, document);
-            originalUnitChange.setEdit(new MultiTextEdit());
-            refactorImports(node, originalUnitChange, original, moved, cu);
-            originalUnitChange.addEdit(new DeleteEdit(start, length));
-            change.add(originalUnitChange);
-            
-            refactorProjectImports(node, file, w.getFile(), change, original, moved);
-            
-            performChange(editor, document, change, "Move to New Source File");
-            gotoLocation(w.getFile().getFullPath(), 0);
-        }
-    }
-
+    
     public static String getImportText(Tree.Declaration node, 
             String targetPackage, String delim) {
         HashSet<String> packages = new HashSet<String>();
@@ -431,7 +286,7 @@ public class MoveUtil {
         }
     }
 
-    private static TextChange createChange(CeylonEditor editor,
+    static TextChange createEditorChange(CeylonEditor editor,
             IDocument document) {
         if (editor.isDirty()) {
             return new DocumentChange("Move from Source File", 
@@ -471,6 +326,17 @@ public class MoveUtil {
             units.addAll(getUnits(p));
         }
         return units;
+    }
+
+    static IStructuredSelection getSelection() {
+        IEditorPart ed = EditorUtil.getCurrentEditor();
+        if (ed!=null) {
+            IEditorInput input = ed.getEditorInput();
+            if (input instanceof IFileEditorInput) {
+                return new StructuredSelection(((IFileEditorInput) input).getFile());
+            }
+        }
+        return null;
     }
 
 }

@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.move.MoveUtil.canMoveDeclaration;
-import static com.redhat.ceylon.eclipse.code.move.MoveUtil.moveToUnit;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.canMoveDeclaration;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -14,7 +13,7 @@ public class MoveToUnitHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) 
             throws ExecutionException {
-        moveToUnit((CeylonEditor) getCurrentEditor());        
+        new MoveToUnitRefactoringAction(getCurrentEditor()).run();        
         return null;
     }
 

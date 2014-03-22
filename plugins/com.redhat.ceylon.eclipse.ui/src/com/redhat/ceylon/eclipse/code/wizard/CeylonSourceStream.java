@@ -17,6 +17,7 @@ public class CeylonSourceStream extends InputStream {
         this.header = getHeader(project, includePreamble);
         this.body = new ByteArrayInputStream(contents.getBytes());
     }
+    
     @Override
     public int read() throws IOException {
         int result = header.read();
@@ -25,6 +26,7 @@ public class CeylonSourceStream extends InputStream {
         }
         return result;
     }
+    
     static InputStream getHeader(IProject project, boolean includePreamble) {
         IFile header = project.getFile("header.ceylon");
         InputStream his = new ByteArrayInputStream(new byte[0]);

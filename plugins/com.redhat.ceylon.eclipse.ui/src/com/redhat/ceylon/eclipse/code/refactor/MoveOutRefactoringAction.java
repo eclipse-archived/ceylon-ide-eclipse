@@ -12,17 +12,17 @@ public class MoveOutRefactoringAction extends AbstractRefactoringAction {
     }
     
     @Override
-    public AbstractRefactoring createRefactoring() {
+    public Refactoring createRefactoring() {
         return new MoveOutRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(Refactoring refactoring) {
         return new MoveOutWizard((MoveOutRefactoring) refactoring);
     }
     
     @Override
-    String message() {
+    public String message() {
         return "No function or class name selected";
     }
 

@@ -11,7 +11,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
-import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ui.IEditorInput;
@@ -80,8 +79,6 @@ abstract class AbstractRefactoring extends Refactoring {
             project = null;
         }
     }
-    
-    abstract boolean isEnabled();
     
     boolean inSameProject(Declaration declaration) {
         return declaration.getUnit() instanceof EditedSourceFile &&

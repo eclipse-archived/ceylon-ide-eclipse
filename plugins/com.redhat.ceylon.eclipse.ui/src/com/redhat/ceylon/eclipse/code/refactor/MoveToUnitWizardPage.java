@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package com.redhat.ceylon.eclipse.code.refactor;
 
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -16,7 +17,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -30,27 +31,18 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.eclipse.code.select.UnitSelectionDialog;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class SelectUnitWizardPage extends WizardPage {
+public class MoveToUnitWizardPage extends UserInputWizardPage {
 
     private IPackageFragmentRoot sourceDir;
     private String unitName = "";
     private IFile unit;
-    boolean shared = true;
     
     private IStructuredSelection selection;
     private Text unitNameText;
     
-    IFile getUnit() {
-        return unit;
-    }
-
-    SelectUnitWizardPage(String title, String description, 
-            String icon) {
-        super(title, title, CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(icon));
-        setDescription(description);
+    MoveToUnitWizardPage(String title) {
+        super(title);
     }
 
     //TODO: fix copy/paste to ExportModuleWizard
@@ -109,29 +101,29 @@ public class SelectUnitWizardPage extends WizardPage {
         fgd.horizontalSpan = 2;
         fgd.grabExcessHorizontalSpace = true;
         folder.setLayoutData(fgd);
-        if (sourceDir!=null) {
-            String folderName = sourceDir.getPath().toPortableString();
+        if (getSourceDir()!=null) {
+            String folderName = getSourceDir().getPath().toPortableString();
             folder.setText(folderName);
         }        
         folder.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
                 setSourceDir(folder.getText());
-                if (sourceDir!=null && unitNameIsLegal()) {
+                if (getSourceDir()!=null && unitNameIsLegal()) {
                     try {
-                        unit = ((IFolder) sourceDir.getCorrespondingResource()).getFile(unitName);
+                        setUnit(((IFolder) getSourceDir().getCorrespondingResource()).getFile(getUnitName()));
                     }
                     catch (JavaModelException e1) {
-                        unit = null;
+                        setUnit(null);
                     }
                 }
-                if (sourceDir==null) {
+                if (getSourceDir()==null) {
                     setErrorMessage(getSelectSourceFolderMessage());
                 }
                 else if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
-                else if (unit!=null && !unit.exists()) {
+                else if (getUnit()!=null && !getUnit().exists()) {
                     setErrorMessage(getUnitNotExistMessage());
                 }
                 else {
@@ -167,26 +159,26 @@ public class SelectUnitWizardPage extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 IPackageFragmentRoot pfr = getSourceContainer(getShell(), 
-                        ResourcesPlugin.getWorkspace().getRoot(), sourceDir);
+                        ResourcesPlugin.getWorkspace().getRoot(), getSourceDir());
                 if (pfr!=null) {
-                    sourceDir = pfr;
-                    String folderName = sourceDir.getPath().toPortableString();
+                    setSourceDir(pfr);
+                    String folderName = getSourceDir().getPath().toPortableString();
                     folder.setText(folderName);
                     try {
-                        unit = ((IFolder) sourceDir.getCorrespondingResource()).getFile(unitName);
+                        setUnit(((IFolder) getSourceDir().getCorrespondingResource()).getFile(getUnitName()));
                     }
                     catch (JavaModelException e1) {
-                        unit = null;
+                        setUnit(null);
                     }
                     setPageComplete(isComplete());
                 }
-                if (sourceDir==null) {
+                if (getSourceDir()==null) {
                     setErrorMessage(getSelectSourceFolderMessage());
                 }
                 else if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
-                else if (unit!=null && !unit.exists()) {
+                else if (getUnit()!=null && !getUnit().exists()) {
                     setErrorMessage(getUnitNotExistMessage());
                 }
                 else {
@@ -213,26 +205,26 @@ public class SelectUnitWizardPage extends WizardPage {
         pgd.horizontalSpan = 2;
         pgd.grabExcessHorizontalSpace = true;
         source.setLayoutData(pgd);
-        source.setText(unitName);
+        source.setText(getUnitName());
         source.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                unitName = source.getText();
-                if (sourceDir!=null && unitNameIsLegal()) {
+                setUnitName(source.getText());
+                if (getSourceDir()!=null && unitNameIsLegal()) {
                     try {
-                        unit = ((IFolder) sourceDir.getCorrespondingResource()).getFile(unitName);
+                        setUnit(((IFolder) getSourceDir().getCorrespondingResource()).getFile(getUnitName()));
                     }
                     catch (JavaModelException e1) {
-                        unit = null;
+                        setUnit(null);
                     }
                 }
                 if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
-                else if (unit!=null && !unit.exists()) {
+                else if (getUnit()!=null && !getUnit().exists()) {
                     setErrorMessage(getUnitNotExistMessage());
                 }
-                else if (sourceDir==null) {
+                else if (getSourceDir()==null) {
                     setErrorMessage(getSelectSourceFolderMessage());
                 }
                 else {
@@ -255,13 +247,13 @@ public class SelectUnitWizardPage extends WizardPage {
         selectPackage.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (sourceDir==null) {
+                if (getSourceDir()==null) {
                     MessageDialog.openWarning(getShell(), 
                             "No Source Folder", 
                             getSelectSourceFolderMessage());
                 }
                 else {
-                    UnitSelectionDialog dialog = new UnitSelectionDialog(getShell(), sourceDir);
+                    UnitSelectionDialog dialog = new UnitSelectionDialog(getShell(), getSourceDir());
                     dialog.setMultipleSelection(false);
                     dialog.setTitle("Source File Selection");
                     dialog.setMessage("Select a source file:");
@@ -269,22 +261,22 @@ public class SelectUnitWizardPage extends WizardPage {
                     Object result = dialog.getFirstResult();
                     if (result!=null) {
                         IFile file = (IFile) result;
-                        unitName = file.getFullPath()
-                                .makeRelativeTo(sourceDir.getPath())
-                                .toPortableString();
-                        source.setText(unitName);
-                        if (sourceDir!=null) {
-                            unit = file;
+                        setUnitName(file.getFullPath()
+                                .makeRelativeTo(getSourceDir().getPath())
+                                .toPortableString());
+                        source.setText(getUnitName());
+                        if (getSourceDir()!=null) {
+                            setUnit(file);
                         }
                         setPageComplete(isComplete());
                     }
                     if (!unitNameIsLegal()) {
                         setErrorMessage(getIllegalUnitNameMessage());
                     }
-                    else if (unit!=null && !unit.exists()) {
+                    else if (getUnit()!=null && !getUnit().exists()) {
                         setErrorMessage(getUnitNotExistMessage());
                     }
-                    else if (sourceDir==null) {
+                    else if (getSourceDir()==null) {
                         setErrorMessage(getSelectSourceFolderMessage());
                     }
                     else {
@@ -323,12 +315,12 @@ public class SelectUnitWizardPage extends WizardPage {
             }
         }
         if (je instanceof IPackageFragmentRoot) {
-            sourceDir = (IPackageFragmentRoot) je;
+            setSourceDir((IPackageFragmentRoot) je);
         }
         else if (je instanceof IPackageFragment) {
             IPackageFragment packageFragment = (IPackageFragment) je;
-            sourceDir = (IPackageFragmentRoot) 
-                    packageFragment.getAncestor(PACKAGE_FRAGMENT_ROOT);
+            setSourceDir((IPackageFragmentRoot) 
+                    packageFragment.getAncestor(PACKAGE_FRAGMENT_ROOT));
         }
     }
     
@@ -339,11 +331,11 @@ public class SelectUnitWizardPage extends WizardPage {
     boolean isComplete() {
         try {
             return unitNameIsLegal() && 
-                    sourceDir!=null && unit!=null &&
-                    unit.exists() &&
-                    ((IFolder) sourceDir.getCorrespondingResource())
-                    .getFile(unit.getFullPath().makeRelativeTo(sourceDir.getPath()))
-                            .equals(unit);
+                    getSourceDir()!=null && getUnit()!=null &&
+                    getUnit().exists() &&
+                    ((IFolder) getSourceDir().getCorrespondingResource())
+                    .getFile(getUnit().getFullPath().makeRelativeTo(getSourceDir().getPath()))
+                            .equals(getUnit());
         }
         catch (JavaModelException e) {
             e.printStackTrace();
@@ -352,8 +344,8 @@ public class SelectUnitWizardPage extends WizardPage {
     }
 
     private boolean unitNameIsLegal() {
-        return unitName!=null && 
-                unitIsNameLegal(unitName);
+        return getUnitName()!=null && 
+                unitIsNameLegal(getUnitName());
     }
 
     boolean unitIsNameLegal(String unitName) {
@@ -368,7 +360,7 @@ public class SelectUnitWizardPage extends WizardPage {
         return "Source file does not exist.";
     }
     
-    public IPackageFragmentRoot getSourceDir() {
+    IPackageFragmentRoot getSourceDir() {
         return sourceDir;
     }
     
@@ -378,6 +370,33 @@ public class SelectUnitWizardPage extends WizardPage {
     
     private String getSelectSourceFolderMessage() {
         return "Please select a source folder.";
+    }
+
+    void setSourceDir(IPackageFragmentRoot sourceDir) {
+        this.sourceDir = sourceDir;
+        IPath path = sourceDir==null ? null : sourceDir.getPath();
+        getMoveToUnitRefactoring().setTargetSourceDirPath(path);
+    }
+    
+    IFile getUnit() {
+        return unit;
+    }
+
+    void setUnit(IFile unit) {
+        this.unit = unit;
+        getMoveToUnitRefactoring().setTargetFile(unit);
+    }
+
+    String getUnitName() {
+        return unitName;
+    }
+
+    void setUnitName(String unitName) {
+        this.unitName = unitName;
+    }
+    
+    MoveToUnitRefactoring getMoveToUnitRefactoring() {
+        return (MoveToUnitRefactoring) getRefactoring();
     }
 
 }

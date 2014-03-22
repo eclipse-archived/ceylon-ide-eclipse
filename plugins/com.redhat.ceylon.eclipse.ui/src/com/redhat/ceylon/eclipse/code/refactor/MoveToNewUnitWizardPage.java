@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -30,7 +30,7 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -48,10 +48,14 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.code.wizard.EditDialog;
+import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
-public class NewUnitWizardPage extends WizardPage {
+/*
+ * TODO: this class is a huge copy/paste job of NewUnitWizardPage
+ */
+public class MoveToNewUnitWizardPage extends UserInputWizardPage {
 
     private String unitName = "";
     private IPackageFragmentRoot sourceDir;
@@ -63,11 +67,9 @@ public class NewUnitWizardPage extends WizardPage {
     private IStructuredSelection selection;
     private IWorkbench workbench;
     private Text unitNameText;
-
-    NewUnitWizardPage(String title, String description, String icon) {
-        super(title, title, CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(icon));
-        setDescription(description);
+    
+    public MoveToNewUnitWizardPage(String title) {
+        super(title);
     }
 
     //TODO: fix copy/paste to ExportModuleWizard
@@ -598,7 +600,7 @@ public class NewUnitWizardPage extends WizardPage {
                         .equals(packageFragment);
     }
     
-    IFile getFile() {
+    public IFile getFile() {
         IPath path = packageFragment.getPath().append(unitName + ".ceylon");
         IProject project = sourceDir.getJavaProject().getProject();
         return project.getFile(path.makeRelativeTo(project.getFullPath()));
@@ -734,7 +736,7 @@ public class NewUnitWizardPage extends WizardPage {
         return "Please enter a legal package name (a period-separated list of all-lowercase identifiers).";
     }
     
-    void setUnitName(String unitName) {
+    public void setUnitName(String unitName) {
         this.unitName = unitName;
     }
 
@@ -758,6 +760,12 @@ public class NewUnitWizardPage extends WizardPage {
                     break;
                 }
             }
+            MoveToNewUnitRefactoring refactoring = 
+                    (MoveToNewUnitRefactoring) getRefactoring();
+            refactoring.setTargetProject(getPackageFragment().getResource().getProject());
+            refactoring.setTargetFile(getFile());
+            refactoring.setTargetPackage(getPackageFragment());
+            refactoring.setIncludePreamble(isIncludePreamble());
         }
         super.setPageComplete(complete);
     }
@@ -769,4 +777,5 @@ public class NewUnitWizardPage extends WizardPage {
     String[] getFileNames() {
         return new String[] { unitName };
     }
+    
 }

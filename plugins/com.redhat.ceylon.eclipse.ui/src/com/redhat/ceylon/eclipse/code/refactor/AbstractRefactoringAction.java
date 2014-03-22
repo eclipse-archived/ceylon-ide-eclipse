@@ -9,11 +9,12 @@ import org.eclipse.ui.texteditor.TextEditorAction;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 
-abstract class AbstractRefactoringAction extends TextEditorAction {
-    final AbstractRefactoring refactoring;
-    final IEditorPart editor;
+public abstract class AbstractRefactoringAction extends TextEditorAction {
     
-    AbstractRefactoringAction(String prefix, IEditorPart editor) {
+    final Refactoring refactoring;
+    private final IEditorPart editor;
+    
+    public AbstractRefactoringAction(String prefix, IEditorPart editor) {
         super(RefactoringMessages.ResBundle, prefix, 
                 editor instanceof ITextEditor ? (ITextEditor) editor : null);
         refactoring = createRefactoring();
@@ -44,9 +45,9 @@ abstract class AbstractRefactoringAction extends TextEditorAction {
         }
     }
     
-    abstract AbstractRefactoring createRefactoring();
-    abstract RefactoringWizard createWizard(AbstractRefactoring refactoring);
+    public abstract Refactoring createRefactoring();
+    public abstract RefactoringWizard createWizard(Refactoring refactoring);
     
-    abstract String message();
+    public abstract String message();
     
 }

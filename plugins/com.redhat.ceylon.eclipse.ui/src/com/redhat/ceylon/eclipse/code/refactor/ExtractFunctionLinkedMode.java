@@ -101,11 +101,11 @@ public final class ExtractFunctionLinkedMode
     protected void openPreview() {
         new ExtractFunctionRefactoringAction(editor) {
             @Override
-            public AbstractRefactoring createRefactoring() {
+            public Refactoring createRefactoring() {
                 return ExtractFunctionLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+            public RefactoringWizard createWizard(Refactoring refactoring) {
                 return new ExtractFunctionWizard((ExtractFunctionRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}

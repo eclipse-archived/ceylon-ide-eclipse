@@ -12,17 +12,17 @@ public class ExtractParameterRefactoringAction extends AbstractRefactoringAction
     }
     
     @Override
-    public AbstractRefactoring createRefactoring() {
+    public Refactoring createRefactoring() {
         return new ExtractParameterRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(Refactoring refactoring) {
         return new ExtractParameterWizard((ExtractParameterRefactoring) refactoring);
     }
     
     @Override
-    String message() {
+    public String message() {
         return "No expression selected";
     }
 

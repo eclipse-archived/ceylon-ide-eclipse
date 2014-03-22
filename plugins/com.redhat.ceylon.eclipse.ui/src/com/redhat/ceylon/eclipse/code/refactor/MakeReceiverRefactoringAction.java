@@ -12,17 +12,17 @@ public class MakeReceiverRefactoringAction extends AbstractRefactoringAction {
     }
     
     @Override
-    public AbstractRefactoring createRefactoring() {
+    public Refactoring createRefactoring() {
         return new MakeReceiverRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(Refactoring refactoring) {
         return new MakeReceiverWizard((MakeReceiverRefactoring) refactoring);
     }
     
     @Override
-    String message() {
+    public String message() {
         return "No parameter name selected";
     }
 

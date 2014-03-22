@@ -102,11 +102,11 @@ public final class ExtractValueLinkedMode
     protected void openPreview() {
         new RenameRefactoringAction(editor) {
             @Override
-            public AbstractRefactoring createRefactoring() {
+            public Refactoring createRefactoring() {
                 return ExtractValueLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+            public RefactoringWizard createWizard(Refactoring refactoring) {
                 return new ExtractValueWizard((ExtractValueRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}
