@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,7 +20,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -142,7 +142,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         this.newName = newName;
     }
     
-    public CollectParametersRefactoring(ITextEditor editor) {
+    public CollectParametersRefactoring(IEditorPart editor) {
         super(editor);
         new FindParametersVisitor().visit(rootNode);
         if (declaration!=null) {

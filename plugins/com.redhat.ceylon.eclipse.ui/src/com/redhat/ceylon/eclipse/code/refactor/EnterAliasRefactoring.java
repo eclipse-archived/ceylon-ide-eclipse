@@ -14,7 +14,7 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -30,7 +30,7 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         return element;
     }
     
-    public EnterAliasRefactoring(ITextEditor editor) {
+    public EnterAliasRefactoring(IEditorPart editor) {
         super(editor);
         element = findImport(rootNode, node);
         if (element!=null) {

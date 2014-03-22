@@ -1,19 +1,16 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
 public class ConvertToClassRefactoringAction extends AbstractRefactoringAction {
     public ConvertToClassRefactoringAction(IEditorPart editor) {
-        super("ConvertToClass.", editor);
-        setActionDefinitionId(PLUGIN_ID + ".action.convertToClass");
+        super(editor);
     }
     
     @Override
     public Refactoring createRefactoring() {
-        return new ConvertToClassRefactoring(getTextEditor());
+        return new ConvertToClassRefactoring(editor);
     }
     
     @Override
@@ -32,6 +29,10 @@ public class ConvertToClassRefactoringAction extends AbstractRefactoringAction {
     
     public boolean isShared() {
         return ((ConvertToClassRefactoring) refactoring).getDeclaration().isShared();
+    }
+
+    public boolean isEnabled() {
+        return refactoring.isEnabled();
     }
     
 }

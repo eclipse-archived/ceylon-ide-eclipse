@@ -148,4 +148,12 @@ public class MoveToUnitRefactoring extends Refactoring {
         return change;
     }
 
+    public int getOffset() {
+        return 0; //TODO!!!
+    }
+
+    public IPath getTargetPath() {
+        return targetFile.getFullPath();
+    }
+
 }

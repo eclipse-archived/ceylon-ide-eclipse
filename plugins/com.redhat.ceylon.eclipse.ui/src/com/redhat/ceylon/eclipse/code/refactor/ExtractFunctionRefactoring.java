@@ -31,7 +31,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -250,11 +250,13 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     List<Return> returns;
     private ProducedType returnType;
 
-    public ExtractFunctionRefactoring(ITextEditor editor) {
+    public ExtractFunctionRefactoring(IEditorPart editor) {
         super(editor);
-        if (editor instanceof CeylonEditor && 
-                editor.getSelectionProvider()!=null) {
-            init(getSelection(editor));
+        if (editor instanceof CeylonEditor) {
+            CeylonEditor ce = (CeylonEditor) editor;
+            if (ce.getSelectionProvider()!=null) {
+                init(getSelection(ce));
+            }
         }
         if (result!=null) {
             newName = result.getDeclarationModel().getName();

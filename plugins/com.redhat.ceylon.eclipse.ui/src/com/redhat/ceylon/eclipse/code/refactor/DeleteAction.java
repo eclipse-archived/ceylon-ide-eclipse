@@ -10,17 +10,17 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 //import org.eclipse.core.commands.AbstractHandler;
 
 public class DeleteAction extends AbstractHandler {
-        
+    
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ITextEditor editor = (ITextEditor) getCurrentEditor();
         new DeleteRefactoringAction(editor).run();
         return null;
     }
-
+    
     @Override
     protected boolean isEnabled(CeylonEditor editor) {
-        return new DeleteRefactoringAction(editor).isEnabled();
+        return new DeleteRefactoring(editor).isEnabled();
     }
-            
+    
 }

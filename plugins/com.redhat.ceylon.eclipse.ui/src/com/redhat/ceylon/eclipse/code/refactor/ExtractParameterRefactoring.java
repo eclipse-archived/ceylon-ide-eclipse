@@ -22,7 +22,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -82,7 +82,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         
     }
         
-    public ExtractParameterRefactoring(ITextEditor editor) {
+    public ExtractParameterRefactoring(IEditorPart editor) {
         super(editor);
         newName = Nodes.nameProposals(node)[0];
         FindFunctionVisitor ffv = new FindFunctionVisitor(node);
@@ -90,10 +90,6 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         methodOrClass = ffv.getDefinitionNode();
     }
     
-    /*public ExtractValueRefactoring(IQuickFixInvocationContext context) {
-        super(context);
-        newName = guessName();
-    }*/
     
     @Override
     public boolean isEnabled() {
