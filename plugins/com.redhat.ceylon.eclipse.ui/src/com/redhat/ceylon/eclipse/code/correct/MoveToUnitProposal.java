@@ -1,12 +1,10 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.move.MoveUtil.canMoveDeclaration;
-import static com.redhat.ceylon.eclipse.code.move.MoveUtil.getDeclarationName;
-import static com.redhat.ceylon.eclipse.code.move.MoveUtil.moveToUnit;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.canMoveDeclaration;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getDeclarationName;
 
 import java.util.Collection;
 
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -15,6 +13,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.refactor.MoveToUnitRefactoringAction;
 
 class MoveToUnitProposal implements ICompletionProposal {
 
@@ -53,12 +52,7 @@ class MoveToUnitProposal implements ICompletionProposal {
 
     @Override
     public void apply(IDocument doc) {
-        try {
-            moveToUnit(editor);
-        } 
-        catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        new MoveToUnitRefactoringAction(editor).run();
     }
     
     static void add(Collection<ICompletionProposal> proposals, 

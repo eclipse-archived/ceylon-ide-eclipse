@@ -27,7 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
-import com.redhat.ceylon.eclipse.code.move.CreateUnitChange;
+import com.redhat.ceylon.eclipse.code.refactor.CreateUnitChange;
 import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
 
 class CreateInNewUnitProposal implements ICompletionProposal,
