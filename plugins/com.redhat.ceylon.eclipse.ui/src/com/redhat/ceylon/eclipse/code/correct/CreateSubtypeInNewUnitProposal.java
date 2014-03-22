@@ -47,8 +47,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.move.CreateUnitChange;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.refactor.CreateUnitChange;
 import com.redhat.ceylon.eclipse.code.wizard.NewSubtypeWizardPage;
 import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
 
@@ -94,11 +94,13 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
     @Override
     public void apply(IDocument doc) {
         String suggestedName = getSuggestedName();
-        final NewSubtypeWizardPage page = new NewSubtypeWizardPage("Create Subtype in New Source File", 
-                suggestedName);
-        SelectNewUnitWizard w = new SelectNewUnitWizard("Create Subtype in New Source File", 
-                "Create a new Ceylon source file containing the new subtype.",
-                suggestedName) {
+        final NewSubtypeWizardPage page = 
+                new NewSubtypeWizardPage("Create Subtype in New Source File", 
+                        suggestedName);
+        SelectNewUnitWizard w = 
+                new SelectNewUnitWizard("Create Subtype in New Source File", 
+                        "Create a new Ceylon source file containing the new subtype.",
+                        suggestedName) {
             @Override
             public void addPages() {
                 addPage(page);
@@ -106,9 +108,12 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
             }
         };
         if (w.open(getFile(editor.getEditorInput()))) {
-            CreateUnitChange change = new CreateUnitChange(w.getFile(), 
-                    w.includePreamble(), getText(doc, page.getClassName()), 
-                    w.getProject(), "Create Subtype in New Source File");
+            CreateUnitChange change = 
+                    new CreateUnitChange(w.getFile(), 
+                            w.includePreamble(), 
+                            getText(doc, page.getClassName()), 
+                            w.getProject(), 
+                            "Create Subtype in New Source File");
             try {
                 performChange(getCurrentEditor(), doc, change, 
                         "Create Subtype in New Source File");
@@ -133,7 +138,7 @@ class CreateSubtypeInNewUnitProposal implements ICompletionProposal,
                 cs.getDefinition().replace("$className", name);
     }
 
-    public static class CreateSubtype {
+    static class CreateSubtype {
         private String definition;
         private String imports;
         private Set<ProducedType> importedTypes;
