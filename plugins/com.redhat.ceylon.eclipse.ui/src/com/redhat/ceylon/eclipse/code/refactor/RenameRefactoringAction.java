@@ -12,17 +12,17 @@ public class RenameRefactoringAction extends AbstractRefactoringAction {
     }
     
     @Override
-    public AbstractRefactoring createRefactoring() {
+    public Refactoring createRefactoring() {
         return new RenameRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(Refactoring refactoring) {
         return new RenameWizard((RenameRefactoring) refactoring);
     }
     
     @Override
-    String message() {
+    public String message() {
         return "No declaration name selected";
     }
     

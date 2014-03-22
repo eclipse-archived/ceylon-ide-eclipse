@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-class EditDialog extends Dialog {
+public class EditDialog extends Dialog {
     
     private String text;
     
@@ -28,7 +28,7 @@ class EditDialog extends Dialog {
         this.text = text;
     }
     
-    EditDialog(Shell parent) {
+    public EditDialog(Shell parent) {
         super(parent);
         setShellStyle(getShellStyle() | SWT.RESIZE | SWT.MAX);
     }

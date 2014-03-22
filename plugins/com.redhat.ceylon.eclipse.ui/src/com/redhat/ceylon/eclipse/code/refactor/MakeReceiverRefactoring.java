@@ -257,7 +257,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    boolean isEnabled() {
+    public boolean isEnabled() {
         if (node instanceof Tree.AttributeDeclaration && 
                 project != null) {
             Value param = ((Tree.AttributeDeclaration) node).getDeclarationModel();

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.move;
+package com.redhat.ceylon.eclipse.code.refactor;
 
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 
@@ -58,5 +58,10 @@ public final class CreateUnitChange extends ResourceChange {
     @Override
     protected IResource getModifiedResource() {
         return file;
+    }
+    
+    @Override
+    public Object[] getAffectedObjects() {
+        return new Object[]{file};
     }
 }

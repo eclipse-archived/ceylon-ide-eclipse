@@ -12,17 +12,17 @@ public class ChangeVersionRefactoringAction extends AbstractRefactoringAction {
     }
     
     @Override
-    public AbstractRefactoring createRefactoring() {
+    public Refactoring createRefactoring() {
         return new ChangeVersionRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(Refactoring refactoring) {
         return new ChangeVersionWizard((AbstractRefactoring) refactoring);
     }
     
     @Override
-    String message() {
+    public String message() {
         return "No module version selected";
     }
     

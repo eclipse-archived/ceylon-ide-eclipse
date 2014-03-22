@@ -173,11 +173,11 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
     protected void openPreview() {
         new ChangeVersionRefactoringAction(editor) {
             @Override
-            public AbstractRefactoring createRefactoring() {
+            public Refactoring createRefactoring() {
                 return ChangeVersionLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+            public RefactoringWizard createWizard(Refactoring refactoring) {
                 return new ChangeVersionWizard((AbstractRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}

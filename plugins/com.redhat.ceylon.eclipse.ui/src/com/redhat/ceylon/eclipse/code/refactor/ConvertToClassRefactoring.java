@@ -38,7 +38,7 @@ public class ConvertToClassRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    boolean isEnabled() {
+    public boolean isEnabled() {
         return node instanceof Tree.ObjectDefinition;
     }
     

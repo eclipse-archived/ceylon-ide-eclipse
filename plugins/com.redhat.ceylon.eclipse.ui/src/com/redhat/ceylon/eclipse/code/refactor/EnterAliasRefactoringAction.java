@@ -12,17 +12,17 @@ public class EnterAliasRefactoringAction extends AbstractRefactoringAction {
     }
     
     @Override
-    public AbstractRefactoring createRefactoring() {
+    public Refactoring createRefactoring() {
         return new EnterAliasRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(Refactoring refactoring) {
         return new EnterAliasWizard((EnterAliasRefactoring) refactoring);
     }
     
     @Override
-    String message() {
+    public String message() {
         return "No expression selected";
     }
 

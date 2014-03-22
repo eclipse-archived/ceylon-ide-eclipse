@@ -233,11 +233,11 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
     protected void openPreview() {
         new EnterAliasRefactoringAction(editor) {
             @Override
-            public AbstractRefactoring createRefactoring() {
+            public Refactoring createRefactoring() {
                 return EnterAliasLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+            public RefactoringWizard createWizard(Refactoring refactoring) {
                 return new EnterAliasWizard((EnterAliasRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}

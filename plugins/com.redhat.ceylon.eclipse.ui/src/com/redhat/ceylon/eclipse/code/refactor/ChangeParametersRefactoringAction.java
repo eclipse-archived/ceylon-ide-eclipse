@@ -12,17 +12,17 @@ public class ChangeParametersRefactoringAction extends AbstractRefactoringAction
     }
     
     @Override
-    public AbstractRefactoring createRefactoring() {
+    public Refactoring createRefactoring() {
         return new ChangeParametersRefactoring(getTextEditor());
     }
     
     @Override
-    public RefactoringWizard createWizard(AbstractRefactoring refactoring) {
+    public RefactoringWizard createWizard(Refactoring refactoring) {
         return new ChangeParametersWizard((AbstractRefactoring) refactoring);
     }
     
     @Override
-    String message() {
+    public String message() {
         return "No function or class selected";
     }
     
