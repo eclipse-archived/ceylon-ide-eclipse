@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -252,7 +252,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         
     }
     
-    public MakeReceiverRefactoring(ITextEditor editor) {
+    public MakeReceiverRefactoring(IEditorPart editor) {
         super(editor);
     }
 

@@ -1,19 +1,16 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
 public class CollectParametersRefactoringAction extends AbstractRefactoringAction {
     public CollectParametersRefactoringAction(IEditorPart editor) {
-        super("CollectParameters.", editor);
-        setActionDefinitionId(PLUGIN_ID + ".action.collectParameters");
+        super(editor);
     }
     
     @Override
     public Refactoring createRefactoring() {
-        return new CollectParametersRefactoring(getTextEditor());
+        return new CollectParametersRefactoring(editor);
     }
     
     @Override

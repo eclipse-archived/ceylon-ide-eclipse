@@ -26,7 +26,7 @@ public class RenameAction extends AbstractHandler {
 
     @Override
     protected boolean isEnabled(CeylonEditor editor) {
-        return new RenameRefactoringAction(editor).isEnabled();
+        return new RenameRefactoring(editor).isEnabled();
     }
             
 }

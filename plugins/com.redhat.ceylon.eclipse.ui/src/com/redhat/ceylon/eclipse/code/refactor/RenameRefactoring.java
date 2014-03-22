@@ -16,7 +16,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -75,7 +75,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         return node;
     }
 
-    public RenameRefactoring(ITextEditor editor) {
+    public RenameRefactoring(IEditorPart editor) {
         super(editor);
         if (rootNode!=null) {
             Declaration refDec = Nodes.getReferencedExplicitDeclaration(node, rootNode);

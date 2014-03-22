@@ -1,10 +1,10 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -25,7 +25,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -47,11 +47,13 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private boolean makeShared=true;
     private String newName;
 
-    public MoveOutRefactoring(ITextEditor editor) {
+    public MoveOutRefactoring(IEditorPart editor) {
         super(editor);
-        if (editor instanceof CeylonEditor && 
-                editor.getSelectionProvider()!=null) {
-            init(getSelection(editor));
+        if (editor instanceof CeylonEditor) {
+            CeylonEditor ce = (CeylonEditor) editor;
+            if (ce.getSelectionProvider()!=null) {
+                init(getSelection(ce));
+            }
         }
     }
 

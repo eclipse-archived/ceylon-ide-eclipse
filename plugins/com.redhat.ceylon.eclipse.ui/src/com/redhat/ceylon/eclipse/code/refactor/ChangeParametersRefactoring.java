@@ -24,7 +24,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -126,7 +126,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         return defaulted;
     }
 
-    public ChangeParametersRefactoring(ITextEditor textEditor) {
+    public ChangeParametersRefactoring(IEditorPart textEditor) {
         super(textEditor);
         if (rootNode!=null) {
             Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);

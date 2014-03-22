@@ -14,8 +14,8 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -50,7 +50,7 @@ abstract class AbstractRefactoring extends Refactoring {
                 context.getOffset()+context.getLength());
     }*/
     
-    public AbstractRefactoring(ITextEditor editor) {
+    public AbstractRefactoring(IEditorPart editor) {
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             this.editor = ce;
@@ -62,7 +62,7 @@ abstract class AbstractRefactoring extends Refactoring {
             IEditorInput input = editor.getEditorInput();
             if (rootNode!=null && input instanceof IFileEditorInput) {
                 sourceFile = EditorUtil.getFile(input);
-                node = Nodes.findNode(rootNode, getSelection(editor));
+                node = Nodes.findNode(rootNode, getSelection(ce));
             }
             else {
                 sourceFile = null;

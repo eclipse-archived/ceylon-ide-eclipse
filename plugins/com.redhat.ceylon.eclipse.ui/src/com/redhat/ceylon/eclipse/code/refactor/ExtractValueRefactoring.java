@@ -2,9 +2,9 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.HashSet;
@@ -20,7 +20,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -35,7 +35,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     private ProducedType type;
     private boolean canBeInferred;
     
-    public ExtractValueRefactoring(ITextEditor editor) {
+    public ExtractValueRefactoring(IEditorPart editor) {
         super(editor);
         newName = Nodes.nameProposals(node)[0];
     }

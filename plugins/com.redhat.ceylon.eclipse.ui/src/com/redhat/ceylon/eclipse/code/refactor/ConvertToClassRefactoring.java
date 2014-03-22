@@ -14,7 +14,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -25,7 +25,7 @@ public class ConvertToClassRefactoring extends AbstractRefactoring {
     private String newName;
     private final Declaration declaration;
 
-    public ConvertToClassRefactoring(ITextEditor editor) {
+    public ConvertToClassRefactoring(IEditorPart editor) {
         super(editor);
         if (node instanceof Tree.ObjectDefinition) {
             declaration = ((Tree.ObjectDefinition) node).getDeclarationModel();

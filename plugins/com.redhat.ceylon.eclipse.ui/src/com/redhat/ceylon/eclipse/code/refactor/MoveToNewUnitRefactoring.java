@@ -13,6 +13,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -40,6 +41,7 @@ public class MoveToNewUnitRefactoring extends Refactoring {
     private IProject targetProject;
     private IPackageFragment targetPackage;
     private boolean includePreamble;
+    private int offset;
     
     public void setTargetFile(IFile targetFile) {
         this.targetFile = targetFile;
@@ -129,6 +131,7 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         String importText = getImportText(node, moved, delim);
         String text = importText.isEmpty() ? 
                 contents : importText + delim + contents;
+        offset = importText.isEmpty() ? 0 : (importText + delim).length();
         CreateUnitChange newUnitChange = 
                 new CreateUnitChange(targetFile, includePreamble, 
                         text, targetProject, 
@@ -143,6 +146,14 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         
         refactorProjectImports(node, originalFile, targetFile, change, original, moved);
         return change;
+    }
+    
+    public int getOffset() {
+        return offset;
+    }
+
+    public IPath getTargetPath() {
+        return targetFile.getFullPath();
     }
 
 }

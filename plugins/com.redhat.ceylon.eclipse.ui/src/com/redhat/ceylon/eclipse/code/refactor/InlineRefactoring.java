@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createFatalErrorStatus;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -24,7 +25,7 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -48,9 +49,9 @@ public class InlineRefactoring extends AbstractRefactoring {
     private boolean delete = true;
     private boolean justOne = false;
 
-    public InlineRefactoring(ITextEditor editor) {
+    public InlineRefactoring(IEditorPart editor) {
         super(editor);
-        declaration = Nodes.getReferencedDeclaration(node);
+        declaration = getReferencedDeclaration(node);
     }
     
     boolean isReference() {

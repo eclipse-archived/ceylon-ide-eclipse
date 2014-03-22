@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -28,7 +29,6 @@ import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class DeleteRefactoring extends AbstractRefactoring {
     
@@ -199,10 +199,10 @@ public class DeleteRefactoring extends AbstractRefactoring {
         return node;
     }
 
-    public DeleteRefactoring(ITextEditor editor) {
+    public DeleteRefactoring(IEditorPart editor) {
         super(editor);
         if (rootNode!=null) {
-            declarationToDelete = Nodes.getReferencedExplicitDeclaration(node, rootNode);
+            declarationToDelete = getReferencedExplicitDeclaration(node, rootNode);
             if (declarationToDelete!=null) {
                 refinedDeclaration = declarationToDelete.getRefinedDeclaration();
             }

@@ -1,27 +1,35 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 
 public class MoveToUnitRefactoringAction extends AbstractRefactoringAction {
 
     public MoveToUnitRefactoringAction(IEditorPart editor) {
-        super("MoveToUnit.", editor);
-        setActionDefinitionId(PLUGIN_ID + ".action.moveDeclarationToUnit");
+        super(editor);
     }
     
     @Override
     public Refactoring createRefactoring() {
-        return new MoveToUnitRefactoring((CeylonEditor) getTextEditor());
+        return new MoveToUnitRefactoring((CeylonEditor) editor);
     }
 
     @Override
     public RefactoringWizard createWizard(Refactoring refactoring) {
         return new MoveToUnitWizard(refactoring);
+    }
+
+    @Override
+    public boolean run() {
+        boolean success = super.run();
+        if (success) {
+            MoveToUnitRefactoring r = (MoveToUnitRefactoring) refactoring;
+            Navigation.gotoLocation(r.getTargetPath(), r.getOffset());
+        }
+        return success;
     }
 
     @Override

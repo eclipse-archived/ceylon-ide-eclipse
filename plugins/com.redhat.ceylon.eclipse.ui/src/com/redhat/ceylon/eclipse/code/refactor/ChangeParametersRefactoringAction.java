@@ -1,19 +1,16 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
 public class ChangeParametersRefactoringAction extends AbstractRefactoringAction {
     public ChangeParametersRefactoringAction(IEditorPart editor) {
-        super("ChangeParameters.", editor);
-        setActionDefinitionId(PLUGIN_ID + ".action.changeParameters");
+        super(editor);
     }
     
     @Override
     public Refactoring createRefactoring() {
-        return new ChangeParametersRefactoring(getTextEditor());
+        return new ChangeParametersRefactoring(editor);
     }
     
     @Override

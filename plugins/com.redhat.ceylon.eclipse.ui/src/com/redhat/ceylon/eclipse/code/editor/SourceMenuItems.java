@@ -23,7 +23,7 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
-import com.redhat.ceylon.eclipse.code.refactor.DeleteRefactoringAction;
+import com.redhat.ceylon.eclipse.code.refactor.DeleteRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -79,7 +79,7 @@ public class SourceMenuItems extends CompoundContributionItem {
                         new CleanImportsHandler().isEnabled(), DELETE_IMPORT),
                 new DynamicMenuItem(PLUGIN_ID + ".action.delete", 
                         "Safe &Delete...",
-                        editor!=null && new DeleteRefactoringAction(editor).isEnabled(), DELETE),
+                        editor!=null && new DeleteRefactoring(editor).isEnabled(), DELETE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.revealInferredType", 
                         "Reveal Inferred &Types",
                         editor!=null && new RevealInferredTypeHandler().isEnabled(), REVEAL),
