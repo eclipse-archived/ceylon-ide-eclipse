@@ -85,21 +85,24 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         gd.grabExcessHorizontalSpace = true;
 //        gd.grabExcessVerticalSpace = true;
         gd.heightHint = 100;
-        gd.widthHint = 250;
+        gd.widthHint = 300;
         moduleImportsTable.setLayoutData(gd);
         
         TableColumn column = new TableColumn(moduleImportsTable, SWT.NONE, 0);
-        column.setText("Module/Version");
-        column.setWidth(200);
-        TableColumn sharedColumn = new TableColumn(moduleImportsTable, SWT.NONE, 1);
+        column.setText("Module");
+        column.setWidth(180);
+        TableColumn versionColumn = new TableColumn(moduleImportsTable, SWT.NONE, 1);
+        versionColumn.setText("Version");
+        versionColumn.setWidth(70);
+        TableColumn sharedColumn = new TableColumn(moduleImportsTable, SWT.NONE, 2);
         sharedColumn.setText("Transitivity");
         sharedColumn.setWidth(70);
 
         final TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
         item.setImage(CeylonLabelProvider.ARCHIVE);
-        item.setText(1, "shared");
-        item.setText(Module.LANGUAGE_MODULE_NAME + "/" + 
-                Versions.CEYLON_VERSION_NUMBER); //TODO: is this right?
+        item.setText(Module.LANGUAGE_MODULE_NAME);
+        item.setText(1, Versions.CEYLON_VERSION_NUMBER); //TODO: is this right?
+        item.setText(2, "shared");
         
         GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
         bgd.grabExcessHorizontalSpace=false;
@@ -112,7 +115,7 @@ public abstract class ImportModulesWizardPage extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 for (TableItem item: moduleImportsTable.getSelection()) {
-                    item.setText(1, item.getText(1).isEmpty() ? "shared": "");
+                    item.setText(2, item.getText(2).isEmpty() ? "shared": "");
                 }
             }
             @Override
@@ -153,7 +156,8 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         for (Map.Entry<String, String> entry: added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
             item.setImage(CeylonLabelProvider.ARCHIVE);
-            item.setText(entry.getKey() + "/" + entry.getValue());
+            item.setText(entry.getKey());
+            item.setText(1, entry.getValue());
         }
     }
 
@@ -165,8 +169,7 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         List<Integer> removed = new ArrayList<Integer>();
         for (int index: selection) {
             TableItem item = moduleImportsTable.getItem(index);
-            String name = item.getText().substring(0, 
-                    item.getText().indexOf('/'));
+            String name = item.getText();
             if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
                 names.add(name);
                 removed.add(index);
@@ -182,9 +185,8 @@ public abstract class ImportModulesWizardPage extends WizardPage {
     Map<String,String> getImports() {
         Map<String,String> result = new HashMap<String,String>();
         for (TableItem item: moduleImportsTable.getItems()) {
-            int ind = item.getText().indexOf('/');
-            String name = item.getText().substring(0, ind);
-            String version = item.getText().substring(ind+1);
+            String name = item.getText();
+            String version = item.getText(1);
             if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
                 result.put(name, version);
             }
@@ -195,9 +197,8 @@ public abstract class ImportModulesWizardPage extends WizardPage {
     Set<String> getSharedImports() {
         Set<String> result = new HashSet<String>();
         for (TableItem item: moduleImportsTable.getItems()) {
-            int ind = item.getText().indexOf('/');
-            String name = item.getText().substring(0, ind);
-            boolean shared = !item.getText(1).isEmpty();
+            String name = item.getText();
+            boolean shared = !item.getText(2).isEmpty();
             if (shared && !name.equals(Module.LANGUAGE_MODULE_NAME)) {
                 result.add(name);
             }

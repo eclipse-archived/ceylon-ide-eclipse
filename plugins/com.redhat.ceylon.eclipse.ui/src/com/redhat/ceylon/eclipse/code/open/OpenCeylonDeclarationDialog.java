@@ -450,7 +450,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             StringBuilder sb = new StringBuilder();
             sb.append("in module ").append(module.getNameAsString());
             if (module.getVersion()!=null) {
-                sb.append(" '").append(module.getVersion()).append("'");
+                sb.append(" \"").append(module.getVersion()).append("\"");
             }
             if (project!=null) {
                 sb.append(" imported by project ").append(project.getName());
