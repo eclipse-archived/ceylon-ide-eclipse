@@ -71,6 +71,7 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     }
 
     void createControls(Composite composite) {
+        createTitle(composite);
         createUnitField(composite);
     }
 
@@ -96,17 +97,22 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
                 else {
-                    IFile file = getWorkspace().getRoot()
-                            .getFile(Path.fromPortableString(unit.getText()));
-                    if (file==null || !file.exists()) {
-                        setErrorMessage(getUnitNotExistMessage());
+                    try {
+                        IFile file = getWorkspace().getRoot()
+                                .getFile(Path.fromPortableString(unit.getText()));
+                        if (file==null || !file.exists()) {
+                            setErrorMessage(getUnitNotExistMessage());
+                        }
+                        else if (file.equals(MoveToUnitWizardPage.this.file)) {
+                            setErrorMessage(getSameUnitMessage());
+                        }
+                        else {
+                            setUnit(file);
+                            setErrorMessage(null);
+                        }
                     }
-                    else if (file.equals(MoveToUnitWizardPage.this.file)) {
-                        setErrorMessage(getSameUnitMessage());
-                    }
-                    else {
-                        setUnit(file);
-                        setErrorMessage(null);
+                    catch (IllegalArgumentException iae) {
+                        setErrorMessage(iae.getMessage());
                     }
                 }
                 setPageComplete(isComplete());
@@ -145,6 +151,18 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
+    }
+
+    private void createTitle(Composite composite) {
+        Label title = new Label(composite, SWT.LEFT);  
+        String name = getMoveToUnitRefactoring().getNode().getDeclarationModel().getName();
+        title.setText("Move '" + name + "' to another source file.");
+        GridData gd = new GridData();
+        gd.horizontalSpan=4;
+        title.setLayoutData(gd);
+        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        gd2.horizontalSpan=4;
+        new Label(composite, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
     }
     
     String getUnitLabel() {
