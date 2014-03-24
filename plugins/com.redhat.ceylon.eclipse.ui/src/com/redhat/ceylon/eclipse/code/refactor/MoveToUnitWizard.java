@@ -15,8 +15,11 @@ public class MoveToUnitWizard extends RefactoringWizard {
     
     @Override
     protected void addUserInputPages() {
+        MoveToUnitRefactoring refactoring = 
+                (MoveToUnitRefactoring) getRefactoring();
         MoveToUnitWizardPage page = 
-                new MoveToUnitWizardPage(getRefactoring().getName());
+                new MoveToUnitWizardPage(refactoring.getName(),
+                        refactoring.getOriginalFile());
         page.init(getSelection());
         addPage(page);
     }

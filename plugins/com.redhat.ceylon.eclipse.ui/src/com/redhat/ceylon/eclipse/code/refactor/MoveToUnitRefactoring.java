@@ -41,15 +41,14 @@ public class MoveToUnitRefactoring extends Refactoring {
     private final Tree.Declaration node;
     private final IFile originalFile; 
     private final IDocument document;
-    private IFile targetFile; 
-    private IPath targetSourceDirPath;
+    private IFile targetFile;
     
     public void setTargetFile(IFile targetFile) {
         this.targetFile = targetFile;
     }
     
-    public void setTargetSourceDirPath(IPath targetSourceDirPath) {
-        this.targetSourceDirPath = targetSourceDirPath;
+    public IFile getOriginalFile() {
+        return originalFile;
     }
     
     public MoveToUnitRefactoring(CeylonEditor ceylonEditor) {
@@ -99,8 +98,8 @@ public class MoveToUnitRefactoring extends Refactoring {
     public Change createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
         IProject project = targetFile.getProject();
-        String relpath = targetFile.getFullPath()
-                .makeRelativeTo(targetSourceDirPath)
+        String relpath = targetFile.getProjectRelativePath()
+                .removeFirstSegments(1)
                 .toPortableString();
         PhasedUnit npu = getProjectTypeChecker(project)
                 .getPhasedUnitFromRelativePath(relpath);
