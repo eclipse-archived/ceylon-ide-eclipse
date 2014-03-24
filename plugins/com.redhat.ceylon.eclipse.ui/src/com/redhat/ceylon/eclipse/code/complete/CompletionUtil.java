@@ -247,10 +247,19 @@ public class CompletionUtil {
     }
 
     public static void styleProposal(StyledString result, String string) {
-        StringTokenizer tokens = new StringTokenizer(string, " ()<>.*+?,{}[]", true);
+        StringTokenizer tokens = new StringTokenizer(string, " ()<>.*+?,{}[]\"", true);
+        boolean version = false;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            if (isUpperCase(token.charAt(0))) {
+            if (token.equals("\"")) {
+                version = !version;
+                result.append(token, VERSION_STYLER);
+
+            }
+            else if (version) {
+                result.append(token, VERSION_STYLER);
+            }
+            else if (isUpperCase(token.charAt(0))) {
                 result.append(token, TYPE_ID_STYLER);
             }
             else if (isLowerCase(token.charAt(0))) {
@@ -263,9 +272,6 @@ public class CompletionUtil {
                 else {
                     result.append(token, ID_STYLER);
                 }
-            }
-            else if (token.charAt(0)=='\"') {
-                result.append(token, VERSION_STYLER);
             }
             else {
                 result.append(token);
