@@ -42,11 +42,14 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -520,8 +523,46 @@ public class ModuleSearchViewPart extends ViewPart {
     }
 
     private void initSashForm() {
-        sashForm = new SashForm(parent, SWT.HORIZONTAL);
+        sashForm = new SashForm(parent, SWT.HORIZONTAL | SWT.SMOOTH);
         sashForm.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).span(4, 1).create());
+        sashForm.addControlListener(new ControlListener() {
+            boolean reentrant;
+            @Override
+            public void controlResized(ControlEvent e) {
+                if (reentrant) return;
+                reentrant = true;
+                try {
+                    Rectangle bounds = sashForm.getBounds();
+//                    IToolBarManager toolBarManager = 
+//                            getViewSite().getActionBars().getToolBarManager();
+                    if (bounds.height>bounds.width) {
+                        if (sashForm.getOrientation()!=SWT.VERTICAL) {
+                            sashForm.setOrientation(SWT.VERTICAL);
+//                            createMainToolBar(toolBarManager);
+//                            toolBarManager.update(false);
+//                            viewForm.setTopLeft(null);
+                        }
+                    }
+                    else {
+                        if (sashForm.getOrientation()!=SWT.HORIZONTAL) {
+                            sashForm.setOrientation(SWT.HORIZONTAL);
+//                            toolBarManager.removeAll();
+//                            toolBarManager.update(false);
+//                            ToolBarManager tbm = new ToolBarManager(SWT.NONE);
+//                            createMainToolBar(tbm);
+//                            tbm.createControl(viewForm);
+//                            viewForm.setTopLeft(tbm.getControl());
+                        }
+                    }
+                    getViewSite().getActionBars().updateActionBars();
+                }
+                finally {
+                    reentrant = false;
+                }
+            }
+            @Override
+            public void controlMoved(ControlEvent e) {}
+        });
     }
 
     private void initModuleTreeViewer() {
