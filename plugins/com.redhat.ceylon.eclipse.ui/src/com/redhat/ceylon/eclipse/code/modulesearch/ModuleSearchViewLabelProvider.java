@@ -40,7 +40,9 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
 
     private void updateVersionNode(ViewerCell cell, ModuleVersionNode versionNode) {
         StyledString styledText = new StyledString();
-        styledText.append(versionNode.getVersion());
+        styledText.append(" \"", CeylonLabelProvider.VERSION_STYLER);
+        styledText.append(versionNode.getVersion(), CeylonLabelProvider.VERSION_STYLER);
+        styledText.append("\"", CeylonLabelProvider.VERSION_STYLER);
         cell.setText(styledText.toString());
         cell.setStyleRanges(styledText.getStyleRanges());
         cell.setImage(CeylonLabelProvider.VERSION);
