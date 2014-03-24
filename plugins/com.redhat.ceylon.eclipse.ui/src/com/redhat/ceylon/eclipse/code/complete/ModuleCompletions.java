@@ -56,7 +56,8 @@ public class ModuleCompletions {
                 String versioned, ModuleDetails module,
                 boolean withBody, ModuleVersionDetails version, 
                 String name) {
-            super(offset, prefix, ARCHIVE, versioned, 
+            super(offset, prefix, ARCHIVE, 
+                    versioned.substring(0, versioned.length()-1), 
                     versioned.substring(len));
             this.len = len;
             this.versioned = versioned;
