@@ -1159,25 +1159,6 @@
    <extension
          point="org.eclipse.ui.bindings">
          
-      <sequenceModifier
-            find="M1+M2" replace="M1+M4" 
-            platforms="cocoa,carbon"/>
-      <sequenceModifier
-            find="M2+M3" replace="M2+M3+M4"
-            platforms="cocoa,carbon"/>
-      
-      <!-- Edit actions -->
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+/"/>
-      <key
-            contextId="com.redhat.ceylon.eclipse.ui.context"
-            commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+\"/>
-
       <!-- Navigation actions -->
       <key
             sequence="M2+M3+ARROW_UP"
@@ -1186,6 +1167,18 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
             sequence="M2+M3+ARROW_DOWN"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="carbon"
+            sequence="CTRL+SHIFT+PAGE_UP"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.selectEnclosing"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="carbon"
+            sequence="CTRL+SHIFT+PAGE_DOWN"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
@@ -1200,10 +1193,27 @@
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoNextTarget"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/-->
+            
    </extension>
    
    <extension
          point="org.eclipse.ui.bindings">
+      
+      <sequenceModifier
+            find="M1+M2" replace="M1+M4" 
+            platforms="cocoa,carbon"/>
+      
+      <!-- Edit actions -->
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.addBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+/"/>
+      <key
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+\"/>
       
       <!-- Show View actions -->
       <sequenceModifier
