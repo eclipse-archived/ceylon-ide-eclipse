@@ -184,21 +184,24 @@ public class CeylonModulePropertiesPage extends PropertyPage
         gd.grabExcessHorizontalSpace = true;
 //        gd.grabExcessVerticalSpace = true;
         gd.heightHint = 100;
-        gd.widthHint = 250;
+        gd.widthHint = 300;
         moduleImportsTable.setLayoutData(gd);
         
         TableColumn column = new TableColumn(moduleImportsTable, SWT.NONE, 0);
         column.setText("Module/Version");
-        column.setWidth(200);
-        TableColumn sharedColumn = new TableColumn(moduleImportsTable, SWT.NONE, 1);
+        column.setWidth(180);
+        TableColumn versionColumn = new TableColumn(moduleImportsTable, SWT.NONE, 1);
+        versionColumn.setText("Version");
+        versionColumn.setWidth(70);
+        TableColumn sharedColumn = new TableColumn(moduleImportsTable, SWT.NONE, 2);
         sharedColumn.setText("Transitivity");
         sharedColumn.setWidth(70);
         for (ModuleImport mi: getModule().getImports()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
             item.setImage(CeylonLabelProvider.ARCHIVE);
-            item.setText(mi.getModule().getNameAsString() + "/" + 
-                    mi.getModule().getVersion());
-            item.setText(1, mi.isExport() ? "shared" : "");
+            item.setText(mi.getModule().getNameAsString());
+            item.setText(1, mi.getModule().getVersion());
+            item.setText(2, mi.isExport() ? "shared" : "");
         }
         
         GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
@@ -250,7 +253,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
     private void makeShared(TableItem[] items) {
         List<String> list = new ArrayList<String>();
         for (TableItem item: items) {
-            String name = getModuleName(item);
+            String name = item.getText();
             if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
                 list.add(name);
             }
@@ -258,9 +261,9 @@ public class CeylonModulePropertiesPage extends PropertyPage
         makeModuleImportShared(project, getModule(), 
                 list.toArray(new String[0]));
         for (TableItem item: items) {
-            String name = getModuleName(item);
+            String name = item.getText();
             if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
-                item.setText(1, item.getText(1).isEmpty() ? "shared" : "");
+                item.setText(2, item.getText(2).isEmpty() ? "shared" : "");
             }
         }
     }
@@ -287,11 +290,11 @@ public class CeylonModulePropertiesPage extends PropertyPage
         gd.grabExcessHorizontalSpace = true;
 //        gd.grabExcessVerticalSpace = true;
         gd.heightHint = 100;
-        gd.widthHint = 250;
+        gd.widthHint = 300;
         packagesTable.setLayoutData(gd);
         TableColumn column = new TableColumn(packagesTable, SWT.NONE, 0);
         column.setText("Package");
-        column.setWidth(200);
+        column.setWidth(250);
         TableColumn sharedColumn = new TableColumn(packagesTable, SWT.NONE, 1);
         sharedColumn.setText("Visibility");
         sharedColumn.setWidth(70);
@@ -484,7 +487,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         List<Integer> removed = new ArrayList<Integer>();
         for (int index: selection) {
             TableItem item = moduleImportsTable.getItem(index);
-            String name = getModuleName(item);
+            String name = item.getText();
             if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
                 names.add(name);
                 removed.add(index);
@@ -496,11 +499,6 @@ public class CeylonModulePropertiesPage extends PropertyPage
             indices[i] = removed.get(i);
         }
         moduleImportsTable.remove(indices);
-    }
-
-    private static String getModuleName(TableItem item) {
-        return item.getText().substring(0, 
-                item.getText().indexOf('/'));
     }
     
 }
