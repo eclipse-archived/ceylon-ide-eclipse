@@ -1,9 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,7 +12,6 @@ import java.util.Map;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -261,20 +258,24 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     }
 
     private void placeAnnotations(Map<Annotation,Position> annotationMap, IAnnotationModel annotationModel) {
-        if (annotationModel==null) return;
+        if (annotationModel==null || 
+                (occurrenceAnnotations==null || occurrenceAnnotations.length==0) && 
+                annotationMap.isEmpty()) {
+            return;
+        }
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
                 ((IAnnotationModelExtension) annotationModel).replaceAnnotations(occurrenceAnnotations, annotationMap);
             } 
             else {
                 removeExistingOccurrenceAnnotations();
-                Iterator<Map.Entry<Annotation,Position>> iter= annotationMap.entrySet().iterator();
+                Iterator<Map.Entry<Annotation,Position>> iter = annotationMap.entrySet().iterator();
                 while (iter.hasNext()) {
-                    Map.Entry<Annotation,Position> mapEntry= iter.next();
+                    Map.Entry<Annotation,Position> mapEntry = iter.next();
                     annotationModel.addAnnotation((Annotation) mapEntry.getKey(), (Position) mapEntry.getValue());
                 }
             }
-            occurrenceAnnotations= (Annotation[]) annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
+            occurrenceAnnotations = (Annotation[]) annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
         }
     }
 
@@ -408,19 +409,17 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
                 if (!activeEditor.isBackgroundParsingPaused() &&
                         !activeEditor.isInLinkedMode()) {
                     try {
-                        getWorkbench().getProgressService().runInUI(activeEditor.getSite().getWorkbenchWindow(), 
-                                new IRunnableWithProgress() {
+                        activeEditor.getEditorSite().getShell().getDisplay().asyncExec( 
+                                new Runnable() {
                             @Override
-                            public void run(IProgressMonitor monitor) 
-                                    throws InvocationTargetException, InterruptedException {
+                            public void run() {
                                 if (activeEditor!=null) {
                                     IRegion selection = activeEditor.getSelection();
-                                    int offset = selection.getOffset();
-                                    int length = selection.getLength();
-                                    recomputeAnnotationsForSelection(offset, length, document);
+                                    recomputeAnnotationsForSelection(selection.getOffset(), 
+                                            selection.getLength(), document);
                                 }
                             }
-                        }, null);
+                        });
                     } 
                     catch (Exception e) {
                         e.printStackTrace();
