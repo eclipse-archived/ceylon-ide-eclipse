@@ -1,21 +1,14 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.select.SourceFileSelectionDialog.getSourceFile;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
-import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
@@ -30,19 +23,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.code.select.UnitSelectionDialog;
-
 public class MoveToUnitWizardPage extends UserInputWizardPage {
-
-    private IPackageFragmentRoot sourceDir;
+    
     private String unitName = "";
     private IFile unit;
     
     private IStructuredSelection selection;
     private Text unitNameText;
+    private IFile file;
     
-    MoveToUnitWizardPage(String title) {
+    MoveToUnitWizardPage(String title, IFile file) {
         super(title);
+        this.file = file;
     }
 
     //TODO: fix copy/paste to ExportModuleWizard
@@ -66,8 +58,6 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
         
-        initFromSelection();
-        
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setFont(parent.getFont());
         GridLayout layout = new GridLayout();
@@ -81,114 +71,9 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     }
 
     void createControls(Composite composite) {
-        createFolderField(composite);
         createUnitField(composite);
     }
 
-    void createFolderField(Composite composite) {
-        Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        folderLabel.setText("Source folder: ");
-        GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        flgd.horizontalSpan = 1;
-        folderLabel.setLayoutData(flgd);
-
-        final Text folder = new Text(composite, SWT.SINGLE | SWT.BORDER);
-        GridData fgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        fgd.horizontalSpan = 2;
-        fgd.grabExcessHorizontalSpace = true;
-        folder.setLayoutData(fgd);
-        if (getSourceDir()!=null) {
-            String folderName = getSourceDir().getPath().toPortableString();
-            folder.setText(folderName);
-        }        
-        folder.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                setSourceDir(folder.getText());
-                if (getSourceDir()!=null && unitNameIsLegal()) {
-                    try {
-                        setUnit(((IFolder) getSourceDir().getCorrespondingResource())
-                                .getFile(getUnitName()));
-                    }
-                    catch (JavaModelException e1) {
-                        setUnit(null);
-                    }
-                }
-                if (getSourceDir()==null) {
-                    setErrorMessage(getSelectSourceFolderMessage());
-                }
-                else if (!unitNameIsLegal()) {
-                    setErrorMessage(getIllegalUnitNameMessage());
-                }
-                else if (getUnit()!=null && !getUnit().exists()) {
-                    setErrorMessage(getUnitNotExistMessage());
-                }
-                else {
-                    setErrorMessage(null);
-                }
-                setPageComplete(isComplete());
-            }
-            private void setSourceDir(String folderName) {
-                try {
-                    sourceDir = null;
-                    for (IJavaProject jp: JavaCore.create(getWorkspace().getRoot())
-                            .getJavaProjects()) {
-                        for (IPackageFragmentRoot pfr: jp.getPackageFragmentRoots()) {
-                            if (pfr.getPath().toPortableString().equals(folderName)) {
-                                sourceDir = pfr;
-                                return;
-                            }
-                        }
-                    }
-                }
-                catch (JavaModelException jme) {
-                    jme.printStackTrace();
-                }
-            }
-        });
-        
-        Button selectFolder = new Button(composite, SWT.PUSH);
-        selectFolder.setText("Browse...");
-        GridData sfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        sfgd.horizontalSpan = 1;
-        selectFolder.setLayoutData(sfgd);
-        selectFolder.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                IPackageFragmentRoot pfr = getSourceContainer(getShell(), 
-                        getWorkspace().getRoot(), getSourceDir());
-                if (pfr!=null) {
-                    setSourceDir(pfr);
-                    String folderName = getSourceDir().getPath().toPortableString();
-                    folder.setText(folderName);
-                    try {
-                        setUnit(((IFolder) getSourceDir().getCorrespondingResource())
-                                .getFile(getUnitName()));
-                    }
-                    catch (JavaModelException e1) {
-                        setUnit(null);
-                    }
-                    setPageComplete(isComplete());
-                }
-                if (getSourceDir()==null) {
-                    setErrorMessage(getSelectSourceFolderMessage());
-                }
-                else if (!unitNameIsLegal()) {
-                    setErrorMessage(getIllegalUnitNameMessage());
-                }
-                else if (getUnit()!=null && !getUnit().exists()) {
-                    setErrorMessage(getUnitNotExistMessage());
-                }
-                else {
-                    setErrorMessage(null);
-                }
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
-        });
-        
-    }
-    
     void createUnitField(Composite composite) {
         
         Label unitLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
@@ -207,35 +92,26 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 setUnitName(unit.getText());
-                if (getSourceDir()!=null && unitNameIsLegal()) {
-                    try {
-                        setUnit(((IFolder) getSourceDir().getCorrespondingResource())
-                                .getFile(getUnitName()));
-                    }
-                    catch (JavaModelException e1) {
-                        setUnit(null);
-                    }
-                }
                 if (!unitNameIsLegal()) {
                     setErrorMessage(getIllegalUnitNameMessage());
                 }
-                else if (getUnit()!=null && !getUnit().exists()) {
-                    setErrorMessage(getUnitNotExistMessage());
-                }
-                else if (getSourceDir()==null) {
-                    setErrorMessage(getSelectSourceFolderMessage());
-                }
                 else {
-                    setErrorMessage(null);
+                    IFile file = getWorkspace().getRoot()
+                            .getFile(Path.fromPortableString(unit.getText()));
+                    if (file==null || !file.exists()) {
+                        setErrorMessage(getUnitNotExistMessage());
+                    }
+                    else if (file.equals(MoveToUnitWizardPage.this.file)) {
+                        setErrorMessage(getSameUnitMessage());
+                    }
+                    else {
+                        setUnit(file);
+                        setErrorMessage(null);
+                    }
                 }
                 setPageComplete(isComplete());
             }
         });
-        
-        /*if (packageFragment!=null) {
-            String pkgName = packageFragment.getElementName();
-            pkg.setText(pkgName);
-        }*/
         
         Button selectUnit = new Button(composite, SWT.PUSH);
         selectUnit.setText("Browse...");
@@ -245,38 +121,20 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
         selectUnit.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (getSourceDir()==null) {
-                    MessageDialog.openWarning(getShell(), 
-                            "No Source Folder", 
-                            getSelectSourceFolderMessage());
-                }
-                else {
-                    UnitSelectionDialog dialog = 
-                            new UnitSelectionDialog(getShell(), getSourceDir());
-                    dialog.setMultipleSelection(false);
-                    dialog.setTitle("Source File Selection");
-                    dialog.setMessage("Select a source file:");
-                    dialog.open();
-                    Object result = dialog.getFirstResult();
-                    if (result!=null) {
-                        IFile file = (IFile) result;
-                        setUnitName(file.getFullPath()
-                                .makeRelativeTo(getSourceDir().getPath())
-                                .toPortableString());
-                        unit.setText(getUnitName());
-                        if (getSourceDir()!=null) {
-                            setUnit(file);
-                        }
-                        setPageComplete(isComplete());
-                    }
-                    if (!unitNameIsLegal()) {
-                        setErrorMessage(getIllegalUnitNameMessage());
-                    }
-                    else if (getUnit()!=null && !getUnit().exists()) {
+                IFile file = getSourceFile(getShell(), 
+                        getWorkspace().getRoot(),
+                        getSelectedElement());
+                if (file!=null) {
+                    setUnitName(file.getFullPath()
+                            .toPortableString());
+                    unit.setText(getUnitName());
+                    setUnit(file);
+                    setPageComplete(isComplete());
+                    if (!file.exists()) {
                         setErrorMessage(getUnitNotExistMessage());
                     }
-                    else if (getSourceDir()==null) {
-                        setErrorMessage(getSelectSourceFolderMessage());
+                    else if (file.equals(MoveToUnitWizardPage.this.file)) {
+                        setErrorMessage(getSameUnitMessage());
                     }
                     else {
                         setErrorMessage(null);
@@ -292,54 +150,15 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     String getUnitLabel() {
         return "Source file: ";
     }
-
-    public void initFromSelection() {
-        IJavaElement je = getSelectedElement();
-        if (je instanceof IJavaProject) {
-            IJavaProject jp = (IJavaProject) je;
-            if (jp.isOpen()) {
-                //default to the first source dir 
-                //we find in the selected project
-                try {
-                    for (IPackageFragmentRoot pfr: 
-                            jp.getAllPackageFragmentRoots()) {
-                        if (!pfr.isExternal() && !pfr.isArchive()) {
-                            je = pfr;
-                            break;
-                        }
-                    }
-                } 
-                catch (JavaModelException e) {}
-            }
-        }
-        if (je instanceof IPackageFragmentRoot) {
-            setSourceDir((IPackageFragmentRoot) je);
-        }
-        else if (je instanceof IPackageFragment) {
-            IPackageFragment packageFragment = (IPackageFragment) je;
-            setSourceDir((IPackageFragmentRoot) 
-                    packageFragment.getAncestor(PACKAGE_FRAGMENT_ROOT));
-        }
-    }
     
     public void init(IStructuredSelection selection) {
         this.selection = selection;
     }
-    
+
     boolean isComplete() {
-        try {
-            return unitNameIsLegal() && 
-                    getSourceDir()!=null && getUnit()!=null &&
-                    getUnit().exists() &&
-                    ((IFolder) getSourceDir().getCorrespondingResource())
-                    .getFile(getUnit().getFullPath()
-                            .makeRelativeTo(getSourceDir().getPath()))
-                            .equals(getUnit());
-        }
-        catch (JavaModelException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return unitNameIsLegal() && 
+                getUnit()!=null &&
+                getUnit().exists();
     }
 
     private boolean unitNameIsLegal() {
@@ -348,7 +167,7 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     }
 
     boolean unitIsNameLegal(String unitName) {
-        return unitName.matches("^([a-z_]\\w*/)*(\\w|-)+\\.ceylon$");
+        return unitName.matches("^(\\w*/)*(\\w|-)+\\.ceylon$");
     }
     
     private String getIllegalUnitNameMessage() {
@@ -359,22 +178,11 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
         return "Source file does not exist.";
     }
     
-    IPackageFragmentRoot getSourceDir() {
-        return sourceDir;
+    private String getSameUnitMessage() {
+        return "Selected source file is the original source file";
     }
-    
     Text getUnitNameText() {
         return unitNameText;
-    }
-    
-    private String getSelectSourceFolderMessage() {
-        return "Please select a source folder.";
-    }
-
-    void setSourceDir(IPackageFragmentRoot sourceDir) {
-        this.sourceDir = sourceDir;
-        IPath path = sourceDir==null ? null : sourceDir.getPath();
-        getMoveToUnitRefactoring().setTargetSourceDirPath(path);
     }
     
     IFile getUnit() {
