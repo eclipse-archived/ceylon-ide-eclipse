@@ -112,6 +112,7 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
     }
 
     void createControls(Composite composite) {
+        createTitle(composite);
         Text name = createNameField(composite);
         createDeclarationField(composite);
         createSeparator(composite);
@@ -120,6 +121,19 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
         name.forceFocus();
     }
 
+    private void createTitle(Composite composite) {
+        Label title = new Label(composite, SWT.LEFT);  
+        String name = ((MoveToNewUnitRefactoring)getRefactoring()).getNode()
+                .getDeclarationModel().getName();
+        title.setText("Move '" + name + "' to a new source file.");
+        GridData gd = new GridData();
+        gd.horizontalSpan=4;
+        title.setLayoutData(gd);
+        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        gd2.horizontalSpan=4;
+        new Label(composite, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
+    }
+    
     void createSeparator(Composite composite) {
         Label sep = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
         GridData sgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);

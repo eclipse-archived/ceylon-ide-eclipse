@@ -90,7 +90,7 @@ public class MoveToNewUnitRefactoring extends Refactoring {
 
     @Override
     public String getName() {
-        return "Move To New Unit";
+        return "Move To New Source File";
     }
 
     @Override

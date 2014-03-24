@@ -51,6 +51,10 @@ public class MoveToUnitRefactoring extends Refactoring {
         return originalFile;
     }
     
+    public Tree.Declaration getNode() {
+        return node;
+    }
+    
     public MoveToUnitRefactoring(CeylonEditor ceylonEditor) {
         editor = ceylonEditor;
         rootNode = editor.getParseController().getRootNode();
@@ -78,7 +82,7 @@ public class MoveToUnitRefactoring extends Refactoring {
 
     @Override
     public String getName() {
-        return "Move To Unit";
+        return "Move To Source File";
     }
 
     @Override
