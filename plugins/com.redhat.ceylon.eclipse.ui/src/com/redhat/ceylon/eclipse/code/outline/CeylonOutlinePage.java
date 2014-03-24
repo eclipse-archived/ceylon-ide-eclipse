@@ -321,7 +321,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         
         public HideNonSharedAction() {
             setText("Hide Unshared");
-            setToolTipText("Hide Unhared Declarations");
+            setToolTipText("Hide Unshared Declarations");
             setDescription("Hide unshared declarations");
             
             setHoverImageDescriptor(PUBLIC);
