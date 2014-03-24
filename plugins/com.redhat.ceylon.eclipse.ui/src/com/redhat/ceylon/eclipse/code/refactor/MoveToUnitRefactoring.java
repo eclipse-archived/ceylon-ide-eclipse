@@ -139,12 +139,14 @@ public class MoveToUnitRefactoring extends Refactoring {
                 ncu, packages, dec);
         removeImport(original, dec, ncu, targetUnitChange, packages);
         targetUnitChange.addEdit(new InsertEdit(targetUnitDocument.getLength(), text));
+        targetUnitChange.setTextType("ceylon");
         change.add(targetUnitChange);
         
         TextChange originalUnitChange = createEditorChange(editor, document);
         originalUnitChange.setEdit(new MultiTextEdit());
         refactorImports(node, originalUnitChange, original, moved, rootNode);
         originalUnitChange.addEdit(new DeleteEdit(start, length));
+        originalUnitChange.setTextType("ceylon");
         change.add(originalUnitChange);
         
         refactorProjectImports(node, originalFile, targetFile, change, original, moved);

@@ -135,13 +135,15 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         CreateUnitChange newUnitChange = 
                 new CreateUnitChange(targetFile, includePreamble, 
                         text, targetProject, 
-                        "Create " + targetFile.getProjectRelativePath());
+                        "Create source file '" + targetFile.getProjectRelativePath() + "'");
         change.add(newUnitChange);
+//        newUnitChange.setTextType("ceylon");
         
         TextChange originalUnitChange = createEditorChange(editor, document);
         originalUnitChange.setEdit(new MultiTextEdit());
         refactorImports(node, originalUnitChange, original, moved, rootNode);
         originalUnitChange.addEdit(new DeleteEdit(start, length));
+        originalUnitChange.setTextType("ceylon");
         change.add(originalUnitChange);
         
         refactorProjectImports(node, originalFile, targetFile, change, original, moved);
