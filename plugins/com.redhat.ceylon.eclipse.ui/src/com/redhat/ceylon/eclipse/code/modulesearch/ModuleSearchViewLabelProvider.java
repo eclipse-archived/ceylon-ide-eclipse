@@ -22,7 +22,7 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
         ModuleVersionNode lastVersion = moduleNode.getLastVersion();
     
         StyledString styledText = new StyledString();
-        styledText.append(moduleNode.getName());
+        styledText.append(moduleNode.getName()); //really should be: CeylonLabelProvider.PACKAGE_STYLER
         styledText.append(" \"", CeylonLabelProvider.VERSION_STYLER);
         styledText.append(lastVersion.getVersion(), CeylonLabelProvider.VERSION_STYLER);
         styledText.append("\"", CeylonLabelProvider.VERSION_STYLER);
