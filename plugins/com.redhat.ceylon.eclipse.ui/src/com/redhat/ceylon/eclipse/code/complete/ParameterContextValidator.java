@@ -68,8 +68,9 @@ class ParameterContextValidator
         }
 
         if (currentParameter != -1) {
-            if (this.currentParameter == currentParameter)
+            if (this.currentParameter == currentParameter) {
                 return false;
+            }
         }
 
         presentation.clear();
@@ -162,8 +163,9 @@ class ParameterContextValidator
                 return false;
             }
 //            System.out.println(document.get(this.position, position-this.position));
-            return getCharCount(document, this.position, position, ";", "", true)==0 && 
-                    getCharCount(document, this.position, position, "{(", "})", false) > 0;
+            int semiCount = getCharCount(document, this.position, position, ";", "", true);
+            int fenceCount = getCharCount(document, this.position, position, "{(", "})", false);
+            return semiCount==0 && fenceCount>0;
 
         } 
         catch (BadLocationException x) {
