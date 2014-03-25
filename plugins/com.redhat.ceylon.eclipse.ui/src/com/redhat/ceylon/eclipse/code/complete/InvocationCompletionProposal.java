@@ -543,8 +543,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                 }
                 param++; 
             }
-            installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(), 
-                    document, linkedModeModel, this, seq, loc+text.length());
+            if (seq>0) {
+                installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(), 
+                        document, linkedModeModel, this, seq, loc+text.length());
+            }
 
         }
         catch (Exception e) {
