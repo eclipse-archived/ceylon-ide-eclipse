@@ -12,10 +12,12 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.TextPresentation;
@@ -49,6 +51,13 @@ class PresentationDamageRepairer implements IPresentationDamager,
             return partition;
         }
         
+        Position linkedPosition =
+                getLinkedPosition(event.getOffset(), event.getLength());
+        if (linkedPosition!=null) {
+            return new Region(linkedPosition.getOffset(), 
+                    linkedPosition.getLength());
+        }
+        
         if (noTextChange(event)) {
             //it was a change to annotations - don't reparse
             return new Region(event.getOffset(), 
@@ -67,6 +76,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
                         event.getText().length());
             }
         }
+        
         return partition;
     }
 
@@ -270,23 +280,39 @@ class PresentationDamageRepairer implements IPresentationDamager,
             TextAttribute attribute, int startOffset, int endOffset,
             int extraStyle) {
         
-        StyleRange styleRange= new StyleRange(startOffset, 
+        StyleRange styleRange = new StyleRange(startOffset, 
                 endOffset-startOffset,
                 attribute==null ? null : attribute.getForeground(),
                 attribute==null ? null : attribute.getBackground(),
                 attribute==null ? extraStyle : attribute.getStyle()|extraStyle);
         
+        presentation.addStyleRange(styleRange);
+        
+    }
+
+    private Position getLinkedPosition(int offset, int length) {
         if (editor!=null) {
             LinkedModeModel linkedMode = editor.getLinkedMode();
             if (linkedMode!=null &&
-                    (linkedMode.anyPositionContains(startOffset) ||
-                            linkedMode.anyPositionContains(endOffset))) {
-                return;
+                    (linkedMode.anyPositionContains(offset) ||
+                     linkedMode.anyPositionContains(offset+length))) {
+                try {
+                    for (Position p: 
+                        document.getPositions(linkedMode.toString())) {
+                        if (!p.isDeleted()) {
+                            if (p.includes(offset) && 
+                                p.includes(offset+length)) {
+                                return p;
+                            }
+                        }
+                    }
+                }
+                catch (BadPositionCategoryException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        
-        presentation.addStyleRange(styleRange);
-        
+        return null;
     }
 
     private boolean noTextChange(DocumentEvent event) {
