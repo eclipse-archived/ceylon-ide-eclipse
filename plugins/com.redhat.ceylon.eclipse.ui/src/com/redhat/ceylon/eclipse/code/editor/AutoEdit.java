@@ -32,8 +32,8 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class AutoEdit extends Indents {
     
@@ -54,7 +54,7 @@ class AutoEdit extends Indents {
     
     public void customizeDocumentCommand() {
         
-        //Note that IMP's Correct Indentation sends us a tab
+        //Note that Correct Indentation sends us a tab
         //character at the start of each line of selected
         //text. This is amazingly sucky because it's very
         //difficult to distinguish Correct Indentation from
@@ -62,46 +62,47 @@ class AutoEdit extends Indents {
         //Note also that typed tabs are replaced with spaces
         //before this method is called if the spacesfortabs 
         //setting is enabled.
-        if (command.doit == false) {
-            return;
-        }
         
-        //command.length>0 means we are replacing or deleting text
-        else if (command.text!=null && command.length==0) { 
-            if (command.text.isEmpty()) {
-                //workaround for a really annoying bug where we 
-                //get sent "" instead of "\t" or "    " by IMP
-                //reconstruct what we would have been sent 
-                //without the bug
-                if (getIndentWithSpaces()) {
-                    int overhang = getPrefix().length() % getIndentSpaces();
-                    command.text = getDefaultIndent().substring(overhang);
+        if (command.text!=null) { 
+            //command.length>0 means we are replacing or deleting text
+            if (command.length==0) {
+                if (command.text.isEmpty()) {
+                    //workaround for a really annoying bug where we 
+                    //get sent "" instead of "\t" or "    " by IMP
+                    //reconstruct what we would have been sent 
+                    //without the bug
+                    if (getIndentWithSpaces()) {
+                        int overhang = getPrefix().length() % getIndentSpaces();
+                        command.text = getDefaultIndent().substring(overhang);
+                    }
+                    else {
+                        command.text = "\t";
+                    }
+                    smartIndentOnKeypress();
                 }
-                else {
-                    command.text = "\t";
+                else if (isLineEnding(command.text)) {
+                    //a typed newline (might have length 1 or 2, 
+                    //depending on the platform)
+                    smartIndentAfterNewline();
                 }
-                smartIndentOnKeypress();
+                else if (command.text.length()==1 || 
+                        //when spacesfortabs is enabled, we get 
+                        //sent spaces instead of a tab - the right
+                        //number of spaces to take us to the next
+                        //tab stop
+                        getIndentWithSpaces() && isIndent(getPrefix())) {
+                    //anything that might represent a single 
+                    //keypress or a Correct Indentation
+                    smartIndentOnKeypress();
+                }
             }
-            else if (isLineEnding(command.text)) {
-                //a typed newline (might have length 1 or 2, 
-                //depending on the platform)
-                smartIndentAfterNewline();
-            }
-            else if (command.text.length()==1 || 
-                    //when spacesfortabs is enabled, we get 
-                    //sent spaces instead of a tab - the right
-                    //number of spaces to take us to the next
-                    //tab stop
-                    getIndentWithSpaces() && isIndent(getPrefix())) {
-                //anything that might represent a single 
-                //keypress or a Correct Indentation
-                smartIndentOnKeypress();
-            }
-        }
-        
-        closeOpening();
-    }
 
+            if (command.text.length()==1) {
+                closeOpening();
+            }
+        }
+    }
+    
     private static String[][] FENCES = {
             { "'", "'", CLOSE_QUOTES },
             { "\"", "\"", CLOSE_QUOTES },
@@ -127,7 +128,7 @@ class AutoEdit extends Indents {
         
         boolean found=false;
         IPreferenceStore store = getPreferences();
-        for (String[] type : FENCES) {
+        for (String[] type: FENCES) {
             if (type[0].equals(current) || 
                     type[1].equals(current)) {
                 if (store==null || store.getBoolean(type[2])) {
@@ -187,7 +188,7 @@ class AutoEdit extends Indents {
                     else if (opening.equals("\"")) {
                         try {
                             if (command.offset<=1 ||
-                                    !document.get(command.offset-2,1).equals("\"")) {
+                                    !document.get(command.offset-1,1).equals("\"")) {
                                 command.text += closing;
                             }
                             else if (command.offset>1 &&
