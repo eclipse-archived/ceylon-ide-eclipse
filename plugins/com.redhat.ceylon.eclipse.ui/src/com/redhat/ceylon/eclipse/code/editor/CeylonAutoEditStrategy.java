@@ -29,7 +29,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         catch (RecognitionException e) {}
         List<CommonToken> tokens = ts.getTokens();
         new AutoEdit(document, tokens, command)
-        .customizeDocumentCommand();
+                .customizeDocumentCommand();
     }
 
 }
