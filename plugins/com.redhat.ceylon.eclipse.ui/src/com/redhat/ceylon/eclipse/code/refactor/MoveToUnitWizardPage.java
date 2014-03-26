@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.select.SourceFileSelectionDialog.getSourceFile;
+import static com.redhat.ceylon.eclipse.code.select.SourceFileSelectionDialog.selectSourceFile;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IFile;
@@ -127,8 +127,7 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
         selectUnit.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                IFile file = getSourceFile(getShell(), 
-                        getWorkspace().getRoot(),
+                IFile file = selectSourceFile(getShell(), 
                         getSelectedElement());
                 if (file!=null) {
                     setUnitName(file.getFullPath()

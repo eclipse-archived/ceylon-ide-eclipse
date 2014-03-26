@@ -1,23 +1,25 @@
 package com.redhat.ceylon.eclipse.code.select;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PROJECT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+
 public class ProjectSelectionDialog extends ElementListSelectionDialog {
 
-    public ProjectSelectionDialog(Shell parent) {
+    private ProjectSelectionDialog(Shell parent) {
         super(parent, new ILabelProvider() {
             @Override
             public void removeListener(ILabelProviderListener listener) {}
@@ -31,7 +33,7 @@ public class ProjectSelectionDialog extends ElementListSelectionDialog {
             public void addListener(ILabelProviderListener listener) {}
             @Override
             public String getText(Object element) {
-                return ((IJavaProject) element).getElementName();
+                return ((IProject) element).getName();
             }
             @Override
             public Image getImage(Object element) {
@@ -42,13 +44,17 @@ public class ProjectSelectionDialog extends ElementListSelectionDialog {
     
     @Override
     public int open() {
-        List<IJavaProject> elements = new ArrayList<IJavaProject>();
-        try {
-            addChildren(elements, JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
-                    .getJavaProjects());
-        }
-        catch (JavaModelException jme) {
-            jme.printStackTrace();
+        List<IProject> elements = new ArrayList<IProject>();
+        for (IProject project: getWorkspace().getRoot().getProjects()) {
+            try {
+                if (project.isOpen() &&
+                        project.hasNature(CeylonNature.NATURE_ID)) {
+                    elements.add(project);
+                }
+            }
+            catch (CoreException e) {
+                e.printStackTrace();
+            }
         }
         /*Collections.sort(elements, new Comparator<IPackageFragment>() {
             @Override
@@ -60,10 +66,17 @@ public class ProjectSelectionDialog extends ElementListSelectionDialog {
         return super.open();
     }
 
-    public void addChildren(List<IJavaProject> elements, IJavaProject[] children)
-            throws JavaModelException {
-        for (IJavaProject jp: children) {
-            elements.add(jp);
+    public static IProject selectProject(Shell shell) {
+        ProjectSelectionDialog dialog = 
+                new ProjectSelectionDialog(shell);
+        dialog.setMultipleSelection(false);
+        dialog.setTitle("Project Selection");
+        dialog.setMessage("Select a project:");
+        if (dialog.open() == Window.OK) {
+            return (IProject) dialog.getFirstResult();
+        }
+        else {
+            return null;
         }
     }
     
