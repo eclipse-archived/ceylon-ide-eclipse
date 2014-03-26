@@ -22,6 +22,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
@@ -334,8 +335,10 @@ class AddAnnotionProposal extends CorrectionProposal {
         else {
             dec = (Declaration) node.getScope();
         }
-        addAddAnnotationProposal(node, "abstract", "Make Abstract", 
-                dec, proposals, project);
+        if (dec instanceof Class) {
+            addAddAnnotationProposal(node, "abstract", "Make Abstract", 
+                    dec, proposals, project);
+        }
     }
 
     static void addMakeContainerAbstractProposal(Collection<ICompletionProposal> proposals, 

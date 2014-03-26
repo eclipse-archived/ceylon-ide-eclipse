@@ -213,7 +213,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
 
         ProblemLocation[] problemLocations =
-            (ProblemLocation[]) problems.toArray(new ProblemLocation[problems.size()]);
+                problems.toArray(new ProblemLocation[problems.size()]);
         Arrays.sort(problemLocations);
         if (addQuickFixes) {
             collectCorrections(context, problemLocations, proposals);
