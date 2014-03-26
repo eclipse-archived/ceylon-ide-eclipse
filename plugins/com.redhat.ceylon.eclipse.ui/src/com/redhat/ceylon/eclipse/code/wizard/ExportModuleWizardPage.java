@@ -6,9 +6,12 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_CAR;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
@@ -25,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
@@ -86,7 +90,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         else if (!isValidRepo()) {
             setErrorMessage("Please select an existing local repository");
         }
-        else if (modules.getSelection().length==0) {
+        else if (getModules().isEmpty()) {
             setErrorMessage("Please select a module to export");
         }
         else {
@@ -200,26 +204,41 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         mlgd.horizontalSpan = 1;
         modulesLabel.setLayoutData(mlgd);
 
-        modules = new Table(composite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-        //modules.setEnabled(false);
-        GridData mgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        modules = new Table(composite, SWT.CHECK | SWT.SINGLE | SWT.BORDER | SWT.V_SCROLL);
+        modules.setHeaderVisible(true);
+        modules.setLinesVisible(true);
+        GridData mgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         mgd.horizontalSpan = 2;
         mgd.grabExcessHorizontalSpace = true;
-        mgd.heightHint = 50;
+        mgd.heightHint = 100;
+        mgd.widthHint = 240;
         modules.setLayoutData(mgd);
+        TableColumn nameColumn = new TableColumn(modules, SWT.NONE);
+        nameColumn.setText("Module");
+        nameColumn.setWidth(180);
+        TableColumn versionColumn = new TableColumn(modules, SWT.NONE, 1);
+        versionColumn.setText("Version");
+        versionColumn.setWidth(50);
+        
         if (project!=null) {
             projectField.setText(project.getName());
             updateModuleList();
         }
-        if (selection!=null) {
+        if (selection instanceof IPackageFragment) {
             String selectionName = selection.getElementName();
             TableItem[] items = modules.getItems();
+            boolean found=false;
             for (int i=0; i<items.length; i++) {
-                String itemText = items[i].getText();
-                int j = itemText.indexOf('/');
-                if (itemText.substring(0,j).equals(selectionName)) {
-                    modules.deselectAll();
-                    modules.select(i);
+                if (items[i].getText().equals(selectionName)) {
+                    if (!found) {
+                        for (TableItem it: items) {
+                            it.setChecked(false);
+                        }
+//                        modules.deselectAll();
+                        found=true;
+                    }
+                    items[i].setChecked(true);
+//                    modules.select(i);
                 }
             }
         }
@@ -273,22 +292,30 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             
             for (Module module: getProjectDeclaredSourceModules(project.getProject())) {
                 TableItem item = new TableItem(modules, SWT.NONE);
-                item.setText(module.getNameAsString() + "/" + module.getVersion());
+                item.setText(module.getNameAsString());
+                item.setText(1, module.getVersion());
                 item.setImage(CeylonLabelProvider.ARCHIVE);
+                item.setChecked(true);
             }
             
-            modules.selectAll();
+//            modules.selectAll();
         }
     }
     
-    public Table getModules() {
-        return modules;
+    public List<TableItem> getModules() {
+        List<TableItem> list = new ArrayList<TableItem>();
+        for (TableItem item: modules.getItems()) {
+            if (item.getChecked()) {
+                list.add(item);
+            }
+        }
+        return list;
     }
 
     private boolean isComplete() {
         return project!=null &&
                 isValidRepo() &&
-                modules.getSelection().length>0;
+                !getModules().isEmpty();
     }
     
     private boolean isValidRepo() {
