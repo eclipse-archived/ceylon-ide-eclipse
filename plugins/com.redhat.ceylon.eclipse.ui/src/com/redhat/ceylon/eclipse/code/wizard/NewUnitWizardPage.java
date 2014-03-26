@@ -445,14 +445,10 @@ public class NewUnitWizardPage extends WizardPage {
                             getSelectSourceFolderMessage());
                 }
                 else {
-                    PackageSelectionDialog dialog = new PackageSelectionDialog(getShell(), sourceDir);
-                    dialog.setMultipleSelection(false);
-                    dialog.setTitle("Package Selection");
-                    dialog.setMessage("Select a package:");
-                    dialog.open();
-                    Object result = dialog.getFirstResult();
+                    IPackageFragment result = 
+                            PackageSelectionDialog.selectPackage(getShell(), sourceDir);
                     if (result!=null) {
-                        packageName = ((IPackageFragment) result).getElementName();
+                        packageName = result.getElementName();
                         pkg.setText(packageName);
                         if (sourceDir!=null) {
                             packageFragment = sourceDir.getPackageFragment(packageName);

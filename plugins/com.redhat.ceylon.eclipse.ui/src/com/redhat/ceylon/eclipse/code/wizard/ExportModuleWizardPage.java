@@ -3,15 +3,12 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_CAR;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.io.File;
-import java.util.List;
 
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
@@ -41,12 +38,12 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     static final String CLEAN_BUILD_BEFORE_EXPORT = "cleanBuildBeforeExport";
     //private IStructuredSelection selection;
     private String repositoryPath;
-    private IJavaProject project;
+    private IProject project;
     private IJavaElement selection;
     private boolean clean = true;
     
     ExportModuleWizardPage(String defaultRepositoryPath, 
-            IJavaProject project, IJavaElement selection) {
+            IProject project, IJavaElement selection) {
         super("Export Ceylon Module", "Export Ceylon Module", CeylonPlugin.getInstance()
                 .getImageRegistry().getDescriptor(CEYLON_EXPORT_CAR));
         setDescription("Export a Ceylon module to a module repository.");
@@ -211,7 +208,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         mgd.heightHint = 50;
         modules.setLayoutData(mgd);
         if (project!=null) {
-            projectField.setText(project.getElementName());
+            projectField.setText(project.getName());
             updateModuleList();
         }
         if (selection!=null) {
@@ -232,15 +229,11 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         selectProject.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ProjectSelectionDialog dialog = new ProjectSelectionDialog(getShell());
-                dialog.setMultipleSelection(false);
-                dialog.setTitle("Project Selection");
-                dialog.setMessage("Select a project:");
-                dialog.open();
-                Object result = dialog.getFirstResult();
+                IProject result = 
+                        ProjectSelectionDialog.selectProject(getShell());
                 if (result!=null) {
-                    project = (IJavaProject) result;
-                    projectField.setText(project.getElementName());
+                    project = result;
+                    projectField.setText(project.getName());
                     updateModuleList();
                 }
                 updateMessage();
@@ -255,7 +248,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             public void modifyText(ModifyEvent e) {
                 String projectName = projectField.getText();
                 if (project==null ||
-                        !project.getElementName().equals(projectName)) {
+                        !project.getName().equals(projectName)) {
                     setProject(projectName);
                     updateModuleList();
                 }
@@ -263,18 +256,12 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
                 setPageComplete(isComplete());
             }
             private void setProject(String projectName) {
-                try {
-                    project = null;
-                    for (IJavaProject jp: JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
-                            .getJavaProjects()) {
-                        if (jp.getElementName().equals(projectName)) {
-                            project = jp;
-                            return;
-                        }
+                project = null;
+                for (IProject jp: getWorkspace().getRoot().getProjects()) {
+                    if (jp.getName().equals(projectName)) {
+                        project = jp;
+                        return;
                     }
-                }
-                catch (JavaModelException jme) {
-                    jme.printStackTrace();
                 }
             }
         });
@@ -314,7 +301,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
         return repositoryPath;
     }
     
-    public IJavaProject getProject() {
+    public IProject getProject() {
         return project;
     }
     

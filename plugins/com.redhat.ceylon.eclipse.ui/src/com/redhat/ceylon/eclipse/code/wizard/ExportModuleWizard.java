@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -53,9 +52,9 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
         if (page == null) {
             IJavaElement selectedElement = getSelectedElement();
             String repoPath=null;
-            IJavaProject project=null;
+            IProject project=null;
             if (selectedElement!=null) {
-                project = selectedElement.getJavaProject();
+                project = selectedElement.getJavaProject().getProject();
                 /*List<String> paths = getCeylonRepositories(project.getProject());
                 if (paths!=null) {
                     for (int i=paths.size()-1; i>=0; i--) {
@@ -105,7 +104,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
     @Override
     public boolean performFinish() {
         final String repositoryPath = page.getRepositoryPath();
-        final IJavaProject project = page.getProject();
+        final IProject project = page.getProject();
         if (project==null) {
             MessageDialog.openError(getShell(), "Export Module Error", 
                     "No Java project selected.");
@@ -131,11 +130,10 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                     @Override
                     protected IStatus run(IProgressMonitor monitor) {
                         monitor.setTaskName("Exporting modules to repository");
-                        IProject p = project.getProject();
                         getDialogSettings().put(CLEAN_BUILD_BEFORE_EXPORT, page.isClean());
                         if (page.isClean()) {
                             try {
-                                p.build(CLEAN_BUILD, monitor);
+                                project.build(CLEAN_BUILD, monitor);
                             }
                             catch (CoreException e) {
                                 ex = e;
@@ -143,7 +141,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                             }
                             yieldRule(monitor);
                         }
-                        File outputDir = getCeylonModulesOutputDirectory(p);
+                        File outputDir = getCeylonModulesOutputDirectory(project);
                         Path outputPath = Paths.get(outputDir.getAbsolutePath());
                         Path repoPath = Paths.get(repositoryPath);
                         if (!Files.exists(repoPath)) {

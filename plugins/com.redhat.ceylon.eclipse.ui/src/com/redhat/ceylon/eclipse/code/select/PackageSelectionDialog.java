@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.select;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,15 +11,16 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
 public class PackageSelectionDialog extends ElementListSelectionDialog {
 
-    IPackageFragmentRoot sourceDir;
+    private final IPackageFragmentRoot sourceDir;
     
-    public PackageSelectionDialog(Shell parent, //IProject project, 
+    private PackageSelectionDialog(Shell parent, //IProject project, 
             IPackageFragmentRoot sourceDir) {
         super(parent, new ILabelProvider() {
             @Override
@@ -52,7 +53,8 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
     
     @Override
     public int open() {
-        List<IPackageFragment> elements = new ArrayList<IPackageFragment>();
+        List<IPackageFragment> elements = 
+                new ArrayList<IPackageFragment>();
         try {
             addChildren(elements, sourceDir.getChildren());
         }
@@ -68,8 +70,8 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
         setElements(elements.toArray());
         return super.open();
     }
-
-    public void addChildren(List<IPackageFragment> elements, IJavaElement[] children)
+    
+    private void addChildren(List<IPackageFragment> elements, IJavaElement[] children)
             throws JavaModelException {
         for (IJavaElement je: children) {
             if (je instanceof IPackageFragment) {
@@ -77,6 +79,21 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
                 elements.add(pf);
                 addChildren(elements, pf.getChildren());
             }
+        }
+    }
+    
+    public static IPackageFragment selectPackage(Shell shell, 
+            IPackageFragmentRoot sourceDir) {
+        PackageSelectionDialog dialog = 
+                new PackageSelectionDialog(shell, sourceDir);
+        dialog.setMultipleSelection(false);
+        dialog.setTitle("Package Selection");
+        dialog.setMessage("Select a package:");
+        if (dialog.open() == Window.OK) {
+            return (IPackageFragment) dialog.getFirstResult();
+        }
+        else {
+            return null;
         }
     }
     
