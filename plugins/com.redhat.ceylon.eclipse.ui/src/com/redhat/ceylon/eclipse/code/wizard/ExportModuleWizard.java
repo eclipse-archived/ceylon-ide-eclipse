@@ -12,6 +12,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -82,7 +83,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
         return repositoryPath;
     }
 
-    //TODO: fix copy/paste from NewUnitWizardPage
+    //TODO: handle multiple modules selected in package explorer
     private IJavaElement getSelectedElement() {
         if (selection!=null && selection.size()==1) {
             Object element = selection.getFirstElement();
@@ -120,10 +121,12 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                 moduleNames.add(module.getNameAsString());
             }*/
             ex = null;
-            TableItem[] selectedItems = page.getModules().getSelection();
-            final String[] selectedModules = new String[selectedItems.length];
-            for (int i=0; i<selectedItems.length; i++) {
-                selectedModules[i] = selectedItems[i].getText();
+            List<TableItem> selectedItems = page.getModules();
+            final String[] selectedModules = new String[selectedItems.size()];
+            final String[] selectedVersions = new String[selectedItems.size()];
+            for (int i=0; i<selectedItems.size(); i++) {
+                selectedModules[i] = selectedItems.get(i).getText();
+                selectedVersions[i] = selectedItems.get(i).getText(1);
             }
             try {
                 Job job = new Job("Exporting modules") {
@@ -149,10 +152,9 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                                     "No repository at location: " + repositoryPath);
                             return Status.CANCEL_STATUS;
                         }
-                        for (String moduleNameVersion: selectedModules) {
-                            int i = moduleNameVersion.indexOf('/');
-                            String name = moduleNameVersion.substring(0, i);
-                            String version = moduleNameVersion.substring(i+1);
+                        for (int i=0; i<selectedModules.length; i++) {
+                            String name = selectedModules[i];
+                            String version = selectedVersions[i];
                             String glob = name + '-' + version + ".*";
                             String dir = name.replace('.', File.separatorChar) + File.separatorChar + version;
                             Path repoOutputPath = outputPath.resolve(dir);
