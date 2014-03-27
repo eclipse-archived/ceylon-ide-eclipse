@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelection;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
@@ -17,6 +18,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -36,7 +38,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class CreateParameterProposal extends InitializerProposal {
@@ -53,16 +54,14 @@ class CreateParameterProposal extends InitializerProposal {
     private static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
             String def, String desc, Image image, Declaration dec, PhasedUnit unit,
             Tree.Declaration decNode, Tree.ParameterList paramList, 
-            ProducedType returnType, Node node) {
+            ProducedType returnType, Set<Declaration> imports, Node node) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
         int offset = paramList.getStopIndex();
-        HashSet<Declaration> decs = new HashSet<Declaration>();
-        CompilationUnit cu = unit.getCompilationUnit();
-        importType(decs, returnType, cu);
-        int il = applyImports(change, decs, cu, doc);
+        int il = applyImports(change, imports, 
+                unit.getCompilationUnit(), doc);
         change.addEdit(new InsertEdit(offset, def));
         int exitPos = node.getStopIndex()+1;
         proposals.add(new CreateParameterProposal(def, 
@@ -127,7 +126,7 @@ class CreateParameterProposal extends InitializerProposal {
                     if (unit.getUnit().equals(dg.rootNode.getUnit())) {
                         addCreateParameterProposal(proposals, paramDef, paramDesc, ADD_CORR, 
                                 decl.getDeclarationModel(), unit, decl, paramList, dg.returnType,
-                                dg.node);
+                                dg.getImports(), dg.node);
                         break;
                     }
                 }
@@ -147,15 +146,17 @@ class CreateParameterProposal extends InitializerProposal {
             if (pr!=null) {
                 Declaration d = pr.getDeclaration();
                 ProducedType t=null;
-                String n=null;
+                String parameterName=null;
                 if (node instanceof Tree.Term) {
                     t = ((Tree.Term) node).getTypeModel();
-                    n = t.getDeclaration().getName();
-                    if (n!=null) {
-                        n = Character.toLowerCase(n.charAt(0)) + n.substring(1)
-                                .replace("?", "").replace("[]", "");
-                        if ("string".equals(n)) {
-                            n = "text";
+                    parameterName = t.getDeclaration().getName();
+                    if (parameterName!=null) {
+                        parameterName = 
+                                Character.toLowerCase(parameterName.charAt(0)) + 
+                                parameterName.substring(1)
+                                        .replace("?", "").replace("[]", "");
+                        if ("string".equals(parameterName)) {
+                            parameterName = "text";
                         }
                     }
                 }
@@ -165,23 +166,23 @@ class CreateParameterProposal extends InitializerProposal {
                     if (se!=null && se.getExpression()!=null) {
                         t = se.getExpression().getTypeModel();
                     }
-                    n = sa.getIdentifier().getText();
+                    parameterName = sa.getIdentifier().getText();
                 }
                 else if (node instanceof Tree.TypedArgument) {
                     Tree.TypedArgument ta = (Tree.TypedArgument) node;
                     t = ta.getType().getTypeModel();
-                    n = ta.getIdentifier().getText();
+                    parameterName = ta.getIdentifier().getText();
                 }
-                if (t!=null && n!=null) {
+                if (t!=null && parameterName!=null) {
                     t = node.getUnit().denotableType(t);
-                    String dv = CorrectionUtil.defaultValue(prim.getUnit(), t);
-                    String tn = t.getProducedTypeName();
-                    String def = tn + " " + n + " = " + dv;
-                    String desc = "parameter '" + n +"'";
+                    String defaultValue = defaultValue(prim.getUnit(), t);
+                    String parameterType = t.getProducedTypeName();
+                    String def = parameterType + " " + parameterName + " = " + defaultValue;
+                    String desc = "parameter '" + parameterName +"'";
                     addCreateParameterProposals(proposals, project, def, desc, d, t, node);
-                    String pdef = n + " = " + dv;
-                    String adef = tn + " " + n + ";";
-                    String padesc = "attribute '" + n +"'";
+                    String pdef = parameterName + " = " + defaultValue;
+                    String adef = parameterType + " " + parameterName + ";";
+                    String padesc = "attribute '" + parameterName +"'";
                     addCreateParameterAndAttributeProposals(proposals, project, 
                             pdef, adef, padesc, d, t, node);
                 }
@@ -214,8 +215,10 @@ class CreateParameterProposal extends InitializerProposal {
                         if (!paramList.getParameters().isEmpty()) {
                             def = ", " + def;
                         }
+                        Set<Declaration> imports = new HashSet<Declaration>();
+                        importType(imports, t, unit.getCompilationUnit());
                         addCreateParameterProposal(proposals, def, desc, ADD_CORR, 
-                                typeDec, unit, decNode, paramList, t, node);
+                                typeDec, unit, decNode, paramList, t, imports, node);
                         break;
                     }
                 }
