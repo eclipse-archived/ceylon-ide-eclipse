@@ -696,14 +696,16 @@ public class CodeCompletions {
                 }
             }
         }
-        else if (d instanceof MethodOrValue) {
+        else if (d instanceof Value) {
             if (ci!=null && !ci.isAnonymous()) {
                 if (d.getName().equals("hash")) {
                     appendHashImpl(unit, indent, result, ci);
                     return;
                 }
             }
-            if (isInterface||d.isParameter()) {
+            if (isInterface/*||d.isParameter()*/) {
+                //interfaces can't have references,
+                //so generate a setter for variables
                 if (d.isFormal()) {
                     result.append(" => nothing;");
                 }
@@ -712,17 +714,22 @@ public class CodeCompletions {
                         .append(d.getName()).append(";");
                 }
                 if (isVariable(d)) {
-                    result.append(indent + "assign " +
-                            d.getName() + " {}");
+                    result.append(indent)
+                        .append("assign ").append(d.getName())
+                        .append(" {}");
                 }
             }
             else {
+                //we can have a references, so use = instead 
+                //of => for variables
+                String arrow = isVariable(d) ? " = " : " => ";
                 if (d.isFormal()) {
-                    result.append(" => nothing;");
+                    result.append(arrow).append("nothing;");
                 }
                 else {
-                    result.append(" => super.")
-                        .append(d.getName()).append(";");
+                    result.append(arrow)
+                        .append("super.").append(d.getName())
+                        .append(";");
                 }
             }
         }
