@@ -6,8 +6,6 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.CreateInNewUnitProposal.addCreateToplevelProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
@@ -15,7 +13,6 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -70,7 +67,10 @@ class CreateProposal extends InitializerProposal {
             indent = bodyIndent + getDefaultIndent();
             indentBefore = delim + indent;
             try {
-                if (doc.getLineOfOffset(body.getStartIndex())==doc.getLineOfOffset(body.getStopIndex())) {
+                boolean singleLineBody = 
+                        doc.getLineOfOffset(body.getStartIndex())
+                        == doc.getLineOfOffset(body.getStopIndex());
+                if (singleLineBody) {
                     indentAfter = delim + bodyIndent;
                 }
                 else {
@@ -84,22 +84,21 @@ class CreateProposal extends InitializerProposal {
             offset = body.getStartIndex()+1;
         }
         else {
-            Tree.Statement statement = statements.get(statements.size()-1);
+            Tree.Statement statement = 
+                    statements.get(statements.size()-1);
             indent = getIndent(statement, doc);
             indentBefore = delim + indent;
             indentAfter = "";
             offset = statement.getStopIndex()+1;
         }
-        HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
-        Tree.CompilationUnit cu = unit.getCompilationUnit();
-        importType(alreadyImported, dg.returnType, cu);
-        if (dg.parameters!=null) {
-            importTypes(alreadyImported, dg.parameters.values(), cu);
-        }
-        int il = applyImports(change, alreadyImported, cu, doc);
-        String def = indentBefore + dg.generateShared(indent, delim) + indentAfter;
+        String def = indentBefore + 
+                dg.generateShared(indent, delim) + 
+                indentAfter;
+        int il = applyImports(change, dg.getImports(), 
+                unit.getCompilationUnit(), doc);
         change.addEdit(new InsertEdit(offset, def));
-        String desc = "Create " + memberKind(dg) + " in '" + typeDec.getName() + "'";
+        String desc = "Create " + memberKind(dg) + 
+                " in '" + typeDec.getName() + "'";
         int exitPos = dg.node.getStopIndex()+1;
         proposals.add(new CreateProposal(def, desc, 
                 body.getScope(), body.getUnit(), dg.returnType, 
@@ -130,13 +129,8 @@ class CreateProposal extends InitializerProposal {
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
         String delim = getDefaultLineDelimiter(doc);
-        HashSet<Declaration> alreadyImported = new HashSet<Declaration>();
         Tree.CompilationUnit cu = unit.getCompilationUnit();
-        importType(alreadyImported, dg.returnType, cu);
-        if (dg.parameters!=null) {
-            importTypes(alreadyImported, dg.parameters.values(), cu);
-        }
-        int il = applyImports(change, alreadyImported, cu, doc);
+        int il = applyImports(change, dg.getImports(), cu, doc);
         String def = dg.generate(indent, delim) + delim + indent;
         if (!local) def += delim;
         change.addEdit(new InsertEdit(offset, def));

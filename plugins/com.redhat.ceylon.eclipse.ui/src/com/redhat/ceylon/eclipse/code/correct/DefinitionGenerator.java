@@ -6,6 +6,9 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinem
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_CLASS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_METHOD;
@@ -70,8 +73,9 @@ class DefinitionGenerator {
     
     String generate(String indent, String delim) {
         StringBuffer def = new StringBuffer();
-        boolean isUpperCase = Character.isUpperCase(brokenName.charAt(0));
-        final boolean isVoid = returnType==null;
+        boolean isUpperCase = 
+                Character.isUpperCase(brokenName.charAt(0));
+        boolean isVoid = returnType==null;
         Unit unit = node.getUnit();
         if (parameters!=null) {            
             List<TypeParameter> typeParams = new ArrayList<TypeParameter>();
@@ -153,6 +157,55 @@ class DefinitionGenerator {
         }
         return def.toString();
     }
+    
+    Set<Declaration> getImports() {
+        Set<Declaration> imports = new HashSet<Declaration>();
+        importType(imports, returnType, rootNode);
+        if (parameters!=null) {
+            importTypes(imports, parameters.values(), rootNode);
+        }
+        boolean isUpperCase = 
+                Character.isUpperCase(brokenName.charAt(0));
+        boolean isVoid = returnType==null;
+        if (isUpperCase && !isVoid) {
+            importMembers(imports);            
+        }
+        return imports;
+    }
+
+    private void importMembers(Set<Declaration> imports) {
+        //TODO: this is a major copy/paste from appendMembers() below
+        TypeDeclaration rtd = returnType.getDeclaration();
+        Set<String> ambiguousNames = new HashSet<String>();
+        Unit unit = rootNode.getUnit();
+        Collection<DeclarationWithProximity> members = 
+                rtd.getMatchingMemberDeclarations(null, "", 0).values();
+        for (DeclarationWithProximity dwp: members) {
+            Declaration dec = dwp.getDeclaration();
+            for (Declaration d: overloads(dec)) {
+                if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
+                    importSignatureTypes(d, rootNode, imports);
+                    ambiguousNames.add(d.getName());
+                }
+            }
+        }
+        TypeDeclaration td = intersectionType(returnType, 
+                unit.getBasicDeclaration().getType(), //TODO: is this always correct?
+                unit).getDeclaration();
+        for (TypeDeclaration superType: td.getSuperTypeDeclarations()) {
+            for (Declaration m: superType.getMembers()) {
+                if (m.isShared()) {
+                    Declaration r = td.getMember(m.getName(), null, false);
+                    if (r==null || 
+                            !r.refines(m) && 
+//                                !r.getContainer().equals(ut) && 
+                            !ambiguousNames.add(m.getName())) {
+                        importSignatureTypes(m, rootNode, imports);
+                    }
+                }
+            }
+        }
+    }
 
     private void appendMembers(String indent, String delim, StringBuffer def,
             String defIndent) {
@@ -167,7 +220,6 @@ class DefinitionGenerator {
                 if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
                     appendRefinementText(indent, delim, def,
                             defIndent, d);
-                    //TODO: imports!!!!
                     ambiguousNames.add(d.getName());
                 }
             }
@@ -185,7 +237,6 @@ class DefinitionGenerator {
                             !ambiguousNames.add(m.getName())) {
                         appendRefinementText(indent, delim, def,
                                 defIndent, m);
-                        //TODO: imports!!!!
                     }
                 }
             }
