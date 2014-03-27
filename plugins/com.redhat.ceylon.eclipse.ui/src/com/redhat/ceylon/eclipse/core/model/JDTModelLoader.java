@@ -924,7 +924,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected Module findModuleForClassMirror(ClassMirror classMirror) {
         String pkgName = getPackageNameForQualifiedClassName(classMirror);
-        return lookupModuleInternal(pkgName);
+        return lookupModuleByPackageName(pkgName);
     }
     
     public void loadJDKModules() {
