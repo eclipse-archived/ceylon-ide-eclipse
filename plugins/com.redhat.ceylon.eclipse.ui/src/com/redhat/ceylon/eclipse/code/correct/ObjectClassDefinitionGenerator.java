@@ -24,6 +24,8 @@ import org.eclipse.swt.graphics.Image;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -122,7 +124,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             appendParameters(parameters, def);
             if (supertype!=null) {
                 def.append(delim).append(indent).append(defIndent).append(defIndent)
-                .append(supertype);
+                    .append(supertype);
             }
             def.append(typeParamConstDef);
             def.append(" {").append(delim);
@@ -138,7 +140,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             def.append("object ").append(brokenName);
             if (supertype!=null) {
                 def.append(delim).append(indent).append(defIndent).append(defIndent)
-                .append(supertype);
+                    .append(supertype);
             }
             def.append(" {").append(delim);
             if (!isVoid) {
@@ -166,11 +168,10 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
 
     private void importMembers(Set<Declaration> imports) {
         //TODO: this is a major copy/paste from appendMembers() below
-        TypeDeclaration rtd = returnType.getDeclaration();
+        TypeDeclaration td = getDefaultedSupertype();
         Set<String> ambiguousNames = new HashSet<String>();
-        Unit unit = rootNode.getUnit();
         Collection<DeclarationWithProximity> members = 
-                rtd.getMatchingMemberDeclarations(null, "", 0).values();
+                td.getMatchingMemberDeclarations(null, "", 0).values();
         for (DeclarationWithProximity dwp: members) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
@@ -180,9 +181,6 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                 }
             }
         }
-        TypeDeclaration td = intersectionType(returnType, 
-                unit.getBasicDeclaration().getType(), //TODO: is this always correct?
-                unit).getDeclaration();
         for (TypeDeclaration superType: td.getSuperTypeDeclarations()) {
             for (Declaration m: superType.getMembers()) {
                 if (m.isShared()) {
@@ -200,10 +198,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
 
     private void appendMembers(String indent, String delim, StringBuffer def,
             String defIndent) {
-        Unit unit = rootNode.getUnit();
-        TypeDeclaration td = intersectionType(returnType, 
-                unit.getBasicDeclaration().getType(), //TODO: is this always correct?
-                unit).getDeclaration();
+        TypeDeclaration td = getDefaultedSupertype();
         Set<String> ambiguousNames = new HashSet<String>();
         Collection<DeclarationWithProximity> members = 
                 td.getMatchingMemberDeclarations(null, "", 0).values();
@@ -231,6 +226,18 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                     }
                 }
             }
+        }
+    }
+
+    private TypeDeclaration getDefaultedSupertype() {
+        if (isNotBasic(returnType)) {
+            return returnType.getDeclaration();
+        }
+        else {
+            Unit unit = rootNode.getUnit();
+            return intersectionType(returnType, 
+                    unit.getBasicDeclaration().getType(),
+                    unit).getDeclaration();
         }
     }
 
@@ -282,13 +289,60 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             return null;
         }
         else {
-            String stn = returnType.getProducedTypeName();
-            //TODO: handle intersection of a class and interface!!!
-            if (returnType.getDeclaration() instanceof Class) {
-                return " extends " + stn + "()"; //TODO: supertype arguments!
+            TypeDeclaration rtd = returnType.getDeclaration();
+            if (rtd instanceof Class) {
+                return " extends " + returnType.getProducedTypeName() + "()"; //TODO: supertype arguments!
+            }
+            else if (rtd instanceof Interface) {
+                return " satisfies " + returnType.getProducedTypeName();
+            }
+            else if (rtd instanceof IntersectionType) {
+                String extendsClause = "";
+                StringBuilder satisfiesClause = new StringBuilder();
+                for (ProducedType st: rtd.getSatisfiedTypes()) {
+                    if (st.getDeclaration() instanceof Class) {
+                        extendsClause = " extends " + st.getProducedTypeName() + "()"; //TODO: supertype arguments!
+                    }
+                    else if (st.getDeclaration() instanceof Interface) {
+                        if (satisfiesClause.length()==0) {
+                            satisfiesClause.append(" satisfies ");
+                        }
+                        else {
+                            satisfiesClause.append(" & ");
+                        }
+                        satisfiesClause.append(st.getProducedTypeName());
+                    }
+                }
+                return extendsClause+satisfiesClause;
             }
             else {
-                return " satisfies " + stn;
+                return null;
+            }
+        }
+    }
+
+    private static boolean isNotBasic(ProducedType returnType) {
+        if (isTypeUnknown(returnType)) {
+            return false;
+        }
+        else {
+            TypeDeclaration rtd = returnType.getDeclaration();
+            if (rtd instanceof Class) {
+                return returnType.getSupertype(rtd.getUnit().getBasicDeclaration())==null;
+            }
+            else if (rtd instanceof Interface) {
+                return false;
+            }
+            else if (rtd instanceof IntersectionType) {
+                for (ProducedType st: rtd.getSatisfiedTypes()) {
+                    if (st.getDeclaration() instanceof Class) {
+                        return returnType.getSupertype(rtd.getUnit().getBasicDeclaration())==null;
+                    }
+                }
+                return false;
+            }
+            else {
+                return false;
             }
         }
     }
