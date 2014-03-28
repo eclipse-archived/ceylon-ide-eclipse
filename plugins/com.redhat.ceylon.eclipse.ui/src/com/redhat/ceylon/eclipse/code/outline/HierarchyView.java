@@ -405,7 +405,7 @@ public class HierarchyView extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         item = new MenuItem(menu, SWT.PUSH);
-        item.setText("Go To Selection");
+        item.setText("Go to Selection");
         item.setImage(GOTO_IMAGE);
         tree.setMenu(menu);
         item.addSelectionListener(new SelectionListener() {
@@ -442,7 +442,7 @@ public class HierarchyView extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         item = new MenuItem(menu, SWT.PUSH);
-        item.setText("Go To Selection");
+        item.setText("Go to Selection");
         item.setImage(GOTO_IMAGE);
         table.setMenu(menu);
         item.addSelectionListener(new SelectionListener() {

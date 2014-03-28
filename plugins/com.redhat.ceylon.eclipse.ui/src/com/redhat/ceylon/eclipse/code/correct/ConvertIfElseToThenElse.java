@@ -172,8 +172,8 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
         }
         replace.append(";");
 
-        TextChange change = new TextFileChange("Convert To then-else", file);
-//      TextChange change = new DocumentChange("Convert To then-else", doc);
+        TextChange change = new TextFileChange("Convert to then-else", file);
+//      TextChange change = new DocumentChange("Convert to then-else", doc);
         change.setEdit(new ReplaceEdit(replaceFrom, 
                 statement.getStopIndex() - replaceFrom + 1, 
                 replace.toString()));

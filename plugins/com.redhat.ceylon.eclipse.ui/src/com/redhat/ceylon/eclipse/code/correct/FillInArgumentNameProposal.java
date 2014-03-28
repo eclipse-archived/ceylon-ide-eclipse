@@ -24,7 +24,7 @@ class FillInArgumentNameProposal extends CorrectionProposal {
             IDocument doc, IFile file, Tree.SpecifiedArgument sa) {
         Tree.Identifier id = sa.getIdentifier();
         if (id.getToken()==null) {
-            TextChange change = new TextFileChange("Convert To Block", file);
+            TextChange change = new TextFileChange("Convert to Block", file);
             change.setEdit(new MultiTextEdit());
             Tree.Expression e = sa.getSpecifierExpression().getExpression();
             if (e!=null) {

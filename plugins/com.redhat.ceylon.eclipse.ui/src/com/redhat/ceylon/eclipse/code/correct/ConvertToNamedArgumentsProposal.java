@@ -32,7 +32,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                 findPositionalArgumentList(currentOffset, cu);
         if (canConvert(pal)) {
             final TextChange tc = 
-                    new TextFileChange("Convert To Named Arguments", file);
+                    new TextFileChange("Convert to Named Arguments", file);
             Integer start = pal.getStartIndex();
             int length = pal.getStopIndex()-start+1;
             StringBuilder result = new StringBuilder().append(" { ");

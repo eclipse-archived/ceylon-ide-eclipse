@@ -28,7 +28,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
     static void addConvertToBlockProposal(IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.LazySpecifierExpression spec, Node decNode) {
-        TextChange change = new TextFileChange("Convert To Block", file);
+        TextChange change = new TextFileChange("Convert to Block", file);
         change.setEdit(new MultiTextEdit());
         Integer offset = spec.getStartIndex();
         String space;
