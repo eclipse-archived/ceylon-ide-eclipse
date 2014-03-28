@@ -44,6 +44,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addCo
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertToVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertThenElseToIfElse.addConvertToIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToBlockProposal.addConvertToBlockProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ConvertToClassProposal.addConvertToClassProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToGetterProposal.addConvertToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
@@ -572,7 +573,6 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             CollectParametersProposal.add(proposals, editor);
             MoveOutProposal.add(proposals, editor, node);
             MakeReceiverProposal.add(proposals, editor, node);
-            ConvertToClassProposal.add(proposals, editor);
                     
             addAssignToLocalProposal(cu, proposals, node, currentOffset);
             
@@ -585,7 +585,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.Declaration declaration = findDeclaration(cu, node);
             Tree.NamedArgument argument = findArgument(cu, node);
             Tree.ImportMemberOrType imp = findImport(cu, node);
-            
+                        
             addVerboseRefinementProposal(proposals, file, statement, cu);
             
             addAnnotationProposals(proposals, project, declaration,
@@ -595,6 +595,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addDeclarationProposals(editor, proposals, doc, file, cu, 
                     declaration, currentOffset);
             
+            addConvertToClassProposal(proposals, declaration, editor);
             addSplitDeclarationProposals(proposals, doc, file, cu, declaration);
             addParameterProposals(proposals, file, cu, declaration, editor);
             

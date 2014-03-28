@@ -667,11 +667,6 @@
             description="Extract selected expression to a parameter"
             name="Extract Parameter"/>
        <command
-            id="com.redhat.ceylon.eclipse.ui.action.convertToClass"
-            categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Convert selected anonymous class to a class"
-            name="Convert to Class"/>
-       <command
              categoryId="com.redhat.ceylon.eclipse.ui"
              description="Reveal inferred types"
              id="com.redhat.ceylon.eclipse.ui.action.revealInferredType"
@@ -865,9 +860,6 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.MakeReceiverHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.makeReceiver"/>
-      <handler
-            class="com.redhat.ceylon.eclipse.code.refactor.ConvertToClassHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.convertToClass"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.revealInferredType"/>
