@@ -50,8 +50,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProp
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateEnumProposal.addCreateEnumProposal;
-import static com.redhat.ceylon.eclipse.code.correct.CreateLocalSubtypeProposal.addCreateLocalSubtypeProposal;
-import static com.redhat.ceylon.eclipse.code.correct.CreateObjectProposal.addCreateObjectProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreateProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
@@ -613,10 +611,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertMethodToGetterProposal(proposals, editor, file, statement);
             
             addThrowsAnnotationProposal(proposals, statement, cu, file, doc);            
-
-            addCreateObjectProposal(doc, cu, proposals, file, node);
-            addCreateLocalSubtypeProposal(doc, cu, proposals, file, node);            
-            CreateSubtypeInNewUnitProposal.add(proposals, editor);
+            
             MoveToNewUnitProposal.add(proposals, editor);
             MoveToUnitProposal.add(proposals, editor);
             

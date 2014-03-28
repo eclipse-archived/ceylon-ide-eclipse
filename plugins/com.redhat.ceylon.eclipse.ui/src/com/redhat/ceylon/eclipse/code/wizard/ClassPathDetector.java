@@ -51,8 +51,6 @@ import org.eclipse.jdt.internal.ui.javaeditor.ASTProvider;
 import org.eclipse.jdt.internal.ui.viewsupport.BasicElementLabels;
 import org.eclipse.jdt.ui.PreferenceConstants;
 
-/**
-  */
 public class ClassPathDetector implements IResourceProxyVisitor {
 
     private HashMap<IPath, List<IPath>> fSourceFolders;
