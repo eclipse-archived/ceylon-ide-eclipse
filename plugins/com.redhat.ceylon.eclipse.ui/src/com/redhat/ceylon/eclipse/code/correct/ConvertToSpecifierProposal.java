@@ -41,7 +41,7 @@ class ConvertToSpecifierProposal extends CorrectionProposal {
                 end = ((Tree.SpecifierStatement) s).getSpecifierExpression();
             }
             if (end!=null) {
-                TextChange change = new TextFileChange("Convert To Specifier", file);
+                TextChange change = new TextFileChange("Convert to Specifier", file);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = block.getStartIndex();
                 String es;

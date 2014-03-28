@@ -33,7 +33,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
             return;
         }
         final TextChange tc = 
-                new TextFileChange("Convert To Positional Arguments", file);
+                new TextFileChange("Convert to Positional Arguments", file);
         Integer start = nal.getStartIndex();
         int length = nal.getStopIndex()-start+1;
         StringBuilder result = new StringBuilder().append("(");

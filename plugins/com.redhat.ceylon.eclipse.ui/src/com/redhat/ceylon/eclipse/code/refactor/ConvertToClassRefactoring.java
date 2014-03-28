@@ -43,7 +43,7 @@ public class ConvertToClassRefactoring extends AbstractRefactoring {
     }
     
     public String getName() {
-        return "Convert To Class";
+        return "Convert to Class";
     }
     
     public String getNewName() {

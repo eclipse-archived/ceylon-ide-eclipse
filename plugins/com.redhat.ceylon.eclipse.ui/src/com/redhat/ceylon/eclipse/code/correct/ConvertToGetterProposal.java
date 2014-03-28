@@ -34,7 +34,7 @@ class ConvertToGetterProposal extends CorrectionProposal {
         if (dec!=null && sie!=null) {
             if (dec.isParameter()) return;
             if (!dec.isVariable()) { //TODO: temp restriction, autocreate setter!
-                TextChange change = new TextFileChange("Convert To Getter", file);
+                TextChange change = new TextFileChange("Convert to Getter", file);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = sie.getStartIndex();
                 String space;

@@ -160,7 +160,7 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
                     .append(delim)
                     .append(baseIndent).append("}");
 
-            TextChange change = new TextFileChange("Convert To if-else", file);
+            TextChange change = new TextFileChange("Convert to if-else", file);
             change.setEdit(new ReplaceEdit(statement.getStartIndex(), 
                     statement.getStopIndex() - statement.getStartIndex() + 1, 
                     replace.toString()));

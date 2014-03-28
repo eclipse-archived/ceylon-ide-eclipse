@@ -178,7 +178,7 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
             type = resultType==null ? 
                     null : node.getUnit().denotableType(resultType);
             
-            DocumentChange change = new DocumentChange("Assign To Local", document);
+            DocumentChange change = new DocumentChange("Assign to Local", document);
             change.setEdit(new MultiTextEdit());
             change.addEdit(new InsertEdit(offset, "value " + initialName + " = "));
             
