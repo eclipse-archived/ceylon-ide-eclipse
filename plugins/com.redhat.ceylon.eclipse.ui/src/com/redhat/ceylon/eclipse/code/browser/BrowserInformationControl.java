@@ -18,7 +18,6 @@ import java.util.Iterator;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.internal.text.html.BrowserInformationControlInput;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IDelayedInputChangeProvider;
 import org.eclipse.jface.text.IInformationControlExtension2;
@@ -55,7 +54,7 @@ import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
  * Displays HTML information in a {@link org.eclipse.swt.browser.Browser} widget.
  * <p>
  * This {@link IInformationControlExtension2} expects {@link #setInput(Object)} to be called with an
- * argument of type {@link BrowserInformationControlInput}.
+ * argument of type {@link BrowserInput}.
  * </p>
  * <p>
  * Moved into this package from <code>org.eclipse.jface.internal.text.revisions</code>.
@@ -266,7 +265,7 @@ public class BrowserInformationControl extends AbstractInformationControl
 
     /**
      * {@inheritDoc} This control can handle {@link String} and
-     * {@link BrowserInformationControlInput}.
+     * {@link BrowserInput}.
      */
     @Override
     public void setInput(Object input) {
