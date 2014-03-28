@@ -51,7 +51,7 @@ import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
-public class NewUnitWizardPage extends WizardPage {
+class NewUnitWizardPage extends WizardPage {
 
     private String unitName = "";
     private IPackageFragmentRoot sourceDir;
