@@ -4,9 +4,9 @@ import java.util.Collection;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -17,7 +17,7 @@ class ChangeDeclarationProposal extends CorrectionProposal {
     ChangeDeclarationProposal(String kw, int offset, 
             TextFileChange change) {
         super("Change declaration to '" + kw + "'", change,
-                new Point(offset, kw.length()));
+                new Region(offset, kw.length()));
     }
     
     static void addChangeDeclarationProposal(ProblemLocation problem, IFile file,

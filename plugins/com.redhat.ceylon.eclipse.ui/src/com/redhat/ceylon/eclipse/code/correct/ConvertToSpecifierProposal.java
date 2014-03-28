@@ -5,10 +5,10 @@ import java.util.Collection;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -18,7 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 class ConvertToSpecifierProposal extends CorrectionProposal {
     
     ConvertToSpecifierProposal(int offset, TextChange change) {
-        super("Convert block to =>", change, new Point(offset, 0));
+        super("Convert block to =>", change, new Region(offset, 0));
     }
     
     static void addConvertToSpecifierProposal(IDocument doc,

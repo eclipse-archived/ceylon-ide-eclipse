@@ -147,7 +147,7 @@ class InitializerProposal extends CorrectionProposal {
     
     InitializerProposal(String name, Change change,
             Declaration declaration, ProducedType type, 
-            Point selection, Image image, int exitPos, 
+            Region selection, Image image, int exitPos, 
             CeylonEditor editor) {
         super(name, change, selection, image);
         this.exitPos = exitPos;
@@ -159,7 +159,7 @@ class InitializerProposal extends CorrectionProposal {
 
     InitializerProposal(String name, Change change,
             Scope scope, Unit unit, ProducedType type, 
-            Point selection, Image image, int exitPos, 
+            Region selection, Image image, int exitPos, 
             CeylonEditor editor) {
         super(name, change, selection, image);
         this.exitPos = exitPos;

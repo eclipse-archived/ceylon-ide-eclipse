@@ -15,10 +15,10 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -38,7 +38,7 @@ class AddParameterProposal extends InitializerProposal {
 	        ProducedType type, int offset, int len, TextChange change, 
 	        int exitPos, CeylonEditor editor) {
         super("Add '" + d.getName() + "' to parameter list of '" + dec.getName() + "'", 
-                change, dec, type, new Point(offset, len), ADD_CORR, exitPos, editor);
+                change, dec, type, new Region(offset, len), ADD_CORR, exitPos, editor);
     }
 	
     private static void addParameterProposal(Tree.CompilationUnit cu,

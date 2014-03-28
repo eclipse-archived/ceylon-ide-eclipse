@@ -12,9 +12,9 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -456,7 +456,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             String description, String missingSatisfiedTypeText, 
             TextFileChange change) {
         super(description, change, 
-                new Point(change.getEdit().getOffset(), 0));
+                new Region(change.getEdit().getOffset(), 0));
         this.typeParam = typeParam;
         this.missingSatisfiedTypeText = missingSatisfiedTypeText;
     }

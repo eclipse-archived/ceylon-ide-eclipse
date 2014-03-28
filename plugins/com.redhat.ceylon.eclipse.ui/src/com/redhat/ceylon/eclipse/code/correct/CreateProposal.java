@@ -21,10 +21,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -48,7 +48,7 @@ class CreateProposal extends InitializerProposal {
             int exitPos, boolean isObjectOrClass) {
         super(desc, change, scope, unit, returnType, 
                 isObjectOrClass ? 
-                        new Point(offset, 0): 
+                        new Region(offset, 0): 
                         computeSelection(offset, def), 
                 image, exitPos, null);
     }

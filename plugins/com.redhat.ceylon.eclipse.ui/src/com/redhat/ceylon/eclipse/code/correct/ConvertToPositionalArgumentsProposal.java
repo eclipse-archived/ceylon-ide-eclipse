@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -22,7 +22,7 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
     
     public ConvertToPositionalArgumentsProposal(int offset, Change change) {
-        super("Convert to positional arguments", change, new Point(offset, 0));
+        super("Convert to positional arguments", change, new Region(offset, 0));
     }
 
     public static void addConvertToPositionalArgumentsProposal(Collection<ICompletionProposal> proposals, 

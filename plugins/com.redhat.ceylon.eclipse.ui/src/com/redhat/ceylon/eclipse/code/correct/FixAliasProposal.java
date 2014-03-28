@@ -3,17 +3,17 @@ package com.redhat.ceylon.eclipse.code.correct;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 class FixAliasProposal extends CorrectionProposal {
     
     FixAliasProposal(int offset, TextChange change) {
-        super("Change = to =>", change, new Point(offset, 0));
+        super("Change = to =>", change, new Region(offset, 0));
     }
     
     static void addFixAliasProposal(Collection<ICompletionProposal> proposals, 

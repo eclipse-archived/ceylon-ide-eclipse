@@ -5,10 +5,10 @@ import java.util.Collection;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -22,7 +22,7 @@ class ConvertToGetterProposal extends CorrectionProposal {
     ConvertToGetterProposal(Declaration dec, int offset, 
             TextChange change) {
         super("Convert '" + dec.getName() + "' to getter", 
-                change, new Point(offset, 0));
+                change, new Region(offset, 0));
     }
     
     static void addConvertToGetterProposal(IDocument doc,
