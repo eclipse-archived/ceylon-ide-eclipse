@@ -48,12 +48,12 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public Image getImage() {
-        return dg.image;
+        return dg.getImage();
     }
 
     @Override
     public String getDisplayString() {
-        return "Create toplevel " + dg.desc + 
+        return "Create toplevel " + dg.getDescription() + 
                 " in a new source file";
     }
 
@@ -71,7 +71,7 @@ class CreateInNewUnitProposal implements ICompletionProposal,
     public void apply(IDocument doc) {
         SelectNewUnitWizard w = new SelectNewUnitWizard("Create in New Source File", 
                 "Create a new Ceylon source file with the missing declaration.",
-                dg.brokenName);
+                dg.getBrokenName());
         if (w.open(file)) {
             CreateUnitChange change = new CreateUnitChange(w.getFile(), 
                     w.includePreamble(), getText(doc), w.getProject(),
@@ -91,9 +91,9 @@ class CreateInNewUnitProposal implements ICompletionProposal,
         String delim = getDefaultLineDelimiter(doc);
         String definition = dg.generate("", delim);
         List<Declaration> imports = new ArrayList<Declaration>();
-        resolveImports(imports, dg.returnType);
-        if (dg.parameters!=null) {
-            resolveImports(imports, dg.parameters.values());
+        resolveImports(imports, dg.getReturnType());
+        if (dg.getParameters()!=null) {
+            resolveImports(imports, dg.getParameters().values());
         }
         String imps = imports(imports, doc);
         if (!imps.isEmpty()) {
@@ -102,7 +102,7 @@ class CreateInNewUnitProposal implements ICompletionProposal,
         return definition;
     }
 
-    static void addCreateToplevelProposal(Collection<ICompletionProposal> proposals, 
+    static void addCreateInNewUnitProposal(Collection<ICompletionProposal> proposals, 
             DefinitionGenerator dg, IFile file) {        
         proposals.add(new CreateInNewUnitProposal(file, dg));
     }

@@ -175,10 +175,10 @@ class RefineFormalMembersProposal implements ICompletionProposal,
             for (Declaration m: superType.getMembers()) {
                 if (m.isShared()) {
                     Declaration r = ci.getMember(m.getName(), null, false);
-                    if (r==null || 
+                    if ((r==null || 
                             !r.refines(m) && 
-                            !r.getContainer().equals(ci) && 
-                            !ambiguousNames.add(m.getName())) {
+                            !r.getContainer().equals(ci)) && 
+                            ambiguousNames.add(m.getName())) {
                         appendRefinementText(isInterface, indent, result, ci, unit, m);
                         importSignatureTypes(m, rootNode, already);
                     }
