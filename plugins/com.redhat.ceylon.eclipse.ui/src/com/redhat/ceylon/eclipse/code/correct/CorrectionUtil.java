@@ -7,9 +7,9 @@ import java.util.StringTokenizer;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -165,7 +165,7 @@ public class CorrectionUtil {
 	    }
 	}
 	
-    static Point computeSelection(int offset, String def) {
+    static Region computeSelection(int offset, String def) {
         int length;
         int loc = def.indexOf("= nothing");
         if (loc<0) loc = def.indexOf("=> nothing");
@@ -186,7 +186,7 @@ public class CorrectionUtil {
             loc = def.indexOf(" ", loc)+1;
             length = 7;
         }
-        return new Point(offset + loc, length);
+        return new Region(offset + loc, length);
     }
     
     public static IDocument getDocument(TextChange change) {

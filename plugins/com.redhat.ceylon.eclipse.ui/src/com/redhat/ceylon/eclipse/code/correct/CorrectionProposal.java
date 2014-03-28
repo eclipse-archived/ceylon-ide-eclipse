@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension5;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -44,7 +45,7 @@ class CorrectionProposal
     private Change change;
     private final String name;
     private final Image image;
-    private final Point selection;
+    private final Region selection;
 
     /**
      * Constructs a change correction proposal.
@@ -56,7 +57,7 @@ class CorrectionProposal
      * @param image the image that is displayed for this proposal or <code>null</code> if no image
      *            is desired
      */
-    public CorrectionProposal(String name, Change change, Point selection, Image image) {
+    public CorrectionProposal(String name, Change change, Region selection, Image image) {
         if (name == null) {
             throw new IllegalArgumentException("Name must not be null");
         }
@@ -74,7 +75,7 @@ class CorrectionProposal
      *            if the change will be created by implementors of {@link #createChange()}.
      * @param relevance The relevance of this proposal.
      */
-    public CorrectionProposal(String name, Change change, Point selection) {
+    public CorrectionProposal(String name, Change change, Region selection) {
         this(name, change, selection, MINOR_CHANGE);
     }
 
@@ -147,7 +148,7 @@ class CorrectionProposal
     }
 
     public Point getSelection(IDocument document) {
-        return selection;
+        return new Point(selection.getOffset(), selection.getLength());
     }
 
     /**

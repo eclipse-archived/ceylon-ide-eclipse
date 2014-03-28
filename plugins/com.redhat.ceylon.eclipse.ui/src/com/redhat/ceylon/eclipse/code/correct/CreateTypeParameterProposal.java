@@ -14,10 +14,10 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -37,7 +37,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     
     CreateTypeParameterProposal(String desc, Image image, 
             int offset, int length, TextFileChange change) {
-        super(desc, change, new Point(offset, length), image);
+        super(desc, change, new Region(offset, length), image);
     }
     
     private static void addProposal(Collection<ICompletionProposal> proposals, 

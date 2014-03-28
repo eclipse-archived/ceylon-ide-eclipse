@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -50,7 +50,7 @@ public class ChangeRefiningTypeProposal {
                 int length = node.getStopIndex()-offset+1;
                 change.setEdit(new ReplaceEdit(offset, length, type));
                 proposals.add(new CorrectionProposal("Change type to '" + type + "'", 
-                        change, new Point(offset, length)));
+                        change, new Region(offset, length)));
             }
         }
     }

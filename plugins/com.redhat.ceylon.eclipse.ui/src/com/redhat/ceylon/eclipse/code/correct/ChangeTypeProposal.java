@@ -16,9 +16,9 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -40,7 +40,7 @@ class ChangeTypeProposal extends CorrectionProposal {
             String name, String type, int offset,
             TextFileChange change) {
         super("Change type of "+ name + " to '" + type + "'", 
-                change, new Point(offset, type.length()));
+                change, new Region(offset, type.length()));
     }
         
     static void addChangeTypeProposal(Node node, ProblemLocation problem, 

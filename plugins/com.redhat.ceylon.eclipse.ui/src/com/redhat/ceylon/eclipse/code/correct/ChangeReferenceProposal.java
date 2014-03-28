@@ -14,10 +14,10 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -36,7 +36,7 @@ class ChangeReferenceProposal extends CorrectionProposal
     private ChangeReferenceProposal(ProblemLocation problem, 
             String name, String pkg, TextFileChange change) {
         super("Change reference to '" + name + "'" + pkg, change, 
-                new Point(problem.getOffset(), name.length()), 
+                new Region(problem.getOffset(), name.length()), 
                 MINOR_CHANGE);
     }
     

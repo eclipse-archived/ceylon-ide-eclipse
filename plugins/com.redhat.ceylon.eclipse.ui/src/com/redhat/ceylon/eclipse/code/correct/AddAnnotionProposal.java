@@ -14,9 +14,9 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -52,7 +52,7 @@ class AddAnnotionProposal extends CorrectionProposal {
     
     AddAnnotionProposal(Declaration dec, String annotation, 
             String desc, int offset, TextFileChange change, 
-            Point selection) {
+            Region selection) {
         super(desc, change, selection);
         this.dec = dec;
         this.annotation = annotation;
@@ -119,9 +119,9 @@ class AddAnnotionProposal extends CorrectionProposal {
                 }
             }
         }
-        Point selection;
+        Region selection;
         if (node.getUnit().equals(decNode.getUnit())) {
-            selection = new Point(insertEdit.getOffset(), annotation.length());
+            selection = new Region(insertEdit.getOffset(), annotation.length());
         }
         else {
             selection = null;

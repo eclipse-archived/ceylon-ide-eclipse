@@ -6,10 +6,10 @@ import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -26,7 +26,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
     
     ShadowReferenceProposal(int offset, int length, TextChange change) {
         super("Shadow reference inside control structure", change,
-                new Point(offset, length));
+                new Region(offset, length));
     }
     
     static void addShadowSwitchReferenceProposal(IFile file, Tree.CompilationUnit cu, 

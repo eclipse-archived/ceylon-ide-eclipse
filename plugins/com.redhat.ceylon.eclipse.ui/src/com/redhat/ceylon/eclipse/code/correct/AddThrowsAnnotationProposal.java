@@ -7,10 +7,10 @@ import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -115,7 +115,7 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
     }
 
     private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, int offset, String declName) {
-        super("Add throws annotation to '" + declName + "'", change, new Point(offset, 0));
+        super("Add throws annotation to '" + declName + "'", change, new Region(offset, 0));
     }
     
 

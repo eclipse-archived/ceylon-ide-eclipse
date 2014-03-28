@@ -6,10 +6,10 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
@@ -22,7 +22,7 @@ class AddInitializerProposal extends InitializerProposal {
 	private AddInitializerProposal(TypedDeclaration dec, int offset, int length,
 	        TextChange change) {
         super("Add initializer to '" + dec.getName() + "'", 
-        		change, dec, dec.getType(), new Point(offset, length),
+        		change, dec, dec.getType(), new Region(offset, length),
         		MINOR_CHANGE, -1, null);
     }
     

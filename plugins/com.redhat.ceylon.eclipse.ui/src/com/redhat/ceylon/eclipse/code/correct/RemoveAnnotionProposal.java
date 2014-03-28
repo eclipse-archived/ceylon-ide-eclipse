@@ -7,9 +7,9 @@ import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -32,7 +32,7 @@ class RemoveAnnotionProposal extends CorrectionProposal {
         super("Make '" + dec.getName() + "' non-" + annotation + " " +
             (dec.getContainer() instanceof TypeDeclaration ?
                     "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
-                    change, new Point(offset, 0));
+                    change, new Region(offset, 0));
         this.dec = dec;
         this.annotation = annotation;
     }

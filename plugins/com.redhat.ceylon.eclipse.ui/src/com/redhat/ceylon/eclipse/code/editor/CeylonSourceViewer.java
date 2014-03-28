@@ -202,7 +202,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
             removeBlockComment();
             return;
         case CORRECT_INDENTATION:
-            doCorrectIndentation(getSelectedRange());
+            Point selectedRange = getSelectedRange();
+            doCorrectIndentation(selectedRange.x, selectedRange.y);
             return;
         case PASTE:
             if (localPaste()) return;
@@ -305,7 +306,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         }
                         try {
                             if (startOfLine && EditorsUI.getPreferenceStore().getBoolean(PASTE_CORRECT_INDENTATION)) {
-                                endOffset = correctSourceIndentation(new Point(endOffset-text.length(), text.length()), doc)+1;
+                                endOffset = correctSourceIndentation(endOffset-text.length(), text.length(), doc)+1;
                             }
                             return true;
                         } 
@@ -525,7 +526,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         return true;
     }
 
-    private void doCorrectIndentation(Point range) {
+    private void doCorrectIndentation(int offset, int len) {
         
         IDocument doc= getDocument();
         DocumentRewriteSession rewriteSession= null;
@@ -534,7 +535,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
 
         try {
-            correctSourceIndentation(range, doc);
+            correctSourceIndentation(offset, len, doc);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -546,13 +547,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
     }
 
-    public int correctSourceIndentation(Point range, IDocument doc)
+    public int correctSourceIndentation(int selStart, int selLen, IDocument doc)
             throws BadLocationException {
-        final int selStart= range.x;
-        final int selLen= range.y;
-        final int selEnd= selStart + selLen;
-        final int startLine= doc.getLineOfOffset(selStart);
-        int endLine= doc.getLineOfOffset(selEnd);
+        int selEnd = selStart + selLen;
+        int startLine = doc.getLineOfOffset(selStart);
+        int endLine = doc.getLineOfOffset(selEnd);
 
         // If the selection extends just to the beginning of the next line, don't indent that one too
         if (selLen > 0 && lookingAtLineEnd(doc, selEnd)) {
@@ -561,7 +560,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
         
         int endOffset = selStart+selLen-1;
         // Indent each line using the AutoEditStrategy
-        for (int line = startLine; line<=endLine; line++) {
+        for (int line=startLine; line<=endLine; line++) {
             int lineStartOffset = doc.getLineOffset(line);
 
             // Replace the existing indentation with the desired indentation.

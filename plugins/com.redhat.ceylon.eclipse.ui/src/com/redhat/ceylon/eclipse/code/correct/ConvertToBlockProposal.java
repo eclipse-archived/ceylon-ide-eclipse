@@ -5,10 +5,10 @@ import java.util.Collection;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -22,7 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 class ConvertToBlockProposal extends CorrectionProposal {
     
     ConvertToBlockProposal(int offset, TextChange change) {
-        super("Convert => to block", change, new Point(offset, 0));
+        super("Convert => to block", change, new Region(offset, 0));
     }
     
     static void addConvertToBlockProposal(IDocument doc,

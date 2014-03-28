@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -23,7 +23,7 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 class ConvertToNamedArgumentsProposal extends CorrectionProposal {
     
     public ConvertToNamedArgumentsProposal(int offset, Change change) {
-        super("Convert to named arguments", change, new Point(offset, 0));
+        super("Convert to named arguments", change, new Region(offset, 0));
     }
     
     public static void addConvertToNamedArgumentsProposal(Collection<ICompletionProposal> proposals, 

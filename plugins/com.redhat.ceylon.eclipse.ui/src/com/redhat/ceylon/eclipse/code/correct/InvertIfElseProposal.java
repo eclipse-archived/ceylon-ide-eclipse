@@ -10,10 +10,10 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -38,7 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 class InvertIfElseProposal extends CorrectionProposal {
     
     InvertIfElseProposal(int offset, TextChange change) {
-        super("Invert if-else", change, new Point(offset, 0));
+        super("Invert if-else", change, new Region(offset, 0));
     }
     
     static void addReverseIfElseProposal(IDocument doc,

@@ -15,10 +15,10 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -36,7 +36,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
     
 	private SplitDeclarationProposal(Declaration dec, int offset, TextChange change) {
         super("Split declaration of '" + dec.getName() + "'", change,
-                new Point(offset, 0));
+                new Region(offset, 0));
     }
     
 	private static void addSplitDeclarationProposal(IDocument doc, Tree.CompilationUnit cu,

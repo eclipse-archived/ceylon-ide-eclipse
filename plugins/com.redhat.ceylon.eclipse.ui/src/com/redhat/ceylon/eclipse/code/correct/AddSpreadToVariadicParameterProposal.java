@@ -3,9 +3,9 @@ package com.redhat.ceylon.eclipse.code.correct;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
@@ -55,7 +55,7 @@ public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
     private AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, 
             int offset, TextFileChange change) {
         super("Spread iterable argument of variadic parameter", change,
-                new Point(offset, 0));
+                new Region(offset, 0));
         this.parameter = parameter;
     }
     
