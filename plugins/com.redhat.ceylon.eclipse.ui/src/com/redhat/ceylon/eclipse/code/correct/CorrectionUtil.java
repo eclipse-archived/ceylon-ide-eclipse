@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -131,23 +132,27 @@ public class CorrectionUtil {
 	        return "nothing";
 	    }
 	    TypeDeclaration tn = t.getDeclaration();
+	    boolean isClass = tn instanceof Class;
 	    if (unit.isOptionalType(t)) {
 	        return "null";
 	    }
-	    else if (tn.equals(unit.getBooleanDeclaration())) {
+	    else if (isClass &&
+	            tn.equals(unit.getBooleanDeclaration())) {
 	        return "false";
 	    }
-	    else if (tn.equals(unit.getIntegerDeclaration())) {
+	    else if (isClass &&
+	            tn.equals(unit.getIntegerDeclaration())) {
 	        return "0";
 	    }
-	    else if (tn.equals(unit.getFloatDeclaration())) {
+	    else if (isClass &&
+	            tn.equals(unit.getFloatDeclaration())) {
 	        return "0.0";
 	    }
-	    else if (tn.equals(unit.getStringDeclaration())) {
+	    else if (isClass &&
+	            tn.equals(unit.getStringDeclaration())) {
 	        return "\"\"";
 	    }
-	    else if (unit.getEmptyDeclaration().getType()
-	    		.isSubtypeOf(t)) {
+	    else if (unit.getEmptyDeclaration().getType().isSubtypeOf(t)) {
 	    	if (t.getSupertype(unit.getSequentialDeclaration())==null) {
 	    		return "{}";
 	    	}
