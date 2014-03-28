@@ -50,12 +50,10 @@ class AddAnnotionProposal extends CorrectionProposal {
     private final Declaration dec;
     private final String annotation;
     
-    AddAnnotionProposal(Declaration dec, String annotation,
-            int offset, TextFileChange change) {
-        super("Make '" + dec.getName() + "' " + annotation +
-            (dec.getContainer() instanceof TypeDeclaration ?
-                    " in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
-                    change, new Point(offset, annotation.length()));
+    AddAnnotionProposal(Declaration dec, String annotation, 
+            String desc, int offset, TextFileChange change, 
+            Point selection) {
+        super(desc, change, selection);
         this.dec = dec;
         this.annotation = annotation;
     }
@@ -90,7 +88,7 @@ class AddAnnotionProposal extends CorrectionProposal {
                     Tree.Declaration decNode = fdv.getDeclarationNode();
                     if (decNode!=null) {
                         addAddAnnotationProposal(annotation, desc, dec,
-                                proposals, unit, decNode);
+                                proposals, unit, node, decNode);
                     }
                     break;
                 }
@@ -100,7 +98,7 @@ class AddAnnotionProposal extends CorrectionProposal {
 
     private static void addAddAnnotationProposal(String annotation, String desc, 
             Declaration dec, Collection<ICompletionProposal> proposals, 
-            PhasedUnit unit, Tree.Declaration decNode) {
+            PhasedUnit unit, Node node, Tree.Declaration decNode) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
@@ -121,8 +119,21 @@ class AddAnnotionProposal extends CorrectionProposal {
                 }
             }
         }
+        Point selection;
+        if (node.getUnit().equals(decNode.getUnit())) {
+            selection = new Point(insertEdit.getOffset(), annotation.length());
+        }
+        else {
+            selection = null;
+        }
+        Scope container = dec.getContainer();
+        String containerDesc = container instanceof TypeDeclaration ?
+                " in '" + ((TypeDeclaration) container).getName() + "'" : "";
+        String description = 
+                "Make '" + dec.getName() + "' " + annotation + containerDesc;
         AddAnnotionProposal p = new AddAnnotionProposal(dec, 
-                annotation, insertEdit.getOffset(), change);
+                annotation, description, insertEdit.getOffset(), 
+                change, selection);
         if (!proposals.contains(p)) {
             proposals.add(p);
         }
