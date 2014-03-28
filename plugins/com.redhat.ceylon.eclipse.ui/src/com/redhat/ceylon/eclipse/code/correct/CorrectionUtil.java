@@ -28,47 +28,47 @@ public class CorrectionUtil {
         
         int n = x.length(); // length of s
         int m = y.length(); // length of t
-              
+        
         if (n == 0) return m;
         if (m == 0) return n;
-
+        
         int p[] = new int[n+1]; //'previous' cost array, horizontally
         int d[] = new int[n+1]; // cost array, horizontally
         int _d[]; //placeholder to assist in swapping p and d
-
+        
         // indexes into strings s and t
         int i; // iterates through s
         int j; // iterates through t
-
+        
         char t_j; // jth character of t
-
+        
         int cost; // cost
-
+        
         for (i = 0; i<=n; i++) {
            p[i] = i;
         }
-              
+        
         for (j = 1; j<=m; j++) {
            t_j = y.charAt(j-1);
            d[0] = j;
-              
+           
            for (i=1; i<=n; i++) {
               cost = x.charAt(i-1)==t_j ? 0 : 1;
               // minimum of cell to the left+1, to the top+1, diagonally left and up +cost                
               d[i] = Math.min(Math.min(d[i-1]+1, p[i]+1),  p[i-1]+cost);  
            }
-
+           
            // copy current distance counts to 'previous row' distance counts
            _d = p;
            p = d;
            d = _d;
         } 
-              
+        
         // our last action in the above loop was to switch d and p, so p now 
         // actually has the most recent cost counts
         return p[n];
     }
-
+    
     static Tree.Body getClassOrInterfaceBody(Tree.Declaration decNode) {
         if (decNode instanceof Tree.ClassDefinition) {
             return ((Tree.ClassDefinition) decNode).getClassBody();
@@ -100,7 +100,7 @@ public class CorrectionUtil {
         }       
         return unit.getCompilationUnit();
     }
-
+    
     static StyledString styleProposal(String name) {
         StyledString result = new StyledString();
         StringTokenizer tokens = new StringTokenizer(name, "'", false);
@@ -115,7 +115,7 @@ public class CorrectionUtil {
         }
         return result;
     }
-
+    
     static String asIntersectionTypeString(List<ProducedType> types) {
         StringBuffer missingSatisfiedTypesText = new StringBuffer();
         for( ProducedType missingSatisfiedType: types ) {
@@ -126,7 +126,7 @@ public class CorrectionUtil {
         }
         return missingSatisfiedTypesText.toString();
     }
-
+    
 	static String defaultValue(Unit unit, ProducedType t) {
 	    if (t==null) {
 	        return "nothing";
@@ -164,7 +164,7 @@ public class CorrectionUtil {
 	        return "nothing";
 	    }
 	}
-
+	
     static Point computeSelection(int offset, String def) {
         int length;
         int loc = def.indexOf("= nothing");
@@ -188,7 +188,7 @@ public class CorrectionUtil {
         }
         return new Point(offset + loc, length);
     }
-
+    
     public static IDocument getDocument(TextChange change) {
         try {
             return change.getCurrentDocument(null);
