@@ -1,0 +1,296 @@
+package com.redhat.ceylon.eclipse.code.correct;
+
+import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_CLASS;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
+
+import org.eclipse.swt.graphics.Image;
+
+import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
+
+class ObjectClassDefinitionGenerator extends DefinitionGenerator {
+    
+    private final String brokenName;
+    private final MemberOrTypeExpression node;
+    private final CompilationUnit rootNode;
+    private final String desc;
+    private final Image image;
+    private final ProducedType returnType;
+    private final LinkedHashMap<String, ProducedType> parameters;
+
+    @Override
+    String getBrokenName() {
+        return brokenName;
+    }
+    
+    @Override
+    ProducedType getReturnType() {
+        return returnType;
+    }
+    
+    @Override
+    LinkedHashMap<String, ProducedType> getParameters() {
+        return parameters;
+    }
+    
+    @Override
+    String getDescription() {
+        return desc;
+    }
+    
+    @Override
+    Image getImage() {
+        return image;
+    }
+    
+    @Override
+    Tree.CompilationUnit getRootNode() {
+        return rootNode;
+    }
+
+    @Override
+    Node getNode() {
+        return node;
+    }
+
+    private ObjectClassDefinitionGenerator(String brokenName, 
+            Tree.MemberOrTypeExpression node, 
+            Tree.CompilationUnit rootNode,
+            String desc,
+            Image image,
+            ProducedType returnType,
+            LinkedHashMap<String, ProducedType> paramTypes) {
+        this.brokenName = brokenName;
+        this.node = node;
+        this.rootNode = rootNode;
+        this.desc = desc;
+        this.image = image;
+        this.returnType = returnType;
+        this.parameters = paramTypes;
+    }
+        
+    String generateShared(String indent, String delim) {
+        return "shared " + generate(indent, delim);
+    }
+    
+    String generate(String indent, String delim) {
+        StringBuffer def = new StringBuffer();
+        boolean isUpperCase = 
+                Character.isUpperCase(brokenName.charAt(0));
+        boolean isVoid = returnType==null;
+        if (isUpperCase && parameters!=null) {
+            List<TypeParameter> typeParams = new ArrayList<TypeParameter>();
+            StringBuilder typeParamDef = new StringBuilder();
+            StringBuilder typeParamConstDef = new StringBuilder();
+            appendTypeParams(typeParams, typeParamDef, typeParamConstDef, returnType);
+            appendTypeParams(typeParams, typeParamDef, typeParamConstDef, parameters.values());
+            if (typeParamDef.length() > 0) {
+                typeParamDef.insert(0, "<");
+                typeParamDef.setLength(typeParamDef.length() - 1);
+                typeParamDef.append(">");
+            }
+            String defIndent = getDefaultIndent();
+            String supertype = isVoid ? 
+                    null : supertypeDeclaration(returnType);
+            def.append("class ").append(brokenName).append(typeParamDef);
+            appendParameters(parameters, def);
+            if (supertype!=null) {
+                def.append(delim).append(indent).append(defIndent).append(defIndent)
+                .append(supertype);
+            }
+            def.append(typeParamConstDef);
+            def.append(" {").append(delim);
+            if (!isVoid) {
+                appendMembers(indent, delim, def, defIndent);
+            }
+            def.append(indent).append("}");            
+        }
+        else if (!isUpperCase && parameters==null) {
+            String defIndent = getDefaultIndent();
+            String supertype = isVoid ? 
+                    null : supertypeDeclaration(returnType);
+            def.append("object ").append(brokenName);
+            if (supertype!=null) {
+                def.append(delim).append(indent).append(defIndent).append(defIndent)
+                .append(supertype);
+            }
+            def.append(" {").append(delim);
+            if (!isVoid) {
+                appendMembers(indent, delim, def, defIndent);
+            }
+            def.append(indent).append("}");
+        }
+        else {
+            return null;
+        }
+        return def.toString();
+    }
+    
+    Set<Declaration> getImports() {
+        Set<Declaration> imports = new HashSet<Declaration>();
+        importType(imports, returnType, rootNode);
+        if (parameters!=null) {
+            importTypes(imports, parameters.values(), rootNode);
+        }
+        if (returnType!=null) {
+            importMembers(imports);            
+        }
+        return imports;
+    }
+
+    private void importMembers(Set<Declaration> imports) {
+        //TODO: this is a major copy/paste from appendMembers() below
+        TypeDeclaration rtd = returnType.getDeclaration();
+        Set<String> ambiguousNames = new HashSet<String>();
+        Unit unit = rootNode.getUnit();
+        Collection<DeclarationWithProximity> members = 
+                rtd.getMatchingMemberDeclarations(null, "", 0).values();
+        for (DeclarationWithProximity dwp: members) {
+            Declaration dec = dwp.getDeclaration();
+            for (Declaration d: overloads(dec)) {
+                if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
+                    importSignatureTypes(d, rootNode, imports);
+                    ambiguousNames.add(d.getName());
+                }
+            }
+        }
+        TypeDeclaration td = intersectionType(returnType, 
+                unit.getBasicDeclaration().getType(), //TODO: is this always correct?
+                unit).getDeclaration();
+        for (TypeDeclaration superType: td.getSuperTypeDeclarations()) {
+            for (Declaration m: superType.getMembers()) {
+                if (m.isShared()) {
+                    Declaration r = td.getMember(m.getName(), null, false);
+                    if (r==null || 
+                            !r.refines(m) && 
+//                                !r.getContainer().equals(ut) && 
+                            !ambiguousNames.add(m.getName())) {
+                        importSignatureTypes(m, rootNode, imports);
+                    }
+                }
+            }
+        }
+    }
+
+    private void appendMembers(String indent, String delim, StringBuffer def,
+            String defIndent) {
+        Unit unit = rootNode.getUnit();
+        TypeDeclaration td = intersectionType(returnType, 
+                unit.getBasicDeclaration().getType(), //TODO: is this always correct?
+                unit).getDeclaration();
+        Set<String> ambiguousNames = new HashSet<String>();
+        Collection<DeclarationWithProximity> members = 
+                td.getMatchingMemberDeclarations(null, "", 0).values();
+        for (DeclarationWithProximity dwp: members) {
+            Declaration dec = dwp.getDeclaration();
+            for (Declaration d: overloads(dec)) {
+                if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
+                    if (ambiguousNames.add(d.getName())) {
+                        appendRefinementText(indent, delim, def,
+                                defIndent, d);
+                    }
+                }
+            }
+        }
+        for (TypeDeclaration superType: td.getSuperTypeDeclarations()) {
+            for (Declaration m: superType.getMembers()) {
+                if (m.isShared()) {
+                    Declaration r = td.getMember(m.getName(), null, false);
+                    if ((r==null || 
+                            !r.refines(m)) && 
+//                            !r.getContainer().equals(ut)) && 
+                            ambiguousNames.add(m.getName())) {
+                        appendRefinementText(indent, delim, def,
+                                defIndent, m);
+                    }
+                }
+            }
+        }
+    }
+
+    private void appendRefinementText(String indent, String delim,
+            StringBuffer def, String defIndent, Declaration d) {
+        ProducedReference pr = 
+                getRefinedProducedReference(returnType, d);
+        String text = getRefinementTextFor(d, pr, node.getUnit(), 
+                false, null, "", false);
+        def.append(indent).append(defIndent).append(text).append(delim);
+    }
+
+    static ObjectClassDefinitionGenerator create(String brokenName, 
+            Tree.MemberOrTypeExpression node, 
+            Tree.CompilationUnit rootNode) {
+        boolean isUpperCase = Character.isUpperCase(brokenName.charAt(0));
+        FindArgumentsVisitor fav = new FindArgumentsVisitor(node);
+        rootNode.visit(fav);
+        ProducedType et = fav.expectedType;
+        final boolean isVoid = et==null;
+        ProducedType returnType = isVoid ? null : node.getUnit().denotableType(et);
+        StringBuilder params = new StringBuilder();
+        LinkedHashMap<String, ProducedType> paramTypes = getParameters(fav);
+        if (paramTypes!=null && isUpperCase) {
+            Class od = node.getUnit().getObjectDeclaration();
+            if (returnType!=null &&
+                    returnType.getSupertype(od)==null) {
+                returnType = null;
+            }
+            String supertype = isVoid ? 
+                    null : supertypeDeclaration(returnType);
+            if (supertype==null) supertype = "";
+            String desc = "class '" + brokenName + params + supertype + "'";
+            return new ObjectClassDefinitionGenerator(brokenName, node, rootNode, 
+                    desc, LOCAL_CLASS, returnType, paramTypes);
+        }
+        else if (paramTypes==null && !isUpperCase) {
+            String desc = "object '" + brokenName + "'";
+            return new ObjectClassDefinitionGenerator(brokenName, node, rootNode, 
+                    desc, LOCAL_ATTRIBUTE, returnType, null);
+        }
+        else {
+            return null;
+        }
+    }
+
+    private static String supertypeDeclaration(ProducedType returnType) {
+        if (isTypeUnknown(returnType)) {
+            return null;
+        }
+        else {
+            String stn = returnType.getProducedTypeName();
+            //TODO: handle intersection of a class and interface!!!
+            if (returnType.getDeclaration() instanceof Class) {
+                return " extends " + stn + "()"; //TODO: supertype arguments!
+            }
+            else {
+                return " satisfies " + stn;
+            }
+        }
+    }
+
+}

@@ -56,7 +56,8 @@ class CreateParameterProposal extends InitializerProposal {
             Tree.Declaration decNode, Tree.ParameterList paramList, 
             ProducedType returnType, Set<Declaration> imports, Node node) {
         IFile file = getFile(unit);
-        TextFileChange change = new TextFileChange("Add Parameter", file);
+        TextFileChange change = 
+                new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
         int offset = paramList.getStopIndex();
@@ -74,7 +75,8 @@ class CreateParameterProposal extends InitializerProposal {
             Tree.Declaration decNode, Tree.ParameterList paramList, Tree.Body body, 
             ProducedType returnType, Node node) {
         IFile file = getFile(unit);
-        TextFileChange change = new TextFileChange("Add Attribute", file);
+        TextFileChange change = 
+                new TextFileChange("Add Attribute", file);
         change.setEdit(new MultiTextEdit());
         int offset = paramList.getStopIndex();
         IDocument doc = getDocument(change);
@@ -106,9 +108,10 @@ class CreateParameterProposal extends InitializerProposal {
     }
 
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
-            IProject project, DefinitionGenerator dg) {
-        if (Character.isLowerCase(dg.brokenName.charAt(0))) {
-            Tree.Declaration decl = findDeclarationWithBody(dg.rootNode, dg.node);
+            IProject project, ValueFunctionDefinitionGenerator dg) {
+        if (Character.isLowerCase(dg.getBrokenName().charAt(0))) {
+            Tree.Declaration decl = 
+                    findDeclarationWithBody(dg.getRootNode(), dg.getNode());
             if (decl == null || 
                     decl.getDeclarationModel() == null || 
                     decl.getDeclarationModel().isActual()) {
@@ -121,12 +124,12 @@ class CreateParameterProposal extends InitializerProposal {
                 //TODO: really ugly and fragile way to strip off the trailing ;
                 String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + 
                         def.substring(0, def.length() - 1);
-                String paramDesc = "parameter '" + dg.brokenName + "'";
-                for (PhasedUnit unit : getUnits(project)) {
-                    if (unit.getUnit().equals(dg.rootNode.getUnit())) {
+                String paramDesc = "parameter '" + dg.getBrokenName() + "'";
+                for (PhasedUnit unit: getUnits(project)) {
+                    if (unit.getUnit().equals(dg.getRootNode().getUnit())) {
                         addCreateParameterProposal(proposals, paramDef, paramDesc, ADD_CORR, 
-                                decl.getDeclarationModel(), unit, decl, paramList, dg.returnType,
-                                dg.getImports(), dg.node);
+                                decl.getDeclarationModel(), unit, decl, paramList, dg.getReturnType(),
+                                dg.getImports(), dg.getNode());
                         break;
                     }
                 }
