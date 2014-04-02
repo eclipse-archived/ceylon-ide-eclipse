@@ -30,6 +30,7 @@ import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.env.IDependent;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
+import org.eclipse.jdt.internal.compiler.lookup.LocalTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
@@ -63,6 +64,10 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     private boolean superClassSet = false;
     private List<ClassMirror> innerClasses;
     private String cacheKey;
+    private JDTMethod enclosingMethod;
+    private boolean enclosingMethodSet;
+    private JDTClass enclosingClass;
+    private boolean enclosingClassSet;
 
 
     
@@ -94,6 +99,12 @@ public class JDTClass implements ClassMirror, IBindingProvider {
             qualifiedName = JDTUtils.getFullyQualifiedName(klass);
         }
         return qualifiedName;
+    }
+
+    @Override
+    public String getFlatName() {
+        // this should only make a difference if we care about local declarations
+        return getQualifiedName();
     }
 
     @Override
@@ -140,7 +151,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
             methods = new ArrayList<MethodMirror>(directMethods.length);
             for(MethodBinding method : directMethods) {
                 if(!method.isBridge() && !method.isSynthetic() && !method.isPrivate())
-                    methods.add(new JDTMethod(method, lookupEnvironment));
+                    methods.add(new JDTMethod(this, method, lookupEnvironment));
             }
         }
         return methods;
@@ -230,10 +241,27 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     
     @Override
     public ClassMirror getEnclosingClass() {
-        //TODO: is this correct?
-        ReferenceBinding enclosingType = klass.enclosingType();
-        return enclosingType==null ? null : new JDTClass(enclosingType, lookupEnvironment);
+        if(!enclosingClassSet){
+            ReferenceBinding enclosingType = klass.enclosingType();
+            enclosingClass = enclosingType==null ? null : new JDTClass(enclosingType, lookupEnvironment);
+            enclosingClassSet = true;
+        }
+        return enclosingClass;
     }
+    
+    @Override
+    public MethodMirror getEnclosingMethod() {
+        if(!enclosingMethodSet){
+            if(klass.isLocalType()){
+                LocalTypeBinding localClass = (LocalTypeBinding) klass;
+                MethodBinding enclosingMethodBinding = localClass.enclosingMethod;
+                enclosingMethod = enclosingMethodBinding != null ? new JDTMethod(this, enclosingMethodBinding, lookupEnvironment) : null;
+            }
+            enclosingMethodSet = true;
+        }
+        return enclosingMethod;
+    }
+
 
     @Override
     public List<ClassMirror> getDirectInnerClasses() {

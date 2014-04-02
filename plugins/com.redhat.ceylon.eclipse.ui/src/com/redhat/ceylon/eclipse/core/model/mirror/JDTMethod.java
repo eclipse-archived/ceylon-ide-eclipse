@@ -38,6 +38,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
+import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
@@ -55,8 +56,10 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     Boolean isOverriding;
     private LookupEnvironment lookupEnvironment;
     private Boolean isOverloading;
+    private ClassMirror enclosingClass;
     
-    public JDTMethod(MethodBinding method, LookupEnvironment lookupEnvironment) {
+    public JDTMethod(ClassMirror enclosingClass, MethodBinding method, LookupEnvironment lookupEnvironment) {
+        this.enclosingClass = enclosingClass;
         this.method = method;
         this.lookupEnvironment = lookupEnvironment;
         this.methodVerifier = lookupEnvironment.methodVerifier();
@@ -318,5 +321,10 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     @Override
     public char[] getBindingKey() {
         return method.computeUniqueKey();
+    }
+
+    @Override
+    public ClassMirror getEnclosingClass() {
+        return enclosingClass;
     }
 }
