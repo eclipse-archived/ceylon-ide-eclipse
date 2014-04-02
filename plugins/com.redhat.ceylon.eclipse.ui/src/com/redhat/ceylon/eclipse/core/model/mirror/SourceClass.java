@@ -104,6 +104,12 @@ public class SourceClass implements ClassMirror {
     }
 
     @Override
+    public String getFlatName() {
+        // should be good
+        return getQualifiedName();
+    }
+
+    @Override
     public PackageMirror getPackage() {
         Declaration decl = getModelDeclaration();
         Scope scope = decl.getContainer();
@@ -159,6 +165,12 @@ public class SourceClass implements ClassMirror {
     @Override
     public ClassMirror getEnclosingClass() {
         System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getEnclosingClass() !!!!!!!!!!!!!!!!!!!!!!!");
+        throw new IllegalAccessError("Don't use a Source Class Mirror !");
+    }
+
+    @Override
+    public MethodMirror getEnclosingMethod() {
+        System.out.println("!!!!!!!!!!!!!!!! In SourceClass.getEnclosingMethod() !!!!!!!!!!!!!!!!!!!!!!!");
         throw new IllegalAccessError("Don't use a Source Class Mirror !");
     }
 
