@@ -432,8 +432,9 @@ class AutoEdit extends Indents {
                     //Note: ANTLR sometimes sends me 2 EOFs, 
                     //      so do this:
                     CommonToken token = null;
-                    for (int i=1; 
-                            token==null || token.getType()==EOF; 
+                    for (int i=1;
+                            tokens.size()>=i &&
+                            (token==null || token.getType()==EOF); 
                             i++) {
                         token = tokens.get(tokens.size()-i);
                     }
