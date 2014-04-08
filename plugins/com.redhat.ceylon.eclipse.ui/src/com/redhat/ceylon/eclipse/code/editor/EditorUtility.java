@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
 
@@ -18,7 +19,12 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.internal.core.JarEntryFile;
+import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.ui.javaeditor.JarEntryEditorInput;
 import org.eclipse.jface.action.IAction;
@@ -39,6 +45,10 @@ import org.eclipse.ui.texteditor.DocumentProviderRegistry;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
+
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 
 /**
  * A number of routines for mapping editor inputs to/from model elements.
@@ -88,7 +98,7 @@ public class EditorUtility {
      * 
      * @return the IEditorPart or null if wrong element type or opening failed
      */
-    private static IEditorPart openInEditor(Object inputElement, boolean activate) throws PartInitException {
+    public static IEditorPart openInEditor(Object inputElement, boolean activate) throws PartInitException {
         if (inputElement instanceof IFile)
             return openInEditor((IFile) inputElement, activate);
         IEditorInput input= getEditorInput(inputElement);
@@ -226,7 +236,6 @@ public class EditorUtility {
         return null;
     }
 
-
     public static IEditorInput getEditorInput(Object input) {
         if (input instanceof IFile) {
             return new FileEditorInput((IFile) input);
@@ -236,12 +245,47 @@ public class EditorUtility {
             return getEditorInput(path);
         }
 
-        if (input instanceof IJavaElement)
+        if (input instanceof IJavaElement) {
+            IClassFile classFile = null;
+            if (input instanceof IClassFile) {
+                classFile = (IClassFile) input;
+            }
+            if (input instanceof IMember) {
+                classFile = ((IMember) input).getClassFile();
+            }
+            if (classFile != null) {
+                IJavaModelAware unit = CeylonBuilder.getUnit(classFile);
+                if (unit instanceof CeylonBinaryUnit) {                
+                    CeylonBinaryUnit ceylonUnit = (CeylonBinaryUnit) unit;
+                    if (! isJavaLikeFileName(ceylonUnit.getSourceRelativePath())) {
+                        return getEditorInput(Path.fromOSString(ceylonUnit.getSourceFullPath()));
+                    }
+                }
+            }
+            
             return org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.getEditorInput((IJavaElement) input);
-
-        if (JavaModelUtil.isOpenableStorage(input))
-            return new JarEntryEditorInput((IStorage)input);
+        }
         
+        if (JavaModelUtil.isOpenableStorage(input)) {
+            if (input instanceof JarEntryFile) {
+                JarEntryFile entry = (JarEntryFile) input;
+                JarPackageFragmentRoot root = (JarPackageFragmentRoot) entry.getPackageFragmentRoot();
+                try {
+                    IPath archiveFullPath = Path.fromOSString(root.getJar().getName());
+                    IPath entryRelativePath = entry.getFullPath();
+                    if (archiveFullPath.getFileExtension().equalsIgnoreCase("SRC") && 
+                             entryRelativePath.getFileExtension().equalsIgnoreCase("ceylon")) {
+                        IPath finalPath = Path.fromOSString(archiveFullPath.toOSString() + "!").append(entryRelativePath);
+                        return EditorUtility.getEditorInput(finalPath);
+                    }
+                } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                
+            }
+            return new JarEntryEditorInput((IStorage)input);
+        }
         return null;
     }
 
