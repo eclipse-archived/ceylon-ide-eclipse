@@ -234,7 +234,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
     
-    
     private final class BuildFileManager extends CeyloncFileManager {
         private final IProject project;
         final boolean explodeModules;
@@ -452,9 +451,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         RESOURCE
     }
     
-    public static final QualifiedName RESOURCE_PROPERTY_PACKAGE_MODEL = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty.packageModel");
-    public static final QualifiedName RESOURCE_PROPERTY_ROOT_FOLDER = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty.rootFolder"); 
-    public static final QualifiedName RESOURCE_PROPERTY_ROOT_FOLDER_TYPE = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty.rootFolderType"); 
+    public static final QualifiedName RESOURCE_PROPERTY_PACKAGE_MODEL = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty_packageModel");
+    public static final QualifiedName RESOURCE_PROPERTY_ROOT_FOLDER = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty_rootFolder"); 
+    public static final QualifiedName RESOURCE_PROPERTY_ROOT_FOLDER_TYPE = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty_rootFolderType"); 
     
     private static CeylonBuildHook buildHook = new CeylonBuildHook() {
         List<CeylonBuildHook> contributedHooks = new LinkedList<>();
@@ -1866,7 +1865,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 typeCheckers.put(project, typeChecker);
                 projectFiles.put(project, scannedFiles);
                 modelStates.put(project, ModelState.Parsed);
-                
+
                 monitor.done();
                 
                 return typeChecker;
@@ -2601,7 +2600,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private static List<IFile> getProjectFiles(IProject project) {
         return projectFiles.get(project);
-    }
+}
 
     public static TypeChecker getProjectTypeChecker(IProject project) {
         return typeCheckers.get(project);
@@ -2615,10 +2614,30 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeChecker.getContext().getModules();
     }
     
+    public static Collection<JDTModule> getProjectExternalModules(IProject project) {
+        TypeChecker typeChecker = getProjectTypeChecker(project);
+        if (typeChecker == null) {
+            return Collections.emptyList();
+        }
+        List<JDTModule> modules = new ArrayList<>();
+        for (Module m : typeChecker.getContext().getModules().getListOfModules()) {
+            if (m instanceof JDTModule) {
+                JDTModule module = (JDTModule) m;
+                if (! module.isProjectModule()) {
+                    modules.add(module);
+                }
+            }
+        }
+        return modules;
+    }
+
     public static Collection<Module> getProjectSourceModules(IProject project) {
         List<Module> moduleList = new ArrayList<Module>();
         moduleList.addAll(getProjectDeclaredSourceModules(project));
-        moduleList.add(getProjectModules(project).getDefaultModule());
+        Modules projectModules = getProjectModules(project);
+        if (projectModules != null) {
+            moduleList.add(projectModules.getDefaultModule());
+        }
         return moduleList;
     }
 
@@ -2775,6 +2794,47 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
     
+    public static RootFolderType getRootFolderType(IPackageFragmentRoot pfr) {
+        IResource resource = null;
+        try {
+            resource = pfr.getCorrespondingResource();
+        } catch (JavaModelException e) {
+        }
+        if (resource instanceof IFolder) {
+            return getRootFolderType((IFolder) resource);
+        }
+        return null;
+    }
+
+    public static boolean isSourceFolder(IPackageFragmentRoot pfr) {
+        return RootFolderType.SOURCE.equals(getRootFolderType(pfr));
+    }
+
+    public static boolean isResourceFolder(IPackageFragmentRoot pfr) {
+        return RootFolderType.RESOURCE.equals(getRootFolderType(pfr));
+    }
+    
+    public static boolean isInSourceFolder(IPackageFragment pf) {
+        return RootFolderType.SOURCE.equals(getRootFolderType(pf));
+    }
+
+    public static boolean isInResourceFolder(IPackageFragment pf) {
+        return RootFolderType.RESOURCE.equals(getRootFolderType(pf));
+    }
+    
+
+    public static RootFolderType getRootFolderType(IPackageFragment pf) {
+        IResource resource = null;
+        try {
+            resource = pf.getCorrespondingResource();
+        } catch (JavaModelException e) {
+        }
+        if (resource instanceof IFolder) {
+            return getRootFolderType((IFolder) resource);
+        }
+        return null;
+    }
+
     public static IFolder getRootFolder(IFile file) {
         if (file.getParent() instanceof IFolder) {
             return getRootFolder((IFolder) file.getParent());
@@ -2788,7 +2848,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             return null;
         }
         try {
-            Object property = folder.getSessionProperty(RESOURCE_PROPERTY_ROOT_FOLDER_TYPE);
+            Object property = rootFolder.getSessionProperty(RESOURCE_PROPERTY_ROOT_FOLDER_TYPE);
             if (property instanceof RootFolderType) {
                 return (RootFolderType) property;
             }
@@ -2919,14 +2979,29 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static Package getPackage(IPackageFragment packageFragment) {
         PackageFragment pkg = (PackageFragment) packageFragment;
+        try {
+            IFolder srcPkgFolder = (IFolder) pkg.getCorrespondingResource();
+            if (srcPkgFolder != null) {
+                return getPackage(srcPkgFolder);
+            }
+        } catch (JavaModelException e) {
+        }
+
         IPackageFragmentRoot root = pkg.getPackageFragmentRoot();
         Modules projectModules = CeylonBuilder.getProjectModules(packageFragment.getJavaProject().getProject());
+        if (projectModules == null) {
+            return null;
+        }
+        
         for (Module m : projectModules.getListOfModules()) {
             if (m instanceof JDTModule && ! m.getNameAsString().equals(Module.DEFAULT_MODULE_NAME)) {
                 JDTModule module = (JDTModule) m;
                 for (IPackageFragmentRoot moduleRoot : module.getPackageFragmentRoots()) {
                     if (root.getPath().equals(moduleRoot.getPath())) {
-                        return module.getDirectPackage(packageFragment.getElementName());
+                        Package result = module.getDirectPackage(packageFragment.getElementName());
+                        if (result != null) {
+                            return result;
+                        }
                     }
                 }
             }
@@ -2934,18 +3009,67 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         JDTModule defaultModule = (JDTModule) projectModules.getDefaultModule();
         for (IPackageFragmentRoot moduleRoot : defaultModule.getPackageFragmentRoots()) {
             if (root.getPath().equals(moduleRoot.getPath())) {
-                return defaultModule.getDirectPackage(packageFragment.getElementName());
+                Package result = defaultModule.getDirectPackage(packageFragment.getElementName());
+                if (result != null) {
+                    return result;
+                }
             }
         }
         return null;
     }
-    
+
+    public static JDTModule asSourceModule(IFolder moduleFolder) {
+        Package p = getPackage(moduleFolder);
+        if (p != null) {
+            Module m = p.getModule();
+            if (m instanceof JDTModule && m.getNameAsString().equals(p.getNameAsString())) {
+                return (JDTModule) m;
+            }
+        }
+        return null;
+    }
+
+    public static JDTModule asSourceModule(IPackageFragment sourceModuleFragment) {
+        IFolder moduleFolder;
+        try {
+            moduleFolder = (IFolder) sourceModuleFragment.getCorrespondingResource();
+            if (moduleFolder != null) {
+                return asSourceModule(moduleFolder);
+            }
+        } catch (JavaModelException e) {
+        }
+        return null;
+    }
+
+    public static JDTModule getModule(IFolder moduleFolder) {
+        Package p = getPackage(moduleFolder);
+        if (p != null) {
+            Module m = p.getModule();
+            if (m instanceof JDTModule) {
+                return (JDTModule) m;
+            }
+        }
+        return null;
+    }
+
+    public static JDTModule getModule(IPackageFragment packageFragment) {
+        Package p = getPackage(packageFragment);
+        if (p != null) {
+            Module m = p.getModule();
+            if (m instanceof JDTModule) {
+                return (JDTModule) m;
+            }
+        }
+        return null;
+    }
+
     public static IJavaModelAware getUnit(IJavaElement javaElement) {
         IOpenable openable = javaElement.getOpenable();
         if (openable instanceof ITypeRoot) {
             Package p = getPackage((IPackageFragment)((ITypeRoot)openable).getParent());
             if (p != null) {
-                for (Unit u : p.getUnits()) {
+                for (Declaration d : p.getMembers()) {
+                    Unit u = d.getUnit();
                     if (u instanceof IJavaModelAware) {
                         if (u.getFilename().equals(((ITypeRoot) openable).getElementName())) {
                             return (IJavaModelAware) u;
