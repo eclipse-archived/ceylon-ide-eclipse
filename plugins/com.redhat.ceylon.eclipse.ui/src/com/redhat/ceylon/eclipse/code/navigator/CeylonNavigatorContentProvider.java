@@ -44,10 +44,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
+import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 public class CeylonNavigatorContentProvider implements
-        IPipelinedTreeContentProvider2 {
+        IPipelinedTreeContentProvider2, ICeylonModelListener {
     
     @SuppressWarnings("unchecked")
     @Override
@@ -407,9 +408,9 @@ public class CeylonNavigatorContentProvider implements
 
     @Override
     public void init(ICommonContentExtensionSite aConfig) {
-        System.out.print("");
+        CeylonBuilder.addModelListener(this);
     }
-
+    
     @Override
     public Object[] getElements(Object inputElement) {
         System.out.print("");
@@ -502,8 +503,7 @@ public class CeylonNavigatorContentProvider implements
     
     @Override
     public void dispose() {
-        // TODO Auto-generated method stub
-
+        CeylonBuilder.removeModelListener(this);
     }
 
     private StructuredViewer viewer = null;
@@ -554,6 +554,21 @@ public class CeylonNavigatorContentProvider implements
             }
         }
         return currentHasChildren;
+    }
+
+    @Override
+    public void modelParsed(IProject project) {
+        if (project != null) {
+            try {
+                for (IPackageFragmentRoot pfr : JavaCore.create(project).getAllPackageFragmentRoots()) {
+                    if (CeylonBuilder.isSourceFolder(pfr)) {
+                        scheduleRefresh(pfr);
+                    }
+                }
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }
