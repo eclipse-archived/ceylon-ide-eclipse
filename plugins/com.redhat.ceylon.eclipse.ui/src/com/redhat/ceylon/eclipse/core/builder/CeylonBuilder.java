@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +130,7 @@ import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
@@ -283,6 +285,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private static Set<IProject> containersInitialized = new HashSet<IProject>();
     private final static Map<IProject, RepositoryManager> projectRepositoryManagers = new HashMap<IProject, RepositoryManager>();
     private final static Map<IProject, ModuleDependencies> projectModuleDependencies = new HashMap<IProject, ModuleDependencies>();
+    private final static Set<ICeylonModelListener> modelListeners = new LinkedHashSet<ICeylonModelListener>();
+
+    public static void addModelListener(ICeylonModelListener listener) {
+        modelListeners.add(listener);
+    }
+    
+    public static void removeModelListener(ICeylonModelListener listener) {
+        modelListeners.remove(listener);
+    }
 
     public static final String CEYLON_CONSOLE= "Ceylon Build";
     //private long startTime;
@@ -1866,6 +1877,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 projectFiles.put(project, scannedFiles);
                 modelStates.put(project, ModelState.Parsed);
 
+                for (ICeylonModelListener listener : modelListeners) {
+                    listener.modelParsed(project);
+                }
                 monitor.done();
                 
                 return typeChecker;
