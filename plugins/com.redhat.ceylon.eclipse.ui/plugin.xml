@@ -2658,6 +2658,7 @@
 		<factory 
             class="com.redhat.ceylon.eclipse.core.adapters.CeylonModelAdapterFactory" 
             adaptableType="com.redhat.ceylon.eclipse.core.model.IUnit">
+            
             <adapter type="org.eclipse.core.resources.IFile"/>
             <adapter type="org.eclipse.jdt.core.IJavaElement"/>
 		</factory>
@@ -2671,6 +2672,7 @@
             <adapter type="com.redhat.ceylon.compiler.typechecker.model.Package"/>
 		</factory>
    </extension>     	
+
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
@@ -2688,4 +2690,142 @@
             type="org.eclipse.core.resources.IResource">
       </propertyTester>
    </extension>
+
+	<extension
+			point="org.eclipse.ui.navigator.viewer">
+		<viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+			<includes>
+				<contentExtension pattern="com.redhat.ceylon.eclipse.ui.ceylonContent" />
+			</includes>
+		</viewerContentBinding>
+	</extension>
+	
+	<extension
+			point="org.eclipse.ui.navigator.navigatorContent">
+		<navigatorContent
+				activeByDefault="true"
+				contentProvider="com.redhat.ceylon.eclipse.code.navigator.CeylonNavigatorContentProvider"
+				icon="icons/ceylon_nature.gif"
+				id="com.redhat.ceylon.eclipse.ui.ceylonContent"
+				labelProvider="com.redhat.ceylon.eclipse.code.navigator.CeylonNavigatorLabelProvider"
+				name="%commonNavigatorContentName"
+				priority="high">			
+			<triggerPoints>
+			    <or>
+					<adapt type="org.eclipse.core.resources.IProject">
+  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+  					</adapt>
+				    <instanceof value="com.redhat.ceylon.eclipse.code.navigator.ModuleNode"/>				    
+				    <instanceof value="com.redhat.ceylon.eclipse.code.navigator.RepositoryNode"/>				    
+					<and>
+						<or>
+						    <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+						    <instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+						</or>
+						<test forcePluginActivation="true"
+							property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+					</and>
+ 				</or>
+			</triggerPoints>
+			<possibleChildren>
+				<or>
+					<adapt type="org.eclipse.core.resources.IProject">
+  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+  					</adapt>
+					<and>
+						<or>
+						    <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+					    	<instanceof value="org.eclipse.core.resources.IFile"/>
+						</or>
+						<test forcePluginActivation="true"
+							property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+					</and>
+				    <instanceof value="org.eclipse.jdt.internal.core.JarPackageFragmentRoot"/>
+				    <instanceof value="com.redhat.ceylon.eclipse.code.navigator.ModuleNode"/>				    
+				    <instanceof value="com.redhat.ceylon.eclipse.code.navigator.RepositoryNode"/>				    
+				</or>
+			</possibleChildren> 
+
+			<actionProvider
+		         class="com.redhat.ceylon.eclipse.code.navigator.CeylonNavigatorOpenActionProvider"
+		         id="com.redhat.ceylon.eclipse.code.navigator.actions.OpenActions"
+		         overrides="org.eclipse.jdt.ui.navigator.actions.OpenActions"> 
+				<enablement>
+					<or>
+						<instanceof value="org.eclipse.jdt.core.IJavaElement" />
+						<instanceof value="org.eclipse.core.resources.IStorage" />
+					</or>
+				</enablement>
+		    </actionProvider> 
+
+			<override
+					policy="InvokeAlwaysRegardlessOfSuppressedExt"
+					suppressedExtensionId="org.eclipse.jdt.java.ui.javaContent"/>
+
+		    <commonWizard
+		        menuGroupId="com.redhat.ceylon.eclipse.ui"
+		        type="new"
+		        wizardId="com.redhat.ceylon.eclipse.ui.newPackageWizard">
+		     	<enablement>
+		        	<or>
+						<adapt type="org.eclipse.core.resources.IProject">
+  							<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+  						</adapt>
+				    	<instanceof value="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>				    
+						<and>
+							<or>
+						    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+						    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+							</or>
+							<test forcePluginActivation="true"
+								property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+						</and>
+		        	</or>
+		     	</enablement>
+		  	</commonWizard>
+
+		    <commonWizard
+		        menuGroupId="com.redhat.ceylon.eclipse.ui"
+		        type="new"
+		        wizardId="com.redhat.ceylon.eclipse.ui.newModuleWizard">
+		     	<enablement>
+		        	<or>
+						<adapt type="org.eclipse.core.resources.IProject">
+  							<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+  						</adapt>
+						<and>
+							<or>
+						    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+						    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+							</or>
+							<test forcePluginActivation="true"
+								property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+						</and>
+		        	</or>
+		     	</enablement>
+		  	</commonWizard>
+
+		    <commonWizard
+		        menuGroupId="com.redhat.ceylon.eclipse.ui"
+		        type="new"
+		        wizardId="com.redhat.ceylon.eclipse.ui.newUnitWizard">
+		     	<enablement>
+		        	<or>
+						<adapt type="org.eclipse.core.resources.IProject">
+  							<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+  						</adapt>
+				    	<instanceof value="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>				    
+						<and>
+							<or>
+						    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+						    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+							</or>
+							<test forcePluginActivation="true"
+								property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+						</and>
+		        	</or>
+		     	</enablement>
+		  	</commonWizard>
+		</navigatorContent>
+    </extension>
 </plugin>
