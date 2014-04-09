@@ -33,7 +33,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.zest.core,
  org.eclipse.draw2d,
- org.eclipse.zest.layouts
+ org.eclipse.zest.layouts,
+ org.eclipse.ui.navigator,
+ org.eclipse.ui.navigator.resources
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,
