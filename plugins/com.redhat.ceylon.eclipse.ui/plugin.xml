@@ -2643,5 +2643,32 @@
                 </enablement>
           </decorator>
     </extension-->
-     
+
+   <extension point="org.eclipse.core.runtime.adapters">
+		<factory 
+            class="com.redhat.ceylon.eclipse.core.adapters.JavaElementAdapterFactory" 
+            adaptableType="org.eclipse.jdt.core.IJavaElement">
+            
+            <adapter type="com.redhat.ceylon.eclipse.core.model.IUnit"/>
+            <adapter type="com.redhat.ceylon.eclipse.core.model.IJavaModelAware"/>
+            <adapter type="com.redhat.ceylon.eclipse.core.model.JDTModule"/>
+            <adapter type="com.redhat.ceylon.compiler.typechecker.model.Package"/>
+		</factory>
+
+		<factory 
+            class="com.redhat.ceylon.eclipse.core.adapters.CeylonModelAdapterFactory" 
+            adaptableType="com.redhat.ceylon.eclipse.core.model.IUnit">
+            <adapter type="org.eclipse.core.resources.IFile"/>
+            <adapter type="org.eclipse.jdt.core.IJavaElement"/>
+		</factory>
+
+		<factory 
+            class="com.redhat.ceylon.eclipse.core.adapters.ResourceAdapterFactory" 
+            adaptableType="org.eclipse.core.resources.IResource">
+            <adapter type="com.redhat.ceylon.eclipse.core.model.IUnit"/>
+            <adapter type="com.redhat.ceylon.eclipse.core.model.IResourceAware"/>
+            <adapter type="com.redhat.ceylon.eclipse.core.model.JDTModule"/>
+            <adapter type="com.redhat.ceylon.compiler.typechecker.model.Package"/>
+		</factory>
+   </extension>     	
 </plugin>
