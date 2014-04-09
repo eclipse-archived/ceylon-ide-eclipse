@@ -148,7 +148,12 @@ class CorrectionProposal
     }
 
     public Point getSelection(IDocument document) {
-        return new Point(selection.getOffset(), selection.getLength());
+        if (selection==null) {
+            return null;
+        }
+        else {
+            return new Point(selection.getOffset(), selection.getLength());
+        }
     }
 
     /**
