@@ -2671,4 +2671,21 @@
             <adapter type="com.redhat.ceylon.compiler.typechecker.model.Package"/>
 		</factory>
    </extension>     	
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="com.redhat.ceylon.eclipse.core.propertyTesters.InCeylonRootFolderPropertyTester"
+            id="com.redhat.ceylon.eclipse.ui.javaElementInCeylonRootFolderPropertyTester"
+            namespace="com.redhat.ceylon.eclipse.ui"
+            properties="isInCeylonSourceFolder,isInCeylonResourceFolder"
+            type="org.eclipse.jdt.core.IJavaElement">
+      </propertyTester>
+      <propertyTester
+            class="com.redhat.ceylon.eclipse.core.propertyTesters.InCeylonRootFolderPropertyTester"
+            id="com.redhat.ceylon.eclipse.ui.resourceInCeylonRootFolderPropertyTester"
+            namespace="com.redhat.ceylon.eclipse.ui"
+            properties="isInCeylonSourceFolder,isInCeylonResourceFolder"
+            type="org.eclipse.core.resources.IResource">
+      </propertyTester>
+   </extension>
 </plugin>
