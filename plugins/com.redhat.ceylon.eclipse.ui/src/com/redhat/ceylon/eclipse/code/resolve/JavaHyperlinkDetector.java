@@ -105,15 +105,15 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                         } else {
                             return null;
                         }
+                    } else {
+                        jp = ((IJavaModelAware)declarationUnit).getTypeRoot().getJavaProject();
                     }
                     if (declarationUnit instanceof CeylonBinaryUnit) {
                         CeylonBinaryUnit ceylonBinaryUnit = (CeylonBinaryUnit) declarationUnit;
                         if (! JavaCore.isJavaLikeFileName(ceylonBinaryUnit.getSourceRelativePath())) {
                             return null; 
                         }
-                        jp = ceylonBinaryUnit.getTypeRoot().getJavaProject();
                     }
-                    //IJavaProject jp = JavaCore.create(Util.getProject(editor));
                     if (jp==null) {
                         return null;
                     }
