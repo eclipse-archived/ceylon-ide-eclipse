@@ -65,6 +65,7 @@ import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.api.VisibilityType;
+import com.redhat.ceylon.cmr.impl.JDKRepository;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
@@ -95,6 +96,7 @@ public class JDTModule extends LazyModule {
     private JDTModuleManager moduleManager;
     private List<IPackageFragmentRoot> packageFragmentRoots;
     private File artifact;
+    private String repositoryDisplayString = "";
     private WeakReference<ExternalModulePhasedUnits> sourceModulePhasedUnits; // Here we have a weak ref on the PhasedUnits because there are already stored as strong references in the TypeChecker phasedUnitsOfDependencies list. 
                                                                     // But in the future we might remove the strong reference in the typeChecker and use strong references here, which would be 
                                                                     // much more modular (think of several versions of a module imported in a non-shared way in the same projet).
@@ -126,6 +128,8 @@ public class JDTModule extends LazyModule {
     
     synchronized void setArtifact(ArtifactResult artifactResult) {
         artifact = artifactResult.artifact();
+        repositoryDisplayString = artifactResult.repositoryDisplayString();
+
         if (artifact.getName().endsWith(ArtifactContext.SRC)) {
             moduleType = ModuleType.CEYLON_SOURCE_ARCHIVE;
         } else if(artifact.getName().endsWith(ArtifactContext.CAR)) {
@@ -264,6 +268,13 @@ public class JDTModule extends LazyModule {
         }
     }
     
+    public String getRepositoryDisplayString() {
+        if (isJDKModule()) {
+            return JDKRepository.JDK_REPOSITORY_DISPLAY_STRING;                    
+        }
+        return repositoryDisplayString;
+    }
+
     synchronized void setSourcePhasedUnits(final ExternalModulePhasedUnits modulePhasedUnits) {
             sourceModulePhasedUnits = new WeakReference<ExternalModulePhasedUnits>(modulePhasedUnits);
     }
@@ -727,6 +738,10 @@ public class JDTModule extends LazyModule {
                     @Override
                     public File artifact() throws RepositoryException {
                         return artifact;
+                    }
+                    @Override
+                    public String repositoryDisplayString() {                        
+                        return "";
                     }
                 });
             }
