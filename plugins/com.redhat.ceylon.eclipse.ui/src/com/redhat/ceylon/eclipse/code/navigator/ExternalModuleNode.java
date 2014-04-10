@@ -23,8 +23,13 @@ public class ExternalModuleNode extends ModuleNode {
     }
 
     @Override
-    protected Collection<JDTModule> modulesToSearchIn() {
-        return CeylonBuilder.getProjectExternalModules(repositoryNode.project);
+    protected JDTModule searchBySignature(String signature) {
+        for (JDTModule module : CeylonBuilder.getProjectExternalModules(repositoryNode.project)) {
+            if (module.getSignature().equals(signature)) {
+                return module;
+            }
+        }
+        return null;
     }
 
     public RepositoryNode getRepositoryNode() {
