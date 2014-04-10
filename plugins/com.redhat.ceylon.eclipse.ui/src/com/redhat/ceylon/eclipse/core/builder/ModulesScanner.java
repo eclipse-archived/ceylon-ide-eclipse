@@ -92,7 +92,6 @@ final class ModulesScanner implements IResourceVisitor {
                     
                     IFile file = moduleFile;
                     final ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
-                    boolean moduleVisited = false;
                     try {
                         PhasedUnit tempPhasedUnit = null;
                         tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
@@ -122,19 +121,13 @@ final class ModulesScanner implements IResourceVisitor {
                         Module m = tempPhasedUnit.visitSrcModulePhase();
                         if (m!= null) {
                             module = m;
-                            moduleVisited = true;
+                            assert(module instanceof JDTModule);
+                            ((JDTModule) module).setProjectModule();
                         }
                     } 
                     catch (Exception e) {
                         e.printStackTrace();
                     }
-                    if (!moduleVisited) {
-                        final List<String> moduleName = pkgName;
-                        module = moduleManager.getOrCreateModule(moduleName, null);
-                    }
-                    
-                    assert(module instanceof JDTModule);
-                    ((JDTModule) module).setProjectModule();
                 }
             }
             

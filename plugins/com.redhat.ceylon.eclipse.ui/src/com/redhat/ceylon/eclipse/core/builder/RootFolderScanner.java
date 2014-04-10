@@ -91,17 +91,6 @@ final class RootFolderScanner implements IResourceVisitor {
                 }
             }
             
-            IFile moduleFile = ((IFolder) resource).getFile(ModuleManager.MODULE_FILE);
-            if (moduleFile.exists()) {
-                if ( module != defaultModule ) {
-                    // This is an error : no nested modules
-                } else {
-                    final List<String> moduleName = pkgName;
-                    //we don't know the version here, but it is already added with the right version in ModulesScanner
-                    module = moduleManager.getOrCreateModule(moduleName, null);
-                    assert(module != null);
-                }
-            }
             if (module == defaultModule) {
                 Module realModule = modelLoader.getLoadedModule(pkgNameAsString);
                 if (realModule != null) {
