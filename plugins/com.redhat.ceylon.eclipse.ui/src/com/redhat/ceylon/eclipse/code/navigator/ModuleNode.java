@@ -11,14 +11,9 @@ public abstract class ModuleNode {
         this.moduleSignature = moduleSignature;
     }
 
-    protected abstract Collection<JDTModule> modulesToSearchIn();
+    protected abstract JDTModule searchBySignature(String signature);
     
     public JDTModule getModule() {
-        for (JDTModule module : modulesToSearchIn()) {
-            if (module.getSignature().equals(moduleSignature)) {
-                return module;
-            }
-        }
-        return null;
+        return searchBySignature(moduleSignature);
     }
 }

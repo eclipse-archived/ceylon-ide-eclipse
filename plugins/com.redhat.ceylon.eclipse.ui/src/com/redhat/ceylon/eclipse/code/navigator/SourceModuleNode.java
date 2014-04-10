@@ -12,6 +12,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
@@ -53,10 +55,25 @@ public class SourceModuleNode extends ModuleNode {
     
     
     @Override
-    protected Collection<JDTModule> modulesToSearchIn() {
-        return Arrays.asList(CeylonBuilder.getProjectSourceModules(getProject()).toArray(new JDTModule[0]));            
+    protected JDTModule searchBySignature(String signature) {
+        Modules modules = CeylonBuilder.getProjectModules(getProject());
+        if (modules != null) {
+            for (Module module : modules.getListOfModules()) {
+                if (! (module instanceof JDTModule)) {
+                    continue;
+                }
+                JDTModule jdtModule = (JDTModule) module;
+                if (jdtModule.isProjectModule() || jdtModule.isDefaultModule()) {
+                    if (jdtModule.getSignature().equals(signature)) {
+                        return jdtModule;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
+    
     @Override
     public int hashCode() {
         final int prime = 31;
