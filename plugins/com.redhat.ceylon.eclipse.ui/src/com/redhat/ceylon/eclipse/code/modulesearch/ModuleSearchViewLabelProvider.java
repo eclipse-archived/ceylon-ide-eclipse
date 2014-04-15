@@ -35,7 +35,7 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
     
         cell.setText(styledText.toString());
         cell.setStyleRanges(styledText.getStyleRanges());
-        cell.setImage(CeylonLabelProvider.ARCHIVE);
+        cell.setImage(CeylonLabelProvider.MODULE);
     }
 
     private void updateVersionNode(ViewerCell cell, ModuleVersionNode versionNode) {

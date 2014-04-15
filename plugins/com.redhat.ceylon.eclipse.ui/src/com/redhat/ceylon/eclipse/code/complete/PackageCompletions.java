@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MODULE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
@@ -131,7 +131,7 @@ public class PackageCompletions {
         String moduleName = getPackageName(file);
         if (moduleName!=null) {
             result.add(new CompletionProposal(offset, prefix, 
-                    isModuleDescriptor(cpc) ? ARCHIVE : PACKAGE, 
+                    isModuleDescriptor(cpc) ? MODULE : PACKAGE, 
                             moduleName, moduleName));
         }
     }

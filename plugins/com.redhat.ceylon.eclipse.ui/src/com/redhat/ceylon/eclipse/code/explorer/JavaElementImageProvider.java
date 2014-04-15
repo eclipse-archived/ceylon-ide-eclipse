@@ -13,7 +13,7 @@ package com.redhat.ceylon.eclipse.code.explorer;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForFile;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ARCHIVE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MODULE;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -350,7 +350,7 @@ public class JavaElementImageProvider {
                         containsJavaElements=true;
                         if (file.getName().equals("module.ceylon")) {
                             return CeylonPlugin.getInstance().getImageRegistry()
-                                    .getDescriptor(CEYLON_ARCHIVE);
+                                    .getDescriptor(CEYLON_MODULE);
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MODULE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.REPO;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.VERSION;
 
@@ -15,7 +15,7 @@ final class ModuleSelectionLabelProvider extends
     @Override
     public Image getImage(Object element) {
         if (element instanceof ModuleNode) {
-            return ARCHIVE;
+            return MODULE;
         }
         else if (element instanceof ModuleVersionNode) {
             return VERSION;

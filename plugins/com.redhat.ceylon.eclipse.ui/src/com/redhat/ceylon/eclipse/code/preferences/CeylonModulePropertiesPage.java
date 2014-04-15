@@ -198,7 +198,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         sharedColumn.setWidth(70);
         for (ModuleImport mi: getModule().getImports()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
-            item.setImage(CeylonLabelProvider.ARCHIVE);
+            item.setImage(CeylonLabelProvider.MODULE);
             item.setText(mi.getModule().getNameAsString());
             item.setText(1, mi.getModule().getVersion());
             item.setText(2, mi.isExport() ? "shared" : "");
@@ -476,7 +476,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         ModuleImportUtil.addModuleImports(project, getModule(), added);
         for (Map.Entry<String, String> entry: added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
-            item.setImage(CeylonLabelProvider.ARCHIVE);
+            item.setImage(CeylonLabelProvider.MODULE);
             item.setText(entry.getKey() + "/" + entry.getValue());
         }
     }
