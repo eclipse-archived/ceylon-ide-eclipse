@@ -9,6 +9,8 @@ import java.net.URI;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.AnnotationModel;
@@ -16,6 +18,10 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
+
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 
 public class SourceArchiveDocumentProvider extends FileDocumentProvider {
 
@@ -37,7 +43,16 @@ public class SourceArchiveDocumentProvider extends FileDocumentProvider {
     
     @Override
     protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
-        IAnnotationModel am = super.createAnnotationModel(element);
+       IAnnotationModel am = super.createAnnotationModel(element);
+        if (am == null) {
+            if (element instanceof FileStoreEditorInput) {
+                URI uri = ((FileStoreEditorInput) element).getURI();
+                IResource resource = ExternalSourceArchiveManager.toResource(uri);
+                if (resource instanceof IFile) {
+                    return new ResourceMarkerAnnotationModel(resource);
+                }
+            }            
+        }
         return am==null ? new AnnotationModel(): am;
     }
     

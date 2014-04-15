@@ -2,9 +2,11 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
@@ -22,9 +24,13 @@ import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.ide.FileStoreEditorInput;
+
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 
 public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreakpointListener {
 
@@ -40,8 +46,21 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
             IEditorPart editorPart= (IEditorPart) part.getAdapter(IEditorPart.class);
             //TODO: handle org.eclipse.ui.ide.FileStoreEditorInput
             //      to set breakpoints in code from archives
-            IFileEditorInput fileInput= (IFileEditorInput) editorPart.getEditorInput();
-            final IFile origSrcFile= fileInput.getFile();
+            IEditorInput editorInput = editorPart.getEditorInput();
+            final IFile origSrcFile;
+            if (editorInput instanceof IFileEditorInput) {
+                origSrcFile= ((IFileEditorInput)editorInput).getFile();
+            } else if (editorInput instanceof FileStoreEditorInput) {
+                URI uri = ((FileStoreEditorInput) editorInput).getURI();
+                IResource resource = ExternalSourceArchiveManager.toResource(uri);
+                if (resource instanceof IFile) {
+                    origSrcFile = (IFile) resource;
+                } else {
+                    origSrcFile = null;
+                }
+            } else {
+                origSrcFile = null;
+            }
             final int lineNumber = textSel.getStartLine()+1;
 
             IWorkspaceRunnable wr= new IWorkspaceRunnable() {
@@ -178,9 +197,15 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
         return false;
     }
 
-    public void breakpointAdded(IBreakpoint breakpoint) { }
+    public void breakpointAdded(IBreakpoint breakpoint) {
+        System.out.print("");
+    }
 
-    public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta) { }
+    public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta)  {
+        System.out.print("");
+    }
 
-    public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta) { }
+    public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta)  {
+        System.out.print("");
+    }
 }
