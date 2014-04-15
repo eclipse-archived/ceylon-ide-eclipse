@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
+import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -9,14 +12,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.filesystem.IFileSystem;
+import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -24,6 +33,8 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.ExternalFoldersManager;
+import org.eclipse.jdt.internal.core.JavaModel;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jdt.internal.core.util.WeakHashSet;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer;
@@ -38,12 +49,15 @@ import org.eclipse.ui.navigator.PipelinedShapeModification;
 import org.eclipse.ui.navigator.PipelinedViewerUpdate;
 import org.eclipse.ui.progress.UIJob;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.NodeUtils;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
+import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
@@ -423,10 +437,31 @@ public class CeylonNavigatorContentProvider implements
             return ((RepositoryNode)parentElement).getModules().toArray();
         }
         if (parentElement instanceof ExternalModuleNode) {
-            return ((ExternalModuleNode)parentElement).getBinaryArchives().toArray();
+            ExternalModuleNode moduleNode = (ExternalModuleNode) parentElement;
+            ArrayList<Object> result = new ArrayList<>(moduleNode.getBinaryArchives().size() + (moduleNode.getSourceArchive() != null ? 1 : 0));
+            if (moduleNode.getSourceArchive() != null) {
+                result.add(moduleNode.getSourceArchive());
+            }
+            result.addAll(moduleNode.getBinaryArchives());             
+            return result.toArray();
         }
+        
         if (parentElement instanceof SourceModuleNode) {
             return ((SourceModuleNode)parentElement).getPackageFragments().toArray();
+        }
+        
+        if (parentElement instanceof CeylonArchiveFileStore) {
+            CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore)parentElement;
+            List<Object> children = new ArrayList<>();
+            try {
+                for (IFileStore child : archiveFileStore.childStores(EFS.NONE, null)) {
+                    CeylonArchiveFileStore childFileStore = (CeylonArchiveFileStore)child;
+                    children.add(childFileStore);
+                }
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
+            return children.toArray();            
         }
         return new Object[0];
     }
@@ -442,6 +477,24 @@ public class CeylonNavigatorContentProvider implements
         if (element instanceof SourceModuleNode) {
             return ((SourceModuleNode)element).getSourceFolder();
         }
+        if (element instanceof CeylonArchiveFileStore) {
+            CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore) element;
+            if (archiveFileStore.getParent() == null) {
+                // it's the archive root
+                for (IProject project : CeylonBuilder.getProjects()) {
+                    for (RepositoryNode repoNode : getProjectRepositoryNodes(project).values()) {
+                        for (ExternalModuleNode moduleNode : repoNode.getModules()) {
+                            if (moduleNode.getSourceArchive().equals(archiveFileStore)) {
+                                return moduleNode;
+                            }
+                        }
+                    }
+                }
+            } else {
+                return ((CeylonArchiveFileStore) element).getParent();
+            }
+        }
+        
         return null;
     }
 
@@ -451,7 +504,8 @@ public class CeylonNavigatorContentProvider implements
             return ! ((RepositoryNode)element).getModules().isEmpty();
         }
         if (element instanceof ExternalModuleNode) {
-            return ! ((ExternalModuleNode)element).getBinaryArchives().isEmpty();
+            return ! ((ExternalModuleNode)element).getBinaryArchives().isEmpty() ||
+                    ((ExternalModuleNode)element).getSourceArchive() != null;
         }
         if (element instanceof SourceModuleNode) {
             SourceModuleNode sourceModuleNode = (SourceModuleNode) element;
@@ -464,6 +518,13 @@ public class CeylonNavigatorContentProvider implements
                 return false;
             }
             return sourceModuleNode.getPackageFragments().size() > 0;
+        }
+        if (element instanceof CeylonArchiveFileStore) {
+            try {
+                return ((CeylonArchiveFileStore) element).childNames(EFS.NONE, null).length > 0;
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
         }
         return false;
     }

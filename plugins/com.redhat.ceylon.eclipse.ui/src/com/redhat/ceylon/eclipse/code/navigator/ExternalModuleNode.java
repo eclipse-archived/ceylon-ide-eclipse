@@ -1,12 +1,21 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
+import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.internal.resources.Resource;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaModelException;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 public class ExternalModuleNode extends ModuleNode {
@@ -20,6 +29,20 @@ public class ExternalModuleNode extends ModuleNode {
 
     public List<IPackageFragmentRoot> getBinaryArchives() {
         return binaryArchives;
+    }
+
+    public CeylonArchiveFileStore getSourceArchive() {
+        JDTModule module = getModule();
+        if (module.isCeylonArchive()) {
+            String sourcePathString = module.getSourceArchivePath();
+            if (sourcePathString != null) {
+                IFolder sourceArchive = getExternalSourceArchiveManager().getSourceArchive(Path.fromOSString(sourcePathString));
+                if (sourceArchive != null && sourceArchive.exists()) {
+                    return ((CeylonArchiveFileStore) ((Resource)sourceArchive).getStore()); 
+                }
+            }
+        }
+        return null;
     }
 
     @Override

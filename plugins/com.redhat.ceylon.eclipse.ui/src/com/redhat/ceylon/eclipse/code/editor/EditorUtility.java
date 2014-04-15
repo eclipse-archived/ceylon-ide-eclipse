@@ -47,6 +47,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 
@@ -276,7 +277,7 @@ public class EditorUtility {
                     if (archiveFullPath.getFileExtension().equalsIgnoreCase("SRC") && 
                              entryRelativePath.getFileExtension().equalsIgnoreCase("ceylon")) {
                         IPath finalPath = Path.fromOSString(archiveFullPath.toOSString() + "!").append(entryRelativePath);
-                        return EditorUtility.getEditorInput(finalPath);
+                        return getEditorInput(finalPath);
                     }
                 } catch (CoreException e) {
                     // TODO Auto-generated catch block
@@ -285,6 +286,14 @@ public class EditorUtility {
                 
             }
             return new JarEntryEditorInput((IStorage)input);
+        }
+
+        if (input instanceof CeylonArchiveFileStore) {
+            return getEditorInput(((CeylonArchiveFileStore) input).getFullPath());
+        }
+
+        if (input instanceof IFileStore) {
+            return getEditorInput((IFileStore)input);
         }
         return null;
     }
