@@ -2725,6 +2725,7 @@
 						<test forcePluginActivation="true"
 							property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
 					</and>
+				    <instanceof value="com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore"/>				    				    
  				</or>
 			</triggerPoints>
 			<possibleChildren>
@@ -2742,7 +2743,8 @@
 					</and>
 				    <instanceof value="org.eclipse.jdt.internal.core.JarPackageFragmentRoot"/>
 				    <instanceof value="com.redhat.ceylon.eclipse.code.navigator.ModuleNode"/>				    
-				    <instanceof value="com.redhat.ceylon.eclipse.code.navigator.RepositoryNode"/>				    
+				    <instanceof value="com.redhat.ceylon.eclipse.code.navigator.RepositoryNode"/>
+				    <instanceof value="com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore"/>				    				    
 				</or>
 			</possibleChildren> 
 
@@ -2754,6 +2756,7 @@
 					<or>
 						<instanceof value="org.eclipse.jdt.core.IJavaElement" />
 						<instanceof value="org.eclipse.core.resources.IStorage" />
+					    <instanceof value="com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore"/>				    				    
 					</or>
 				</enablement>
 		    </actionProvider> 
@@ -2828,4 +2831,11 @@
 		  	</commonWizard>
 		</navigatorContent>
     </extension>
+    <extension
+         id="org.eclipse.core.filesystem.zip"
+         point="org.eclipse.core.filesystem.filesystems">
+        <filesystem scheme="ceylonArchive">
+            <run class="com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem"/>
+        </filesystem>
+    </extension>    
 </plugin>

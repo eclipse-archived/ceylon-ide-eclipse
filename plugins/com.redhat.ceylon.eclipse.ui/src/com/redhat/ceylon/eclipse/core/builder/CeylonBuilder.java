@@ -7,6 +7,8 @@ import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.compiler.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
+import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
+import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchives;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
@@ -128,6 +130,7 @@ import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
@@ -1700,7 +1703,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 } else {
                     projectModuleDependencies.put(project, new ModuleDependencies());
                 }
-                
+
+                ExternalSourceArchiveManager externalArchiveManager = getExternalSourceArchiveManager();
+                externalArchiveManager.cleanUp(monitor);
 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
@@ -1877,9 +1882,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 projectFiles.put(project, scannedFiles);
                 modelStates.put(project, ModelState.Parsed);
 
+                for (IPath sourceArchivePath : getExternalSourceArchives(getProjectExternalModules(project))) {
+                    externalArchiveManager.addSourceArchive(sourceArchivePath, true);                    
+                }
+                externalArchiveManager.createPendingSourceArchives(monitor);
+                
                 for (ICeylonModelListener listener : modelListeners) {
                     listener.modelParsed(project);
                 }
+                
                 monitor.done();
                 
                 return typeChecker;
@@ -2783,6 +2794,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static IFolder getRootFolder(IFolder folder) {
+        if (folder.isLinked(IResource.CHECK_ANCESTORS)) {
+            return null;
+        }
         if (! folder.exists()) {
             for (IFolder sourceFolder: getSourceFolders(folder.getProject())) {
                 if (sourceFolder.getFullPath().isPrefixOf(folder.getFullPath())) {
@@ -2896,6 +2910,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static Package getPackage(IFolder resource) {
+        if (resource.isLinked(IResource.CHECK_ANCESTORS)) {
+            return null;
+        }
         Object property = null;
         if (! resource.exists()) {
             IFolder rootFolder = getRootFolder(resource);
