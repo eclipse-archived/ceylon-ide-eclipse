@@ -381,11 +381,6 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                 modulesWithSourcesAlreadySearched.add(module.toString());
                 IClasspathEntry newEntry = newLibraryEntry(modulePath, srcPath, null);
                 paths.put(newEntry.toString(), newEntry);
-                if (srcPath!=null) {
-                    IClasspathEntry newSourceEntry = newLibraryEntry(srcPath, srcPath, null);
-                    paths.put(newSourceEntry.toString(), newSourceEntry);
-                }
-                //}
 
             }
             else {
