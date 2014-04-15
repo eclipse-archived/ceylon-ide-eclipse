@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.external;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +15,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.provider.FileSystem;
+import org.eclipse.core.internal.filesystem.local.LocalFileSystem;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -488,6 +492,30 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
 
     public static boolean isInSourceArchive(IResource resource) {
         return resource.getProject().equals(getExternalSourceArchiveManager().getExternalSourceArchivesProject());
+    }
+
+    public static IResource toResource(IPath sourceArchiveEntryPath) {
+        String entryPathString = sourceArchiveEntryPath.toString();
+        int jarSuffixIndex = entryPathString.indexOf(CeylonArchiveFileSystem.JAR_SUFFIX);
+        if (jarSuffixIndex > 0) {
+            IPath archivePath = new Path(entryPathString.substring(0, jarSuffixIndex));
+            IFolder sourceArchiveFolder = getExternalSourceArchiveManager().getSourceArchive(archivePath);
+            if (sourceArchiveFolder != null) {
+                IPath entryPath = new Path(entryPathString.substring(jarSuffixIndex + 2));
+                IResource resource = sourceArchiveFolder.findMember(entryPath);
+                return resource;
+            }
+        }
+        return null;
+    }
+
+    public static IResource toResource(URI sourceArchiveEntryURI) {
+        String scheme = sourceArchiveEntryURI.getScheme();
+        if (EFS.SCHEME_FILE.equals(scheme) || 
+                CeylonArchiveFileSystem.SCHEME_CEYLON_ARCHIVE.equals(scheme)) {
+            return toResource(new Path(sourceArchiveEntryURI.getPath()));
+        }
+        return null;
     }
 
 }
