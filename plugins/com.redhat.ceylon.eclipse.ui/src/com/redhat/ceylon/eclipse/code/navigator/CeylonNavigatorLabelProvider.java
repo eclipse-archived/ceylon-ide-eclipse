@@ -7,6 +7,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -24,6 +25,7 @@ import org.eclipse.ui.navigator.ICommonContentExtensionSite;
 import org.eclipse.ui.navigator.ICommonLabelProvider;
 import org.eclipse.ui.navigator.INavigatorContentExtension;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.Repository;
 import com.redhat.ceylon.cmr.impl.JDKRepository;
 import com.redhat.ceylon.cmr.impl.NodeUtils;
@@ -33,6 +35,8 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 public class CeylonNavigatorLabelProvider extends
@@ -73,11 +77,29 @@ public class CeylonNavigatorLabelProvider extends
             return new StyledString(super.getStyledText(element).getString());
         }
         
-        StyledString styledString = super.getStyledText(element);
-        if (styledString.getString().equals("<something>")) {
-            return getJavaNavigatorLabelProvider().getStyledText(element);
+        if (element instanceof CeylonArchiveFileStore) {
+            CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore)element;
+            if (archiveFileStore.getParent() == null) {
+                return new StyledString("Ceylon Sources");
+            }
+            return new StyledString(archiveFileStore.getName());
         }
 
+        if (element instanceof JarPackageFragmentRoot) {
+            JarPackageFragmentRoot jpfr = (JarPackageFragmentRoot) element;
+            if (ArtifactContext.CAR.substring(1).equalsIgnoreCase(jpfr.getPath().getFileExtension())) {
+                return new StyledString("Java Binaries");
+            }
+        }
+
+        StyledString styledString = super.getStyledText(element);
+        if (styledString.getString().equals("<something>")) {
+            StyledString javaResult = getJavaNavigatorLabelProvider().getStyledText(element);
+            if (! javaResult.getString().trim().isEmpty()) {
+                return javaResult;
+            }
+        }
+        
         return styledString;
     }
 
@@ -144,10 +166,6 @@ public class CeylonNavigatorLabelProvider extends
     public Image getImage(Object element) {
         JavaNavigatorLabelProvider javaProvider = getJavaNavigatorLabelProvider();
 
-        if (element instanceof IPackageFragmentRoot &&
-                ! CeylonBuilder.isSourceFolder((IPackageFragmentRoot)element)) {
-            return javaProvider.getImage(element);
-        }
         if (element instanceof IPackageFragment &&
                 ! CeylonBuilder.isInSourceFolder((IPackageFragment)element)) {
             return javaProvider.getImage(element);
@@ -174,6 +192,21 @@ public class CeylonNavigatorLabelProvider extends
             
             return getDecoratedImage(getImageKey(((SourceModuleNode)element).getModule()), decorationAttributes);
         }
+        
+        if (element instanceof CeylonArchiveFileStore) {
+            CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore)element;
+            if (archiveFileStore.getParent() != null 
+                    && ! archiveFileStore.fetchInfo().isDirectory()) {
+                IFolder sourceArchiveFolder = ExternalSourceArchiveManager.getExternalSourceArchiveManager().getSourceArchive(archiveFileStore.getArchivePath());
+                if (sourceArchiveFolder != null && sourceArchiveFolder.exists()) {
+                    IResource file = sourceArchiveFolder.findMember(archiveFileStore.getEntryPath());
+                    if (file instanceof IFile) {
+                        element = file;
+                    }
+                }
+            }
+        }
+        
         if (element instanceof IFile) {
             if (! CeylonBuilder.isCeylon((IFile) element)) {
                 return javaProvider.getImage(element);
@@ -199,6 +232,23 @@ public class CeylonNavigatorLabelProvider extends
         if (element instanceof IPackageFragment) {
             return CEYLON_PACKAGE;
         }
+        if (element instanceof CeylonArchiveFileStore) {
+            CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore)element;
+            if (archiveFileStore.getParent() == null) {
+                return CEYLON_SOURCE_ARCHIVE;
+            } else {
+                if (archiveFileStore.fetchInfo().isDirectory()) {
+                    return CEYLON_PACKAGE;
+                } else {
+                    return CEYLON_FILE;
+                }
+            }
+        }
+
+        if (element instanceof JarPackageFragmentRoot) {
+            return CEYLON_BINARY_ARCHIVE;
+        }
+        
         return super.getImageKey(element);
     }
 
@@ -222,6 +272,14 @@ public class CeylonNavigatorLabelProvider extends
                 return "Repository path : " + repo.getDisplayString();
             }
         }
+
+        if (anElement instanceof CeylonArchiveFileStore) {
+            CeylonArchiveFileStore archive = (CeylonArchiveFileStore)anElement;
+            if (archive.getParent() == null) {
+                return archive.getArchivePath().toOSString();
+            }
+        }
+
         return null;
     }
 
