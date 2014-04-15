@@ -686,8 +686,7 @@ public class JDTModule extends LazyModule {
                                 if (archiveEntry != null) {
                                     Package pkg = getPackageFromRelativePath(relativePathToAdd);
                                     ((ExternalModulePhasedUnits)phasedUnitMap).parseFile(archiveEntry, sourceArchive, pkg);
-                            }
-                            
+                                }                            
                             }
                         } catch (Exception e) {
                             StringBuilder error = new StringBuilder("Unable to read source artifact from ");
