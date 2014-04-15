@@ -99,7 +99,7 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         sharedColumn.setWidth(70);
 
         final TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
-        item.setImage(CeylonLabelProvider.ARCHIVE);
+        item.setImage(CeylonLabelProvider.MODULE);
         item.setText(Module.LANGUAGE_MODULE_NAME);
         item.setText(1, Versions.CEYLON_VERSION_NUMBER); //TODO: is this right?
         item.setText(2, "shared");
@@ -155,7 +155,7 @@ public abstract class ImportModulesWizardPage extends WizardPage {
         Map<String, String> added = getModules();
         for (Map.Entry<String, String> entry: added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
-            item.setImage(CeylonLabelProvider.ARCHIVE);
+            item.setImage(CeylonLabelProvider.MODULE);
             item.setText(entry.getKey());
             item.setText(1, entry.getValue());
         }

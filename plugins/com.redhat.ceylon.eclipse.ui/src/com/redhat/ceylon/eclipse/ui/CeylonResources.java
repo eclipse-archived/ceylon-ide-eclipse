@@ -26,7 +26,9 @@ public interface CeylonResources {
     public static final String CEYLON_PARAMETER_METHOD = "ceylon_parameter_method";
     public static final String CEYLON_TYPE_PARAMETER = "ceylon_type_parameter";
     
-    public static final String CEYLON_ARCHIVE = "ceylon_archive";
+    public static final String CEYLON_MODULE = "ceylon_module";
+    public static final String CEYLON_SOURCE_ARCHIVE = "ceylon_source_archive";
+    public static final String CEYLON_BINARY_ARCHIVE = "ceylon_binary_archive";
     public static final String CEYLON_PACKAGE = "ceylon_package";
     public static final String CEYLON_IMPORT = "ceylon_import";
     public static final String CEYLON_IMPORT_LIST = "ceylon_import_list";
@@ -139,7 +141,9 @@ public interface CeylonResources {
     public static final Image PARAMETER = imageRegistry.get(CEYLON_PARAMETER);
     public static final Image PARAMETER_METHOD = imageRegistry.get(CEYLON_PARAMETER_METHOD);
     public static final Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
-    public static final Image ARCHIVE = imageRegistry.get(CEYLON_ARCHIVE);
+    public static final Image MODULE = imageRegistry.get(CEYLON_MODULE);
+    public static final Image SOURCE_ARCHIVE = imageRegistry.get(CEYLON_SOURCE_ARCHIVE);
+    public static final Image BINARY_ARCHIVE = imageRegistry.get(CEYLON_BINARY_ARCHIVE);
     public static final Image VERSION = imageRegistry.get(MODULE_VERSION);
     public static final Image IMPORT = imageRegistry.get(CEYLON_IMPORT);
     public static final Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);

@@ -5,7 +5,7 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARCHIVE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MODULE;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
 
@@ -33,7 +33,7 @@ public class ModuleCompletions {
     
     static final class ModuleDescriptorProposal extends CompletionProposal {
         ModuleDescriptorProposal(int offset, String prefix, String moduleName) {
-            super(offset, prefix, ARCHIVE, 
+            super(offset, prefix, MODULE, 
                     "module " + moduleName,
                     "module " + moduleName + " \"1.0.0\" {}");
         }
@@ -56,7 +56,7 @@ public class ModuleCompletions {
                 String versioned, ModuleDetails module,
                 boolean withBody, ModuleVersionDetails version, 
                 String name) {
-            super(offset, prefix, ARCHIVE, 
+            super(offset, prefix, MODULE, 
                     versioned.substring(0, versioned.length()-1), 
                     versioned.substring(len));
             this.len = len;
@@ -93,7 +93,7 @@ public class ModuleCompletions {
 
         JDKModuleProposal(int offset, String prefix, int len, 
                 String versioned, String name) {
-            super(offset, prefix, ARCHIVE, versioned, 
+            super(offset, prefix, MODULE, versioned, 
                     versioned.substring(len));
             this.name = name;
         }

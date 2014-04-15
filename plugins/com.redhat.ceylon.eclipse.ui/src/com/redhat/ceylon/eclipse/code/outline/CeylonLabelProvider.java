@@ -248,7 +248,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (element instanceof IPackageFragment) {
             if (((IFolder)((IPackageFragment)element).getResource())
                     .getFile("module.ceylon").exists()) {
-                return CEYLON_ARCHIVE;
+                return CEYLON_MODULE;
             }
             else {
                 return CEYLON_PACKAGE;
@@ -259,7 +259,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return CEYLON_PACKAGE;
         }
         if (element instanceof Module) {
-            return CEYLON_ARCHIVE;
+            return CEYLON_MODULE;
         }
         if (element instanceof Unit) {
             return CEYLON_FILE;
@@ -292,7 +292,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return CEYLON_PACKAGE;
         }
         else if (n instanceof ModuleDescriptor) {
-            return CEYLON_ARCHIVE;
+            return CEYLON_MODULE;
         }
         else if (n instanceof Tree.CompilationUnit) {
             return CEYLON_FILE;

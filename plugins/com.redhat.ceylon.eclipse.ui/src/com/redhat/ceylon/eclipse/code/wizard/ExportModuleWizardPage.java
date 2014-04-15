@@ -294,7 +294,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
                 TableItem item = new TableItem(modules, SWT.NONE);
                 item.setText(module.getNameAsString());
                 item.setText(1, module.getVersion());
-                item.setImage(CeylonLabelProvider.ARCHIVE);
+                item.setImage(CeylonLabelProvider.MODULE);
                 item.setChecked(true);
             }
             

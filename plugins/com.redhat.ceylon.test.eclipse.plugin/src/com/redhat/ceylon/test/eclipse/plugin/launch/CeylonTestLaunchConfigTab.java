@@ -92,7 +92,7 @@ public class CeylonTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
                 if (entry.isValid()) {
                     switch(entry.getType()) {
                     case PROJECT: image = CeylonLabelProvider.PROJECT; break;
-                    case MODULE: image = CeylonLabelProvider.ARCHIVE; break;
+                    case MODULE: image = CeylonLabelProvider.MODULE; break;
                     case PACKAGE: image = CeylonLabelProvider.PACKAGE; break;
                     case CLASS: image = CeylonLabelProvider.CLASS; break;
                     case CLASS_LOCAL: image = CeylonLabelProvider.LOCAL_CLASS; break;
