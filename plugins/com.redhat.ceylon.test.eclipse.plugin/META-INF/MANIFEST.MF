@@ -4,7 +4,7 @@ Bundle-Name: Ceylon Test Plugin
 Bundle-SymbolicName: com.redhat.ceylon.test.eclipse.plugin; singleton:=true
 Bundle-Version: 1.1.0.qualifier
 Bundle-Activator: com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin
-Require-Bundle: com.redhat.ceylon.eclipse.ui;bundle-version="1.0.0",
+Require-Bundle: com.redhat.ceylon.eclipse.ui;bundle-version="1.1.0",
  org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
@@ -29,6 +29,6 @@ Require-Bundle: com.redhat.ceylon.eclipse.ui;bundle-version="1.0.0",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
- lib/ceylon.language-1.0.0-ide.jar,
+ lib/ceylon.language-1.1.0-ide.jar,
  lib/ceylon.test-1.0.0-ide.jar,
  lib/com.redhat.ceylon.test-1.0.0-ide.jar
