@@ -99,4 +99,12 @@ public class SourceArchiveDocumentProvider extends FileDocumentProvider {
             return null;
         }
     }
+    
+    @Override
+    public boolean isModifiable(Object element) {
+        if (element instanceof SourceArchiveEditorInput) {
+            return false;
+        }
+        return super.isModifiable(element);
+    }
 }
