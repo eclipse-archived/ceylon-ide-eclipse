@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.ui.actions.RulerBreakpointAction;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -10,6 +11,8 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.IUpdate;
+
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 
 public class RulerEnableDisableBreakpointAction extends RulerBreakpointAction implements IUpdate, MouseListener {
     private IBreakpoint fBreakpoint;
@@ -32,6 +35,12 @@ public class RulerEnableDisableBreakpointAction extends RulerBreakpointAction im
         if (fBreakpoint != null) {
             try {
                 fBreakpoint.setEnabled(!fBreakpoint.isEnabled());
+                if (fBreakpoint.getMarker() != null && 
+                        ExternalSourceArchiveManager.isInSourceArchive(fBreakpoint.getMarker().getResource())) {
+                    // Necessary since the breakpoint marker deltas will not be seen by the BreakPointManagerVisitor since 
+                    // it ignores the hidden resources, and the fake project used for source archive folders *is* hidden.
+                    DebugPlugin.getDefault().getBreakpointManager().fireBreakpointChanged(fBreakpoint);
+                }
             } catch (CoreException e) {
                 ErrorDialog.openError(getEditor().getSite().getShell(), "Error", 
                         "Failed to toggle breakpoint enablement", e.getStatus());
