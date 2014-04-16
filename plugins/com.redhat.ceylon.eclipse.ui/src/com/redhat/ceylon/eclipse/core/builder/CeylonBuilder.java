@@ -1704,9 +1704,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     projectModuleDependencies.put(project, new ModuleDependencies());
                 }
 
-                ExternalSourceArchiveManager externalArchiveManager = getExternalSourceArchiveManager();
-                externalArchiveManager.cleanUp(monitor);
-
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -1882,8 +1879,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 projectFiles.put(project, scannedFiles);
                 modelStates.put(project, ModelState.Parsed);
 
+                ExternalSourceArchiveManager externalArchiveManager = getExternalSourceArchiveManager();
+                if (allClasspathContainersInitialized()) {
+                    externalArchiveManager.cleanUp(monitor);
+                }
                 for (IPath sourceArchivePath : getExternalSourceArchives(getProjectExternalModules(project))) {
-                    externalArchiveManager.addSourceArchive(sourceArchivePath, true);                    
+                    if (externalArchiveManager.getSourceArchive(sourceArchivePath) == null) {
+                        externalArchiveManager.addSourceArchive(sourceArchivePath, true);                    
+                    }
                 }
                 externalArchiveManager.createPendingSourceArchives(monitor);
                 
