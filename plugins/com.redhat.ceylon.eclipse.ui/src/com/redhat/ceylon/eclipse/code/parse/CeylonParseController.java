@@ -22,8 +22,10 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -67,6 +69,7 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
@@ -146,6 +149,16 @@ public class CeylonParseController {
      */
     public void initialize(IPath filePath, IProject project, 
             AnnotationCreator handler) {
+        if (ExternalSourceArchiveManager.isTheSourceArchiveProject(project)) {
+            IResource archiveEntry = project.findMember(filePath);
+            if (archiveEntry instanceof IFile && archiveEntry.exists()) {
+                IPath entryPath = ExternalSourceArchiveManager.toFullPath((IFile) archiveEntry);
+                if (entryPath != null) {
+                    filePath = entryPath;
+                }
+                project = null;
+            }
+        }
         this.project= project;
         this.filePath= filePath;
         this.handler= handler;
