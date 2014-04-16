@@ -1225,6 +1225,16 @@
             commandId="org.eclipse.ui.views.showView"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
+            sequence="M2+M3+Q C">
+          <parameter
+              id="org.eclipse.ui.views.showView.viewId"
+              value="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer">
+          </parameter>
+      </key>      
+      <key
+            commandId="org.eclipse.ui.views.showView"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
             sequence="M2+M3+Q T">
           <parameter
               id="org.eclipse.ui.views.showView.viewId"
@@ -1904,11 +1914,15 @@
                   relative="org.eclipse.ui.console.ConsoleView"
                   visible="false"
                   relationship="stack"/>
-            <view id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+            <view id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"
                   relative="org.eclipse.ui.editorss"
                   closeable="false"
                   ratio="0.22"
                   relationship="left"/>
+            <view id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
+                  relative="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"
+                  visible="false"
+                  relationship="stack"/>
             <view id="org.eclipse.ui.navigator.ProjectExplorer"
                   relative="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"
                   visible="false"
@@ -1944,10 +1958,12 @@
             <perspectiveShortcut 
                   id="org.eclipse.jdt.ui.JavaPerspective"/>
             <showInPart id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
+            <showInPart id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
             <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
             <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
+            <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
             <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"/>
@@ -2313,11 +2329,17 @@
             name="Ceylon"
             id="com.redhat.ceylon.eclipse.ui.views"/>
       <view
-            name="Ceylon Explorer"
+            name="Old Ceylon Explorer"
             icon="icons/package.gif"
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart"
             id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
+      <view
+            category="com.redhat.ceylon.eclipse.ui.views"
+            class="org.eclipse.ui.navigator.resources.ProjectExplorer"
+            icon="icons/package.gif"
+            id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"
+            name="Ceylon Explorer"/>
       <view
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart"
@@ -2837,5 +2859,106 @@
         <filesystem scheme="ceylonArchive">
             <run class="com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem"/>
         </filesystem>
-    </extension>    
+    </extension>
+    
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+       <viewer
+             helpContext="org.eclipse.ui.project_explorer_context"
+             viewerId="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer">
+          <popupMenu
+                allowsPlatformContributions="true"
+                id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer#PopupMenu">  
+             <insertionPoint name="group.new"/>
+             <insertionPoint
+                   name="group.open"
+                   separator="true"/>
+             <insertionPoint name="group.openWith"/>   
+             <insertionPoint name="group.edit"
+                   separator="true"/>   
+             <insertionPoint name="group.reorganize" />         
+             <insertionPoint
+                   name="group.port"
+                   separator="true"/>     
+             <insertionPoint
+                   name="group.build"
+                   separator="true"/> 
+             <insertionPoint
+                   name="group.generate"
+                   separator="true"/> 
+             <insertionPoint
+                   name="group.search"
+                   separator="true"/>              
+             <insertionPoint
+                   name="additions"
+                   separator="true"/>              
+             <insertionPoint
+                   name="group.properties"
+                   separator="true"/>
+             
+          </popupMenu>
+          <options>
+             <property
+                   name="org.eclipse.ui.navigator.customizeViewDialogHelpContext"
+                   value="org.eclipse.ui.project_explorer_customization_dialog">
+             </property>
+          </options>
+       </viewer>
+       <viewerContentBinding 
+             viewerId="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer">
+          <includes>
+       	    <contentExtension pattern="org.eclipse.ui.navigator.resourceContent" />		       	      
+	        <contentExtension pattern="org.eclipse.ui.navigator.resources.filters.*"/>
+			<contentExtension pattern="org.eclipse.ui.navigator.resources.linkHelper"/>
+			<contentExtension pattern="org.eclipse.ui.navigator.resources.workingSets"/>
+			<contentExtension pattern="org.eclipse.jdt.java.ui.javaContent" />
+			<contentExtension pattern="org.eclipse.jdt.java.ui.filters.*" />	
+			<contentExtension pattern="org.eclipse.jdt.java.ui.javaLinkHelper" />	
+			<contentExtension pattern="com.redhat.ceylon.eclipse.ui.ceylonContent" />
+	     </includes>
+       </viewerContentBinding>
+       <viewerActionBinding
+            viewerId="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer">
+         <includes>
+             <actionExtension pattern="org.eclipse.ui.navigator.resources.*" />
+         </includes>
+       </viewerActionBinding>
+       <dragAssistant
+             class="org.eclipse.ui.navigator.resources.ResourceDragAdapterAssistant"
+             viewerId="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
+       
+   </extension>
+    <extension
+          point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
+       <propertyContributor
+             contributorId="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"
+             labelProvider="org.eclipse.ui.internal.navigator.resources.workbench.TabbedPropertySheetTitleProvider">
+          <propertyCategory category="general"/>
+          <propertyCategory category="core"/>
+          <propertyCategory category="appearance"/>
+          <propertyCategory category="resource"/>
+          <propertyCategory category="advanced"/>
+       </propertyContributor>
+    </extension>
+    <extension
+          point="org.eclipse.ui.views.properties.tabbed.propertyTabs">
+       <propertyTabs contributorId="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer">
+          <propertyTab
+                label="%Resource"
+                category="resource"
+                id="CommonNavigator.tab.Resource"/>
+       </propertyTabs>
+    </extension>
+    <extension
+          point="org.eclipse.ui.views.properties.tabbed.propertySections">
+       <propertySections contributorId="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer">
+          <propertySection
+                class="org.eclipse.ui.views.properties.tabbed.AdvancedPropertySection"
+                id="CommonNavigator.section.Resource"
+                tab="CommonNavigator.tab.Resource">
+             <input type="java.lang.Object"/>
+          </propertySection>
+       </propertySections>
+    </extension>
+        
 </plugin>
