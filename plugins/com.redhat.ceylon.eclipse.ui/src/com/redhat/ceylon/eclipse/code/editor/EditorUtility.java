@@ -13,6 +13,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.IFileSystem;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -48,6 +49,7 @@ import org.eclipse.ui.texteditor.TextEditorAction;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 
@@ -302,6 +304,11 @@ public class EditorUtility {
         IWorkspace ws= ResourcesPlugin.getWorkspace();
         IWorkspaceRoot wsRoot= ws.getRoot();
 
+        IResource sourceArchiveResource = ExternalSourceArchiveManager.toResource(path);
+        if (sourceArchiveResource instanceof IFile) {
+            return new SourceArchiveEditorInput((IFile)sourceArchiveResource);
+        }
+        
         // Only create an IFileStore directly from the path if the path is outside the workspace,
         // or points inside the workspace, but is still file-system-absolute.
         if (path.isAbsolute() && (wsRoot.getLocation().isPrefixOf(path) || !wsRoot.exists(path))) {

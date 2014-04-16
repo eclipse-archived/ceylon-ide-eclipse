@@ -144,6 +144,7 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage;
 import com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems;
 import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 
 /**
  * An editor for Ceylon source code.
@@ -1590,25 +1591,44 @@ public class CeylonEditor extends TextEditor {
 
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
-        
-        //the following crazy stuff seems to be needed in
-        //order to get syntax highlighting in structured
-        //compare viewer
-        CeylonSourceViewer sourceViewer = getCeylonSourceViewer();
-        if (sourceViewer!=null) {
-            // uninstall & unregister preference store listener
-            getSourceViewerDecorationSupport(sourceViewer).uninstall();
-            sourceViewer.unconfigure();
-            //setPreferenceStore(createCombinedPreferenceStore(input));
-            // install & register preference store listener
-            sourceViewer.configure(getSourceViewerConfiguration());
-            getSourceViewerDecorationSupport(sourceViewer).install(getPreferenceStore());
+        if (input instanceof IFileEditorInput && 
+                ! (input instanceof SourceArchiveEditorInput)) {
+            IFile file = ((IFileEditorInput) input).getFile();
+            if (file != null) {
+                if (ExternalSourceArchiveManager.isInSourceArchive(file)) {
+                    IPath fullPath = ExternalSourceArchiveManager.toFullPath(file);
+                    if (fullPath != null) {
+                        input = EditorUtility.getEditorInput(fullPath);
+                    } else {
+                        // Problem => close the editor
+                        input = null;
+                    }
+                }
+            }
+        }
+
+        if (input != null) {
+            //the following crazy stuff seems to be needed in
+            //order to get syntax highlighting in structured
+            //compare viewer
+            CeylonSourceViewer sourceViewer = getCeylonSourceViewer();
+            if (sourceViewer!=null) {
+                // uninstall & unregister preference store listener
+                getSourceViewerDecorationSupport(sourceViewer).uninstall();
+                sourceViewer.unconfigure();
+                //setPreferenceStore(createCombinedPreferenceStore(input));
+                // install & register preference store listener
+                sourceViewer.configure(getSourceViewerConfiguration());
+                getSourceViewerDecorationSupport(sourceViewer).install(getPreferenceStore());
+            }
         }
         
         super.doSetInput(input);
         
-        //have to do this or we get a funny-looking caret
-        setInsertMode(SMART_INSERT);
+        if (input != null) {
+            //have to do this or we get a funny-looking caret
+            setInsertMode(SMART_INSERT);
+        }
     }
 
     /**
