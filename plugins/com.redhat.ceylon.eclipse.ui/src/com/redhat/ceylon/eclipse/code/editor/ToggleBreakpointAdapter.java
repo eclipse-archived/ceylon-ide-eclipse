@@ -32,12 +32,11 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 
-public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreakpointListener {
+public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget {
 
     private static final String JDT_DEBUG_PLUGIN_ID= "org.eclipse.jdt.debug";
 
     public ToggleBreakpointAdapter() {
-        DebugPlugin.getDefault().getBreakpointManager().addBreakpointListener(this);
     }
 
     public void toggleLineBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
@@ -195,17 +194,5 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IBreak
 
     public boolean canToggleWatchpoints(IWorkbenchPart part, ISelection selection) {
         return false;
-    }
-
-    public void breakpointAdded(IBreakpoint breakpoint) {
-        System.out.print("");
-    }
-
-    public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta)  {
-        System.out.print("");
-    }
-
-    public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta)  {
-        System.out.print("");
     }
 }
