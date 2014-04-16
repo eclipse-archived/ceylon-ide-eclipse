@@ -16,8 +16,10 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
 import org.eclipse.core.internal.filesystem.local.LocalFileSystem;
+import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -331,8 +333,14 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
                 for (int i = 0, length = members.length; i < length; i++) {
                     IResource member = members[i];
                     if (member.getType() == IResource.FOLDER && member.isLinked() && member.getName().startsWith(LINKED_FOLDER_NAME)) {
-                        IPath externalSourceArchivePath = member.getLocation();
-                        tempSourceArchives.put(externalSourceArchivePath, member);
+                        String path = member.getLocationURI().getPath();
+                        if (path != null) {
+                            if (path.endsWith(CeylonArchiveFileSystem.JAR_SUFFIX)) {
+                                path = path.substring(0, path.length() - 2);
+                            }
+                            IPath externalSourceArchivePath = new Path(path);
+                            tempSourceArchives.put(externalSourceArchivePath, member);
+                        }
                     }
                 }
             } catch (CoreException e) {
@@ -492,6 +500,17 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
 
     public static boolean isInSourceArchive(IResource resource) {
         return resource.getProject().equals(getExternalSourceArchiveManager().getExternalSourceArchivesProject());
+    }
+
+    public static IPath toFullPath(IResource resource) {
+        if (resource == null) {
+            return null;
+        }
+        IProject project = resource.getProject();
+        if (! project.equals(MANAGER.getExternalSourceArchivesProject())) {
+            return null;
+        }
+        return new Path(resource.getLocationURI().getPath());
     }
 
     public static IResource toResource(IPath sourceArchiveEntryPath) {
