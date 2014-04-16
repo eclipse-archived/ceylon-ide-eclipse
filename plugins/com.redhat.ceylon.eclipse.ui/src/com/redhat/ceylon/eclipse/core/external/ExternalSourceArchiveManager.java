@@ -499,9 +499,13 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
     }
 
     public static boolean isInSourceArchive(IResource resource) {
-        return resource.getProject().equals(getExternalSourceArchiveManager().getExternalSourceArchivesProject());
+        return resource != null && resource.getProject().equals(getExternalSourceArchiveManager().getExternalSourceArchivesProject());
     }
 
+    public static boolean isTheSourceArchiveProject(IProject project) {
+        return project != null && project.equals(getExternalSourceArchiveManager().getExternalSourceArchivesProject());
+    }
+    
     public static IPath toFullPath(IResource resource) {
         if (resource == null) {
             return null;
