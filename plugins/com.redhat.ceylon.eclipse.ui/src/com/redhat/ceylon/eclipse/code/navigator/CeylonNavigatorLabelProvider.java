@@ -12,8 +12,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.ui.navigator.JavaNavigatorContentProvider;
@@ -33,7 +33,6 @@ import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
@@ -45,7 +44,7 @@ public class CeylonNavigatorLabelProvider extends
     ICommonContentExtensionSite extensionSite;
     
     public CeylonNavigatorLabelProvider() {
-        super(false);
+        super(false, true); // small images
     }
 
     @Override
@@ -92,6 +91,10 @@ public class CeylonNavigatorLabelProvider extends
             }
         }
 
+        if (element instanceof IProject || element instanceof IJavaProject) {
+            return getJavaNavigatorLabelProvider().getStyledText(element);
+        }
+        
         StyledString styledString = super.getStyledText(element);
         if (styledString.getString().equals("<something>")) {
             StyledString javaResult = getJavaNavigatorLabelProvider().getStyledText(element);
@@ -166,11 +169,18 @@ public class CeylonNavigatorLabelProvider extends
     public Image getImage(Object element) {
         JavaNavigatorLabelProvider javaProvider = getJavaNavigatorLabelProvider();
 
+        if (element instanceof IProject || element instanceof IJavaProject) {
+            Image javaContributedImage = javaProvider.getImage(element);
+            if (javaContributedImage != null) {
+                return javaContributedImage;
+            }
+        }
+        
         if (element instanceof IPackageFragment &&
                 ! CeylonBuilder.isInSourceFolder((IPackageFragment)element)) {
             return javaProvider.getImage(element);
         }
-
+        
         if (element instanceof ExternalModuleNode) {
             return super.getImage(((ExternalModuleNode)element).getModule());
         }
@@ -181,16 +191,16 @@ public class CeylonNavigatorLabelProvider extends
                     continue;
                 }
                 int childValue = getDecorationAttributes(child);
-                if (childValue == ERROR) {
+                if ((childValue & ERROR) != 0) {
                     decorationAttributes = ERROR;
                     break;
                 }
-                if (childValue == WARNING) {
+                if ((childValue & WARNING) != 0) {
                     decorationAttributes = WARNING;
                 }
             }
             
-            return getDecoratedImage(getImageKey(((SourceModuleNode)element).getModule()), decorationAttributes);
+            return getDecoratedImage(getImageKey(((SourceModuleNode)element).getModule()), decorationAttributes, true);
         }
         
         if (element instanceof CeylonArchiveFileStore) {

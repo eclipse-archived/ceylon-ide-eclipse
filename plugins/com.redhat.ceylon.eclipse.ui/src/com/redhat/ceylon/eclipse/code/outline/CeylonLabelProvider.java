@@ -34,8 +34,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
-import org.eclipse.jdt.ui.jarpackager.JarPackageData;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -154,10 +152,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
     };
     
+    public static final Point BIG_SIZE = new Point(22,16);
+    public static final Point SMALL_SIZE = new Point(16,16);
+    
     private final boolean includePackage;
+    private boolean smallSize = false;
 
-    protected final static int WARNING = 1 << 2;
-    protected final static int ERROR = 1 << 3;
+    public final static int WARNING = 1 << 2;
+    public final static int ERROR = 1 << 3;
     private final static int REFINES = 1 << 4;
     private final static int IMPLEMENTS = 1 << 5;
     private final static int FORMAL = 1 << 6;
@@ -167,6 +169,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private final static int ENUM = 1 << 10;
     private final static int ALIAS = 1 << 11;
     private final static int DEPRECATED = 1 << 12;
+    private final static int CEYLON_NATURE = 1 << 12;
     //private final static int FINAL = 1 << 13;
 
     static final DecorationDescriptor[] DECORATIONS = new DecorationDescriptor[] {
@@ -180,35 +183,41 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         new DecorationDescriptor(ANNOTATION, ANNOTATION_IMAGE, TOP_LEFT),
         new DecorationDescriptor(ENUM, ENUM_IMAGE, TOP_LEFT),
         new DecorationDescriptor(ALIAS, ALIAS_IMAGE, TOP_LEFT),
-        new DecorationDescriptor(DEPRECATED, DEPRECATED_IMAGE, IDecoration.UNDERLAY)
+        new DecorationDescriptor(DEPRECATED, DEPRECATED_IMAGE, IDecoration.UNDERLAY),
         //new DecorationDescriptor(FINAL, CeylonPlugin.getInstance().image("..."), TOP_RIGHT)
     };
+    
 
     public CeylonLabelProvider(boolean includePackage) {
         this.includePackage = includePackage;
     }
     
-    protected static Image getDecoratedImage(Object element, String key) {
+    public CeylonLabelProvider(boolean includePackage, boolean smallSize) {
+        this.includePackage = includePackage;
+        this.smallSize = smallSize;
+    }
+    
+    protected static Image getDecoratedImage(Object element, String key, boolean smallSize) {
         if (key==null) return null;
         int flags = CeylonLabelProvider.getDecorationAttributes(element);
-        return getDecoratedImage(key, flags);
+        return getDecoratedImage(key, flags, smallSize);
     }
 
-    public static Image getDecoratedImage(String key, int decorationAttributes) {
+    public static Image getDecoratedImage(String key, int decorationAttributes, boolean smallSize) {
         ImageDescriptor descriptor = imageRegistry.getDescriptor(key);
-        String decoratedKey = key+'#'+decorationAttributes;
+        String decoratedKey = key+'#'+decorationAttributes + (smallSize ? "#small" : "");
         Image image = imageRegistry.get(decoratedKey);
         if (image==null) {
             imageRegistry.put(decoratedKey, 
-                    new DecoratedImageDescriptor(descriptor, decorationAttributes, new Point(22,16)));
+                    new DecoratedImageDescriptor(descriptor, decorationAttributes, smallSize ? SMALL_SIZE : BIG_SIZE));
             image = imageRegistry.get(decoratedKey);
         }
         return image;
     }
-    
+
     @Override
     public Image getImage(Object element) {
-        return getDecoratedImage(element, getImageKey(element));
+        return getDecoratedImage(element, getImageKey(element), smallSize);
     }
     
     protected String getImageKey(Object element) {
@@ -365,11 +374,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     public static Image getImageForDeclaration(Declaration element) {
-        return getDecoratedImage(element, getImageKeyForDeclaration(element));
+        return getDecoratedImage(element, getImageKeyForDeclaration(element), false);
     }
 
     public static Image getImageForFile(IFile file) {
-        return getDecoratedImage(file, getImageKeyForFile(file));
+        return getDecoratedImage(file, getImageKeyForFile(file), false);
     }
 
     private static String getImageKeyForDeclaration(Declaration d) {
@@ -819,7 +828,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
 
     public static int getDecorationAttributes(Object entity) {
         if (entity instanceof IProject) {
-            //TODO: add a Ceylon decoration to the project icon!
+            int decorationAttributes = CEYLON_NATURE;
+            switch (getMaxProblemMarkerSeverity((IProject) entity, IResource.DEPTH_INFINITE)) {
+            case IMarker.SEVERITY_ERROR:
+                decorationAttributes &= ERROR;
+                break;
+            case IMarker.SEVERITY_WARNING:
+                decorationAttributes &= WARNING;
+                break;
+            }
+            return decorationAttributes;
         }
         if (entity instanceof IPackageFragment && 
                 ! ((IPackageFragment) entity).isDefaultPackage()) {
@@ -1004,7 +1022,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
 
     public static Image getRefinementIcon(Declaration dec) {
-        return getDecoratedImage(null, getRefinementIconKey(dec));
+        return getDecoratedImage(null, getRefinementIconKey(dec), false);
     }
     
 }
