@@ -1447,7 +1447,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         return true;
     }
 
-    private boolean enableJdtClassesDir = false;
+    private boolean enableJdtClassesDir = true;
     
     public boolean isEnableJdtClassesDir() {
         return enableJdtClassesDir;
@@ -1502,26 +1502,10 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         layoutb.marginBottom = 3;
         composite.setLayout(layoutb);
         
-        final Button enableJdtClasses = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        enableJdtClasses.setText("Enable Java classes calling Ceylon (may affect performance)");
-        enableJdtClasses.setSelection(enableJdtClassesDir);
-        enableJdtClasses.setEnabled(true);
-
         final Button showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(true);
-
-//        addSelectRepoSection(parent);
-        
-        enableJdtClasses.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                enableJdtClassesDir = !enableJdtClassesDir;
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
-        });
 
         showWarnings.addSelectionListener(new SelectionListener() {
             @Override
@@ -1537,7 +1521,6 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 compileJava = !compileJava;
                 fJREGroup.updateEnableState();
-                enableJdtClasses.setEnabled(compileJava);
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
