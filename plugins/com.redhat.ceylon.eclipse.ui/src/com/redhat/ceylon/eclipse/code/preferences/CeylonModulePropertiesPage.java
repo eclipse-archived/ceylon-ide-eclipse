@@ -61,6 +61,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
 
@@ -135,8 +136,19 @@ public class CeylonModulePropertiesPage extends PropertyPage
         IAdaptable element = getElement();
         IFile file = (IFile) element.getAdapter(IFile.class);
         if (file==null) {
-            packageFragment = (IPackageFragment) element
-                    .getAdapter(IPackageFragment.class);
+            SourceModuleNode node = (SourceModuleNode) element.getAdapter(SourceModuleNode.class);
+            if (node==null) {
+                packageFragment = (IPackageFragment) element
+                        .getAdapter(IPackageFragment.class);
+            }
+            else {
+                for (IPackageFragment pf: node.getPackageFragments()) {
+                    if (pf.getElementName().equals(node.getModule().getNameAsString())) {
+                        packageFragment = pf;
+                        break;
+                    }
+                }
+            }
         }
         else {
             IJavaElement javaElement = JavaCore.create(file.getParent());

@@ -1780,6 +1780,8 @@
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonModulePropertiesPage">
          <enabledWhen>
             <or>
+               <adapt
+                   type="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>
                <and>
                   <adapt
                      type="org.eclipse.jdt.core.IPackageFragment"/>
