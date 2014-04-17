@@ -1211,7 +1211,7 @@
       <sequenceModifier
             find="M2+M3" replace="M1+M3"
             platforms="cocoa,carbon"/>
-      <key
+      <!--key
             commandId="org.eclipse.ui.views.showView"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
@@ -1220,12 +1220,12 @@
               id="org.eclipse.ui.views.showView.viewId"
               value="com.redhat.ceylon.eclipse.ui.view.PackageExplorer">
           </parameter>
-      </key>
+      </key-->
       <key
             commandId="org.eclipse.ui.views.showView"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.perspectiveContext"
-            sequence="M2+M3+Q C">
+            sequence="M2+M3+Q P">
           <parameter
               id="org.eclipse.ui.views.showView.viewId"
               value="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer">
@@ -1959,12 +1959,12 @@
                   id="org.eclipse.debug.ui.DebugPerspective"/>
             <perspectiveShortcut 
                   id="org.eclipse.jdt.ui.JavaPerspective"/>
-            <showInPart id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
+            <!--showInPart id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/-->
             <showInPart id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
             <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
             <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
-            <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/>
+            <!--viewShortcut id="com.redhat.ceylon.eclipse.ui.view.PackageExplorer"/-->
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
             <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
