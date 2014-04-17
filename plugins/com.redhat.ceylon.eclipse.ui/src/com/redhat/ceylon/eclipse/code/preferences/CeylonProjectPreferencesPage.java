@@ -145,7 +145,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         showWarnings.setEnabled(builderEnabled);
 
         enableExplodeModules = new Button(composite, SWT.CHECK);
-        enableExplodeModules.setText("Enable Java classes calling Ceylon (may affect performance)");
+        enableExplodeModules.setText("Enable Java classes calling Ceylon");
         enableExplodeModules.setSelection(explodeModules);
         enableExplodeModules.setEnabled(builderEnabled&&backendJava);
         
