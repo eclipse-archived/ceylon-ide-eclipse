@@ -5,8 +5,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
