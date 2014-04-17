@@ -1,31 +1,22 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
-
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.filesystem.IFileSystem;
-import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -33,23 +24,17 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.core.ExternalFoldersManager;
-import org.eclipse.jdt.internal.core.JavaModel;
-import org.eclipse.jdt.internal.core.PackageFragmentRoot;
-import org.eclipse.jdt.internal.core.util.WeakHashSet;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer.RequiredProjectWrapper;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IMemento;
-import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.navigator.ICommonContentExtensionSite;
 import org.eclipse.ui.navigator.IPipelinedTreeContentProvider2;
 import org.eclipse.ui.navigator.PipelinedShapeModification;
 import org.eclipse.ui.navigator.PipelinedViewerUpdate;
 import org.eclipse.ui.progress.UIJob;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.NodeUtils;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -57,14 +42,13 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 public class CeylonNavigatorContentProvider implements
         IPipelinedTreeContentProvider2, ICeylonModelListener {
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void getPipelinedChildren(Object aParent, Set theCurrentChildren) {
         if (aParent instanceof IJavaProject) {
@@ -222,9 +206,8 @@ public class CeylonNavigatorContentProvider implements
     }
     
     @Override
-    public void getPipelinedElements(Object anInput, Set theCurrentElements) {
-        System.out.print("");
-    }
+    @SuppressWarnings("rawtypes")
+    public void getPipelinedElements(Object anInput, Set theCurrentElements) {}
 
     @Override
     public Object getPipelinedParent(Object anObject, Object aSuggestedParent) {
@@ -294,6 +277,7 @@ public class CeylonNavigatorContentProvider implements
     public PipelinedShapeModification interceptAdd(
             PipelinedShapeModification aShapeModification) {
         Object aParent = aShapeModification.getParent();
+        @SuppressWarnings("rawtypes")
                 Set changedChildren = aShapeModification.getChildren();
                 
                 /*
@@ -346,6 +330,7 @@ public class CeylonNavigatorContentProvider implements
                 return aShapeModification;
     }
 
+    @SuppressWarnings("rawtypes")
     private void replaceParentOrScheduleRefresh(
             PipelinedShapeModification shapeModification, Object parent,
             Set addedChildren, Object nodeToRefresh) {
@@ -398,6 +383,7 @@ public class CeylonNavigatorContentProvider implements
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean interceptRefresh(
             PipelinedViewerUpdate aRefreshSynchronization) {
         ClassPathContainer aClassPathContainer = null;

@@ -225,13 +225,10 @@ public class CeylonNavigatorLabelProvider extends
 
         return super.getImage(element); 
     }
-
-    private boolean hasChildren(Object child) {
-        return getContentProvider().hasChildren(child);
-    }
     
     private boolean hasPipelinedChildren(Object child) {
-        return getContentProvider().hasPipelinedChildren(child, getJavaNavigatorContentProvider().hasChildren(child));
+        return getContentProvider().hasPipelinedChildren(child, 
+                getJavaNavigatorContentProvider().hasChildren(child));
     }
     
     @Override
