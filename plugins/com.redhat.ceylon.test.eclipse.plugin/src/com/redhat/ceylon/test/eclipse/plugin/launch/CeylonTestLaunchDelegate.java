@@ -95,7 +95,6 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
 
         if(runAsJs) {
             args.add("test-js");
-            args.add("--version=1.0.0"); // XXX workaround, it fails on "ceylon test-js: Module com.redhat.ceylon.testjs not found in the following"
         }
         else {
             args.add("test");
