@@ -44,10 +44,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IConsoleDocumentPartitioner;
 import org.eclipse.ui.console.TextConsole;
 
-import com.redhat.ceylon.test.eclipse.TestElement;
-import com.redhat.ceylon.test.eclipse.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 
 @SuppressWarnings("restriction")
 public class StackTracePanel extends Composite {

@@ -30,5 +30,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/ceylon.language-1.1.0-ide.jar,
- lib/ceylon.test-1.0.0-ide.jar,
- lib/com.redhat.ceylon.test-1.0.0-ide.jar
+ lib/net.minidev.json-smart-1.1.1.jar

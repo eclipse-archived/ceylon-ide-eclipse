@@ -9,6 +9,11 @@
             icon="icons/ceylon_test.png"
             id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestLaunch.png">
       </launchConfigurationTypeImage>
+      <launchConfigurationTypeImage
+            configTypeID="com.redhat.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationType"
+            icon="icons/ceylon_test.png"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestJsLaunch.png">
+      </launchConfigurationTypeImage>
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
@@ -22,6 +27,20 @@
          </launchMode>
          <launchMode
                description="Debug Ceylon Test"
+               mode="debug"
+               perspective="org.eclipse.debug.ui.DebugPerspective">
+         </launchMode>
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigTabGroup"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationTabGroup"
+            type="com.redhat.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationType">
+         <launchMode
+               description="Run Ceylon Test JavaScript"
+               mode="run">
+         </launchMode>
+         <launchMode
+               description="Debug Ceylon Test JavaScript"
                mode="debug"
                perspective="org.eclipse.debug.ui.DebugPerspective">
          </launchMode>
@@ -66,6 +85,43 @@
                mode="debug">
          </description>
       </shortcut>
+      <shortcut
+            class="com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestJsLaunchShortcut"
+            icon="icons/ceylon_test.png"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestJsLaunchShortcut"
+            label="Ceylon Test JavaScript"
+            modes="run, debug">
+                  <contextualLaunch>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <test
+                           property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaScriptModule">
+                     </test>
+                     <test
+                           forcePluginActivation="true"
+                           property="com.redhat.ceylon.test.eclipse.plugin.canLaunchAsCeylonTest">
+                     </test>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+               id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationType">
+         </configurationType>
+         <description
+               description="Run Ceylon Test JavaScript"
+               mode="run">
+         </description>
+         <description
+               description="Debug Ceylon Test JavaScript"
+               mode="debug">
+         </description>
+      </shortcut>
    </extension>
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
@@ -74,8 +130,16 @@
             id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationType"
             modes="run, debug"
             name="Ceylon Test"
-            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
-            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+            sourceLocatorId="com.redhat.ceylon.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
+      </launchConfigurationType>
+      <launchConfigurationType
+            delegate="com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchDelegate"
+            id="com.redhat.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationType"
+            modes="run, debug"
+            name="Ceylon Test JavaScript"
+            sourceLocatorId="com.redhat.ceylon.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
       </launchConfigurationType>
    </extension>
    <extension
