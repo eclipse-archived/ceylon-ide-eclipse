@@ -78,15 +78,15 @@ import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.test.eclipse.TestElement;
-import com.redhat.ceylon.test.eclipse.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry;
 import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type;
 import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun.TestVisitor;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 import com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
@@ -401,7 +401,7 @@ public class TestsPanel extends Composite {
 		if (entries.isEmpty()) {
 			MessageDialog.openInformation(getShell(), errorDialogTitle, errorCanNotFindSelectedTest);
 		} else {
-			CeylonTestLaunchShortcut.launch(launchName, entries, launchMode);
+			CeylonTestLaunchShortcut.launch(launchName, entries, launchMode, currentTestRun.getLaunch().getLaunchConfiguration().getType().getIdentifier());
 		}		
 	}
 

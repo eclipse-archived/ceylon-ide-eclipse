@@ -41,9 +41,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 
-import com.redhat.ceylon.test.eclipse.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListener;

@@ -19,6 +19,7 @@ public class CeylonTestPlugin extends AbstractUIPlugin {
     public static final String CEYLON_TEST_MODULE_DEFAULT_VERSION = "1.0.0";
     
     public static final String LAUNCH_CONFIG_TYPE = PLUGIN_ID + ".ceylonTestLaunchConfigurationType";
+    public static final String LAUNCH_CONFIG_TYPE_JS = PLUGIN_ID + ".ceylonTestJsLaunchConfigurationType";
     public static final String LAUNCH_CONFIG_ENTRIES_KEY = PLUGIN_ID + ".entries";
     public static final String LAUNCH_CONFIG_PORT = PLUGIN_ID + ".port";
     

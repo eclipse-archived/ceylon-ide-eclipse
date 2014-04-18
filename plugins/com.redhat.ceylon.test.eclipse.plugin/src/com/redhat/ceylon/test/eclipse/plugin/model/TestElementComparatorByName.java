@@ -3,8 +3,6 @@ package com.redhat.ceylon.test.eclipse.plugin.model;
 import java.text.Collator;
 import java.util.Comparator;
 
-import com.redhat.ceylon.test.eclipse.TestElement;
-
 public class TestElementComparatorByName implements Comparator<TestElement> {
 
     public static final TestElementComparatorByName INSTANCE = new TestElementComparatorByName();

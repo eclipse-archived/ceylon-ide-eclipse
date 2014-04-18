@@ -9,11 +9,8 @@ import java.util.Map;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
-import com.redhat.ceylon.test.eclipse.TestElement;
-import com.redhat.ceylon.test.eclipse.TestElement.State;
-import com.redhat.ceylon.test.eclipse.TestEvent;
-import com.redhat.ceylon.test.eclipse.TestEvent.Type;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 
 public class TestRun {
 
@@ -196,10 +193,10 @@ public class TestRun {
         return startDate;
     }
 
-    public synchronized void processRemoteTestEvent(TestEvent event) {
-        switch (event.getType()) {
+    public synchronized void processRemoteTestEvent(TestEventType eventType, TestElement element) {
+        switch (eventType) {
         case TEST_RUN_STARTED:
-            updateRootElement(event.getTestElement());
+            updateRootElement(element);
             isRunning = true;
             isFinished = false;
             isInterrupted = false;
@@ -212,14 +209,14 @@ public class TestRun {
             fireTestRunFinished();
             break;
         case TEST_STARTED:
-            updateTestElement(event.getTestElement());
-            updateCounters(event);
-            fireTestStarted(event.getTestElement());
+            updateTestElement(element);
+            updateCounters(eventType, element);
+            fireTestStarted(element);
             break;
         case TEST_FINISHED:
-            updateTestElement(event.getTestElement());
-            updateCounters(event);
-            fireTestFinished(event.getTestElement());
+            updateTestElement(element);
+            updateCounters(eventType, element);
+            fireTestFinished(element);
             break;
         }
     }
@@ -283,25 +280,25 @@ public class TestRun {
         }.visitElements(root);
     }
 
-    private void updateCounters(TestEvent event) {
-        if (event.getType() == Type.TEST_STARTED) {
+    private void updateCounters(TestEventType eventType, TestElement element) {
+        if (eventType == TestEventType.TEST_STARTED) {
             startedCount++;
         }
-        if (event.getType() == Type.TEST_FINISHED) {
-            State state = event.getTestElement().getState();
+        if (eventType == TestEventType.TEST_FINISHED) {
+            State state = element.getState();
             switch (state) {
             case SUCCESS:
-                if (atomicTests.contains(event.getTestElement())) {
+                if (atomicTests.contains(element)) {
                     successCount++;
                 }
                 break;
             case FAILURE:
-                if (event.getTestElement().getException() != null) {
+                if (element.getException() != null) {
                     failureCount++;
                 }
                 break;
             case ERROR:
-                if (event.getTestElement().getException() != null) {
+                if (element.getException() != null) {
                     errorCount++;
                 }
                 break;
@@ -309,7 +306,7 @@ public class TestRun {
                 ignoreCount++;
                 break;
             default:
-                throw new IllegalStateException(event.toString());
+                throw new IllegalStateException(element.toString());
             }
         }
     }

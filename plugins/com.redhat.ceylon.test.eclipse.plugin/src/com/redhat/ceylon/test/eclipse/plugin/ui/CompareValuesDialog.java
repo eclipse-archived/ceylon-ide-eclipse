@@ -47,8 +47,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.test.eclipse.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 
 public class CompareValuesDialog extends TrayDialog {
 

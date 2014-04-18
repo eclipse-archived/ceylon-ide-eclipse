@@ -2,6 +2,7 @@ package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_PORT;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
 
 import java.util.LinkedHashSet;
@@ -49,6 +50,9 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
 
     @Override
     protected void prepareArguments(List<String> args, List<IPath> workingRepos, IProject project, ILaunch launch, boolean runAsJs) throws CoreException {
+        runAsJs = DebugPlugin.getDefault().getLaunchManager()
+                .getLaunchConfigurationType(LAUNCH_CONFIG_TYPE_JS).equals(launch.getLaunchConfiguration().getType());
+        
         LinkedHashSet<String> moduleArgs = new LinkedHashSet<String>();
         LinkedHashSet<String> testArgs = new LinkedHashSet<String>();
 
@@ -89,7 +93,13 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
             }
         }
 
-        args.add("test");
+        if(runAsJs) {
+            args.add("test-js");
+            args.add("--version=1.0.0"); // XXX workaround, it fails on "ceylon test-js: Module com.redhat.ceylon.testjs not found in the following"
+        }
+        else {
+            args.add("test");
+        }
         args.add("--port="+portThreadLocal.get());
 
         prepareRepositoryArguments(args, project, workingRepos);
