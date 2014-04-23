@@ -39,6 +39,8 @@ public class CeylonTestMessages extends NLS {
     public static String statusTestRunRunning;
     public static String statusTestRunFinished;
     public static String statusTestRunInterrupted;
+    public static String statusTestPlatformJvm;
+    public static String statusTestPlatformJs;
     
     public static String counterRuns;
     public static String counterFailures;
@@ -66,6 +68,7 @@ public class CeylonTestMessages extends NLS {
     public static String historyDlgTitle;
     public static String historyDlgMessage;
     public static String historyColumnName;
+    public static String historyColumnPlatform;
     public static String historyColumnStartDate;
     public static String historyColumnTotal;
     public static String historyColumnSuccess;
@@ -85,6 +88,7 @@ public class CeylonTestMessages extends NLS {
     public static String compareValuesDlgActual;
     
     public static String compareRunsDlgRunName;
+    public static String compareRunsDlgPlatform;
     public static String compareRunsDlgStartDate;
     public static String compareRunsDlgElapsedTime;
     public static String compareRunsDlgTotal;
@@ -110,6 +114,8 @@ public class CeylonTestMessages extends NLS {
     public static String information;
     public static String inProjectPrefix;
     public static String addCeylonTestImport;
+    public static String platformJvm;
+    public static String platformJs;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, CeylonTestMessages.class);

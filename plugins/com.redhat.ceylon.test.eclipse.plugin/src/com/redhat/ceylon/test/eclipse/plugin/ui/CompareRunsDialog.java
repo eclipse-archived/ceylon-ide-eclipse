@@ -19,6 +19,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRu
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgFailures;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgFixed;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgIgnored;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgPlatform;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgRegressedError;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgRegressedFailure;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgRemoved;
@@ -28,6 +29,9 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRu
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgSuccess;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgTotal;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgUnchanged;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJs;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJvm;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getTestStateImage;
@@ -39,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.ToolBarManager;
@@ -79,10 +84,11 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
+import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElementComparatorByName;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 
 public class CompareRunsDialog extends TrayDialog {
 
@@ -229,6 +235,24 @@ public class CompareRunsDialog extends TrayDialog {
         runNameText.setText(testRun.getRunName());
         runNameText.setBackground(backgroundColor);
         runNameText.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.BEGINNING).grab(true, false).create());
+        
+        Label platformLabel = new Label(g, SWT.NONE);
+        platformLabel.setText(compareRunsDlgPlatform);
+        platformLabel.setBackground(backgroundColor);
+        platformLabel.setForeground(labelForegroundColor);
+
+        Text platformText = new Text(g, SWT.READ_ONLY);
+        platformText.setBackground(backgroundColor);
+        platformText.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.BEGINNING).grab(true, false).create());
+        try {
+            if (LAUNCH_CONFIG_TYPE_JS.equals(testRun.getLaunch().getLaunchConfiguration().getType().getIdentifier())) {
+                platformText.setText(platformJs);
+            } else {
+                platformText.setText(platformJvm);
+            }
+        } catch (CoreException e) {
+            CeylonTestPlugin.logError("", e);
+        }
 
         Label startDateLabel = new Label(g, SWT.NONE);
         startDateLabel.setText(compareRunsDlgStartDate);

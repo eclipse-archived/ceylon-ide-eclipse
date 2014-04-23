@@ -6,15 +6,19 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STOP
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.msg;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestPlatformJs;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestPlatformJvm;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunFinished;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunInterrupted;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunRunning;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stopLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getActivePage;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -252,6 +256,17 @@ public class TestRunViewPart extends ViewPart {
             }
             else if (currentTestRun.isInterrupted()) {
                 msg = msg(statusTestRunInterrupted, currentTestRun.getRunName());
+            }
+            
+            try {
+                msg += " ";
+                if (LAUNCH_CONFIG_TYPE_JS.equals(currentTestRun.getLaunch().getLaunchConfiguration().getType().getIdentifier())) {
+                    msg += statusTestPlatformJs;
+                } else {
+                    msg += statusTestPlatformJvm;
+                }
+            } catch (CoreException e) {
+                CeylonTestPlugin.logError("", e);
             }
         }
 
