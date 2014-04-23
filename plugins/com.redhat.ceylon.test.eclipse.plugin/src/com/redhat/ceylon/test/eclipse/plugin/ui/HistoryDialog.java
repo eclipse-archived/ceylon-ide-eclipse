@@ -11,6 +11,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyCo
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnFailures;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnIgnored;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnName;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnPlatform;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnStartDate;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSuccess;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnTotal;
@@ -22,12 +23,16 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyPi
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyPinTooltip;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyUnpinLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.information;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJs;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJvm;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.remove;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.removeAll;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
 
 import java.text.DateFormat;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -93,7 +98,7 @@ public class HistoryDialog extends TitleAreaDialog {
 
     @Override
     protected Point getInitialSize() {
-        return new Point(900, 500);
+        return new Point(960, 500);
     }
 
     @Override
@@ -136,6 +141,7 @@ public class HistoryDialog extends TitleAreaDialog {
 
         createColumnPin();
         createColumnName();
+        createColumnPlatform();
         createColumnStartDate();
         createColumnCounts();
 
@@ -197,10 +203,32 @@ public class HistoryDialog extends TitleAreaDialog {
             }
         });
     }
+	
+    private void createColumnPlatform() {
+        TableViewerColumn colType = new TableViewerColumn(tableViewer, SWT.NONE);
+        colType.getColumn().setWidth(70);
+        colType.getColumn().setText(historyColumnPlatform);
+        colType.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                String platform = "";
+                try {
+                    if (LAUNCH_CONFIG_TYPE_JS.equals(((TestRun) element).getLaunch().getLaunchConfiguration().getType().getIdentifier())) {
+                        platform = platformJs;
+                    } else {
+                        platform = platformJvm;
+                    }
+                } catch (CoreException e) {
+                    // noop
+                }
+                return platform;
+            }
+        });
+    }
 
     private void createColumnStartDate() {
         TableViewerColumn colStartDate = new TableViewerColumn(tableViewer, SWT.NONE);
-        colStartDate.getColumn().setWidth(160);
+        colStartDate.getColumn().setWidth(150);
         colStartDate.getColumn().setText(historyColumnStartDate);
         colStartDate.setLabelProvider(new ColumnLabelProvider() {
             @Override
