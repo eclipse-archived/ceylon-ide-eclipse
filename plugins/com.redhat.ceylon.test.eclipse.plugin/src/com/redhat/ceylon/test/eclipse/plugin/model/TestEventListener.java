@@ -53,13 +53,15 @@ public class TestEventListener {
                 InputStream is = socket.getInputStream();
                 StringBuffer buf = new StringBuffer(128);
 
+                int ch;
+                boolean esc = false;
                 while (true) {
-                    int ch = is.read();
+                    ch = is.read();
                     if (ch == -1) {
                         break;
                     }
                     
-                    if (ch == EOT) {
+                    if (ch == EOT && esc == false) {
                         JSONObject json = (JSONObject) JSONValue.parse(buf.toString());
                         
                         TestEventType eventType = parseTestEventType((String) json.get("event"));
@@ -71,8 +73,14 @@ public class TestEventListener {
                         
                         buf.setLength(0);
                     } else {
-                        buf.append((char) ch);
+                        if (ch == EOT && esc == true) {
+                            buf.setCharAt(buf.length() - 1, (char) ch);
+                        } else {
+                            buf.append((char) ch);
+                        }
                     }
+                    
+                    esc = (ch == '\\');
                 }
             } catch (EOFException e) {
                 // noop
