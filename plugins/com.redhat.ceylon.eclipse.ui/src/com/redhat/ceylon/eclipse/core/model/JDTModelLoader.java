@@ -304,7 +304,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         /*
          * We start by loading java.lang because we will need it no matter what.
          */
-        Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME, JDK_MODULE_VERSION);
+        Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME, JDKUtils.jdk.version);
         Module languageModule = getLanguageModule();
         if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
             findOrCreatePackage(languageModule, CEYLON_LANGUAGE);
@@ -929,9 +929,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     public void loadJDKModules() {
         for(String jdkModule : JDKUtils.getJDKModuleNames())
-            findOrCreateModule(jdkModule, JDK_MODULE_VERSION);
+            findOrCreateModule(jdkModule, JDKUtils.jdk.version);
         for(String jdkOracleModule : JDKUtils.getOracleJDKModuleNames())
-            findOrCreateModule(jdkOracleModule, JDK_MODULE_VERSION);
+            findOrCreateModule(jdkOracleModule, JDKUtils.jdk.version);
     }
 
     @Override

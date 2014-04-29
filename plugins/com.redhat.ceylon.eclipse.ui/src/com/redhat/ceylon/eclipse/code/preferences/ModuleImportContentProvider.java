@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
-import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -73,7 +71,7 @@ public abstract class ModuleImportContentProvider extends ModuleSearchViewConten
             for (String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if ((prefix.equals("java.|javax.")||name.startsWith(prefix)) && !excluded(module, name)) {
                     ModuleNode moduleNode = new ModuleNode(name, new ArrayList<ModuleVersionNode>(1));
-                    moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, JDK_MODULE_VERSION));
+                    moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, JDKUtils.jdk.version));
                     list.add(moduleNode);
                 }
             }

@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.IMPORT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQueryType;
 
 import java.util.Collection;
@@ -103,7 +102,7 @@ class AddModuleImportProposal implements ICompletionProposal,
             for (String mod: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if (JDKUtils.isJDKPackage(mod, pkg)) {
                     proposals.add(new AddModuleImportProposal(project, unit, mod, 
-                            JDK_MODULE_VERSION));
+                            JDKUtils.jdk.version));
                     return;
                 }
             }
