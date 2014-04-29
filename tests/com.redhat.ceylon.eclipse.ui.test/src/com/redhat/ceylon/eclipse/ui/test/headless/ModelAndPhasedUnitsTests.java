@@ -29,6 +29,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.junit.Test;
 
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -330,7 +331,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
             }
         }
         
-        Module module = modelLoader.findModule(AbstractModelLoader.JAVA_BASE_MODULE_NAME, AbstractModelLoader.JDK_MODULE_VERSION);
+        Module module = modelLoader.findModule(AbstractModelLoader.JAVA_BASE_MODULE_NAME, JDKUtils.jdk.version);
         
         JavaClassFile javaClass = checkDeclarationUnit(module, "java.util.logging.Logger", 
                 JavaClassFile.class, 
