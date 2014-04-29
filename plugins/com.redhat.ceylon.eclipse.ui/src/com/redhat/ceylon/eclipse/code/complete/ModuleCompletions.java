@@ -1,12 +1,11 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.JDK_MODULE_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MODULE;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
 
 import java.util.List;
@@ -22,7 +21,6 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
-import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -82,7 +80,7 @@ public class ModuleCompletions {
         @Override
         public String getAdditionalProposalInfo() {
             return JDKUtils.isJDKModule(name) ?
-                    getDocumentationForModule(name, JDK_MODULE_VERSION,
+                    getDocumentationForModule(name, JDKUtils.jdk.version,
                             "This module forms part of the Java SDK.") :
                     getDocumentationFor(module, version.getVersion());
         }
@@ -100,14 +98,14 @@ public class ModuleCompletions {
 
         @Override
         public String getAdditionalProposalInfo() {
-            return getDocumentationForModule(name, JDK_MODULE_VERSION, 
+            return getDocumentationForModule(name, JDKUtils.jdk.version, 
                     "This module forms part of the Java SDK.");
         }
     }
 
     private static final SortedSet<String> JDK_MODULE_VERSION_SET = new TreeSet<String>();
     {
-        JDK_MODULE_VERSION_SET.add(AbstractModelLoader.JDK_MODULE_VERSION);
+        JDK_MODULE_VERSION_SET.add(JDKUtils.jdk.version);
     }
     
     static void addModuleCompletions(CeylonParseController cpc, 
@@ -126,7 +124,7 @@ public class ModuleCompletions {
                 if (name.startsWith(pfp) &&
                         !moduleAlreadyImported(cpc, name)) {
                     result.add(new JDKModuleProposal(offset, prefix, len,
-                            getModuleString(withBody, name, JDK_MODULE_VERSION), 
+                            getModuleString(withBody, name, JDKUtils.jdk.version), 
                             name));
                 }
             }
