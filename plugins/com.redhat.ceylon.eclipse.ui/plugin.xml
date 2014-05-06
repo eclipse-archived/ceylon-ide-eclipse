@@ -1780,24 +1780,20 @@
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonModulePropertiesPage">
          <enabledWhen>
             <or>
-               <adapt
-                   type="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>
-               <and>
-                  <adapt
-                     type="org.eclipse.jdt.core.IPackageFragment"/>
+              <adapt
+                 type="org.eclipse.jdt.core.IPackageFragment">
+	              <test 
+	                 value="true"
+	                 forcePluginActivation="true"
+	                 property="com.redhat.ceylon.eclipse.ui.module"/>
+              </adapt>   
+              <adapt
+                  type="org.eclipse.core.resources.IFile">
                   <test 
-                     value="true"
-                     forcePluginActivation="true"
-                     property="com.redhat.ceylon.eclipse.ui.module"/>
-               </and>
-               <and>
-                  <adapt
-                     type="org.eclipse.core.resources.IFile"/>
-                  <test 
-                     value="true"
-                     forcePluginActivation="true"
-                     property="com.redhat.ceylon.eclipse.ui.module"/>
-               </and>
+	                  value="true"
+	                  forcePluginActivation="true"
+	                  property="com.redhat.ceylon.eclipse.ui.module"/>
+              </adapt>
             </or>
          </enabledWhen>
        </page>
@@ -2286,7 +2282,7 @@
                definitionId="com.redhat.ceylon.eclipse.ui.action.showInHierarchyView"/>
      </objectContribution>
      <objectContribution
-           objectClass="org.eclipse.jdt.core.IJavaProject"
+           objectClass="org.eclipse.core.resources.IProject"
            adaptable="true"
            nameFilter="*"
            id="com.redhat.ceylon.eclipse.ui.projectContextMenu">
@@ -2306,7 +2302,7 @@
         </visibility>
      </objectContribution>
      <objectContribution
-           objectClass="org.eclipse.jdt.core.IJavaProject"
+           objectClass="org.eclipse.core.resources.IProject"
            adaptable="true"
            nameFilter="*"
            id="com.redhat.ceylon.eclipse.ui.projectViewAs">
@@ -2806,6 +2802,19 @@
 					suppressedExtensionId="org.eclipse.jdt.java.ui.javaContent"/>
 
 		    <commonWizard
+		          menuGroupId="com.redhat.ceylon.eclipse.ui"
+		          type="new"
+		          wizardId="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard">
+				<enablement>
+					<or> 
+						<adapt type="org.eclipse.core.resources.IProject">
+  							<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+  						</adapt>
+					</or>
+				</enablement>
+			</commonWizard>
+
+		    <commonWizard
 		        menuGroupId="com.redhat.ceylon.eclipse.ui"
 		        type="new"
 		        wizardId="com.redhat.ceylon.eclipse.ui.newPackageWizard">
@@ -2814,17 +2823,18 @@
 						<adapt type="org.eclipse.core.resources.IProject">
   							<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
   						</adapt>
-				    	<instanceof value="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>				    
 						<and>
-							<or>
-						    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
-						    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
-							</or>
 							<adapt type="org.eclipse.core.resources.IResource">
 		  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
 	  						</adapt>
-							<test forcePluginActivation="true"
-								property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+	  						<adapt type="org.eclipse.jdt.core.IJavaElement"> 
+								<or>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+								</or>
+								<test forcePluginActivation="true"
+									property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+	  						</adapt>
 						</and>
 		        	</or>
 		     	</enablement>
@@ -2840,15 +2850,17 @@
   							<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
   						</adapt>
 						<and>
-							<or>
-						    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
-						    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
-							</or>
 							<adapt type="org.eclipse.core.resources.IResource">
 		  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
 	  						</adapt>
-							<test forcePluginActivation="true"
-								property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+	  						<adapt type="org.eclipse.jdt.core.IJavaElement"> 
+								<or>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+								</or>
+								<test forcePluginActivation="true"
+									property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+	  						</adapt>
 						</and>
 		        	</or>
 		     	</enablement>
@@ -2863,17 +2875,18 @@
 						<adapt type="org.eclipse.core.resources.IProject">
   							<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
   						</adapt>
-				    	<instanceof value="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>				    
 						<and>
-							<or>
-						    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
-						    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
-							</or>
 							<adapt type="org.eclipse.core.resources.IResource">
 		  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
 	  						</adapt>
-							<test forcePluginActivation="true"
-								property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+	  						<adapt type="org.eclipse.jdt.core.IJavaElement"> 
+								<or>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+								</or>
+								<test forcePluginActivation="true"
+									property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
+	  						</adapt>
 						</and>
 		        	</or>
 		     	</enablement>
