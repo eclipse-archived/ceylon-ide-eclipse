@@ -2746,6 +2746,9 @@
 						    <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
 						    <instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
 						</or>
+						<adapt type="org.eclipse.core.resources.IResource">
+	  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+	  					</adapt>
 						<test forcePluginActivation="true"
 							property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
 					</and>
@@ -2762,10 +2765,18 @@
 						    <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
 					    	<instanceof value="org.eclipse.core.resources.IFile"/>
 						</or>
+						<adapt type="org.eclipse.core.resources.IResource">
+	  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+	  					</adapt>
 						<test forcePluginActivation="true"
 							property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
 					</and>
-				    <instanceof value="org.eclipse.jdt.internal.core.JarPackageFragmentRoot"/>
+					<and>
+					    <instanceof value="org.eclipse.jdt.internal.core.JarPackageFragmentRoot"/>
+						<adapt type="org.eclipse.core.resources.IResource">
+	  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+	  					</adapt>
+					</and>
 				    <instanceof value="com.redhat.ceylon.eclipse.code.navigator.ModuleNode"/>				    
 				    <instanceof value="com.redhat.ceylon.eclipse.code.navigator.RepositoryNode"/>
 				    <instanceof value="com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore"/>				    				    
@@ -2778,7 +2789,12 @@
 		         overrides="org.eclipse.jdt.ui.navigator.actions.OpenActions"> 
 				<enablement>
 					<or>
-						<instanceof value="org.eclipse.jdt.core.IJavaElement" />
+						<and>
+							<instanceof value="org.eclipse.jdt.core.IJavaElement" />
+							<adapt type="org.eclipse.core.resources.IResource">
+		  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+	  						</adapt>
+						</and>
 						<instanceof value="org.eclipse.core.resources.IStorage" />
 					    <instanceof value="com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore"/>				    				    
 					</or>
@@ -2804,6 +2820,9 @@
 						    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
 						    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
 							</or>
+							<adapt type="org.eclipse.core.resources.IResource">
+		  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+	  						</adapt>
 							<test forcePluginActivation="true"
 								property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
 						</and>
@@ -2825,6 +2844,9 @@
 						    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
 						    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
 							</or>
+							<adapt type="org.eclipse.core.resources.IResource">
+		  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+	  						</adapt>
 							<test forcePluginActivation="true"
 								property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
 						</and>
@@ -2847,6 +2869,9 @@
 						    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
 						    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
 							</or>
+							<adapt type="org.eclipse.core.resources.IResource">
+		  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+	  						</adapt>
 							<test forcePluginActivation="true"
 								property="com.redhat.ceylon.eclipse.ui.isInCeylonSourceFolder"/>
 						</and>
