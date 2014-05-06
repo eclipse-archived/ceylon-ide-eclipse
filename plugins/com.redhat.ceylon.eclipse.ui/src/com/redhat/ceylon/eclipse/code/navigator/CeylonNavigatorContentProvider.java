@@ -127,42 +127,48 @@ public class CeylonNavigatorContentProvider implements
         }
 
         if (aParent instanceof IPackageFragment) {
-            IPackageFragment pkgFragment = (IPackageFragment) aParent;
-            IPackageFragmentRoot root = (IPackageFragmentRoot) pkgFragment.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
-            if (root != null) {
-                IFolder rootFolder = null;
-                try {
-                    rootFolder = (IFolder) root.getCorrespondingResource();
-                } catch (JavaModelException e) {
-                    e.printStackTrace();
-                }
-                if (rootFolder != null && RootFolderType.SOURCE.equals(CeylonBuilder.getRootFolderType(root))) {
-                    if (pkgFragment.isDefaultPackage()) {
-                        try {
-                            for (IResource r : rootFolder.members()) {
-                                if (r instanceof IFile && ! JavaCore.isJavaLikeFileName(r.getName())) {
-                                    theCurrentChildren.add((IFile)r);
+            if (!(aParent instanceof SourceModuleNode)) {
+                IPackageFragment pkgFragment = (IPackageFragment) aParent;
+                IPackageFragmentRoot root = (IPackageFragmentRoot) pkgFragment.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                if (root != null) {
+                    IFolder rootFolder = null;
+                    try {
+                        rootFolder = (IFolder) root.getCorrespondingResource();
+                    } catch (JavaModelException e) {
+                        e.printStackTrace();
+                    }
+                    if (rootFolder != null && RootFolderType.SOURCE.equals(CeylonBuilder.getRootFolderType(root))) {
+                        if (pkgFragment.isDefaultPackage()) {
+                            try {
+                                for (IResource r : rootFolder.members()) {
+                                    if (r instanceof IFile && ! JavaCore.isJavaLikeFileName(r.getName())) {
+                                        theCurrentChildren.add((IFile)r);
+                                    }
                                 }
+                            } catch (CoreException e) {
+                                e.printStackTrace();
                             }
-                        } catch (CoreException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        JDTModule fragmentModule = CeylonBuilder.getModule(pkgFragment);
-                        if (fragmentModule != null) {
-                            for (Iterator<Object> itr = theCurrentChildren.iterator(); itr.hasNext(); ) {
-                                Object child = itr.next();
-                                if (child instanceof IPackageFragment) {
-                                    IPackageFragment childPkg = (IPackageFragment) child;
-                                    if (! fragmentModule.equals(CeylonBuilder.getModule(childPkg))) {
-                                        itr.remove();
-                                    }                                    
+                        } else {
+                            JDTModule fragmentModule = CeylonBuilder.getModule(pkgFragment);
+                            if (fragmentModule != null) {
+                                for (Iterator<Object> itr = theCurrentChildren.iterator(); itr.hasNext(); ) {
+                                    Object child = itr.next();
+                                    if (child instanceof IPackageFragment) {
+                                        IPackageFragment childPkg = (IPackageFragment) child;
+                                        if (! fragmentModule.equals(CeylonBuilder.getModule(childPkg))) {
+                                            itr.remove();
+                                        }                                    
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            } else {
+                theCurrentChildren.clear();
+                theCurrentChildren.addAll(((SourceModuleNode)aParent).getPackageFragments());
             }
+
         }
     }
 
@@ -230,26 +236,30 @@ public class CeylonNavigatorContentProvider implements
         }
 
         if (anObject instanceof IPackageFragment) {
-            IPackageFragment pkgFragment = (IPackageFragment) anObject;
-            IPackageFragmentRoot root = (IPackageFragmentRoot) pkgFragment.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
-            Map<String, SourceModuleNode> moduleNodes = getSourceDirectoryModules(root);
-            if (CeylonBuilder.isSourceFolder(root)) {
-                if (aSuggestedParent instanceof IPackageFragmentRoot) {
-                    JDTModule module = CeylonBuilder.getModule(pkgFragment);
-                    if (module != null) {
-                        return moduleNodes.get(module.getSignature());
+            if ( !(anObject instanceof SourceModuleNode)) {
+                IPackageFragment pkgFragment = (IPackageFragment) anObject;
+                IPackageFragmentRoot root = (IPackageFragmentRoot) pkgFragment.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                Map<String, SourceModuleNode> moduleNodes = getSourceDirectoryModules(root);
+                if (CeylonBuilder.isSourceFolder(root)) {
+                    if (aSuggestedParent instanceof IPackageFragmentRoot) {
+                        JDTModule module = CeylonBuilder.getModule(pkgFragment);
+                        if (module != null) {
+                            return moduleNodes.get(module.getSignature());
+                        }
                     }
-                }
-                if (aSuggestedParent instanceof IPackageFragment) {
-                    JDTModule module = CeylonBuilder.getModule(pkgFragment);
-                    if (module != null) {
-                        JDTModule parentModule = CeylonBuilder.getModule((IPackageFragment)aSuggestedParent);
-                        if (! module.equals(parentModule)) {
-                            String signature = module.getSignature();
-                            return moduleNodes.get(signature);
+                    if (aSuggestedParent instanceof IPackageFragment) {
+                        JDTModule module = CeylonBuilder.getModule(pkgFragment);
+                        if (module != null) {
+                            JDTModule parentModule = CeylonBuilder.getModule((IPackageFragment)aSuggestedParent);
+                            if (! module.equals(parentModule)) {
+                                String signature = module.getSignature();
+                                return moduleNodes.get(signature);
+                            }
                         }
                     }
                 }
+            } else {
+                return ((SourceModuleNode)anObject).getSourceFolder();
             }
         }
         
