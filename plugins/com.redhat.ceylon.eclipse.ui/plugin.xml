@@ -2716,6 +2716,7 @@
 		<viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
 			<includes>
 				<contentExtension pattern="com.redhat.ceylon.eclipse.ui.ceylonContent" />
+				<contentExtension pattern="com.redhat.ceylon.eclipse.ui.navigator.filters.*" />	
 			</includes>
 		</viewerContentBinding>
 	</extension>
@@ -2892,6 +2893,12 @@
 		     	</enablement>
 		  	</commonWizard>
 		</navigatorContent>
+  		<commonFilter
+		        activeByDefault="true"
+		        class="com.redhat.ceylon.eclipse.code.navigator.EmptyLibraryContainerFilter"
+		        name="Empty Library Containers"
+		        description="Filter out empty 'Referenced Libraries' nodes"
+		        id="com.redhat.ceylon.eclipse.ui.navigator.filters.EmptyLibraryContainerFilter"/>
     </extension>
     <extension
          id="org.eclipse.core.filesystem.zip"
@@ -2955,6 +2962,7 @@
 			<contentExtension pattern="org.eclipse.jdt.java.ui.filters.*" />	
 			<contentExtension pattern="org.eclipse.jdt.java.ui.javaLinkHelper" />	
 			<contentExtension pattern="com.redhat.ceylon.eclipse.ui.ceylonContent" />
+			<contentExtension pattern="com.redhat.ceylon.eclipse.ui.navigator.filters.*" />	
 	     </includes>
        </viewerContentBinding>
        <viewerActionBinding

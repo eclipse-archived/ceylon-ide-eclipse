@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,10 +27,14 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer.RequiredProjectWrapper;
+import org.eclipse.jdt.internal.ui.packageview.LibraryContainer;
+import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.navigator.ICommonContentExtensionSite;
+import org.eclipse.ui.navigator.INavigatorContentExtension;
 import org.eclipse.ui.navigator.IPipelinedTreeContentProvider2;
 import org.eclipse.ui.navigator.PipelinedShapeModification;
 import org.eclipse.ui.navigator.PipelinedViewerUpdate;
@@ -82,6 +87,9 @@ public class CeylonNavigatorContentProvider implements
                             System.out.print("");
                         }
                     }
+                }
+                if (child instanceof LibraryContainer) {
+                    toRemove.add(child);
                 }
             }
 
@@ -419,6 +427,16 @@ public class CeylonNavigatorContentProvider implements
     @Override
     public void init(ICommonContentExtensionSite aConfig) {
         CeylonBuilder.addModelListener(this);
+        @SuppressWarnings("unchecked")
+        Set<INavigatorContentExtension> set = aConfig.getService().findContentExtensionsByTriggerPoint(JavaCore.create(ResourcesPlugin.getWorkspace().getRoot()));
+        for (INavigatorContentExtension extension : set) {
+            if (extension.getDescriptor().equals(aConfig.getExtension().getDescriptor().getOverriddenDescriptor())) {
+                ITreeContentProvider javaContentProvider = extension.getContentProvider();
+                if (javaContentProvider instanceof PackageExplorerContentProvider) {
+                    ((PackageExplorerContentProvider) javaContentProvider).setShowLibrariesNode(true);
+                }
+            }
+        }
     }
     
     @Override
