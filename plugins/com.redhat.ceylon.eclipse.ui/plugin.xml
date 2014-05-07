@@ -2717,6 +2717,7 @@
 			<includes>
 				<contentExtension pattern="com.redhat.ceylon.eclipse.ui.ceylonContent" />
 				<contentExtension pattern="com.redhat.ceylon.eclipse.ui.navigator.filters.*" />	
+				<contentExtension pattern="com.redhat.ceylon.eclipse.ui.navigator.ceylonLinkHelper" />	
 			</includes>
 		</viewerContentBinding>
 	</extension>
@@ -2900,6 +2901,34 @@
 		        description="Filter out empty 'Referenced Libraries' nodes"
 		        id="com.redhat.ceylon.eclipse.ui.navigator.filters.EmptyLibraryContainerFilter"/>
     </extension>
+  	<extension
+       point="org.eclipse.ui.navigator.linkHelper">
+		<linkHelper
+	          class="com.redhat.ceylon.eclipse.code.navigator.CeylonFileLinkHelper"
+	          id="com.redhat.ceylon.eclipse.ui.navigator.ceylonLinkHelper">          
+			<editorInputEnablement>
+		    	<or> 
+		        	<instanceof value="org.eclipse.ui.IFileEditorInput" />
+		        </or>
+			</editorInputEnablement>
+			<selectionEnablement>
+				<or>
+					<instanceof value="com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore" />
+					<and>
+						<adapt type="org.eclipse.core.resources.IResource" >
+							<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature"/>
+						</adapt>
+						<or>
+							<instanceof value="org.eclipse.core.resources.IResource" />
+							<instanceof value="org.eclipse.jdt.core.IJavaElement" />
+							<instanceof value="org.eclipse.jdt.core.IJarEntryResource" /> 
+							<instanceof value="org.eclipse.jdt.internal.ui.packageview.PackageFragmentRootContainer" />
+						</or>
+					</and>
+				</or>			
+	    	</selectionEnablement>
+		</linkHelper>          
+	</extension>
     <extension
          id="org.eclipse.core.filesystem.zip"
          point="org.eclipse.core.filesystem.filesystems">
@@ -2962,7 +2991,8 @@
 			<contentExtension pattern="org.eclipse.jdt.java.ui.filters.*" />	
 			<contentExtension pattern="org.eclipse.jdt.java.ui.javaLinkHelper" />	
 			<contentExtension pattern="com.redhat.ceylon.eclipse.ui.ceylonContent" />
-			<contentExtension pattern="com.redhat.ceylon.eclipse.ui.navigator.filters.*" />	
+			<contentExtension pattern="com.redhat.ceylon.eclipse.ui.navigator.filters.*" />
+			<contentExtension pattern="com.redhat.ceylon.eclipse.ui.navigator.ceylonLinkHelper" />	
 	     </includes>
        </viewerContentBinding>
        <viewerActionBinding
