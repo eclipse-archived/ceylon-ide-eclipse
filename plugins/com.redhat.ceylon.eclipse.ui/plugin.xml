@@ -210,6 +210,8 @@
              id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
        <primaryWizard
              id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
+       <primaryWizard
+             id="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard"/>
    </extension>
    
    <extension 
