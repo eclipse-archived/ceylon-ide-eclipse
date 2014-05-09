@@ -1951,6 +1951,8 @@
                   id="com.redhat.ceylon.eclipse.ui.newModuleWizard"/>
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
+            <newWizardShortcut
+                  id="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard"/>
             <perspectiveShortcut 
                   id="org.eclipse.debug.ui.DebugPerspective"/>
             <perspectiveShortcut 
