@@ -230,21 +230,35 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
     
     private void afterCopyCut(String selection, Map<Declaration,String> imports) {
-        if (!editor.isBlockSelectionModeEnabled()) {
-            Clipboard clipboard= new Clipboard(getTextWidget().getDisplay());
+        if (imports!=null && !editor.isBlockSelectionModeEnabled()) {
+            Clipboard clipboard = 
+                    new Clipboard(getTextWidget().getDisplay());
             try {
-                Object text = clipboard.getContents(TextTransfer.getInstance());
-                Object rtf = clipboard.getContents(RTFTransfer.getInstance());
+                Object text = 
+                        clipboard.getContents(TextTransfer.getInstance());
+                Object rtf = 
+                        clipboard.getContents(RTFTransfer.getInstance());
                 
                 try {
-                    if (imports==null) return;
-                    Object[] data = new Object[] { text, rtf, imports, selection };
-                    Transfer[] dataTypes = new Transfer[] {
-                            TextTransfer.getInstance(),
-                            RTFTransfer.getInstance(),
-                            ImportsTransfer.INSTANCE, 
-                            SourceTransfer.INSTANCE
-                        };
+                    Object[] data;
+                    Transfer[] dataTypes;
+                    if (rtf==null) {
+                        data = new Object[] { text, imports, selection };
+                        dataTypes = new Transfer[] {
+                                TextTransfer.getInstance(),
+                                ImportsTransfer.INSTANCE, 
+                                SourceTransfer.INSTANCE
+                            };
+                    }
+                    else {
+                        data = new Object[] { text, rtf, imports, selection };
+                        dataTypes = new Transfer[] {
+                                TextTransfer.getInstance(),
+                                RTFTransfer.getInstance(),
+                                ImportsTransfer.INSTANCE, 
+                                SourceTransfer.INSTANCE
+                            };
+                    }
                     clipboard.setContents(data, dataTypes);
                 } 
                 catch (SWTError e) {
@@ -262,15 +276,18 @@ public class CeylonSourceViewer extends ProjectionViewer {
     
     private boolean localPaste() {
         if (!editor.isBlockSelectionModeEnabled()) {
-            Clipboard clipboard= new Clipboard(getTextWidget().getDisplay());
+            Clipboard clipboard = 
+                    new Clipboard(getTextWidget().getDisplay());
             try {
-                String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
+                String text = 
+                        (String) clipboard.getContents(SourceTransfer.INSTANCE);
                 if (text==null) {
                     return false;
                 }
                 else {
                     @SuppressWarnings({"unchecked", "rawtypes"})
-                    Map<Declaration,String> imports = (Map) clipboard.getContents(ImportsTransfer.INSTANCE);
+                    Map<Declaration,String> imports = 
+                            (Map) clipboard.getContents(ImportsTransfer.INSTANCE);
                     IRegion selection = editor.getSelection();
                     int offset = selection.getOffset();
                     int length = selection.getLength();
@@ -279,7 +296,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     IDocument doc = this.getDocument();
                     DocumentRewriteSession rewriteSession= null;
                     if (doc instanceof IDocumentExtension4) {
-                        rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+                        rewriteSession = 
+                                ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
                     }
                     
                     try {
@@ -305,7 +323,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                             return false;
                         }
                         try {
-                            if (startOfLine && EditorsUI.getPreferenceStore().getBoolean(PASTE_CORRECT_INDENTATION)) {
+                            if (startOfLine && 
+                                    EditorsUI.getPreferenceStore().getBoolean(PASTE_CORRECT_INDENTATION)) {
                                 endOffset = correctSourceIndentation(endOffset-text.length(), text.length(), doc)+1;
                             }
                             return true;
