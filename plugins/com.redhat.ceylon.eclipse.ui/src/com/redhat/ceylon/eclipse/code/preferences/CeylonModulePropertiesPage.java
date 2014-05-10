@@ -489,7 +489,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
         for (Map.Entry<String, String> entry: added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
             item.setImage(CeylonLabelProvider.MODULE);
-            item.setText(entry.getKey() + "/" + entry.getValue());
+            item.setText(entry.getKey());
+            item.setText(1, entry.getValue());
         }
     }
 
