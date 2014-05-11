@@ -42,10 +42,11 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
 
     private boolean firstTime = true;
     
-    private final HashMap<Annotation,Position> newAnnotations = new HashMap<Annotation, Position>();
-    private HashMap<Annotation,Position> oldAnnotations = new HashMap<Annotation, Position>();
+    private final HashMap<Annotation,Position> newAnnotations = 
+            new HashMap<Annotation, Position>();
+    private HashMap<Annotation,Position> oldAnnotations = 
+            new HashMap<Annotation, Position>();
     
-
     public ProjectionAnnotationManager(CeylonEditor editor) {
         this.editor = editor;
     }
@@ -128,7 +129,7 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
         try {
             int line = doc.getLineOfOffset(offset+len);
             while (offset+len<doc.getLength() && 
-                    Character.isWhitespace(doc.getChar(offset+len)) &&
+//                    Character.isWhitespace(doc.getChar(offset+len)) &&
                     doc.getLineOfOffset(offset+len)==line) {
                 len++;
             }
