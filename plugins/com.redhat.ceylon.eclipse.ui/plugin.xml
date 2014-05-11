@@ -1103,7 +1103,7 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
       <key
-            sequence="M2+M3+A"
+            sequence="M2+M3+Y"
             commandId="com.redhat.ceylon.eclipse.ui.action.enterAlias"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
