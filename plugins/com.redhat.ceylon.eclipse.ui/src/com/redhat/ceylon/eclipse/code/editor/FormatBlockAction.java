@@ -120,8 +120,9 @@ final class FormatBlockAction extends Action {
                         pc.getTokens()))
                 .append(delim);
             }
-            if (builder.toString().endsWith(",")) {
-                builder.setLength(builder.length()-1);
+            if (builder.toString().endsWith(","+delim)) {
+                builder.setLength(builder.length()-1-delim.length());
+                builder.append(delim);
             }
             if (builder.length()!=0) {
                 builder.insert(0, delim);
