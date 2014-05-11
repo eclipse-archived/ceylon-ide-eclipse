@@ -321,6 +321,166 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
+    final class NestedLiteralCompletionProposal implements ICompletionProposal, 
+            ICompletionProposalExtension2 {
+        
+        private final int loc;
+        private final int index;
+        private final String value;
+        
+        NestedLiteralCompletionProposal(String value, int loc, 
+                int index) {
+            this.value = value;
+            this.loc = loc;
+            this.index = index;
+        }
+        
+        public String getAdditionalProposalInfo() {
+            return null;
+        }
+        
+        @Override
+        public void apply(IDocument document) {
+            //the following awfulness is necessary because the
+            //insertion point may have changed (and even its
+            //text may have changed, since the proposal was
+            //instantiated).
+            try {
+                IRegion li = document.getLineInformationOfOffset(loc);
+                int endOfLine = li.getOffset() + li.getLength();
+                int startOfArgs = getFirstPosition();
+                int offset = findCharCount(index, document, 
+                        loc+startOfArgs, endOfLine, 
+                        ",;", "", true)+1;
+                if (offset>0 && document.getChar(offset)==' ') {
+                    offset++;
+                }
+                int nextOffset = findCharCount(index+1, document, 
+                        loc+startOfArgs, endOfLine, 
+                        ",;", "", true);
+                int middleOffset = findCharCount(1, document, 
+                        offset, nextOffset, 
+                        "=", "", true)+1;
+                if (middleOffset>0 &&
+                        document.getChar(middleOffset)=='>') {
+                    middleOffset++;
+                }
+                while (middleOffset>0 &&
+                        document.getChar(middleOffset)==' ') {
+                    middleOffset++;
+                }
+                if (middleOffset>offset &&
+                        middleOffset<nextOffset) {
+                    offset = middleOffset;
+                }
+                String str = value;
+                if (nextOffset==-1) {
+                    nextOffset = offset;
+                }
+                if (document.getChar(nextOffset)=='}') {
+                    str += " ";
+                }
+                document.replace(offset, nextOffset-offset, str);
+            } 
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+            //adding imports drops us out of linked mode :(
+            /*try {
+                DocumentChange tc = new DocumentChange("imports", document);
+                tc.setEdit(new MultiTextEdit());
+                HashSet<Declaration> decs = new HashSet<Declaration>();
+                CompilationUnit cu = cpc.getRootNode();
+                importDeclaration(decs, d, cu);
+                if (d instanceof Functional) {
+                    List<ParameterList> pls = ((Functional) d).getParameterLists();
+                    if (!pls.isEmpty()) {
+                        for (Parameter p: pls.get(0).getParameters()) {
+                            MethodOrValue pm = p.getModel();
+                            if (pm instanceof Method) {
+                                for (ParameterList ppl: ((Method) pm).getParameterLists()) {
+                                    for (Parameter pp: ppl.getParameters()) {
+                                        importSignatureTypes(pp.getModel(), cu, decs);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                }
+                applyImports(tc, decs, cu, document);
+                tc.perform(new NullProgressMonitor());
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }*/
+        }
+        
+        
+        @Override
+        public Point getSelection(IDocument document) {
+            return null;
+        }
+        
+        @Override
+        public String getDisplayString() {
+            return value;
+        }
+        
+        @Override
+        public Image getImage() {
+            return null;
+        }
+        
+        @Override
+        public IContextInformation getContextInformation() {
+            return null;
+        }
+        
+        @Override
+        public void apply(ITextViewer viewer, char trigger, 
+                int stateMask, int offset) {
+            apply(viewer.getDocument());
+        }
+        
+        @Override
+        public void selected(ITextViewer viewer, boolean smartToggle) {}
+        
+        @Override
+        public void unselected(ITextViewer viewer) {}
+        
+        @Override
+        public boolean validate(IDocument document, int currentOffset,
+                DocumentEvent event) {
+            if (event==null) {
+                return true;
+            }
+            else {
+                try {
+                    IRegion li = document.getLineInformationOfOffset(loc);
+                    int endOfLine = li.getOffset() + li.getLength();
+                    int startOfArgs = getFirstPosition();
+                    int offset = findCharCount(index, document, 
+                            loc+startOfArgs, endOfLine, 
+                            ",;", "", true)+1;
+                    String content = document.get(offset, currentOffset - offset);
+                    int eq = content.indexOf("=");
+                    if (eq>0) {
+                        content = content.substring(eq+1);
+                    }
+                    String filter = content.trim().toLowerCase();
+                    if (value.toLowerCase().startsWith(filter)) {
+                        return true;
+                    }
+                }
+                catch (BadLocationException e) {
+                    // ignore concurrently modified document
+                }
+                return false;
+            }
+        }
+    }
+    
     private final CeylonParseController cpc;
     private final Declaration declaration;
     private final ProducedReference producedReference;
@@ -564,6 +724,25 @@ class InvocationCompletionProposal extends CompletionProposal {
                 .getType();
         if (type==null) return;
         Unit unit = getUnit();
+        TypeDeclaration dtd = unit.getDefiniteType(type).getDeclaration();
+        if (dtd instanceof Class) {
+            if (dtd.equals(unit.getIntegerDeclaration())) {
+                props.add(new NestedLiteralCompletionProposal("0", loc, index));
+                props.add(new NestedLiteralCompletionProposal("1", loc, index));
+            }
+            if (dtd.equals(unit.getFloatDeclaration())) {
+                props.add(new NestedLiteralCompletionProposal("0.0", loc, index));
+                props.add(new NestedLiteralCompletionProposal("1.0", loc, index));
+            }
+            if (dtd.equals(unit.getStringDeclaration())) {
+                props.add(new NestedLiteralCompletionProposal("\"\"", loc, index));
+            }
+            if (dtd.equals(unit.getCharacterDeclaration())) {
+                props.add(new NestedLiteralCompletionProposal("' '", loc, index));
+                props.add(new NestedLiteralCompletionProposal("'\\n'", loc, index));
+                props.add(new NestedLiteralCompletionProposal("'\\t'", loc, index));
+            }
+        }
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
                 getSortedProposedValues(scope, unit)) {
