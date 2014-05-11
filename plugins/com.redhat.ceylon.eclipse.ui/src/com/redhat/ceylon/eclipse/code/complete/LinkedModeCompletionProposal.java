@@ -21,7 +21,10 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 public class LinkedModeCompletionProposal 
@@ -230,6 +233,11 @@ public class LinkedModeCompletionProposal
         List<ProducedType> supertypes = isTypeUnknown(type) ?
                 Collections.<ProducedType>emptyList() :
                     type.getSupertypes();
+        TypeDeclaration td = type.getDeclaration();
+        if (td instanceof UnionType ||
+            td instanceof IntersectionType) {
+            supertypes.add(0,type);
+        }
         ICompletionProposal[] typeProposals = 
                 new ICompletionProposal[supertypes.size() + (includeValue?1:0)];
         int i=0;

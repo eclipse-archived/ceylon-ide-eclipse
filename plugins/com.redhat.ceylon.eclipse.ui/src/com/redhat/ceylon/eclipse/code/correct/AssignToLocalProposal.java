@@ -88,7 +88,7 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
                 ProposalPosition namePosition = 
                 		new ProposalPosition(document, offset+6, initialName.length(), 0, 
                 				getNameProposals(offset, 1, nameProposals));
-
+                
                 addLinkedPosition(linkedModeModel, typePosition);
                 addLinkedPosition(linkedModeModel, namePosition);
                 
