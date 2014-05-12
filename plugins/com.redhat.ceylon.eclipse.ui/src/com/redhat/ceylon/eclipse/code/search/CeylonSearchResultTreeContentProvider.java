@@ -8,9 +8,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
@@ -33,8 +31,9 @@ class CeylonSearchResultTreeContentProvider implements
     
     static final int LEVEL_FILE=0;
     static final int LEVEL_PACKAGE=1;
-    static final int LEVEL_FOLDER=2;
-    static final int LEVEL_PROJECT=3;
+    static final int LEVEL_MODULE=2;
+    static final int LEVEL_FOLDER=3;
+    static final int LEVEL_PROJECT=4;
     
     private final TreeViewer viewer;
     private CeylonSearchResult result;
@@ -175,78 +174,70 @@ class CeylonSearchResultTreeContentProvider implements
         }
     }
 
-    public Object getParent(Object element) {
-        if (element instanceof IProject ||
-            element instanceof IJavaProject) {
+    public Object getParent(Object child) {
+        if (child instanceof IProject) {
             return null;
         }
-        if (element instanceof IPackageFragment) {
-            if (level==LEVEL_PACKAGE) {
-                return null;
-            }
-            IJavaElement container=((IPackageFragment)element).getParent();
-            while (container instanceof IPackageFragment) {
-                container = container.getParent();
-            }
-            return container; //the IPackageFragmentRoot
-        }
-        if (element instanceof IPackageFragmentRoot) {
+        if (child instanceof IPackageFragmentRoot) {
             if (level==LEVEL_FOLDER) {
                 return null;
             }
-            return ((IPackageFragmentRoot)element).getJavaProject().getProject();
+            return ((IPackageFragmentRoot) child).getJavaProject().getProject();
         }
-        if (element instanceof IResource) {
-            if (level==LEVEL_FILE) {
-                return null;
+        if (child instanceof WithSourceFolder) {
+            Object element = ((WithSourceFolder) child).element;
+            IPackageFragmentRoot sourceFolder = ((WithSourceFolder) child).sourceFolder;
+            if (element instanceof Unit) {
+                if (level==LEVEL_FILE) {
+                    return null;
+                }
+                return new WithSourceFolder(((Unit) element).getPackage(), sourceFolder);
             }
-            IContainer parent = ((IResource) element).getParent();
-            IJavaElement javaElement = JavaCore.create(parent);
-            if (javaElement instanceof IPackageFragment ||
-                javaElement instanceof IPackageFragmentRoot) {
-                return javaElement;
+            if (element instanceof Package) {
+                if (level==LEVEL_PACKAGE) {
+                    return null;
+                }
+                return new WithSourceFolder(((Package) element).getModule(), sourceFolder);
             }
-            else {
-                return parent;
+            if (element instanceof Module) {
+                if (level==LEVEL_MODULE) {
+                    return null;
+                }
+                return sourceFolder==null ? ArchiveMatches.INSTANCE : sourceFolder;
             }
         }
-        if (element instanceof Unit) {
-            if (level==LEVEL_FILE) {
-                return null;
-            }
-            return ((Unit) element).getPackage();
-        }
-        if (element instanceof Package) {
-            if (level==LEVEL_PACKAGE) {
-                return null;
-            }
-            return ((Package) element).getModule();
-        }
-        if (element instanceof Module) {
-            if (level==LEVEL_PACKAGE) {
-                return null;
-            }
-            return null;
-        }
-        if (element instanceof CeylonElement) {
-            IFile file = ((CeylonElement) element).getFile();
+        if (child instanceof CeylonElement) {
+            CeylonElement ceylonElement = (CeylonElement) child;
+            
+            IPackageFragmentRoot sourceFolder = null;
+            IFile file = ceylonElement.getFile();
             if (file!=null) {
-                return file;
+                IContainer parent = file.getParent();
+                IJavaElement javaElement = JavaCore.create(parent);
+                if (javaElement instanceof IPackageFragment) {
+                    while (javaElement instanceof IPackageFragment) {
+                        javaElement = javaElement.getParent();
+                    }
+                }
+                if (javaElement instanceof IPackageFragmentRoot) {
+                    sourceFolder = (IPackageFragmentRoot) javaElement;
+                }
             }
-            VirtualFile virtualFile = ((CeylonElement) element).getVirtualFile();
+            
+            VirtualFile virtualFile = ceylonElement.getVirtualFile();
             for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
                 PhasedUnit phasedUnit = tc.getPhasedUnits().getPhasedUnit(virtualFile);
                 if (phasedUnit!=null) {
-                    return phasedUnit.getUnit();
+                    return new WithSourceFolder(phasedUnit.getUnit(), sourceFolder);
                 }
                 
-                for (Module m : tc.getContext().getModules().getListOfModules()) {
+                for (Module m: tc.getContext().getModules().getListOfModules()) {
                     if (m instanceof JDTModule) {
                         JDTModule module = (JDTModule) m;
                         if (module.isCeylonArchive()) {
                             phasedUnit = module.getPhasedUnit(virtualFile);
                             if (phasedUnit!=null) {
-                                return phasedUnit.getUnit();
+                                return new WithSourceFolder(phasedUnit.getUnit(), sourceFolder);
                             }
                         }
                     }
@@ -254,6 +245,7 @@ class CeylonSearchResultTreeContentProvider implements
             }
             return null;
         }
+        
         return null;
     }
     

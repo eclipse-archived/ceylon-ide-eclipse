@@ -3,11 +3,13 @@ package com.redhat.ceylon.eclipse.code.search;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FILE;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FOLDER;
+import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_MODULE;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PACKAGE;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FOLDER_MODE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
@@ -22,6 +24,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
@@ -53,7 +56,28 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 
     private void configureViewer(StructuredViewer viewer) {
         viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(new CeylonLabelProvider(true));
+        viewer.setLabelProvider(new CeylonLabelProvider(true) {
+            @Override
+            protected String getImageKey(Object element) {
+                if (element instanceof ArchiveMatches) {
+                    return RUNTIME_OBJ;
+                }
+                if (element instanceof WithSourceFolder) {
+                    element = ((WithSourceFolder) element).element;
+                }
+                return super.getImageKey(element);
+            }
+            @Override
+            public StyledString getStyledText(Object element) {
+                if (element instanceof ArchiveMatches) {
+                    return new StyledString("Source Archive Matches");
+                }
+                if (element instanceof WithSourceFolder) {
+                    element = ((WithSourceFolder) element).element;
+                }
+                return super.getStyledText(element);
+            }
+        });
         viewer.setComparator(new CeylonViewerComparator());
     }
 
@@ -97,12 +121,16 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         }
     }
     
-    private static final String GROUP_LAYOUT =  PLUGIN_ID + ".search.CeylonSearchResultPage.layout";
-    private static final String GROUP_GROUPING =  PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
-    private static final String KEY_GROUPING = PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
+    private static final String GROUP_LAYOUT = 
+            PLUGIN_ID + ".search.CeylonSearchResultPage.layout";
+    private static final String GROUP_GROUPING = 
+            PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
+    private static final String KEY_GROUPING = 
+            PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
     
     private GroupAction fGroupFileAction;
     private GroupAction fGroupPackageAction;
+    private GroupAction fGroupModuleAction;
     private GroupAction fGroupFolderAction;
     private GroupAction fGroupProjectAction;
     
@@ -116,6 +144,8 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 PROJECT_MODE, LEVEL_PROJECT);
         fGroupFolderAction= new GroupAction("Source Folder", "Group by Source Folder", 
                 FOLDER_MODE, LEVEL_FOLDER);
+        fGroupModuleAction= new GroupAction("Module", "Group by Module", 
+                MODULE_MODE, LEVEL_MODULE);
         fGroupPackageAction= new GroupAction("Package", "Group by Package", 
                 PACKAGE_MODE, LEVEL_PACKAGE);
         fGroupFileAction= new GroupAction("Source File", "Group by Source File", 
@@ -130,6 +160,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     private void updateGroupingActions() {
         fGroupProjectAction.setChecked(fCurrentGrouping == LEVEL_PROJECT);
         fGroupFolderAction.setChecked(fCurrentGrouping == LEVEL_FOLDER);
+        fGroupModuleAction.setChecked(fCurrentGrouping == LEVEL_MODULE);
         fGroupPackageAction.setChecked(fCurrentGrouping == LEVEL_PACKAGE);
         fGroupFileAction.setChecked(fCurrentGrouping == LEVEL_FILE);
     }
@@ -151,6 +182,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             tbm.appendToGroup(GROUP_VIEWER_SETUP, new Separator(GROUP_GROUPING));
             tbm.appendToGroup(GROUP_GROUPING, fGroupProjectAction);
             tbm.appendToGroup(GROUP_GROUPING, fGroupFolderAction);
+            tbm.appendToGroup(GROUP_GROUPING, fGroupModuleAction);
             tbm.appendToGroup(GROUP_GROUPING, fGroupPackageAction);
             tbm.appendToGroup(GROUP_GROUPING, fGroupFileAction);
             try {
