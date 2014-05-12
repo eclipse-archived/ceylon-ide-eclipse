@@ -495,10 +495,12 @@ public class CeylonNavigatorContentProvider implements
             CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore) element;
             if (archiveFileStore.getParent() == null) {
                 // it's the archive root
-                for (IProject project : CeylonBuilder.getProjects()) {
-                    for (RepositoryNode repoNode : getProjectRepositoryNodes(project).values()) {
-                        for (ExternalModuleNode moduleNode : repoNode.getModules()) {
-                            if (moduleNode.getSourceArchive().equals(archiveFileStore)) {
+                for (IProject project: CeylonBuilder.getProjects()) {
+                    for (RepositoryNode repoNode: getProjectRepositoryNodes(project).values()) {
+                        for (ExternalModuleNode moduleNode: repoNode.getModules()) {
+                            CeylonArchiveFileStore sourceArchive = moduleNode.getSourceArchive();
+                            if (sourceArchive!=null &&
+                                    sourceArchive.equals(archiveFileStore)) {
                                 return moduleNode;
                             }
                         }
