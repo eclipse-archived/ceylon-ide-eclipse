@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.code.wizard.ExportModuleWizardPage.CLEAN_BUILD_BEFORE_EXPORT;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -137,6 +138,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                         if (page.isClean()) {
                             try {
                                 project.build(CLEAN_BUILD, monitor);
+                                project.build(AUTO_BUILD, monitor);
                             }
                             catch (CoreException e) {
                                 ex = e;
@@ -180,9 +182,9 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                         return Status.OK_STATUS;
                     }
                 };
+                job.setRule(getWorkspace().getRuleFactory().buildRule());
                 getWorkbench().getProgressService().showInDialog(getShell(), job);
                 job.setUser(true);
-                job.setRule(getWorkspace().getRuleFactory().buildRule());
                 job.schedule();
             } 
             catch (Exception e) {
