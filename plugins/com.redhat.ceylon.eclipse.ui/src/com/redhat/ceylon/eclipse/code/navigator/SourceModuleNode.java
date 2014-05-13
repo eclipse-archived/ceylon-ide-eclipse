@@ -43,10 +43,10 @@ public class SourceModuleNode extends ModuleNode implements IPackageFragment {
         return sourceFolder;
     }
 
-    public SourceModuleNode(IPackageFragmentRoot sourceFolder, String moduleSignature) {
+	public SourceModuleNode(IPackageFragmentRoot sourceFolder, String moduleSignature) {
         super(moduleSignature);
         this.sourceFolder = sourceFolder;
-        JDTModule module = getModule();
+        JDTModule module = getModule();        
         if (module.isDefaultModule()) {
             mainPackageFragment = sourceFolder.getPackageFragment("");
         } else {
@@ -121,239 +121,239 @@ public class SourceModuleNode extends ModuleNode implements IPackageFragment {
         return true;
     }
 
-    @Override
-    public IJavaElement[] getChildren() throws JavaModelException {
-        return mainPackageFragment.getChildren();
-    }
+	@Override
+	public IJavaElement[] getChildren() throws JavaModelException {
+	    return mainPackageFragment.getChildren();
+	}
 
-    @Override
-    public boolean hasChildren() throws JavaModelException {
-        return mainPackageFragment.hasChildren();
-    }
+	@Override
+	public boolean hasChildren() throws JavaModelException {
+	    return mainPackageFragment.hasChildren();
+	}
 
-    @Override
-    public boolean exists() {
-        return mainPackageFragment.exists();
-    }
+	@Override
+	public boolean exists() {
+	    return mainPackageFragment.exists();
+	}
 
-    @Override
-    public IJavaElement getAncestor(int ancestorType) {
-        return mainPackageFragment.getAncestor(ancestorType);
-    }
+	@Override
+	public IJavaElement getAncestor(int ancestorType) {
+	    return mainPackageFragment.getAncestor(ancestorType);
+	}
 
-    @Override
+	@Override
     public String getAttachedJavadoc(IProgressMonitor monitor)
             throws JavaModelException {
-        return mainPackageFragment.getAttachedJavadoc(monitor);
-    }
+	    return mainPackageFragment.getAttachedJavadoc(monitor);
+	}
 
-    @Override
-    public IResource getCorrespondingResource() throws JavaModelException {
-        return mainPackageFragment.getCorrespondingResource();
-    }
+	@Override
+	public IResource getCorrespondingResource() throws JavaModelException {
+	    return mainPackageFragment.getCorrespondingResource();
+	}
 
-    @Override
-    public int getElementType() {
-        return mainPackageFragment.getElementType();
-    }
+	@Override
+	public int getElementType() {
+	    return mainPackageFragment.getElementType();
+	}
 
-    @Override
-    public String getHandleIdentifier() {
-        return mainPackageFragment.getHandleIdentifier();
-    }
+	@Override
+	public String getHandleIdentifier() {
+	    return mainPackageFragment.getHandleIdentifier();
+	}
 
-    @Override
-    public IJavaModel getJavaModel() {
-        return mainPackageFragment.getJavaModel();
-    }
+	@Override
+	public IJavaModel getJavaModel() {
+	    return mainPackageFragment.getJavaModel();
+	}
 
-    @Override
-    public IJavaProject getJavaProject() {
-        return mainPackageFragment.getJavaProject();
-    }
+	@Override
+	public IJavaProject getJavaProject() {
+	    return mainPackageFragment.getJavaProject();
+	}
 
-    @Override
-    public IOpenable getOpenable() {
-        return mainPackageFragment.getOpenable();
-    }
+	@Override
+	public IOpenable getOpenable() {
+	    return mainPackageFragment.getOpenable();
+	}
 
-    @Override
-    public IJavaElement getParent() {
-        return mainPackageFragment.getParent();
-    }
+	@Override
+	public IJavaElement getParent() {
+	    return mainPackageFragment.getParent();
+	}
 
-    @Override
-    public IPath getPath() {
-        return mainPackageFragment.getPath();
-    }
+	@Override
+	public IPath getPath() {
+	    return mainPackageFragment.getPath();
+	}
 
-    @Override
-    public IJavaElement getPrimaryElement() {
-        return mainPackageFragment.getPrimaryElement();
-    }
+	@Override
+	public IJavaElement getPrimaryElement() {
+	    return mainPackageFragment.getPrimaryElement();
+	}
 
-    @Override
-    public IResource getResource() {
-        return mainPackageFragment.getResource();
-    }
+	@Override
+	public IResource getResource() {
+	    return mainPackageFragment.getResource();
+	}
 
-    @Override
-    public ISchedulingRule getSchedulingRule() {
-        return mainPackageFragment.getSchedulingRule();
-    }
+	@Override
+	public ISchedulingRule getSchedulingRule() {
+	    return mainPackageFragment.getSchedulingRule();
+	}
 
-    @Override
-    public IResource getUnderlyingResource() throws JavaModelException {
-        return mainPackageFragment.getUnderlyingResource();
-    }
+	@Override
+	public IResource getUnderlyingResource() throws JavaModelException {
+	    return mainPackageFragment.getUnderlyingResource();
+	}
 
-    @Override
-    public boolean isReadOnly() {
-        return mainPackageFragment.isReadOnly();
-    }
+	@Override
+	public boolean isReadOnly() {
+	    return mainPackageFragment.isReadOnly();
+	}
 
-    @Override
-    public boolean isStructureKnown() throws JavaModelException {
-        return mainPackageFragment.isStructureKnown();
-    }
+	@Override
+	public boolean isStructureKnown() throws JavaModelException {
+	    return mainPackageFragment.isStructureKnown();
+	}
 
-    @Override
-    public Object getAdapter(Class adapter) {
-        return mainPackageFragment.getAdapter(adapter);
-    }
+	@Override
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+	    return mainPackageFragment.getAdapter(adapter);
+	}
 
-    @Override
-    public void close() throws JavaModelException {
-        mainPackageFragment.close();
-    }
+	@Override
+	public void close() throws JavaModelException {
+	    mainPackageFragment.close();
+	}
 
-    @Override
-    public String findRecommendedLineSeparator() throws JavaModelException {
-        return mainPackageFragment.findRecommendedLineSeparator();
-    }
+	@Override
+	public String findRecommendedLineSeparator() throws JavaModelException {
+	    return mainPackageFragment.findRecommendedLineSeparator();
+	}
 
-    @Override
-    public IBuffer getBuffer() throws JavaModelException {
-        return mainPackageFragment.getBuffer();
-    }
+	@Override
+	public IBuffer getBuffer() throws JavaModelException {
+	    return mainPackageFragment.getBuffer();
+	}
 
-    @Override
-    public boolean hasUnsavedChanges() throws JavaModelException {
-        return mainPackageFragment.hasUnsavedChanges();
-    }
+	@Override
+	public boolean hasUnsavedChanges() throws JavaModelException {
+	    return mainPackageFragment.hasUnsavedChanges();
+	}
 
-    @Override
-    public boolean isConsistent() throws JavaModelException {
-        return mainPackageFragment.isConsistent();
-    }
+	@Override
+	public boolean isConsistent() throws JavaModelException {
+	    return mainPackageFragment.isConsistent();
+	}
 
-    @Override
-    public boolean isOpen() {
-        return mainPackageFragment.isOpen();
-    }
+	@Override
+	public boolean isOpen() {
+	    return mainPackageFragment.isOpen();
+	}
 
-    @Override
+	@Override
     public void makeConsistent(IProgressMonitor progress)
             throws JavaModelException {
-        mainPackageFragment.makeConsistent(progress);
-    }
+	    mainPackageFragment.makeConsistent(progress);
+	}
 
-    @Override
-    public void open(IProgressMonitor progress) throws JavaModelException {
-        mainPackageFragment.open(progress);
-    }
+	@Override
+	public void open(IProgressMonitor progress) throws JavaModelException {
+	    mainPackageFragment.open(progress);
+	}
 
-    @Override
+	@Override
     public void save(IProgressMonitor progress, boolean force)
             throws JavaModelException {
-        mainPackageFragment.save(progress, force);        
-    }
+	    mainPackageFragment.save(progress, force);        
+	}
 
-    @Override
+	@Override
     public void copy(IJavaElement container, IJavaElement sibling,
             String rename, boolean replace, IProgressMonitor monitor)
             throws JavaModelException {
-        mainPackageFragment.copy(container, sibling, rename, replace, monitor);
-    }
+			    mainPackageFragment.copy(container, sibling, rename, replace, monitor);
+			}
 
-    @Override
+	@Override
     public void delete(boolean force, IProgressMonitor monitor)
             throws JavaModelException {
-        mainPackageFragment.delete(force, monitor);
-    }
+	    mainPackageFragment.delete(force, monitor);
+	}
 
-    @Override
+	@Override
     public void move(IJavaElement container, IJavaElement sibling,
             String rename, boolean replace, IProgressMonitor monitor)
             throws JavaModelException {
-        mainPackageFragment.move(container, sibling, rename, replace, monitor);
-    }
+			    mainPackageFragment.move(container, sibling, rename, replace, monitor);
+			}
 
-    @Override
-    public void rename(String name, boolean replace, IProgressMonitor monitor)
-            throws JavaModelException {
-        mainPackageFragment.rename(name, replace, monitor);
-    }
+	@Override
+	public void rename(String name, boolean replace, IProgressMonitor monitor)
+			throws JavaModelException {
+			    mainPackageFragment.rename(name, replace, monitor);
+			}
 
-    @Override
-    public boolean containsJavaResources() throws JavaModelException {
-        return mainPackageFragment.containsJavaResources();
-    }
+	@Override
+	public boolean containsJavaResources() throws JavaModelException {
+	    return mainPackageFragment.containsJavaResources();
+	}
 
-    @Override
+	@Override
     public ICompilationUnit createCompilationUnit(String name, String contents,
             boolean force, IProgressMonitor monitor) throws JavaModelException {
-        return mainPackageFragment.createCompilationUnit(name, contents, force, monitor);
-    }
+			    return mainPackageFragment.createCompilationUnit(name, contents, force, monitor);
+			}
 
-    @Override
-    public IClassFile getClassFile(String name) {
-        return mainPackageFragment.getClassFile(name);
-    }
+	@Override
+	public IClassFile getClassFile(String name) {
+	    return mainPackageFragment.getClassFile(name);
+	}
 
-    @Override
-    public IClassFile[] getClassFiles() throws JavaModelException {
-        return mainPackageFragment.getClassFiles();
-    }
+	@Override
+	public IClassFile[] getClassFiles() throws JavaModelException {
+	    return mainPackageFragment.getClassFiles();
+	}
 
-    @Override
-    public ICompilationUnit getCompilationUnit(String name) {
-        return mainPackageFragment.getCompilationUnit(name);
-    }
+	@Override
+	public ICompilationUnit getCompilationUnit(String name) {
+	    return mainPackageFragment.getCompilationUnit(name);
+	}
 
-    @Override
-    public ICompilationUnit[] getCompilationUnits() throws JavaModelException {
-        return mainPackageFragment.getCompilationUnits();
-    }
+	@Override
+	public ICompilationUnit[] getCompilationUnits() throws JavaModelException {
+	    return mainPackageFragment.getCompilationUnits();
+	}
 
-    @Override
+	@Override
     public ICompilationUnit[] getCompilationUnits(WorkingCopyOwner owner)
             throws JavaModelException {
-        return mainPackageFragment.getCompilationUnits(owner);
-    }
+	    return mainPackageFragment.getCompilationUnits(owner);
+	}
 
-    @Override
-    public String getElementName() {
-        return mainPackageFragment.getElementName();
-    }
+	@Override
+	public String getElementName() {
+	    return mainPackageFragment.getElementName();
+	}
 
-    @Override
-    public int getKind() throws JavaModelException {
-        return mainPackageFragment.getKind();
-    }
+	@Override
+	public int getKind() throws JavaModelException {
+	    return mainPackageFragment.getKind();
+	}
 
-    @Override
-    public Object[] getNonJavaResources() throws JavaModelException {
-        return mainPackageFragment.getNonJavaResources();
-    }
+	@Override
+	public Object[] getNonJavaResources() throws JavaModelException {
+	    return mainPackageFragment.getNonJavaResources();
+	}
 
-    @Override
-    public boolean hasSubpackages() throws JavaModelException {
-        return mainPackageFragment.hasSubpackages();
-    }
+	@Override
+	public boolean hasSubpackages() throws JavaModelException {
+	    return mainPackageFragment.hasSubpackages();
+	}
 
-    @Override
-    public boolean isDefaultPackage() {
-        return mainPackageFragment.isDefaultPackage();
-    }
+	@Override
+	public boolean isDefaultPackage() {
+	    return mainPackageFragment.isDefaultPackage();
+	}
 }
