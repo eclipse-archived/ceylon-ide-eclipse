@@ -22,10 +22,10 @@
 	<classpathentry exported="true" kind="lib" path="defaultRepository/org/jboss/jandex/1.0.3.Final/org.jboss.jandex-1.0.3.Final.jar"/>
 	<classpathentry kind="lib" path="lib/jgrapht-jdk1.6.jar" sourcepath="/home/david/jgrapht-0.8.3/src"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/ceylon/language/1.1.0/ceylon.language-1.1.0.car"/>
-	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/common/1.1.0/com.redhat.ceylon.common-1.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/java/1.1.0/com.redhat.ceylon.compiler.java-1.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/module-resolver/1.1.0/com.redhat.ceylon.module-resolver-1.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/typechecker/1.1.0/com.redhat.ceylon.typechecker-1.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/js/1.1.0/com.redhat.ceylon.compiler.js-1.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/common/1.1.0/com.redhat.ceylon.common-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-common"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/java/1.1.0/com.redhat.ceylon.compiler.java-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-compiler"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/module-resolver/1.1.0/com.redhat.ceylon.module-resolver-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-module-resolver"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/typechecker/1.1.0/com.redhat.ceylon.typechecker-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-spec"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/js/1.1.0/com.redhat.ceylon.compiler.js-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-js"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
