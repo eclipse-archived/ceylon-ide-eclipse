@@ -553,39 +553,6 @@ public class CeylonNavigatorContentProvider implements
         return false;
     }
     
-    private boolean defaultModuleHasFiles(IPackageFragment pkgFragment) {
-        IFolder folder;
-        try {
-            folder = (IFolder) pkgFragment.getCorrespondingResource();
-            if (folder != null) {
-                Package p = CeylonBuilder.getPackage(folder);
-                if (p != null) {
-                    if (! p.getModule().isDefault()) {
-                        return false;
-                    }
-                    for (IResource childResource : folder.members()) {
-                        if (childResource instanceof IFile) {
-                            return true;
-                        }
-                    }                    
-                    for (IJavaElement child : pkgFragment.getChildren()) {
-                        if (child instanceof IPackageFragment) {
-                            if (defaultModuleHasFiles((IPackageFragment)child)) {
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
-                }
-            }
-        } catch (JavaModelException e1) {
-            e1.printStackTrace();
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-    
     @Override
     public void dispose() {
         CeylonBuilder.removeModelListener(this);
