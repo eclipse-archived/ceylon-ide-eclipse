@@ -32,12 +32,10 @@ import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.navigator.ICommonContentExtensionSite;
 import org.eclipse.ui.navigator.ICommonFilterDescriptor;
 import org.eclipse.ui.navigator.INavigatorContentExtension;
-import org.eclipse.ui.navigator.INavigatorContentServiceListener;
 import org.eclipse.ui.navigator.INavigatorFilterService;
 import org.eclipse.ui.navigator.IPipelinedTreeContentProvider2;
 import org.eclipse.ui.navigator.PipelinedShapeModification;
@@ -104,7 +102,7 @@ public class CeylonNavigatorContentProvider implements
         }
         
         if (aParent instanceof IPackageFragmentRoot) {
-    		IPackageFragmentRoot root = (IPackageFragmentRoot) aParent;
+            IPackageFragmentRoot root = (IPackageFragmentRoot) aParent;
             if (CeylonBuilder.isSourceFolder(root)) {
                 Map<String, SourceModuleNode> moduleNodes = getSourceDirectoryModules(root);
                 
@@ -210,7 +208,7 @@ public class CeylonNavigatorContentProvider implements
                     String signature = module.getSignature();
                     SourceModuleNode sourceModuleNode = sourceDirectoryModules.get(signature);
                     if (sourceModuleNode == null) {
-                        sourceModuleNode = new SourceModuleNode(sourceRoot, signature);                    		
+                        sourceModuleNode = new SourceModuleNode(sourceRoot, signature);
                         sourceDirectoryModules.put(signature, sourceModuleNode);
                     }
                 }
@@ -226,7 +224,7 @@ public class CeylonNavigatorContentProvider implements
     @Override
     public Object getPipelinedParent(Object anObject, Object aSuggestedParent) {
         if (anObject instanceof IPackageFragmentRoot) {
-    		IPackageFragmentRoot pfr = (IPackageFragmentRoot) anObject;
+            IPackageFragmentRoot pfr = (IPackageFragmentRoot) anObject;
             if (aSuggestedParent instanceof ClassPathContainer) {
                 IProject project = pfr.getJavaProject().getProject();
                 Map<String, RepositoryNode> repositories = getProjectRepositoryNodes(project);
@@ -240,7 +238,7 @@ public class CeylonNavigatorContentProvider implements
                     }
                 }
                 return null;
-            }	
+            }
         }
 
         if (anObject instanceof IPackageFragment) {
@@ -438,8 +436,8 @@ public class CeylonNavigatorContentProvider implements
             }
         }
         
-        INavigatorFilterService filterService = aConfig.getService().getFilterService();
-        List<String> filtersToActivate = new ArrayList<>();
+        final INavigatorFilterService filterService = aConfig.getService().getFilterService();
+        final List<String> filtersToActivate = new ArrayList<>();
         for (ICommonFilterDescriptor descriptor : filterService.getVisibleFilterDescriptors()) {
         	String filterId = descriptor.getId();
         	if (filterService.isActive(filterId)) {
@@ -452,7 +450,16 @@ public class CeylonNavigatorContentProvider implements
         		}
         	}
         }
-        filterService.activateFilterIdsAndUpdateViewer(filtersToActivate.toArray(new String[0]));
+
+        UIJob changeJDTEmptyFiltersJob = new UIJob("Change JDT Empty Filters") {
+            @Override
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+                filterService.activateFilterIdsAndUpdateViewer(filtersToActivate.toArray(new String[0]));
+                return Status.OK_STATUS;
+            }
+        };
+        changeJDTEmptyFiltersJob.setSystem(true);
+        changeJDTEmptyFiltersJob.schedule();
     }
     
     @Override
