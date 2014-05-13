@@ -2904,6 +2904,24 @@
 		        name="Empty Library Containers"
 		        description="Filter out empty 'Referenced Libraries' nodes"
 		        id="com.redhat.ceylon.eclipse.ui.navigator.filters.EmptyLibraryContainerFilter"/>
+  		<commonFilter
+		        activeByDefault="false"
+		        class="com.redhat.ceylon.eclipse.code.navigator.NonEssentialEmptyPackageFilter"
+		        name="Empty Ceylon packages"
+		        description="Hides all empty packages"
+		        id="com.redhat.ceylon.eclipse.ui.navigator.filters.HideEmptyPackages"/>
+  		<commonFilter
+		        activeByDefault="true"
+		        class="com.redhat.ceylon.eclipse.code.navigator.NonEssentialEmptyInnerPackageFilter"
+		        name="Empty Ceylon parent packages"
+		        description="Hides empty packages which do not contain files but other sub-folders. E.g. given a package 'org.junit' where 'org' does not contain any files, this filter will hide the package 'org' but not the package 'org.junit'"
+		        id="com.redhat.ceylon.eclipse.ui.navigator.filters.HideEmptyInnerPackages"/>
+  		<commonFilter
+		        activeByDefault="true"
+		        class="com.redhat.ceylon.eclipse.code.navigator.EmptyModuleRepositoryFilter"
+		        name="Empty Ceylon module repositories"
+		        description="Hides Ceylon module repositories that doesn't contain any module used by the project"
+		        id="com.redhat.ceylon.eclipse.ui.navigator.filters.HideEmptyModuleRepository"/>
     </extension>
   	<extension
        point="org.eclipse.ui.navigator.linkHelper">
