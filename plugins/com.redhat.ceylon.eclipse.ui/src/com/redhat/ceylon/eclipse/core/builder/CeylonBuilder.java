@@ -2674,7 +2674,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (typeChecker == null) {
             return Collections.emptyList();
         }
-        return typeChecker.getPhasedUnits().getModuleManager().getCompiledModules();
+        List<Module> modules = new ArrayList<>();
+        for (Module m : typeChecker.getPhasedUnits().getModuleManager().getCompiledModules()) {
+            if (m instanceof JDTModule) {
+                JDTModule module = (JDTModule) m;
+                if (module.isProjectModule()) {
+                    modules.add(module);
+                }
+            }
+        }
+        return modules;
     }
 
     public static RepositoryManager getProjectRepositoryManager(IProject project) {
