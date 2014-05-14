@@ -52,7 +52,7 @@ public class SourceModuleNode extends ModuleNode implements IPackageFragment {
         } else {
             mainPackageFragment = sourceFolder.getPackageFragment(module.getNameAsString());
         }
-        if (mainPackageFragment != null) {
+        if (mainPackageFragment != null && module.equals(CeylonBuilder.getModule(mainPackageFragment))) {
             packageFragments.add(mainPackageFragment);
         }        
     }
