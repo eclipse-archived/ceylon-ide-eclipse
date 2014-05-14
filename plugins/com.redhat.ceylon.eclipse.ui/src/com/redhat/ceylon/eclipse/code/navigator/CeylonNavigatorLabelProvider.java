@@ -88,6 +88,8 @@ public class CeylonNavigatorLabelProvider extends
             JarPackageFragmentRoot jpfr = (JarPackageFragmentRoot) element;
             if (ArtifactContext.CAR.substring(1).equalsIgnoreCase(jpfr.getPath().getFileExtension())) {
                 return new StyledString("Java Binaries");
+            } else {
+                return getJavaNavigatorLabelProvider().getStyledText(element);
             }
         }
 
