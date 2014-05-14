@@ -349,46 +349,10 @@ public class JDTModuleManager extends LazyModuleManager {
     }
     
 
-    private Method addErrorToModuleMethod = null;
-    
-    // Todo : to be suppressed when the base one will be done protected. 
-    private void addErrorToModule(List<String> moduleName, String error) {
-        if (addErrorToModuleMethod == null) {
-            try {
-                addErrorToModuleMethod = ModuleManager.class.getDeclaredMethod("addErrorToModule", 
-                        new Class[] {List.class, String.class});
-                addErrorToModuleMethod.setAccessible(true);
-                addErrorToModuleMethod.invoke(this, new Object[] {moduleName, error});
-            } catch (SecurityException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
-    
     // Todo : to push into the base ModelManager class
     public void addTopLevelModuleError() {
         addErrorToModule(new ArrayList<String>(), 
                 "A module cannot be defined at the top level of the hierarchy");
-    }
-    public void addTwoModulesInHierarchyError(List<String> existingModuleName, 
-            List<String> newModulePackageName) {
-        StringBuilder error = new StringBuilder("Found two modules within the same hierarchy: '");
-        error.append( formatPath( existingModuleName ) )
-            .append( "' and '" )
-            .append( formatPath( newModulePackageName ) )
-            .append("'");
-        addErrorToModule(existingModuleName, error.toString());
-        addErrorToModule(newModulePackageName, error.toString());
     }
     
     public class ExternalModulePhasedUnits extends PhasedUnits {
