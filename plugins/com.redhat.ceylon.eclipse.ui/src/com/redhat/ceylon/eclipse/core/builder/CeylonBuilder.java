@@ -646,9 +646,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         try {
             IMarker[] buildMarkers = project.findMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
             for (IMarker m: buildMarkers) {
-                Object message = m.getAttribute("message");
+                Object message = m.getAttribute(IMarker.MESSAGE);
+                Object sourceId = m.getAttribute(IMarker.SOURCE_ID);
                 if (message!=null && message.toString().endsWith("'.exploded'")) {
                     //ignore message from JDT about missing JDTClasses dir
+                    m.delete();
+                }
+                if (sourceId!=null && sourceId.equals(PLUGIN_ID)) {
+                    // Delete markers added by this builder since they will be added again just after.
                     m.delete();
                 }
                 else if (message!=null && message.toString().contains("is missing required Java project:")) {
@@ -676,6 +681,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                 marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
                 return project.getReferencedProjects();
             }
             if (! applicationModulesContainerFound) {
@@ -686,6 +692,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                 marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
                 return project.getReferencedProjects();
             }
             
@@ -707,9 +714,43 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                 marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
                 return project.getReferencedProjects();
             }
             /* End issue #471 */
+            
+            boolean sourceDirectoryInProjectFolder = false;
+            boolean outputDirectoryInProjectFolder = javaProject.getOutputLocation().equals(javaProject.getPath());
+            
+            for (IPackageFragmentRoot root : javaProject.getAllPackageFragmentRoots()) {
+                if (root.getRawClasspathEntry().getEntryKind() == IClasspathEntry.CPE_SOURCE
+                        && root.getResource().getLocation().equals(project.getLocation())) {
+                    sourceDirectoryInProjectFolder = true;
+                    break;
+                }
+            }
+            
+            if (sourceDirectoryInProjectFolder || outputDirectoryInProjectFolder) {
+                if (sourceDirectoryInProjectFolder) {
+                    IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+                    marker.setAttribute(IMarker.MESSAGE, "One source directory is the root folder of the project, which is not supported for Ceylon projects." + 
+                            " Change it in the project properties");
+                    marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                    marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                    marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+                }
+                if (outputDirectoryInProjectFolder) {
+                    IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+                    marker.setAttribute(IMarker.MESSAGE, "The project Java class directory is the root folder of the project, which is not supported for Ceylon projects." + 
+                            " Change it in the project properties");
+                    marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                    marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                    marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+                }
+                return project.getReferencedProjects();
+            }
             
             IPath modulesOutputFolderPath = getCeylonModulesOutputFolder(project).getRawLocation();
             IPath jdtOutputFolderPath = javaProject.getOutputLocation();
@@ -725,6 +766,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                 marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
                 return project.getReferencedProjects();
             }
             
