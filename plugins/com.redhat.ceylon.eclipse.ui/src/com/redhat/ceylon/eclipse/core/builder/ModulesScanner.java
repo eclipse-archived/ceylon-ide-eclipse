@@ -78,56 +78,52 @@ final class ModulesScanner implements IResourceVisitor {
             
             IFile moduleFile = ((IFolder) resource).getFile(ModuleManager.MODULE_FILE);
             if (moduleFile.exists()) {
-                if ( module != defaultModule ) {
-                    moduleManager.addTwoModulesInHierarchyError(module.getName(), pkgName);
-                } else {
-                    // First create the package with the default module and we'll change the package
-                    // after since the module doesn't exist for the moment and the package is necessary 
-                    // to create the PhasedUnit which in turns is necessary to create the module with the 
-                    // right version from the beginning (which is necessary now because the version is 
-                    // part of the Module signature used in equals/has methods and in caching
-                    // The right module will be set when calling findOrCreatePackage() with the right module 
-                    Package pkg = new Package();
-                    pkg.setName(pkgName);
-                    
-                    IFile file = moduleFile;
-                    final ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
-                    try {
-                        PhasedUnit tempPhasedUnit = null;
-                        tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
-                                typeChecker, virtualFile, srcDir, pkg);
-                        tempPhasedUnit = new CeylonSourceParser<ProjectPhasedUnit>() {
-                            @Override
-                            protected String getCharset() {
-                                try {
-                                    return virtualFile.getResource().getProject().getDefaultCharset();
-                                }
-                                catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
+                // First create the package with the default module and we'll change the package
+                // after since the module doesn't exist for the moment and the package is necessary 
+                // to create the PhasedUnit which in turns is necessary to create the module with the 
+                // right version from the beginning (which is necessary now because the version is 
+                // part of the Module signature used in equals/has methods and in caching
+                // The right module will be set when calling findOrCreatePackage() with the right module 
+                Package pkg = new Package();
+                pkg.setName(pkgName);
+                
+                IFile file = moduleFile;
+                final ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
+                try {
+                    PhasedUnit tempPhasedUnit = null;
+                    tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
+                            typeChecker, virtualFile, srcDir, pkg);
+                    tempPhasedUnit = new CeylonSourceParser<ProjectPhasedUnit>() {
+                        @Override
+                        protected String getCharset() {
+                            try {
+                                return virtualFile.getResource().getProject().getDefaultCharset();
                             }
-                            @SuppressWarnings("unchecked")
-                            @Override
-                            protected ProjectPhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
-                                return new ProjectPhasedUnit(virtualFile, srcDir, cu, pkg, 
-                                        moduleManager, typeChecker, tokenStream.getTokens()) {
-                                    protected boolean reuseExistingDescriptorModels() {
-                                        return true;
-                                    };
-                                };
+                            catch (Exception e) {
+                                throw new RuntimeException(e);
                             }
-                        }.parseFileToPhasedUnit(moduleManager, typeChecker, virtualFile, srcDir, pkg);
-                        
-                        Module m = tempPhasedUnit.visitSrcModulePhase();
-                        if (m!= null) {
-                            module = m;
-                            assert(module instanceof JDTModule);
-                            ((JDTModule) module).setProjectModule();
                         }
-                    } 
-                    catch (Exception e) {
-                        e.printStackTrace();
+                        @SuppressWarnings("unchecked")
+                        @Override
+                        protected ProjectPhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
+                            return new ProjectPhasedUnit(virtualFile, srcDir, cu, pkg, 
+                                    moduleManager, typeChecker, tokenStream.getTokens()) {
+                                protected boolean reuseExistingDescriptorModels() {
+                                    return true;
+                                };
+                            };
+                        }
+                    }.parseFileToPhasedUnit(moduleManager, typeChecker, virtualFile, srcDir, pkg);
+                    
+                    Module m = tempPhasedUnit.visitSrcModulePhase();
+                    if (m!= null) {
+                        module = m;
+                        assert(module instanceof JDTModule);
+                        ((JDTModule) module).setProjectModule();
                     }
+                } 
+                catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             
