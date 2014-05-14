@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -91,12 +90,10 @@ final class RootFolderScanner implements IResourceVisitor {
                 }
             }
             
-            if (module == defaultModule) {
-                Module realModule = modelLoader.getLoadedModule(pkgNameAsString);
-                if (realModule != null) {
-                    // The module descriptor had probably been found in another source directory
-                    module = realModule;
-                }
+            Module realModule = modelLoader.getLoadedModule(pkgNameAsString);
+            if (realModule != null) {
+                // The module descriptor had probably been found in another source directory
+                module = realModule;
             }
             
             pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
