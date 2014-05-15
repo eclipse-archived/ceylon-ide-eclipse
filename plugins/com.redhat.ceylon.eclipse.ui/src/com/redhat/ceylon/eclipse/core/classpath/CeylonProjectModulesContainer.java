@@ -63,6 +63,7 @@ import org.eclipse.jdt.internal.core.DeltaProcessingState;
 import org.eclipse.jdt.internal.core.JavaElementDelta;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
+import org.eclipse.jdt.internal.ui.util.CoreUtility;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactResultType;
@@ -176,19 +177,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
             @Override 
             protected IStatus run(IProgressMonitor monitor) {
                 final IProject project = javaProject.getProject();
-                IFolder explodedModulesFolder = getCeylonClassesOutputFolder(project);
                 try {
-                    
-                    if (isExplodeModulesEnabled(project)) {
-                        if (!explodedModulesFolder.exists()) {
-                            explodedModulesFolder.create(0, true, monitor);
-                        }
-                    }
-                    else {
-                        if (explodedModulesFolder.exists()) {
-                            explodedModulesFolder.delete(true, monitor);
-                        }
-                    }
                     
                     final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject);                    
                     javaProject.setRawClasspath(classpath, monitor);
@@ -297,6 +286,22 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                 typeChecker = parseCeylonModel(project, monitor);
             }
             
+            IFolder explodedModulesFolder = getCeylonClassesOutputFolder(project);
+            if (isExplodeModulesEnabled(project)) {
+                if (!explodedModulesFolder.exists()) {
+                    CoreUtility.createDerivedFolder(explodedModulesFolder, true, true, monitor);
+                } else {
+                    if (!explodedModulesFolder.isDerived()) {
+                        explodedModulesFolder.setDerived(true, monitor);
+                    }
+                }
+            }
+            else {
+                if (explodedModulesFolder.exists()) {
+                    explodedModulesFolder.delete(true, monitor);
+                }
+            }
+
             final Collection<IClasspathEntry> paths = findModuleArchivePaths(
                     javaProject, project, typeChecker);
             if (oldEntries == null || 

@@ -231,6 +231,7 @@ public class CeylonProjectConfig {
         boolean isSourceDirsChanged = transientSourceDirectories != null && !transientSourceDirectories.equals(oldSourceDirectories);
         boolean isResourceDirsChanged = transientResourceDirectories != null && !transientResourceDirectories.equals(oldResourceDirectories);
         
+        fixHiddenOutputFolder(oldOutputRepo);
         if (isOutputRepoChanged) {
             deleteOldOutputFolder(oldOutputRepo);
             createNewOutputFolder();
@@ -293,6 +294,18 @@ public class CeylonProjectConfig {
         }
     }
 
+    // Un-hide previously hidden the existing output folder in old projects
+    private void fixHiddenOutputFolder(String oldOutputRepo) {
+        IFolder oldOutputRepoFolder = project.getFolder(removeCurrentDirPrefix(oldOutputRepo));
+        if (oldOutputRepoFolder.exists() && oldOutputRepoFolder.isHidden()) {
+            try {
+                oldOutputRepoFolder.setHidden(false);
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private File getProjectConfigFile() {
         File projectCeylonDir = new File(project.getLocation().toFile(), ".ceylon");
         File projectCeylonConfigFile = new File(projectCeylonDir, "config");
@@ -332,9 +345,9 @@ public class CeylonProjectConfig {
                 }
             }
         }
-        if (oldOutputRepoFolder.exists() && oldOutputRepoFolder.isHidden()) {
+        if (oldOutputRepoFolder.exists() && oldOutputRepoFolder.isDerived()) {
             try {
-                oldOutputRepoFolder.setHidden(false);
+                oldOutputRepoFolder.setDerived(false, null);
             } catch (CoreException e) {
                 e.printStackTrace();
             }
@@ -346,13 +359,6 @@ public class CeylonProjectConfig {
         if (!newOutputRepoFolder.exists()) {
             try {
                 CoreUtility.createDerivedFolder(newOutputRepoFolder, true, true, null);
-            } catch (CoreException e) {
-                e.printStackTrace();
-            }
-        }
-        if (!newOutputRepoFolder.isHidden()) {
-            try {
-                newOutputRepoFolder.setHidden(true);
             } catch (CoreException e) {
                 e.printStackTrace();
             }

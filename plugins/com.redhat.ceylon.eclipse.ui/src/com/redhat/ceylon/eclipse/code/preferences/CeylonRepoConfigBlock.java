@@ -14,7 +14,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.wizards.TypedElementSelectionValidator;
 import org.eclipse.jdt.internal.ui.wizards.TypedViewerFilter;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.FolderSelectionDialog;
@@ -535,42 +534,20 @@ public class CeylonRepoConfigBlock {
         ITreeContentProvider cp= new WorkbenchContentProvider();
 
         IResource container= null;
-        try {
-            container = getOutputFolder();
-            if (container.exists() && container.isHidden()) {
-                container.setHidden(false); // TODO: whooaah awful hack!
-            }
-        } catch(IllegalArgumentException iae) {
-            // noop (IllegalArgumentException: Path must include project and resource name)
-        } catch (CoreException ce) {
-            ce.printStackTrace();
-        }
 
-        try {
-            FolderSelectionDialog dialog= new FolderSelectionDialog(control.getShell(), lp, cp);
-            dialog.setTitle(title);
-            dialog.setValidator(validator);
-            dialog.setMessage(description);
-            dialog.addFilter(filter);
-            dialog.setInput(root);
-            dialog.setInitialSelection(container);
-            dialog.setComparator(new ResourceComparator(ResourceComparator.NAME));
+        FolderSelectionDialog dialog= new FolderSelectionDialog(control.getShell(), lp, cp);
+        dialog.setTitle(title);
+        dialog.setValidator(validator);
+        dialog.setMessage(description);
+        dialog.addFilter(filter);
+        dialog.setInput(root);
+        dialog.setInitialSelection(container);
+        dialog.setComparator(new ResourceComparator(ResourceComparator.NAME));
 
-            if (dialog.open() == Window.OK) {
-                return (IResource)dialog.getFirstResult();
-            }
-            return null;
+        if (dialog.open() == Window.OK) {
+            return (IResource)dialog.getFirstResult();
         }
-        finally {
-            if (container != null && container.exists()) {
-                try {
-                    container.setHidden(true);
-                } 
-                catch (Exception ce) {
-                    ce.printStackTrace();
-                }
-            }
-        }
+        return null;
     }
 
     private void addProjectRepo(String repo, int index, boolean isLocalRepo) {
