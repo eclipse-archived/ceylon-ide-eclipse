@@ -20,7 +20,6 @@ import java.util.Map.Entry;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -41,7 +40,6 @@ import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.test.Utils;
 import com.redhat.ceylon.eclipse.ui.test.Utils.CeylonBuildSummary;
 
-import static com.redhat.ceylon.eclipse.ui.test.Utils.buildProject; 
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -110,7 +108,7 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
 	}
 
     @Override
-    protected void verifyClassLoading(String ceylon) {
+    protected void verifyCompilerClassLoading(String ceylon, ModelComparison modelCompare) {
         if (compilationError != null) {
             throw compilationError;
         }
@@ -133,24 +131,25 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
                     entry.getValue() instanceof Value ? DeclarationType.VALUE : DeclarationType.TYPE);
             Assert.assertNotNull(modelDeclaration);
             // make sure we loaded them exactly the same
-            compareDeclarations(entry.getValue(), modelDeclaration);
+            modelCompare.compareDeclarations(entry.getValue(), modelDeclaration);
         }
     }
 
-    
-    
     @Override
-    protected void compareDeclarations(Declaration validDeclaration,
-            Declaration modelDeclaration) {
-        if (modelDeclaration.getUnit() != null && 
-                modelDeclaration.getUnit().getFilename() != null && 
-                modelDeclaration.getUnit().getFilename().endsWith(".ceylon")) {
-            return;
-        }
-        super.compareDeclarations(validDeclaration, modelDeclaration);
+    protected void verifyCompilerClassLoading(String ceylon) {
+        verifyCompilerClassLoading(ceylon, new ModelComparison() {
+            @Override
+            public void compareDeclarations(Declaration validDeclaration,
+                    Declaration modelDeclaration) {
+                if (modelDeclaration.getUnit() != null && 
+                        modelDeclaration.getUnit().getFilename() != null && 
+                        modelDeclaration.getUnit().getFilename().endsWith(".ceylon")) {
+                    return;
+                }
+                super.compareDeclarations(validDeclaration, modelDeclaration);
+            }
+        });
     }
-    
-
     
     
     @Override
@@ -201,7 +200,7 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
     }
 
     @Override
-    protected void verifyClassLoading(String ceylon, RunnableTest test,
+    protected void verifyCompilerClassLoading(String ceylon, RunnableTest test,
             List<String> options) {
         test.test(CeylonBuilder.getProjectModelLoader(projectReferences));
     }
