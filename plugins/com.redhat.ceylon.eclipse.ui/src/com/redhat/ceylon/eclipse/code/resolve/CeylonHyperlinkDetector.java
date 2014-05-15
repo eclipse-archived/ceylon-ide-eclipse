@@ -12,10 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
-/**
- * Provides a method to detect hyperlinks originating from a
- * given region in the parse stream of a given parse controller.
- */
+
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     private CeylonParseController pc;
     
