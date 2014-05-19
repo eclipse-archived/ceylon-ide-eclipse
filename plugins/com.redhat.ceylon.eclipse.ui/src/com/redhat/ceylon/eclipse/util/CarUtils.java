@@ -25,7 +25,7 @@ public class CarUtils {
     
     public static Properties retrieveMappingFile(ZipFile carFile) {
         Properties mapping = new Properties();
-        if (carFile != null) {
+        if (carFile != null && carFile.isValidZipFile()) {
             FileHeader fileHeader;
             try {
                 fileHeader = carFile.getFileHeader("META-INF/mapping.txt");
