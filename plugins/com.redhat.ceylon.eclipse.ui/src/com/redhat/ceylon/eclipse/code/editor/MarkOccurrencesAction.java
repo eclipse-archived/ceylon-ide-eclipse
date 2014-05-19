@@ -141,11 +141,14 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     
     @Override
     public void selectionChanged(SelectionChangedEvent event) {
-        if (!activeEditor.isBackgroundParsingPaused() &&
+        ISelection sel = event.getSelection();
+        if (sel instanceof ITextSelection &&
+                !activeEditor.isBackgroundParsingPaused() &&
                 !activeEditor.isBlockSelectionModeEnabled() &&
                 !activeEditor.isInLinkedMode()) {
-            ITextSelection selection = (ITextSelection) event.getSelection();
-            recomputeAnnotationsForSelection(selection.getOffset(), selection.getLength(), document);
+            ITextSelection selection = (ITextSelection) sel;
+            recomputeAnnotationsForSelection(selection.getOffset(), 
+                    selection.getLength(), document);
         }
     }
 
