@@ -20,6 +20,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
@@ -81,11 +82,14 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         Module currentModule = getUnit().getPackage().getModule();        
         for(IProject referencingProject : getProjectResource().getReferencingProjects()) {
             JDTModule referencingSourceModule = null;
-            for (Module m : CeylonBuilder.getProjectModules(referencingProject).getListOfModules()) {
-                if (m.getNameAsString().equals(currentModule.getNameAsString())) {
-                    assert(m instanceof JDTModule);
-                    referencingSourceModule = (JDTModule) m;
-                    break;
+            Modules referencingProjectModules = CeylonBuilder.getProjectModules(referencingProject);
+            if (referencingProjectModules != null) {
+                for (Module m : referencingProjectModules.getListOfModules()) {
+                    if (m.getNameAsString().equals(currentModule.getNameAsString())) {
+                        assert(m instanceof JDTModule);
+                        referencingSourceModule = (JDTModule) m;
+                        break;
+                    }
                 }
             }
             if (referencingSourceModule != null) {
