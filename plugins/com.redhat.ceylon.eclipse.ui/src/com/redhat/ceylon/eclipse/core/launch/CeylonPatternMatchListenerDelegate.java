@@ -47,7 +47,7 @@ public class CeylonPatternMatchListenerDelegate implements
             String text = console.getDocument()
                     .get(event.getOffset()+3, event.getLength()-4);
             int j = text.indexOf("(");
-            int i = text.indexOf(":");
+            int i = text.indexOf(":", j);
             final String[] elems = text.substring(0,j).split("\\.");
             final String file = text.substring(j+1, i);
             final String line = text.substring(i+1);
