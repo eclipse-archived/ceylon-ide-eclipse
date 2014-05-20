@@ -1301,15 +1301,23 @@ $ps:[{$nm:'other',$t:{t:String$}}]};}
 String$proto.smallerThan=function(o){
 return Comparable.$$.prototype.smallerThan.call(this,o);
 }
+String$proto.smallerThan.$crtmm$=function(){return{mod:$CCMM$,$t:{t:Boolean$},
+$ps:[{$nm:'Other',$t:{t:String$},$mt:'prm'}],d:['$','String','$m','smallerThan']};};
 String$proto.largerThan=function(o){
 return Comparable.$$.prototype.largerThan.call(this,o);
 }
+String$proto.largerThan.$crtmm$=function(){return{mod:$CCMM$,$t:{t:Boolean$},
+$ps:[{$nm:'Other',$t:{t:String$},$mt:'prm'}],d:['$','String','$m','largerThan']};};
 String$proto.notSmallerThan=function(o){
 return Comparable.$$.prototype.notSmallerThan.call(this,o);
 }
+String$proto.notSmallerThan.$crtmm$=function(){return{mod:$CCMM$,$t:{t:Boolean$},
+$ps:[{$nm:'Other',$t:{t:String$},$mt:'prm'}],d:['$','String','$m','notSmallerThan']};};
 String$proto.notLargerThan=function(o){
 return Comparable.$$.prototype.notLargerThan.call(this,o);
 }
+String$proto.notLargerThan.$crtmm$=function(){return{mod:$CCMM$,$t:{t:Boolean$},
+$ps:[{$nm:'Other',$t:{t:String$},$mt:'prm'}],d:['$','String','$m','notLargerThan']};};
 atr$(String$proto,'sequence',function(){
 return Iterable.$$.prototype.$prop$getSequence.get.call(this);
 },undefined,function(){return{
@@ -3419,7 +3427,7 @@ initExistingType(JSNumber, Number, 'ceylon.language::JSNumber');
 JSNumber.$crtmm$=function(){return{$nm:'JSNumber',$mt:'c',$an:function(){return[shared()];},
 mod:$CCMM$,d:['$','Number']};}
 var origNumToString = Number.prototype.toString;
-inheritProto(JSNumber, Object$, $init$Integral(), Exponentiable);
+inheritProto(JSNumber, Object$, Number$, $init$Integral(), Exponentiable);
 function Integer(value) {
 if (value && value.getT$name && value.getT$name() === 'ceylon.language::Integer') {
 return value;
