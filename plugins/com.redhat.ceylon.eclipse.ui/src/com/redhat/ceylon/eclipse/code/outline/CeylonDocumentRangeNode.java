@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.ROOT_CATEGORY;
-
 import java.util.Arrays;
 
 import org.eclipse.compare.ITypedElement;
@@ -21,13 +19,9 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
     private final CeylonOutlineNode node;
     
     public CeylonDocumentRangeNode(DocumentRangeNode parent, 
-            CeylonOutlineNode outlineNode, 
+            String id, CeylonOutlineNode outlineNode, 
             IDocument document) {
-        super(parent, 1, 
-                outlineNode.getCategory()==ROOT_CATEGORY ?
-                        "@root" :
-                        outlineNode.getIdentifier(), 
-                document,
+        super(parent, 1, id, document,
                 outlineNode.getRealStartOffset(), 
                 outlineNode.getRealEndOffset()-outlineNode.getRealStartOffset());
         node = outlineNode;
