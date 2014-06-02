@@ -96,16 +96,21 @@ public class CeylonStructureCreator extends StructureCreator {
         CeylonDocumentRangeNode compareNode;
         switch (outlineNode.getCategory()) {
         case ROOT_CATEGORY: //attach children of the unit node directly to our root
-            compareNode = new CeylonDocumentRangeNode(parent, outlineNode, document) {
+            compareNode = new CeylonDocumentRangeNode(parent, 
+                    "@root", outlineNode, document) {
                 @Override
                 public String getName() {
                     return "Ceylon Source File";
                 }
             };
             break;
-        case DEFAULT_CATEGORY:
         case IMPORT_LIST_CATEGORY:
-            compareNode = new CeylonDocumentRangeNode(parent, outlineNode, document);
+            compareNode = new CeylonDocumentRangeNode(parent, 
+                    "@importlist", outlineNode, document);
+            break;
+        case DEFAULT_CATEGORY:
+            compareNode = new CeylonDocumentRangeNode(parent, 
+                    outlineNode.getIdentifier(), outlineNode, document);
             break;
         default:
             // The outline view has some extra nodes 
@@ -124,7 +129,9 @@ public class CeylonStructureCreator extends StructureCreator {
             IStreamContentAccessor sca = (IStreamContentAccessor) node;
             try {
                 String contents = readString(sca);
-                return ignoreWhitespace ? contents.replaceAll("\\p{javaWhitespace}+", " ") : contents;
+                return ignoreWhitespace ? 
+                        contents.replaceAll("\\p{javaWhitespace}+", " ") : 
+                        contents;
             } 
             catch (CoreException ex) {
                 ex.printStackTrace();
@@ -134,27 +141,30 @@ public class CeylonStructureCreator extends StructureCreator {
     }
 
     private static String readString(InputStream is, String encoding) {
-        if (is == null)
+        if (is == null) {
             return null;
-        BufferedReader reader= null;
+        }
+        BufferedReader reader = null;
         try {
             StringBuffer buffer= new StringBuffer();
-            char[] part= new char[2048];
-            int read= 0;
-            reader= new BufferedReader(new InputStreamReader(is, encoding));
-
-            while ((read= reader.read(part)) != -1)
+            char[] part = new char[2048];
+            int read = 0;
+            reader = new BufferedReader(new InputStreamReader(is, encoding));
+            while ((read= reader.read(part)) != -1) {
                 buffer.append(part, 0, read);
-
+            }
             return buffer.toString();
 
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             // NeedWork
-        } finally {
+        }
+        finally {
             if (reader != null) {
                 try {
                     reader.close();
-                } catch (IOException ex) {
+                }
+                catch (IOException ex) {
                     // silently ignored
                 }
             }
@@ -162,18 +172,19 @@ public class CeylonStructureCreator extends StructureCreator {
         return null;
     }
 
-    public static String readString(IStreamContentAccessor sa) throws CoreException {
+    public static String readString(IStreamContentAccessor sa) 
+            throws CoreException {
         InputStream is= sa.getContents();
         if (is != null) {
-            String encoding= null;
+            String encoding = null;
             if (sa instanceof IEncodedStreamContentAccessor) {
                 try {
-                    encoding= ((IEncodedStreamContentAccessor) sa).getCharset();
-                } catch (Exception e) {
+                    encoding = ((IEncodedStreamContentAccessor) sa).getCharset();
                 }
+                catch (Exception e) {}
             }
             if (encoding == null)
-                encoding= ResourcesPlugin.getEncoding();
+                encoding = ResourcesPlugin.getEncoding();
             return readString(is, encoding);
         }
         return null;
