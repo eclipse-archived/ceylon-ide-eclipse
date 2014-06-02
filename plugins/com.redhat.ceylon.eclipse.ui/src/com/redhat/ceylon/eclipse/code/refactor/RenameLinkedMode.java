@@ -18,7 +18,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.util.Escaping;
 
 public final class RenameLinkedMode
         extends RefactorLinkedMode {

@@ -38,7 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.ide.util.FindDeclarationNodeVisitor;
 
 class CreateParameterProposal extends InitializerProposal {
     

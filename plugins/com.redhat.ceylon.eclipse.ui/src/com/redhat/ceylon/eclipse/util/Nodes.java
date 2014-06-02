@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.redhat.ceylon.ide.util.Escaping;
+import com.redhat.ceylon.ide.util.FindDeclarationNodeVisitor;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;

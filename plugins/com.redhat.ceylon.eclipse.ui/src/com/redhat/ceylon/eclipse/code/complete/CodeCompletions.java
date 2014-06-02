@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STY
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.ide.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.Collections;

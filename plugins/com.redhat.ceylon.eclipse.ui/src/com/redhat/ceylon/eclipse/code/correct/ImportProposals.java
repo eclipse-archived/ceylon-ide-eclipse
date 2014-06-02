@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
+import static com.redhat.ceylon.ide.util.Escaping.escapeName;
+import static com.redhat.ceylon.ide.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 

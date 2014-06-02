@@ -38,7 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class MoveOutRefactoring extends AbstractRefactoring {

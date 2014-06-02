@@ -16,7 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.util.Escaping;
 
 public abstract class ExtractLinkedMode extends RefactorLinkedMode {
 

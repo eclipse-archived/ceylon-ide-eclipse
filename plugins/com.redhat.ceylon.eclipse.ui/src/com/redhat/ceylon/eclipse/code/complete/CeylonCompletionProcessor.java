@@ -133,7 +133,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonCompletionProcessor implements IContentAssistProcessor {

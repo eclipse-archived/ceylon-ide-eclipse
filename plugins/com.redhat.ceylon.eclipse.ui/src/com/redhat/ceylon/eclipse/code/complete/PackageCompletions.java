@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MODULE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
+import static com.redhat.ceylon.ide.util.Escaping.escapePackageName;
 
 import java.util.List;
 
