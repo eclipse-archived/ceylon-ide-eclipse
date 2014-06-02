@@ -458,6 +458,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addMakeContainerAbstractProposal(proposals, project, node);
             addRemoveAnnotationDecProposal(proposals, "formal", project, node);
             break;
+        case 1101:
+            addRemoveAnnotationDecProposal(proposals, "formal", project, node);
+            //TODO: replace body with ;
+            break;
         case 1000:
             addAddParenthesesProposal(problem, file, proposals, node);
             addChangeDeclarationProposal(problem, file, proposals, node);
