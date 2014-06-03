@@ -363,4 +363,11 @@ class FindArgumentsVisitor extends Visitor
     public void visitAny(Node that) {
         if (!found) super.visitAny(that);
     }
+    @Override
+    public void visit(Tree.FunctionArgument that) {
+        ProducedType ct = currentType;
+        currentType = null;
+        super.visit(that);
+        currentType = ct;
+    }
 }
