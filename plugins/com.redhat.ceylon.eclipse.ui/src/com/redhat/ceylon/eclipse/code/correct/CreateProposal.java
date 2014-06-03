@@ -234,7 +234,9 @@ class CreateProposal extends InitializerProposal {
             ValueFunctionDefinitionGenerator vfdg = 
                     ValueFunctionDefinitionGenerator.create(brokenName, smte, cu);
             if (vfdg!=null) {
-                addCreateParameterProposal(proposals, project, vfdg);
+                if (smte instanceof Tree.BaseMemberExpression) {
+                    addCreateParameterProposal(proposals, project, vfdg);
+                }
                 addCreateProposals(cu, proposals, project, file, smte, vfdg);
             }
             ObjectClassDefinitionGenerator ocdg = 

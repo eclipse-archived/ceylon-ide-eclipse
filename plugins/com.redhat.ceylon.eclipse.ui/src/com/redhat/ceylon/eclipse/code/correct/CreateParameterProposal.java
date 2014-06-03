@@ -123,7 +123,7 @@ class CreateParameterProposal extends InitializerProposal {
                 String def = dg.generate("", "");
                 //TODO: really ugly and fragile way to strip off the trailing ;
                 String paramDef = (paramList.getParameters().isEmpty() ? "" : ", ") + 
-                        def.substring(0, def.length() - 1);
+                        def.substring(0, def.length() - (def.endsWith("{}")?3:1));
                 String paramDesc = "parameter '" + dg.getBrokenName() + "'";
                 for (PhasedUnit unit: getUnits(project)) {
                     if (unit.getUnit().equals(dg.getRootNode().getUnit())) {
