@@ -20,11 +20,7 @@
 
 package com.redhat.ceylon.eclipse.core.model;
 
-import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
-
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

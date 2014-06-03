@@ -882,12 +882,11 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     @Override
     protected LazyClass makeLazyClass(ClassMirror classMirror, Class superClass,
-            MethodMirror constructor, boolean forTopLevelObject) {
+            MethodMirror constructor) {
         if (classMirror instanceof SourceClass) {
             return (LazyClass) (((SourceClass) classMirror).getModelDeclaration());
         }
-        return super.makeLazyClass(classMirror, superClass, constructor,
-                forTopLevelObject);
+        return super.makeLazyClass(classMirror, superClass, constructor);
     }
 
     @Override
