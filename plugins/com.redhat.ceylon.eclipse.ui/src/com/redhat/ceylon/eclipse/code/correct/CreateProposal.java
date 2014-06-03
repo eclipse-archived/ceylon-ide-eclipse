@@ -55,7 +55,7 @@ class CreateProposal extends InitializerProposal {
     
     static void addCreateMemberProposal(Collection<ICompletionProposal> proposals, 
             DefinitionGenerator dg, Declaration typeDec, PhasedUnit unit,
-            Tree.Declaration decNode, Tree.Body body) {
+            Tree.Declaration decNode, Tree.Body body, Tree.Statement statement) {
         IFile file = getFile(unit);
         TextFileChange change = 
                 new TextFileChange("Create Member", file);
@@ -89,12 +89,21 @@ class CreateProposal extends InitializerProposal {
             offset = body.getStartIndex()+1;
         }
         else {
-            Tree.Statement statement = 
-                    statements.get(statements.size()-1);
-            indent = getIndent(statement, doc);
+            Tree.Statement st = statements.get(statements.size()-1);
+            if (statement!=null && 
+                    statement.getUnit().equals(body.getUnit()) &&
+                    statement.getStartIndex()>=body.getStartIndex() &&
+                    statement.getStopIndex()<=body.getStopIndex()) {
+                for (Tree.Statement s: statements) {
+                    if (s.getStopIndex()<statement.getStartIndex()) {
+                        st = s;
+                    }
+                }
+            }
+            indent = getIndent(st, doc);
             indentBefore = delim + indent;
             indentAfter = "";
-            offset = statement.getStopIndex()+1;
+            offset = st.getStopIndex()+1;
         }
         String def = indentBefore + 
                 dg.generateShared(indent, delim) + 
@@ -154,16 +163,17 @@ class CreateProposal extends InitializerProposal {
     
     static void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg,
-            Tree.QualifiedMemberOrTypeExpression qmte) {
+            Tree.QualifiedMemberOrTypeExpression qmte, Tree.Statement statement) {
         Tree.Primary p = ((Tree.QualifiedMemberOrTypeExpression) qmte).getPrimary();
         if (p.getTypeModel()!=null) {
             Declaration typeDec = p.getTypeModel().getDeclaration();
-            addCreateMemberProposals(proposals, project, dg, typeDec);
+            addCreateMemberProposals(proposals, project, dg, typeDec, statement);
         }
     }
 
     static void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
-            IProject project, DefinitionGenerator dg, Declaration typeDec) {
+            IProject project, DefinitionGenerator dg, Declaration typeDec, 
+            Tree.Statement statement) {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
@@ -174,7 +184,8 @@ class CreateProposal extends InitializerProposal {
                     Tree.Body body = getClassOrInterfaceBody(decNode);
                     if (body!=null) {
                         addCreateMemberProposal(proposals, dg, 
-                                typeDec, unit, decNode, body);
+                                typeDec, unit, decNode, body,
+                                statement);
                         break;
                     }
                 }
@@ -239,7 +250,8 @@ class CreateProposal extends InitializerProposal {
             IFile file, Tree.MemberOrTypeExpression smte, DefinitionGenerator dg) {
         if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
             addCreateMemberProposals(proposals, project, dg, 
-                    (Tree.QualifiedMemberOrTypeExpression) smte);
+                    (Tree.QualifiedMemberOrTypeExpression) smte,
+                    Nodes.findStatement(cu, smte));
         }
         else {
             addCreateLocalProposals(proposals, project, dg);
@@ -248,7 +260,11 @@ class CreateProposal extends InitializerProposal {
                     container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
                 do {
                     addCreateMemberProposals(proposals, project, 
-                            dg, container);
+                            dg, container,
+                            //TODO: this is a little lame because
+                            //      it doesn't handle some cases
+                            //      of nesting
+                            Nodes.findStatement(cu, smte));
                     if (container.getContainer() instanceof Declaration) {
                         Declaration outerContainer = 
                                 (Declaration) container.getContainer();
