@@ -256,17 +256,20 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         boolean isUpperCase = Character.isUpperCase(brokenName.charAt(0));
         FindArgumentsVisitor fav = new FindArgumentsVisitor(node);
         rootNode.visit(fav);
-        ProducedType et = fav.expectedType;
-        final boolean isVoid = et==null;
-        ProducedType returnType = isVoid ? null : node.getUnit().denotableType(et);
+        Unit unit = node.getUnit();
+        ProducedType returnType = unit.denotableType(fav.expectedType);
         StringBuilder params = new StringBuilder();
         LinkedHashMap<String, ProducedType> paramTypes = getParameters(fav);
+        TypeDeclaration rtd = returnType.getDeclaration();
+        if (rtd.equals(unit.getObjectDeclaration()) ||
+                rtd.equals(unit.getAnythingDeclaration())) {
+            returnType = null;
+        }
         if (!isValidSupertype(returnType)) {
             return null;
         }
         if (paramTypes!=null && isUpperCase) {
-            String supertype = isVoid ? 
-                    null : supertypeDeclaration(returnType);
+            String supertype = supertypeDeclaration(returnType);
             if (supertype==null) supertype = "";
             String desc = "class '" + brokenName + params + supertype + "'";
             return new ObjectClassDefinitionGenerator(brokenName, node, rootNode, 
