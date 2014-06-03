@@ -261,12 +261,10 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         ProducedType returnType = isVoid ? null : node.getUnit().denotableType(et);
         StringBuilder params = new StringBuilder();
         LinkedHashMap<String, ProducedType> paramTypes = getParameters(fav);
+        if (!isValidSupertype(returnType)) {
+            return null;
+        }
         if (paramTypes!=null && isUpperCase) {
-            Class od = node.getUnit().getObjectDeclaration();
-            if (returnType!=null &&
-                    returnType.getSupertype(od)==null) {
-                returnType = null;
-            }
             String supertype = isVoid ? 
                     null : supertypeDeclaration(returnType);
             if (supertype==null) supertype = "";
@@ -317,6 +315,33 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             }
             else {
                 return null;
+            }
+        }
+    }
+
+    private static boolean isValidSupertype(ProducedType returnType) {
+        if (isTypeUnknown(returnType)) {
+            return true;
+        }
+        else {
+            TypeDeclaration rtd = returnType.getDeclaration();
+            if (rtd.getCaseTypes()!=null) {
+                return false;
+            }
+            if (rtd instanceof Class) {
+                return !rtd.isFinal();
+            }
+            else if (rtd instanceof Interface) {
+                return true;
+            }
+            else if (rtd instanceof IntersectionType) {
+                for (ProducedType st: rtd.getSatisfiedTypes()) {
+                    if (!isValidSupertype(st)) return false;
+                }
+                return true;
+            }
+            else {
+                return false;
             }
         }
     }
