@@ -66,6 +66,12 @@ public final class CeylonHierarchyContentProvider
         if (newInput!=null && newInput!=oldInput) {
             HierarchyInput rootNode = (HierarchyInput) newInput;
             Declaration declaration = rootNode.declaration;
+            if (declaration instanceof TypedDeclaration) { 
+                TypedDeclaration td = (TypedDeclaration) declaration;
+                if (td.getTypeDeclaration().isAnonymous()) {
+                    declaration = ((TypedDeclaration) declaration).getTypeDeclaration();
+                }
+            }
             showingRefinements = !(declaration instanceof TypeDeclaration);
             empty = declaration==null;
             if (!empty) {
