@@ -173,28 +173,28 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                 editor = (CeylonEditor) ed;
             }
         }
-        if (typeNode instanceof Tree.LocalModifier) {
-//            final TextChange change = 
-//                    new TextFileChange("Specify Type", file); 
-            DocumentChange change = 
-                    new DocumentChange("Specify Type", document);
-            change.setEdit(new MultiTextEdit());
-            try {
-                HashSet<Declaration> decs = new HashSet<Declaration>();
-                importType(decs, infType, rootNode);
-                int il = applyImports(change, decs, rootNode, document);
-                String typeName = infType.getProducedTypeName(rootNode.getUnit());
-                change.addEdit(new ReplaceEdit(offset, length, typeName));
-                change.perform(new NullProgressMonitor());
-                offset += il;
-                length = typeName.length();
-                selection = new Point(offset, length);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
+        if (editor==null) {
+            if (typeNode instanceof Tree.LocalModifier) {
+                DocumentChange change = 
+                        new DocumentChange("Specify Type", document);
+                change.setEdit(new MultiTextEdit());
+                try {
+                    HashSet<Declaration> decs = new HashSet<Declaration>();
+                    importType(decs, infType, rootNode);
+                    int il = applyImports(change, decs, rootNode, document);
+                    String typeName = infType.getProducedTypeName(rootNode.getUnit());
+                    change.addEdit(new ReplaceEdit(offset, length, typeName));
+                    change.perform(new NullProgressMonitor());
+                    offset += il;
+                    length = typeName.length();
+                    selection = new Point(offset, length);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
-        if (editor!=null) {
+        else {
             LinkedModeModel linkedModeModel = new LinkedModeModel();
             List<ProducedType> supertypes = infType.getSupertypes();
             TypeDeclaration td = infType.getDeclaration();
