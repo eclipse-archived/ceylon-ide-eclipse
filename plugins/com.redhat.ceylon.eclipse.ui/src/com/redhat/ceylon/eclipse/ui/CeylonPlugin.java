@@ -42,6 +42,7 @@ import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
     public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
+    public static final String DIST_PLUGIN_ID = "com.redhat.ceylon.dist";
     public static final String LANGUAGE_ID = "ceylon";
     public static final String EDITOR_ID = PLUGIN_ID + ".editor";
     private static final String[] RUNTIME_LIBRARIES = new String[]{
@@ -165,7 +166,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         }
         if (ceylonRepository == null) {
             try {
-                Bundle bundle = Platform.getBundle(PLUGIN_ID);
+                Bundle bundle = Platform.getBundle(DIST_PLUGIN_ID);
                 Path path = new Path("defaultRepository");
                 URL eclipseUrl = FileLocator.find(bundle, path, null);
                 URL fileURL = FileLocator.resolve(eclipseUrl);
