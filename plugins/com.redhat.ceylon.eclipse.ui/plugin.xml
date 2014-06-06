@@ -2745,7 +2745,7 @@
   		<commonFilter
 		        activeByDefault="true"
 		        class="com.redhat.ceylon.eclipse.code.navigator.OutputRepositoryFolderFilter"
-		        name="Ceyon Output repository folder"
+		        name="Ceyon output repository folder"
 		        description="Hides the folder used as the Ceylon output repository"
 		        id="com.redhat.ceylon.eclipse.ui.navigator.filters.HideOutputRepositoryFolder"/>
     </extension>
