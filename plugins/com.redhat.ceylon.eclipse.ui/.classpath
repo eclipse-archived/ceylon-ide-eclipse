@@ -9,7 +9,6 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="lib/zip4j_1.2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/ceylon-bootstrap.jar"/>
 	<classpathentry kind="lib" path="lib/jgrapht-jdk1.6.jar" sourcepath="/home/david/jgrapht-0.8.3/src"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
