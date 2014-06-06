@@ -123,8 +123,9 @@ public class CodeCompletions {
             ProducedReference pr, Unit unit, boolean includeDefaulted) {
         StringBuilder result = new StringBuilder(escapeName(d));
         Declaration dd = d.getDeclaration();
-        if (forceExplicitTypeArgs(dd, null))
+        if (forceExplicitTypeArgs(dd, null)) {
             appendTypeParameters(dd, result);
+        }
         appendNamedArgs(dd, pr, unit, result, includeDefaulted, false);
         appendSemiToVoidInvocation(result, dd);
         return result.toString();

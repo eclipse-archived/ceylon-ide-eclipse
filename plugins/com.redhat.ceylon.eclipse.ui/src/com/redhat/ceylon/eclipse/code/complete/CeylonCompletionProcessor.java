@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
@@ -107,6 +108,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -708,6 +710,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (!filter && !inDoc && !isMember) {
                 addKeywordProposals(cpc, offset, prefix, result, node, ol);
                 //addTemplateProposal(offset, prefix, result);
+                if (prefix.isEmpty() && !isTypeUnknown(requiredType) &&
+                        node.getUnit().isCallableType(requiredType)) {
+                    addAnonFunctionProposal(offset, requiredType, result);
+                }
             }
             
             boolean isPackageOrModuleDescriptor = 
@@ -787,6 +793,44 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    private static void addAnonFunctionProposal(int offset, 
+            ProducedType requiredType, List<ICompletionProposal> result) {
+        StringBuilder text = new StringBuilder();
+        text.append("(");
+        Unit unit = requiredType.getDeclaration().getUnit();
+        boolean first = true;
+        char c = 'a';
+        for (ProducedType paramType: unit.getCallableArgumentTypes(requiredType)) {
+            if (first) {
+                first = false;
+            }
+            else {
+                text.append(", ");
+            }
+            text.append(paramType.getProducedTypeName(unit))
+                .append(" ")
+                .append(c++);
+        }
+        text.append(")");
+        String funtext = text.toString() + " => nothing";
+        result.add(new CompletionProposal(offset, "", null, funtext, funtext) {
+            @Override
+            public Point getSelection(IDocument document) {
+                return new Point(offset + text.indexOf("nothing"), 7);
+            }
+        });
+        if (unit.getCallableReturnType(requiredType).getDeclaration()
+                .equals(unit.getAnythingDeclaration())) {
+            String voidtext = "void " + text.toString() + " {}";
+            result.add(new CompletionProposal(offset, "", null, voidtext, voidtext) {
+                @Override
+                public Point getSelection(IDocument document) {
+                    return new Point(offset + text.length()-1, 0);
+                }
+            });
+        }
     }
 
     private static boolean isReferenceProposable(OccurrenceLocation ol,
