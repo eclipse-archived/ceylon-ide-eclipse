@@ -47,6 +47,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertToBlockProposal.addC
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToClassProposal.addConvertToClassProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToConcatenationProposal.addConvertToConcatenationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToGetterProposal.addConvertToGetterProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ConvertToInterpolationProposal.addConvertToInterpolationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
@@ -625,6 +626,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertToVerbatimProposal(proposals, file, cu, node, doc);
             addConvertFromVerbatimProposal(proposals, file, cu, node, doc);
             addConvertToConcatenationProposal(proposals, file, cu, node, doc);
+            addConvertToInterpolationProposal(proposals, file, cu, node, doc);
         }
         
     }
