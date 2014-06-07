@@ -120,7 +120,7 @@ class AddAnnotionProposal extends CorrectionProposal {
             }
         }
         Region selection;
-        if (node.getUnit().equals(decNode.getUnit())) {
+        if (node!=null && node.getUnit().equals(decNode.getUnit())) {
             selection = new Region(insertEdit.getOffset(), annotation.length());
         }
         else {
