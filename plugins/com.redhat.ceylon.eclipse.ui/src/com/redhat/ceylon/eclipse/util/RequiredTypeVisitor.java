@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -241,7 +243,9 @@ class RequiredTypeVisitor extends Visitor
     @Override
     public void visit(Tree.ResourceList that) {
         ProducedType ort = requiredType;
-        requiredType = that.getUnit().getCloseableDeclaration().getType();
+        Unit unit = that.getUnit();
+        requiredType = unionType(unit.getDestroyableDeclaration().getType(), 
+                unit.getObtainableDeclaration().getType(), unit);
         super.visit(that);
         requiredType = ort;
     }
