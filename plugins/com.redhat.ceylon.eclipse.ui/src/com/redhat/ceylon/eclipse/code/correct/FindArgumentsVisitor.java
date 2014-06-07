@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.producedType;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -79,7 +80,9 @@ class FindArgumentsVisitor extends Visitor
     }*/
     @Override
     public void visit(Tree.Resource that) {
-        currentType = that.getUnit().getCloseableDeclaration().getType();
+        Unit unit = that.getUnit();
+        currentType = unionType(unit.getDestroyableDeclaration().getType(), 
+                unit.getObtainableDeclaration().getType(), unit);
         super.visit(that);
         currentType = null;
     }
