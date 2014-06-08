@@ -161,6 +161,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
     private boolean hasOuterRefs(Declaration d, Tree.Body scope, 
             Collection<Statement> statements) {
+        if (scope==null) return false; //TODO: what case is this?
         FindOuterReferencesVisitor v = 
                 new FindOuterReferencesVisitor(d);
         for (Statement s: scope.getStatements()) {

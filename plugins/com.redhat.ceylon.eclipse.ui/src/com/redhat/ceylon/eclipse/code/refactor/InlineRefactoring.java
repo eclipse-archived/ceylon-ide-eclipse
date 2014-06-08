@@ -36,7 +36,9 @@ import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
@@ -70,7 +72,8 @@ public class InlineRefactoring extends AbstractRefactoring {
                 !declaration.isFormal() &&
                 (((MethodOrValue)declaration).getTypeDeclaration()!=null) &&
                 (!((MethodOrValue)declaration).getTypeDeclaration().isAnonymous()) &&
-                (declaration.isToplevel() || !declaration.isShared()); //TODO temporary restriction!
+                (declaration.isToplevel() || !declaration.isShared() ||
+                        (!declaration.isFormal() && !declaration.isDefault() && !declaration.isActual()));
                 //TODO: && !declaration is a control structure variable 
                 //TODO: && !declaration is a value with lazy init
     }
@@ -383,72 +386,40 @@ public class InlineRefactoring extends AbstractRefactoring {
             Tree.CompilationUnit declarationUnit, Tree.Term term, 
             List<CommonToken> declarationTokens, Tree.CompilationUnit pu, 
             List<CommonToken> tokens, TextChange tfc) {
-        String template = Nodes.toString(term, declarationTokens);
-        int templateStart = term.getStartIndex();
         if (declarationNode instanceof Tree.AnyAttribute) {
-            inlineAttributeReferences(pu, template, tfc);
+            inlineAttributeReferences(pu, tokens, term, declarationTokens, tfc);
         }
         else if (declarationNode instanceof Tree.AnyMethod) {
-            inlineFunctionReferences(pu, tokens, term, template, templateStart, tfc);
+            inlineFunctionReferences(pu, tokens, term, declarationTokens, tfc);
         }
     }
 
-    private void inlineFunctionReferences(final Tree.CompilationUnit pu, final List<CommonToken> tokens,
-            final Tree.Term term, final String template, final int templateStart, 
-            final TextChange tfc) {
+    private void inlineFunctionReferences(final Tree.CompilationUnit pu, 
+            final List<CommonToken> tokens, final Tree.Term term, 
+            final List<CommonToken> declarationTokens, final TextChange tfc) {
         new Visitor() {
             @Override
             public void visit(final Tree.InvocationExpression that) {
                 super.visit(that);
                 if (that.getPrimary() instanceof Tree.MemberOrTypeExpression) {
-                    Tree.MemberOrTypeExpression mte = (Tree.MemberOrTypeExpression) that.getPrimary();
-                    Declaration d = mte.getDeclaration();
-                    if (inlineRef(mte, d)) {
-                        //TODO: breaks for invocations like f(f(x, y),z)
-                        final StringBuilder result = new StringBuilder();
-                        class InterpolateArgumentsVisitor extends Visitor {
-                            int start = 0;
-                            @Override
-                            public void visit(Tree.BaseMemberExpression it) {
-                                super.visit(it);
-                                if (it.getDeclaration().isParameter()) {
-                                    Parameter param = ((MethodOrValue) it.getDeclaration()).getInitializerParameter();
-                                    if ( param.getDeclaration().equals(declaration) ) {
-                                        result.append(template.substring(start,it.getStartIndex()-templateStart));
-                                        start = it.getStopIndex()-templateStart+1;
-                                        boolean sequenced = param.isSequenced();
-                                        if (that.getPositionalArgumentList()!=null) {
-                                            interpolatePositionalArguments(result, that, it, sequenced, tokens);
-                                        }
-                                        if (that.getNamedArgumentList()!=null) {
-                                            interpolateNamedArguments(result, that, it, sequenced, tokens);
-                                        }
-                                    }
-                                }
-                            }
-                            void finish() {
-                                result.append(template.substring(start, template.length()));
-                            }
-                        }
-                        InterpolateArgumentsVisitor iv = new InterpolateArgumentsVisitor();
-                        iv.visit(term);
-                        iv.finish();
-                        tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
-                                that.getStopIndex()-that.getStartIndex()+1, 
-                                result.toString()));
-                    }
+                    Tree.MemberOrTypeExpression mte = 
+                            (Tree.MemberOrTypeExpression) that.getPrimary();
+                    inlineDefinition(tokens, declarationTokens, term, tfc, that, mte);
                 }
             }
+            //TODO: inline callable references, replacing them with anon functions!
         }.visit(pu);
     }
 
-    private void inlineAttributeReferences(final Tree.CompilationUnit pu, final String template,
-            final TextChange tfc) {
+    private void inlineAttributeReferences(final Tree.CompilationUnit pu, 
+            final List<CommonToken> tokens, final Term term, 
+            final List<CommonToken> declarationTokens, final TextChange tfc) {
         new Visitor() {
             @Override
             public void visit(Tree.Variable that) {
                 if (that.getType() instanceof Tree.SyntheticVariable) {
-                    TypedDeclaration od = that.getDeclarationModel().getOriginalDeclaration();
+                    TypedDeclaration od = 
+                            that.getDeclarationModel().getOriginalDeclaration();
                     if (od!=null && od.equals(declaration) && delete) {
                         tfc.addEdit(new InsertEdit(that.getSpecifierExpression().getStartIndex(), 
                                 that.getIdentifier().getText()+" = "));
@@ -457,18 +428,122 @@ public class InlineRefactoring extends AbstractRefactoring {
                 super.visit(that);
             }
             @Override
-            public void visit(Tree.BaseMemberExpression that) {
+            public void visit(Tree.MemberOrTypeExpression that) {
                 super.visit(that);
-                Declaration d = that.getDeclaration();
-                if (inlineRef(that, d)) {
-                    tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
-                            that.getStopIndex()-that.getStartIndex()+1, 
-                            template));    
-                }
+                inlineDefinition(tokens, declarationTokens, term, tfc, null, that);
             }
         }.visit(pu);
     }
 
+    private void inlineDefinitionReference(List<CommonToken> tokens,
+            List<CommonToken> declarationTokens, 
+            Tree.MemberOrTypeExpression re, Tree.InvocationExpression ie, 
+            StringBuilder result, Tree.StaticMemberOrTypeExpression it) {
+        Declaration dec = it.getDeclaration();
+        if (dec.isParameter() && ie!=null && 
+                it instanceof Tree.BaseMemberOrTypeExpression) {
+            Parameter param = 
+                    ((MethodOrValue) dec).getInitializerParameter();
+            if (param.getDeclaration().equals(declaration)) {
+                boolean sequenced = param.isSequenced();
+                if (ie.getPositionalArgumentList()!=null) {
+                    interpolatePositionalArguments(result, ie, it, sequenced, tokens);
+                }
+                if (ie.getNamedArgumentList()!=null) {
+                    interpolateNamedArguments(result, ie, it, sequenced, tokens);
+                }
+            }
+        }
+        else {
+            String expressionText = Nodes.toString(it, declarationTokens);
+            if (re instanceof Tree.QualifiedMemberOrTypeExpression) {
+                String prim = Nodes.toString(((Tree.QualifiedMemberOrTypeExpression) re).getPrimary(), tokens);
+                if (it instanceof Tree.QualifiedMemberOrTypeExpression) {
+                    //TODO: handle more depth, for example, foo.bar.baz
+                    Tree.QualifiedMemberOrTypeExpression qmte = (Tree.QualifiedMemberOrTypeExpression) it;
+                    Tree.Primary p = qmte.getPrimary();
+                    if (p instanceof Tree.This) {
+                        result.append(prim)
+                             .append(qmte.getMemberOperator().getText())
+                             .append(qmte.getIdentifier().getText());
+                    }
+                    else {
+                        String primaryText = Nodes.toString(p, declarationTokens);
+                        if (p instanceof Tree.MemberOrTypeExpression) {
+                            if (((Tree.MemberOrTypeExpression) p).getDeclaration().isClassOrInterfaceMember()) {
+                                result.append(prim)
+                                    .append(".")
+                                    .append(primaryText);
+                            }
+                        }
+                        else {
+                            result.append(primaryText);
+                        }
+                    }
+                }
+                else {
+                    if (it.getDeclaration().isClassOrInterfaceMember()) {
+                        result.append(prim)
+                            .append(".")
+                            .append(expressionText);
+                    }
+                    else {
+                        result.append(expressionText);
+                    }
+                }
+            }
+            else {
+                result.append(expressionText);
+            }
+        }
+    }
+    
+    private void inlineDefinition(final List<CommonToken> tokens,
+            final List<CommonToken> declarationTokens,
+            final Tree.Term term, final TextChange tfc,
+            final Tree.InvocationExpression that,
+            final Tree.MemberOrTypeExpression mte) {
+        Declaration d = mte.getDeclaration();
+        if (inlineRef(mte, d)) {
+            //TODO: breaks for invocations like f(f(x, y),z)
+            final StringBuilder result = new StringBuilder();
+            class InterpolationVisitor extends Visitor {
+                int start = 0;
+                final String template = Nodes.toString(term, declarationTokens);
+                final int templateStart = term.getStartIndex();
+                void text(Node it) {
+                    result.append(template.substring(start,it.getStartIndex()-templateStart));
+                    start = it.getStopIndex()-templateStart+1;
+                }
+                @Override
+                public void visit(Tree.BaseMemberExpression it) {
+                    super.visit(it);
+                    text(it);
+                    inlineDefinitionReference(tokens, declarationTokens, 
+                            mte, that, result, it);
+                }
+                @Override
+                public void visit(Tree.QualifiedMemberExpression it) {
+                    super.visit(it);
+                    text(it);
+                    inlineDefinitionReference(tokens, declarationTokens, 
+                            mte, that, result, it);
+
+                }
+                void finish() {
+                    result.append(template.substring(start, template.length()));
+                }
+            }
+            InterpolationVisitor iv = new InterpolationVisitor();
+            iv.visit(term);
+            iv.finish();
+            Node node = that==null ? mte : that;
+            tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
+                    node.getStopIndex()-node.getStartIndex()+1, 
+                    result.toString()));
+        }
+    }
+    
     private boolean inlineRef(Tree.MemberOrTypeExpression that, Declaration d) {
         return (!justOne || that.getUnit().equals(node.getUnit()) && 
                     that.getStartIndex()!=null &&
@@ -477,7 +552,7 @@ public class InlineRefactoring extends AbstractRefactoring {
     }
     
     private static void interpolatePositionalArguments(StringBuilder result, 
-            Tree.InvocationExpression that, Tree.BaseMemberExpression it,
+            Tree.InvocationExpression that, Tree.StaticMemberOrTypeExpression it,
             boolean sequenced, List<CommonToken> tokens) {
         boolean first = true;
         boolean found = false;
@@ -506,7 +581,7 @@ public class InlineRefactoring extends AbstractRefactoring {
     }
 
     private static void interpolateNamedArguments(StringBuilder result,
-            Tree.InvocationExpression that, Tree.BaseMemberExpression it,
+            Tree.InvocationExpression that, Tree.StaticMemberOrTypeExpression it,
             boolean sequenced, List<CommonToken> tokens) {
         boolean found = false;
         for (Tree.NamedArgument arg: that.getNamedArgumentList().getNamedArguments()) {
