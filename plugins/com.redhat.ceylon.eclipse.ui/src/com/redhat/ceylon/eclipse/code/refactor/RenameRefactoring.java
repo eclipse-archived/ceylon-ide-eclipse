@@ -165,9 +165,14 @@ public class RenameRefactoring extends AbstractRefactoring {
             pm.worked(i++);
         }
         if (project!=null && renameFile) {
-            IPath newPath = project.getFullPath()
+            IPath oldPath = project.getFullPath()
                     .append(declaration.getUnit().getFullPath());
-            cc.add(new RenameResourceChange(newPath, getNewName() + ".ceylon"));
+            String newFileName = getNewName() + ".ceylon";
+            IPath newPath = oldPath.removeFirstSegments(1).removeLastSegments(1)
+                    .append(newFileName);
+            if (!project.getFile(newPath).exists()) {
+                cc.add(new RenameResourceChange(oldPath, newFileName));
+            }
         }
         pm.done();
         return cc;
