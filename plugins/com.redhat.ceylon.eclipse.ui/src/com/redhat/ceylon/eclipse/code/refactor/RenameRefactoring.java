@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.Region;
@@ -14,6 +15,7 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.ltk.core.refactoring.resource.RenameResourceChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
@@ -70,6 +72,7 @@ public class RenameRefactoring extends AbstractRefactoring {
 
     private String newName;
     private final Declaration declaration;
+    private boolean renameFile;
     
     public Node getNode() {
         return node;
@@ -82,6 +85,8 @@ public class RenameRefactoring extends AbstractRefactoring {
             if (refDec!=null) {
                 declaration = refDec.getRefinedDeclaration();
                 newName = declaration.getName();
+                String filename = declaration.getUnit().getFilename();
+                renameFile = (declaration.getName()+".ceylon").equals(filename);
             }
             else {
                 declaration = null;
@@ -158,6 +163,11 @@ public class RenameRefactoring extends AbstractRefactoring {
             DocumentChange dc = newDocumentChange();
             renameInFile(dc, cc, editor.getParseController().getRootNode());
             pm.worked(i++);
+        }
+        if (project!=null && renameFile) {
+            IPath newPath = project.getFullPath()
+                    .append(declaration.getUnit().getFullPath());
+            cc.add(new RenameResourceChange(newPath, getNewName() + ".ceylon"));
         }
         pm.done();
         return cc;
@@ -262,5 +272,13 @@ public class RenameRefactoring extends AbstractRefactoring {
 
     public String getNewName() {
         return newName;
+    }
+
+    public boolean isRenameFile() {
+        return renameFile;
+    }
+
+    public void setRenameFile(boolean renameFile) {
+        this.renameFile = renameFile;
     }
 }
