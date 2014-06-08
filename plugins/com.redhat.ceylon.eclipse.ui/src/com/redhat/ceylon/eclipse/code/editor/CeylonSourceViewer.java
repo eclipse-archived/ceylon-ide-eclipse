@@ -156,72 +156,73 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
 
     public void doOperation(int operation) {
-        if (getTextWidget() == null) {
-            super.doOperation(operation);
-            return;
-        }
-        String selectedText = editor.getSelectionText();
-        Map<Declaration,String> imports = null;
-        
-        switch (operation) {
-        case SHOW_OUTLINE:
-            if (outlinePresenter!=null)
-                outlinePresenter.showInformation();
-            return;
-        case OPEN_STRUCTURE:
-            if (structurePresenter!=null)
-                structurePresenter.showInformation();
-            return;
-        case SHOW_HIERARCHY:
-            if (hierarchyPresenter!=null)
-                hierarchyPresenter.showInformation();
-            return;
-        case SHOW_DEFINITION:
-            if (definitionPresenter!=null)
-                definitionPresenter.showInformation();
-            return;
-        case SHOW_REFERENCES:
-            if (referencesPresenter!=null)
-                referencesPresenter.showInformation();
-            return;
-        case SHOW_IN_HIERARCHY_VIEW:
-            try {
+        try {
+            if (getTextWidget() == null) {
+                super.doOperation(operation);
+                return;
+            }
+            String selectedText = editor.getSelectionText();
+            Map<Declaration,String> imports = null;
+
+            switch (operation) {
+            case SHOW_OUTLINE:
+                if (outlinePresenter!=null)
+                    outlinePresenter.showInformation();
+                return;
+            case OPEN_STRUCTURE:
+                if (structurePresenter!=null)
+                    structurePresenter.showInformation();
+                return;
+            case SHOW_HIERARCHY:
+                if (hierarchyPresenter!=null)
+                    hierarchyPresenter.showInformation();
+                return;
+            case SHOW_DEFINITION:
+                if (definitionPresenter!=null)
+                    definitionPresenter.showInformation();
+                return;
+            case SHOW_REFERENCES:
+                if (referencesPresenter!=null)
+                    referencesPresenter.showInformation();
+                return;
+            case SHOW_IN_HIERARCHY_VIEW:
                 showHierarchy();
+                return;
+            case TOGGLE_COMMENT:
+                doToggleComment();
+                return;
+            case ADD_BLOCK_COMMENT:
+                addBlockComment();
+                return;
+            case REMOVE_BLOCK_COMMENT:
+                removeBlockComment();
+                return;
+            case CORRECT_INDENTATION:
+                Point selectedRange = getSelectedRange();
+                doCorrectIndentation(selectedRange.x, selectedRange.y);
+                return;
+            case PASTE:
+                if (localPaste()) return;
+                break;
+            case CUT:
+            case COPY:
+                imports = copyImports();
+                break;
             }
-            catch (Exception e) {
-                e.printStackTrace();
+            super.doOperation(operation);
+            switch (operation) {
+            case CUT:
+            case COPY:
+                afterCopyCut(selectedText, imports);
+                break;
+            /*case PASTE:
+                afterPaste(textWidget);
+                break;*/
             }
-            return;
-        case TOGGLE_COMMENT:
-            doToggleComment();
-            return;
-        case ADD_BLOCK_COMMENT:
-            addBlockComment();
-            return;
-        case REMOVE_BLOCK_COMMENT:
-            removeBlockComment();
-            return;
-        case CORRECT_INDENTATION:
-            Point selectedRange = getSelectedRange();
-            doCorrectIndentation(selectedRange.x, selectedRange.y);
-            return;
-        case PASTE:
-            if (localPaste()) return;
-            break;
-        case CUT:
-        case COPY:
-            imports = copyImports();
-            break;
         }
-        super.doOperation(operation);
-        switch (operation) {
-        case CUT:
-        case COPY:
-            afterCopyCut(selectedText, imports);
-            break;
-        /*case PASTE:
-            afterPaste(textWidget);
-            break;*/
+        catch (Exception e) {
+            //never propagate exceptions
+            e.printStackTrace();
         }
     }
 
