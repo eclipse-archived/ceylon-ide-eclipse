@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 
 import java.util.List;
@@ -128,7 +129,7 @@ public class CorrectionUtil {
     }
     
 	static String defaultValue(Unit unit, ProducedType t) {
-	    if (t==null) {
+	    if (isTypeUnknown(t)) {
 	        return "nothing";
 	    }
 	    TypeDeclaration tn = t.getDeclaration();
