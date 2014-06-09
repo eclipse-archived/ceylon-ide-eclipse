@@ -260,10 +260,12 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         ProducedType returnType = unit.denotableType(fav.expectedType);
         StringBuilder params = new StringBuilder();
         LinkedHashMap<String, ProducedType> paramTypes = getParameters(fav);
-        TypeDeclaration rtd = returnType.getDeclaration();
-        if (rtd.equals(unit.getObjectDeclaration()) ||
-                rtd.equals(unit.getAnythingDeclaration())) {
-            returnType = null;
+        if (returnType!=null) {
+            TypeDeclaration rtd = returnType.getDeclaration();
+            if (rtd.equals(unit.getObjectDeclaration()) ||
+                    rtd.equals(unit.getAnythingDeclaration())) {
+                returnType = null;
+            }
         }
         if (!isValidSupertype(returnType)) {
             return null;
