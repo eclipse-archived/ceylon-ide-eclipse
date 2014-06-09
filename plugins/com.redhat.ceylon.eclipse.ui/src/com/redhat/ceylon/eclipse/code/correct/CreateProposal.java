@@ -89,21 +89,30 @@ class CreateProposal extends InitializerProposal {
             offset = body.getStartIndex()+1;
         }
         else {
-            Tree.Statement st = statements.get(statements.size()-1);
+            Tree.Statement st;
             if (statement!=null && 
                     statement.getUnit().equals(body.getUnit()) &&
                     statement.getStartIndex()>=body.getStartIndex() &&
                     statement.getStopIndex()<=body.getStopIndex()) {
+                st = statements.get(0);
                 for (Tree.Statement s: statements) {
-                    if (s.getStopIndex()<statement.getStartIndex()) {
+                    if (statement.getStartIndex()>=s.getStartIndex() &&
+                        statement.getStopIndex()<=s.getStopIndex()) {
                         st = s;
                     }
                 }
+                indent = getIndent(st, doc);
+                indentBefore = "";
+                indentAfter = delim + indent;
+                offset = st.getStartIndex();
             }
-            indent = getIndent(st, doc);
-            indentBefore = delim + indent;
-            indentAfter = "";
-            offset = st.getStopIndex()+1;
+            else {
+                st = statements.get(statements.size()-1);
+                indent = getIndent(st, doc);
+                indentBefore = delim + indent;
+                indentAfter = "";
+                offset = st.getStopIndex()+1;
+            }
         }
         String def = indentBefore + 
                 dg.generateShared(indent, delim) + 
