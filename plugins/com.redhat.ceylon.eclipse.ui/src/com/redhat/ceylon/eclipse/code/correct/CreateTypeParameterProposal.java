@@ -27,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -123,13 +124,16 @@ class CreateTypeParameterProposal extends CorrectionProposal {
             @Override
             public void visit(Tree.SimpleType that) {
                 super.visit(that);
-                List<TypeParameter> tps = that.getDeclarationModel().getTypeParameters();
-                Tree.TypeArgumentList tal = that.getTypeArgumentList();
-                if (tal!=null) {
-                    List<Tree.Type> tas = tal.getTypes();
-                    for (int i=0; i<tas.size(); i++) {
-                        if (tas.get(i)==node) {
-                            result = tps.get(i).getSatisfiedTypes();
+                TypeDeclaration dm = that.getDeclarationModel();
+                if (dm!=null) {
+                    List<TypeParameter> tps = dm.getTypeParameters();
+                    Tree.TypeArgumentList tal = that.getTypeArgumentList();
+                    if (tal!=null) {
+                        List<Tree.Type> tas = tal.getTypes();
+                        for (int i=0; i<tas.size(); i++) {
+                            if (tas.get(i)==node) {
+                                result = tps.get(i).getSatisfiedTypes();
+                            }
                         }
                     }
                 }
