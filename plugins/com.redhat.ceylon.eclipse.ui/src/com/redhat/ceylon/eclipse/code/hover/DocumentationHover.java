@@ -1299,7 +1299,7 @@ public class DocumentationHover
                             appendDocAnnotationContent(refNode.getAnnotationList(), 
                                     doc, resolveScope(dec));
                         }
-                        ProducedType type = ptr.getTypedParameter(p).getFullType();
+                        ProducedType type = ptr.getTypedParameter(p).getType();
                         if (type==null) type = new UnknownType(dec.getUnit()).getType();
                         HTML.addImageAndLabel(buffer, p.getModel(), 
                                 HTML.fileUrl("methpro_obj.gif").toExternalForm(),
