@@ -339,13 +339,33 @@ class FindArgumentsVisitor extends Visitor
     @Override
     public void visit(Tree.SpecifierStatement that) {
         currentType = that.getBaseMemberExpression().getTypeModel();
+        Tree.SpecifierExpression se = that.getSpecifierExpression();
+        if (se!=null) {
+            if (isTypeUnknown(currentType) &&
+                    se.getExpression()!=null) {
+                currentType = se.getExpression().getTypeModel();
+            }
+        }
+        else {
+            currentType = null;
+        }
         super.visit(that);
         currentType = null;
     }
     @Override
     public void visit(Tree.AssignmentOp that) {
         ProducedType ct = currentType;
-        currentType = that.getLeftTerm().getTypeModel();
+        Tree.Term leftTerm = that.getLeftTerm();
+        Tree.Term rightTerm = that.getRightTerm();
+        if (leftTerm!=null && rightTerm!=null) {
+            currentType = leftTerm.getTypeModel();
+            if (isTypeUnknown(currentType) ) {
+                currentType = rightTerm.getTypeModel();
+            }
+        }
+        else {
+            currentType = null;
+        }
         super.visit(that);
         currentType = ct;
     }
