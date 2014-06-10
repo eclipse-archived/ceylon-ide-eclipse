@@ -49,7 +49,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-        "org.jboss.modules-1.1.3.GA.jar",
+        "org.jboss.modules-1.3.3.Final.jar",
     };
     private static final String[] COMPILETIME_LIBRARIES = new String[]{
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
