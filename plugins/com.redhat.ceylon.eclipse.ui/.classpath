@@ -17,7 +17,6 @@
 	<classpathentry exported="true" kind="lib" path="defaultRepository/org/slf4j/api/1.6.1/org.slf4j.api-1.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/github/rjeschke/txtmark/0.8-c0dcd373ce/com.github.rjeschke.txtmark-0.8-c0dcd373ce.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/net/minidev/json-smart/1.1.1/net.minidev.json-smart-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/maven-support/1.0/com.redhat.ceylon.maven-support-1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-module-resolver"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/org/antlr/runtime/3.4/org.antlr.runtime-3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/org/jboss/jandex/1.0.3.Final/org.jboss.jandex-1.0.3.Final.jar"/>
 	<classpathentry kind="lib" path="lib/jgrapht-jdk1.6.jar" sourcepath="/home/david/jgrapht-0.8.3/src"/>
@@ -27,5 +26,6 @@
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/module-resolver/1.1.0/com.redhat.ceylon.module-resolver-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-module-resolver"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/typechecker/1.1.0/com.redhat.ceylon.typechecker-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-spec"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/js/1.1.0/com.redhat.ceylon.compiler.js-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-js"/>
+	<classpathentry kind="lib" path="defaultRepository/com/redhat/ceylon/maven-support/2.0/com.redhat.ceylon.maven-support-2.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
