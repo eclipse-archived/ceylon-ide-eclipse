@@ -190,9 +190,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static final String SOURCE = "Ceylon";
     
-    private static final class CeylonModelCacheEnabler implements ProducedTypeCache.CacheEnabler {
-        // Caches are disabled by default. And only enabled during build and warmup jobs
-        private final ThreadLocal<Object> cachingIsEnabled = new ThreadLocal<>();
+    private static final class CeylonModelCacheEnabler 
+            implements ProducedTypeCache.CacheEnabler {
+        // Caches are disabled by default. And only enabled 
+        // during build and warmup jobs
+        private final ThreadLocal<Object> cachingIsEnabled = 
+                new ThreadLocal<Object>();
         
         public CeylonModelCacheEnabler() {
             ProducedTypeCache.setCacheEnabler(this);
@@ -211,7 +214,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
     
-    private static CeylonModelCacheEnabler modelCacheEnabler = new CeylonModelCacheEnabler();
+    private static CeylonModelCacheEnabler modelCacheEnabler = 
+            new CeylonModelCacheEnabler();
     
     public static void doWithCeylonModelCaching(final Runnable action) {
         modelCacheEnabler.enableCaching();
@@ -222,7 +226,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    public static <T> T doWithCeylonModelCaching(final Callable<T> action) throws CoreException {
+    public static <T> T doWithCeylonModelCaching(final Callable<T> action) 
+            throws CoreException {
         modelCacheEnabler.enableCaching();
         try {
             return action.call();
@@ -856,13 +861,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                 monitor.subTask("Typechecking all source  files of project " + project.getName());
                 modelStates.put(project, ModelState.TypeChecking);
-                builtPhasedUnits = doWithCeylonModelCaching(new Callable<List<PhasedUnit>>() {
-                    @Override
-                    public List<PhasedUnit> call() throws Exception {
-                        return fullTypeCheck(project, typeChecker, 
+                builtPhasedUnits = fullTypeCheck(project, typeChecker, 
                                 monitor.newChild(30, PREPEND_MAIN_LABEL_TO_SUBTASK ));
-                    }
-                });
                 modelStates.put(project, ModelState.TypeChecked);
                 
                 filesForBinaryGeneration = getProjectFiles(project);
@@ -910,13 +910,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                     monitor.subTask("Initial typechecking all source files of project " + project.getName());
                     modelStates.put(project, ModelState.TypeChecking);
-                    builtPhasedUnits = doWithCeylonModelCaching(new Callable<List<PhasedUnit>>() {
-                        @Override
-                        public List<PhasedUnit> call() throws Exception {
-                            return fullTypeCheck(project, typeChecker, 
+                    builtPhasedUnits = fullTypeCheck(project, typeChecker, 
                                     monitor.newChild(22, PREPEND_MAIN_LABEL_TO_SUBTASK ));
-                        }
-                    });
                     modelStates.put(project, ModelState.TypeChecked);
 
                     if (monitor.isCanceled()) {
@@ -1614,7 +1609,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    private List<PhasedUnit> fullTypeCheck(IProject project, 
+    private List<PhasedUnit> fullTypeCheck(final IProject project, 
             TypeChecker typeChecker, IProgressMonitor mon) 
                     throws CoreException {
 
@@ -1630,7 +1625,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         final List<PhasedUnit> listOfUnits = typeChecker.getPhasedUnits().getPhasedUnits();
 
-        SubMonitor monitor = SubMonitor.convert(mon,
+        final SubMonitor monitor = SubMonitor.convert(mon,
                 "Typechecking " + listOfUnits.size() + " source files of project " + 
                 project.getName(), dependencies.size()*5+listOfUnits.size()*6);
         
@@ -1639,7 +1634,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         JDTModelLoader loader = getModelLoader(typeChecker);
 //        loader.reset();
-                
+        
         for (PhasedUnit pu: dependencies) {
             monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
             pu.scanDeclarations();
@@ -1660,7 +1655,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         loader.loadPackage(languageModule, LANGUAGE_MODULE_NAME, true);
         loader.loadPackage(languageModule, "ceylon.language.descriptor", true);
         loader.loadPackageDescriptors();
-        
         
         monitor.subTask("(typechecking source files for project " 
                 + project.getName() +")");
@@ -1695,16 +1689,23 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
-        for (PhasedUnit pu : listOfUnits) {
-            if (! pu.isFullyTyped()) {
-                monitor.subTask("- typechecking " + pu.getUnit().getFilename());
-                pu.analyseTypes();
-                if (showWarnings(project)) {
-                    pu.analyseUsage();
+
+        doWithCeylonModelCaching(new Runnable() {
+            @Override
+            public void run() {
+                for (PhasedUnit pu : listOfUnits) {
+                    if (! pu.isFullyTyped()) {
+                        monitor.subTask("- typechecking " + pu.getUnit().getFilename());
+                        pu.analyseTypes();
+                        if (showWarnings(project)) {
+                            pu.analyseUsage();
+                        }
+                        monitor.worked(3);
+                    }
                 }
-                monitor.worked(3);
             }
-        }
+        });
+        
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
