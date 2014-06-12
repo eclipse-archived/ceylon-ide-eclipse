@@ -506,7 +506,7 @@ public class Nodes {
         return exp.toString();
     }
 
-    private static int getTokenLength(CommonToken token) {
+    public static int getTokenLength(CommonToken token) {
         return token.getStopIndex()-token.getStartIndex()+1;
     }
 
