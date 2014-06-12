@@ -261,9 +261,14 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         StringBuilder params = new StringBuilder();
         LinkedHashMap<String, ProducedType> paramTypes = getParameters(fav);
         if (returnType!=null) {
+            if(unit.isOptionalType(returnType)){
+                returnType = returnType.eliminateNull();
+            }
             TypeDeclaration rtd = returnType.getDeclaration();
-            if (rtd.equals(unit.getObjectDeclaration()) ||
-                    rtd.equals(unit.getAnythingDeclaration())) {
+            if ( (rtd instanceof Class) && (
+                    rtd.equals(unit.getObjectDeclaration()) || 
+                    rtd.equals(unit.getAnythingDeclaration()))
+            ) {
                 returnType = null;
             }
         }
