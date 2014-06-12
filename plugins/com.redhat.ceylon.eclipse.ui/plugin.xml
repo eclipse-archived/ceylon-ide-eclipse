@@ -783,6 +783,12 @@
             description="Restore the previous selection"
             id="com.redhat.ceylon.eclipse.ui.editor.restorePrevious"
             name="Undo Expand Selection"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Invert Boolean"
+            id="com.redhat.ceylon.eclipse.ui.action.invertBoolean"
+            name="Invert Boolean">
+      </command>
    </extension>
    
    <extension
@@ -888,6 +894,10 @@
             <class class="com.redhat.ceylon.eclipse.code.wizard.NewHandler">
                 <parameter name="wizardId" value="com.redhat.ceylon.eclipse.ui.newProjectWizard"/>
             </class>
+      </handler>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.InvertBooleanHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.invertBoolean">
       </handler>
    </extension>
    
@@ -1147,6 +1157,12 @@
             commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToUnit"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="com.redhat.ceylon.eclipse.ui.context"/>
+      <key
+            commandId="com.redhat.ceylon.eclipse.ui.action.invertBoolean"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+B">
+      </key>
             
    </extension>
    

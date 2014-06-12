@@ -577,6 +577,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             CollectParametersProposal.add(proposals, editor);
             MoveOutProposal.add(proposals, editor, node);
             MakeReceiverProposal.add(proposals, editor, node);
+            InvertBooleanProposal.add(proposals, editor);
                     
             addAssignToLocalProposal(cu, proposals, node, currentOffset);
             
