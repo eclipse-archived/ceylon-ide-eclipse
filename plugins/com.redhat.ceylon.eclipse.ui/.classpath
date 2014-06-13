@@ -26,6 +26,6 @@
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/module-resolver/1.1.0/com.redhat.ceylon.module-resolver-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-module-resolver"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/typechecker/1.1.0/com.redhat.ceylon.typechecker-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-spec"/>
 	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/compiler/js/1.1.0/com.redhat.ceylon.compiler.js-1.1.0.jar" sourcepath="sourcesCeylonProjects/ceylon-js"/>
-	<classpathentry kind="lib" path="defaultRepository/com/redhat/ceylon/maven-support/2.0/com.redhat.ceylon.maven-support-2.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="defaultRepository/com/redhat/ceylon/maven-support/2.0/com.redhat.ceylon.maven-support-2.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
