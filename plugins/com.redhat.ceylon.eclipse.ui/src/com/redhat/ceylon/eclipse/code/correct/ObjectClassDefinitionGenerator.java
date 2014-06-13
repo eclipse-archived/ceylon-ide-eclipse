@@ -342,7 +342,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                 return !rtd.isFinal();
             }
             else if (rtd instanceof Interface) {
-                return true;
+                return !rtd.equals(rtd.getUnit().getCallableDeclaration());
             }
             else if (rtd instanceof IntersectionType) {
                 for (ProducedType st: rtd.getSatisfiedTypes()) {
