@@ -707,51 +707,59 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
     
     Map<Declaration,String> copyImports() {
-        CeylonParseController pc = editor.getParseController();
-        if (pc==null || pc.getRootNode()==null) return null;
-        Tree.CompilationUnit cu = pc.getRootNode();
-        final IRegion selection = editor.getSelection();
-        class SelectedImportsVisitor extends Visitor {
-            Map<Declaration,String> results = new HashMap<Declaration,String>();
-            boolean inSelection(Node node) {
-                return node.getStartIndex()>=selection.getOffset() &&
-                        node.getStopIndex()<selection.getOffset()+selection.getLength();
-            }
-            void addDeclaration(Declaration d, Tree.Identifier id) {
-                if (d!=null && id!=null && d.isToplevel() && 
-                        !d.getUnit().getPackage().getNameAsString()
-                                .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    results.put(d, id.getText());
-                }
-            }
-            @Override
-            public void visit(Tree.BaseMemberOrTypeExpression that) {
-                if (inSelection(that)) {
-                    addDeclaration(that.getDeclaration(), 
-                            that.getIdentifier());
-                }
-                super.visit(that);
-            }
-            @Override
-            public void visit(Tree.BaseType that) {
-                if (inSelection(that)) {
-                    addDeclaration(that.getDeclarationModel(), 
-                            that.getIdentifier());
-                }
-                super.visit(that);
-            }
-            @Override
-            public void visit(Tree.MemberLiteral that) {
-                if (inSelection(that) && that.getType()==null) {
-                    addDeclaration(that.getDeclaration(), 
-                            that.getIdentifier());
-                }
-                super.visit(that);
-            }
-        }
-        SelectedImportsVisitor v = new SelectedImportsVisitor();
-        cu.visit(v);
-        return v.results;
+    	try {
+    		CeylonParseController pc = editor.getParseController();
+    		if (pc==null || pc.getRootNode()==null) return null;
+    		Tree.CompilationUnit cu = pc.getRootNode();
+    		final IRegion selection = editor.getSelection();
+    		class SelectedImportsVisitor extends Visitor {
+    			Map<Declaration,String> results = new HashMap<Declaration,String>();
+    			boolean inSelection(Node node) {
+    				return node.getStartIndex()>=selection.getOffset() &&
+    						node.getStopIndex()<selection.getOffset()+selection.getLength();
+    			}
+    			void addDeclaration(Declaration d, Tree.Identifier id) {
+    				if (d!=null && id!=null && d.isToplevel()) {
+    					String pname = d.getUnit().getPackage().getNameAsString();
+    					if (!pname.isEmpty() &&
+    							!pname.equals(Module.LANGUAGE_MODULE_NAME)) {
+    						results.put(d, id.getText());
+    					}
+    				}
+    			}
+    			@Override
+    			public void visit(Tree.BaseMemberOrTypeExpression that) {
+    				if (inSelection(that)) {
+    					addDeclaration(that.getDeclaration(), 
+    							that.getIdentifier());
+    				}
+    				super.visit(that);
+    			}
+    			@Override
+    			public void visit(Tree.BaseType that) {
+    				if (inSelection(that)) {
+    					addDeclaration(that.getDeclarationModel(), 
+    							that.getIdentifier());
+    				}
+    				super.visit(that);
+    			}
+    			@Override
+    			public void visit(Tree.MemberLiteral that) {
+    				if (inSelection(that) && that.getType()==null) {
+    					addDeclaration(that.getDeclaration(), 
+    							that.getIdentifier());
+    				}
+    				super.visit(that);
+    			}
+    		}
+    		SelectedImportsVisitor v = new SelectedImportsVisitor();
+    		cu.visit(v);
+    		return v.results;
+    	}
+    	catch (Exception e) {
+    		e.printStackTrace();
+    		return null;
+    	}
     }
     
     void pasteImports(Map<Declaration,String> map, MultiTextEdit edit, 
