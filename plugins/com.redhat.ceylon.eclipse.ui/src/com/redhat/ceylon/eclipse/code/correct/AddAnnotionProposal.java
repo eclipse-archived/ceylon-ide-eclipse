@@ -20,6 +20,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -102,9 +103,12 @@ class AddAnnotionProposal extends CorrectionProposal {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
-        InsertEdit insertEdit = createInsertAnnotationEdit(annotation, 
-                decNode, getDocument(change));
-        change.addEdit(insertEdit);
+        TextEdit edit = createReplaceAnnotationEdit(annotation, node, change);
+        if (edit==null) {
+        	edit = createInsertAnnotationEdit(annotation, decNode, 
+        			getDocument(change));
+        }
+        change.addEdit(edit);
         if (decNode instanceof Tree.TypedDeclaration &&
                 !(decNode instanceof Tree.ObjectDefinition)) {
             Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
@@ -121,7 +125,7 @@ class AddAnnotionProposal extends CorrectionProposal {
         }
         Region selection;
         if (node!=null && node.getUnit().equals(decNode.getUnit())) {
-            selection = new Region(insertEdit.getOffset(), annotation.length());
+            selection = new Region(edit.getOffset(), annotation.length());
         }
         else {
             selection = null;
@@ -131,13 +135,38 @@ class AddAnnotionProposal extends CorrectionProposal {
                 " in '" + ((TypeDeclaration) container).getName() + "'" : "";
         String description = 
                 "Make '" + dec.getName() + "' " + annotation + containerDesc;
-        AddAnnotionProposal p = new AddAnnotionProposal(dec, 
-                annotation, description, insertEdit.getOffset(), 
-                change, selection);
+        AddAnnotionProposal p = new AddAnnotionProposal(dec, annotation, 
+        		description, edit.getOffset(), change, selection);
         if (!proposals.contains(p)) {
             proposals.add(p);
         }
     }
+
+	private static ReplaceEdit createReplaceAnnotationEdit(String annotation,
+			Node node, TextFileChange change) {
+		String toRemove;
+		if ("formal".equals(annotation)) {
+			toRemove = "default";
+		}
+		else if ("abstract".equals(annotation)) {
+			toRemove = "final";
+		}
+		else {
+			return null;
+		}
+		Tree.AnnotationList annotationList = getAnnotationList(node);
+		if (annotationList != null) {
+			for (Tree.Annotation ann:
+				annotationList.getAnnotations()) {
+				if (toRemove.equals(getAnnotationIdentifier(ann))) {
+					return new ReplaceEdit(ann.getStartIndex(), 
+							ann.getStopIndex()+1-ann.getStartIndex(),
+							annotation);
+				}
+			}
+		}
+		return null;
+	}
 
     public static InsertEdit createInsertAnnotationEdit(String newAnnotation, 
             Node node, IDocument doc) {
@@ -270,11 +299,18 @@ class AddAnnotionProposal extends CorrectionProposal {
     
     static void addMakeActualDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        boolean shared = decNode.getDeclarationModel().isShared();
-        addAddAnnotationProposal(node, shared ? "actual" : "shared actual", 
+        Declaration dec;
+        if (node instanceof Tree.Declaration) {
+            dec = ((Tree.Declaration) node).getDeclarationModel();
+        }
+        else {
+            dec = (Declaration) node.getScope();
+        }
+        boolean shared = dec.isShared();
+        addAddAnnotationProposal(node, 
+        		shared ? "actual" : "shared actual", 
                 shared ? "Make Actual" : "Make Shared Actual",
-                decNode.getDeclarationModel(), proposals, project);
+                dec, proposals, project);
     }
 
     static void addMakeDefaultProposal(Collection<ICompletionProposal> proposals, 
@@ -311,7 +347,8 @@ class AddAnnotionProposal extends CorrectionProposal {
                 }
             }
             if (rd!=null) {
-                addAddAnnotationProposal(node, "default", "Make Default", 
+                addAddAnnotationProposal(node, 
+                		"default", "Make Default", 
                         rd, proposals, project);
             }
         }
@@ -319,22 +356,32 @@ class AddAnnotionProposal extends CorrectionProposal {
 
     static void addMakeDefaultDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        Declaration d = decNode.getDeclarationModel();
+    	Declaration dec;
+        if (node instanceof Tree.Declaration) {
+            dec = ((Tree.Declaration) node).getDeclarationModel();
+        }
+        else {
+            dec = (Declaration) node.getScope();
+        }
         addAddAnnotationProposal(node, 
-                d.isShared() ? "default" : "shared default", 
-                d.isShared() ? "Make Default" : "Make Shared Default", 
-                d, proposals, project);
+                dec.isShared() ? "default" : "shared default", 
+                dec.isShared() ? "Make Default" : "Make Shared Default", 
+                dec, proposals, project);
     }
 
     static void addMakeFormalDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        Declaration d = decNode.getDeclarationModel();
+    	Declaration dec;
+        if (node instanceof Tree.Declaration) {
+            dec = ((Tree.Declaration) node).getDeclarationModel();
+        }
+        else {
+            dec = (Declaration) node.getScope();
+        }
         addAddAnnotationProposal(node, 
-                d.isShared() ? "formal" : "shared formal",
-                d.isShared() ? "Make Formal" : "Make Shared Formal",
-                d, proposals, project);
+                dec.isShared() ? "formal" : "shared formal",
+                dec.isShared() ? "Make Formal" : "Make Shared Formal",
+                dec, proposals, project);
     }
 
     static void addMakeAbstractDecProposal(Collection<ICompletionProposal> proposals, 
@@ -347,7 +394,8 @@ class AddAnnotionProposal extends CorrectionProposal {
             dec = (Declaration) node.getScope();
         }
         if (dec instanceof Class) {
-            addAddAnnotationProposal(node, "abstract", "Make Abstract", 
+            addAddAnnotationProposal(node, 
+            		"abstract", "Make Abstract", 
                     dec, proposals, project);
         }
     }
@@ -368,7 +416,8 @@ class AddAnnotionProposal extends CorrectionProposal {
         else {
             dec = (Declaration) node.getScope();
         }
-        addAddAnnotationProposal(node, "abstract", "Make Abstract", 
+        addAddAnnotationProposal(node, 
+        		"abstract", "Make Abstract", 
                 dec, proposals, project);
     }
 
@@ -395,7 +444,8 @@ class AddAnnotionProposal extends CorrectionProposal {
                     ((Tree.MemberOrTypeExpression) term).getDeclaration();
             if (dec instanceof Value) {
                 if (((Value) dec).getOriginalDeclaration()==null) {
-                    addAddAnnotationProposal(node, "variable", "Make Variable", 
+                    addAddAnnotationProposal(node, 
+                    		"variable", "Make Variable", 
                             dec, proposals, project);
                 }
             }
@@ -408,7 +458,8 @@ class AddAnnotionProposal extends CorrectionProposal {
         if (dec instanceof Value && node instanceof Tree.AttributeDeclaration) {
             final Value v = (Value) dec;
             if (!v.isVariable() && !v.isTransient()) {
-                addAddAnnotationProposal(node, "variable", "Make Variable",
+                addAddAnnotationProposal(node, 
+                		"variable", "Make Variable",
                         dec, proposals, project);
             }
         }
@@ -429,7 +480,8 @@ class AddAnnotionProposal extends CorrectionProposal {
         }
         GetInitializedVisitor v = new GetInitializedVisitor();
         v.visit(cu);
-        addAddAnnotationProposal(node, "variable", "Make Variable",
+        addAddAnnotationProposal(node, 
+        		"variable", "Make Variable",
                 v.dec, proposals, project);
     }
     
@@ -475,7 +527,8 @@ class AddAnnotionProposal extends CorrectionProposal {
                 addMakeSharedProposal(proposals, project, refined);
             }
             else {
-                addAddAnnotationProposal(node, "shared default", "Make Shared Default", 
+                addAddAnnotationProposal(node, 
+                		"shared default", "Make Shared Default", 
                         refined, proposals, project);
             }
         }
@@ -579,7 +632,8 @@ class AddAnnotionProposal extends CorrectionProposal {
                        dec instanceof ClassOrInterface || 
                        dec instanceof TypeAlias) {
                 if (!dec.isShared()) {
-                    addAddAnnotationProposal(null, "shared", "Make Shared", 
+                    addAddAnnotationProposal(null, 
+                    		"shared", "Make Shared", 
                             dec, proposals, project);
                 }
             }
@@ -590,7 +644,8 @@ class AddAnnotionProposal extends CorrectionProposal {
             IProject project, Node node) {
         if (node instanceof Tree.Declaration) {
             Declaration d = ((Tree.Declaration) node).getDeclarationModel();
-            addAddAnnotationProposal(node, "shared", "Make Shared",  
+            addAddAnnotationProposal(node, 
+            		"shared", "Make Shared",  
                     d, proposals, project);
         }
     }
