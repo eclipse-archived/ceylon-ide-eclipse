@@ -5,6 +5,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		<groupId>com.redhat.ceylon.eclipse</groupId>
 		<artifactId>ceylon-ide-eclipse.all</artifactId>
 		<version>1.1.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>features</artifactId>
 	<name>ceylon.features</name>
@@ -13,6 +14,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	<modules>
 		<module>com.redhat.ceylon.eclipse.feature</module>
 		<module>com.redhat.ceylon.eclipse.android.feature</module>
+		
 	</modules>
 </project>
 	

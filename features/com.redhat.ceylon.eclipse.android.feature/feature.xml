@@ -6,7 +6,7 @@
       provider-name="%providerName"
       plugin="com.redhat.ceylon.eclipse.android.plugin">
 
-   <description url="http://in.relation.to">
+   <description url="http://ceylon-lang.org/documentation/current/ide/">
       %description
    </description>
 
