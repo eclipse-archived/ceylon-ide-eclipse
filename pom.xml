@@ -40,13 +40,13 @@
    <repository>
      <id>ceylon-dist</id>
      <layout>p2</layout>
-     <url>file:../ceylon-dist-osgi/p2/build/dist/repository</url>
+     <url>file:../ceylon-dist/osgi/build/dist</url>
    </repository>
 
    <repository>
      <id>ceylon-sdk</id>
      <layout>p2</layout>
-     <url>file:../ceylon-sdk/p2/build/dist/repository</url>     
+     <url>file:../ceylon-sdk/osgi/dist</url>     
    </repository>
 
   </repositories>
