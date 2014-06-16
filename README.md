@@ -1,6 +1,6 @@
 # Eclipse plugin for Ceylon
 
-## Installing from http://ceylon-lang.org/eclipse/updatesite/
+## Installing from the update site
 
 1.  Follow the instructions found there :
     
@@ -10,19 +10,47 @@
     
 5.  Go to `Help > Welcome to Ceylon` to get started.
 
-## Installing/Building with (pure) Eclipse
+## Building with (pure) Eclipse
 
 1.  Start with a clean install of Eclipse Juno or Kepler.
     
     <http://www.eclipse.org/downloads/>
     
-2.  Use `File > Import... > Existing Projects into Workspace` 
-    to import the project from this root directory: 
-    
-        ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
+2.  Install the following feature : _Graphical Editing Framework Zest Visualization Toolkit SDK_ available at the main Eclipse release update site (http://download.eclipse.org/releases/kepler for the Kepler version)
+	
+3.  Make sure you have the following feature : _Eclipse Plug-in Development Environment_.
+    This is normally included inside the Eclipse Standard Package.
 
-3. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
-    - Add the SWTBot Eclipse plugins, which is required to compile and run the Ceylon IDE 
+4.  Use `File > Import... > Existing Projects into Workspace` 
+    to import the projects from this root directories : 
+
+    ```
+    ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
+    ceyon-ide-eclipse/plugins/com.redhat.ceylon.test.eclipse.plugin
+    ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.android.plugin
+    ```
+
+5.  The `com.redhat.ceylon.eclipse.ui` plugin depends on several OSGI bundles, which must be available inside Eclipse to be able to build it.	
+    Quite recent versions of these dependencies should be available on the [IDE development update site](http://ceylon-lang.org/eclipse/development/)
+	in the _Ceylon IDE Runtime Bundles_ category.
+	Installing all the bundles of this category will provide all the dependencies required to be able to build and run the Ceylon IDE.
+	
+	However, if you need to build the IDE with the very last versions of the dependencies (ceylon compiler, typechecker, etc), you will
+	need to build a full Ceylon distribution locally first (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
+		
+	- First make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
+		
+	- In the `ceylon-dist` directory run : `ant clean publish-all ide-quick`
+		
+	- This should have produced an eclipse update site available at the following path :
+        `.../ceylon-dist/osgi/build/dist`
+			
+	The 2 OSGI bundles available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
+	
+	Each time you will rebuild the Ceylon distribution, you will need to update these required bundles and restart Eclipse.
+
+6. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
+    - Add the SWTBot Eclipse features, which are required to compile and run the Ceylon IDE 
       interactive tests.
       Install all the features available at the following update site :
         
@@ -33,30 +61,44 @@
     
             ceylon-ide-eclipse/tests/com.redhat.ceylon.eclipse.ui.test
 
-3.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
+7.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`. Now go to the new instance of 
     Eclipse.
     
-4.  Go to `Help > Welcome to Ceylon` to get started.
+8.  Go to `Help > Welcome to Ceylon` to get started.
 
 ## Building with Tycho/Maven 3
 
-1.  From this directory, type
+1.  First make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
+
+2.  Make sure that the following GitHub repositories have all been cloned locally in the same parent directory :
+	- ceylon-dist
+	- ceylon-sdk
+	- ceylon-ide-eclipse	
+	
+	
+2.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
+    - In the `ceylon-dist` directory run : `ant clean publish-all ide-quick`
+
+3.  Build the Ceylon SDK locally :
+    - In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
+
+4.  From this directory (`ceylon-ide-eclipse`), type :
     
-        mvn clean install -fae
+        `mvn clean install -fae`
 
     To skip tests completely you can do:
 
-        mvn clean install -Dmaven.test.skip 
+        `mvn clean install -DskipTests` 
    
-2.  The directory `site/target/site` now contains an update site you can 
+2.  The directory `site/target/repository` now contains an update site you can 
     install from.
 
 ## Pushing a new release onto the development update site
 
 1.  Build with Tycho/Maven 3 (see previous section)
     
-2.  Copy (through sftp) the content of the directory `site/target/site` onto the server :
+2.  Copy (through sftp) the content of the directory `site/target/repository` onto the server :
 
         www.ceylon-lang.org 
     
