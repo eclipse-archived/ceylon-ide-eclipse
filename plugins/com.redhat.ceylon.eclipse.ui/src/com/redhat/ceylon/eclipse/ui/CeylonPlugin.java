@@ -200,7 +200,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
      */
     public static List<String> getModuleLauncherJars(){
         try {
-            Bundle bundle = Platform.getBundle(PLUGIN_ID);
+            Bundle bundle = Platform.getBundle(DIST_PLUGIN_ID);
             Path path = new Path("lib");
             URL eclipseUrl = FileLocator.find(bundle, path, null);
             URL fileURL = FileLocator.resolve(eclipseUrl);
