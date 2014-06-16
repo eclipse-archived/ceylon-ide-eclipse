@@ -37,6 +37,18 @@
      <url>http://download.eclipse.org/technology/swtbot/releases/latest/</url>
    </repository>
 
+   <repository>
+     <id>ceylon-dist</id>
+     <layout>p2</layout>
+     <url>file:../ceylon-dist-osgi/p2/build/dist/repository</url>
+   </repository>
+
+   <repository>
+     <id>ceylon-sdk</id>
+     <layout>p2</layout>
+     <url>file:../ceylon-sdk/p2/build/dist/repository</url>     
+   </repository>
+
   </repositories>
 
   <modules>
