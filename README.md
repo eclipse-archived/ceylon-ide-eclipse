@@ -33,7 +33,7 @@
 5.  The `com.redhat.ceylon.eclipse.ui` plugin depends on several OSGI bundles, which must be available inside Eclipse to be able to build it.	
     Quite recent versions of these dependencies should be available on the [IDE development update site](http://ceylon-lang.org/eclipse/development/)
 	in the _Ceylon IDE Runtime Bundles_ category.
-	Installing all the bundles of this category will provide all the dependencies required to be able to build and run the Ceylon IDE.
+	Installing all the bundles of this category will provide all the dependencies required to build and run the Ceylon IDE.
 	
 	However, if you need to build the IDE with the very last versions of the dependencies (ceylon compiler, typechecker, etc), you will
 	need to build a full Ceylon distribution locally first (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
