@@ -156,6 +156,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             appendAnnotations(sb, md, owner.getDeclarationModel());
             sb.append(toString(md.getType())).append(" ")
                 .append(toString(md.getIdentifier()));
+            if (md.getTypeParameterList()!=null)
+            	sb.append(toString(md.getTypeParameterList()));
             List<Tree.ParameterList> parameterLists = md.getParameterLists();
             Tree.ParameterList first = parameterLists.get(0);
             sb.append(toString(first));
@@ -192,6 +194,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             appendAnnotations(sb, cd, owner.getDeclarationModel());
             sb.append("class ")
                 .append(toString(cd.getIdentifier()));
+            if (cd.getTypeParameterList()!=null)
+            	sb.append(toString(cd.getTypeParameterList()));
             Tree.ParameterList first = cd.getParameterList();
             sb.append(toString(first));
             if (!first.getParameters().isEmpty()) {
