@@ -222,7 +222,7 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
             if (cu!=null) {
                 Node refNode = getReferencedNode(dec, cu);
                 if (refNode!=null) {
-                    gotoNode(refNode);
+                    gotoNode(refNode, project);
                 }
             }
             else {

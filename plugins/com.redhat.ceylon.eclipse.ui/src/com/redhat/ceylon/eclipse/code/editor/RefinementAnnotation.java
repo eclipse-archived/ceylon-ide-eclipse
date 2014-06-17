@@ -10,6 +10,7 @@ import org.eclipse.jface.text.source.Annotation;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class RefinementAnnotation extends Annotation {
 
@@ -32,10 +33,10 @@ public class RefinementAnnotation extends Annotation {
     
     public void gotoRefinedDeclaration(CeylonEditor editor) {
         Declaration dec = getDeclaration();
-        Tree.CompilationUnit cu = getCompilationUnit(dec, 
-                editor.getParseController());
+        CeylonParseController pc = editor.getParseController();
+		Tree.CompilationUnit cu = getCompilationUnit(dec, pc);
         if (cu!=null) {
-            gotoNode(getReferencedNode(dec, cu));
+            gotoNode(getReferencedNode(dec, cu), pc.getProject());
         }
         else {
             gotoJavaNode(dec);

@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
 
 import java.util.StringTokenizer;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -71,7 +72,7 @@ final class PeekDefinitionPopup extends PopupDialog
             if (EditorUtil.triggersBinding(e, getCommandBinding())) {
                 e.doit=false;
                 dispose();
-                gotoNode(referencedNode);
+                gotoNode(referencedNode, pc.getProject());
             }
         }
     }
@@ -310,13 +311,14 @@ final class PeekDefinitionPopup extends PopupDialog
                 r.getOffset()+r.getLength());
         referencedNode = Nodes.getReferencedNode(node, epc);
         if (referencedNode==null) return;
-        IPath path = getNodePath(referencedNode);
+        IProject project = epc.getProject();
+		IPath path = getNodePath(referencedNode, project);
         //CeylonParseController treats files with full paths subtly
         //differently to files with relative paths, so make the
         //path relative
-        if (epc.getProject()!=null && 
-                epc.getProject().getLocation().isPrefixOf(path)) {
-            path = path.makeRelativeTo(epc.getProject().getLocation());
+        if (project!=null && 
+                project.getLocation().isPrefixOf(path)) {
+            path = path.makeRelativeTo(project.getLocation());
         }
         IDocument doc;
         if (path.equals(epc.getPath())) {
@@ -343,7 +345,7 @@ final class PeekDefinitionPopup extends PopupDialog
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        pc.initialize(path, epc.getProject(), null);
+        pc.initialize(path, project, null);
         pc.parse(doc, new NullProgressMonitor(), null);
         /*try {
             int lines = doc.getLineOfOffset(refDec.getStopIndex())-

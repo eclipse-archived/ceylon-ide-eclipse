@@ -47,7 +47,7 @@ public class Navigation {
                 if (ep != null && ep.equals(project)) {
                     Node node = getReferencedNode(d, getCompilationUnit(d, cpc));
                     if (node != null) {
-                        gotoNode(node);
+                        gotoNode(node, project);
                         return;
                     }
                 }
@@ -56,7 +56,7 @@ public class Navigation {
                 CeylonUnit ceylonUnit = (CeylonUnit) d.getUnit();
                 Node node = getReferencedNode(d, ceylonUnit.getCompilationUnit());
                 if (node != null) {
-                    gotoNode(node);
+                    gotoNode(node, project);
                 }
                 else if (ceylonUnit instanceof CeylonBinaryUnit) {
                     CeylonBinaryUnit binaryUnit = (CeylonBinaryUnit) ceylonUnit;
@@ -77,8 +77,8 @@ public class Navigation {
         }
     }
     
-    public static void gotoNode(Node node) {
-        gotoLocation(getNodePath(node), 
+    public static void gotoNode(Node node, IProject project) {
+        gotoLocation(getNodePath(node, project), 
                 Nodes.getStartOffset(node), 
                 Nodes.getLength(node));
     }
@@ -134,13 +134,16 @@ public class Navigation {
 //                project.equals(((IResourceAware)unit).getProjectResource());
 //    }
 
-    public static IPath getNodePath(Node node) {
+    public static IPath getNodePath(Node node, IProject project) {
         Unit unit = node.getUnit();
         
         if (unit instanceof IResourceAware) {
             IFile fileResource = ((IResourceAware) unit).getFileResource();
-            if (fileResource != null) {
+            if (fileResource!=null) {
                 return fileResource.getLocation();
+            }
+            else if (project!=null) {
+            	return project.getLocation().append(unit.getRelativePath());
             }
         }
         
@@ -161,10 +164,9 @@ public class Navigation {
     public static void gotoDeclaration(Referenceable model,
             CeylonParseController controller) {
         if (model!=null) {
-            Node refNode = getReferencedNode(model, 
-                    controller);
+            Node refNode = getReferencedNode(model, controller);
             if (refNode!=null) {
-                gotoNode(refNode);
+                gotoNode(refNode, controller.getProject());
             }
             else if (model instanceof Declaration) {
                 gotoJavaNode((Declaration) model);

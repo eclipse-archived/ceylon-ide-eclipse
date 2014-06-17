@@ -96,7 +96,7 @@ public class ModuleImportUtil {
         int offset = addModuleImports(project, target, 
                 singletonMap(moduleName, moduleVersion));
         IPath path = getNodePath(findPhasedUnit(project, target)
-                .getCompilationUnit());
+                .getCompilationUnit(), project);
         gotoLocation(path, 
                 offset + moduleName.length() + 
                         getDefaultIndent().length() + 10, 
