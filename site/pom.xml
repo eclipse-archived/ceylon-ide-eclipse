@@ -9,7 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>ceylon.site</artifactId>
-	<name>ceylon.site</name>
+	<name>Ceylon IDE Update Site </name>
 
 	<packaging>eclipse-repository</packaging>
 </project>
