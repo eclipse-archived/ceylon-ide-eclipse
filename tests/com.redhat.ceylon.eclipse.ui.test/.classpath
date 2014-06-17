@@ -8,8 +8,5 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/compiler-tests-1.1.0.jar" sourcepath="/ceylon-compiler/test/src"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.common-1.1.0-ide.jar"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.compiler.java-1.1.0-ide.jar"/>
-	<classpathentry kind="lib" path="lib/com.redhat.ceylon.typechecker-1.1.0-ide.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
