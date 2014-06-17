@@ -71,19 +71,22 @@
 
 1.  First make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
 
-2.  Make sure that the following GitHub repositories have all been cloned locally in the same parent directory :
+2.  Make sure that your JAVA_HOME is set to the right JDK 7 installation
+
+
+3.  Make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
 	- ceylon-dist
 	- ceylon-sdk
 	- ceylon-ide-eclipse	
 	
 	
-2.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
+4.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
     - In the `ceylon-dist` directory run : `ant clean publish-all ide-quick`
 
-3.  Build the Ceylon SDK locally :
+5.  Build the Ceylon SDK locally :
     - In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
 
-4.  From this directory (`ceylon-ide-eclipse`), type :
+6.  From this directory (`ceylon-ide-eclipse`), type :
     
         `mvn clean install -fae`
 
@@ -91,7 +94,7 @@
 
         `mvn clean install -DskipTests` 
    
-2.  The directory `site/target/repository` now contains an update site you can 
+7.  The directory `site/target/repository` now contains an update site you can 
     install from.
 
 ## Pushing a new release onto the development update site
