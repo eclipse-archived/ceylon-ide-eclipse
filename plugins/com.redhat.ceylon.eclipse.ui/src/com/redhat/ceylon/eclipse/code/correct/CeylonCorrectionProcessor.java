@@ -369,6 +369,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             if (tc!=null) {
                 addChangeReferenceProposals(cu, node, problem, proposals, file);
             }
+            addCreateEnumProposal(cu, node, problem, proposals, 
+                    project, tc, file);
             addCreationProposals(cu, node, problem, proposals, 
                     project, tc, file);
             break;
