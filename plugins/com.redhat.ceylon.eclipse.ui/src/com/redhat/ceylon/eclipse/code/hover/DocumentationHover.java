@@ -101,6 +101,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
@@ -1279,6 +1280,7 @@ public class DocumentationHover
             Declaration dec, Node node, StringBuilder buffer) {
         if (dec instanceof Functional) {
             ProducedReference ptr = getProducedReference(dec, node);
+            if (ptr==null) return;
             for (ParameterList pl: ((Functional) dec).getParameterLists()) {
                 if (!pl.getParameters().isEmpty()) {
                     buffer.append("<p>");
@@ -1299,17 +1301,22 @@ public class DocumentationHover
                             appendDocAnnotationContent(refNode.getAnnotationList(), 
                                     doc, resolveScope(dec));
                         }
-                        ProducedType type = ptr.getTypedParameter(p).getType();
-                        if (type==null) type = new UnknownType(dec.getUnit()).getType();
-                        HTML.addImageAndLabel(buffer, p.getModel(), 
-                                HTML.fileUrl("methpro_obj.gif").toExternalForm(),
-                                16, 16, 
-                                "accepts&nbsp;&nbsp;<tt><a " + HTML.link(type.getDeclaration()) + ">" + 
-                                        convertToHTMLContent(type.getProducedTypeName()) + 
-                                        "</a>&nbsp;<a " + HTML.link(p.getModel()) + ">"+ p.getName() +
-                                        convertToHTMLContent(params.toString()) + "</a>" + 
-                                        convertToHTMLContent(def) + "</tt>" + doc, 
-                                20, 2);
+                        ProducedTypedReference tp = ptr.getTypedParameter(p);
+                        if (tp!=null) {
+                        	ProducedType type = tp.getType();
+                        	if (type==null) {
+                        		type = new UnknownType(dec.getUnit()).getType();
+                        	}
+                        	HTML.addImageAndLabel(buffer, p.getModel(), 
+                        			HTML.fileUrl("methpro_obj.gif").toExternalForm(),
+                        			16, 16, 
+                        			"accepts&nbsp;&nbsp;<tt><a " + HTML.link(type.getDeclaration()) + ">" + 
+                        					convertToHTMLContent(type.getProducedTypeName()) + 
+                        					"</a>&nbsp;<a " + HTML.link(p.getModel()) + ">"+ p.getName() +
+                        					convertToHTMLContent(params.toString()) + "</a>" + 
+                        					convertToHTMLContent(def) + "</tt>" + doc, 
+                        					20, 2);
+                        }
                     }
                     buffer.append("</p>");
                 }
