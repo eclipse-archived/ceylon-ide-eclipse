@@ -52,7 +52,7 @@ public class Nodes {
             Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
     
 
-	public static Tree.Declaration findDeclaration(Tree.CompilationUnit cu, Node node) {
+    public static Tree.Declaration findDeclaration(Tree.CompilationUnit cu, Node node) {
         FindDeclarationVisitor fcv = new FindDeclarationVisitor(node);
         fcv.visit(cu);
         return fcv.getDeclarationNode();
@@ -511,7 +511,7 @@ public class Nodes {
     }
 
     public static String[] nameProposals(Node node) {
-    	Set<String> names = new LinkedHashSet<String>();
+        Set<String> names = new LinkedHashSet<String>();
         Node identifyingNode = node;
         if (identifyingNode instanceof Tree.Expression) {
             identifyingNode = ((Tree.Expression) identifyingNode).getTerm();
@@ -522,42 +522,42 @@ public class Nodes {
         }
         
         if (identifyingNode instanceof Tree.QualifiedMemberOrTypeExpression) {
-        	Tree.QualifiedMemberOrTypeExpression qmte = 
-            		(Tree.QualifiedMemberOrTypeExpression) identifyingNode;
-			Declaration d = qmte.getDeclaration();
+            Tree.QualifiedMemberOrTypeExpression qmte = 
+                    (Tree.QualifiedMemberOrTypeExpression) identifyingNode;
+            Declaration d = qmte.getDeclaration();
             if (d!=null) {
-            	addNameProposals(names, d, false);
+                addNameProposals(names, d, false);
             }
         }
         if (identifyingNode instanceof Tree.SumOp) {
-        	names.add("sum");
+            names.add("sum");
         }
         else if (identifyingNode instanceof Tree.DifferenceOp) {
-        	names.add("difference");
+            names.add("difference");
         }
         else if (identifyingNode instanceof Tree.ProductOp) {
-        	names.add("product");
+            names.add("product");
         }
         else if (identifyingNode instanceof Tree.QuotientOp) {
-        	names.add("ratio");
+            names.add("ratio");
         }
         else if (identifyingNode instanceof Tree.RemainderOp) {
-        	names.add("remainder");
+            names.add("remainder");
         }
         else if (identifyingNode instanceof Tree.UnionOp) {
-        	names.add("union");
+            names.add("union");
         }
         else if (identifyingNode instanceof Tree.IntersectionOp) {
-        	names.add("intersection");
+            names.add("intersection");
         }
         else if (identifyingNode instanceof Tree.ComplementOp) {
-        	names.add("complement");
+            names.add("complement");
         }
         else if (identifyingNode instanceof Tree.RangeOp) {
-        	names.add("range");
+            names.add("range");
         }
         else  if (identifyingNode instanceof Tree.EntryOp) {
-        	names.add("entry");
+            names.add("entry");
         }
 
         if (identifyingNode instanceof Tree.Term) {
@@ -570,12 +570,16 @@ public class Nodes {
                 }
                 if (node.getUnit().isIterableType(type)) {
                     ProducedType iteratedType = node.getUnit().getIteratedType(type);
-                    addNameProposals(names, iteratedType.getDeclaration(), true);
+                    TypeDeclaration itd = iteratedType.getDeclaration();
+                    if (itd instanceof ClassOrInterface || 
+                        itd instanceof TypeParameter) {
+                        addNameProposals(names, itd, true);
+                    }
                 }
             }
         }
         if (names.isEmpty()) {
-        	names.add("it");
+            names.add("it");
         }
         return names.toArray(NO_STRINGS);
     }
@@ -588,22 +592,22 @@ public class Nodes {
     public static void addNameProposals(Set<String> names, boolean plural,
             String tn) {
         String name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
-		Matcher matcher = IDPATTERN.matcher(name);
-		while (matcher.find()) {
-			int loc = matcher.start(2);
-			String initial = name.substring(matcher.start(1), loc);
-			if (Character.isLowerCase(name.charAt(0))) {
-				initial = initial.toLowerCase();
-			}
-			String subname = initial + name.substring(loc);
-			if (plural) subname += "s";
-	        if (Escaping.KEYWORDS.contains(subname)) {
-	            names.add("\\i" + subname);
-	        }
-	        else {
-	            names.add(subname);
-	        }
-		}
+        Matcher matcher = IDPATTERN.matcher(name);
+        while (matcher.find()) {
+            int loc = matcher.start(2);
+            String initial = name.substring(matcher.start(1), loc);
+            if (Character.isLowerCase(name.charAt(0))) {
+                initial = initial.toLowerCase();
+            }
+            String subname = initial + name.substring(loc);
+            if (plural) subname += "s";
+            if (Escaping.KEYWORDS.contains(subname)) {
+                names.add("\\i" + subname);
+            }
+            else {
+                names.add(subname);
+            }
+        }
     }
 
     public static Tree.SpecifierOrInitializerExpression getDefaultArgSpecifier(
