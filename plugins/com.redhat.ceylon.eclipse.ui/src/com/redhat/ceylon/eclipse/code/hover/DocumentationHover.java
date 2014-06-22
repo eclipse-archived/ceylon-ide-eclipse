@@ -1327,7 +1327,9 @@ public class DocumentationHover
     private static void addReturnType(Declaration dec, StringBuilder buffer,
             Node node, boolean obj) {
         if (dec instanceof TypedDeclaration && !obj) {
-            ProducedType ret = getProducedReference(dec, node).getType();
+            ProducedReference pr = getProducedReference(dec, node);
+            if (pr==null) return;
+			ProducedType ret = pr.getType();
             if (ret!=null) {
                 buffer.append("<p>");
                 List<ProducedType> list;
