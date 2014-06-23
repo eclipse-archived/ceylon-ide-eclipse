@@ -36,7 +36,7 @@ public interface EditorActionIds {
     /**
      * Source menu: id of standard Format global action
      */
-    //public static final String FORMAT= PLUGIN_ID + ".editor.formatSource";
+    public static final String FORMAT= PLUGIN_ID + ".editor.formatSource";
 
     /**
      * Action definition ID of the edit -> Go to Matching Fence action

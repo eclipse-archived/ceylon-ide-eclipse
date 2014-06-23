@@ -738,11 +738,11 @@
             description="Uncomments the current selection"
             id="com.redhat.ceylon.eclipse.ui.editor.removeBlockComment"
             name="Remove Block Comment"/>
-      <!--command
+      <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Format the source code"
             id="com.redhat.ceylon.eclipse.ui.editor.formatSource"
-            name="Format"/-->
+            name="Format"/>
       <command
             name="Go to Matching Fence"
             description="Moves the cursor to the matching fence character, if any"
