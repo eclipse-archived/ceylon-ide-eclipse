@@ -132,8 +132,8 @@ public class CeylonToJavaMatcher {
             return visit((IParent)javaType);
         }
         
-        IJavaElement result = null;
-        if ((result = declarationMatched(javaType, mirror)) != null) {
+        IJavaElement result = declarationMatched(javaType, mirror);
+        if (result != null) {
             return result;
         }
         return visit((IParent)javaType);
@@ -148,8 +148,8 @@ public class CeylonToJavaMatcher {
         if (ceylonDeclaration instanceof JavaMethod) {
             mirror = (IBindingProvider) ((JavaMethod) ceylonDeclaration).mirror;
         }
-        IJavaElement result = null;
-        if ((result = declarationMatched(javaMethod, mirror)) != null) {
+        IJavaElement result = declarationMatched(javaMethod, mirror);
+        if (result != null) {
             return result;
         }
 
@@ -165,7 +165,6 @@ public class CeylonToJavaMatcher {
                 }
             }
         } catch (JavaModelException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return null;
@@ -181,11 +180,11 @@ public class CeylonToJavaMatcher {
                     // Case of a constructor : let's go to the constructor and not to the type.
                     ITypeBinding typeBinding = (ITypeBinding) bindings[0];
                     for (IMethodBinding methodBinding : typeBinding.getDeclaredMethods()) {
-                        if (methodBinding.isConstructor()) {
-                            if (CharOperation.equals(methodBinding.getKey().toCharArray(), mirror.getBindingKey())) {
-                                return methodBinding.getJavaElement();
-                            }
-                        }
+//                        if (methodBinding.isConstructor()) {
+                    	if (CharOperation.equals(methodBinding.getKey().toCharArray(), mirror.getBindingKey())) {
+                    		return methodBinding.getJavaElement();
+                    	}
+//                        }
                     }
                 }
                 if (CharOperation.equals(bindings[0].getKey().toCharArray(), mirror.getBindingKey())) {
