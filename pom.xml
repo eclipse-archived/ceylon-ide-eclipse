@@ -45,6 +45,12 @@
      <url>file:../ceylon-sdk/osgi/dist</url>     
    </repository>
 
+   <repository>
+     <id>ceylon-formatter</id>
+     <layout>p2</layout>
+     <url>file:../ceylon.formatter/osgi/dist</url>     
+   </repository>
+
   </repositories>
 
   <modules>

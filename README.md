@@ -45,8 +45,23 @@
 	- This should have produced an eclipse update site available at the following path :
         `.../ceylon-dist/osgi/build/dist`
 			
-	The 2 OSGI bundles available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
+	The Ceylon Distribution feature available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
 	
+	- In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
+		
+	- This should have produced an eclipse update site available at the following path :
+        `.../ceylon-sdk/osgi/dist`
+			
+	The required OSGI bundles available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
+
+	- The ceylon.formatter module is also required now (see [here](https://github.com/lucaswerkmeister/ceylon.formatter) for more details):
+	In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
+		
+	- This should have produced an eclipse update site available at the following path :
+        `.../ceylon.formatter/osgi/dist`
+			
+	The OSGI bundles available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
+
 	Each time you will rebuild the Ceylon distribution, you will need to update these required bundles and restart Eclipse.
 
 6. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
@@ -73,10 +88,10 @@
 
 2.  Make sure that your JAVA_HOME is set to the right JDK 7 installation
 
-
 3.  Make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
 	- ceylon-dist
 	- ceylon-sdk
+	- ceylon.formatter
 	- ceylon-ide-eclipse	
 	
 	
@@ -85,6 +100,9 @@
 
 5.  Build the Ceylon SDK locally :
     - In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
+
+5.  Build the Ceylon Formatter locally :
+    - In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
 
 6.  From this directory (`ceylon-ide-eclipse`), type :
     
