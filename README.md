@@ -36,33 +36,36 @@
 	Installing all the bundles of this category will provide all the dependencies required to build and run the Ceylon IDE.
 	
 	However, if you need to build the IDE with the very last versions of the dependencies (ceylon compiler, typechecker, etc), you will
-	need to build a full Ceylon distribution locally first (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
+	need to build :
+	- a full Ceylon distribution locally first (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
 		
-	- First make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
+		- First make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
 		
-	- In the `ceylon-dist` directory run : `ant clean publish-all ide-quick`
+		- In the `ceylon-dist` directory run : `ant clean publish-all ide-quick`
 		
-	- This should have produced an eclipse update site available at the following path :
-        `.../ceylon-dist/osgi/build/dist`
+		- This should have produced an eclipse update site available at the following path :
+        	`.../ceylon-dist/osgi/build/dist`
 			
-	The Ceylon Distribution feature available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
+		The Ceylon Distribution feature available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
 	
-	- In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
-		
-	- This should have produced an eclipse update site available at the following path :
-        `.../ceylon-sdk/osgi/dist`
-			
-	The required OSGI bundles available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
+	- the Ceylon SDK :
 
-	- The ceylon.formatter module is also required now (see [here](https://github.com/lucaswerkmeister/ceylon.formatter) for more details):
-	In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
+		- In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
 		
-	- This should have produced an eclipse update site available at the following path :
-        `.../ceylon.formatter/osgi/dist`
+		- This should have produced an eclipse update site available at the following path :
+        	`.../ceylon-sdk/osgi/dist`
 			
-	The OSGI bundles available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
+		The required OSGI bundles (ceylon.file, ceylon.interop.java, ceylon.collection) available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
 
-	Each time you will rebuild the Ceylon distribution, you will need to update these required bundles and restart Eclipse.
+	- The _ceylon.formatter_ module is also required now (see [here](https://github.com/lucaswerkmeister/ceylon.formatter) for more details):
+		- In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
+		
+		- This should have produced an eclipse update site available at the following path :
+        	`.../ceylon.formatter/osgi/dist`
+			
+		The OSGI bundles available under the _Ceylon Distribution Runtime Bundles_ category should be installed in Eclipse.
+
+	Each time you will rebuild one of those elemens, you will need to update these required bundles and restart Eclipse.
 
 6. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
     - Add the SWTBot Eclipse features, which are required to compile and run the Ceylon IDE 
