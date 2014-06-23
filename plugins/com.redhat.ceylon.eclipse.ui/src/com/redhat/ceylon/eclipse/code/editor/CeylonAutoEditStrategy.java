@@ -1,9 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import java.util.List;
-
 import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.eclipse.jface.text.DocumentCommand;
@@ -27,8 +24,7 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
             new CeylonParser(ts).compilationUnit();
         } 
         catch (RecognitionException e) {}
-        List<CommonToken> tokens = ts.getTokens();
-        new AutoEdit(document, tokens, command)
+        new AutoEdit(document, ts.getTokens(), command)
                 .customizeDocumentCommand();
     }
 
