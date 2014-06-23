@@ -19,8 +19,7 @@
    </license>
 
    <requires>
-      <import plugin="ceylon.language" version="1.1.0" match="equivalent"/>
-      <import plugin="com.redhat.ceylon.dist" version="1.1.0" match="equivalent"/>
+      <import feature="com.redhat.ceylon.dist.feature" version="1.1.0" match="equivalent"/>
    </requires>
 
    <plugin
