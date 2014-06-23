@@ -62,6 +62,7 @@ import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.ArtifactResultType;
 import com.redhat.ceylon.cmr.api.ImportType;
 import com.redhat.ceylon.cmr.api.JDKUtils;
+import com.redhat.ceylon.cmr.api.PathFilter;
 import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.api.VisibilityType;
@@ -741,6 +742,10 @@ public class JDTModule extends LazyModule {
                     @Override
                     public String repositoryDisplayString() {                        
                         return "";
+                    }
+                    @Override
+                    public PathFilter filter() {
+                        return null;
                     }
                 });
             }
