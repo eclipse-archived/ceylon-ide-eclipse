@@ -408,6 +408,10 @@ public class CeylonEditor extends TextEditor {
         action.setActionDefinitionId(EditorActionIds.FORMAT_BLOCK);
         setAction(EditorActionIds.FORMAT_BLOCK, action);
 
+        action= new FormatAction(this);
+        action.setActionDefinitionId(EditorActionIds.FORMAT);
+        setAction(EditorActionIds.FORMAT, action);
+
         foldingActionGroup= new FoldingActionGroup(this, this.getSourceViewer());
         
 //        getAction(ITextEditorActionConstants.SHIFT_LEFT)
