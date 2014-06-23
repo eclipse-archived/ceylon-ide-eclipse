@@ -157,15 +157,20 @@ class AutoEdit extends Indents {
                 catch (BadLocationException e) {}
             }
 
-            if (current.equals(opening) && (!isQuotedOrCommented(command.offset) || 
-                    isGraveAccentCharacterInStringLiteral(command.offset, opening) ||
-                    isOpeningBracketInAnnotationStringLiteral(command.offset, opening))) {
+            boolean isInterpolation = 
+            		isGraveAccentCharacterInStringLiteral(command.offset, opening);
+			boolean isDocLink = 
+					isOpeningBracketInAnnotationStringLiteral(command.offset, opening);
+			if (current.equals(opening) && 
+					(isInterpolation || isDocLink ||
+							!isQuotedOrCommented(command.offset))) {
                 //typed character is an opening fence
-                if (closeOpeningFence(opening, closing)) {
+                if (isInterpolation || isDocLink ||
+                		closeOpeningFence(opening, closing)) {
                     //add a closing fence
                     command.shiftsCaret = false;
                     command.caretOffset = command.offset + 1;
-                    if (isGraveAccentCharacterInStringLiteral(command.offset, opening)) {
+                    if (isInterpolation) {
                         try {
                             if (command.offset>1 &&
                                     document.get(command.offset-1,1).equals("`") &&
@@ -175,7 +180,7 @@ class AutoEdit extends Indents {
                         } 
                         catch (BadLocationException e) {}
                     }
-                    else if (isOpeningBracketInAnnotationStringLiteral(command.offset, opening)) {
+                    else if (isDocLink) {
                         try {
                             if (command.offset>1 &&
                                     document.get(command.offset-1,1).equals("[") &&
@@ -684,6 +689,10 @@ class AutoEdit extends Indents {
                     !text.endsWith(token)) {
                 count++;
             }
+            if (text.endsWith(token) &&
+                    !text.startsWith(token)) {
+                count++;
+            }
         }
         return count;
     }
@@ -739,12 +748,14 @@ class AutoEdit extends Indents {
                     startOfCurrentLineChar, endOfLastLineChar,
                     false, buf);
             
-            if (opening) {
-                buf.append(command.text.charAt(0));
+            if (!document.get(start, endOfWs-start).equals(buf.toString())) {
+                if (opening) {
+                    buf.append(command.text.charAt(0));
+                }
+            	command.text = buf.toString();
+            	command.offset=start;
+            	command.length=endOfWs-start;
             }
-            command.text = buf.toString();
-            command.offset=start;
-            command.length=endOfWs-start;
         }
     }
 
