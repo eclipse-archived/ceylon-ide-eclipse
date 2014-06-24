@@ -1055,11 +1055,11 @@
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.formatBlock"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <!--key
+      <key
             sequence="M1+M2+F"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.formatSource"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/-->
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       
       <!-- Navigation actions -->
       <key
