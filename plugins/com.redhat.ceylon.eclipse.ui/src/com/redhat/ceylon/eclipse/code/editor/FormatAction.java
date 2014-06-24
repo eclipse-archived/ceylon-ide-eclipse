@@ -1,12 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
-import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
-
-import java.io.StringWriter;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
@@ -15,16 +9,12 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import ceylon.formatter.format_;
 import ceylon.file.Writer;
 import ceylon.file.Writer$impl;
-import ceylon.language.Destroyable;
+import ceylon.formatter.format_;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class FormatAction extends Action {
     private final CeylonEditor editor;
