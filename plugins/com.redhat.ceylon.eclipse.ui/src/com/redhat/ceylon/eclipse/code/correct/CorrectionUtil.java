@@ -153,19 +153,45 @@ public class CorrectionUtil {
 	            tn.equals(unit.getStringDeclaration())) {
 	        return "\"\"";
 	    }
-	    else if (unit.getEmptyDeclaration().getType().isSubtypeOf(t)) {
-	    	if (t.getSupertype(unit.getSequentialDeclaration())==null) {
-	    		return "{}";
-	    	}
-	    	else {
-	    		return "[]";
-	    	}
-	    }
-	    else {
-	        return "nothing";
-	    }
-	}
-	
+        else if (isClass &&
+                tn.equals(unit.getTupleDeclaration())) {
+            final int minimumLength = unit.getTupleMinimumLength(t);
+            final List<ProducedType> tupleTypes = unit.getTupleElementTypes(t);
+            final StringBuilder sb = new StringBuilder();
+            for(int i = 0 ; i < minimumLength ; i++){
+                sb.append(sb.length() == 0 ? "[" : ", ");
+                ProducedType currentType = tupleTypes.get(i);
+                if(unit.isSequentialType(currentType)){
+                    currentType = unit.getSequentialElementType(currentType);
+                }
+                sb.append(defaultValue(unit, currentType));
+            }
+            sb.append(']');
+            return sb.toString();
+        } 
+        else if (unit.isSequentialType(t)) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append('[');
+            if (!unit.getEmptyDeclaration().getType().isSubtypeOf(t)) {
+                sb.append(defaultValue(unit, unit.getSequentialElementType(t)));
+            }
+            sb.append(']');
+            return sb.toString();
+        }
+        else if (unit.isIterableType(t)) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append('{');
+            if (!unit.getEmptyDeclaration().getType().isSubtypeOf(t)) {
+                sb.append(defaultValue(unit, unit.getIteratedType(t)));
+            }
+            sb.append('}');
+            return sb.toString();
+        }
+        else {
+            return "nothing";
+        }
+    }
+    
     static Region computeSelection(int offset, String def) {
         int length;
         int loc = def.indexOf("= nothing");
