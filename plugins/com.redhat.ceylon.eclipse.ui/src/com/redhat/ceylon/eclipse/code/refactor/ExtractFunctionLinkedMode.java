@@ -125,6 +125,11 @@ public final class ExtractFunctionLinkedMode
     }
     
     @Override
+    public boolean canBeInferred() {
+        return refactoring.canBeInferred();
+    }
+    
+    @Override
     protected String getKind() {
         return "function";
     }

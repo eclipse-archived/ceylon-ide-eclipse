@@ -81,7 +81,9 @@ public class LinkedModeCompletionProposal
                 DocumentEvent event) {
             for (ICompletionProposal p: proposals) {
                 if (p instanceof ICompletionProposalExtension2) {
-                    if (((ICompletionProposalExtension2) p).validate(document, offset, event)) {
+                    ICompletionProposalExtension2 ext = 
+                    		(ICompletionProposalExtension2) p;
+					if (ext.validate(document, offset, event)) {
                         return true;
                     }
                 }
@@ -140,7 +142,8 @@ public class LinkedModeCompletionProposal
         for (int i=offset;
                 i<document.getLength(); 
                 i++) {
-            if (Character.isWhitespace(document.getChar(i))) {
+        	char ch = document.getChar(i);
+            if (Character.isWhitespace(ch) || ch=='(') {
                 if (count++==position) {
                     break;
                 }
@@ -229,7 +232,7 @@ public class LinkedModeCompletionProposal
     }
 
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
-            Unit unit, ProducedType type, boolean includeValue) {
+            Unit unit, ProducedType type, boolean includeValue, String kind) {
     	if (type==null) return new ICompletionProposal[0];
         List<ProducedType> supertypes = isTypeUnknown(type) ?
                 Collections.<ProducedType>emptyList() :
@@ -244,7 +247,7 @@ public class LinkedModeCompletionProposal
         int i=0;
         if (includeValue) {
             typeProposals[i++] =
-                    new LinkedModeCompletionProposal(offset, "value", 0, null);
+                    new LinkedModeCompletionProposal(offset, kind, 0, null);
         }
         for (int j=0; j<supertypes.size(); j++) {
             ProducedType supertype = supertypes.get(j);

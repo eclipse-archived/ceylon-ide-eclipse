@@ -511,6 +511,12 @@ public class Nodes {
     }
 
     public static String[] nameProposals(Node node) {
+    	if (node instanceof Tree.FunctionArgument) {
+    		Tree.FunctionArgument fa = (Tree.FunctionArgument) node;
+			if (fa.getExpression()!=null) {
+    			node = fa.getExpression();
+			}
+    	}
         Set<String> names = new LinkedHashSet<String>();
         Node identifyingNode = node;
         if (identifyingNode instanceof Tree.Expression) {

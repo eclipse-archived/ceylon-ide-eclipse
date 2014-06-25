@@ -132,7 +132,7 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected String getKind() {
-        return "value";
+        return refactoring.isFunction() ? "function" : "value";
     }
     
 }

@@ -24,6 +24,7 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -75,8 +76,8 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         return new RefactoringStatus();
     }
 
-    public TextChange createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
+    public TextChange createChange(IProgressMonitor pm) 
+    		throws CoreException, OperationCanceledException {
         TextChange tfc = newLocalChange();
         extractInFile(tfc);
         return tfc;
@@ -89,6 +90,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     void extractInFile(TextChange tfc) throws CoreException {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = tfc.getCurrentDocument(null);
+        Unit unit = node.getUnit();
         Tree.Term term = (Tree.Term) node;
         Tree.Statement statement = findStatement(rootNode, node);
         boolean toplevel;
@@ -99,8 +101,11 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
             toplevel = false;
         }
         String exp = toString(unparenthesize(term));
-        type = node.getUnit()
-                .denotableType(term.getTypeModel());
+        boolean anonFunction = term instanceof Tree.FunctionArgument;
+		type = unit.denotableType(term.getTypeModel());
+        if (anonFunction) {
+        	type = unit.getCallableReturnType(type);
+        }
         int il;
         String typeDec;
         if (type==null || type.isUnknown()) {
@@ -108,25 +113,31 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
             il = 0;
         }
         else if (explicitType||toplevel) {
-            typeDec = type.getProducedTypeName(node.getUnit());
+            typeDec = type.getProducedTypeName(unit);
             HashSet<Declaration> decs = new HashSet<Declaration>();
             importType(decs, type, rootNode);
             il = applyImports(tfc, decs, rootNode, doc);
         }
         else {
             canBeInferred = true;
-            typeDec = "value";
+            typeDec = anonFunction ? "function" : "value";
             il = 0;
         }
-        String dec = typeDec + " " +  newName + 
-                (getter ? " { return " + exp  + "; } " : " = " + exp + ";");
-        String text = dec + getDefaultLineDelimiter(doc) + getIndent(statement, doc);
+        String dec = 
+        		typeDec + " " +  newName + 
+        		(anonFunction ? "" : (getter ? " => "  : " = ")) + 
+        		exp  + ";";
+        
+        String text = dec + getDefaultLineDelimiter(doc) + 
+        		getIndent(statement, doc);
         Integer start = statement.getStartIndex();
         tfc.addEdit(new InsertEdit(start, text));
-        tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), Nodes.getNodeLength(node), newName));
+        tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), 
+        		Nodes.getNodeLength(node), newName));
         typeRegion = new Region(start, typeDec.length());
         decRegion = new Region(start+typeDec.length()+1, newName.length());
-        refRegion = new Region(Nodes.getNodeStartOffset(node)+text.length()+il, newName.length());
+        refRegion = new Region(Nodes.getNodeStartOffset(node)+text.length()+il, 
+        		newName.length());
     }
     
     public boolean canBeInferred() {
@@ -155,6 +166,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     
 	public String[] getNameProposals() {
 		return Nodes.nameProposals(node);
+	}
+	
+	public boolean isFunction() {
+		return node instanceof Tree.FunctionArgument;
 	}
     
 }
