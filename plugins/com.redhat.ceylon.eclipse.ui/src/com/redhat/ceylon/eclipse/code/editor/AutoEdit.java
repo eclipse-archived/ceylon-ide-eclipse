@@ -158,15 +158,15 @@ class AutoEdit extends Indents {
             }
 
             boolean isInterpolation = 
-            		isGraveAccentCharacterInStringLiteral(command.offset, opening);
-			boolean isDocLink = 
-					isOpeningBracketInAnnotationStringLiteral(command.offset, opening);
-			if (current.equals(opening) && 
-					(isInterpolation || isDocLink ||
-							!isQuotedOrCommented(command.offset))) {
+                    isGraveAccentCharacterInStringLiteral(command.offset, opening);
+            boolean isDocLink = 
+                    isOpeningBracketInAnnotationStringLiteral(command.offset, opening);
+            if (current.equals(opening) && 
+                    (isInterpolation || isDocLink ||
+                            !isQuotedOrCommented(command.offset))) {
                 //typed character is an opening fence
                 if (isInterpolation || isDocLink ||
-                		closeOpeningFence(opening, closing)) {
+                        closeOpeningFence(opening, closing)) {
                     //add a closing fence
                     command.shiftsCaret = false;
                     command.caretOffset = command.offset + 1;
@@ -748,13 +748,23 @@ class AutoEdit extends Indents {
                     startOfCurrentLineChar, endOfLastLineChar,
                     false, buf);
             
-            if (!document.get(start, endOfWs-start).equals(buf.toString())) {
+            int len = endOfWs-start;
+            String text = buf.toString();
+            char ch = command.text.charAt(0);
+            if (//if we have only ws in the command 
+                //(including Correct Indentation case)
+                !opening || 
+                //or we need to change the indent because
+                //the current indent is "wrong"
+                text.length()!=len ||
+                !document.get(start,len).equals(text)) {
+            	//replace the ws at the start of the line
                 if (opening) {
-                    buf.append(command.text.charAt(0));
+                    buf.append(ch);
                 }
-            	command.text = buf.toString();
-            	command.offset=start;
-            	command.length=endOfWs-start;
+                command.text = text;
+                command.offset = start;
+                command.length = len;
             }
         }
     }
