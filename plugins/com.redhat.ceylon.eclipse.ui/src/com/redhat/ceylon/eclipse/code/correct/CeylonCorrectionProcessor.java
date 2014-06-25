@@ -63,6 +63,7 @@ import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentati
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.addImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addReverseIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
+import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationDecProposal;
@@ -520,6 +521,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 3000:
             addAssignToLocalProposal(cu, proposals, node, problem.getOffset());
+            addPrintProposal(cu, proposals, node, problem.getOffset());
             break;
         case 3100:
             addShadowReferenceProposal(file, cu, proposals, node);
@@ -582,6 +584,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             InvertBooleanProposal.add(proposals, editor);
                     
             addAssignToLocalProposal(cu, proposals, node, currentOffset);
+            addPrintProposal(cu, proposals, node, currentOffset);
             
             addConvertToNamedArgumentsProposal(proposals, file, cu, 
                     editor, currentOffset);

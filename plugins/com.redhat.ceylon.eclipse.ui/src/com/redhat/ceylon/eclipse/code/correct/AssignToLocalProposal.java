@@ -132,14 +132,23 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
                 }
             }
             else if (st instanceof Tree.Declaration) {
-                Declaration d = ((Tree.Declaration) st).getDeclarationModel();
+                Tree.Declaration dec = (Tree.Declaration) st;
+				Declaration d = dec.getDeclarationModel();
                 if (d==null || d.isToplevel()) {
                     return;
                 }
                 //some expressions get interpreted as annotations
                 List<Annotation> annotations = 
-                        ((Tree.Declaration) st).getAnnotationList().getAnnotations();
-                if (!annotations.isEmpty()) {
+                        dec.getAnnotationList().getAnnotations();
+                Tree.AnonymousAnnotation aa = 
+                		dec.getAnnotationList().getAnonymousAnnotation();
+                if (aa!=null && currentOffset<=aa.getStopIndex()+1) {
+                	expression = aa;
+                	expanse = expression;
+                	resultType = aa.getUnit().getStringDeclaration().getType();
+                }
+                else if (!annotations.isEmpty() && 
+                		currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
                     Tree.Annotation a = annotations.get(0);
                     expression = a;
                     expanse = expression;
@@ -178,7 +187,8 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
             type = resultType==null ? 
                     null : node.getUnit().denotableType(resultType);
             
-            DocumentChange change = new DocumentChange("Assign to Local", document);
+            DocumentChange change = 
+            		new DocumentChange("Assign to Local", document);
             change.setEdit(new MultiTextEdit());
             change.addEdit(new InsertEdit(offset, "value " + initialName + " = "));
             
@@ -263,30 +273,31 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
             return true;
         }
         else if (st instanceof Tree.Declaration) {
-            Declaration d = ((Tree.Declaration) st).getDeclarationModel();
+            Tree.Declaration dec = (Tree.Declaration) st;
+			Declaration d = dec.getDeclarationModel();
             if (d==null || d.isToplevel()) {
                 return false;
             }
             //some expressions get interpreted as annotations
             List<Annotation> annotations = 
-                    ((Tree.Declaration) st).getAnnotationList().getAnnotations();
-            if (!annotations.isEmpty()) {
-                return true;
+                    dec.getAnnotationList().getAnnotations();
+            Tree.AnonymousAnnotation aa = 
+            		dec.getAnnotationList().getAnonymousAnnotation();
+            if ((aa!=null || !annotations.isEmpty()) &&
+            		currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
+            	return true;
             }
             else if (st instanceof Tree.TypedDeclaration) {
                 //some expressions look like a type declaration
                 //when they appear right in front of an annotation
                 //or function invocations
                 Tree.Type type = ((Tree.TypedDeclaration) st).getType();
-                return type instanceof Tree.SimpleType;
-            }
-            else {
-                return false;
+                if (currentOffset<=type.getStopIndex()+1) {
+                	return type instanceof Tree.SimpleType;
+                }
             }
         }
-        else {
-            return false;
-        }
+        return false;
     }
 
 }

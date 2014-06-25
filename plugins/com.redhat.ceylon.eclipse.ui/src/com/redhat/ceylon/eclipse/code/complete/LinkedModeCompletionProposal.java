@@ -230,6 +230,7 @@ public class LinkedModeCompletionProposal
 
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
             Unit unit, ProducedType type, boolean includeValue) {
+    	if (type==null) return new ICompletionProposal[0];
         List<ProducedType> supertypes = isTypeUnknown(type) ?
                 Collections.<ProducedType>emptyList() :
                     type.getSupertypes();
