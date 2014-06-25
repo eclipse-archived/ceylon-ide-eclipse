@@ -22,7 +22,8 @@ final class CeylonSpanEmitter implements SpanEmitter {
         String linkTarget; 
         
         int indexOf = content.indexOf("|");
-        if (indexOf == -1) {
+        boolean hasNoPlainText = indexOf == -1;
+        if (hasNoPlainText) {
             linkName = content;
             linkTarget = content;
         }
@@ -35,10 +36,14 @@ final class CeylonSpanEmitter implements SpanEmitter {
         if (href != null) {
             out.append("<a ").append(href).append(">");
         }
-        out.append("<code>");
+        if (hasNoPlainText) {
+        	out.append("<code>");
+        }
         int sep = linkName.indexOf("::");
         out.append(sep<0?linkName:linkName.substring(sep+2));
-        out.append("</code>");
+        if (hasNoPlainText) {
+        	out.append("</code>");
+        }
         if (href != null) {
             out.append("</a>");
         }

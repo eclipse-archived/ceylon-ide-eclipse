@@ -865,7 +865,13 @@ public class ModuleSearchViewPart extends ViewPart {
                 setSpecialLinkEmitter(new SpanEmitter() {
                     @Override
                     public void emitSpan(StringBuilder out, String content) {
-                        out.append("<code>").append(content).append("</code>");
+                    	int bar = content.indexOf('|');
+                    	if (bar>0) {
+                    		out.append(content.substring(0, bar));
+                    	}
+                    	else {
+                    		out.append("<code>").append(content).append("</code>");
+                    	}
                     }
                 }).
                 build();
