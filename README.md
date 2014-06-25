@@ -64,13 +64,17 @@
 	    .../ceyon-dist/osgi
 	    ```
 
-	- Import inside your Eclipse workspace all the required bundle proxy projects found under the following location :
+	- Import inside your Eclipse workspace all the required _bundle-proxys_ projects found under the following location :
 	    ```
 	    .../ceyon-ide-eclipse/required-bundle-proxies
 	    ```
 
-	Each time you will rebuild one of those required projects (distribution, SDK, formatter, ...), you only need to _Refresh_ the `ceylon-dist-osgi` project, as well as the bundle proxy projects related to the rebuilt required projects, in order to be able to see the changes in the Ceylon IDE projects.
+		#### _Important Note :_
+		Since the Ceylon Distribution modules have circular dependencies on each others, it happens that those cirecular dependencies are reproduced by the _ceylon-dist-osgi_ and _bundle-proxys_ projects. In order to be able to build you projects, you will have to allow cycles in the Java build paths by setting the following Eclipse preference `Java -> Compiler -> Build -> Circukar Dependencies`to `warning` 
+		
+	Each time you will rebuild one of the projects required by the Ceylon IDE plugin (distribution, SDK, formatter, ...), you only need to _Refresh_ the `ceylon-dist-osgi` project, as well as the bundle proxy projects related to the rebuilt required projects, in order to be able to see the changes in the Ceylon IDE projects.
 
+	
 6. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
     - Add the SWTBot Eclipse features, which are required to compile and run the Ceylon IDE 
       interactive tests.
