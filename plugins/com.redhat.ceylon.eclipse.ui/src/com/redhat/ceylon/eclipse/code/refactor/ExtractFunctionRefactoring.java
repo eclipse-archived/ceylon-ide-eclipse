@@ -391,6 +391,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     IRegion decRegion;
     IRegion refRegion;
     IRegion typeRegion;
+	private boolean canBeInferred;
 
     public Change createChange(IProgressMonitor pm) 
             throws CoreException,
@@ -500,6 +501,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 else {
                     type = "function";
                     il = 0;
+                    canBeInferred = true;
                 }
             }
         }
@@ -760,4 +762,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 		return Nodes.nameProposals(node);
 	}
     
+    public boolean canBeInferred() {
+        return canBeInferred;
+    }
+
 }

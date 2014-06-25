@@ -83,7 +83,7 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
                 ProposalPosition typePosition = 
                 		new ProposalPosition(document, offset, 5, 1, 
                 				getSupertypeProposals(offset, unit, 
-                						type, true));
+                						type, true, "value"));
                 
                 ProposalPosition namePosition = 
                 		new ProposalPosition(document, offset+6, initialName.length(), 0, 

@@ -85,7 +85,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
         ProposalPosition linkedPosition = 
                 new ProposalPosition(document, offset, length, 1, 
                         getSupertypeProposals(offset, unit, type,
-                                canBeInferred()));
+                                canBeInferred(), getKind()));
         try {
             addLinkedPosition(linkedModeModel, linkedPosition);
         } 
