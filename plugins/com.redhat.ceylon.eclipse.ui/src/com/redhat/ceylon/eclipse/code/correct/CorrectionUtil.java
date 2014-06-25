@@ -132,12 +132,13 @@ public class CorrectionUtil {
 	    if (isTypeUnknown(t)) {
 	        return "nothing";
 	    }
-	    TypeDeclaration tn = t.getDeclaration();
-	    boolean isClass = tn instanceof Class;
-	    if (unit.isOptionalType(t)) {
-	        return "null";
-	    }
-	    else if (isClass &&
+        final boolean isOptional = unit.isOptionalType(t);
+        if (isOptional) {
+           t = t.eliminateNull();
+        }
+        final TypeDeclaration tn = t.getDeclaration();
+        final boolean isClass = tn instanceof Class;
+	    if (isClass &&
 	            tn.equals(unit.getBooleanDeclaration())) {
 	        return "false";
 	    }
@@ -188,7 +189,7 @@ public class CorrectionUtil {
             return sb.toString();
         }
         else {
-            return "nothing";
+            return isOptional ? "null" : "nothing";
         }
     }
     
