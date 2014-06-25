@@ -126,5 +126,36 @@
 			<type>2</type>
 			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-module-resolver/webdav/src/main/java/com/redhat/ceylon/cmr/webdav</locationURI>
 		</link>
+
+		<link>
+			<name>sourcesCeylonProjects/ceylon-runtime/ceylon/modules</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-runtime/spi/src/main/java/ceylon/modules</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-runtime/ceylon/modules/api</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-runtime/api/src/main/java/ceylon/modules/api</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-runtime/ceylon/modules/bootstrap</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-runtime/bootstrap/src/main/java/ceylon/modules/bootstrap</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-runtime/ceylon/modules/impl/</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-runtime/impl/src/main/java/ceylon/modules/jboss</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-runtime/ceylon/modules/spi/</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-runtime/spi/src/main/java/ceylon/modules/spi</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon.language</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon.language/runtime</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>
