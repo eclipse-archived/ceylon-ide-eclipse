@@ -70,7 +70,7 @@
 	    ```
 
 		#### _Important Note :_
-		Since the Ceylon Distribution modules have circular dependencies on each others, it happens that those cirecular dependencies are reproduced by the _ceylon-dist-osgi_ and _bundle-proxys_ projects. In order to be able to build you projects, you will have to allow cycles in the Java build paths by setting the following Eclipse preference `Java -> Compiler -> Build -> Circukar Dependencies`to `warning` 
+		Since the Ceylon Distribution modules have circular dependencies on each others, it happens that those cirecular dependencies are reproduced by the _ceylon-dist-osgi_ and _bundle-proxys_ projects. In order to be able to build you projects, you will have to allow cycles in the Java build paths by setting the following Eclipse preference `Java -> Compiler -> Build -> Circular Dependencies`to `warning` 
 		
 	Each time you will rebuild one of the projects required by the Ceylon IDE plugin (distribution, SDK, formatter, ...), you only need to _Refresh_ the `ceylon-dist-osgi` project, as well as the bundle proxy projects related to the rebuilt required projects, in order to be able to see the changes in the Ceylon IDE projects.
 
