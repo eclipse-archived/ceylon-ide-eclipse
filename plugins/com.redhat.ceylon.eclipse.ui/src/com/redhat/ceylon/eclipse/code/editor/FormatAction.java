@@ -2,6 +2,12 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 
+import java.util.List;
+
+import org.antlr.runtime.BufferedTokenStream;
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Token;
+import org.antlr.runtime.TokenSource;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
@@ -28,9 +34,26 @@ final class FormatAction extends Action {
     public void run() {
         IDocument document = editor.getCeylonSourceViewer().getDocument();
         final ITextSelection ts = getSelection(editor);
-        CeylonParseController pc = editor.getParseController();
-        Tree.CompilationUnit rootNode = pc.getRootNode();
-        if (rootNode==null) return;
+        final CeylonParseController pc = editor.getParseController();
+        final Tree.CompilationUnit rootNode = pc.getRootNode();
+        if (rootNode==null) {
+            return;
+        }
+        final TokenSource tokens = new TokenSource() {
+            int i = 0;
+            List<CommonToken> tokens = pc.getTokens();
+            @Override
+            public Token nextToken() {
+                if (i<tokens.size())
+                    return tokens.get(i++);
+                else
+                    return null;
+            }
+            @Override
+            public String getSourceName() {
+                throw new IllegalStateException("No one should need this");
+            }
+        };
         
         final StringBuilder builder = new StringBuilder(document.getLength());
         format_.format(rootNode, format_.format$options(rootNode), new Writer() {
@@ -73,7 +96,7 @@ final class FormatAction extends Action {
             public String writeLine$line() {
                 return ""; // default value for "line" parameter
             }
-        });
+        }, new BufferedTokenStream(tokens));
         
         String text = builder.toString();
         try {
