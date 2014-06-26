@@ -48,7 +48,7 @@
 	- build the Ceylon SDK :
 		- In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
 
-	- build the _ceylon.formatter_ module that is also required now (see [here](https://github.com/lucaswerkmeister/ceylon.formatter) for more details):
+	- build the _ceylon.formatter_ module that is also required now (see [here](https://github.com/ceylon/ceylon.formatter) for more details):
 		- In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
 
 	- make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
@@ -116,7 +116,7 @@
     - This should have produced an eclipse update site available at the following path :
       `.../ceylon-sdk/osgi/dist`
 
-5.  Build the Ceylon Formatter locally (see [here](https://github.com/lucaswerkmeister/ceylon.formatter) for more details) :
+5.  Build the Ceylon Formatter locally (see [here](https://github.com/ceylon/ceylon.formatter) for more details) :
     - In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path :
       `.../ceylon.formatter/osgi/dist`
