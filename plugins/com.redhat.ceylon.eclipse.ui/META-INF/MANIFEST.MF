@@ -51,7 +51,7 @@ Require-Bundle: com.github.rjeschke.txtmark;bundle-version="0.8.0",
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,
- lib/zip4j_1.2.6.jar,
+ lib/zip4j_1.3.2.jar,
  lib/jgrapht-jdk1.6.jar
 Import-Package: org.eclipse.help
 Export-Package: com.redhat.ceylon.eclipse.code.complete;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
