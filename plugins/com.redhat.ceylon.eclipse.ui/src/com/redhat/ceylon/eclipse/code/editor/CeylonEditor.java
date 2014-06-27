@@ -133,8 +133,6 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import ceylon.language.StringBuilder;
-
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.outline.NavigateMenuItems;
