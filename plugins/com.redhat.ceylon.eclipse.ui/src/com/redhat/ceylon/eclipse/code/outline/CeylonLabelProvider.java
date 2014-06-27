@@ -71,6 +71,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.eclipse.code.search.CeylonElement;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
 
@@ -839,15 +841,27 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             return decorationAttributes;
         }
-        if (entity instanceof IPackageFragment && 
-                ! ((IPackageFragment) entity).isDefaultPackage()) {
-            IResource resource = null;
+        if (entity instanceof IPackageFragment) {
+            IFolder folder = null;
             try {
-                resource = ((IPackageFragment) entity).getCorrespondingResource();
+                folder = (IFolder) ((IPackageFragment) entity).getCorrespondingResource();
             } catch (JavaModelException e) {
             }
-            if (resource != null) {
-                int sev = getMaxProblemMarkerSeverity(resource, IResource.DEPTH_INFINITE);
+            if (folder != null) {
+                final JDTModule moduleOfRootPackage = CeylonBuilder.getModule(folder);
+                int sev = getMaxProblemMarkerSeverity(folder, IResource.DEPTH_INFINITE,
+                        new IMarkerFilter() {
+                            @Override
+                            public boolean select(IMarker marker) {
+                                if (marker.getResource() instanceof IFile) {
+                                    Package currentPackage = CeylonBuilder.getPackage((IFile) marker.getResource());
+                                    if (moduleOfRootPackage != null) {
+                                        return moduleOfRootPackage.equals(currentPackage.getModule());
+                                    }
+                                }
+                                return false;
+                            }
+                        });
                 switch (sev) {
                 case IMarker.SEVERITY_ERROR:
                     return ERROR;
@@ -975,6 +989,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return result;
         }
 
+    static interface IMarkerFilter {
+        boolean select(IMarker marker);
+    }
+    
+    static IMarkerFilter acceptAllMarkers = new IMarkerFilter() {
+        @Override
+        public boolean select(IMarker marker) {
+            return true;
+        }
+    };
+    
     /**
      * Returns the maximum problem marker severity for the given resource, and, if
      * depth is IResource.DEPTH_INFINITE, its children. The return value will be
@@ -982,7 +1007,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
      * or 0, indicating that no problem markers exist on the given resource.
      * @param depth TODO
      */
-    static int getMaxProblemMarkerSeverity(IResource res, int depth) {
+    static int getMaxProblemMarkerSeverity(IResource res, int depth, IMarkerFilter markerFilter) {
         if (res == null || !res.isAccessible())
             return 0;
     
@@ -999,15 +1024,28 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
         for (int i= 0; i < markers.length; i++) {
             IMarker m= markers[i];
-            int priority= m.getAttribute(IMarker.SEVERITY, -1);
-            if (priority == IMarker.SEVERITY_WARNING) {
-                hasWarnings= true;
-            } 
-            else if (priority == IMarker.SEVERITY_ERROR) {
-                return IMarker.SEVERITY_ERROR;
+            if (markerFilter.select(m)) {
+                int priority= m.getAttribute(IMarker.SEVERITY, -1);
+                if (priority == IMarker.SEVERITY_WARNING) {
+                    hasWarnings= true;
+                } 
+                else if (priority == IMarker.SEVERITY_ERROR) {
+                    return IMarker.SEVERITY_ERROR;
+                }
             }
         }
         return hasWarnings ? IMarker.SEVERITY_WARNING : 0;
+    }
+
+    /**
+     * Returns the maximum problem marker severity for the given resource, and, if
+     * depth is IResource.DEPTH_INFINITE, its children. The return value will be
+     * one of IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING, IMarker.SEVERITY_INFO
+     * or 0, indicating that no problem markers exist on the given resource.
+     * @param depth TODO
+     */
+    static int getMaxProblemMarkerSeverity(IResource res, int depth) {
+        return getMaxProblemMarkerSeverity(res, depth, acceptAllMarkers);
     }
 
     private static String getRefinementIconKey(Declaration dec) {
