@@ -25,11 +25,4 @@
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>ceylon.formatter-1.1.0.car</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/ceylon.formatter/modules/ceylon/formatter/1.1.0/ceylon.formatter-1.1.0.car</locationURI>
-		</link>
-	</linkedResources>
 </projectDescription>
