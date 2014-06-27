@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -19,8 +20,10 @@ import ceylon.file.Writer;
 import ceylon.file.Writer$impl;
 import ceylon.formatter.format_;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class FormatAction extends Action {
     private final CeylonEditor editor;
@@ -34,18 +37,37 @@ final class FormatAction extends Action {
     public void run() {
         IDocument document = editor.getCeylonSourceViewer().getDocument();
         final ITextSelection ts = getSelection(editor);
+        final boolean selected = ts.getLength() > 0;
         final CeylonParseController pc = editor.getParseController();
-        final Tree.CompilationUnit rootNode = pc.getRootNode();
-        if (rootNode==null) {
+        final Node node;
+        if (selected) {
+            // a node was selected, format only that
+            node = Nodes.findNode(pc.getRootNode(), ts);
+        } else {
+            // format everything
+            node = pc.getRootNode();
+        }
+        if (node == null) {
             return;
         }
+        final CommonToken startToken = (CommonToken)node.getToken();
+        final CommonToken endToken = (CommonToken)node.getEndToken();
+        if (startToken == null || endToken == null) {
+            return;
+        }
+        final int startTokenIndex = startToken.getTokenIndex();
+        final int endTokenIndex = endToken.getTokenIndex();
+        final int startIndex = startToken.getStartIndex();
+        final int stopIndex = endToken.getStopIndex();
         final TokenSource tokens = new TokenSource() {
-            int i = 0;
+            int i = startTokenIndex;
             List<CommonToken> tokens = pc.getTokens();
             @Override
             public Token nextToken() {
-                if (i<tokens.size())
+                if (i <= endTokenIndex)
                     return tokens.get(i++);
+                else if (i == endTokenIndex + 1)
+                    return tokens.get(tokens.size() - 1); // EOF token
                 else
                     return null;
             }
@@ -56,7 +78,7 @@ final class FormatAction extends Action {
         };
         
         final StringBuilder builder = new StringBuilder(document.getLength());
-        format_.format(rootNode, format_.format$options(rootNode), new Writer() {
+        format_.format(node, format_.format$options(node), new Writer() {
 
             @Override
             public Object write(String string) {
@@ -96,15 +118,28 @@ final class FormatAction extends Action {
             public String writeLine$line() {
                 return ""; // default value for "line" parameter
             }
-        }, new BufferedTokenStream(tokens));
+        }, new BufferedTokenStream(tokens), Indents.getIndent(node, document).length() / Indents.getIndentSpaces());
         
-        String text = builder.toString();
+        final String text;
+        if (selected) {
+            // remove the trailing line break
+            // TODO when we pass options to the formatter, we'll have to account for \r\n here, which is two chars long.
+            text = builder.substring(0, builder.length() - 1);
+        } else {
+            text = builder.toString();
+        }
         try {
             if (!document.get().equals(text)) {
                 DocumentChange change = 
                         new DocumentChange("Format", document);
-                change.setEdit(new ReplaceEdit(0, document.getLength(), text));
+                change.setEdit(new ReplaceEdit(
+                        selected ? startIndex : 0,
+                                selected ? stopIndex - startIndex + 1 : document.getLength(),
+                                        text));
                 change.perform(new NullProgressMonitor());
+                if (selected) {
+                    editor.getSelectionProvider().setSelection(new TextSelection(startIndex, text.length()));
+                }
             }
         }
         catch (Exception e) {
