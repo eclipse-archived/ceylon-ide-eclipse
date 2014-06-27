@@ -25,11 +25,4 @@
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>com.redhat.ceylon.common-1.1.0.jar</name>
-			<type>1</type>
-			<location>PARENT-3-PROJECT_LOC/ceylon-dist/osgi/defaultRepository/com/redhat/ceylon/common/1.1.0/com.redhat.ceylon.common-1.1.0.jar</location>
-		</link>
-	</linkedResources>
 </projectDescription>
