@@ -2011,7 +2011,8 @@
     </themeElementCategory>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.keywords" label="Keywords"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.keywords" 
+        label="Keywords"
         value="COLOR_DARK_MAGENTA">
         <description>
             Color for highlighting Ceylon keywords
@@ -2019,7 +2020,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.interpolation" label="String interpolation delimiters"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.interpolation" 
+        label="String interpolation delimiters"
         value="COLOR_BLUE">
         <description>
             Color for highlighting string interpolation delimiters
@@ -2027,7 +2029,8 @@
     </colorDefinition>
     <colorDefinition
           categoryId="com.redhat.ceylon.eclipse.ui.theme"
-          id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals" label="Metamodel expression delimiters"
+          id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals" 
+          label="Metamodel expression delimiters"
           value="COLOR_BLACK">
        <description>
           Color for highlighting metamodel expression delimiters
@@ -2035,7 +2038,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.annotations" label="Annotations"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.annotations" 
+        label="Annotations"
         value="COLOR_DARK_CYAN">
         <description>
             Color for highlighting annotation identifiers
@@ -2043,7 +2047,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.identifiers" label="Other unqualified identifiers"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.identifiers" 
+        label="Other unqualified identifiers"
         value="COLOR_BLACK">
         <description>
             Color for highlighting unqualified identifiers
@@ -2051,15 +2056,17 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.members" label="Other qualified identifiers"
-        value="COLOR_BLACK">
+        id="com.redhat.ceylon.eclipse.ui.theme.color.members" 
+        label="Other qualified identifiers"
+        value="153,51,51">
         <description>
             Color for highlighting qualified identifiers
         </description>
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.types" label="Type identifiers"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.types" 
+        label="Type identifiers"
         value="COLOR_DARK_BLUE">
         <description>
             Color for highlighting type identifiers
@@ -2067,7 +2074,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.packages" label="Package identifiers"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.packages" 
+        label="Package identifiers"
         value="COLOR_DARK_GRAY">
         <description>
             Color for highlighting module and package identifiers
@@ -2075,7 +2083,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.numbers" label="Numeric literals"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.numbers" 
+        label="Numeric literals"
         value="COLOR_BLUE">
         <description>
             Color for highlighting numeric literals
@@ -2083,7 +2092,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.strings" label="String literals"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.strings" 
+        label="String literals"
         value="COLOR_BLUE">
         <description>
             Color for highlighting string literals
@@ -2091,7 +2101,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.characters" label="Character literals"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.characters" 
+        label="Character literals"
         value="COLOR_BLUE">
         <description>
             Color for highlighting character literals
@@ -2099,7 +2110,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.comments" label="Comments"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.comments" 
+        label="Comments"
         value="COLOR_DARK_GRAY">
         <description>
             Color for highlighting comments
@@ -2107,7 +2119,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings" label="Strings in annotations"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings" 
+        label="Strings in annotations"
         value="COLOR_DARK_GRAY">
         <description>
             Color for highlighting strings in annotations
@@ -2115,7 +2128,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.todos" label="Todos"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.todos" 
+        label="Todos"
         value="0,120,255">
         <description>
             Color for highlighting TODOs and FIXes.
@@ -2123,7 +2137,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.semis" label="Semicolons"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.semis" 
+        label="Semicolons"
         value="COLOR_BLACK">
         <description>
             Color for highlighting semicolons.
@@ -2131,7 +2146,8 @@
     </colorDefinition>
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.braces" label="Braces"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.braces" 
+        label="Braces"
         value="COLOR_BLACK">
         <description>
             Color for highlighting braces.
