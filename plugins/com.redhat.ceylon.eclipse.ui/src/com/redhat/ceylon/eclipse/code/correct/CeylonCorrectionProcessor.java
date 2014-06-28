@@ -367,14 +367,6 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     problem.getOffset() + problem.getLength());
         switch ( problem.getProblemId() ) {
         case 100:
-            if (tc!=null) {
-                addChangeReferenceProposals(cu, node, problem, proposals, file);
-            }
-            addCreateEnumProposal(cu, node, problem, proposals, 
-                    project, tc, file);
-            addCreationProposals(cu, node, problem, proposals, 
-                    project, tc, file);
-            break;
         case 102:
             if (tc!=null) {
                 addImportProposals(cu, node, proposals, file);
