@@ -33,7 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.util.Escaping;
 
 
 public class EnterAliasLinkedMode extends RefactorLinkedMode {

@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.util.Escaping;
 
 public class MoveOutInputPage extends UserInputWizardPage {
     public MoveOutInputPage(String name) {

@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextForDocLink;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.ide.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.List;

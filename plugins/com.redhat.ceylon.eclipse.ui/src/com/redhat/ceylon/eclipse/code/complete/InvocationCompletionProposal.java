@@ -27,7 +27,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.ide.util.Escaping.escapeName;
 
 import java.util.ArrayList;
 import java.util.HashSet;

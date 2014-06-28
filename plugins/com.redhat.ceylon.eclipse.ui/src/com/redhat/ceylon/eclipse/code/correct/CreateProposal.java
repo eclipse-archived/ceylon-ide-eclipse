@@ -37,7 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
-import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.ide.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class CreateProposal extends InitializerProposal {

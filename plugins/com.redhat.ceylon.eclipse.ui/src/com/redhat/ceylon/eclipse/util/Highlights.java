@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.List;
 
+import com.redhat.ceylon.ide.util.Escaping;
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.TextAttribute;
