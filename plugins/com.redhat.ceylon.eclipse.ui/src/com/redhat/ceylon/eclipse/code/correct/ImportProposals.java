@@ -3,12 +3,12 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
-import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
+import static java.util.Collections.singleton;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,8 +43,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ImportProposals {
 
@@ -94,7 +94,7 @@ public class ImportProposals {
             IFile file, Declaration declaration) {
         TextFileChange change = new TextFileChange("Add Import", file);
         IDocument doc = CorrectionUtil.getDocument(change);
-        List<InsertEdit> ies = importEdits(cu, Collections.singleton(declaration), 
+        List<InsertEdit> ies = importEdits(cu, singleton(declaration), 
                 null, null, doc);
         if (ies.isEmpty()) return null;
         change.setEdit(new MultiTextEdit());
