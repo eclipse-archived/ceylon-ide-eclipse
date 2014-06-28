@@ -11,6 +11,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_INSERT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
@@ -75,6 +76,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor normalizeNl;
     BooleanFieldEditor stripTrailingWs;
     BooleanFieldEditor cleanImports;
+    BooleanFieldEditor format;
     BooleanFieldEditor autoFoldImports;
     BooleanFieldEditor autoFoldComments;
     BooleanFieldEditor closeParens;
@@ -107,6 +109,7 @@ public class CeylonEditorPreferencesPage
         normalizeNl.store();
         stripTrailingWs.store();
         cleanImports.store();
+        format.store();
         autoFoldImports.store();
         autoFoldComments.store();
         closeAngles.store();
@@ -138,6 +141,7 @@ public class CeylonEditorPreferencesPage
         normalizeNl.loadDefault();
         stripTrailingWs.loadDefault();
         cleanImports.loadDefault();
+        format.loadDefault();
         autoFoldImports.loadDefault();
         autoFoldComments.loadDefault();
         closeAngles.loadDefault();
@@ -447,6 +451,11 @@ public class CeylonEditorPreferencesPage
                 parent);
         cleanImports.load();
         addField(cleanImports);
+        format = new BooleanFieldEditor(FORMAT,
+                "Format",
+                parent);
+        format.load();
+        addField(format);
     }
     
     protected Composite getFieldEditorParent(Composite group) {

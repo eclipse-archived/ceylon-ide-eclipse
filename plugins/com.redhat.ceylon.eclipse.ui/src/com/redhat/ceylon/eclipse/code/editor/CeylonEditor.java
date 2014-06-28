@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.STRIP_TRAILING_WS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.configCompletionPopup;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
@@ -1505,6 +1506,7 @@ public class CeylonEditor extends TextEditor {
         boolean normalizeNl = prefs.getBoolean(NORMALIZE_NL);
         boolean stripTrailingWs = prefs.getBoolean(STRIP_TRAILING_WS);
         boolean cleanImports = prefs.getBoolean(CLEAN_IMPORTS);
+        boolean format = prefs.getBoolean(FORMAT);
         if (cleanImports) {
             try {
                 CleanImportsHandler.cleanImports(this, doc);
@@ -1513,7 +1515,9 @@ public class CeylonEditor extends TextEditor {
                 e.printStackTrace();
             }
         }
-        if (normalizeWs || normalizeNl || stripTrailingWs) {
+        if (format) {
+            new FormatAction(this, /* respectSelection = */ false).run();
+        } else if (normalizeWs || normalizeNl || stripTrailingWs) {
             normalize(viewer, doc, normalizeWs, normalizeNl, stripTrailingWs);
         }
         super.doSave(progressMonitor);
