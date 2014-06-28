@@ -38,10 +38,16 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class FormatAction extends Action {
     private final CeylonEditor editor;
+    private final boolean respectSelection;
 
     FormatAction(CeylonEditor editor) {
+        this(editor, false);
+    }
+    
+    FormatAction(CeylonEditor editor, boolean respectSelection) {
         super(null);
         this.editor = editor;
+        this.respectSelection = respectSelection;
     }
     
     /**
@@ -112,7 +118,7 @@ final class FormatAction extends Action {
     public void run() {
         IDocument document = editor.getCeylonSourceViewer().getDocument();
         final ITextSelection ts = getSelection(editor);
-        final boolean selected = ts.getLength() > 0;
+        final boolean selected = respectSelection && ts.getLength() > 0;
         final CeylonParseController pc = editor.getParseController();
         final Node node;
         if (selected) {

@@ -74,6 +74,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String NORMALIZE_NL = "normalizedNl";
     public static final String STRIP_TRAILING_WS = "stripTrailingWs";
     public static final String CLEAN_IMPORTS = "cleanImports";
+    public static final String FORMAT = "format";
     
     protected final CeylonEditor editor;
     
@@ -131,6 +132,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(NORMALIZE_NL, false);
         preferenceStore.setDefault(STRIP_TRAILING_WS, false);
         preferenceStore.setDefault(CLEAN_IMPORTS, false);
+        preferenceStore.setDefault(FORMAT, false);
         preferenceStore.setDefault(CLOSE_PARENS, true);
         preferenceStore.setDefault(CLOSE_BRACKETS, true);
         preferenceStore.setDefault(CLOSE_ANGLES, true);
