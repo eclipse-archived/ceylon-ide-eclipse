@@ -78,47 +78,14 @@ final class FormatAction extends Action {
         };
         
         final StringBuilder builder = new StringBuilder(document.getLength());
-        format_.format(node, format_.format$options(node), new Writer() {
-
-            @Override
-            public Object write(String string) {
-                builder.append(string);
-                return null; // void
-            }
-            
-            // the rest is boring
-            
-            @Override
-            public Writer$impl $ceylon$file$Writer$impl() {
-                return new Writer$impl(this);
-            }
-            @Override
-            public Object close() {
-                return null; // void
-            }
-            @Override
-            public Object destroy(Throwable arg0) {
-                return null; // void
-            }
-            @Override
-            public Object flush() {
-                return null; // void
-            }
-            @Override
-            public Object writeLine() {
-                // unused; ceylon.formatter has its own newline handling
-                throw new UnsupportedOperationException();
-            }
-            @Override
-            public Object writeLine(String line) {
-                // unused; ceylon.formatter has its own newline handling
-                throw new UnsupportedOperationException();
-            }
-            @Override
-            public String writeLine$line() {
-                return ""; // default value for "line" parameter
-            }
-        }, new BufferedTokenStream(tokens), Indents.getIndent(node, document).length() / Indents.getIndentSpaces());
+        final SparseFormattingOptions wsOptions = getWsOptions();
+        format_.format(
+                node,
+                format_.format$options(node),
+                new StringBuilderWriter(builder),
+                new BufferedTokenStream(tokens),
+                Indents.getIndent(node, document).length() / Indents.getIndentSpaces()
+                );
         
         final String text;
         if (selected) {
@@ -146,5 +113,50 @@ final class FormatAction extends Action {
             e.printStackTrace();
         }
     }
+    
+    private static class StringBuilderWriter implements Writer {
+        private final StringBuilder builder;
+        public StringBuilderWriter(StringBuilder builder) {
+            this.builder = builder;
+        }
+        
+        @Override
+        public Object write(String string) {
+            builder.append(string);
+            return null; // void
+        }
 
+        // the rest is boring
+
+        @Override
+        public Writer$impl $ceylon$file$Writer$impl() {
+            return new Writer$impl(this);
+        }
+        @Override
+        public Object close() {
+            return null; // void
+        }
+        @Override
+        public Object destroy(Throwable arg0) {
+            return null; // void
+        }
+        @Override
+        public Object flush() {
+            return null; // void
+        }
+        @Override
+        public Object writeLine() {
+            // unused; ceylon.formatter has its own newline handling
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public Object writeLine(String line) {
+            // unused; ceylon.formatter has its own newline handling
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public String writeLine$line() {
+            return ""; // default value for "line" parameter
+        }
+    }
 }
