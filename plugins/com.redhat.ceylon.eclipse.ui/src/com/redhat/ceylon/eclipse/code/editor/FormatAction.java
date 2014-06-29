@@ -41,7 +41,7 @@ final class FormatAction extends Action {
     private final boolean respectSelection;
 
     FormatAction(CeylonEditor editor) {
-        this(editor, false);
+        this(editor, true);
     }
     
     FormatAction(CeylonEditor editor, boolean respectSelection) {
