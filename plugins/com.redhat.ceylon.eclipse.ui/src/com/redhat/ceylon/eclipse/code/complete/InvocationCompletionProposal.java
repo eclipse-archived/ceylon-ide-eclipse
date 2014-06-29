@@ -56,6 +56,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.NothingType;
@@ -742,6 +743,15 @@ class InvocationCompletionProposal extends CompletionProposal {
                 props.add(new NestedLiteralCompletionProposal("'\\n'", loc, index));
                 props.add(new NestedLiteralCompletionProposal("'\\t'", loc, index));
             }
+        }
+        else if (dtd instanceof Interface) {
+           if (dtd.equals(unit.getIterableDeclaration())) {
+               props.add(new NestedLiteralCompletionProposal("{}", loc, index));
+           }
+           if (dtd.equals(unit.getSequentialDeclaration()) ||
+               dtd.equals(unit.getEmptyDeclaration())) {
+               props.add(new NestedLiteralCompletionProposal("[]", loc, index));
+           }
         }
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
