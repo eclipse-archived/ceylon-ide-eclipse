@@ -13,6 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignmentOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.InitializerParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.MethodDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PostfixOperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PrefixOperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
@@ -62,6 +63,9 @@ public class FindAssignmentsVisitor extends Visitor implements NaturalVisitor {
     public void visit(SpecifierStatement that) {
         super.visit(that);
         Term lhs = that.getBaseMemberExpression();
+        while (lhs instanceof Tree.ParameterizedExpression) {
+        	lhs = ((Tree.ParameterizedExpression)lhs).getPrimary();
+        }
         if (isReference(lhs)) {
             nodes.add(that.getSpecifierExpression());
         }
@@ -113,6 +117,15 @@ public class FindAssignmentsVisitor extends Visitor implements NaturalVisitor {
     }
         
     @Override
+    public void visit(MethodDeclaration that) {
+        super.visit(that);
+        if (that.getSpecifierExpression()!=null && 
+                isReference(that.getDeclarationModel())) {
+            nodes.add(that.getSpecifierExpression());
+        }
+    }
+        
+    @Override
     public void visit(Variable that) {
         super.visit(that);
         if (that.getSpecifierExpression()!=null && 
@@ -148,6 +161,14 @@ public class FindAssignmentsVisitor extends Visitor implements NaturalVisitor {
             nodes.add(that);
         }
         super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.Return that) {
+    	if (isReference(that.getDeclaration())) {
+    		nodes.add(that);
+    	}
+		super.visit(that);
     }
         
 }
