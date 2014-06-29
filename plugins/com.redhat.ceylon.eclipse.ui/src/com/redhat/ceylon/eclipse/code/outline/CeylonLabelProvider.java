@@ -559,12 +559,23 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             for (Tree.ParameterList pl: am.getParameterLists()) { 
                 parameters(pl, label);
             }
+            ProducedType tm = td.getType().getTypeModel();
+            if (tm!=null) {
+            	label.append(" ∊ " + tm.getProducedTypeName(td.getUnit()),
+            			ANN_STYLER);
+            }
             return label;
         }
         else if (n instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
-            return new StyledString("value ", KW_STYLER)
+            StyledString label = new StyledString("value ", KW_STYLER)
                     .append(name(td.getIdentifier()), ID_STYLER);
+            ProducedType tm = td.getType().getTypeModel();
+            if (tm!=null) {
+            	label.append(" ∊ " + tm.getProducedTypeName(td.getUnit()),
+            			ANN_STYLER);
+            }
+			return label;
         }
 //        else if (n instanceof Tree.TypedDeclaration) {
 //            Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
