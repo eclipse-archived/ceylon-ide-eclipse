@@ -369,12 +369,12 @@
             verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.todo.ruler"
             overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.todo.overview"
 
-            colorPreferenceValue="000,120,255"
+            colorPreferenceValue="255,128,0"
             textPreferenceValue="false"
             textStylePreferenceValue="NONE"
             highlightPreferenceValue="false"
             verticalRulerPreferenceValue="true"
-            overviewRulerPreferenceValue="true"/>
+            overviewRulerPreferenceValue="true"/> <!-- was: 0,120,255 -->
             
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
@@ -2040,7 +2040,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.annotations" 
         label="Annotations"
-        value="COLOR_DARK_CYAN">
+        value="0,128,255">
         <description>
             Color for highlighting annotation identifiers
         </description>
@@ -2067,7 +2067,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.types" 
         label="Type identifiers"
-        value="COLOR_DARK_BLUE">
+        value="75,0,128">
         <description>
             Color for highlighting type identifiers
         </description>
@@ -2121,7 +2121,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings" 
         label="Strings in annotations"
-        value="COLOR_DARK_GRAY">
+        value="0,128,128">
         <description>
             Color for highlighting strings in annotations
         </description>
@@ -2130,7 +2130,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.todos" 
         label="Todos"
-        value="0,120,255">
+        value="255,128,0">
         <description>
             Color for highlighting TODOs and FIXes.
         </description>
