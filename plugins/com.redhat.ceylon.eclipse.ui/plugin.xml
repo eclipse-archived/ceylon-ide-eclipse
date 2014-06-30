@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin>
-   <extension-point id="ceylonBuildHook" name="Ceylon Build Hook" schema="schema/ceylonBuildHook.exsd"/>
+   <extension-point id="ceylonBuildHook" name="Ceylon Build Hook" 
+                    schema="schema/ceylonBuildHook.exsd"/>
 
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
@@ -2151,6 +2152,16 @@
         value="COLOR_BLACK">
         <description>
             Color for highlighting braces.
+        </description>
+    </colorDefinition>
+
+    <colorDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.theme.color.outlineTypes" 
+        label="Types in outline view"
+        value="128,64,0">
+        <description>
+            Color for displaying return types in outline view. (Takes effect after restart.)
         </description>
     </colorDefinition>
 

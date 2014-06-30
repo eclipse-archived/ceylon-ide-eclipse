@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.util.Highlights.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.util.Highlights.KEYWORDS;
+import static com.redhat.ceylon.eclipse.util.Highlights.OUTLINE_TYPES;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGES;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPES;
@@ -44,11 +45,9 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.TextStyle;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
@@ -138,12 +137,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
     };
     
-    private static final Color OLIVE = new Color(Display.getDefault(), 0x80, 0x80, 0);
-    
     public static final Styler ARROW_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=OLIVE;
+            textStyle.foreground=color(colorRegistry, OUTLINE_TYPES);
         }
     };
     
@@ -562,7 +559,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             ProducedType tm = td.getType().getTypeModel();
             if (tm!=null) {
             	label.append(" ∊ " + tm.getProducedTypeName(td.getUnit()),
-            			ANN_STYLER);
+            			ARROW_STYLER);
             }
             return label;
         }
@@ -573,7 +570,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             ProducedType tm = td.getType().getTypeModel();
             if (tm!=null) {
             	label.append(" ∊ " + tm.getProducedTypeName(td.getUnit()),
-            			ANN_STYLER);
+            			ARROW_STYLER);
             }
 			return label;
         }
