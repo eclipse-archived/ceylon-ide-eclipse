@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MULTIPLE_TYPES_IMAGE;
-import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -36,6 +35,9 @@ abstract class CeylonHierarchyLabelProvider extends
 
     StyledString getStyledText(CeylonHierarchyNode n) {
         Declaration d = getDisplayedDeclaration(n);
+        if (d==null) {
+        	return new StyledString();
+        }
         StyledString result = getStyledDescriptionFor(d);
         /*if (d.getContainer() instanceof Declaration) {
             result.append(" in ")
