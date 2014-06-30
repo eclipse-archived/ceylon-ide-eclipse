@@ -2048,7 +2048,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.keywords" 
         label="Keywords"
-        value="51,0,0">
+        value="76,76,76">
         <description>
             Color for highlighting Ceylon keywords
         </description>
@@ -2075,7 +2075,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.annotations" 
         label="Annotations"
-        value="0,128,255">
+        value="51,153,204">
         <description>
             Color for highlighting annotation identifiers
         </description>
