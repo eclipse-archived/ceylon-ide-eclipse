@@ -1,10 +1,13 @@
 package com.redhat.ceylon.eclipse.util;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -58,7 +61,47 @@ public class FindAssignmentsVisitor extends Visitor implements NaturalVisitor {
         return lhs instanceof MemberOrTypeExpression && 
                 isReference(((MemberOrTypeExpression)lhs).getDeclaration());
     }
-        
+    
+    @Override
+    public void visit(Tree.TypeParameterDeclaration that) {
+    	super.visit(that);
+    	if (that.getTypeSpecifier()!=null) {
+    		if (isReference(that.getDeclarationModel())) {
+    			nodes.add(that.getTypeSpecifier());
+    		}
+    	}
+    }
+    
+    @Override
+    public void visit(Tree.TypeAliasDeclaration that) {
+    	super.visit(that);
+    	if (that.getTypeSpecifier()!=null) {
+    		if (isReference(that.getDeclarationModel())) {
+    			nodes.add(that.getTypeSpecifier());
+    		}
+    	}
+    }
+    
+    @Override
+    public void visit(Tree.ClassDeclaration that) {
+    	super.visit(that);
+    	if (that.getClassSpecifier()!=null) {
+    		if (isReference(that.getDeclarationModel())) {
+    			nodes.add(that.getClassSpecifier());
+    		}
+    	}
+    }
+    
+    @Override
+    public void visit(Tree.InterfaceDeclaration that) {
+    	super.visit(that);
+    	if (that.getTypeSpecifier()!=null) {
+    		if (isReference(that.getDeclarationModel())) {
+    			nodes.add(that.getTypeSpecifier());
+    		}
+    	}
+    }
+    
     @Override
     public void visit(SpecifierStatement that) {
         super.visit(that);
@@ -160,6 +203,46 @@ public class FindAssignmentsVisitor extends Visitor implements NaturalVisitor {
         if (isReference(that.getParameter())) {
             nodes.add(that);
         }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.StaticMemberOrTypeExpression that) {
+    	Tree.TypeArguments typeArguments = that.getTypeArguments();
+    	if (typeArguments instanceof Tree.TypeArgumentList) {
+    		Declaration dec = that.getDeclaration();
+    		if (dec instanceof Generic) {
+    			List<TypeParameter> typeParameters = 
+    					((Generic) dec).getTypeParameters();
+    			List<Tree.Type> types = 
+    					((Tree.TypeArgumentList) typeArguments).getTypes();
+    			for (int i=0; i<types.size() && i<typeParameters.size(); i++) {
+    				if (isReference(typeParameters.get(i))) {
+    					nodes.add(types.get(i));
+    				}
+    			}
+    		}
+    	}
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.SimpleType that) {
+    	Tree.TypeArgumentList typeArguments = that.getTypeArgumentList();
+    	if (typeArguments!=null) {
+    		Declaration dec = that.getDeclarationModel();
+    		if (dec instanceof Generic) {
+    			List<TypeParameter> typeParameters = 
+    					((Generic) dec).getTypeParameters();
+    			List<Tree.Type> types = 
+    					((Tree.TypeArgumentList) typeArguments).getTypes();
+    			for (int i=0; i<types.size() && i<typeParameters.size(); i++) {
+    				if (isReference(typeParameters.get(i))) {
+    					nodes.add(types.get(i));
+    				}
+    			}
+    		}
+    	}
         super.visit(that);
     }
     
