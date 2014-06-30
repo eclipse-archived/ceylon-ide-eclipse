@@ -61,7 +61,7 @@ public class MoveUtil {
         return applyImports(fc, imports, ncu, doc, declaration);
     }
 
-    public static Map<Declaration,String> getImports(Tree.Declaration node,
+    public static Map<Declaration,String> getImports(Node node,
             final String packageName, final Tree.CompilationUnit ncu,
             final Set<String> packages) {
         final Map<Declaration, String> imports = 
@@ -102,6 +102,10 @@ public class MoveUtil {
         HashSet<String> packages = new HashSet<String>();
         Map<Declaration, String> imports = 
                 getImports(node, targetPackage, null, packages);
+        return getImportText(packages, imports, delim);
+    }
+
+    public static String getImportText(Set<String> packages, Map<Declaration, String> imports, String delim) {
         StringBuilder sb = new StringBuilder();
         for (String p: packages) {
             sb.append("import ").append(p).append(" {")

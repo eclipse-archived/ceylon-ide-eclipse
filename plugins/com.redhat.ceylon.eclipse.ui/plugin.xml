@@ -694,6 +694,11 @@
             description="Extract selected expression to a function"
             name="Extract Function"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.extractInterface"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Extract selected members to new interface"
+            name="Extract Interface"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.extractValue"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Extract selected expression to a value"
@@ -897,6 +902,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.extractFunction"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.ExtractInterfaceHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.extractInterface"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.MoveOutHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.moveOut"/>
