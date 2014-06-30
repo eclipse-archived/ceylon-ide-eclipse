@@ -12,6 +12,7 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.eclipse.jface.viewers.StyledString;
 
@@ -592,6 +593,21 @@ public class CodeCompletions {
                     p.getName() : escapeName(p.getModel()));
     }
     
+    private static void appendTypeName(StyledString result, ProducedType type) {
+    	String typeName = type.getProducedTypeName();
+    	StringTokenizer tokens = 
+    			new StringTokenizer(typeName,"|&?[]{}*+=-<>(),",true);
+    	while (tokens.hasMoreTokens()) {
+    		String token = tokens.nextToken();
+    		if (Character.isLetter(token.charAt(0))) {
+    			result.append(token, TYPE_STYLER);
+    		}
+    		else {
+    			result.append(token);
+    		}
+    	}
+    }
+    
     private static void appendDeclarationDescription(Declaration d, 
             StyledString result) {
         if (d instanceof Class) {
@@ -621,7 +637,6 @@ public class CodeCompletions {
                 if (isSequenced) {
                     type = d.getUnit().getIteratedType(type);
                 }
-                String typeName = type.getProducedTypeName();
                 if (td instanceof Value &&
                         td.getTypeDeclaration().isAnonymous()) {
                     result.append("object", KW_STYLER);
@@ -631,11 +646,11 @@ public class CodeCompletions {
                         result.append("void", KW_STYLER);
                     }
                     else {
-                        result.append(typeName, TYPE_STYLER);
+                    	appendTypeName(result, type);
                     }
                 }
                 else {
-                    result.append(typeName, TYPE_STYLER);
+                	appendTypeName(result, type);
                 }
                 if (isSequenced) {
                     result.append("*");
