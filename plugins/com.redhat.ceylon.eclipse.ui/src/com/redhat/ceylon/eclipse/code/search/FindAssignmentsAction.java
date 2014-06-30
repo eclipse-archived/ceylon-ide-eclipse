@@ -8,9 +8,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
-import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
@@ -59,7 +61,10 @@ public class FindAssignmentsAction extends AbstractFindAction {
     @Override
     boolean isValidSelection() {
         //TODO: invalid for getters with no matching setter
-        return declaration instanceof MethodOrValue;
+        return declaration instanceof MethodOrValue ||
+        		declaration instanceof ClassOrInterface ||
+        		declaration instanceof TypeAlias ||
+        		declaration instanceof TypeParameter;
     }
 
     @Override
