@@ -2,8 +2,8 @@ package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
-import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Comparator;
 import java.util.List;
@@ -178,8 +178,8 @@ class LabelProvider extends StyledCellLabelProvider
         else {
             Declaration d = (Declaration) element;
             StyledString label = getStyledDescriptionFor(d);
-            label.append(" - ", QUALIFIER_STYLER)
-                .append(getPackageLabel(d), QUALIFIER_STYLER);
+            label.append(" - ", PACKAGE_STYLER)
+                .append(getPackageLabel(d), PACKAGE_STYLER);
             return label;
         }
     }

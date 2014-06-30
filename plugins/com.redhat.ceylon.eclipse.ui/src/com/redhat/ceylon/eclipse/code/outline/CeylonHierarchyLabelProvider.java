@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MULTIPLE_TYPES_IMAGE;
@@ -44,8 +45,8 @@ abstract class CeylonHierarchyLabelProvider extends
             result.append(" in ")
                     .append(((Declaration) d.getContainer()).getName(), TYPE_ID_STYLER);
         }
-        result.append(" - ", QUALIFIER_STYLER)
-                .append(CeylonLabelProvider.getPackageLabel(d), QUALIFIER_STYLER);
+        result.append(" - ", PACKAGE_STYLER)
+                .append(CeylonLabelProvider.getPackageLabel(d), PACKAGE_STYLER);
         if (n.isNonUnique()) {
             result.append(" - and other supertypes");
             result.append(getViewInterfacesShortcut());
