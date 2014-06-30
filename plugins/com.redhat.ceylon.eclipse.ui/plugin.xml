@@ -260,6 +260,8 @@
             markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.todo"/>
       <type
+            name="com.redhat.ceylon.eclipse.ui.declarationAnnotation"/>
+      <type
             name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"/>
       <type
             name="com.redhat.ceylon.eclipse.ui.assignmentAnnotation"/>
@@ -379,7 +381,7 @@
             
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
-            label="Ceylon Occurrences"
+            label="Ceylon References"
             presentationLayer="3"
             contributesToHeader="false"
             includeOnPreferencePage="true"
@@ -400,6 +402,38 @@
             overviewRulerPreferenceKey="occurrenceOverviewRulerPreference"
             
             colorPreferenceValue="206,236,245"
+            textPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="true"
+            verticalRulerPreferenceValue="false"
+            overviewRulerPreferenceValue="true"/>
+            <!-- colorPreferenceValue="206,236,245"
+                 colorPreferenceValue="224,240,224" 
+                 colorPreferenceValue="224,224,240" -->
+            
+      <specification
+            annotationType="com.redhat.ceylon.eclipse.ui.declarationAnnotation"
+            label="Ceylon Declarations"
+            presentationLayer="3"
+            contributesToHeader="false"
+            includeOnPreferencePage="true"
+            icon="icons/occ_match.gif"
+                        
+            isGoToNextNavigationTarget="false"
+            isGoToNextNavigationTargetKey="declarationAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="false"
+            isGoToPreviousNavigationTargetKey="declarationAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarActionKey="declarationAnnotationIsShownInDropdown"
+            showInNextPrevDropdownToolbarAction="true"
+            
+            colorPreferenceKey="declarationColorPreference"
+            textPreferenceKey="declarationTextPreference"
+            textStylePreferenceKey="declarationAnnotationTextStyleKey"
+            highlightPreferenceKey="declarationHighlightKey"
+            verticalRulerPreferenceKey="declarationVerticalRulerPreference"
+            overviewRulerPreferenceKey="declarationOverviewRulerPreference"
+            
+            colorPreferenceValue="255,221,221"
             textPreferenceValue="false"
             textStylePreferenceValue="NONE"
             highlightPreferenceValue="true"

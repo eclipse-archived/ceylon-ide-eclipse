@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.ASSIGNMENT_ANNOTATION;
+import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.DECLARATION_ANNOTATION;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.OCCURRENCE_ANNOTATION;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 
@@ -42,6 +43,7 @@ public class AnnotationUtils {
         sAnnotationTypesToFilter.add(prefix + "quickdiffAddition");
         sAnnotationTypesToFilter.add(prefix + "quickdiffDeletion");
         sAnnotationTypesToFilter.add("org.eclipse.debug.core.breakpoint");
+        sAnnotationTypesToFilter.add(DECLARATION_ANNOTATION);
         sAnnotationTypesToFilter.add(OCCURRENCE_ANNOTATION);
         sAnnotationTypesToFilter.add(ASSIGNMENT_ANNOTATION);
         sAnnotationTypesToFilter.add(ProjectionAnnotation.TYPE);
