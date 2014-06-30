@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
+import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Set;
 
@@ -52,15 +53,18 @@ public class CeylonNavigatorLabelProvider extends
         if (element instanceof ExternalModuleNode) {
             ExternalModuleNode externalModule = (ExternalModuleNode) element;
             JDTModule jdtModule = externalModule.getModule();
-            StyledString moduleText = super.getStyledText(((ExternalModuleNode)element).getModule());
+            JDTModule mod = ((ExternalModuleNode) element).getModule();
+			String name = super.getStyledText(mod).toString();
+			StyledString moduleText = new StyledString(name);
             if (jdtModule != null) {
-                moduleText.append(" - " + jdtModule.getVersion());
+                moduleText.append(" - " + jdtModule.getVersion(), QUALIFIER_STYLER);
             }
             return moduleText;
         }
         if (element instanceof SourceModuleNode) {
-            JDTModule module = ((SourceModuleNode)element).getModule();
-            StyledString result = super.getStyledText(module);
+            JDTModule module = ((SourceModuleNode) element).getModule();
+            String name = super.getStyledText(module).toString();
+			StyledString result = new StyledString(name);
             if (module != null && module.isDefaultModule()) {
                 result = result.insert('(', 0).append(')').append("");
             }

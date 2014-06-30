@@ -493,7 +493,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 ce.getVirtualFile().getPath() : 
                 file.getFullPath().toString();
         return new StyledString().append(ce.getLabel())
-                .append(pkg, QUALIFIER_STYLER)
+                .append(pkg, PACKAGE_STYLER)
                 .append(" - " + path, COUNTER_STYLER)
                 .append(":" + ce.getLocation(), COUNTER_STYLER);
     }
