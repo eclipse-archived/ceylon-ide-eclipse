@@ -2048,7 +2048,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.keywords" 
         label="Keywords"
-        value="COLOR_DARK_MAGENTA">
+        value="51,0,0">
         <description>
             Color for highlighting Ceylon keywords
         </description>
@@ -2084,7 +2084,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.identifiers" 
         label="Other unqualified identifiers"
-        value="COLOR_BLACK">
+        value="0,51,153">
         <description>
             Color for highlighting unqualified identifiers
         </description>
@@ -2093,7 +2093,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.members" 
         label="Other qualified identifiers"
-        value="153,51,51">
+        value="102,51,153">
         <description>
             Color for highlighting qualified identifiers
         </description>
@@ -2102,7 +2102,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.types" 
         label="Type identifiers"
-        value="75,0,128">
+        value="153,0,102">
         <description>
             Color for highlighting type identifiers
         </description>
