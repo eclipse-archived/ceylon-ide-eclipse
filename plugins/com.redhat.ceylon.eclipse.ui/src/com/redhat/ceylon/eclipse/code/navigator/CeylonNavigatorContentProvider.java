@@ -479,7 +479,7 @@ public class CeylonNavigatorContentProvider implements
             if (moduleNode.getSourceArchive() != null) {
                 result.add(moduleNode.getSourceArchive());
             }
-            result.addAll(moduleNode.getBinaryArchives());             
+            result.addAll(moduleNode.getBinaryArchives());
             return result.toArray();
         }
         
@@ -586,6 +586,10 @@ public class CeylonNavigatorContentProvider implements
     @Override
     public boolean hasPipelinedChildren(Object anInput,
             boolean currentHasChildren) {
+        if (anInput instanceof SourceModuleNode) {
+            SourceModuleNode sourceModuleNode = (SourceModuleNode) anInput;
+            return sourceModuleNode.getPackageFragments().size() > 0;
+        }
         if (anInput instanceof IPackageFragment) {
             IPackageFragment pkgFragment = (IPackageFragment) anInput;
             IPackageFragmentRoot root = (IPackageFragmentRoot) pkgFragment.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);

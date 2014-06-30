@@ -16,7 +16,16 @@ public class NonEssentialEmptyInnerPackageFilter extends NonEssentialElementsFil
 			IPackageFragment pkg= (IPackageFragment)element;
 			try {
 				if (pkg.isDefaultPackage()) {
-					return pkg.hasChildren() || hasUnfilteredResources(viewer, pkg);
+				    if (pkg.hasChildren() || hasUnfilteredResources(viewer, pkg)) {
+				        return true;
+				    }
+				    if (pkg instanceof SourceModuleNode) {
+				        for (IPackageFragment pf : ((SourceModuleNode)pkg).getPackageFragments()) {
+				            if (! pf.isDefaultPackage()) {
+				                return true;
+				            }
+				        }
+				    }
 				}
 				return !pkg.hasSubpackages() || pkg.hasChildren() || hasUnfilteredResources(viewer, pkg);
 			} catch (JavaModelException e) {
