@@ -40,7 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
-class AddAnnotionProposal extends CorrectionProposal {
+public class AddAnnotionProposal extends CorrectionProposal {
     
     private static final List<String> ANNOTATIONS_ORDER = 
             asList("doc", "throws", "see", "tagged", "shared", "abstract", 
