@@ -36,6 +36,7 @@ public class Highlights  {
     public static String BRACES = "braces";    
     public static String PACKAGES = "packages";    
     public static String MEMBERS = "members";    
+    public static String OUTLINE_TYPES = "outlineTypes";    
     
     private static TextAttribute identifierAttribute, typeAttribute, typeLiteralAttribute, keywordAttribute, numberAttribute, 
     annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
