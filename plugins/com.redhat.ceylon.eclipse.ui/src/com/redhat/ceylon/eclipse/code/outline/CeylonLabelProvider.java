@@ -453,7 +453,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (element instanceof IPackageFragment) {
             return new StyledString(((IPackageFragment) element).getElementName(), 
-                    QUALIFIER_STYLER);
+                    PACKAGE_STYLER);
         }
         else if (element instanceof IJavaElement) {
             return new StyledString(((IJavaElement) element).getElementName());
@@ -463,10 +463,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (element instanceof Package) {
             return new StyledString(getLabel((Package) element), 
-                    QUALIFIER_STYLER);
+            		PACKAGE_STYLER);
         }
         else if (element instanceof Module) {
-            return new StyledString(getLabel((Module) element));
+            return new StyledString(getLabel((Module) element), 
+            		PACKAGE_STYLER);
         }
         else if (element instanceof Unit) {
             return new StyledString(((Unit) element).getFilename());
@@ -602,7 +603,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
                 return new StyledString("module ", KW_STYLER)
-                        .append(toPath(p), QUALIFIER_STYLER);
+                        .append(toPath(p), PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.PackageDescriptor) {
@@ -610,7 +611,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
                 return new StyledString("package ", KW_STYLER)
-                        .append(toPath(p), QUALIFIER_STYLER);
+                        .append(toPath(p), PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.ImportList) {
@@ -619,7 +620,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (n instanceof Tree.ImportPath) {
             Tree.ImportPath p = (Tree.ImportPath) n;
             if (isNonempty(p)) {
-                return new StyledString(toPath(p), QUALIFIER_STYLER);
+                return new StyledString(toPath(p), PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.Import) {
@@ -627,7 +628,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
                 return new StyledString("import ", KW_STYLER)
-                        .append(toPath(p), QUALIFIER_STYLER);
+                        .append(toPath(p), PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.ImportModule) {
@@ -635,7 +636,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
                 return new StyledString("import ", KW_STYLER)
-                        .append(toPath(p), QUALIFIER_STYLER);
+                        .append(toPath(p), PACKAGE_STYLER);
             }
             Tree.QuotedLiteral ql = i.getQuotedLiteral();
             if (ql!=null) {
@@ -649,7 +650,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return new StyledString("default package");
             }
             else {
-                return new StyledString(pn.getPackageName(), QUALIFIER_STYLER);
+                return new StyledString(pn.getPackageName(), 
+                		PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.SpecifierStatement) {

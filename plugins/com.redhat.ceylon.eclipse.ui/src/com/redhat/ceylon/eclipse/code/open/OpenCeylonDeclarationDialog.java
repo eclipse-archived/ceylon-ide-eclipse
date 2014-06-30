@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
@@ -199,8 +200,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                     label.append(" of ").append(ci.getName(), TYPE_ID_STYLER);
                 }
                 if (nameOccursMultipleTimes(d)) {
-                    label.append(" - ", QUALIFIER_STYLER)
-                        .append(getPackageLabel(d), QUALIFIER_STYLER)
+                    label.append(" - ", PACKAGE_STYLER)
+                        .append(getPackageLabel(d), PACKAGE_STYLER)
                         .append(" - ", COUNTER_STYLER)
                         .append(getLocation(dwp), COUNTER_STYLER);
                 }
