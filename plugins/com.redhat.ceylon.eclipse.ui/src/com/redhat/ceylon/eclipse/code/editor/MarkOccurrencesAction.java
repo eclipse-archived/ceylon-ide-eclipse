@@ -56,6 +56,7 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     /**
      * The ID for the kind of annotations created for "mark occurrences"
      */
+    public static final String DECLARATION_ANNOTATION = PLUGIN_ID + ".declarationAnnotation";
     public static final String OCCURRENCE_ANNOTATION = PLUGIN_ID + ".occurrenceAnnotation";
     public static final String ASSIGNMENT_ANNOTATION = PLUGIN_ID + ".assignmentAnnotation";
 
@@ -208,12 +209,16 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         }
         Node selectedNode = Nodes.findNode(root, offset, offset+length-1);
         try {
+            List<Node> declarations = getDeclarationsOf(parseController, selectedNode);
             List<Node> occurrences = getOccurrencesOf(parseController, selectedNode);
             List<Node> assignments = getAssignmentsOf(parseController, selectedNode);
+            removeEditedOccurrences(document, declarations);
             removeEditedOccurrences(document, occurrences);
             removeEditedOccurrences(document, assignments);
             Map<Annotation,Position> annotationMap = new HashMap<Annotation,Position>
-                    (occurrences.size()+assignments.size());
+                    (declarations.size()+occurrences.size()+assignments.size());
+            addPositionsToAnnotationMap(convertRefNodesToPositions(declarations), 
+                    DECLARATION_ANNOTATION, document, annotationMap);
             addPositionsToAnnotationMap(convertRefNodesToPositions(occurrences), 
                     OCCURRENCE_ANNOTATION, document, annotationMap);
             addPositionsToAnnotationMap(convertRefNodesToPositions(assignments), 
@@ -293,7 +298,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             while (annotationIterator.hasNext()) {
                 // SMS 23 Jul 2008:  added test for annotation type
                 Annotation ann = (Annotation) annotationIterator.next();
-                if (ann.getType().startsWith(OCCURRENCE_ANNOTATION) ||
+                if (ann.getType().startsWith(DECLARATION_ANNOTATION) ||
+                    ann.getType().startsWith(OCCURRENCE_ANNOTATION) ||
                     ann.getType().startsWith(ASSIGNMENT_ANNOTATION)) {
                     annotationList.add(ann);
                 }
@@ -437,6 +443,33 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         return Stage.TYPE_ANALYSIS;
     }
     
+    private List<Node> getDeclarationsOf(CeylonParseController parseController, Node node) {
+        if (parseController.getStage().ordinal() >= getStage().ordinal()) {
+            // Check whether we even have an AST in which to find occurrences
+            Tree.CompilationUnit root = parseController.getRootNode();
+            if (root == null) {
+                return Collections.emptyList();
+            }
+
+            Declaration declaration = Nodes.getReferencedExplicitDeclaration(node, root);
+            if (declaration==null) {
+                return Collections.emptyList();
+            }
+            else {
+                List<Node> occurrences = new ArrayList<Node>();
+                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
+                FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(frv.getDeclaration());
+                root.visit(fdv);
+                Tree.Declaration decNode = fdv.getDeclarationNode();
+                if (decNode!=null) {
+                    occurrences.add(decNode);
+                }
+                return occurrences;
+            }
+        }
+        return Collections.emptyList();
+    }
+    
     private List<Node> getOccurrencesOf(CeylonParseController parseController, Node node) {
         if (parseController.getStage().ordinal() >= getStage().ordinal()) {
             // Check whether we even have an AST in which to find occurrences
@@ -454,12 +487,6 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
                 FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
                 root.visit(frv);
                 occurrences.addAll(frv.getNodes());
-                FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(frv.getDeclaration());
-                root.visit(fdv);
-                Tree.Declaration decNode = fdv.getDeclarationNode();
-                if (decNode!=null) {
-                    occurrences.add(decNode);
-                }
                 return occurrences;
             }
         }
