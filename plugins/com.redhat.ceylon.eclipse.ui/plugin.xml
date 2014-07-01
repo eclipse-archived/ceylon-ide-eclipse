@@ -2084,7 +2084,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.identifiers" 
         label="Other unqualified identifiers"
-        value="0,51,153">
+        value="COLOR_DARK_BLUE">
         <description>
             Color for highlighting unqualified identifiers
         </description>
@@ -2102,7 +2102,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.types" 
         label="Type identifiers"
-        value="153,0,102">
+        value="128,0,64">
         <description>
             Color for highlighting type identifiers
         </description>
@@ -2156,7 +2156,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings" 
         label="Strings in annotations"
-        value="0,128,128">
+        value="COLOR_DARK_CYAN">
         <description>
             Color for highlighting strings in annotations
         </description>
