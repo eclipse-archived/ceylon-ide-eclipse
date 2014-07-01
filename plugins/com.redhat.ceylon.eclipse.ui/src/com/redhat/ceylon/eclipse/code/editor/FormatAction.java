@@ -30,6 +30,7 @@ import ceylon.formatter.options.crlf_;
 import ceylon.formatter.options.lf_;
 import ceylon.formatter.options.os_;
 import ceylon.language.Singleton;
+import ceylon.language.AssertionError;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -160,13 +161,19 @@ final class FormatAction extends Action {
         
         final StringBuilder builder = new StringBuilder(document.getLength());
         final SparseFormattingOptions wsOptions = getWsOptions();
-        format_.format(
-                node,
-                new CombinedOptions(format_.format$options(node), new Singleton<SparseFormattingOptions>(SparseFormattingOptions.$TypeDescriptor$, wsOptions)),
-                new StringBuilderWriter(builder),
-                new BufferedTokenStream(tokens),
-                Indents.getIndent(node, document).length() / Indents.getIndentSpaces()
-                );
+        try {
+            format_.format(
+                    node,
+                    new CombinedOptions(format_.format$options(node), new Singleton<SparseFormattingOptions>(SparseFormattingOptions.$TypeDescriptor$, wsOptions)),
+                    new StringBuilderWriter(builder),
+                    new BufferedTokenStream(tokens),
+                    Indents.getIndent(node, document).length() / Indents.getIndentSpaces()
+                    );
+        } catch (Exception e) {
+            return;
+        } catch (AssertionError e) {
+            return;
+        }
         
         final String text;
         if (selected) {
