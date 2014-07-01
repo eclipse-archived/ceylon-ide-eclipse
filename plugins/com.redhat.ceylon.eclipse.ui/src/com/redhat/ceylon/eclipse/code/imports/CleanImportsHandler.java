@@ -149,7 +149,7 @@ public class CleanImportsHandler extends AbstractHandler {
         StringBuilder builder = new StringBuilder();
         String lastToplevel=null;
         String delim = getDefaultLineDelimiter(doc);
-		for (Map.Entry<String, List<Tree.Import>> pack: 
+        for (Map.Entry<String, List<Tree.Import>> pack: 
                 packages.entrySet()) {
             String packageName = pack.getKey();
             List<Tree.Import> imports = pack.getValue();
