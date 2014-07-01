@@ -67,13 +67,17 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends PhasedUnit> T checkExternalPhasedUnitClass(String moduleName, String phasedUnitPath, Class<T> phasedUnitClass) {
+    private <T extends PhasedUnit> T checkExternalPhasedUnitClass(String moduleName, String phasedUnitPath, Class<T> expectedPhasedUnitClass) {
         PhasedUnit pu = null;
         
         JDTModule module = (JDTModule) modelLoader.getLoadedModule(moduleName);
         pu = module.getPhasedUnitFromRelativePath(phasedUnitPath);
         Assert.assertNotNull("No phased unit for path : " + phasedUnitPath, pu);
-        Assert.assertEquals(pu.getUnitFile().getName(), phasedUnitClass, pu.getClass());
+        Class<? extends PhasedUnit> phasedUnitClass = pu.getClass();
+        if (phasedUnitClass.isAnonymousClass()) {
+            phasedUnitClass = (Class<? extends PhasedUnit>) phasedUnitClass.getSuperclass();
+        }
+        Assert.assertEquals(pu.getUnitFile().getName(), expectedPhasedUnitClass, phasedUnitClass);
         
         return (T) pu;
     }
