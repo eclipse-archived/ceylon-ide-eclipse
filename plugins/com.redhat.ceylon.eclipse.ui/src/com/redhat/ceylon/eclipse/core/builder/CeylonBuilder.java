@@ -2463,6 +2463,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             resource.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_INFINITE);
             if (alsoDeleteBackendErrors) {
                 resource.deleteMarkers(PROBLEM_MARKER_ID + ".backend", true, DEPTH_INFINITE);
+                for (IMarker javaMarker : resource.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, false, IResource.DEPTH_INFINITE)) {
+                    if (CeylonPlugin.PLUGIN_ID.equals(javaMarker.getAttribute(IMarker.SOURCE_ID))) {
+                        javaMarker.delete();
+                    }
+                }
             }
             //these are actually errors from the Ceylon compiler, but
             //we did not bother creating a separate annotation type!
