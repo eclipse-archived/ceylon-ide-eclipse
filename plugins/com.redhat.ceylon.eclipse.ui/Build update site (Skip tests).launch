@@ -6,12 +6,10 @@
 <booleanAttribute key="M2_OFFLINE" value="false"/>
 <stringAttribute key="M2_PROFILES" value=""/>
 <listAttribute key="M2_PROPERTIES"/>
-<stringAttribute key="M2_RUNTIME" value="/opt/apache-maven-3.0.2"/>
+<stringAttribute key="M2_RUNTIME" value="/opt/apache-maven-3.2.1"/>
 <booleanAttribute key="M2_SKIP_TESTS" value="true"/>
 <intAttribute key="M2_THREADS" value="1"/>
 <booleanAttribute key="M2_UPDATE_SNAPSHOTS" value="true"/>
 <booleanAttribute key="M2_WORKSPACE_RESOLUTION" value="false"/>
-<listAttribute key="org.eclipse.debug.ui.favoriteGroups">
-</listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:/com.redhat.ceylon.eclipse.ui}/../.."/>
 </launchConfiguration>
