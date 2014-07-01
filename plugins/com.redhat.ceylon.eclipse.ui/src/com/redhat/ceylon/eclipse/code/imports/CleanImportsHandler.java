@@ -148,7 +148,8 @@ public class CleanImportsHandler extends AbstractHandler {
         
         StringBuilder builder = new StringBuilder();
         String lastToplevel=null;
-        for (Map.Entry<String, List<Tree.Import>> pack: 
+        String delim = getDefaultLineDelimiter(doc);
+		for (Map.Entry<String, List<Tree.Import>> pack: 
                 packages.entrySet()) {
             String packageName = pack.getKey();
             List<Tree.Import> imports = pack.getValue();
@@ -166,18 +167,16 @@ public class CleanImportsHandler extends AbstractHandler {
                 String escapedPackageName = packageModel instanceof Package ?
                         escapePackageName((Package) packageModel) : 
                         packageName;
+                if (builder.length()!=0) {
+                    builder.append(delim);
+                }
                 builder.append("import ")
                         .append(escapedPackageName)
                         .append(" {");
                 appendImportElements(packageName, list, unused, 
                         proposed, hasWildcard, builder, doc);
-                builder.append(getDefaultLineDelimiter(doc))
-                        .append("}")
-                        .append(getDefaultLineDelimiter(doc));
+                builder.append(delim).append("}");
             }
-        }
-        if (builder.length()!=0) {
-            builder.setLength(builder.length()-1);
         }
         return builder.toString();
     }
