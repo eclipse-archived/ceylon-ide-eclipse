@@ -4,6 +4,7 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
@@ -32,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
+import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
@@ -309,6 +311,17 @@ public class CodeCompletions {
             appendDeclarationDescription(d, result);
             appendTypeParameters(d, result);
             appendParametersDescription(d, result);
+            if (d instanceof TypedDeclaration) {
+                TypedDeclaration td = (TypedDeclaration) d;
+                if (!td.isParameter()) {
+                    ProducedType t = td.getType();
+                    if (t!=null) {
+                        result.append(" ∊ " + 
+                                t.getProducedTypeName(td.getUnit()),
+                                ARROW_STYLER);
+                    }
+                }
+            }
             /*result.append(" - refine declaration in ") 
                 .append(((Declaration) d.getContainer()).getName());*/
         }
@@ -624,38 +637,65 @@ public class CodeCompletions {
         else if (d instanceof TypeAlias) {
             result.append("alias", KW_STYLER);
         }
-        else if (d instanceof TypedDeclaration) {
+        else if (d.isParameter()) {
             TypedDeclaration td = (TypedDeclaration) d;
             ProducedType type = td.getType();
             if (td.isDynamicallyTyped()) {
                 result.append("dynamic", KW_STYLER);
             }
             else if (type!=null) {
-                boolean isSequenced = d.isParameter() && 
+                boolean isSequenced = //d.isParameter() && 
                         ((MethodOrValue) d).getInitializerParameter()
                                 .isSequenced();
                 if (isSequenced) {
                     type = d.getUnit().getIteratedType(type);
                 }
-                if (td instanceof Value &&
+                /*if (td instanceof Value &&
                         td.getTypeDeclaration().isAnonymous()) {
                     result.append("object", KW_STYLER);
                 }
-                else if (d instanceof Method) {
+                else*/ if (d instanceof Method) {
                     if (((Functional)d).isDeclaredVoid()) {
                         result.append("void", KW_STYLER);
                     }
                     else {
-                    	appendTypeName(result, type);
+                        appendTypeName(result, type);
                     }
                 }
                 else {
-                	appendTypeName(result, type);
+                    appendTypeName(result, type);
                 }
                 if (isSequenced) {
                     result.append("*");
                 }
             }
+        }
+        else if (d instanceof Value) {
+            Value v = (Value) d;
+            if (v.isDynamicallyTyped()) {
+                result.append("dynamic", KW_STYLER);
+            }
+            else if (v.getTypeDeclaration().isAnonymous()) {
+                result.append("object", KW_STYLER);
+            }
+            else {
+                result.append("value", KW_STYLER);
+            }
+        }
+        else if (d instanceof Method) {
+            Method m = (Method) d;
+            if (m.isDynamicallyTyped()) {
+                result.append("dynamic", KW_STYLER);
+            }
+            else if (m.isDeclaredVoid()) {
+                result.append("void", KW_STYLER);
+            }
+            else {
+                result.append("function", KW_STYLER);
+            }
+        }
+        else if (d instanceof Setter) {
+            result.append("assign", KW_STYLER);
         }
         String name = d.getName();
         if (name != null) {

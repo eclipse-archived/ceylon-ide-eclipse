@@ -570,7 +570,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                     .append(name(td.getIdentifier()), ID_STYLER);
             ProducedType tm = td.getType().getTypeModel();
             if (tm!=null) {
-            	label.append(" ∊ " + tm.getProducedTypeName(td.getUnit()),
+            	label.append(" ∊ " + 
+            	        tm.getProducedTypeName(td.getUnit()),
             			ARROW_STYLER);
             }
 			return label;
