@@ -39,6 +39,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -115,13 +116,17 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public String decorateText(String text, Object element) {
             DeclarationWithProject dwp = 
-            		(DeclarationWithProject) element;
+                    (DeclarationWithProject) element;
             if (nameOccursMultipleTimes(dwp.getDeclaration())) {
                 return text;
             }
             else {
-                return text + " - " + 
-                		getPackageLabel(dwp.getDeclaration());
+                String string = text + " - " + 
+                        getPackageLabel(dwp.getDeclaration());
+                if (dwp.getVersion()!=null) {
+                    string += " \"" + dwp.getVersion() + "\"";
+                }
+                return string;
             }
         }
         
@@ -149,9 +154,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public String getText(Object element) {
             DeclarationWithProject dwp = 
-            		(DeclarationWithProject) element;
+                    (DeclarationWithProject) element;
             return getPackageLabel(dwp.getDeclaration()) + 
-            		" - " + getLocation(dwp);
+                    " - " + getLocation(dwp);
         }
 
         @Override
@@ -180,28 +185,35 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public Image getImage(Object element) {
-            DeclarationWithProject dwp = 
-            		(DeclarationWithProject) element;
-            return dwp==null ? null : 
-            	getImageForDeclaration(dwp.getDeclaration());
+            if (element instanceof DeclarationWithProject) {
+                DeclarationWithProject dwp = 
+                        (DeclarationWithProject) element;
+                return dwp==null ? null : 
+                    getImageForDeclaration(dwp.getDeclaration());
+            }
+            else {
+                return null;
+            }
         }
-        
+
         @Override
         public String getText(Object element) {
-            DeclarationWithProject dwp = 
-            		(DeclarationWithProject) element;
-            return dwp==null ? null : 
-            	getDescriptionFor(dwp.getDeclaration());
+            if (element instanceof DeclarationWithProject) {
+                DeclarationWithProject dwp = 
+                        (DeclarationWithProject) element;
+                return dwp==null ? null : 
+                    getDescriptionFor(dwp.getDeclaration());
+            }
+            else {
+                return "";
+            }
         }
 
         @Override
         public StyledString getStyledText(Object element) {
-            if (element==null) {
-                return new StyledString();
-            }
-            else {
+            if (element instanceof DeclarationWithProject) {
                 DeclarationWithProject dwp = 
-                		(DeclarationWithProject) element;
+                        (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 StyledString label = getStyledDescriptionFor(d);
                 if (d.isClassOrInterfaceMember()) {
@@ -217,18 +229,24 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 }
                 return label;
             }
+            else {
+                return new StyledString();
+            }
         }
 
         @Override
         public void update(ViewerCell cell) {
             Object element = cell.getElement();
-            if (element!=null) {
+            if (element instanceof DeclarationWithProject) {
                 StyledString styledText = getStyledText(element);
                 cell.setText(styledText.toString());
                 cell.setStyleRanges(styledText.getStyleRanges());
                 cell.setImage(getImage(element));
-                super.update(cell);
             }
+            else {
+                cell.setStyleRanges(new StyleRange[0]);
+            }
+            super.update(cell);
         }
         
     }
@@ -239,6 +257,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             String unitFileName = element.getString("unitFileName");
             String packageName = element.getString("packageName");
             String projectName = element.getString("projectName");
+            String version = element.getString("version");
             String path = element.getString("path");
             //search for a source file in the project
             //TODO: we can probably remove this loop
@@ -249,7 +268,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         for (Declaration dec: unit.getDeclarations()) {
                             if (dec.getQualifiedNameString().equals(qualifiedName)) {
                                 return new DeclarationWithProject(dec, 
-                                        getFile(unit).getProject(), path);
+                                        getFile(unit).getProject(), 
+                                        version, path);
                             }
                         }
                     }
@@ -265,7 +285,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                             if (pkg.getQualifiedNameString().equals(packageName)) {
                                 for (Declaration dec: pkg.getMembers()) {
                                     if (dec.getQualifiedNameString().equals(qualifiedName)) {
-                                        return new DeclarationWithProject(dec, p, path);
+                                        return new DeclarationWithProject(dec, p, version, path);
                                     }
                                 }
                             }
@@ -279,15 +299,16 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             DeclarationWithProject dwp = (DeclarationWithProject) item;
             Declaration dec = dwp.getDeclaration();
             element.putString("qualifiedName", 
-            		dec.getQualifiedNameString());
+                    dec.getQualifiedNameString());
             element.putString("unitFileName", 
-            		dec.getUnit().getFilename());
+                    dec.getUnit().getFilename());
             element.putString("packageName", 
-            		dec.getUnit().getPackage().getQualifiedNameString());
+                    dec.getUnit().getPackage().getQualifiedNameString());
             IProject project = dwp.getProject();
             element.putString("projectName", 
-            		project==null ? null : project.getName());
+                    project==null ? null : project.getName());
             element.putString("path", dwp.getPath());
+            element.putString("version", dwp.getVersion());
         }
      }
     
@@ -326,11 +347,11 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             @Override
             public int compare(Object o1, Object o2) {
                 DeclarationWithProject dwp1 = 
-                		(DeclarationWithProject) o1;
+                        (DeclarationWithProject) o1;
                 DeclarationWithProject dwp2 = 
-                		(DeclarationWithProject) o2;
+                        (DeclarationWithProject) o2;
                 int dc = compareDeclarations(
-                		dwp1.getDeclaration(), 
+                        dwp1.getDeclaration(), 
                         dwp2.getDeclaration());
                 if (dc!=0) {
                     return dc;
@@ -350,7 +371,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 }
             }
             private int compareDeclarations(Declaration dec1, 
-            		Declaration dec2) {
+                    Declaration dec2) {
                 int dc = dec1.getName()
                         .compareTo(dec2.getName());
                 if (dc!=0) {
@@ -367,7 +388,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 else if (dec1.isClassOrInterfaceMember() && 
                         dec2.isClassOrInterfaceMember()) {
                     return compareDeclarations(
-                    		(Declaration) dec1.getContainer(), 
+                            (Declaration) dec1.getContainer(), 
                             (Declaration) dec2.getContainer());
                 }
                 else {
@@ -378,24 +399,26 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     }
     
     Map<String,Integer> usedNames = 
-    		new HashMap<String,Integer>();
+            new HashMap<String,Integer>();
     
     @Override
     protected void fillContentProvider(AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, IProgressMonitor progressMonitor) 
-            		throws CoreException {
+                    throws CoreException {
         usedNames.clear();
         progressMonitor.beginTask("filtering", 10000);
         Set<DeclarationWithProject> set = 
-        		new HashSet<DeclarationWithProject>();
+                new HashSet<DeclarationWithProject>();
         List<PhasedUnit> units = getUnits();
         for (PhasedUnit unit: units) {
             for (Declaration dec: unit.getDeclarations()) {
                 if (includeMembers ? dec.isShared() : dec.isToplevel() && 
                         isPresentable(dec)) {
+                    String version = unit.getPackage().getModule().getVersion();
                     DeclarationWithProject dwp = 
                             new DeclarationWithProject(dec, 
                                     getFile(unit).getProject(),
+                                    version,
                                     unit.getUnitFile().getPath());
                     contentProvider.add(dwp, itemsFilter);
                     set.add(dwp);
@@ -409,7 +432,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             List<Package> packages = new LinkedList<Package>();
             
             for (Module compiledModule: 
-            	    getProjectSourceModules(project)) {
+                    getProjectSourceModules(project)) {
                 for (Package p: compiledModule.getAllPackages()) {
                     Module m = p.getModule();
                     if (!m.isJava() || includeJava()) {
@@ -420,12 +443,10 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             for (Package p: packages) {
                 for (Declaration dec: p.getMembers()) {
                     if (isPresentable(dec)) {
-                        boolean isUnversionedModule = 
-                                p.getModule().getVersion()==null;
+                        String version = p.getModule().getVersion();
                         DeclarationWithProject dwp =
                                 new DeclarationWithProject(dec,
-                                        isUnversionedModule ? 
-                                        		null : project, null); //TODO: figure out the full path
+                                        project, version, null); //TODO: figure out the full path
                         //TODO: eliminate duplicates based on the
                         //      location of the module archive
                         if (set.add(dwp)) {
@@ -438,8 +459,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                                 if (mem.isShared() && isPresentable(mem)) {
                                     DeclarationWithProject mwp =
                                             new DeclarationWithProject(mem,
-                                                    isUnversionedModule ? 
-                                                    		null : project, null); //TODO: figure out the full path
+                                                    project, version, null); //TODO: figure out the full path
                                     if (set.add(mwp)) {
                                         contentProvider.add(mwp, itemsFilter);
                                         nameOccurs(mem);
@@ -493,7 +513,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         String name = dec.getName();
         if (dec.isClassOrInterfaceMember()) {
             name = ((Declaration)dec.getContainer()).getName() + 
-            		"." + name; 
+                    "." + name; 
         }
         return name;
     }
@@ -524,8 +544,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     @Override
     protected void fillViewMenu(IMenuManager menuManager) {
         Action action = 
-        		new Action("Include Member Declarations", 
-        				IAction.AS_CHECK_BOX) {
+                new Action("Include Member Declarations", 
+                        IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
                 includeMembers=!includeMembers;

@@ -6,15 +6,19 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
 class DeclarationWithProject {
     
-    DeclarationWithProject(Declaration dec, IProject project, String path) {
+    DeclarationWithProject(Declaration dec, 
+            IProject project, String version,
+            String path) {
         this.dec = dec;
         this.project = project;
+        this.version = version;
         this.path = path;
     }
     
-    final Declaration dec;
-    final IProject project;
-    final String path;
+    private final Declaration dec;
+    private final IProject project;
+    private final String version;
+    private final String path;
     
     public Declaration getDeclaration() {
         return dec;
@@ -28,15 +32,23 @@ class DeclarationWithProject {
         return path;
     }
     
+    public String getVersion() {
+        return version;
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof DeclarationWithProject) {
-            DeclarationWithProject that = (DeclarationWithProject) obj;
-            return (that.project==project || 
-                        that.project!=null && project!=null && 
-                        that.project.equals(project)) && 
-                    that.dec.equals(dec) /*&& 
-                    that.path.equals(path)*/;
+            DeclarationWithProject that = 
+                    (DeclarationWithProject) obj;
+            return (this.path==null && that.path==null || //both binary (hack!)
+                    that.project==project || 
+                    that.project!=null && project!=null && 
+                    that.project.equals(project)) && 
+                    (that.version==version || 
+                    that.version!=null && version!=null && 
+                    that.version.equals(version)) && 
+                    that.dec.equals(dec);
         }
         else {
             return false;
