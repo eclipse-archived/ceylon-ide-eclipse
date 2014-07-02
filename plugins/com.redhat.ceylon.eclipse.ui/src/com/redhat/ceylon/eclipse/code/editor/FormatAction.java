@@ -121,20 +121,23 @@ final class FormatAction extends Action {
         final ITextSelection ts = getSelection(editor);
         final boolean selected = respectSelection && ts.getLength() > 0;
         final CeylonParseController pc = editor.getParseController();
+        final List<CommonToken> tokenList = pc.getTokens();
         final Node node;
+        final CommonToken startToken, endToken;
         if (selected) {
             // a node was selected, format only that
             node = Nodes.findNode(pc.getRootNode(), ts);
+            if (node == null)
+                return;
+            startToken = (CommonToken)node.getToken();
+            endToken = (CommonToken)node.getEndToken();
         } else {
             // format everything
             node = pc.getRootNode();
+            startToken = tokenList.get(0);
+            endToken = tokenList.get(tokenList.size() - 1);
         }
-        if (node == null) {
-            return;
-        }
-        final CommonToken startToken = (CommonToken)node.getToken();
-        final CommonToken endToken = (CommonToken)node.getEndToken();
-        if (startToken == null || endToken == null) {
+        if (node == null || startToken == null || endToken == null) {
             return;
         }
         final int startTokenIndex = startToken.getTokenIndex();
@@ -143,13 +146,12 @@ final class FormatAction extends Action {
         final int stopIndex = endToken.getStopIndex();
         final TokenSource tokens = new TokenSource() {
             int i = startTokenIndex;
-            List<CommonToken> tokens = pc.getTokens();
             @Override
             public Token nextToken() {
                 if (i <= endTokenIndex)
-                    return tokens.get(i++);
+                    return tokenList.get(i++);
                 else if (i == endTokenIndex + 1)
-                    return tokens.get(tokens.size() - 1); // EOF token
+                    return tokenList.get(tokenList.size() - 1); // EOF token
                 else
                     return null;
             }
