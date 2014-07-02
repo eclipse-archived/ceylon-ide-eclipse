@@ -158,7 +158,6 @@ import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskEvent.Kind;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.file.RelativePath.RelativeFile;
-import com.sun.tools.javac.file.ZipFileIndexCache;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has
@@ -2206,7 +2205,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             setupJDTModelLoader(project, typeChecker, context);
         }
         
-        ZipFileIndexCache.getSharedInstance().clearCache();
+//        ZipFileIndexCache.getSharedInstance().clearCache();
         
         CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
                 fileManager, errorReporter, options, null, 
