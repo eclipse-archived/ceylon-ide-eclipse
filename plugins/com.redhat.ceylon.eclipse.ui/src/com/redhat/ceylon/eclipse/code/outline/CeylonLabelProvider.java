@@ -506,7 +506,22 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     protected boolean includePackage() {
         return includePackage;
     }
-        
+    
+    private static void appendPostfixType(Tree.TypedDeclaration td,
+            StyledString label) {
+        Tree.Type type = td.getType();
+        if (type!=null && 
+                !(type instanceof Tree.DynamicModifier) &&
+                !(type instanceof Tree.VoidModifier)) {
+            ProducedType tm = type.getTypeModel();
+            if (!isTypeUnknown(tm)) {
+                label.append(" ∊ " + 
+                        tm.getProducedTypeName(td.getUnit()),
+                        ARROW_STYLER);
+            }
+        }
+    }
+
     public static StyledString getStyledLabelForNode(Node n) {
         //TODO: it would be much better to render types
         //      from the tree nodes instead of from the
@@ -550,30 +565,40 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (n instanceof Tree.AnyMethod) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
-            StyledString label = new StyledString("function ", KW_STYLER)
+            String kind;
+            if (td.getType() instanceof Tree.DynamicModifier) {
+                kind = "dynamic";
+            }
+            else if (td.getType() instanceof Tree.VoidModifier) {
+                kind = "void";
+            }
+            else {
+                kind = "function";
+            }
+            StyledString label = new StyledString(kind, KW_STYLER)
+                    .append(" ")
                     .append(name(td.getIdentifier()), ID_STYLER);
             Tree.AnyMethod am = (Tree.AnyMethod) n;
             parameters(am.getTypeParameterList(), label);
             for (Tree.ParameterList pl: am.getParameterLists()) { 
                 parameters(pl, label);
             }
-            ProducedType tm = td.getType().getTypeModel();
-            if (tm!=null) {
-            	label.append(" ∊ " + tm.getProducedTypeName(td.getUnit()),
-            			ARROW_STYLER);
-            }
+            appendPostfixType(td, label);
             return label;
         }
         else if (n instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
-            StyledString label = new StyledString("value ", KW_STYLER)
-                    .append(name(td.getIdentifier()), ID_STYLER);
-            ProducedType tm = td.getType().getTypeModel();
-            if (tm!=null) {
-            	label.append(" ∊ " + 
-            	        tm.getProducedTypeName(td.getUnit()),
-            			ARROW_STYLER);
+            String kind;
+            if (td.getType() instanceof Tree.DynamicModifier) {
+                kind = "dynamic";
             }
+            else {
+                kind = "value";
+            }
+            StyledString label = new StyledString(kind, KW_STYLER)
+                    .append(" ")
+                    .append(name(td.getIdentifier()), ID_STYLER);
+            appendPostfixType(td, label);
 			return label;
         }
 //        else if (n instanceof Tree.TypedDeclaration) {

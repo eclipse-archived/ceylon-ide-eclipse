@@ -313,7 +313,9 @@ public class CodeCompletions {
             appendParametersDescription(d, result);
             if (d instanceof TypedDeclaration) {
                 TypedDeclaration td = (TypedDeclaration) d;
-                if (!td.isParameter()) {
+                if (!td.isParameter() && 
+                        !td.isDynamicallyTyped() &&
+                        !(td instanceof Method && ((Method) td).isDeclaredVoid())) {
                     ProducedType t = td.getType();
                     if (t!=null) {
                         result.append(" ∊ " + 
