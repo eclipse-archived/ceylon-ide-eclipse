@@ -39,8 +39,8 @@ public class Navigation {
     }
     
     public static void gotoDeclaration(Declaration d, IProject project, IEditorPart editor) {
-        if (project!=null) {
-            if (editor instanceof CeylonEditor) {
+//        if (project!=null) {
+            if (project!=null && editor instanceof CeylonEditor) {
                 CeylonEditor ce = (CeylonEditor) editor;
                 CeylonParseController cpc = ce.getParseController();
                 IProject ep = cpc.getProject();
@@ -68,13 +68,13 @@ public class Navigation {
             else {
                 gotoJavaNode(d);
             }
-        }
-        else {
-            //it's coming from the "unversioned" JDK module, which
-            //we don't display multiple choices for, so just pick
-            //the first available project
-            gotoJavaNode(d);
-        }
+//        }
+//        else {
+//            //it's coming from the "unversioned" JDK module, which
+//            //we don't display multiple choices for, so just pick
+//            //the first available project
+//            gotoJavaNode(d);
+//        }
     }
     
     public static void gotoNode(Node node, IProject project) {

@@ -40,9 +40,11 @@ public class OpenDeclarationInHierarchyAction extends Action {
         dialog.open();
         Object[] types = dialog.getResult();
         if (types != null && types.length > 0) {
-            DeclarationWithProject dwp = (DeclarationWithProject) types[0];
+            DeclarationWithProject dwp = 
+                    (DeclarationWithProject) types[0];
             try {
-                showHierarchyView().focusOn(dwp.getProject(), dwp.getDeclaration());
+                showHierarchyView().focusOn(dwp.getProject(), 
+                        dwp.getDeclaration());
             }
             catch (PartInitException e) {
                 e.printStackTrace();
