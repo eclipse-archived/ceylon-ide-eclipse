@@ -292,7 +292,7 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
                 //when they appear right in front of an annotation
                 //or function invocations
                 Tree.Type type = ((Tree.TypedDeclaration) st).getType();
-                if (currentOffset<=type.getStopIndex()+1) {
+                if (type!=null && currentOffset<=type.getStopIndex()+1) {
                 	return type instanceof Tree.SimpleType;
                 }
             }
