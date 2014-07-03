@@ -58,6 +58,18 @@ class InferTypeVisitor extends Visitor {
         }
     }
     
+    @Override public void visit(Tree.MethodDeclaration that) {
+        super.visit(that);
+        Term term = that.getSpecifierExpression()==null ? 
+                null : that.getSpecifierExpression().getExpression().getTerm();
+        if (term instanceof Tree.BaseMemberExpression) {
+            Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
+            if (d!=null && d.equals(dec)) {
+                intersect(that.getType().getTypeModel());
+            }
+        }
+    }
+    
     @Override public void visit(Tree.SpecifierStatement that) {
         super.visit(that);
         Tree.Term bme = that.getBaseMemberExpression();
