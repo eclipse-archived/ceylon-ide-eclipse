@@ -74,17 +74,17 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                         Tree.MethodArgument ma = (Tree.MethodArgument) na;
                         if (ma.getDeclarationModel().isDeclaredVoid()) {
                             result.append("void ");
-                            for (Tree.ParameterList pl: ma.getParameterLists()) {
-                                result.append(Nodes.toString(pl, tokens));
-                            }
-                            if (ma.getBlock()!=null) {
-                                result.append(" ")
-                                    .append(Nodes.toString(ma.getBlock(), tokens));
-                            }
-                            if (ma.getSpecifierExpression()!=null) {
-                                result.append(" ")
-                                    .append(Nodes.toString(ma.getSpecifierExpression(), tokens));
-                            }
+                        }
+                        for (Tree.ParameterList pl: ma.getParameterLists()) {
+                            result.append(Nodes.toString(pl, tokens));
+                        }
+                        if (ma.getBlock()!=null) {
+                            result.append(" ")
+                            .append(Nodes.toString(ma.getBlock(), tokens));
+                        }
+                        if (ma.getSpecifierExpression()!=null) {
+                            result.append(" ")
+                            .append(Nodes.toString(ma.getSpecifierExpression(), tokens));
                         }
                     }
                     else {
