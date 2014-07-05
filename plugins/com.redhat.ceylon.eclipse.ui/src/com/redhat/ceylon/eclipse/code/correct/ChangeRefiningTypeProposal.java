@@ -79,7 +79,7 @@ public class ChangeRefiningTypeProposal {
             ProducedTypedReference pr = ((TypedDeclaration) rd).getProducedTypedReference(supertype, 
                     Collections.<ProducedType>emptyList());
             List<Tree.Parameter> params = list.getParameters();
-            TextFileChange change = new TextFileChange("Change Parameter List", file);
+            TextFileChange change = new TextFileChange("Fix Refining Parameter List", file);
             change.setEdit(new MultiTextEdit());
             Unit unit = decNode.getUnit();
             for (int i=0; i<params.size(); i++) {
@@ -119,7 +119,7 @@ public class ChangeRefiningTypeProposal {
                 change.addEdit(new InsertEdit(offset, buf.toString()));
             }
             if (change.getEdit().hasChildren()) {
-                proposals.add(new CorrectionProposal("Change parameter list", 
+                proposals.add(new CorrectionProposal("Fix refining parameter list", 
                         change, null));
             }
         }
