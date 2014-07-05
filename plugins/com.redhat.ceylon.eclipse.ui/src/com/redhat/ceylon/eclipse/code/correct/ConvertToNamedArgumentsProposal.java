@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
@@ -35,7 +36,16 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                     new TextFileChange("Convert to Named Arguments", file);
             Integer start = pal.getStartIndex();
             int length = pal.getStopIndex()-start+1;
-            StringBuilder result = new StringBuilder().append(" { ");
+            StringBuilder result = new StringBuilder();
+            try {
+                if (!Character.isWhitespace(CorrectionUtil.getDocument(tc).getChar(start-1))) {
+                    result.append(" ");
+                }
+            }
+            catch (BadLocationException e1) {
+                e1.printStackTrace();
+            }
+            result.append("{ ");
             boolean sequencedArgs = false;
             List<CommonToken> tokens = editor.getParseController().getTokens();
             final List<Tree.PositionalArgument> args = pal.getPositionalArguments();
