@@ -1,10 +1,13 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
+
 import java.util.Collection;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
@@ -35,6 +38,14 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
         final TextChange tc = 
                 new TextFileChange("Convert to Positional Arguments", file);
         Integer start = nal.getStartIndex();
+        try {
+            if (getDocument(tc).getChar(start-1)==' ') {
+                start--;
+            }
+        }
+        catch (BadLocationException e1) {
+            e1.printStackTrace();
+        }
         int length = nal.getStopIndex()-start+1;
         StringBuilder result = new StringBuilder().append("(");
         List<CommonToken> tokens = editor.getParseController().getTokens();
