@@ -130,7 +130,9 @@ class AutoEdit extends Indents {
             }
             // don't close fences before an identifier,
             // literal or opening paren
-            if (!quoted) {
+            if (!quoted &&
+                    //there are special rules for < below
+                    !current.equals("<")) {
                 int curr = command.offset;
                 while (curr<document.getLength()) {
                     char ch = document.getChar(curr++);
