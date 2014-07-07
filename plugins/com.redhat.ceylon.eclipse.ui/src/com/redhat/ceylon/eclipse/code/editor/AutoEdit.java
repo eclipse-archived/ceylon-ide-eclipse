@@ -113,11 +113,36 @@ class AutoEdit extends Indents {
 
     private void closeOpening() {
         
+        if (isCommented(command.offset)) {
+            return;
+        }
+        
+        boolean quoted = isQuoted(command.offset);
+        
         try {
-            // TODO: improve this, check the surrounding token type!
+            // don't close fences after a 
+            // backslash escape 
+            // TODO: improve this, check the 
+            //       surrounding token type!
             if (command.offset>0 &&
                 document.getChar(command.offset - 1) == '\\') {
                 return;
+            }
+            // don't close fences before an 
+            // identifier or opening paren
+            if (!quoted) {
+                int offset = command.offset;
+                while (offset<document.getLength()) {
+                    char ch = document.getChar(offset++);
+                    if (Character.isLetter(ch) || 
+                        Character.isDigit(ch) ||
+                        ch=='(') {
+                        return;
+                    }
+                    if (ch!=' ') {
+                        break;
+                    }
+                }
             }
         } 
         catch (BadLocationException e) {}
@@ -162,8 +187,7 @@ class AutoEdit extends Indents {
             boolean isDocLink = 
                     isOpeningBracketInAnnotationStringLiteral(command.offset, opening);
             if (current.equals(opening) && 
-                    (isInterpolation || isDocLink ||
-                            !isQuotedOrCommented(command.offset))) {
+                    (isInterpolation || isDocLink || !quoted)) {
                 //typed character is an opening fence
                 if (isInterpolation || isDocLink ||
                         closeOpeningFence(opening, closing)) {
@@ -318,6 +342,10 @@ class AutoEdit extends Indents {
                 type==AVERBATIM_STRING ||
                 type==MULTI_COMMENT ||
                 type==CHAR_LITERAL; //doesn't really belong here
+    }
+
+    private boolean isCommented(int offset) {
+        return isCommentToken(getTokenTypeStrictlyContainingOffset(offset));
     }
 
     private boolean isQuotedOrCommented(int offset) {
