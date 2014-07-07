@@ -121,16 +121,15 @@ class AutoEdit extends Indents {
         String current = command.text;
         
         try {
-            // don't close fences after a 
-            // backslash escape 
-            // TODO: improve this, check the 
-            //       surrounding token type!
+            // don't close fences after a backslash escape
+            // TODO: improve this, check the surrounding 
+            //       token type!
             if (command.offset>0 &&
                 document.getChar(command.offset - 1) == '\\') {
                 return;
             }
-            // don't close fences before an 
-            // identifier or opening paren
+            // don't close fences before an identifier,
+            // literal or opening paren
             if (!quoted) {
                 int curr = command.offset;
                 while (curr<document.getLength()) {
