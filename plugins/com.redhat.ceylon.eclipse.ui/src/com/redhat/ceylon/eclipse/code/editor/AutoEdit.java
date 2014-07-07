@@ -118,6 +118,7 @@ class AutoEdit extends Indents {
         }
         
         boolean quoted = isQuoted(command.offset);
+        String current = command.text;
         
         try {
             // don't close fences after a 
@@ -131,12 +132,21 @@ class AutoEdit extends Indents {
             // don't close fences before an 
             // identifier or opening paren
             if (!quoted) {
-                int offset = command.offset;
-                while (offset<document.getLength()) {
-                    char ch = document.getChar(offset++);
+                int curr = command.offset;
+                while (curr<document.getLength()) {
+                    char ch = document.getChar(curr++);
                     if (Character.isLetter(ch) || 
                         Character.isDigit(ch) ||
                         ch=='(') {
+                        return;
+                    }
+                    if (ch=='"' &&
+                        !"\"".equals(current) &&
+                        !"`".equals(current)) {
+                        return;
+                    }
+                    if (ch=='\'' &&
+                        !"\'".equals(current)) {
                         return;
                     }
                     if (ch!=' ') {
@@ -147,7 +157,6 @@ class AutoEdit extends Indents {
         } 
         catch (BadLocationException e) {}
 
-        String current = command.text;
         String opening = null;
         String closing = null;
         
