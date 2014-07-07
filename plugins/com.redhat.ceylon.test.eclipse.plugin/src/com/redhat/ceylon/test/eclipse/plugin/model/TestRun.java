@@ -178,7 +178,7 @@ public class TestRun {
     public long getRunElapsedTimeInMilis() {
         long elapsedTimeInMilis = 0;
 
-        if( root.getChildren() != null ) {
+        if( root != null && root.getChildren() != null ) {
             for (TestElement testElement : root.getChildren()) {
                 if (testElement.getState().isFinished()) {
                     elapsedTimeInMilis += testElement.getElapsedTimeInMilis();
