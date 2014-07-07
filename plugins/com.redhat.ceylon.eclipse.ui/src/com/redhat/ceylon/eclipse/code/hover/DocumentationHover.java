@@ -45,7 +45,6 @@ import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD_DISABLED;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -108,7 +107,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
@@ -116,6 +114,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnonymousAnnotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.util.ProducedTypeNamePrinter;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
 import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
@@ -595,14 +594,18 @@ public class DocumentationHover
         if (t==null) return null;
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
-        HTML.addImageAndLabel(buffer, null, HTML.fileUrl("types.gif").toExternalForm(), 
-                16, 16, "<tt>" + HTML.highlightLine(t.getProducedTypeName()) + "</tt>", 
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("types.gif").toExternalForm(), 
+                16, 16, 
+                "<tt>" + /*HTML.highlightLine(*/producedTypeLink(t, node.getUnit()) + "</tt>", 
                 20, 4);
         buffer.append("<hr/>");
         if (!t.containsUnknowns()) {
             buffer.append("One quick assist available:<br/>");
-            HTML.addImageAndLabel(buffer, null, HTML.fileUrl("correction_change.gif").toExternalForm(), 
-                    16, 16, "<a href=\"stp:" + node.getStartIndex() + "\">Specify explicit type</a>", 
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("correction_change.gif").toExternalForm(), 
+                    16, 16, 
+                    "<a href=\"stp:" + node.getStartIndex() + "\">Specify explicit type</a>", 
                     20, 4);
         }
         //buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
@@ -624,9 +627,10 @@ public class DocumentationHover
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
         String desc = node instanceof Tree.Literal ? "literal" : "expression";
-        HTML.addImageAndLabel(buffer, null, HTML.fileUrl("types.gif").toExternalForm(), 
-                16, 16, "<tt>" + HTML.highlightLine(t.getProducedTypeName()) + 
-                "</tt> "+desc+"", 
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("types.gif").toExternalForm(), 
+                16, 16, 
+                "<tt>" + /*HTML.highlightLine(*/producedTypeLink(t, node.getUnit()) + "</tt> " + desc, 
                 20, 4);
         if (node instanceof Tree.StringLiteral) {
             buffer.append( "<hr/>")
@@ -677,12 +681,17 @@ public class DocumentationHover
                 .append("</code>");
         }
         if (selectedText!=null) {
-            buffer.append("<hr/>").append("Two quick assists available:<br/>");
-            HTML.addImageAndLabel(buffer, null, HTML.fileUrl("change.png").toExternalForm(), 
-                    16, 16, "<a href=\"exv:\">Extract value</a>", 
+            buffer.append("<hr/>")
+                .append("Two quick assists available:<br/>");
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("change.png").toExternalForm(), 
+                    16, 16, 
+                    "<a href=\"exv:\">Extract value</a>", 
                     20, 4);
-            HTML.addImageAndLabel(buffer, null, HTML.fileUrl("change.png").toExternalForm(), 
-                    16, 16, "<a href=\"exf:\">Extract function</a>", 
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("change.png").toExternalForm(), 
+                    16, 16,
+                    "<a href=\"exf:\">Extract function</a>", 
                     20, 4);
             buffer.append("<br/>");
         }
@@ -988,7 +997,8 @@ public class DocumentationHover
     private static Module addPackageModuleInfo(Package pack,
             StringBuilder buffer) {
         Module mod = pack.getModule();
-        HTML.addImageAndLabel(buffer, mod, HTML.fileUrl(getIcon(mod)).toExternalForm(), 
+        HTML.addImageAndLabel(buffer, mod, 
+                HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
                 "in module&nbsp;&nbsp;<tt><a " + HTML.link(mod) + ">" + 
                         getLabel(mod) +"</a></tt>", 
@@ -1155,7 +1165,7 @@ public class DocumentationHover
         addMainDescription(buffer, dec, node, cpc);
         addContainerInfo(dec, node, buffer);
         boolean hasDoc = addDoc(cpc, dec, node, buffer);
-        boolean obj = addInheritanceInfo(dec, buffer);
+        boolean obj = addInheritanceInfo(dec, node, buffer);
         addRefinementInfo(cpc, dec, node, buffer, hasDoc);
         addReturnType(dec, buffer, node, obj);
         addParameters(cpc, dec, node, buffer);
@@ -1229,7 +1239,7 @@ public class DocumentationHover
     }
 
     private static boolean addInheritanceInfo(Declaration dec,
-            StringBuilder buffer) {
+            Node node, StringBuilder buffer) {
         //boolean extraBreak = false;
         boolean obj=false;
         if (dec instanceof TypedDeclaration) {
@@ -1237,11 +1247,11 @@ public class DocumentationHover
                     ((TypedDeclaration) dec).getTypeDeclaration();
             if (td!=null && td.isAnonymous()) {
                 obj=true;
-                documentInheritance(td, buffer);    
+                documentInheritance(td, node, buffer);    
             }
         }
         else if (dec instanceof TypeDeclaration) {
-            documentInheritance((TypeDeclaration) dec, buffer);    
+            documentInheritance((TypeDeclaration) dec, node, buffer);    
         }
         return obj;
     }
@@ -1255,14 +1265,12 @@ public class DocumentationHover
             TypeDeclaration superclass = (TypeDeclaration) rd.getContainer();
             ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
             ProducedType sup = getQualifyingType(node, outer).getSupertype(superclass);
-            String qualifyingType = sup.getProducedTypeName();
             HTML.addImageAndLabel(buffer, rd, 
                     HTML.fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
                     16, 16, 
                     "refines&nbsp;&nbsp;<tt><a " + HTML.link(rd) + ">" + 
                             rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
-                            convertToHTMLContent(qualifyingType) + 
-                            "</tt>", 
+                            producedTypeLink(sup, node.getUnit()) + "</tt>", 
                     20, 2);
             buffer.append("</p>");
             if (!hasDoc) {
@@ -1307,13 +1315,14 @@ public class DocumentationHover
                         	if (type==null) {
                         		type = new UnknownType(dec.getUnit()).getType();
                         	}
-                        	HTML.addImageAndLabel(buffer, p.getModel(), 
+                        	Unit unit = node==null ? null : node.getUnit();
+                            HTML.addImageAndLabel(buffer, p.getModel(), 
                         			HTML.fileUrl("methpro_obj.gif").toExternalForm(),
                         			16, 16, 
-                        			"accepts&nbsp;&nbsp;<tt><a " + HTML.link(type.getDeclaration()) + ">" + 
-                        					convertToHTMLContent(type.getProducedTypeName()) + 
-                        					"</a>&nbsp;<a " + HTML.link(p.getModel()) + ">"+ p.getName() +
-                        					convertToHTMLContent(params.toString()) + "</a>" + 
+                        			"accepts&nbsp;&nbsp;<tt>" + producedTypeLink(type, unit) + 
+                        					"&nbsp;<a " + HTML.link(p.getModel()) + ">"+ p.getName() + "</a>" +
+                        					//TODO: links in parameter types!
+                        					convertToHTMLContent(params.toString()) + 
                         					convertToHTMLContent(def) + "</tt>" + doc, 
                         					20, 2);
                         }
@@ -1332,25 +1341,9 @@ public class DocumentationHover
 			ProducedType ret = pr.getType();
             if (ret!=null) {
                 buffer.append("<p>");
-                List<ProducedType> list;
-                if (ret.getDeclaration() instanceof UnionType) {
-                    list = ret.getDeclaration().getCaseTypes();
-                }
-                else {
-                    list = Arrays.asList(ret);
-                }
                 StringBuilder buf = new StringBuilder("returns&nbsp;&nbsp;<tt>");
-                for (ProducedType pt: list) {
-                    if (pt.getDeclaration() instanceof ClassOrInterface || 
-                            pt.getDeclaration() instanceof TypeParameter) {
-                        buf.append("<a " + HTML.link(pt.getDeclaration()) + ">" + 
-                                convertToHTMLContent(pt.getProducedTypeName()) +"</a>");
-                    }
-                    else {
-                        buf.append(convertToHTMLContent(pt.getProducedTypeName()));
-                    }
-                    buf.append("|");
-                }
+                Unit unit = node==null ? null : node.getUnit();
+                buf.append(producedTypeLink(ret, unit)).append("|");
                 buf.setLength(buf.length()-1);
                 buf.append("</tt>");
                 HTML.addImageAndLabel(buffer, ret.getDeclaration(), 
@@ -1359,6 +1352,32 @@ public class DocumentationHover
                 buffer.append("</p>");
             }
         }
+    }
+    
+    private static ProducedTypeNamePrinter PRINTER = 
+            new ProducedTypeNamePrinter(true, true, false, true) {
+        @Override
+        protected String getSimpleDeclarationName(Declaration declaration, Unit unit) {
+            return "<a " + HTML.link(declaration) + ">" + 
+                    super.getSimpleDeclarationName(declaration, unit) + 
+                    "</a>";
+        }
+        @Override
+        protected String amp() {
+            return "&amp;";
+        }
+        @Override
+        protected String lt() {
+            return "&lt;";
+        }
+        @Override
+        protected String gt() {
+            return "&gt;";
+        }
+    };
+    
+    private static String producedTypeLink(ProducedType pt, Unit unit) {
+        return PRINTER.getProducedTypeName(pt, unit);
     }
 
     private static ProducedReference getProducedReference(Declaration dec,
@@ -1422,12 +1441,12 @@ public class DocumentationHover
                 ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
                 ProducedType qt = getQualifyingType(node, outer);
                 if (qt!=null) {
-                    String qualifyingType = qt.getProducedTypeName();
+                    Unit unit = node==null ? null : node.getUnit();
                     HTML.addImageAndLabel(buffer, outer, 
                             HTML.fileUrl(getIcon(outer)).toExternalForm(), 
                             16, 16, 
-                            "member of&nbsp;&nbsp;<tt><a " + HTML.link(outer) + ">" + 
-                                    convertToHTMLContent(qualifyingType) + "</a></tt>", 20, 2);
+                            "member of&nbsp;&nbsp;<tt>" + producedTypeLink(qt, unit) + "</tt>", 
+                            20, 2);
                 }
             }
 
@@ -1527,7 +1546,8 @@ public class DocumentationHover
         }
     }
 
-    private static void documentInheritance(TypeDeclaration dec, StringBuilder buffer) {
+    private static void documentInheritance(TypeDeclaration dec, Node node, StringBuilder buffer) {
+        Unit unit = node==null ? null : node.getUnit();
         if (dec instanceof Class) {
             ProducedType sup = ((Class) dec).getExtendedType();
             if (sup!=null) {
@@ -1535,8 +1555,7 @@ public class DocumentationHover
                 HTML.addImageAndLabel(buffer, sup.getDeclaration(), 
                         HTML.fileUrl("super_co.gif").toExternalForm(), 
                         16, 16, 
-                        "extends <tt><a " + HTML.link(sup.getDeclaration()) + ">" + 
-                                convertToHTMLContent(sup.getProducedTypeName()) +"</a></tt>", 
+                        "extends <tt>" + producedTypeLink(sup, unit) +"</tt>", 
                         20, 2);
                 buffer.append("</p>");
                 //extraBreak = true;
@@ -1550,8 +1569,7 @@ public class DocumentationHover
                     HTML.addImageAndLabel(buffer, td.getDeclaration(), 
                             HTML.fileUrl("super_co.gif").toExternalForm(), 
                             16, 16, 
-                            "satisfies <tt><a " + HTML.link(td.getDeclaration()) + ">" + 
-                                    convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 
+                            "satisfies <tt>" + producedTypeLink(td, unit) +"</tt>", 
                             20, 2);
                     //extraBreak = true;
                 }
@@ -1565,8 +1583,7 @@ public class DocumentationHover
                             HTML.fileUrl("sub_co.gif").toExternalForm(), 
                             16, 16, 
                             (td.getDeclaration().isSelfType() ? "has self type" : "has case") + 
-                            " <tt><a " + HTML.link(td.getDeclaration()) + ">" + 
-                            convertToHTMLContent(td.getProducedTypeName()) +"</a></tt>", 
+                            " <tt>" + producedTypeLink(td, unit) +"</tt>", 
                             20, 2);
                     //extraBreak = true;
                 }
