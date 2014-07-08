@@ -255,34 +255,36 @@ class AutoEdit extends Indents {
     }
 
     private boolean closeOpeningFence(String opening, String closing) {
-        boolean closeOpening;
-        if (opening.equals(closing)) { 
-            closeOpening = count(opening)%2==0;
-        }
-        else { 
-            closeOpening = count(opening)>=count(closing);
-        }
-
         if (opening.equals("<")) {
-            // only close angle brackets if it's after a UIdentifier
-            // if(a< -> don't close
-            // if(Some< -> close
-            // A< -> close
-            int currOfset = command.offset - 1;
-            char currChar;
+            // only close angle brackets if it's after 
+            // an uppercase identifier or open fence
+            int currOffset = command.offset;
             try {
-                while (Character.isAlphabetic(currChar = 
-                        document.getChar(currOfset))) {
-                    currOfset--;
+                //TODO: eat whitespace
+                char ch = document.getChar(currOffset-1);
+                if (ch=='{'||ch=='('||ch=='['||ch=='<'||ch==',') {
+                    return !Character.isJavaIdentifierPart(document.getChar(currOffset));
                 }
-                currChar = document.getChar(currOfset + 1);
-                if (!Character.isUpperCase(currChar)) {
-                    closeOpening = false;
+                while (Character.isJavaIdentifierPart(ch) &&
+                        --currOffset>0) {
+                    ch = document.getChar(currOffset-1);
                 }
-            } catch (BadLocationException e) {
+                return currOffset<command.offset &&
+                        Character.isUpperCase(document.getChar(currOffset));
+            }
+            catch (BadLocationException e) {
+                return false;
             }
         }
-        return closeOpening;
+        else {
+            if (opening.equals(closing)) { 
+                return count(opening)%2==0;
+            }
+            else { 
+                return count(opening)>=count(closing);
+            }
+
+        }
     }
 
     private String getPrefix() {
