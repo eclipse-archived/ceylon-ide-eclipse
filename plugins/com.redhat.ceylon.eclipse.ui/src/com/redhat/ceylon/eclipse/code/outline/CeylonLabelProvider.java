@@ -22,6 +22,7 @@ import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -733,17 +734,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             ProducedType tm = type.getTypeModel();
             if (tm!=null && !isTypeUnknown(tm)) {
-                boolean sequenced = type instanceof Tree.SequencedType;
-                if (sequenced) {
-                    tm = type.getUnit().getIteratedType(tm);
-                    if (tm!=null) {
-                        return result.append(tm.getProducedTypeName(node.getUnit()), 
-                                    TYPE_STYLER)
-                                .append("*");
+                if (type instanceof Tree.SequencedType) {
+                    Tree.SequencedType st = (Tree.SequencedType) type;
+                    ProducedType itm = type.getUnit().getIteratedType(tm);
+                    if (itm!=null) {
+                        appendTypeName(result, itm);
+                        result.append(st.getAtLeastOne()?"+":"*");
+                        return result;
                     }
                 }
-                return result.append(tm.getProducedTypeName(node.getUnit()), 
-                        TYPE_STYLER);
+                appendTypeName(result, tm);
+                return result;
             }
         }
         return result.append(node instanceof Tree.AnyMethod ? "function" : "value", 
@@ -862,6 +863,21 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         cell.setStyleRanges(styledText.getStyleRanges());
         cell.setImage(getImage(element));
         super.update(cell);
+    }
+
+    public static void appendTypeName(StyledString result, ProducedType type) {
+    	String typeName = type.getProducedTypeName();
+    	StringTokenizer tokens = 
+    			new StringTokenizer(typeName,"|&?[]{}*+=-<>(),",true);
+    	while (tokens.hasMoreTokens()) {
+    		String token = tokens.nextToken();
+    		if (Character.isLetter(token.charAt(0))) {
+    			result.append(token, TYPE_STYLER);
+    		}
+    		else {
+    			result.append(token);
+    		}
+    	}
     }
 
     public static int getDecorationAttributes(Object entity) {

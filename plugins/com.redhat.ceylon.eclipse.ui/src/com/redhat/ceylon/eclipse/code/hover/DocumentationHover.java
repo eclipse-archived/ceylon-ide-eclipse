@@ -1349,7 +1349,12 @@ public class DocumentationHover
             }
             else {
                 if (ppr!=null) {
-                    result.append(producedTypeLink(ppr.getType(), unit));
+                    ProducedType pt = ppr.getType();
+                    if (p.isSequenced() && pt!=null) {
+                        pt = p.getDeclaration().getUnit()
+                                .getSequentialElementType(pt);
+                    }
+                    result.append(producedTypeLink(pt, unit));
                     if (p.isSequenced()) {
                         result.append(p.isAtLeastOne()?'+':'*');
                     }

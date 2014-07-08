@@ -8,12 +8,12 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARROW_S
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.eclipse.jface.viewers.StyledString;
 
@@ -606,21 +606,6 @@ public class CodeCompletions {
         result.append(" ")
             .append(descriptionOnly ? 
                     p.getName() : escapeName(p.getModel()));
-    }
-    
-    private static void appendTypeName(StyledString result, ProducedType type) {
-    	String typeName = type.getProducedTypeName();
-    	StringTokenizer tokens = 
-    			new StringTokenizer(typeName,"|&?[]{}*+=-<>(),",true);
-    	while (tokens.hasMoreTokens()) {
-    		String token = tokens.nextToken();
-    		if (Character.isLetter(token.charAt(0))) {
-    			result.append(token, TYPE_STYLER);
-    		}
-    		else {
-    			result.append(token);
-    		}
-    	}
     }
     
     private static void appendDeclarationDescription(Declaration d, 
