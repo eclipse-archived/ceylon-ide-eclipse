@@ -19,7 +19,7 @@ class AddParenthesesProposal extends CorrectionProposal {
             TextFileChange change) {
         super("Add empty parameter list to '" + dec.getName() + "'" + 
                 (dec.getContainer() instanceof TypeDeclaration?
-                        "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
+                        " in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
                         change, new Region(offset, 0));
     }
 
