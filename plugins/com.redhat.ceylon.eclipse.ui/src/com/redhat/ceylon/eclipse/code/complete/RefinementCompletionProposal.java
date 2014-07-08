@@ -272,8 +272,15 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             importParameterTypes(declaration, cu, decs);
         }
         int il=applyImports(change, decs, cu, document);
+        String str;
+        if (text.endsWith(";") && document.getChar(offset)==';') {
+            str = text.substring(0,text.length()-1);
+        }
+        else {
+            str = text;
+        }
         change.addEdit(new ReplaceEdit(offset-prefix.length(), 
-                prefix.length(), text));
+                prefix.length(), str));
         offset+=il;
         return change;
     }

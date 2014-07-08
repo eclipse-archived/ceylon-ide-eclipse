@@ -26,7 +26,7 @@ public class CompletionProposal implements ICompletionProposal,
     
     public CompletionProposal(int offset, String prefix, Image image,
             String desc, String text) {
-        this.text=text;
+        this.text = text;
         this.image = image;
         this.offset = offset;
         this.prefix = prefix;
