@@ -805,29 +805,17 @@ public class DocumentationHover
                 String icon = dec.isShared() ? 
                         "class_obj.gif" : 
                         "innerclass_private_obj.gif";
-                if (((Class) dec).getCaseTypes()!=null) {
-                    icon = icon.replace("obj", "enum");
-                }
-                else if (dec.isAnnotation()) {
-                    icon = icon.replace("obj", "ann");
-                }
-                return icon;
+                return decorateTypeIcon(dec, icon);
             }
             else if (dec instanceof Interface) {
                 String icon = dec.isShared() ? 
                         "int_obj.gif" : 
                         "innerinterface_private_obj.gif";
-                if (((Interface) dec).getCaseTypes()!=null) {
-                    icon = icon.replace("obj", "enum");
-                }
-                else if (dec.isAnnotation()) {
-                    icon = icon.replace("obj", "ann");
-                }
-                return icon;
+                return decorateTypeIcon(dec, icon);
             }
             else if (dec instanceof TypeAlias||
                     dec instanceof NothingType) {
-                return "types.gif";
+                return "type_alias.gif";
             }
             else if (dec.isParameter()) {
                 if (dec instanceof Method) {
@@ -841,10 +829,7 @@ public class DocumentationHover
                 String icon = dec.isShared() ?
                         "public_co.gif" : 
                         "private_co.gif";
-                if (dec.isAnnotation()) {
-                    icon = icon.replace("co", "ann");
-                }
-                return icon;
+                return decorateFunctionIcon(dec, icon);
             }
             else if (dec instanceof MethodOrValue) {
                 return dec.isShared() ?
@@ -856,6 +841,30 @@ public class DocumentationHover
             }
         }
         return null;
+    }
+
+    private static String decorateFunctionIcon(Declaration dec, String icon) {
+        if (dec.isAnnotation()) {
+            return icon.replace("co", "ann");
+        }
+        else {
+            return icon;
+        }
+    }
+
+    private static String decorateTypeIcon(Declaration dec, String icon) {
+        if (((TypeDeclaration) dec).getCaseTypes()!=null) {
+            return icon.replace("obj", "enum");
+        }
+        else if (dec.isAnnotation()) {
+            return icon.replace("obj", "ann");
+        }
+        else if (((TypeDeclaration) dec).isAlias()) {
+            return icon.replace("obj", "alias");
+        }
+        else {
+            return icon;
+        }
     }
 
     /**
