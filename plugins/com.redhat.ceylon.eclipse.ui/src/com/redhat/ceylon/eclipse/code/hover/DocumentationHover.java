@@ -802,14 +802,28 @@ public class DocumentationHover
         else if (obj instanceof Declaration) {
             Declaration dec = (Declaration) obj;
             if (dec instanceof Class) {
-                return dec.isShared() ? 
+                String icon = dec.isShared() ? 
                         "class_obj.gif" : 
                         "innerclass_private_obj.gif";
+                if (((Class) dec).getCaseTypes()!=null) {
+                    icon = icon.replace("obj", "enum");
+                }
+                else if (dec.isAnnotation()) {
+                    icon = icon.replace("obj", "ann");
+                }
+                return icon;
             }
             else if (dec instanceof Interface) {
-                return dec.isShared() ? 
+                String icon = dec.isShared() ? 
                         "int_obj.gif" : 
                         "innerinterface_private_obj.gif";
+                if (((Interface) dec).getCaseTypes()!=null) {
+                    icon = icon.replace("obj", "enum");
+                }
+                else if (dec.isAnnotation()) {
+                    icon = icon.replace("obj", "ann");
+                }
+                return icon;
             }
             else if (dec instanceof TypeAlias||
                     dec instanceof NothingType) {
@@ -824,9 +838,13 @@ public class DocumentationHover
                 }
             }
             else if (dec instanceof Method) {
-                return dec.isShared() ?
+                String icon = dec.isShared() ?
                         "public_co.gif" : 
                         "private_co.gif";
+                if (dec.isAnnotation()) {
+                    icon = icon.replace("co", "ann");
+                }
+                return icon;
             }
             else if (dec instanceof MethodOrValue) {
                 return dec.isShared() ?
