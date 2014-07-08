@@ -516,9 +516,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 !(type instanceof Tree.VoidModifier)) {
             ProducedType tm = type.getTypeModel();
             if (!isTypeUnknown(tm)) {
-                label.append(" ∊ " + 
-                        tm.getProducedTypeName(td.getUnit()),
-                        ARROW_STYLER);
+                label.append(" ∊ ");
+                appendTypeName(label, tm, ARROW_STYLER);
             }
         }
     }
@@ -866,13 +865,18 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
 
     public static void appendTypeName(StyledString result, ProducedType type) {
+        appendTypeName(result, type, TYPE_STYLER);
+    }
+    
+    public static void appendTypeName(StyledString result, ProducedType type, 
+            Styler styler) {
     	String typeName = type.getProducedTypeName();
     	StringTokenizer tokens = 
-    			new StringTokenizer(typeName,"|&?[]{}*+=-<>(),",true);
+    			new StringTokenizer(typeName,"|&?[]{}*+=-<>(), ",true);
     	while (tokens.hasMoreTokens()) {
     		String token = tokens.nextToken();
     		if (Character.isLetter(token.charAt(0))) {
-    			result.append(token, TYPE_STYLER);
+    			result.append(token, styler);
     		}
     		else {
     			result.append(token);
@@ -883,7 +887,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static int getDecorationAttributes(Object entity) {
         if (entity instanceof IProject) {
             int decorationAttributes = CEYLON_NATURE;
-            switch (getMaxProblemMarkerSeverity((IProject) entity, IResource.DEPTH_INFINITE)) {
+            switch (getMaxProblemMarkerSeverity((IProject) entity, 
+                    IResource.DEPTH_INFINITE)) {
             case IMarker.SEVERITY_ERROR:
                 decorationAttributes &= ERROR;
                 break;
@@ -901,7 +906,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             if (folder != null) {
                 final JDTModule moduleOfRootPackage = CeylonBuilder.getModule(folder);
-                int sev = getMaxProblemMarkerSeverity(folder, IResource.DEPTH_INFINITE,
+                int sev = getMaxProblemMarkerSeverity(folder, 
+                        IResource.DEPTH_INFINITE,
                         new IMarkerFilter() {
                             @Override
                             public boolean select(IMarker marker) {
