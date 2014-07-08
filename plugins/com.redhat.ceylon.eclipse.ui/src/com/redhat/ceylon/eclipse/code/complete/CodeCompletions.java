@@ -318,9 +318,8 @@ public class CodeCompletions {
                         !(td instanceof Method && ((Method) td).isDeclaredVoid())) {
                     ProducedType t = td.getType();
                     if (t!=null) {
-                        result.append(" ∊ " + 
-                                t.getProducedTypeName(td.getUnit()),
-                                ARROW_STYLER);
+                        result.append(" ∊ ");
+                        appendTypeName(result, t, ARROW_STYLER);
                     }
                 }
             }
