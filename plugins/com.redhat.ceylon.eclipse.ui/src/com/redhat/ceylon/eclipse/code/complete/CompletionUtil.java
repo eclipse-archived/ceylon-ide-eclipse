@@ -279,7 +279,7 @@ public class CompletionUtil {
         }
     }
 
-    public static String getInitalValueDescription(final Declaration dec, CeylonParseController cpc) {
+    public static String getInitialValueDescription(final Declaration dec, CeylonParseController cpc) {
         Node refnode = Nodes.getReferencedNode(dec, cpc);
         Tree.SpecifierOrInitializerExpression sie = null;
         String arrow = null;
@@ -336,7 +336,7 @@ public class CompletionUtil {
                 return " => ...";
             }
             else {
-                return getInitalValueDescription(p.getModel(), cpc);
+                return getInitialValueDescription(p.getModel(), cpc);
             }
         }
         else {

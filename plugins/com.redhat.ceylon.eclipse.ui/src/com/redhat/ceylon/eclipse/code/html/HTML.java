@@ -187,6 +187,11 @@ public class HTML {
            return "";
         }
     }
+    
+    public static String keyword(String kw) {
+        String kwc = toHex(getCurrentThemeColor(KEYWORDS));
+        return "<span style='color:"+kwc+"'>"+ kw + "</span>";
+    }
 
     public static String highlightLine(String line) {
         String kwc = toHex(getCurrentThemeColor(KEYWORDS));

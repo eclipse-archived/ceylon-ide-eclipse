@@ -13,10 +13,8 @@ package com.redhat.ceylon.eclipse.code.hover;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.isAvailable;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParametersDescription;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitalValueDescription;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitialValueDescription;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectionFromThread;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
@@ -1311,20 +1309,81 @@ public class DocumentationHover
         }
     }
 
+    private static void appendParameters(Declaration d, ProducedReference pr, 
+            Unit unit, StringBuilder result/*, CeylonParseController cpc*/) {
+        if (d instanceof Functional) {
+            List<ParameterList> plists = ((Functional) d).getParameterLists();
+            if (plists!=null) {
+                for (ParameterList params: plists) {
+                    if (params.getParameters().isEmpty()) {
+                        result.append("()");
+                    }
+                    else {
+                        result.append("(");
+                        for (Parameter p: params.getParameters()) {
+                            appendParameter(result, pr, p, unit);
+//                            if (cpc!=null) {
+//                                result.append(getDefaultValueDescription(p, cpc));
+//                            }
+                            result.append(", ");
+                        }
+                        result.setLength(result.length()-2);
+                        result.append(")");
+                    }
+                }
+            }
+        }
+    }
+    
+    private static void appendParameter(StringBuilder result,
+            ProducedReference pr, Parameter p, Unit unit) {
+        if (p.getModel() == null) {
+            result.append(p.getName());
+        }
+        else {
+            ProducedTypedReference ppr = pr==null ? 
+                    null : pr.getTypedParameter(p);
+            if (p.isDeclaredVoid()) {
+                result.append(HTML.keyword("void"));
+            }
+            else {
+                if (ppr!=null) {
+                    result.append(producedTypeLink(ppr.getType(), unit));
+                    if (p.isSequenced()) {
+                        result.append(p.isAtLeastOne()?'+':'*');
+                    }
+                }
+                else if (p.getModel() instanceof Method) {
+                    result.append(HTML.keyword("function"));
+                }
+                else {
+                    result.append(HTML.keyword("value"));
+                }
+            }
+            result.append("&nbsp;<a ")
+                  .append(HTML.link(p.getModel()))
+                  .append(">")
+                  .append(p.getName())
+                  .append("</a>");
+            appendParameters(p.getModel(), ppr, unit, result);
+        }
+    }
+    
     private static void addParameters(CeylonParseController cpc,
             Declaration dec, Node node, StringBuilder buffer) {
         if (dec instanceof Functional) {
+            Unit unit = node==null ? null : node.getUnit();
             ProducedReference ptr = getProducedReference(dec, node);
             if (ptr==null) return;
             for (ParameterList pl: ((Functional) dec).getParameterLists()) {
                 if (!pl.getParameters().isEmpty()) {
                     buffer.append("<p>");
                     for (Parameter p: pl.getParameters()) {
-                        StringBuilder params = new StringBuilder();
+                        StringBuilder param = new StringBuilder();
                         String def;
                         if (p.getModel()!=null) {
-                        	appendParametersDescription(p.getModel(), params, cpc);
-                        	def = getDefaultValueDescription(p, cpc);
+                        	appendParameter(param, ptr, p, unit);
+                        	def = HTML.highlightLine(getInitialValueDescription(p.getModel(), cpc));
                         }
                         else {
                         	def = "";
@@ -1342,16 +1401,13 @@ public class DocumentationHover
                         	if (type==null) {
                         		type = new UnknownType(dec.getUnit()).getType();
                         	}
-                        	Unit unit = node==null ? null : node.getUnit();
                             HTML.addImageAndLabel(buffer, p.getModel(), 
                         			HTML.fileUrl("methpro_obj.gif").toExternalForm(),
                         			16, 16, 
-                        			"accepts&nbsp;&nbsp;<tt>" + producedTypeLink(type, unit) + 
-                        					"&nbsp;<a " + HTML.link(p.getModel()) + ">"+ p.getName() + "</a>" +
-                        					//TODO: links in parameter types!
-                        					convertToHTMLContent(params.toString()) + 
-                        					convertToHTMLContent(def) + "</tt>" + doc, 
-                        					20, 2);
+                        			"accepts&nbsp;&nbsp;<tt>" + 
+                        			param + def + 
+                        			"</tt>" + doc, 
+                        			20, 2);
                         }
                     }
                     buffer.append("</p>");
@@ -1634,11 +1690,11 @@ public class DocumentationHover
         }
         else if (dec instanceof Value) {
             if (!((Value) dec).isVariable()) {
-                result += getInitalValueDescription(dec, cpc);
+                result += getInitialValueDescription(dec, cpc);
             }
         }
         else if (dec instanceof Method) {
-            result += getInitalValueDescription(dec, cpc);
+            result += getInitialValueDescription(dec, cpc);
         }
         /*else if (dec instanceof ValueParameter) {
             Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
