@@ -97,7 +97,8 @@ class AutoEdit extends Indents {
                 }
             }
 
-            if (command.text.length()==1) {
+            if (command.text!=null &&
+                    command.text.length()==1) {
                 closeOpening();
             }
         }
@@ -183,7 +184,7 @@ class AutoEdit extends Indents {
                     // skip one ahead if next char is already a closing fence
                     if (skipClosingFence(closing) &&
                             closeOpeningFence(opening, closing)) {
-                        command.text = "";
+                        command.text = null;
                         command.shiftsCaret = false;
                         command.caretOffset = command.offset + 1;
                         return;
@@ -788,21 +789,19 @@ class AutoEdit extends Indents {
             
             int len = endOfWs-start;
             String text = buf.toString();
-            char ch = command.text.charAt(0);
-            if (//if we have only ws in the command 
-                //(including Correct Indentation case)
-                !opening || 
-                //or we need to change the indent because
-                //the current indent is "wrong"
-                text.length()!=len ||
+            if (text.length()!=len ||
                 !document.get(start,len).equals(text)) {
-            	//replace the ws at the start of the line
                 if (opening) {
-                    buf.append(ch);
+                    text+=command.text;
                 }
                 command.text = text;
                 command.offset = start;
                 command.length = len;
+            }
+            else if (!opening) {
+                command.caretOffset = start+len;
+                command.shiftsCaret = false;
+                command.text = null;
             }
         }
     }
