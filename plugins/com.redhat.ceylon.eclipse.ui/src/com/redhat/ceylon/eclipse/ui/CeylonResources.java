@@ -125,6 +125,8 @@ public interface CeylonResources {
     
     public static final String SORT_ALPHA = "sort_alpha";
     
+    public static final String CEYLON_LITERAL = "literal";
+    
     public static final ImageRegistry imageRegistry = CeylonPlugin.getInstance()
             .getImageRegistry();
     
@@ -162,6 +164,7 @@ public interface CeylonResources {
     public static final Image LOCAL_NAME = imageRegistry.get(CEYLON_LOCAL_NAME);
     public static final Image MULTIPLE_TYPES_IMAGE = imageRegistry.get(MULTIPLE_TYPES);
     public static final Image REPO = imageRegistry.get(RUNTIME_OBJ);
+//    public static final Image LITERAL = imageRegistry.get(CEYLON_LITERAL);
 
     public static final Image ERROR = imageRegistry.get(CEYLON_ERROR);
     public static final Image WARNING = imageRegistry.get(CEYLON_WARNING);

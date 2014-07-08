@@ -26,7 +26,9 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 
 import java.util.ArrayList;
@@ -250,9 +252,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             StringBuilder sb = new StringBuilder()
                     .append(op).append(dec.getName());
             if (dec instanceof Functional && !basic) {
-                appendPositionalArgs(dec, 
-                        getUnit(), 
-                        sb, false, description);
+                appendPositionalArgs(dec, getUnit(), sb, 
+                        false, description);
             }
             return sb.toString();
         }
@@ -430,7 +431,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         
         @Override
         public Image getImage() {
-            return null;
+            return getDecoratedImage(CEYLON_LITERAL, 0, false);
         }
         
         @Override
@@ -527,8 +528,15 @@ class InvocationCompletionProposal extends CompletionProposal {
             importCallableParameterParamTypes(declaration, decs, cu);
         }
         int il=applyImports(change, decs, cu, document);
+        String str;
+        if (text.endsWith(";") && document.getChar(offset)==';') {
+            str = text.substring(0,text.length()-1);
+        }
+        else {
+            str = text;
+        }
         change.addEdit(new ReplaceEdit(offset-prefix.length(), 
-                    prefix.length(), text));
+                    prefix.length(), str));
         offset+=il;
         return change;
     }
@@ -725,6 +733,101 @@ class InvocationCompletionProposal extends CompletionProposal {
                 .getType();
         if (type==null) return;
         Unit unit = getUnit();
+        List<DeclarationWithProximity> proposals = 
+                getSortedProposedValues(scope, unit);
+        for (DeclarationWithProximity dwp: proposals) {
+            if (dwp.getProximity()<=1) {
+                addValueArgumentProposal(p, loc, props, index, last,
+                        type, unit, dwp);
+            }
+        }
+        addLiteralProposals(loc, props, index, type, unit);
+        for (DeclarationWithProximity dwp: proposals) {
+            if (dwp.getProximity()>1) {
+                addValueArgumentProposal(p, loc, props, index, last,
+                        type, unit, dwp);
+            }
+        }
+    }
+
+    private void addValueArgumentProposal(Parameter p, final int loc,
+            List<ICompletionProposal> props, int index, boolean last,
+            ProducedType type, Unit unit, DeclarationWithProximity dwp) {
+        if (dwp.isUnimported()) {
+            return;
+        }
+        TypeDeclaration td = type.getDeclaration();
+        Declaration d = dwp.getDeclaration();
+        if (d instanceof Value) {
+            Value value = (Value) d;
+            if (d.getUnit().getPackage().getNameAsString()
+                    .equals(Module.LANGUAGE_MODULE_NAME)) {
+                if (isIgnoredLanguageModuleValue(value)) {
+                    return;
+                }
+            }
+            ProducedType vt = value.getType();
+            if (vt!=null && !vt.isNothing() &&
+                ((td instanceof TypeParameter) && 
+                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
+                        vt.isSubtypeOf(type))) {
+                boolean isIterArg = namedInvocation && last && 
+                        unit.isIterableParameterType(type);
+                boolean isVarArg = p.isSequenced() && positionalInvocation;
+                props.add(new NestedCompletionProposal(d, 
+                loc, index, false, isIterArg || isVarArg ? "*" : ""));
+            }
+        }
+        if (d instanceof Method) {
+            if (!d.isAnnotation()) {
+                Method method = (Method) d;
+                if (d.getUnit().getPackage().getNameAsString()
+                        .equals(Module.LANGUAGE_MODULE_NAME)) {
+                    if (isIgnoredLanguageModuleMethod(method)) {
+                        return;
+                    }
+                }
+                ProducedType mt = method.getType();
+                if (mt!=null && !mt.isNothing() &&
+                        ((td instanceof TypeParameter) && 
+                                isInBounds(((TypeParameter)td).getSatisfiedTypes(), mt) || 
+                                mt.isSubtypeOf(type))) {
+                    boolean isIterArg = namedInvocation && last && 
+                            unit.isIterableParameterType(type);
+                    boolean isVarArg = p.isSequenced() && positionalInvocation;
+                    props.add(new NestedCompletionProposal(d, 
+                            loc, index, false, isIterArg || isVarArg ? "*" : ""));
+                }
+            }
+        }
+        if (d instanceof Class) {
+            Class clazz = (Class) d;
+            if (!clazz.isAbstract() && !d.isAnnotation()) {
+                if (d.getUnit().getPackage().getNameAsString()
+                        .equals(Module.LANGUAGE_MODULE_NAME)) {
+                    if (isIgnoredLanguageModuleClass(clazz)) {
+                        return;
+                    }
+                }
+                ProducedType ct = clazz.getType();
+                if (ct!=null && !ct.isNothing() &&
+                        ((td instanceof TypeParameter) && 
+                                isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
+                                ct.getDeclaration().equals(type.getDeclaration()) ||
+                                ct.isSubtypeOf(type))) {
+                    boolean isIterArg = namedInvocation && last && 
+                            unit.isIterableParameterType(type);
+                    boolean isVarArg = p.isSequenced() && positionalInvocation;
+                    props.add(new NestedCompletionProposal(d, loc, index, false, 
+                            isIterArg || isVarArg ? "*" : ""));
+                }
+            }
+        }
+    }
+
+    private void addLiteralProposals(final int loc,
+            List<ICompletionProposal> props, int index, ProducedType type,
+            Unit unit) {
         TypeDeclaration dtd = unit.getDefiniteType(type).getDeclaration();
         if (dtd instanceof Class) {
             if (dtd.equals(unit.getIntegerDeclaration())) {
@@ -752,82 +855,6 @@ class InvocationCompletionProposal extends CompletionProposal {
                dtd.equals(unit.getEmptyDeclaration())) {
                props.add(new NestedLiteralCompletionProposal("[]", loc, index));
            }
-        }
-        TypeDeclaration td = type.getDeclaration();
-        for (DeclarationWithProximity dwp: 
-                getSortedProposedValues(scope, unit)) {
-            if (dwp.isUnimported()) {
-                //don't propose unimported stuff b/c adding
-                //imports drops us out of linked mode and
-                //because it results in a pause
-                continue;
-            }
-            Declaration d = dwp.getDeclaration();
-            if (d instanceof Value) {
-                Value value = (Value) d;
-                if (d.getUnit().getPackage().getNameAsString()
-                        .equals(Module.LANGUAGE_MODULE_NAME)) {
-                    if (isIgnoredLanguageModuleValue(value)) {
-                        continue;
-                    }
-                }
-                ProducedType vt = value.getType();
-                if (vt!=null && !vt.isNothing() &&
-                    ((td instanceof TypeParameter) && 
-                        isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
-                            vt.isSubtypeOf(type))) {
-                    boolean isIterArg = namedInvocation && last && 
-                            unit.isIterableParameterType(type);
-                    boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    props.add(new NestedCompletionProposal(d, 
-                    loc, index, false, isIterArg || isVarArg ? "*" : ""));
-                }
-            }
-            if (d instanceof Method) {
-                if (!d.isAnnotation()) {
-                    Method method = (Method) d;
-                    if (d.getUnit().getPackage().getNameAsString()
-                            .equals(Module.LANGUAGE_MODULE_NAME)) {
-                        if (isIgnoredLanguageModuleMethod(method)) {
-                            continue;
-                        }
-                    }
-                    ProducedType mt = method.getType();
-                    if (mt!=null && !mt.isNothing() &&
-                            ((td instanceof TypeParameter) && 
-                                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), mt) || 
-                                    mt.isSubtypeOf(type))) {
-                        boolean isIterArg = namedInvocation && last && 
-                                unit.isIterableParameterType(type);
-                        boolean isVarArg = p.isSequenced() && positionalInvocation;
-                        props.add(new NestedCompletionProposal(d, 
-                                loc, index, false, isIterArg || isVarArg ? "*" : ""));
-                    }
-                }
-            }
-            if (d instanceof Class) {
-                Class clazz = (Class) d;
-                if (!clazz.isAbstract() && !d.isAnnotation()) {
-                    if (d.getUnit().getPackage().getNameAsString()
-                            .equals(Module.LANGUAGE_MODULE_NAME)) {
-                        if (isIgnoredLanguageModuleClass(clazz)) {
-                            continue;
-                        }
-                    }
-                    ProducedType ct = clazz.getType();
-                    if (ct!=null && !ct.isNothing() &&
-                            ((td instanceof TypeParameter) && 
-                                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
-                                    ct.getDeclaration().equals(type.getDeclaration()) ||
-                                    ct.isSubtypeOf(type))) {
-                        boolean isIterArg = namedInvocation && last && 
-                                unit.isIterableParameterType(type);
-                        boolean isVarArg = p.isSequenced() && positionalInvocation;
-                        props.add(new NestedCompletionProposal(d, loc, index, false, 
-                                isIterArg || isVarArg ? "*" : ""));
-                    }
-                }
-            }
         }
     }
 
