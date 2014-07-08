@@ -592,8 +592,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
             cmd.doit = true;
             cmd.shiftsCaret = false;
             autoEditStrategy.customizeDocumentCommand(doc, cmd);
-            doc.replace(cmd.offset, cmd.length, cmd.text);
-            endOffset += cmd.text.length()-cmd.length;
+            if (cmd.text!=null) {
+                doc.replace(cmd.offset, cmd.length, cmd.text);
+                endOffset += cmd.text.length()-cmd.length;
+            }
         }
         return endOffset;
     }
