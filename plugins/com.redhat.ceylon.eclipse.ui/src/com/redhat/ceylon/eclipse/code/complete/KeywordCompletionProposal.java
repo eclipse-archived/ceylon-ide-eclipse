@@ -6,6 +6,8 @@ import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -15,6 +17,7 @@ import java.util.Set;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -84,7 +87,10 @@ public class KeywordCompletionProposal extends CompletionProposal {
         }
     }
     
-
+    @Override
+    public Image getImage() {
+        return getDecoratedImage(CEYLON_LITERAL, 0, false);
+    }
 
     @Override
     public StyledString getStyledDisplayString() {
