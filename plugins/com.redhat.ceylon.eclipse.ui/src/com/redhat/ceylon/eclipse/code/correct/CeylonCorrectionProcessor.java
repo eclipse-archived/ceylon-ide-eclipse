@@ -55,6 +55,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateEnumProposal.addCreat
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreateProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
+import static com.redhat.ceylon.eclipse.code.correct.DeclareLocalProposal.addDeclareLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
@@ -358,43 +359,46 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     }
     
     private void addProposals(IQuickAssistInvocationContext context, 
-            ProblemLocation problem, IFile file, Tree.CompilationUnit cu, 
+            ProblemLocation problem, IFile file, 
+            Tree.CompilationUnit rootNode,
             Collection<ICompletionProposal> proposals) {
         if (file==null) return;
         IProject project = file.getProject();
         TypeChecker tc = getProjectTypeChecker(project);
-        Node node = Nodes.findNode(cu, problem.getOffset(), 
+        Node node = Nodes.findNode(rootNode, problem.getOffset(), 
                     problem.getOffset() + problem.getLength());
         switch ( problem.getProblemId() ) {
         case 100:
+            addDeclareLocalProposal(rootNode, node, proposals, file, editor);
+            //fall through:
         case 102:
             if (tc!=null) {
-                addImportProposals(cu, node, proposals, file);
+                addImportProposals(rootNode, node, proposals, file);
             }
-            addCreateEnumProposal(cu, node, problem, proposals, 
+            addCreateEnumProposal(rootNode, node, problem, proposals, 
                     project, tc, file);
-            addCreationProposals(cu, node, problem, proposals, 
+            addCreationProposals(rootNode, node, problem, proposals, 
                     project, tc, file);
             if (tc!=null) {
-                addChangeReferenceProposals(cu, node, problem, proposals, file);
+                addChangeReferenceProposals(rootNode, node, problem, proposals, file);
             }
             break;
         case 101:
-            addCreateParameterProposals(cu, node, problem, proposals, 
+            addCreateParameterProposals(rootNode, node, problem, proposals, 
                     project, tc, file);
             if (tc!=null) {
-                addChangeReferenceProposals(cu, node, problem, proposals, file);
+                addChangeReferenceProposals(rootNode, node, problem, proposals, file);
             }
             break;
         case 200:
-            addSpecifyTypeProposal(cu, node, proposals, null);
+            addSpecifyTypeProposal(rootNode, node, proposals, null);
             break;
         case 300:
-            addRefineFormalMembersProposal(proposals, node, cu, false);
+            addRefineFormalMembersProposal(proposals, node, rootNode, false);
             addMakeAbstractDecProposal(proposals, project, node);
             break;
         case 350:
-            addRefineFormalMembersProposal(proposals, node, cu, true);
+            addRefineFormalMembersProposal(proposals, node, rootNode, true);
             addMakeAbstractDecProposal(proposals, project, node);
             break;
         case 310:
@@ -433,7 +437,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addMakeSharedProposalForSupertypes(proposals, project, node);
             break;
         case 714:
-            addExportModuleImportProposalForSupertypes(proposals, project, node, cu);
+            addExportModuleImportProposalForSupertypes(proposals, project, node, rootNode);
             break;
         case 800:
         case 804:
@@ -443,7 +447,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addMakeVariableProposal(proposals, project, node);
             break;
         case 801:
-            addMakeVariableDecProposal(proposals, project, cu, node);
+            addMakeVariableDecProposal(proposals, project, rootNode, node);
             break;
         case 802:
             break;
@@ -490,8 +494,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 1450:
         	addMakeFormalDecProposal(proposals, project, node);
-        	addParameterProposals(proposals, file, cu, node, null);
-        	addInitializerProposals(proposals, file, cu, node);
+        	addParameterProposals(proposals, file, rootNode, node, null);
+        	addInitializerProposals(proposals, file, rootNode, node);
         	break;
         case 1500:
             addRemoveAnnotationDecProposal(proposals, "variable", project, node);
@@ -500,52 +504,52 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
             break;
         case 2000:
-            addCreateParameterProposals(cu, node, problem, proposals, 
+            addCreateParameterProposals(rootNode, node, problem, proposals, 
                     project, tc, file);
             break;
         case 2100:
         case 2102:
-            addChangeTypeProposals(cu, node, problem, proposals, project);
-            addSatisfiesProposals(cu, node, proposals, project);
+            addChangeTypeProposals(rootNode, node, problem, proposals, project);
+            addSatisfiesProposals(rootNode, node, proposals, project);
             break;
         case 2101:
-            addEllipsisToSequenceParameterProposal(cu, node, proposals, file);            
+            addEllipsisToSequenceParameterProposal(rootNode, node, proposals, file);            
             break;
         case 3000:
-            addAssignToLocalProposal(cu, proposals, node, problem.getOffset());
-            addPrintProposal(cu, proposals, node, problem.getOffset());
+            addAssignToLocalProposal(rootNode, proposals, node, problem.getOffset());
+            addPrintProposal(rootNode, proposals, node, problem.getOffset());
             break;
         case 3100:
-            addShadowReferenceProposal(file, cu, proposals, node);
+            addShadowReferenceProposal(file, rootNode, proposals, node);
             break;
         case 3101:
         case 3102:
-            addShadowSwitchReferenceProposal(file, cu, proposals, node);
+            addShadowSwitchReferenceProposal(file, rootNode, proposals, node);
             break;
         case 5001:
         case 5002:
             addChangeIdentifierCaseProposal(node, proposals, file);
             break;
         case 6000:
-            addFixMultilineStringIndentation(proposals, file, cu, node);
+            addFixMultilineStringIndentation(proposals, file, rootNode, node);
             break;
         case 7000:
             addModuleImportProposals(proposals, project, tc, node);
             break;
         case 8000:
-            addRenameDescriptorProposal(cu, context, problem, proposals, file);
+            addRenameDescriptorProposal(rootNode, context, problem, proposals, file);
             //TODO: figure out some other way to get a Shell!
             if (context.getSourceViewer()!=null) {
-                addMoveDirProposal(file, cu, project, proposals, 
+                addMoveDirProposal(file, rootNode, project, proposals, 
                         context.getSourceViewer().getTextWidget().getShell());
             }
             break;
         case 9000:
-            addChangeRefiningTypeProposal(file, cu, proposals, node);
+            addChangeRefiningTypeProposal(file, rootNode, proposals, node);
             break;
         case 9100:
         case 9200:
-            addChangeRefiningParametersProposal(file, cu, proposals, node);
+            addChangeRefiningParametersProposal(file, rootNode, proposals, node);
             break;
         }
     }
