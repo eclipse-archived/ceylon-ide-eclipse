@@ -1,7 +1,9 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,12 +102,12 @@ public class LinkedModeCompletionProposal
     private final int offset;
     private int position;
     
-    LinkedModeCompletionProposal(int offset, String text, 
+    private LinkedModeCompletionProposal(int offset, String text, 
             int position) {
         this(offset, text, position, null);
     }
     
-    LinkedModeCompletionProposal(int offset, String text, 
+    private LinkedModeCompletionProposal(int offset, String text, 
             int position, Image image) {
         this.text=text;
         this.position = position;
@@ -247,7 +249,8 @@ public class LinkedModeCompletionProposal
         int i=0;
         if (includeValue) {
             typeProposals[i++] =
-                    new LinkedModeCompletionProposal(offset, kind, 0, null);
+                    new LinkedModeCompletionProposal(offset, kind, 0, 
+                            getDecoratedImage(CEYLON_LITERAL, 0, false));
         }
         for (int j=0; j<supertypes.size(); j++) {
             ProducedType supertype = supertypes.get(j);
