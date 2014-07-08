@@ -1290,12 +1290,13 @@ public class DocumentationHover
             TypeDeclaration superclass = (TypeDeclaration) rd.getContainer();
             ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
             ProducedType sup = getQualifyingType(node, outer).getSupertype(superclass);
+            Unit unit = node==null ? null : node.getUnit();
             HTML.addImageAndLabel(buffer, rd, 
                     HTML.fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
                     16, 16, 
                     "refines&nbsp;&nbsp;<tt><a " + HTML.link(rd) + ">" + 
                             rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
-                            producedTypeLink(sup, node.getUnit()) + "</tt>", 
+                            producedTypeLink(sup, unit) + "</tt>", 
                     20, 2);
             buffer.append("</p>");
             if (!hasDoc) {
