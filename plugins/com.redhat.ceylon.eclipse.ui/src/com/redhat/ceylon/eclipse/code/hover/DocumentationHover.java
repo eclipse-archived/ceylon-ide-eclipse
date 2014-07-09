@@ -1750,8 +1750,12 @@ public class DocumentationHover
         if (annotationList!=null) {
             AnonymousAnnotation aa = annotationList.getAnonymousAnnotation();
             if (aa!=null) {
-                documentation.append(markdown(aa.getStringLiteral().getText(), linkScope,
-                        annotationList.getUnit()));
+                HTML.addImageAndLabel(documentation, null, 
+                        HTML.fileUrl("toc_obj.gif").toExternalForm(), 
+                        16, 16,
+                        markdown(aa.getStringLiteral().getText(), 
+                                linkScope, annotationList.getUnit()), 
+                        20, 0);
             }
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 Tree.Primary annotPrim = annotation.getPrimary();
