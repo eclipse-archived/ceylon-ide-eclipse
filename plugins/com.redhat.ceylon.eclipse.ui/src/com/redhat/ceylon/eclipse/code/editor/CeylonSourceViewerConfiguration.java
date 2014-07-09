@@ -62,6 +62,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String LINKED_MODE_RENAME = "linkedModeRename";
     public static final String LINKED_MODE_EXTRACT = "linkedModeExtract";
     public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
+    public static final String DISPLAY_RETURN_TYPES = "displayReturnTypes";
     
     public static final String CLOSE_PARENS = "closeParens";
     public static final String CLOSE_BRACKETS = "closeBrackets";
@@ -94,29 +95,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         reconciler.setDamager(damageRepairer, DEFAULT_CONTENT_TYPE);
         return reconciler;
     }
-
-    /*private final class Warmup implements IRunnableWithProgress {
-        @Override
-        public void run(IProgressMonitor monitor) throws InvocationTargetException,
-                InterruptedException {
-            
-            monitor.beginTask("Warming up completion processor", 100000);
-            
-            List<Package> packages = editor.getParseController()
-                    .getRootNode().getUnit().getPackage()
-                    .getModule().getAllPackages();
-            
-            monitor.worked(10000);
-            
-            for (Package p: packages) {
-                p.getMembers();
-                monitor.worked(90000/packages.size());
-                if (monitor.isCanceled()) return;
-            }
-
-            monitor.done();
-        }
-    }*/
     
     static void setPreferenceDefaults() {
         IPreferenceStore preferenceStore = EditorsUI.getPreferenceStore();
@@ -128,6 +106,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(LINKED_MODE_RENAME, true);
         preferenceStore.setDefault(LINKED_MODE_EXTRACT, true);
         preferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
+        preferenceStore.setDefault(DISPLAY_RETURN_TYPES, false);
         preferenceStore.setDefault(NORMALIZE_WS, false);
         preferenceStore.setDefault(NORMALIZE_NL, false);
         preferenceStore.setDefault(STRIP_TRAILING_WS, false);

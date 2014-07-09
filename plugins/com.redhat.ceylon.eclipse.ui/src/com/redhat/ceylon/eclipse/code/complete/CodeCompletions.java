@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -312,18 +314,20 @@ public class CodeCompletions {
             appendTypeParameters(d, result);
             appendParametersDescription(d, result);
             if (d instanceof TypedDeclaration) {
-                TypedDeclaration td = (TypedDeclaration) d;
-                if (!td.isParameter() && 
-                        !td.isDynamicallyTyped() &&
-                        !(td instanceof Method && ((Method) td).isDeclaredVoid())) {
-                    ProducedType t = td.getType();
-                    if (t!=null) {
-                        result.append(" ∊ ");
-                        appendTypeName(result, t, ARROW_STYLER);
+                if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
+                    TypedDeclaration td = (TypedDeclaration) d;
+                    if (!td.isParameter() && 
+                            !td.isDynamicallyTyped() &&
+                            !(td instanceof Method && ((Method) td).isDeclaredVoid())) {
+                        ProducedType t = td.getType();
+                        if (t!=null) {
+                            result.append(" ∊ ");
+                            appendTypeName(result, t, ARROW_STYLER);
+                        }
                     }
                 }
             }
-            /*result.append(" - refine declaration in ") 
+            /*result.append(" - refines declaration in ") 
                 .append(((Declaration) d.getContainer()).getName());*/
         }
         return result;
