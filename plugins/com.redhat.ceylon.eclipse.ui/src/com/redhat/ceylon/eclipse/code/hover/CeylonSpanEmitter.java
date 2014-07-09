@@ -4,6 +4,8 @@ import com.github.rjeschke.txtmark.SpanEmitter;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.code.html.HTML;
@@ -27,6 +29,13 @@ final class CeylonSpanEmitter implements SpanEmitter {
         if (hasNoPlainText) {
             int sep = content.indexOf("::");
             linkDescription = sep<0 ? content : content.substring(sep+2);
+            //to match behavior of ceylon doc:
+            /*if (linkDescription.startsWith("package ")) {
+                linkDescription = linkDescription.substring(8);
+            }
+            if (linkDescription.startsWith("module ")) {
+                linkDescription = linkDescription.substring(7);
+            }*/
             linkTarget = content;
         }
         else {
@@ -34,7 +43,7 @@ final class CeylonSpanEmitter implements SpanEmitter {
             linkTarget = content.substring(indexOf+1, content.length()); 
         }
         
-        Declaration decl = resolveLink(linkTarget, linkScope, unit);
+        Referenceable decl = resolveLink(linkTarget, linkScope, unit);
         String href = decl != null ? HTML.link(decl) : null;
         if (href != null) {
             out.append("<a ").append(href).append(">");
@@ -54,7 +63,16 @@ final class CeylonSpanEmitter implements SpanEmitter {
         }
     }
 
-    static Declaration resolveLink(String linkTarget, Scope linkScope, Unit unit) {
+    static Referenceable resolveLink(String linkTarget, Scope linkScope, Unit unit) {
+        if (linkTarget.startsWith("package ")) {
+            Module module = DocumentationHover.resolveModule(linkScope);
+            return module.getPackage(linkTarget.substring(8).trim());
+        }
+        if (linkTarget.startsWith("module ")) {
+            Module module = DocumentationHover.resolveModule(linkScope);
+            Package p = module.getPackage(linkTarget.substring(7).trim());
+            return p==null ? null : p.getModule();
+        }
         String declName;
         Scope scope = null;
         int pkgSeparatorIndex = linkTarget.indexOf("::");
