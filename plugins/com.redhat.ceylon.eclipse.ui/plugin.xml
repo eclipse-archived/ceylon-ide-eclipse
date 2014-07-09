@@ -2193,9 +2193,9 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.outlineTypes" 
         label="Return types in outline view"
-        value="128,0,128">
+        value="102,102,51">
         <description>
-            Color for displaying return types in outline view. (Takes effect after restart.)
+            Color for displaying return types in outline view. (Takes effect after closing Ceylon editor.)
         </description>
     </colorDefinition>
 
