@@ -347,14 +347,23 @@ public class Nodes {
         if (node instanceof Tree.ImportPath) {
             return ((Tree.ImportPath) node).getModel();
         }
-        else {
-            Declaration dec = getReferencedDeclaration((Node) node);
-            if (dec instanceof MethodOrValue && 
-                    ((MethodOrValue) dec).isShortcutRefinement()) {
-                dec = dec.getRefinedDeclaration();
+        else if (node instanceof Tree.DocLink) {
+            Tree.DocLink docLink = (Tree.DocLink) node;
+            if (docLink.getBase()==null) {
+                if (docLink.getModule()!=null) {
+                    return docLink.getModule(); 
+                }
+                if (docLink.getPkg()!=null) {
+                    return docLink.getPkg();
+                }
             }
-            return dec;
         }
+        Declaration dec = getReferencedDeclaration((Node) node);
+        if (dec instanceof MethodOrValue && 
+                ((MethodOrValue) dec).isShortcutRefinement()) {
+            dec = dec.getRefinedDeclaration();
+        }
+        return dec;
     }
 
     public static Declaration getReferencedExplicitDeclaration(Node node, 
