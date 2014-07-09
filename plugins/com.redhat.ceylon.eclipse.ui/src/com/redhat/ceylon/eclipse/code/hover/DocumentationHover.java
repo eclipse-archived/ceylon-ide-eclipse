@@ -14,6 +14,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.isAvailable;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.isVariable;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitialValueDescription;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectionFromThread;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
@@ -26,6 +27,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModu
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
+import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
 import static com.redhat.ceylon.eclipse.util.Highlights.NUMBERS;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
@@ -1009,6 +1011,14 @@ public class DocumentationHover
 
     private static void addMainPackageDescription(Package pack,
             StringBuilder buffer) {
+        if (pack.isShared()) {
+            String ann = toHex(getCurrentThemeColor(ANNOTATIONS));
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("annotation_obj.gif").toExternalForm(), 
+                    16, 16, 
+                    "<tt style='font-size:90%;color:" + ann + "'>shared</tt>"
+                    , 20, 4);
+        }
         HTML.addImageAndLabel(buffer, pack, 
                 HTML.fileUrl(getIcon(pack)).toExternalForm(), 
                 16, 16, 
@@ -1208,12 +1218,37 @@ public class DocumentationHover
 
     private static void addMainDescription(StringBuilder buffer,
             Declaration dec, Node node, CeylonParseController cpc) {
+        StringBuilder buf = new StringBuilder();
+        if (dec.isShared()) buf.append("shared&nbsp;");
+        if (dec.isActual()) buf.append("actual&nbsp;");
+        if (dec.isDefault()) buf.append("default&nbsp;");
+        if (dec.isFormal()) buf.append("formal&nbsp;");
+        if (dec instanceof Value && ((Value)dec).isLate()) 
+            buf.append("late&nbsp;");
+        if (isVariable(dec)) buf.append("variable&nbsp;");
+        if (dec.isNative()) buf.append("native&nbsp;");
+        if (dec instanceof TypeDeclaration) {
+            TypeDeclaration td = (TypeDeclaration) dec;
+            if (td.isSealed()) buf.append("sealed&nbsp;");
+            if (td.isFinal()) buf.append("final&nbsp;");
+            if (td instanceof Class && ((Class)td).isAbstract()) 
+                buf.append("abstract&nbsp;");
+        }
+        if (dec.isAnnotation()) buf.append("annotation&nbsp;");
+        if (buf.length()!=0) {
+            String ann = toHex(getCurrentThemeColor(ANNOTATIONS));
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("annotation_obj.gif").toExternalForm(), 
+                    16, 16, 
+                    "<tt style='font-size:90%;color:" + ann + "'>" + buf + "</tt>"
+                    , 20, 4);
+        }
         HTML.addImageAndLabel(buffer, dec, 
                 HTML.fileUrl(getIcon(dec)).toExternalForm(), 
                 16, 16, 
                 "<tt style='font-size:102%'>" + 
                 (dec.isDeprecated() ? "<s>":"") + 
-                HTML.highlightLine(description(dec, node, cpc)) + 
+                description(dec, node, cpc) + 
                 (dec.isDeprecated() ? "</s>":"") + 
                 "</tt>", 
                 20, 4);
@@ -1681,47 +1716,23 @@ public class DocumentationHover
 //        }
     }
 
-    private static String description(Declaration dec, 
-            Node node, CeylonParseController cpc) {
+    private static String description(Declaration dec, Node node, 
+            CeylonParseController cpc) {
         ProducedReference pr = getProducedReference(dec, node);
-        String result = node==null ? 
-                getDescriptionFor(dec, pr, dec.getUnit()) :
-                getDescriptionFor(dec, pr, node.getUnit());
+        Unit unit = node==null ? dec.getUnit() : node.getUnit();
+        String description = getDescriptionFor(dec, pr, unit);
         if (dec instanceof TypeDeclaration) {
             TypeDeclaration td = (TypeDeclaration) dec;
             if (td.isAlias() && td.getExtendedType()!=null) {
-                result += " => ";
-                result += td.getExtendedType().getProducedTypeName();
+                description += " => " + 
+                        td.getExtendedType().getProducedTypeName();
             }
         }
-        else if (dec instanceof Value) {
-            if (!((Value) dec).isVariable()) {
-                result += getInitialValueDescription(dec, cpc);
-            }
+        if (dec instanceof Value && !isVariable(dec) ||
+                dec instanceof Method) {
+            description += getInitialValueDescription(dec, cpc);
         }
-        else if (dec instanceof Method) {
-            result += getInitialValueDescription(dec, cpc);
-        }
-        /*else if (dec instanceof ValueParameter) {
-            Tree.Declaration refnode = (Tree.Declaration) getReferencedNode(dec, cpc);
-            if (refnode instanceof Tree.ValueParameterDeclaration) {
-                Tree.DefaultArgument da = ((Tree.ValueParameterDeclaration) refnode).getDefaultArgument();
-                if (da!=null) {
-                    Tree.Expression e = da.getSpecifierExpression().getExpression();
-                    if (e!=null) {
-                        Tree.Term term = e.getTerm();
-                        if (term instanceof Tree.Literal) {
-                            result += " = ";
-                            result += term.getText();
-                        }
-                        else {
-                            result += " =";
-                        }
-                    }
-                }
-            }
-        }*/
-        return result;
+        return HTML.highlightLine(description);
     }
 
     private static void appendJavadoc(Declaration model, IProject project,
@@ -1876,12 +1887,10 @@ public class DocumentationHover
     }
     
     private static String markdown(String text, final Scope linkScope, final Unit unit) {
-        if( text == null || text.length() == 0 ) {
+        if (text == null || text.isEmpty()) {
             return text;
         }
-
-//        String unquotedText = text.substring(1, text.length()-1);
-
+        
         Builder builder = Configuration.builder().forceExtentedProfile();
         builder.setCodeBlockEmitter(new CeylonBlockEmitter());
         if (linkScope!=null) {
