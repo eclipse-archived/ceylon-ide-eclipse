@@ -1040,27 +1040,7 @@ public class DocumentationHover
                 20, 2);
         return mod;
     }
-
-    private static void addPackageDocumentation(CeylonParseController cpc,
-            Package pack, StringBuilder buffer) {
-        String packageFileName = pack.getNameAsString().replace('.', '/') + 
-                "/package.ceylon";
-        PhasedUnit pu = cpc.getTypeChecker()
-                .getPhasedUnitFromRelativePath(packageFileName);
-        if (pu!=null) {
-            List<Tree.PackageDescriptor> packageDescriptors = 
-                    pu.getCompilationUnit().getPackageDescriptors();
-            if (!packageDescriptors.isEmpty()) {
-                Tree.PackageDescriptor refnode = packageDescriptors.get(0);
-                if (refnode!=null) {
-                    appendDocAnnotationContent(refnode.getAnnotationList(), buffer, pack);
-                    appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, pack);
-                    appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
-                }
-            }
-        }
-    }
-
+    
     private static String description(Package pack) {
         return "package " + getLabel(pack);
     }
@@ -1147,6 +1127,28 @@ public class DocumentationHover
                 Tree.ModuleDescriptor refnode = moduleDescriptors.get(0);
                 if (refnode!=null) {
                     Scope linkScope = mod.getPackage(mod.getNameAsString());
+                    appendDocAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
+                    appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
+                    appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
+                }
+            }
+        }
+    }
+
+    private static void addPackageDocumentation(CeylonParseController cpc,
+            Package pack, StringBuilder buffer) {
+        Unit unit = pack.getUnit();
+        PhasedUnit pu = null;
+        if (unit instanceof CeylonUnit) {
+            pu = ((CeylonUnit)unit).getPhasedUnit();
+        }
+        if (pu!=null) {
+            List<Tree.PackageDescriptor> packageDescriptors = 
+                    pu.getCompilationUnit().getPackageDescriptors();
+            if (!packageDescriptors.isEmpty()) {
+                Tree.PackageDescriptor refnode = packageDescriptors.get(0);
+                if (refnode!=null) {
+                    Scope linkScope = pack;
                     appendDocAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
                     appendThrowAnnotationContent(refnode.getAnnotationList(), buffer, linkScope);
                     appendSeeAnnotationContent(refnode.getAnnotationList(), buffer);
