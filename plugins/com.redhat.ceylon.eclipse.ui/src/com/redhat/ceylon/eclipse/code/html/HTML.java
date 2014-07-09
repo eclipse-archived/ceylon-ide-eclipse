@@ -45,7 +45,8 @@ public class HTML {
 
     public static URL fileUrl(String icon) {
         try {
-            return FileLocator.toFileURL(FileLocator.find(CeylonPlugin.getInstance().getBundle(), 
+            Bundle bundle = CeylonPlugin.getInstance().getBundle();
+            return FileLocator.toFileURL(FileLocator.find(bundle, 
                     new Path("icons/").append(icon), null));
         } 
         catch (IOException e) {

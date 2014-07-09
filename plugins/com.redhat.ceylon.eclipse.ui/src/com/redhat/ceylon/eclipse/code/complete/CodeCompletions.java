@@ -251,7 +251,7 @@ public class CodeCompletions {
         return result.toString();
     }
 
-    private static boolean isVariable(Declaration d) {
+    public static boolean isVariable(Declaration d) {
         return d instanceof TypedDeclaration && 
                 ((TypedDeclaration) d).isVariable();
     }
@@ -295,9 +295,6 @@ public class CodeCompletions {
     public static String getDescriptionFor(Declaration d, 
             ProducedReference pr, Unit unit) {
         StringBuilder result = new StringBuilder();
-        if (d.isFormal()) result.append("formal ");
-        if (d.isDefault()) result.append("default ");
-        if (isVariable(d)) result.append("variable ");
         appendDeclarationHeaderDescription(d, pr, unit, result);
         appendTypeParameters(d, result);
         appendParametersDescription(d, pr, unit, result);
@@ -307,6 +304,7 @@ public class CodeCompletions {
     public static StyledString getStyledDescriptionFor(Declaration d) {
         StyledString result = new StyledString();
         if (d!=null) {
+            if (d.isActual()) result.append("actual ", ANN_STYLER);
             if (d.isFormal()) result.append("formal ", ANN_STYLER);
             if (d.isDefault()) result.append("default ", ANN_STYLER);
             if (isVariable(d)) result.append("variable ", ANN_STYLER);
