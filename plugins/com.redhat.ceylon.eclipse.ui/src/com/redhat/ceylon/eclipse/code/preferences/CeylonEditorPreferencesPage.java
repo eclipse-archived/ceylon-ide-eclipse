@@ -11,13 +11,14 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_INSERT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
@@ -68,6 +69,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor linkedMode;
     BooleanFieldEditor linkedModeRename;
     BooleanFieldEditor linkedModeExtract;
+    BooleanFieldEditor displayOutlineTypes;
     ScaleFieldEditor autoActivationDelay;
     RadioGroupFieldEditor autoActivationChars;
     BooleanFieldEditor smartCaret;
@@ -103,6 +105,7 @@ public class CeylonEditorPreferencesPage
         linkedMode.store();
         linkedModeRename.store();
         linkedModeExtract.store();
+        displayOutlineTypes.store();
         smartCaret.store();
         pasteCorrectIndent.store();
         normalizeWs.store();
@@ -135,6 +138,7 @@ public class CeylonEditorPreferencesPage
         linkedMode.loadDefault();
         linkedModeRename.loadDefault();
         linkedModeExtract.loadDefault();
+        displayOutlineTypes.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
         normalizeWs.loadDefault();
@@ -416,6 +420,11 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent(group));
         pasteCorrectIndent.load();
         addField(pasteCorrectIndent);
+        displayOutlineTypes = new BooleanFieldEditor(DISPLAY_RETURN_TYPES, 
+                "Display return types in outlines", 
+                getFieldEditorParent(group));
+        displayOutlineTypes.load();
+        addField(displayOutlineTypes);
     }
     
     private void onSaveSection() {

@@ -4,6 +4,7 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.util.Highlights.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.util.Highlights.KEYWORDS;
@@ -50,6 +51,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -510,14 +512,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     private static void appendPostfixType(Tree.TypedDeclaration td,
             StyledString label) {
-        Tree.Type type = td.getType();
-        if (type!=null && 
-                !(type instanceof Tree.DynamicModifier) &&
-                !(type instanceof Tree.VoidModifier)) {
-            ProducedType tm = type.getTypeModel();
-            if (!isTypeUnknown(tm)) {
-                label.append(" ∊ ");
-                appendTypeName(label, tm, ARROW_STYLER);
+        if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
+            Tree.Type type = td.getType();
+            if (type!=null && 
+                    !(type instanceof Tree.DynamicModifier) &&
+                    !(type instanceof Tree.VoidModifier)) {
+                ProducedType tm = type.getTypeModel();
+                if (!isTypeUnknown(tm)) {
+                    label.append(" ∊ ");
+                    appendTypeName(label, tm, ARROW_STYLER);
+                }
             }
         }
     }
