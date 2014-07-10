@@ -181,7 +181,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                 }
             }
         }
-        for (TypeDeclaration superType: td.getSuperTypeDeclarations()) {
+        for (TypeDeclaration superType: td.getSupertypeDeclarations()) {
             for (Declaration m: superType.getMembers()) {
                 if (m.isShared()) {
                     Declaration r = td.getMember(m.getName(), null, false);
@@ -213,7 +213,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                 }
             }
         }
-        for (TypeDeclaration superType: td.getSuperTypeDeclarations()) {
+        for (TypeDeclaration superType: td.getSupertypeDeclarations()) {
             for (Declaration m: superType.getMembers()) {
                 if (m.isShared()) {
                     Declaration r = td.getMember(m.getName(), null, false);

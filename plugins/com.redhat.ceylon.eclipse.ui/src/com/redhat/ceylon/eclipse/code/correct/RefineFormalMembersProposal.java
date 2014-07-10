@@ -171,7 +171,7 @@ class RefineFormalMembersProposal implements ICompletionProposal,
                 }
             }
         }
-        for (TypeDeclaration superType: ci.getSuperTypeDeclarations()) {
+        for (TypeDeclaration superType: ci.getSupertypeDeclarations()) {
             for (Declaration m: superType.getMembers()) {
                 if (m.isShared()) {
                     Declaration r = ci.getMember(m.getName(), null, false);
