@@ -21,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 class RemoveAnnotionProposal extends CorrectionProposal {
     
@@ -52,6 +53,13 @@ class RemoveAnnotionProposal extends CorrectionProposal {
     @Override
     public int hashCode() {
         return dec.hashCode();
+    }
+    
+    static void addRemoveAnnotationProposal(Node node, String annotation,
+            Collection<ICompletionProposal> proposals, IProject project) {
+        addRemoveAnnotationProposal(node, annotation, "Make Non" + annotation,  
+                Nodes.getReferencedDeclaration(node), 
+                proposals, project);
     }
 
     static void addRemoveAnnotationProposal(Node node, String annotation, String desc,
