@@ -68,6 +68,7 @@ import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintPropo
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationDecProposal;
+import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameDescriptorProposal.addRenameDescriptorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
@@ -404,6 +405,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 310:
             addMakeAbstractDecProposal(proposals, project, node);
             break;
+        case 320:
+            addRemoveAnnotationProposal(node, "formal", proposals, project);
+            break;
         case 400:
             addMakeSharedProposal(proposals, project, node);
             break;
@@ -454,7 +458,6 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 905:
             addMakeContainerAbstractProposal(proposals, project, node);
             break;
-        case 900:
         case 1100:
             addMakeContainerAbstractProposal(proposals, project, node);
             addRemoveAnnotationDecProposal(proposals, "formal", project, node);
