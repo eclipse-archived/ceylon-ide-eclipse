@@ -10,7 +10,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -208,9 +207,20 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             }
         });
         
+        Link buildPathsPageLink = new Link(parent, 0);
+//        buildPathsPageLink.setLayoutData(GridDataFactory.swtDefaults()
+//                .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
+        buildPathsPageLink.setText("<a>Change Project Build Paths...</a>");
+        buildPathsPageLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                IWorkbenchPreferenceContainer container = (IWorkbenchPreferenceContainer) getContainer();
+                container.openPage(CeylonBuildPathsPropertiesPage.ID, null);
+            }
+        });
         Link openRepoPageLink = new Link(parent, 0);
-        openRepoPageLink.setLayoutData(GridDataFactory.swtDefaults()
-                .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
+//        openRepoPageLink.setLayoutData(GridDataFactory.swtDefaults()
+//                .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
         openRepoPageLink.setText("<a>Configure Project Module Repositories...</a>");
         openRepoPageLink.addSelectionListener(new SelectionAdapter() {
             @Override
