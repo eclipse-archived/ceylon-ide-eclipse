@@ -1836,6 +1836,7 @@ public class DocumentationHover
                     if ("see".equals(name)) {
                         Tree.PositionalArgumentList argList = annotation.getPositionalArgumentList();
                         if (argList!=null) {
+                            StringBuilder sb = new StringBuilder();
                             List<Tree.PositionalArgument> args = argList.getPositionalArguments();
                             for (Tree.PositionalArgument arg: args) {
                                 if (arg instanceof Tree.ListedArgument) {
@@ -1847,14 +1848,18 @@ public class DocumentationHover
                                             if (dec.isClassOrInterfaceMember()) {
                                                 dn = ((ClassOrInterface) dec.getContainer()).getName() + "." + dn;
                                             }
-                                            HTML.addImageAndLabel(documentation, dec, 
-                                                    HTML.fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 
-                                                    16, 16, 
-                                                    "see <tt><a "+HTML.link(dec)+">"+dn+"</a></tt>", 
-                                                    20, 2);
+                                            if (sb.length()!=0) sb.append(", ");
+                                            sb.append("<tt><a "+HTML.link(dec)+">"+dn+"</a></tt>");
                                         }
                                     }
                                 }
+                            }
+                            if (sb.length()!=0) {
+                                HTML.addImageAndLabel(documentation, null, 
+                                        HTML.fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 
+                                        16, 16, 
+                                        "see " + sb + ".", 
+                                        20, 2);
                             }
                         }
                     }
