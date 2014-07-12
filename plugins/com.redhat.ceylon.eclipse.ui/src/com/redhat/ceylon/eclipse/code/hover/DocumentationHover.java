@@ -476,6 +476,12 @@ public class DocumentationHover
             else {
                 return null;
             }
+            if (scope instanceof Value) {
+                TypeDeclaration val = ((Value) scope).getTypeDeclaration();
+                if (val.isAnonymous()) {
+                    scope = val;
+                }
+            }
             target = scope.getDirectMember(bits[i], null, false);
             //TODO: nasty workaround for bug in model loader 
             //      where unshared parameters are not getting 
@@ -1197,6 +1203,12 @@ public class DocumentationHover
     private static String getDocumentationFor(CeylonParseController cpc, 
             Declaration dec, Node node) {
         if (dec==null) return null;
+        if (dec instanceof Value) {
+            TypeDeclaration val = ((Value) dec).getTypeDeclaration();
+            if (val.isAnonymous()) {
+                dec = val;
+            }
+        }
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addMainDescription(buffer, dec, node, cpc);
@@ -1264,10 +1276,10 @@ public class DocumentationHover
                 boolean first = true;
                 for (Declaration mem: dec.getMembers()) {
                     if (mem instanceof Method && 
-                            ((Method)mem).isOverloaded()) {
+                            ((Method) mem).isOverloaded()) {
                         continue;
                     }
-                    if (mem.isShared() && !dec.isAnonymous()) {
+                    if (mem.isShared()) {
                         if (first) {
                             buffer.append("<hr/>Members:&nbsp;&nbsp;");
                             first = false;
