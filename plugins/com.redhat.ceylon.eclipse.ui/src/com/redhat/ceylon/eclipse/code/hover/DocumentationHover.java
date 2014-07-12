@@ -1847,8 +1847,11 @@ public class DocumentationHover
                                             if (dec.isClassOrInterfaceMember()) {
                                                 dn = ((ClassOrInterface) dec.getContainer()).getName() + "." + dn;
                                             }
-                                            HTML.addImageAndLabel(documentation, dec, HTML.fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
-                                                    "see <tt><a "+HTML.link(dec)+">"+dn+"</a></tt>", 20, 2);
+                                            HTML.addImageAndLabel(documentation, dec, 
+                                                    HTML.fileUrl("link_obj.gif"/*getIcon(dec)*/).toExternalForm(), 
+                                                    16, 16, 
+                                                    "see <tt><a "+HTML.link(dec)+">"+dn+"</a></tt>", 
+                                                    20, 2);
                                         }
                                     }
                                 }
@@ -1891,9 +1894,12 @@ public class DocumentationHover
                                                         + "." + dn;
                                             }
                                         }
-                                        HTML.addImageAndLabel(documentation, dec, HTML.fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 16, 16, 
+                                        HTML.addImageAndLabel(documentation, dec, 
+                                                HTML.fileUrl("ihigh_obj.gif"/*getIcon(dec)*/).toExternalForm(), 
+                                                16, 16, 
                                                 "throws <tt><a "+HTML.link(dec)+">"+dn+"</a></tt>" + 
-                                                        markdown(text, linkScope, annotationList.getUnit()), 20, 2);
+                                                        markdown(text, linkScope, annotationList.getUnit()), 
+                                                20, 2);
                                     }
                                 }
                             }
