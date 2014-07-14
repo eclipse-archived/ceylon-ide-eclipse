@@ -983,7 +983,7 @@ public class DocumentationHover
             }
             if (dec.isShared() && !dec.isAnonymous()) {
                 if (first) {
-                    buffer.append("<hr/>Contains:&nbsp;&nbsp;");
+                    buffer.append("<p>Contains:&nbsp;&nbsp;");
                     first = false;
                 }
                 else {
@@ -1001,7 +1001,7 @@ public class DocumentationHover
             }
         }
         if (!first) {
-            buffer.append(".<br/>");
+            buffer.append(".</p>");
         }
     }
 
@@ -1017,6 +1017,7 @@ public class DocumentationHover
 
     private static void addMainPackageDescription(Package pack,
             StringBuilder buffer) {
+        buffer.append("<p>");
         if (pack.isShared()) {
             String ann = toHex(getCurrentThemeColor(ANNOTATIONS));
             HTML.addImageAndLabel(buffer, null, 
@@ -1032,7 +1033,7 @@ public class DocumentationHover
                 HTML.highlightLine(description(pack)) +
                 "</tt>", 
                 20, 4);
-        buffer.append("<hr/>");
+        buffer.append("</p>");
     }
 
     private static Module addPackageModuleInfo(Package pack,
@@ -1057,8 +1058,8 @@ public class DocumentationHover
     
     public static String getDocumentationForModule(String name, 
             String version, String doc) {
-        StringBuilder buffer= new StringBuilder();
-        
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("<p>");
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
                 16, 16, 
@@ -1066,7 +1067,7 @@ public class DocumentationHover
                 HTML.highlightLine(description(name, version)) + 
                 "</tt></b>",
                 20, 4);
-        buffer.append("<hr/>");
+        buffer.append("</p>");
         
         if (doc!=null) {
             buffer.append(markdown(doc, null, null));
@@ -1109,6 +1110,7 @@ public class DocumentationHover
 
     private static void addMainModuleDescription(Module mod,
             StringBuilder buffer) {
+        buffer.append("<p>");
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
@@ -1116,7 +1118,7 @@ public class DocumentationHover
                 HTML.highlightLine(description(mod)) + 
                 "</tt>", 
                 20, 4);
-        buffer.append("<hr/>");
+        buffer.append("</p>");
     }
 
     private static void addModuleDocumentation(CeylonParseController cpc,
@@ -1169,7 +1171,7 @@ public class DocumentationHover
         for (Package pack: mod.getPackages()) {
             if (pack.isShared()) {
                 if (first) {
-                    buffer.append("<hr/>Contains:&nbsp;&nbsp;");
+                    buffer.append("<p>Contains:&nbsp;&nbsp;");
                     first = false;
                 }
                 else {
@@ -1187,7 +1189,7 @@ public class DocumentationHover
             }
         }
         if (!first) {
-            buffer.append(".<br/>");
+            buffer.append(".</p>");
         }
     }
 
@@ -1212,12 +1214,12 @@ public class DocumentationHover
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addMainDescription(buffer, dec, node, cpc);
-        addContainerInfo(dec, node, buffer);
-        boolean hasDoc = addDoc(cpc, dec, node, buffer);
         boolean obj = addInheritanceInfo(dec, node, buffer);
+        boolean hasDoc = addDoc(cpc, dec, node, buffer);
         addRefinementInfo(cpc, dec, node, buffer, hasDoc);
         addReturnType(dec, buffer, node, obj);
         addParameters(cpc, dec, node, buffer);
+        addContainerInfo(dec, node, buffer);
         addClassMembersInfo(dec, buffer);
         if (dec instanceof NothingType) {
             addNothingTypeInfo(buffer);
@@ -1237,7 +1239,7 @@ public class DocumentationHover
         if (dec.isActual()) buf.append("actual&nbsp;");
         if (dec.isDefault()) buf.append("default&nbsp;");
         if (dec.isFormal()) buf.append("formal&nbsp;");
-        if (dec instanceof Value && ((Value)dec).isLate()) 
+        if (dec instanceof Value && ((Value) dec).isLate()) 
             buf.append("late&nbsp;");
         if (isVariable(dec)) buf.append("variable&nbsp;");
         if (dec.isNative()) buf.append("native&nbsp;");
@@ -1254,19 +1256,19 @@ public class DocumentationHover
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("annotation_obj.gif").toExternalForm(), 
                     16, 16, 
-                    "<tt style='font-size:90%;color:" + ann + "'>" + buf + "</tt>"
-                    , 20, 4);
+                    "<tt style='font-size:90%;color:" + ann + "'>" + buf + "</tt>", 
+                    20, 4);
         }
         HTML.addImageAndLabel(buffer, dec, 
                 HTML.fileUrl(getIcon(dec)).toExternalForm(), 
                 16, 16, 
-                "<tt style='font-size:102%'>" + 
+                "<tt style='font-size:103%'>" + 
                 (dec.isDeprecated() ? "<s>":"") + 
                 description(dec, node, cpc) + 
                 (dec.isDeprecated() ? "</s>":"") + 
                 "</tt>", 
                 20, 4);
-        buffer.append("<hr/>");
+        
     }
 
     private static void addClassMembersInfo(Declaration dec,
@@ -1281,7 +1283,7 @@ public class DocumentationHover
                     }
                     if (mem.isShared()) {
                         if (first) {
-                            buffer.append("<hr/>Members:&nbsp;&nbsp;");
+                            buffer.append("<p>Members:&nbsp;&nbsp;");
                             first = false;
                         }
                         else {
@@ -1298,7 +1300,7 @@ public class DocumentationHover
                     }
                 }
                 if (!first) {
-                    buffer.append(".<br/>");
+                    buffer.append(".</p>");
                     //extraBreak = true;
                 }
             }
@@ -1314,7 +1316,7 @@ public class DocumentationHover
 
     private static boolean addInheritanceInfo(Declaration dec,
             Node node, StringBuilder buffer) {
-        //boolean extraBreak = false;
+        buffer.append("<p>");
         boolean obj=false;
         if (dec instanceof TypedDeclaration) {
             TypeDeclaration td = 
@@ -1327,6 +1329,8 @@ public class DocumentationHover
         else if (dec instanceof TypeDeclaration) {
             documentInheritance((TypeDeclaration) dec, node, buffer);    
         }
+        documentTypeParameters(dec, node, buffer);
+        buffer.append("</p>");
         return obj;
     }
 
@@ -1554,6 +1558,7 @@ public class DocumentationHover
 
     private static void addContainerInfo(Declaration dec, Node node,
             StringBuilder buffer) {
+        buffer.append("<p>");
         Package pack = dec.getUnit().getPackage();
         if (dec.isParameter()) {
             Declaration pd = 
@@ -1562,16 +1567,16 @@ public class DocumentationHover
             HTML.addImageAndLabel(buffer, pd, 
                     HTML.fileUrl(getIcon(pd)).toExternalForm(),
                     16, 16, 
-                    "parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
-                            pd.getName() +"</a></tt>", 20, 2);
+                    "<span style='font-size:95%'>parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
+                            pd.getName() +"</a></tt><span>", 20, 2);
         }
         else if (dec instanceof TypeParameter) {
             Declaration pd = ((TypeParameter) dec).getDeclaration();
             HTML.addImageAndLabel(buffer, pd, 
                     HTML.fileUrl(getIcon(pd)).toExternalForm(),
                     16, 16, 
-                    "type parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
-                            pd.getName() +"</a></tt>", 
+                    "<span style='font-size:95%'>type parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
+                            pd.getName() +"</a></tt></span>", 
                     20, 2);
         }
         else {
@@ -1583,7 +1588,8 @@ public class DocumentationHover
                     HTML.addImageAndLabel(buffer, outer, 
                             HTML.fileUrl(getIcon(outer)).toExternalForm(), 
                             16, 16, 
-                            "member of&nbsp;&nbsp;<tt>" + producedTypeLink(qt, unit) + "</tt>", 
+                            "<span style='font-size:95%'>member of&nbsp;&nbsp;<tt>" + 
+                                producedTypeLink(qt, unit) + "</tt></span>", 
                             20, 2);
                 }
             }
@@ -1592,11 +1598,11 @@ public class DocumentationHover
                     !(dec instanceof NothingType)) {
                 String label;
                 if (pack.getNameAsString().isEmpty()) {
-                    label = "in default package";
+                    label = "<span style='font-size:95%'>in default package</span>";
                 }
                 else {
-                    label = "in package&nbsp;&nbsp;<tt><a " + HTML.link(pack) + ">" + 
-                            getPackageLabel(dec) +"</a></tt>";
+                    label = "<span style='font-size:95%'>in package&nbsp;&nbsp;<tt><a " + HTML.link(pack) + ">" + 
+                            getPackageLabel(dec) +"</a></tt></span>";
                 }
                 HTML.addImageAndLabel(buffer, pack, 
                         HTML.fileUrl(getIcon(pack)).toExternalForm(), 
@@ -1605,11 +1611,12 @@ public class DocumentationHover
                 HTML.addImageAndLabel(buffer, mod, 
                         HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                         16, 16, 
-                        "in module&nbsp;&nbsp;<tt><a " + HTML.link(mod) + ">" + 
-                                getModuleLabel(dec) +"</a></tt>", 
+                        "<span style='font-size:95%'>in module&nbsp;&nbsp;<tt><a " + HTML.link(mod) + ">" + 
+                                getModuleLabel(dec) +"</a></tt></span>", 
                         20, 2);
             }
         }
+        buffer.append("</p>");
     }
 
     private static ProducedType getQualifyingType(Node node,
@@ -1628,7 +1635,7 @@ public class DocumentationHover
 
     private static void appendExtraActions(Declaration dec, 
             StringBuilder buffer) {
-        buffer.append("<hr/>");
+        buffer.append("<p>");
         String unitName = null;
         if (dec.getUnit() instanceof CeylonUnit) {
             // Manage the case of CeylonBinaryUnit : getFileName() would return the class file name.
@@ -1642,92 +1649,126 @@ public class DocumentationHover
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("unit.gif").toExternalForm(), 
                 16, 16, 
-                "<a href='dec:" + HTML.declink(dec) + 
+                "<span style='font-size:95%'><a href='dec:" + HTML.declink(dec) + 
                         "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
-                        unitName + "</tt>", 
+                        unitName + "</tt></span>", 
                 20, 2);
         //}
-        buffer.append("<hr/>");
+        buffer.append("</p><p>");
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("search_ref_obj.png").toExternalForm(), 
                 16, 16, 
-                "<a href='ref:" + HTML.declink(dec) + 
+                "<span style='font-size:95%'><a href='ref:" + HTML.declink(dec) + 
                         "'>find references</a> to&nbsp;&nbsp;<tt>" +
-                        dec.getName() + "</tt>",
+                        dec.getName() + "</tt></span>",
                 20, 2);
         if (dec instanceof ClassOrInterface) {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("search_decl_obj.png").toExternalForm(), 
                     16, 16, 
-                    "<a href='sub:" + HTML.declink(dec) + 
+                    "<span style='font-size:95%'><a href='sub:" + HTML.declink(dec) + 
                             "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
-                            dec.getName() + "</tt>",
+                            dec.getName() + "</tt></span>",
                     20, 2);
         }
         if (dec instanceof Value) {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("search_ref_obj.png").toExternalForm(), 
                     16, 16, 
-                    "<a href='ass:" + HTML.declink(dec) + 
+                    "<span style='font-size:95%'><a href='ass:" + HTML.declink(dec) + 
                             "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
-                            dec.getName() + "</tt>", 
+                            dec.getName() + "</tt></span>", 
                     20, 2);
         }
         if (dec.isFormal()||dec.isDefault()) {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("search_decl_obj.png").toExternalForm(), 
                     16, 16, 
-                    "<a href='act:" + HTML.declink(dec) + 
+                    "<span style='font-size:95%'><a href='act:" + HTML.declink(dec) + 
                             "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
-                            dec.getName() + "</tt>", 
+                            dec.getName() + "</tt></span>", 
                     20, 2);
         }
+        buffer.append("</p>");
     }
 
-    private static void documentInheritance(TypeDeclaration dec, Node node, StringBuilder buffer) {
+    private static void documentInheritance(TypeDeclaration dec, 
+            Node node, StringBuilder buffer) {
         Unit unit = node==null ? null : node.getUnit();
+        List<ProducedType> cts = ((TypeDeclaration) dec).getCaseTypes();
+        if (cts!=null) {
+            StringBuilder cases = new StringBuilder();
+            for (ProducedType ct: cts) {
+                if (cases.length()>0) {
+                    cases.append(" | ");
+                }
+                cases.append(producedTypeLink(ct, unit));
+            }
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("sub_co.gif").toExternalForm(), 
+                    16, 16, 
+                    //(td.getDeclaration().isSelfType() ? "has self type" : "has case") + 
+                    " <tt style='font-size:95%'>of " + cases +"</tt>", 
+                    20, 2);
+        }
         if (dec instanceof Class) {
             ProducedType sup = ((Class) dec).getExtendedType();
             if (sup!=null) {
-                buffer.append("<p>");
                 HTML.addImageAndLabel(buffer, sup.getDeclaration(), 
                         HTML.fileUrl("super_co.gif").toExternalForm(), 
                         16, 16, 
-                        "extends <tt>" + producedTypeLink(sup, unit) +"</tt>", 
+                        "<tt style='font-size:95%'>extends " + 
+                            producedTypeLink(sup, unit) +"</tt>", 
                         20, 2);
-                buffer.append("</p>");
-                //extraBreak = true;
             }
         }
-//        if (dec instanceof TypeDeclaration) {
-            List<ProducedType> sts = ((TypeDeclaration) dec).getSatisfiedTypes();
-            if (!sts.isEmpty()) {
-                buffer.append("<p>");
-                for (ProducedType td: sts) {
-                    HTML.addImageAndLabel(buffer, td.getDeclaration(), 
-                            HTML.fileUrl("super_co.gif").toExternalForm(), 
-                            16, 16, 
-                            "satisfies <tt>" + producedTypeLink(td, unit) +"</tt>", 
-                            20, 2);
-                    //extraBreak = true;
+        List<ProducedType> sts = ((TypeDeclaration) dec).getSatisfiedTypes();
+        if (!sts.isEmpty()) {
+            StringBuilder satisfies = new StringBuilder();
+            for (ProducedType st: sts) {
+                if (satisfies.length()>0) {
+                    satisfies.append(" & ");
                 }
-                buffer.append("</p>");
+                satisfies.append(producedTypeLink(st, unit));
             }
-            List<ProducedType> cts = ((TypeDeclaration) dec).getCaseTypes();
-            if (cts!=null) {
-                buffer.append("<p>");
-                for (ProducedType td: cts) {
-                    HTML.addImageAndLabel(buffer, td.getDeclaration(), 
-                            HTML.fileUrl("sub_co.gif").toExternalForm(), 
-                            16, 16, 
-                            (td.getDeclaration().isSelfType() ? "has self type" : "has case") + 
-                            " <tt>" + producedTypeLink(td, unit) +"</tt>", 
-                            20, 2);
-                    //extraBreak = true;
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("super_co.gif").toExternalForm(), 
+                    16, 16, 
+                    "<tt style='font-size:95%'>satisfies " + satisfies +"</tt>", 
+                    20, 2);
+        }
+    }
+    
+    private static void documentTypeParameters(Declaration dec, 
+            Node node, StringBuilder buffer) {
+        List<TypeParameter> typeParameters;
+        if (dec instanceof Functional) {
+            typeParameters = ((Functional) dec).getTypeParameters();
+        }
+        else if (dec instanceof Interface) {
+            typeParameters = ((Interface) dec).getTypeParameters();
+        }
+        else {
+            typeParameters = Collections.emptyList();
+        }
+        for (TypeParameter tp: typeParameters) {
+            StringBuilder bounds = new StringBuilder();
+            for (ProducedType st: tp.getSatisfiedTypes()) {
+                if (bounds.length() == 0) {
+                    bounds.append(" satisfies ");
                 }
-                buffer.append("</p>");
+                else {
+                    bounds.append(" & ");
+                }
+                bounds.append(producedTypeLink(st, dec.getUnit()));
             }
-//        }
+            HTML.addImageAndLabel(buffer, tp, 
+                    HTML.fileUrl(getIcon(tp)).toExternalForm(), 
+                    16, 16, 
+                    "<tt style='font-size:95%'>given <a " + HTML.link(tp) + ">" + 
+                            tp.getName() + "</a>" + bounds + "</tt>", 
+                            20, 4);
+        }
     }
 
     private static String description(Declaration dec, Node node, 
