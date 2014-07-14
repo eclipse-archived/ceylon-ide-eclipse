@@ -1316,7 +1316,7 @@ public class DocumentationHover
 
     private static boolean addInheritanceInfo(Declaration dec,
             Node node, StringBuilder buffer) {
-        buffer.append("<p>");
+        buffer.append("<p><div style='padding-left:20px'>");
         boolean obj=false;
         if (dec instanceof TypedDeclaration) {
             TypeDeclaration td = 
@@ -1329,6 +1329,7 @@ public class DocumentationHover
         else if (dec instanceof TypeDeclaration) {
             documentInheritance((TypeDeclaration) dec, node, buffer);    
         }
+        buffer.append("</div></p>");
         documentTypeParameters(dec, node, buffer);
         buffer.append("</p>");
         return obj;
