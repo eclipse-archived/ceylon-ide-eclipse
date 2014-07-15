@@ -94,6 +94,7 @@ import com.redhat.ceylon.common.log.Logger;
 import com.redhat.ceylon.compiler.Options;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
 import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
+import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
@@ -3121,13 +3122,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (openable instanceof ITypeRoot) {
             Package p = getPackage((IPackageFragment)((ITypeRoot)openable).getParent());
             if (p != null) {
-                if (javaElement.getElementName().equals("package_.class")) {
+                if (javaElement.getElementName().equals(Naming.PACKAGE_DESCRIPTOR_CLASS_NAME+".class")) {
                     Unit packageUnit = p.getUnit();
                     if (packageUnit instanceof IJavaModelAware && ((IJavaModelAware) packageUnit).getTypeRoot().equals(openable)) {
                         return (IJavaModelAware) packageUnit;
                     }
                 }
-                if (javaElement.getElementName().equals("module_.class")) {
+                if (javaElement.getElementName().equals(Naming.MODULE_DESCRIPTOR_CLASS_NAME+".class")) {
                     Unit moduleUnit = p.getModule().getUnit();
                     if (moduleUnit instanceof IJavaModelAware && ((IJavaModelAware) moduleUnit).getTypeRoot().equals(openable)) {
                         return (IJavaModelAware) moduleUnit;
