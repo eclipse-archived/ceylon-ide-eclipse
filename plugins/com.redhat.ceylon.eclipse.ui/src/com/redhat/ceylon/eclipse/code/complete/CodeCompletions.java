@@ -475,15 +475,22 @@ public class CodeCompletions {
             }
         }
     }
-    
+
     private static void appendTypeParameters(Declaration d, 
             StringBuilder result) {
+        appendTypeParameters(d, result, false);
+    }
+    
+    private static void appendTypeParameters(Declaration d, 
+            StringBuilder result, boolean variances) {
         if (d instanceof Generic) {
             List<TypeParameter> types = 
                     ((Generic) d).getTypeParameters();
             if (!types.isEmpty()) {
                 result.append("<");
                 for (TypeParameter tp: types) {
+                    if (tp.isCovariant()) result.append("out ");
+                    if (tp.isContravariant()) result.append("in ");
                     result.append(tp.getName()).append(", ");
                 }
                 result.setLength(result.length()-2);
