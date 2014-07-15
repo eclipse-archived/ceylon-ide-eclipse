@@ -1724,10 +1724,12 @@ public class DocumentationHover
                 }
                 cases.append(producedTypeLink(ct, unit));
             }
+            if (dec.getSelfType()!=null) {
+                cases.append(" (self type)");
+            }
             HTML.addImageAndLabel(buffer, null, 
-                    HTML.fileUrl("sub_co.gif").toExternalForm(), 
-                    16, 16, 
-                    //(td.getDeclaration().isSelfType() ? "has self type" : "has case") + 
+                    HTML.fileUrl("sub.gif").toExternalForm(), 
+                    16, 16,
                     " <tt style='font-size:96%'>of&nbsp;" + cases +"</tt>", 
                     20, 2);
         }
@@ -1735,7 +1737,7 @@ public class DocumentationHover
             ProducedType sup = ((Class) dec).getExtendedType();
             if (sup!=null) {
                 HTML.addImageAndLabel(buffer, sup.getDeclaration(), 
-                        HTML.fileUrl("super_co.gif").toExternalForm(), 
+                        HTML.fileUrl("superclass.gif").toExternalForm(), 
                         16, 16, 
                         "<tt style='font-size:96%'>extends&nbsp;" + 
                             producedTypeLink(sup, unit) +"</tt>", 
@@ -1752,7 +1754,7 @@ public class DocumentationHover
                 satisfies.append(producedTypeLink(st, unit));
             }
             HTML.addImageAndLabel(buffer, null, 
-                    HTML.fileUrl("super_co.gif").toExternalForm(), 
+                    HTML.fileUrl("super.gif").toExternalForm(), 
                     16, 16, 
                     "<tt style='font-size:96%'>satisfies&nbsp;" + satisfies +"</tt>", 
                     20, 2);
