@@ -79,6 +79,7 @@ import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.JDKUtils;
+import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Timer;
 import com.redhat.ceylon.compiler.java.util.Util;
@@ -654,7 +655,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 if (jdtModule.isCeylonBinaryArchive()) {
                     for (Package p : jdtModule.getPackages()) {
                         if (p.getUnit() == null) {
-                            ClassMirror packageClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".package_");
+                            ClassMirror packageClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + "." + Naming.PACKAGE_DESCRIPTOR_CLASS_NAME);
                             // some modules do not declare their main package, because they don't have any declaration to share
                             // there, for example, so this can be null
                             if(packageClassMirror != null)
@@ -662,7 +663,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                         }
                         if (p.getNameAsString().equals(jdtModule.getNameAsString())) {
                             if (jdtModule.getUnit() == null) {
-                                ClassMirror moduleClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + ".module_");
+                                ClassMirror moduleClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + "." + Naming.MODULE_DESCRIPTOR_CLASS_NAME);
                                 if (moduleClassMirror != null) {
                                     jdtModule.setUnit(newCompiledUnit((LazyPackage) p, moduleClassMirror));
                                 }
