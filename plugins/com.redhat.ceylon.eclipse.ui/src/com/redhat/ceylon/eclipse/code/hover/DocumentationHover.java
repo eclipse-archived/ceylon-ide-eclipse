@@ -1664,9 +1664,8 @@ public class DocumentationHover
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("unit.gif").toExternalForm(), 
                 16, 16, 
-                "<span style='font-size:96%'><a href='dec:" + HTML.declink(dec) + 
-                        "'>declared</a> in unit&nbsp;&nbsp;<tt>"+ 
-                        unitName + "</tt></span>", 
+                "<span style='font-size:96%'>declared in&nbsp;&nbsp;<tt><a href='dec:" + 
+                        HTML.declink(dec) + "'>"+ unitName + "</a></tt></span>", 
                 20, 2);
         //}
         buffer.append("</p>");
