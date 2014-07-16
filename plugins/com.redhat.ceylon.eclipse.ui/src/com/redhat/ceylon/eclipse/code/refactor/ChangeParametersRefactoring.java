@@ -32,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -129,16 +130,19 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     public ChangeParametersRefactoring(IEditorPart textEditor) {
         super(textEditor);
         if (rootNode!=null) {
-            Declaration refDec = getReferencedExplicitDeclaration(node, rootNode);
-            if (refDec instanceof Functional) {
-                refDec = refDec.getRefinedDeclaration();
-                List<ParameterList> pls = ((Functional) refDec).getParameterLists();
+            Referenceable refDec = 
+                    getReferencedExplicitDeclaration(node, rootNode);
+            if (refDec instanceof Functional && 
+                    refDec instanceof Declaration) {
+                refDec = ((Declaration) refDec).getRefinedDeclaration();
+                List<ParameterList> pls = 
+                        ((Functional) refDec).getParameterLists();
                 if (pls.isEmpty()) {
                     declaration = null;
                     parameters = null;
                 }
                 else {
-                    declaration = refDec;
+                    declaration = (Declaration) refDec;
                     parameters = pls.get(0).getParameters();
                     for (int i=0; i<parameters.size(); i++) {
                         order.add(i);

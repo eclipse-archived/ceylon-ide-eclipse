@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
@@ -40,12 +42,12 @@ public class RenameRefactoring extends AbstractRefactoring {
         @Override
         protected boolean isReference(Declaration ref) {
             return super.isReference(ref) ||
-                    ref!=null && ref.refines(getDeclaration());
+                    ref!=null && ref.refines((Declaration)getDeclaration());
         }
         @Override
         protected boolean isReference(Declaration ref, String id) {
             return isReference(ref) && id!=null &&
-                    getDeclaration().getName().equals(id); //TODO: really lame way to tell if it's an alias!
+                    getDeclaration().getNameAsString().equals(id); //TODO: really lame way to tell if it's an alias!
         }
     }
 
@@ -81,9 +83,10 @@ public class RenameRefactoring extends AbstractRefactoring {
     public RenameRefactoring(IEditorPart editor) {
         super(editor);
         if (rootNode!=null) {
-            Declaration refDec = Nodes.getReferencedExplicitDeclaration(node, rootNode);
-            if (refDec!=null) {
-                declaration = refDec.getRefinedDeclaration();
+            Referenceable refDec = 
+                    getReferencedExplicitDeclaration(node, rootNode);
+            if (refDec instanceof Declaration) {
+                declaration = ((Declaration) refDec).getRefinedDeclaration();
                 newName = declaration.getName();
                 String filename = declaration.getUnit().getFilename();
                 renameFile = (declaration.getName()+".ceylon").equals(filename);
@@ -99,7 +102,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     
     @Override
     public boolean isEnabled() {
-        return declaration!=null &&
+        return declaration instanceof Declaration &&
                 project != null &&
                 inSameProject(declaration);
     }
@@ -112,10 +115,11 @@ public class RenameRefactoring extends AbstractRefactoring {
     int countReferences(Tree.CompilationUnit cu) {
         FindRenamedReferencesVisitor frv = 
                 new FindRenamedReferencesVisitor(declaration);
+        Declaration dec = (Declaration) frv.getDeclaration();
         FindRefinementsVisitor fdv = 
-                new FindRefinementsVisitor(frv.getDeclaration());
+                new FindRefinementsVisitor(dec);
         FindDocLinkReferencesVisitor fdlrv = 
-                new FindDocLinkReferencesVisitor(frv.getDeclaration());
+                new FindDocLinkReferencesVisitor(dec);
         cu.visit(frv);
         cu.visit(fdv);
         cu.visit(fdlrv);
@@ -201,7 +205,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         root.visit(frv);
         list.addAll(frv.getNodes());
         FindRefinementsVisitor fdv = 
-                new FindRefinementsVisitor(frv.getDeclaration());
+                new FindRefinementsVisitor((Declaration)frv.getDeclaration());
         root.visit(fdv);
         list.addAll(fdv.getDeclarationNodes());
         return list;

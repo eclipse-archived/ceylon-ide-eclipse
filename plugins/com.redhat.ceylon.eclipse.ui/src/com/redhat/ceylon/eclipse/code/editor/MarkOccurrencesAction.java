@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationView;
@@ -447,24 +449,23 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         if (parseController.getStage().ordinal() >= getStage().ordinal()) {
             // Check whether we even have an AST in which to find occurrences
             Tree.CompilationUnit root = parseController.getRootNode();
-            if (root == null) {
-                return Collections.emptyList();
-            }
-
-            Declaration declaration = Nodes.getReferencedExplicitDeclaration(node, root);
-            if (declaration==null) {
-                return Collections.emptyList();
-            }
-            else {
-                List<Node> occurrences = new ArrayList<Node>();
-                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-                FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(frv.getDeclaration());
-                root.visit(fdv);
-                Tree.Declaration decNode = fdv.getDeclarationNode();
-                if (decNode!=null) {
-                    occurrences.add(decNode);
+            if (root!=null) {
+                Referenceable declaration = 
+                        getReferencedExplicitDeclaration(node, root);
+                if (declaration!=null) {
+                    List<Node> occurrences = 
+                            new ArrayList<Node>();
+                    FindReferencesVisitor frv = 
+                            new FindReferencesVisitor(declaration);
+                    FindDeclarationNodeVisitor fdv = 
+                            new FindDeclarationNodeVisitor(frv.getDeclaration());
+                    root.visit(fdv);
+                    Tree.StatementOrArgument decNode = fdv.getDeclarationNode();
+                    if (decNode!=null) {
+                        occurrences.add(decNode);
+                    }
+                    return occurrences;
                 }
-                return occurrences;
             }
         }
         return Collections.emptyList();
@@ -474,45 +475,38 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         if (parseController.getStage().ordinal() >= getStage().ordinal()) {
             // Check whether we even have an AST in which to find occurrences
             Tree.CompilationUnit root = parseController.getRootNode();
-            if (root == null) {
-                return Collections.emptyList();
-            }
-
-            Declaration declaration = Nodes.getReferencedExplicitDeclaration(node, root);
-            if (declaration==null) {
-                return Collections.emptyList();
-            }
-            else {
-                List<Node> occurrences = new ArrayList<Node>();
-                FindReferencesVisitor frv = new FindReferencesVisitor(declaration);
-                root.visit(frv);
-                occurrences.addAll(frv.getNodes());
-                return occurrences;
+            if (root!=null) {
+                Referenceable declaration = 
+                        getReferencedExplicitDeclaration(node, root);
+                if (declaration!=null) {
+                    List<Node> occurrences = new ArrayList<Node>();
+                    FindReferencesVisitor frv = 
+                            new FindReferencesVisitor(declaration);
+                    root.visit(frv);
+                    occurrences.addAll(frv.getNodes());
+                    return occurrences;
+                }
             }
         }
         return Collections.emptyList();
     }
     
     private List<Node> getAssignmentsOf(CeylonParseController parseController, Node node) {
-        
         // Check whether we even have an AST in which to find occurrences
         Tree.CompilationUnit root = parseController.getRootNode();
-        if (root == null) {
-            return Collections.emptyList();
+        if (root!=null) {
+            Referenceable declaration = 
+                    getReferencedExplicitDeclaration(node, root);
+            if (declaration instanceof Declaration) {
+                List<Node> occurrences = new ArrayList<Node>();
+                FindAssignmentsVisitor frv = 
+                        new FindAssignmentsVisitor((Declaration) declaration);
+                root.visit(frv);
+                occurrences.addAll(frv.getNodes());
+                return occurrences;
+            }
         }
-
-        Declaration declaration = Nodes.getReferencedExplicitDeclaration(node, root);
-        if (declaration==null) {
-            return Collections.emptyList();
-        }
-        else {
-            List<Node> occurrences = new ArrayList<Node>();
-            FindAssignmentsVisitor frv = new FindAssignmentsVisitor(declaration);
-            root.visit(frv);
-            occurrences.addAll(frv.getNodes());
-            return occurrences;
-        }
-        
+        return Collections.emptyList();
     }
     
 }

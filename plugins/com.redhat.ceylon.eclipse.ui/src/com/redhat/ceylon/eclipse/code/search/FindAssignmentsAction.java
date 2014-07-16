@@ -11,6 +11,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -26,8 +27,9 @@ public class FindAssignmentsAction extends AbstractFindAction {
 
         @Override
         protected Set<Node> getNodes(Tree.CompilationUnit cu, 
-                Declaration referencedDeclaration) {
-            FindAssignmentsVisitor frv = new FindAssignmentsVisitor(referencedDeclaration);
+                Referenceable referencedDeclaration) {
+            FindAssignmentsVisitor frv = 
+                    new FindAssignmentsVisitor((Declaration) referencedDeclaration);
             cu.visit(frv);
             return frv.getNodes();
         }
@@ -69,7 +71,7 @@ public class FindAssignmentsAction extends AbstractFindAction {
 
     @Override
     public FindSearchQuery createSearchQuery() {
-        return new Query(declaration, project);
+        return new Query((Declaration) declaration, project);
     }
 
 }

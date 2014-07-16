@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -19,14 +20,16 @@ import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 public class FindSubtypesAction extends AbstractFindAction {
 
     private static final class Query extends FindSearchQuery {
-        private Query(Declaration referencedDeclaration, IProject project) {
+        private Query(TypeDeclaration referencedDeclaration, 
+                IProject project) {
             super(referencedDeclaration, project);
         }
 
         @Override
         protected Set<Node> getNodes(Tree.CompilationUnit cu,
-                Declaration referencedDeclaration) {
-            FindSubtypesVisitor frv = new FindSubtypesVisitor((TypeDeclaration) referencedDeclaration);
+                Referenceable referencedDeclaration) {
+            FindSubtypesVisitor frv = 
+                    new FindSubtypesVisitor((TypeDeclaration) referencedDeclaration);
             cu.visit(frv);
             Set<Tree.Declaration> nodes = frv.getDeclarationNodes();
             return Collections.<Node>unmodifiableSet(nodes);
@@ -66,6 +69,6 @@ public class FindSubtypesAction extends AbstractFindAction {
 
     @Override
     public FindSearchQuery createSearchQuery() {
-        return new Query(declaration, project);
+        return new Query((TypeDeclaration) declaration, project);
     }
 }

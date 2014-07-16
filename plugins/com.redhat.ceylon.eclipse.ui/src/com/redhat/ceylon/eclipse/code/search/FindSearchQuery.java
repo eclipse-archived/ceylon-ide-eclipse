@@ -17,8 +17,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -30,18 +30,18 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 abstract class FindSearchQuery implements ISearchQuery {
     
-    private Declaration referencedDeclaration;
+    private Referenceable referencedDeclaration;
     //private final IProject project;
     private AbstractTextSearchResult result = new CeylonSearchResult(this);
     private int count = 0;
     private IWorkbenchPage page;
     private String name;
     
-    FindSearchQuery(Declaration referencedDeclaration, IProject project) {
+    FindSearchQuery(Referenceable referencedDeclaration, IProject project) {
         this.referencedDeclaration = referencedDeclaration;
         //this.project = project;
         this.page = EditorUtil.getActivePage();
-        name = referencedDeclaration.getName();
+        name = referencedDeclaration.getNameAsString();
     }
     
     @Override
@@ -129,7 +129,7 @@ abstract class FindSearchQuery implements ISearchQuery {
     }
     
     protected abstract Set<Node> getNodes(Tree.CompilationUnit cu, 
-            Declaration referencedDeclaration);
+            Referenceable referencedDeclaration);
     
     protected abstract String labelString();
 

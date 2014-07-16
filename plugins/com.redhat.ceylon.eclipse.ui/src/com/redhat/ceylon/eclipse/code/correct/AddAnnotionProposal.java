@@ -86,7 +86,8 @@ class AddAnnotionProposal extends CorrectionProposal {
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(dec);
                     getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    Tree.Declaration decNode = 
+                            (Tree.Declaration) fdv.getDeclarationNode();
                     if (decNode!=null) {
                         addAddAnnotationProposal(annotation, desc, dec,
                                 proposals, unit, node, decNode);

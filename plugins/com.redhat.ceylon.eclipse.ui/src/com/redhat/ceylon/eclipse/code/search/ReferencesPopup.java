@@ -73,6 +73,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -708,7 +709,7 @@ public final class ReferencesPopup extends PopupDialog
     public void setInput(Object input) {
         CeylonParseController pc = editor.getParseController();
 //        IProject project = getProject(editor);
-        Declaration declaration = 
+        Referenceable declaration = 
                 Nodes.getReferencedExplicitDeclaration(getSelectedNode(editor), 
                         pc.getRootNode());
         if (declaration==null) {
@@ -726,8 +727,15 @@ public final class ReferencesPopup extends PopupDialog
         } else {
             message = "references to";
         }
+        String name;
+        if (declaration instanceof Declaration) {
+            name = ((Declaration) declaration).getName(pc.getRootNode().getUnit());
+        }
+        else {
+            name = declaration.getNameAsString();
+        }
         setTitleText("Quick Find References - " + message + " '" + 
-                        declaration.getName(pc.getRootNode().getUnit()) + "' in project source");
+                        name + "' in project source");
         TreeNode root = new TreeNode(new Object());
         Map<Package,TreeNode> packageNodes = new HashMap<Package,TreeNode>();
         Map<Module,TreeNode> moduleNodes = new HashMap<Module,TreeNode>();
@@ -748,21 +756,21 @@ public final class ReferencesPopup extends PopupDialog
             Set<Node> nodes;
             if (showingRefinements) {
                 if (type) {
-                    FindSubtypesVisitor frv = new FindSubtypesVisitor(
-                            (TypeDeclaration) declaration);
+                    FindSubtypesVisitor frv = 
+                            new FindSubtypesVisitor((TypeDeclaration) declaration);
                     frv.visit(cu);
                     nodes = new HashSet<Node>(frv.getDeclarationNodes());
                 }
                 else {
-                    FindRefinementsVisitor frv = new FindRefinementsVisitor(
-                            declaration);
+                    FindRefinementsVisitor frv = 
+                            new FindRefinementsVisitor((Declaration) declaration);
                     frv.visit(cu);
                     nodes = new HashSet<Node>(frv.getDeclarationNodes());
                 }
             }
             else {
-                FindReferencesVisitor frv = new FindReferencesVisitor(
-                        declaration);
+                FindReferencesVisitor frv = 
+                        new FindReferencesVisitor(declaration);
                 frv.visit(cu);
                 nodes = frv.getNodes();
             }

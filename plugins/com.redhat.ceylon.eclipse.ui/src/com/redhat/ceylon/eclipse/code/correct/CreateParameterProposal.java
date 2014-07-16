@@ -210,9 +210,11 @@ class CreateParameterProposal extends InitializerProposal {
         if (typeDec!=null && typeDec instanceof Functional) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
-                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeDec);
+                    FindDeclarationNodeVisitor fdv = 
+                            new FindDeclarationNodeVisitor(typeDec);
                     getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    Tree.Declaration decNode = 
+                            (Tree.Declaration) fdv.getDeclarationNode();
                     Tree.ParameterList paramList = getParameters(decNode);
                     if (paramList!=null) {
                         if (!paramList.getParameters().isEmpty()) {
@@ -235,9 +237,11 @@ class CreateParameterProposal extends InitializerProposal {
         if (typeDec!=null && typeDec instanceof ClassOrInterface) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
-                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeDec);
+                    FindDeclarationNodeVisitor fdv = 
+                            new FindDeclarationNodeVisitor(typeDec);
                     getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    Tree.Declaration decNode = 
+                            (Tree.Declaration) fdv.getDeclarationNode();
                     Tree.ParameterList paramList = getParameters(decNode);
                     Tree.Body body = getClassOrInterfaceBody(decNode);
                     if (body!=null && paramList!=null) {

@@ -9,6 +9,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
@@ -16,13 +17,13 @@ import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 public class FindReferencesAction extends AbstractFindAction {
 
     private static final class Query extends FindSearchQuery {
-        private Query(Declaration referencedDeclaration, IProject project) {
+        private Query(Referenceable referencedDeclaration, IProject project) {
             super(referencedDeclaration, project);
         }
 
         @Override
         protected Set<Node> getNodes(Tree.CompilationUnit cu,
-                Declaration referencedDeclaration) {
+                Referenceable referencedDeclaration) {
             FindReferencesVisitor frv = new FindReferencesVisitor(referencedDeclaration);
             cu.visit(frv);
             return frv.getNodes();

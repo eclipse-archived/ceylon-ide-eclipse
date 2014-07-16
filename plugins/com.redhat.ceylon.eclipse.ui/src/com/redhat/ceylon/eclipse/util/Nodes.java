@@ -358,19 +358,23 @@ public class Nodes {
                 }
             }
         }
-        Declaration dec = getReferencedDeclaration((Node) node);
-        if (dec instanceof MethodOrValue && 
-                ((MethodOrValue) dec).isShortcutRefinement()) {
-            dec = dec.getRefinedDeclaration();
+        Referenceable dec = getReferencedDeclaration((Node) node);
+        if (dec instanceof MethodOrValue) {
+            MethodOrValue mv = (MethodOrValue) dec;
+            if (mv.isShortcutRefinement()) {
+                dec = mv.getRefinedDeclaration();
+            }
         }
         return dec;
     }
 
-    public static Declaration getReferencedExplicitDeclaration(Node node, 
+    public static Referenceable getReferencedExplicitDeclaration(Node node, 
             Tree.CompilationUnit rn) {
-        Declaration dec = getReferencedDeclaration(node);
-        if (dec!=null && dec.getUnit().equals(node.getUnit())) {
-            FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
+        Referenceable dec = getReferencedDeclaration(node);
+        if (dec!=null && dec.getUnit()!=null &&
+                dec.getUnit().equals(node.getUnit())) {
+            FindDeclarationNodeVisitor fdv = 
+                    new FindDeclarationNodeVisitor(dec);
             fdv.visit(rn);
             Node decNode = fdv.getDeclarationNode();
             if (decNode instanceof Tree.Variable) {
@@ -385,7 +389,7 @@ public class Nodes {
         return dec;
     }
 
-    public static Declaration getReferencedDeclaration(Node node) {
+    public static Referenceable getReferencedDeclaration(Node node) {
         //NOTE: this must accept a null node, returning null!
         if (node instanceof Tree.MemberOrTypeExpression) {
             return ((Tree.MemberOrTypeExpression) node).getDeclaration();
@@ -419,6 +423,9 @@ public class Nodes {
             else {
                 return docLink.getBase();
             }
+        }
+        else if (node instanceof Tree.ImportPath) {
+            return ((Tree.ImportPath) node).getModel();
         }
         else {
             return null;
