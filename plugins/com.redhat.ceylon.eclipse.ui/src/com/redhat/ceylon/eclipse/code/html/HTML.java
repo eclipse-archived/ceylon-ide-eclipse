@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.Token;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -26,6 +25,7 @@ import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.swt.graphics.FontData;
 import org.osgi.framework.Bundle;
 
+import com.redhat.ceylon.compiler.java.tools.NewlineFixingInputStream;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -203,7 +203,7 @@ public class HTML {
         String cc = toHex(getCurrentThemeColor(CHARS));
         String pc = toHex(getCurrentThemeColor(PACKAGES));
         String lcc = toHex(getCurrentThemeColor(COMMENTS));
-        CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(line));
+        CeylonLexer lexer = new CeylonLexer(new NewlineFixingInputStream(line));
         Token token;
         boolean inPackageName = false;
         StringBuilder result = new StringBuilder();

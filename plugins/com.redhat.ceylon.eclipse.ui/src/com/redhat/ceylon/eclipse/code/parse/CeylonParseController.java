@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -42,6 +41,7 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
+import com.redhat.ceylon.compiler.java.tools.NewlineFixingInputStream;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
@@ -271,7 +271,7 @@ public class CeylonParseController {
             return;
         }
         
-        CeylonLexer lexer = new CeylonLexer(createInputStream(contents));
+        CeylonLexer lexer = new CeylonLexer(new NewlineFixingInputStream(contents));
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         tokenStream.fill();
         tokens = tokenStream.getTokens();
@@ -404,10 +404,6 @@ public class CeylonParseController {
         else {
             return new SourceCodeVirtualFile(contents, path);
         }
-    }
-
-    private ANTLRStringStream createInputStream(String contents) {
-        return new ANTLRStringStream(contents);
     }
 
     private VirtualFile inferSrcDir(IPath path) {

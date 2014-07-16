@@ -30,6 +30,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 
+import com.redhat.ceylon.compiler.java.tools.NewlineFixingInputStream;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 
@@ -195,7 +196,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
     public void createPresentation(TextPresentation presentation, 
             ITypedRegion damage) {
         ANTLRStringStream input = 
-                new ANTLRStringStream(document.get());
+                new NewlineFixingInputStream(document.get());
         CeylonLexer lexer = 
                 new CeylonLexer(input);
         CommonTokenStream tokenStream = 
