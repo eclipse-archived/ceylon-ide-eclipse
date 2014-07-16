@@ -1207,7 +1207,7 @@ public class DocumentationHover
         if (dec==null) return null;
         if (dec instanceof Value) {
             TypeDeclaration val = ((Value) dec).getTypeDeclaration();
-            if (val.isAnonymous()) {
+            if (val!=null && val.isAnonymous()) {
                 dec = val;
             }
         }
