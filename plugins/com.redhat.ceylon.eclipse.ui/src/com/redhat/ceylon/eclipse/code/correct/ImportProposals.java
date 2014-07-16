@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 import static java.util.Collections.singleton;
 
@@ -113,6 +114,7 @@ public class ImportProposals {
     public static List<InsertEdit> importEdits(Tree.CompilationUnit cu,
             Iterable<Declaration> declarations, Iterable<String> aliases,
             Declaration declarationBeingDeleted, IDocument doc) {
+        String delim = getDefaultLineDelimiter(doc);
         List<InsertEdit> result = new ArrayList<InsertEdit>();
         Set<Package> packages = new HashSet<Package>();
         for (Declaration declaration: declarations) {
@@ -123,7 +125,9 @@ public class ImportProposals {
             if (aliases==null) {
                 for (Declaration d: declarations) {
                     if (d.getUnit().getPackage().equals(p)) {
-                        text.append(", ").append(escapeName(d));
+                        text.append(",")
+                            .append(delim).append(getDefaultIndent())
+                            .append(escapeName(d));
                     }
                 }
             }
@@ -132,7 +136,8 @@ public class ImportProposals {
                 for (Declaration d: declarations) {
                     String alias = aliasIter.next();
                     if (d.getUnit().getPackage().equals(p)) {
-                        text.append(", ");
+                        text.append(",")
+                            .append(delim).append(getDefaultIndent());
                         if (alias!=null && !alias.equals(d.getName())) {
                             text.append(alias).append('=');
                         }
@@ -163,9 +168,8 @@ public class ImportProposals {
             else {
                 int insertPosition = getBestImportInsertPosition(cu);
                 text.delete(0, 2);
-                text.insert(0, "import " + escapePackageName(p) + " { ")
-                    .append(" }"); 
-                String delim = Indents.getDefaultLineDelimiter(doc);
+                text.insert(0, "import " + escapePackageName(p) + " {" + delim)
+                    .append(delim + "}"); 
                 if (insertPosition==0) {
                     text.append(delim);
                 }
@@ -191,14 +195,17 @@ public class ImportProposals {
         StringBuilder text = new StringBuilder();
         if (aliases==null) {
             for (Declaration d: declarations) {
-                text.append(", ").append(d.getName());
+                text.append(",")
+                    .append(delim).append(getDefaultIndent())
+                    .append(d.getName());
             }
         }
         else {
             Iterator<String> aliasIter = aliases.iterator();
             for (Declaration d: declarations) {
                 String alias = aliasIter.next();
-                text.append(", ");
+                text.append(",")
+                    .append(delim).append(getDefaultIndent());
                 if (alias!=null && !alias.equals(d.getName())) {
                     text.append(alias).append('=');
                 }
@@ -263,7 +270,8 @@ public class ImportProposals {
             else {
                 int insertPosition = getBestImportInsertPosition(cu);
                 text.delete(0, 2);
-                text.insert(0, "import " + newPackageName + " { ").append(" }"); 
+                text.insert(0, "import " + newPackageName + " {" + delim)
+                    .append(delim + "}"); 
                 if (insertPosition==0) {
                     text.append(delim);
                 }
