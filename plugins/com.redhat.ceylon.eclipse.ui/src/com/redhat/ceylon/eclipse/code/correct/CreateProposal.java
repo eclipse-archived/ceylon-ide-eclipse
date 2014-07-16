@@ -187,9 +187,11 @@ class CreateProposal extends InitializerProposal {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?
-                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeDec);
+                    FindDeclarationNodeVisitor fdv = 
+                            new FindDeclarationNodeVisitor(typeDec);
                     getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    Tree.Declaration decNode = 
+                            (Tree.Declaration) fdv.getDeclarationNode();
                     Tree.Body body = getClassOrInterfaceBody(decNode);
                     if (body!=null) {
                         addCreateMemberProposal(proposals, dg, 

@@ -44,6 +44,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     @Override
     public boolean isEnabled() {
         return sourceFile!=null &&
+                isEditable() &&
                 !sourceFile.getName().equals("module.ceylon") &&
                 !sourceFile.getName().equals("package.ceylon") &&
                 node instanceof Tree.Term;

@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +63,7 @@ abstract class AbstractRefactoring extends Refactoring {
             IEditorInput input = editor.getEditorInput();
             if (rootNode!=null && input instanceof IFileEditorInput) {
                 sourceFile = EditorUtil.getFile(input);
-                node = Nodes.findNode(rootNode, getSelection(ce));
+                node = findNode(rootNode, getSelection(ce));
             }
             else {
                 sourceFile = null;
@@ -82,9 +83,14 @@ abstract class AbstractRefactoring extends Refactoring {
     
     boolean inSameProject(Declaration declaration) {
         return declaration.getUnit() instanceof EditedSourceFile &&
-        project.equals(((EditedSourceFile)declaration.getUnit()).getProjectResource()) ||
-        declaration.getUnit() instanceof ProjectSourceFile &&
-                project.equals(((ProjectSourceFile)declaration.getUnit()).getProjectResource());
+                   ((EditedSourceFile) declaration.getUnit()).getProjectResource().equals(project) ||
+               declaration.getUnit() instanceof ProjectSourceFile &&
+                   ((ProjectSourceFile) declaration.getUnit()).getProjectResource().equals(project);
+    }
+
+    boolean isEditable() {
+        return rootNode.getUnit() instanceof EditedSourceFile ||
+                rootNode.getUnit() instanceof ProjectSourceFile;
     }
     
     String toString(Node term) {

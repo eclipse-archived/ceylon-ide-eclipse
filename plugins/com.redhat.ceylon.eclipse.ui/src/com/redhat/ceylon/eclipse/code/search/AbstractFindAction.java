@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.search;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getProject;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
@@ -19,6 +20,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -30,7 +32,7 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 abstract class AbstractFindAction extends Action implements IObjectActionDelegate {
     
     private Shell shell;
-    protected Declaration declaration;
+    protected Referenceable declaration;
     protected IProject project;
     private ContentOutline outlineView;
     
@@ -98,7 +100,7 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             declaration = 
-                    Nodes.getReferencedExplicitDeclaration(getSelectedNode(ce), 
+                    getReferencedExplicitDeclaration(getSelectedNode(ce), 
                             ce.getParseController().getRootNode());
             setEnabled(isValidSelection());
         }

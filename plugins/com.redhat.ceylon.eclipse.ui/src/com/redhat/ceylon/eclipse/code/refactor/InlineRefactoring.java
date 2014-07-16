@@ -33,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -54,7 +55,13 @@ public class InlineRefactoring extends AbstractRefactoring {
 
     public InlineRefactoring(IEditorPart editor) {
         super(editor);
-        declaration = getReferencedDeclaration(node);
+        Referenceable ref = getReferencedDeclaration(node);
+        if (ref instanceof Declaration) {
+            declaration = (Declaration) ref;
+        }
+        else {
+            declaration = null;
+        }
     }
     
     boolean isReference() {
@@ -118,7 +125,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         FindDeclarationNodeVisitor fdv = 
         		new FindDeclarationNodeVisitor(declaration);
         declarationUnit.visit(fdv);
-        declarationNode = fdv.getDeclarationNode();
+        declarationNode = (Tree.Declaration) fdv.getDeclarationNode();
         if (declarationNode instanceof Tree.AttributeDeclaration &&
                 ((Tree.AttributeDeclaration) declarationNode).getSpecifierOrInitializerExpression()==null ||
             declarationNode instanceof Tree.MethodDeclaration &&
@@ -190,7 +197,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             FindDeclarationNodeVisitor fdv = 
             		new FindDeclarationNodeVisitor(declaration);
             declarationUnit.visit(fdv);
-            declarationNode = fdv.getDeclarationNode();
+            declarationNode = (Tree.Declaration) fdv.getDeclarationNode();
             term = getInlinedTerm(declarationNode);
         }
         

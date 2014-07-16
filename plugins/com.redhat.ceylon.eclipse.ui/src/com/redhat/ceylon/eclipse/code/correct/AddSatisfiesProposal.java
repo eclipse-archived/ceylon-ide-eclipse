@@ -313,9 +313,11 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             }
         };
         fdv.visit(cu);
-        Tree.Declaration dec = fdv.getDeclarationNode();
+        Tree.Declaration dec = 
+                (Tree.Declaration) fdv.getDeclarationNode();
         if (dec != null) {
-            FindContainerVisitor fcv = new FindContainerVisitor(dec);
+            FindContainerVisitor fcv = 
+                    new FindContainerVisitor(dec);
             fcv.visit(cu);
             return fcv.getStatementOrArgument();
         }

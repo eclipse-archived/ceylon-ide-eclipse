@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
@@ -24,8 +25,11 @@ public class FindRefinementsAction extends AbstractFindAction {
 
         @Override
         protected Set<Node> getNodes(Tree.CompilationUnit cu,
-                Declaration referencedDeclaration) {
-            Declaration declaration = new FindReferencesVisitor(referencedDeclaration).getDeclaration();
+                Referenceable referencedDeclaration) {
+            //TODO: very ugly!!
+            Declaration declaration = (Declaration)
+                    new FindReferencesVisitor((Declaration)referencedDeclaration)
+                            .getDeclaration();
             FindRefinementsVisitor frv = new FindRefinementsVisitor(declaration);
             cu.visit(frv);
             Set<Tree.StatementOrArgument> nodes = frv.getDeclarationNodes();
@@ -60,14 +64,15 @@ public class FindRefinementsAction extends AbstractFindAction {
     
     @Override
     boolean isValidSelection() {
-        declaration = new FindReferencesVisitor(declaration).getDeclaration();
-        return declaration!=null /*&& 
+        declaration = 
+                new FindReferencesVisitor(declaration).getDeclaration();
+        return declaration instanceof Declaration /*&& 
                 declaration.isClassOrInterfaceMember() &&
                 !(declaration instanceof TypeParameter)*/;
     }
 
     @Override
     public FindSearchQuery createSearchQuery() {
-        return new Query(declaration, project);
+        return new Query((Declaration) declaration, project);
     }
 }

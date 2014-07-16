@@ -1,35 +1,42 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+
 import java.util.HashSet;
 import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     
-    private Declaration declaration;
+    private Referenceable declaration;
     private final Set<Node> nodes = new HashSet<Node>();
     
-    public FindReferencesVisitor(Declaration declaration) {
+    public FindReferencesVisitor(Referenceable declaration) {
         if (declaration instanceof TypedDeclaration) {
-            Declaration od = declaration;
+            Referenceable od = declaration;
             while (od!=null && od!=declaration) {
                 declaration = od;
                 od = ((TypedDeclaration) od).getOriginalDeclaration();
             }
         }
-        if (declaration!=null && 
-                declaration.getContainer() instanceof Setter) {
-            Setter setter = (Setter) declaration.getContainer();
+        if (declaration instanceof Declaration && 
+                ((Declaration)declaration).getContainer() instanceof Setter) {
+            Setter setter = (Setter) ((Declaration)declaration).getContainer();
             if (setter.getDirectMember(setter.getName(), null, false)
                     .equals(declaration)) {
                 declaration = setter;
@@ -41,7 +48,7 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
         this.declaration = declaration;
     }
     
-    public Declaration getDeclaration() {
+    public Referenceable getDeclaration() {
         return declaration;
     }
     
@@ -54,8 +61,8 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     }
     
     protected boolean isReference(Declaration ref) {
-        return ref!=null && declaration!=null && 
-                (declaration.refines(ref) || 
+        return ref!=null && declaration instanceof Declaration && 
+                (((Declaration)declaration).refines(ref) || 
                         isSetterParameterReference(ref));
     }
 
@@ -92,7 +99,7 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
             if (var!=null) {
                 TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
                 if (od!=null && od.equals(declaration)) {
-                    Declaration d = declaration;
+                    Referenceable d = declaration;
                     declaration = var.getDeclarationModel();
                     that.getBlock().visit(this);
                     declaration = d;
@@ -111,7 +118,7 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
                 TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
                 if (od!=null && od.equals(declaration)) {
                     c.visit(this);
-                    Declaration d = declaration;
+                    Referenceable d = declaration;
                     declaration = var.getDeclarationModel();
                     if (that.getBlock()!=null) {
                         that.getBlock().visit(this);
@@ -133,7 +140,7 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
                         .getOriginalDeclaration();
                 if (od!=null && od.equals(declaration)) {
                     c.visit(this);
-                    Declaration d = declaration;
+                    Referenceable d = declaration;
                     declaration = var.getDeclarationModel();
                     that.getBlock().visit(this);
                     declaration = d;
@@ -146,7 +153,7 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     
     @Override
     public void visit(Tree.Body body) {
-        Declaration d = declaration;
+        Referenceable d = declaration;
         for (Tree.Statement st: body.getStatements()) {
             if (st instanceof Tree.Assertion) {
                 Tree.Assertion that = (Tree.Assertion) st;
@@ -223,6 +230,29 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
         super.visit(that);
     }
         
+    
+    @Override
+    public void visit(Import that) {
+        super.visit(that);
+        if (declaration instanceof Package) {
+            if (formatPath(that.getImportPath().getIdentifiers())
+                    .equals(declaration.getNameAsString())) {
+                nodes.add(that);
+            }
+        }
+    }
+    
+    @Override
+    public void visit(ImportModule that) {
+        super.visit(that);
+        if (declaration instanceof Module) {
+            if (formatPath(that.getImportPath().getIdentifiers())
+                    .equals(declaration.getNameAsString())) {
+                nodes.add(that);
+            }
+        }
+    }
+    
     @Override
     public void visit(Tree.InitializerParameter that) {
         if (isReference(that.getParameterModel())) {

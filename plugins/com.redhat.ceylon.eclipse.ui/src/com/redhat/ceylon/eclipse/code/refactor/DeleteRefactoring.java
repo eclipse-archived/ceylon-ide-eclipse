@@ -41,7 +41,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
         }
         @Override
         protected boolean isReference(Declaration ref) {
-            Declaration declaration = getDeclaration();
+            Declaration declaration = 
+                    (Declaration) getDeclaration();
             if (ref==null) {
                 return false;
             }
@@ -55,8 +56,10 @@ public class DeleteRefactoring extends AbstractRefactoring {
                             refinedDeclaration instanceof TypedDeclaration) {
                         //if it's a reference to a refining method or value
                         //we can safely delete unless it refines the return type
-                        ProducedType type = ((TypedDeclaration) declaration).getType();
-                        ProducedType refinedType = ((TypedDeclaration) refinedDeclaration).getType();
+                        ProducedType type = 
+                                ((TypedDeclaration) declaration).getType();
+                        ProducedType refinedType = 
+                                ((TypedDeclaration) refinedDeclaration).getType();
                         return type!=null && refinedType!=null && 
                                 !type.isExactly(refinedType);
                     }
@@ -125,9 +128,10 @@ public class DeleteRefactoring extends AbstractRefactoring {
             handleParameterRefinement(that);
         }
         private void handleParameterRefinement(Tree.Declaration that) {
-            Declaration declaration = getDeclaration();
+            Declaration declaration = (Declaration) getDeclaration();
             if (declaration.isParameter()) {
-                Declaration parameterized = (Declaration) declaration.getContainer();
+                Declaration parameterized = 
+                        (Declaration) declaration.getContainer();
                 Declaration current = that.getDeclarationModel();
                 if (!parameterized.equals(current)) {
                     if (parameterized.getRefinedDeclaration().equals(current)) {
@@ -146,7 +150,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
     //TODO: copy/pasted from RenameRefactoring!
     class FindDocLinkReferencesVisitor extends Visitor {
         private Declaration declaration;
-        private List<Tree.DocLink> links = new ArrayList<Tree.DocLink>();
+        private List<Tree.DocLink> links = 
+                new ArrayList<Tree.DocLink>();
         List<Tree.DocLink> getLinks() {
             return links;
         }
@@ -202,9 +207,11 @@ public class DeleteRefactoring extends AbstractRefactoring {
     public DeleteRefactoring(IEditorPart editor) {
         super(editor);
         if (rootNode!=null) {
-            declarationToDelete = getReferencedExplicitDeclaration(node, rootNode);
+            declarationToDelete = (Declaration) 
+                    getReferencedExplicitDeclaration(node, rootNode);
             if (declarationToDelete!=null) {
-                refinedDeclaration = declarationToDelete.getRefinedDeclaration();
+                refinedDeclaration = 
+                        declarationToDelete.getRefinedDeclaration();
             }
             else {
                 refinedDeclaration = null;
@@ -272,10 +279,11 @@ public class DeleteRefactoring extends AbstractRefactoring {
     int countReferences(Tree.CompilationUnit cu) {
         FindDeletedReferencesVisitor frv =
                 new FindDeletedReferencesVisitor(declarationToDelete);
+        Declaration declaration = (Declaration) frv.getDeclaration();
         FindRefinementsVisitor fdv =
-                new FindDeletedRefinementsVisitor(frv.getDeclaration());
+                new FindDeletedRefinementsVisitor(declaration);
         FindDocLinkReferencesVisitor fdlrv =
-                new FindDocLinkReferencesVisitor(frv.getDeclaration());
+                new FindDocLinkReferencesVisitor(declaration);
         cu.visit(frv);
         cu.visit(fdv);
         cu.visit(fdlrv);
@@ -497,10 +505,11 @@ public class DeleteRefactoring extends AbstractRefactoring {
             List<CeylonSearchMatch> list, PhasedUnit pu) {
         FindDeletedReferencesVisitor frv = 
                 new FindDeletedReferencesVisitor(declarationToDelete);
+        Declaration declaration = (Declaration) frv.getDeclaration();
         FindDeletedRefinementsVisitor fdv = 
-                new FindDeletedRefinementsVisitor(frv.getDeclaration());
+                new FindDeletedRefinementsVisitor(declaration);
         FindDocLinkReferencesVisitor fdlrv = 
-                new FindDocLinkReferencesVisitor(frv.getDeclaration());
+                new FindDocLinkReferencesVisitor(declaration);
         cu.visit(frv);
         cu.visit(fdv);
         cu.visit(fdlrv);

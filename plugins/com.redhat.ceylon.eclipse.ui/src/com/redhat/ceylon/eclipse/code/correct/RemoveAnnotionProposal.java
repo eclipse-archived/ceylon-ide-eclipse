@@ -15,6 +15,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -57,9 +58,12 @@ class RemoveAnnotionProposal extends CorrectionProposal {
     
     static void addRemoveAnnotationProposal(Node node, String annotation,
             Collection<ICompletionProposal> proposals, IProject project) {
-        addRemoveAnnotationProposal(node, annotation, "Make Non" + annotation,  
-                Nodes.getReferencedDeclaration(node), 
-                proposals, project);
+        Referenceable dec = Nodes.getReferencedDeclaration(node);
+        if (dec instanceof Declaration) {
+            addRemoveAnnotationProposal(node, annotation, 
+                    "Make Non" + annotation,  
+                    (Declaration) dec, proposals, project);
+        }
     }
 
     static void addRemoveAnnotationProposal(Node node, String annotation, String desc,
@@ -68,11 +72,13 @@ class RemoveAnnotionProposal extends CorrectionProposal {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?
-                    FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(dec);
+                    FindDeclarationNodeVisitor fdv = 
+                            new FindDeclarationNodeVisitor(dec);
                     getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = fdv.getDeclarationNode();
+                    Tree.Declaration decNode = 
+                            (Tree.Declaration) fdv.getDeclarationNode();
                     if (decNode!=null) {
-                        RemoveAnnotionProposal.addRemoveAnnotationProposal(annotation, desc, dec,
+                        addRemoveAnnotationProposal(annotation, desc, dec,
                                 proposals, unit, decNode);
                     }
                     break;

@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 
 import java.util.StringTokenizer;
 
@@ -35,6 +36,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -42,7 +44,6 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class HierarchyPopup extends TreeViewPopup {
     
@@ -282,22 +283,25 @@ public class HierarchyPopup extends TreeViewPopup {
     }
     
     private HierarchyInput getInformation() {
-        Node selectedNode = EditorUtil.getSelectedNode(editor);
-        Declaration declaration = Nodes.getReferencedDeclaration(selectedNode);
+        Node selectedNode = 
+                EditorUtil.getSelectedNode(editor);
+        Referenceable declaration = 
+                getReferencedDeclaration(selectedNode);
         if (declaration==null) {
-            FindContainerVisitor fcv = new FindContainerVisitor(selectedNode);
+            FindContainerVisitor fcv = 
+                    new FindContainerVisitor(selectedNode);
             fcv.visit(editor.getParseController().getRootNode());
-            com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument node = fcv.getStatementOrArgument();
+            Node node = fcv.getStatementOrArgument();
             if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
                 declaration = ((com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node).getDeclarationModel();
             }
         }
-        if (declaration==null) {
-            return null;
+        if (declaration instanceof Declaration) {
+            return new HierarchyInput((Declaration) declaration, 
+                    editor.getParseController().getProject());
         }
         else {
-            return new HierarchyInput(declaration, 
-                    editor.getParseController().getProject());
+            return null;
         }
     }
     

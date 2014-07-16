@@ -17,6 +17,8 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,13 +68,13 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class HierarchyView extends ViewPart {
 
@@ -488,9 +490,11 @@ public class HierarchyView extends ViewPart {
 
     public void focusOnSelection(CeylonEditor editor) {
         CeylonParseController cpc = editor.getParseController();
-        Node node = Nodes.findNode(cpc.getRootNode(), editor.getSelection().getOffset());
-        Declaration dec = Nodes.getReferencedDeclaration(node);
-        focusOn(cpc.getProject(), dec);
+        Node node = findNode(cpc.getRootNode(), editor.getSelection().getOffset());
+        Referenceable dec = getReferencedDeclaration(node);
+        if (dec instanceof Declaration) {
+            focusOn(cpc.getProject(), (Declaration) dec);
+        }
     }
 
     public void focusOn(IProject project, Declaration dec) {

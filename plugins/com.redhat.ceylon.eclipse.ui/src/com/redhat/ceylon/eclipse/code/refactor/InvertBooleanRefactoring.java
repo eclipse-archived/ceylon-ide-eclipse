@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenLength;
 
 import java.util.HashMap;
@@ -28,11 +29,11 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class InvertBooleanRefactoring extends AbstractRefactoring {
 
@@ -40,8 +41,8 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
 
     public InvertBooleanRefactoring(IEditorPart editor) {
         super(editor);
-
-        Declaration declaration = Nodes.getReferencedDeclaration(node);
+        Referenceable declaration =  
+                getReferencedDeclaration(node);
         if (declaration instanceof Value) {
             value = (Value) declaration;
         }
@@ -55,7 +56,8 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
     public boolean isEnabled() {
         return value != null
                 && value.getTypeDeclaration() != null
-                && value.getTypeDeclaration().equals(value.getUnit().getBooleanDeclaration());
+                && value.getTypeDeclaration()
+                       .equals(value.getUnit().getBooleanDeclaration());
     }
 
     @Override
