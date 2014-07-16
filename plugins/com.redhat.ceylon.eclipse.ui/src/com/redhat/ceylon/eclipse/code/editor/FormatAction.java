@@ -21,7 +21,6 @@ import ceylon.file.Writer;
 import ceylon.file.Writer$impl;
 import ceylon.formatter.format_;
 import ceylon.formatter.options.CombinedOptions;
-import ceylon.formatter.options.FormattingOptions;
 import ceylon.formatter.options.LineBreak;
 import ceylon.formatter.options.Spaces;
 import ceylon.formatter.options.SparseFormattingOptions;
@@ -29,8 +28,8 @@ import ceylon.formatter.options.Tabs;
 import ceylon.formatter.options.crlf_;
 import ceylon.formatter.options.lf_;
 import ceylon.formatter.options.os_;
-import ceylon.language.Singleton;
 import ceylon.language.AssertionError;
+import ceylon.language.Singleton;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
