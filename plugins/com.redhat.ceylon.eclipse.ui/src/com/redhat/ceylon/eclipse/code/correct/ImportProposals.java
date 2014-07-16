@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static java.util.Collections.singleton;
 
 import java.util.ArrayList;
@@ -44,8 +45,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Indents;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ImportProposals {
 
@@ -53,12 +52,16 @@ public class ImportProposals {
             Collection<ICompletionProposal> proposals, IFile file) {
         if (node instanceof Tree.BaseMemberOrTypeExpression ||
                 node instanceof Tree.SimpleType) {
-            Node id = Nodes.getIdentifyingNode(node);
+            Node id = getIdentifyingNode(node);
             String brokenName = id.getText();
             Module module = cu.getUnit().getPackage().getModule();
-            for (Declaration decl: findImportCandidates(module, brokenName, cu)) {
-                ICompletionProposal ip = createImportProposal(cu, file, decl);
-                if (ip!=null) proposals.add(ip);
+            for (Declaration decl: 
+                    findImportCandidates(module, brokenName, cu)) {
+                ICompletionProposal ip = 
+                        createImportProposal(cu, file, decl);
+                if (ip!=null) {
+                    proposals.add(ip);
+                }
             }
         }
     }
@@ -68,7 +71,8 @@ public class ImportProposals {
         Set<Declaration> result = new HashSet<Declaration>();
         for (Package pkg: module.getAllPackages()) {
             if (!pkg.getName().isEmpty()) {
-                Declaration member = pkg.getMember(name, null, false);
+                Declaration member = 
+                        pkg.getMember(name, null, false);
                 if (member!=null) {
                     result.add(member);
                 }
@@ -93,13 +97,17 @@ public class ImportProposals {
     
     private static ICompletionProposal createImportProposal(Tree.CompilationUnit cu, 
             IFile file, Declaration declaration) {
-        TextFileChange change = new TextFileChange("Add Import", file);
+        TextFileChange change = 
+                new TextFileChange("Add Import", file);
         IDocument doc = CorrectionUtil.getDocument(change);
-        List<InsertEdit> ies = importEdits(cu, singleton(declaration), 
-                null, null, doc);
+        List<InsertEdit> ies = 
+                importEdits(cu, singleton(declaration), 
+                        null, null, doc);
         if (ies.isEmpty()) return null;
         change.setEdit(new MultiTextEdit());
-        for (InsertEdit ie: ies) change.addEdit(ie);
+        for (InsertEdit ie: ies) {
+            change.addEdit(ie);
+        }
         String proposedName = declaration.getName();
         /*String brokenName = id.getText();
         if (!brokenName.equals(proposedName)) {
@@ -145,7 +153,8 @@ public class ImportProposals {
                     }
                 }
             }
-            Tree.Import importNode = findImportNode(cu, p.getNameAsString());
+            Tree.Import importNode = 
+                    findImportNode(cu, p.getNameAsString());
             if (importNode!=null) {
                 Tree.ImportMemberOrTypeList imtl = 
                         importNode.getImportMemberOrTypeList();
@@ -166,7 +175,8 @@ public class ImportProposals {
                 }
             } 
             else {
-                int insertPosition = getBestImportInsertPosition(cu);
+                int insertPosition = 
+                        getBestImportInsertPosition(cu);
                 text.delete(0, 2);
                 text.insert(0, "import " + escapePackageName(p) + " {" + delim)
                     .append(delim + "}"); 
@@ -186,7 +196,7 @@ public class ImportProposals {
     public static List<TextEdit> importEditForMove(Tree.CompilationUnit cu,
             Iterable<Declaration> declarations, Iterable<String> aliases,
             String newPackageName, String oldPackageName, IDocument doc) {
-        String delim = Indents.getDefaultLineDelimiter(doc);
+        String delim = getDefaultLineDelimiter(doc);
         List<TextEdit> result = new ArrayList<TextEdit>();
         Set<Declaration> set = new HashSet<Declaration>();
         for (Declaration d: declarations) {
@@ -327,8 +337,9 @@ public class ImportProposals {
             Declaration declarationBeingDeleted,
             Tree.CompilationUnit cu, IDocument doc) {
         int il=0;
-        for (InsertEdit ie: importEdits(cu, declarations, 
-                null, declarationBeingDeleted, doc)) {
+        for (InsertEdit ie: 
+            importEdits(cu, declarations, null, 
+                    declarationBeingDeleted, doc)) {
             il+=ie.getText().length();
             change.addEdit(ie);
         }
@@ -340,8 +351,10 @@ public class ImportProposals {
             Tree.CompilationUnit cu, IDocument doc,
             Declaration declarationBeingDeleted) {
         int il=0;
-        for (InsertEdit ie: importEdits(cu, declarations.keySet(), 
-                declarations.values(), declarationBeingDeleted, doc)) {
+        for (InsertEdit ie: 
+            importEdits(cu, declarations.keySet(), 
+                declarations.values(), 
+                declarationBeingDeleted, doc)) {
             il+=ie.getText().length();
             change.addEdit(ie);
         }
@@ -351,14 +364,16 @@ public class ImportProposals {
     public static void importSignatureTypes(Declaration declaration, 
             Tree.CompilationUnit rootNode, Set<Declaration> declarations) {
         if (declaration instanceof TypedDeclaration) {
-            importType(declarations, ((TypedDeclaration) declaration).getType(), 
+            importType(declarations, 
+                    ((TypedDeclaration) declaration).getType(), 
                     rootNode);
         }
         if (declaration instanceof Functional) {
             for (ParameterList pl: 
                     ((Functional) declaration).getParameterLists()) {
                 for (Parameter p: pl.getParameters()) {
-                    importSignatureTypes(p.getModel(), rootNode, declarations);
+                    importSignatureTypes(p.getModel(), 
+                            rootNode, declarations);
                 }
             }
         }
@@ -406,7 +421,9 @@ public class ImportProposals {
         Package p = declaration.getUnit().getPackage();
         if (!p.getNameAsString().isEmpty() && 
             !p.equals(rootNode.getUnit().getPackage()) &&
-            !p.getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
+            !p.getNameAsString().equals(Module.LANGUAGE_MODULE_NAME) &&
+            (!declaration.isClassOrInterfaceMember() ||
+              declaration.isStaticallyImportable())) {
             if (!isImported(declaration, rootNode)) {
                 declarations.add(declaration);
             }
@@ -426,7 +443,8 @@ public class ImportProposals {
     public static void importCallableParameterParamTypes(Declaration declaration, 
             HashSet<Declaration> decs, Tree.CompilationUnit cu) {
         if (declaration instanceof Functional) {
-            List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+            List<ParameterList> pls = 
+                    ((Functional) declaration).getParameterLists();
             if (!pls.isEmpty()) {
                 for (Parameter p: pls.get(0).getParameters()) {
                     MethodOrValue pm = p.getModel();
