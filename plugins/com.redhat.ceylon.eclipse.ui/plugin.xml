@@ -2596,6 +2596,16 @@
             <adapter type="com.redhat.ceylon.eclipse.core.model.JDTModule"/>
             <adapter type="com.redhat.ceylon.compiler.typechecker.model.Package"/>
 		</factory>
+
+		<factory 
+            class="com.redhat.ceylon.eclipse.code.navigator.CeylonNavigatorAdapterFactory" 
+            adaptableType="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode">
+            
+            <adapter type="org.eclipse.core.resources.IResource"/>
+            <adapter type="org.eclipse.core.resources.IFolder"/>
+            <adapter type="org.eclipse.jdt.core.IJavaElement"/>
+            <adapter type="org.eclipse.jdt.core.IPackageFragment"/>
+		</factory>
    </extension>     	
 
    <extension
