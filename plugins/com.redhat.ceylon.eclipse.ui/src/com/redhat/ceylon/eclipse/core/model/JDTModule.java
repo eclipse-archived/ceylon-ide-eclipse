@@ -365,8 +365,9 @@ public class JDTModule extends LazyModule {
                     }
                 }
                 else {
+                    File jarToSearch = null;
                     try {
-                        File jarToSearch = returnCarFile();
+                        jarToSearch = returnCarFile();
                         if (jarToSearch == null) {
                             RepositoryManager repoMgr = CeylonBuilder.getProjectRepositoryManager(javaProject.getProject());
                             if (repoMgr != null) {
@@ -384,6 +385,9 @@ public class JDTModule extends LazyModule {
                             }
                         }
                     } catch (CoreException e) {
+                        if (jarToSearch != null) {
+                            System.err.println("Exception trying to get Jar file '" + jarToSearch + "' :");
+                        }
                         e.printStackTrace();
                     }
                 }
@@ -640,6 +644,7 @@ public class JDTModule extends LazyModule {
         try {
             PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
             if (isCeylonBinaryArchive()) {
+                JavaModelManager.getJavaModelManager().resetClasspathListCache();
                 JavaModelManager.getJavaModelManager().getJavaModel().refreshExternalArchives(getPackageFragmentRoots().toArray(new IPackageFragmentRoot[0]), null);
                 phasedUnitMap = binaryModulePhasedUnits;
             }
