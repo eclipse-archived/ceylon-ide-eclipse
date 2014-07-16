@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.code.search;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getProject;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnit;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 
 import org.eclipse.core.resources.IProject;
@@ -25,9 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 abstract class AbstractFindAction extends Action implements IObjectActionDelegate {
     
@@ -47,9 +47,10 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
         if (firstElement instanceof CeylonElement) {
             CeylonElement element = ((CeylonElement) firstElement);
             if (element.getVirtualFile() != null) {
-                CeylonUnit unit = CeylonBuilder.getUnit(element.getVirtualFile());
+                CeylonUnit unit = getUnit(element.getVirtualFile());
                 Tree.CompilationUnit rn = unit.getCompilationUnit();
-                Node node = Nodes.findNode(rn, element.getStartOffset(), element.getEndOffset());
+                Node node = findNode(rn, element.getStartOffset(), 
+                        element.getEndOffset());
                 if (node instanceof Tree.Declaration) {
                     declaration = ((Tree.Declaration) node).getDeclarationModel();
                 }
@@ -70,10 +71,16 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
                     Tree.CompilationUnit rootNode = 
                             ce.getParseController().getRootNode();
                     if (rootNode!=null) {
-                        Node node = Nodes.findNode(rootNode, on.getStartOffset());
+                        Node node = findNode(rootNode, on.getStartOffset());
                         if (node instanceof Tree.Declaration) {
                             declaration = ((Tree.Declaration) node).getDeclarationModel();
-                            project =  getProject(currentEditor);
+                            project = getProject(currentEditor);
+                            action.setEnabled(isValidSelection());
+                            return; //early exit
+                        }
+                        else if (node instanceof Tree.ImportPath) {
+                            declaration = ((Tree.ImportPath) node).getModel();
+                            project = getProject(currentEditor);
                             action.setEnabled(isValidSelection());
                             return; //early exit
                         }
