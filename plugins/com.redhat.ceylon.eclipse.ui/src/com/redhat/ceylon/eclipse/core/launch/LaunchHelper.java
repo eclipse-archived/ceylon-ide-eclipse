@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE;
@@ -11,7 +11,6 @@ import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResou
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;

@@ -16,10 +16,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.filesystem.provider.FileSystem;
-import org.eclipse.core.internal.filesystem.local.LocalFileSystem;
-import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
