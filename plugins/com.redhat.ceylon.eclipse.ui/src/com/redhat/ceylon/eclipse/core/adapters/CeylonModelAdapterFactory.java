@@ -3,14 +3,10 @@ package com.redhat.ceylon.eclipse.core.adapters;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IPackageFragment;
 
-import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.IUnit;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 
 public class CeylonModelAdapterFactory implements IAdapterFactory {
