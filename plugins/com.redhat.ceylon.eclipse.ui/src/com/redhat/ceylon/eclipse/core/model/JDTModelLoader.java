@@ -24,6 +24,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonCla
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -355,50 +356,66 @@ public class JDTModelLoader extends AbstractModelLoader {
                     }
                     
                     packageFragment = root.getPackageFragment(packageName);
-                    if(packageFragment.exists()){
-                        if(!loadDeclarations) {
-                            // we found the package
-                            return true;
-                        }else{
-                            try {
-                                // we have a few virtual types in java.lang that we need to load but they are not listed from class files
-                                if(packageName.equals("java.lang")){
-                                    loadJavaBaseArrays();
-                                }
-                                for (IClassFile classFile : packageFragment.getClassFiles()) {
-                                    // skip removed class files
-                                    if(!classFile.exists())
-                                        continue;
-                                    IType type = classFile.getType();
-                                    if (type.exists() 
-                                         // only top-levels are added in source declarations
-                                            && ! (type.isMember() || type.isAnonymous() || type.isLocal()) 
-                                            && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))
-                                            && ! isTypeHidden(module, type.getFullyQualifiedName())
-                                            && ! type.getFullyQualifiedName().endsWith("$")) {  
-                                        convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
-                                    }
-                                }
-                                for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : packageFragment.getCompilationUnits()) {
-                                    // skip removed CUs
-                                    if(!compilationUnit.exists())
-                                        continue;
-                                    for (IType type : compilationUnit.getTypes()) {
-                                        if (type.exists() 
-                                                && ! (type.isMember() || type.isAnonymous() || type.isLocal()) 
-                                                && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), type.getTypeQualifiedName()))
-                                                && ! isTypeHidden(module, type.getFullyQualifiedName())) {
-                                            convertToDeclaration(module, type.getFullyQualifiedName(), DeclarationType.VALUE);
-                                        }
-                                    }
-                                }
-                            } catch (JavaModelException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                    if(! packageFragment.exists()){
+                        continue;
                     }
                 } catch (JavaModelException e) {
                     e.printStackTrace();
+                }
+                if(!loadDeclarations) {
+                    // we found the package
+                    return true;
+                }
+                
+                // we have a few virtual types in java.lang that we need to load but they are not listed from class files
+                if(packageName.equals("java.lang")){
+                    loadJavaBaseArrays();
+                }
+                
+                IClassFile[] classFiles = new IClassFile[] {};
+                org.eclipse.jdt.core.ICompilationUnit[] compilationUnits = new org.eclipse.jdt.core.ICompilationUnit[] {};
+                try {
+                    classFiles = packageFragment.getClassFiles();
+                } catch (JavaModelException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    compilationUnits = packageFragment.getCompilationUnits();
+                } catch (JavaModelException e) {
+                    e.printStackTrace();
+                }
+                
+                List<IType> typesToLoad = new LinkedList<>();
+                for (IClassFile classFile : classFiles) {
+                    IType type = classFile.getType();
+                    typesToLoad.add(type);
+                }
+                
+                for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : compilationUnits) {
+                    // skip removed CUs
+                    if(!compilationUnit.exists())
+                        continue;
+                    try {
+                        for (IType type : compilationUnit.getTypes()) {
+                            typesToLoad.add(type);
+                        }
+                    } catch (JavaModelException e) {
+                        e.printStackTrace();
+                    }
+                }
+                
+                for (IType type : typesToLoad) {
+                    String typeFullyQualifiedName = type.getFullyQualifiedName();
+                    // only top-levels are added in source declarations
+                    if (typeFullyQualifiedName.indexOf('$') > 0) {
+                        continue;
+                    }
+                    
+                    if (type.exists() 
+                            && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), typeFullyQualifiedName))
+                            && ! isTypeHidden(module, typeFullyQualifiedName)) {  
+                        convertToDeclaration(module, typeFullyQualifiedName, DeclarationType.VALUE);
+                    }
                 }
             }
         }
