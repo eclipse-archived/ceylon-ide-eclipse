@@ -104,9 +104,9 @@ public class MoveUtil {
         StringBuilder sb = new StringBuilder();
         for (String p: packages) {
             sb.append("import ").append(p).append(" { ");
+            boolean first = true;
             for (Map.Entry<Declaration, String> e: imports.entrySet()) {
                 Declaration d = e.getKey();
-                boolean first = true;
                 String pn = d.getUnit().getPackage()
                         .getQualifiedNameString();
                 if (pn.equals(p)) {
