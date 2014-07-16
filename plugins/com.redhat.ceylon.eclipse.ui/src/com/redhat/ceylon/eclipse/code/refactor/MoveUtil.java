@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
@@ -103,16 +104,20 @@ public class MoveUtil {
                 getImports(node, targetPackage, null, packages);
         StringBuilder sb = new StringBuilder();
         for (String p: packages) {
-            sb.append("import ").append(p).append(" { ");
+            sb.append("import ").append(p).append(" {")
+              .append(delim);
             boolean first = true;
             for (Map.Entry<Declaration, String> e: imports.entrySet()) {
                 Declaration d = e.getKey();
                 String pn = d.getUnit().getPackage()
                         .getQualifiedNameString();
                 if (pn.equals(p)) {
+                    if (!first) {
+                        sb.append(",").append(delim);
+                    }
+                    sb.append(getDefaultIndent());
                     String name = d.getName();
                     String alias = e.getValue();
-                    if (!first) sb.append(", ");
                     if (!name.equals(alias)) {
                         sb.append(alias).append("=");
                     }
@@ -120,7 +125,7 @@ public class MoveUtil {
                     first = false;
                 }
             }
-            sb.append(" }").append(delim);
+            sb.append(delim).append("}").append(delim);
         }
         return sb.toString();
     }
