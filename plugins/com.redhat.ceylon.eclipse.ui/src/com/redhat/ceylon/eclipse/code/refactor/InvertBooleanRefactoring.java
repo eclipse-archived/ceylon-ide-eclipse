@@ -28,6 +28,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
@@ -55,7 +56,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
     @Override
     public boolean isEnabled() {
         return value != null
-                && value.getTypeDeclaration() != null
+                && value.getTypeDeclaration() instanceof Class
                 && value.getTypeDeclaration()
                        .equals(value.getUnit().getBooleanDeclaration());
     }
