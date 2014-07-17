@@ -42,7 +42,7 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
-import com.redhat.ceylon.common.config.ConfigParser;
+import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -102,7 +102,7 @@ public class CeylonRepoConfigBlock {
 
     public void performDefaults() {
         systemRepoText.setText("");
-        outputRepoText.setText(Repositories.withConfig(ConfigParser.loadDefaultConfig(null))
+        outputRepoText.setText(Repositories.withConfig(CeylonConfigFinder.loadDefaultConfig(null))
                 .getOutputRepository().getUrl());
 
         projectLocalRepos = new ArrayList<String>();
