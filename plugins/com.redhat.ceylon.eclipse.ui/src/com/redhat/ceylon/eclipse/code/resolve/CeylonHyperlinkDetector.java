@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -10,7 +13,6 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
@@ -58,14 +60,14 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             return null;
         }
         else {
-            Node node = Nodes.findNode(pc.getRootNode(), region.getOffset(), 
+            Node node = findNode(pc.getRootNode(), region.getOffset(), 
                     region.getOffset()+region.getLength());
-            Node id = Nodes.getIdentifyingNode(node);
+            Node id = getIdentifyingNode(node);
             if (node==null) {
                 return null;
             }
             else {
-                Node r = Nodes.getReferencedNode(node, pc);
+                Node r = getReferencedNode(node, pc);
                 if (r==null) {
                     return null;
                 }
