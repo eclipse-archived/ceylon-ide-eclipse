@@ -25,7 +25,7 @@ import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.swt.graphics.FontData;
 import org.osgi.framework.Bundle;
 
-import com.redhat.ceylon.compiler.java.tools.NewlineFixingInputStream;
+import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -203,7 +203,7 @@ public class HTML {
         String cc = toHex(getCurrentThemeColor(CHARS));
         String pc = toHex(getCurrentThemeColor(PACKAGES));
         String lcc = toHex(getCurrentThemeColor(COMMENTS));
-        CeylonLexer lexer = new CeylonLexer(new NewlineFixingInputStream(line));
+        CeylonLexer lexer = new CeylonLexer(new NewlineFixingStringStream(line));
         Token token;
         boolean inPackageName = false;
         StringBuilder result = new StringBuilder();

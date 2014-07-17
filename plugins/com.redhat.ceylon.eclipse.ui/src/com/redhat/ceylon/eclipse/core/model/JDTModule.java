@@ -36,7 +36,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IProject;
@@ -67,6 +66,7 @@ import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.api.VisibilityType;
 import com.redhat.ceylon.cmr.impl.JDKRepository;
+import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
@@ -804,7 +804,7 @@ public class JDTModule extends LazyModule {
                     
                     if (archiveEntry != null) {
                         IProject project = moduleManager.getJavaProject().getProject();
-                        CeylonLexer lexer = new CeylonLexer(new ANTLRInputStream(archiveEntry.getInputStream(), project.getDefaultCharset()));
+                        CeylonLexer lexer = new CeylonLexer(NewlineFixingStringStream.fromStream(archiveEntry.getInputStream(), project.getDefaultCharset()));
                         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
                         CeylonParser parser = new CeylonParser(tokenStream);
                         Tree.CompilationUnit cu = parser.compilationUnit();
