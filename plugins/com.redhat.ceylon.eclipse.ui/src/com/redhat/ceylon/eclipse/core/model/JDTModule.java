@@ -478,7 +478,7 @@ public class JDTModule extends LazyModule {
                 for(String pkg : jarPackages){
                     if(name.equals("ceylon.language") && ! pkg.startsWith("ceylon.language")) {
                         // special case for the language module to hide stuff
-                        break;
+                        continue;
                     }
                     modelLoader.findOrCreatePackage(this, pkg);
                 }
