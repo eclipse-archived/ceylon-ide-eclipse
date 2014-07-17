@@ -2,10 +2,11 @@ package com.redhat.ceylon.eclipse.util;
 
 import java.util.List;
 
-import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 
+import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -21,9 +22,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 public abstract class CeylonSourceParser<ResultPhasedUnit extends PhasedUnit> {
     public final ResultPhasedUnit parseFileToPhasedUnit(final ModuleManager moduleManager, final TypeChecker typeChecker,
             final VirtualFile file, final VirtualFile srcDir, final Package pkg) {
-        ANTLRInputStream input;
+        ANTLRStringStream input;
         try {
-            input = new ANTLRInputStream(file.getInputStream(), getCharset());
+            input = NewlineFixingStringStream.fromStream(file.getInputStream(), getCharset());
         }
         catch (RuntimeException e) {
             throw e;
