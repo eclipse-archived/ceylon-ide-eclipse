@@ -34,6 +34,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
@@ -63,25 +64,29 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.MemberOrTypeExpression that) {
             super.visit(that);
-            if (that.getDeclaration()
-                    .equals(declaration)) {
+            Declaration dec = that.getDeclaration();
+            if (declaration.equals(dec)) {
                 refs++;
             }
         }
         @Override
         public void visit(Tree.Declaration that) {
             super.visit(that);
-            if (that.getDeclarationModel()
-                    .equals(declaration)) {
+            Declaration dec = that.getDeclarationModel();
+            if (declaration.equals(dec)) {
                 refs++;
             }
         }
         @Override
         public void visit(Tree.Type that) {
             super.visit(that);
-            if (that.getTypeModel().getDeclaration()
-                    .equals(declaration)) {
-                refs++;
+            ProducedType type = that.getTypeModel();
+            if (type!=null) {
+                TypeDeclaration dec = type.getDeclaration();
+                if (dec instanceof ClassOrInterface &&
+                        declaration.equals(dec)) {
+                    refs++;
+                }
             }
         }
     }
