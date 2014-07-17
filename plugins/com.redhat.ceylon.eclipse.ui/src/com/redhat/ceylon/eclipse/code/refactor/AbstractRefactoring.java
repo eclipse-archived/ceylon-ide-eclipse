@@ -20,6 +20,7 @@ import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
@@ -28,6 +29,7 @@ import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -82,10 +84,17 @@ abstract class AbstractRefactoring extends Refactoring {
     }
     
     boolean inSameProject(Declaration declaration) {
-        return declaration.getUnit() instanceof EditedSourceFile &&
-                   ((EditedSourceFile) declaration.getUnit()).getProjectResource().equals(project) ||
-               declaration.getUnit() instanceof ProjectSourceFile &&
-                   ((ProjectSourceFile) declaration.getUnit()).getProjectResource().equals(project);
+        Unit unit = declaration.getUnit();
+        if (unit instanceof IResourceAware) {
+            IProject proj = ((IResourceAware) unit).getProjectResource();
+            if (proj==null) {
+                return false;
+            }
+            else {
+                return proj.equals(project);
+            }
+        }
+        return false;
     }
 
     boolean isEditable() {
