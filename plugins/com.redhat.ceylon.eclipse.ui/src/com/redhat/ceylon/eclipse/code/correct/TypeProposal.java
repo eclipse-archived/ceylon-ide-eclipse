@@ -1,11 +1,13 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -143,17 +145,18 @@ class TypeProposal implements ICompletionProposal,
             int offset, int length, ProducedType infType,
             Tree.CompilationUnit rootNode, String kind) {
         
-        List<ProducedType> supertypes = 
-                infType.getSupertypes();
-        
         TypeDeclaration td = infType.getDeclaration();
-        if (td instanceof UnionType || 
-            td instanceof IntersectionType) {
-            supertypes.add(0, infType);
-        }
+        List<TypeDeclaration> supertypes = isTypeUnknown(infType) ?
+                Collections.<TypeDeclaration>emptyList() :
+                td.getSupertypeDeclarations();
         
         int size = supertypes.size();
         if (kind!=null) size++;
+        if (td instanceof UnionType || 
+            td instanceof IntersectionType) {
+            size++;
+        }
+        
         ICompletionProposal[] proposals = 
                 new ICompletionProposal[size];
         int i=0;
@@ -161,8 +164,16 @@ class TypeProposal implements ICompletionProposal,
             proposals[i++] =
                     new TypeProposal(offset, null, kind, rootNode);
         }
-        for (int j=0; j<supertypes.size(); j++) {
-            ProducedType type = supertypes.get(j);
+        if (td instanceof UnionType || 
+                td instanceof IntersectionType) {
+            String typename = 
+                    infType.getProducedTypeName(rootNode.getUnit());
+            proposals[i++] = 
+                    new TypeProposal(offset, infType, typename, rootNode);
+        }
+        for (int j=supertypes.size()-1; j>=0; j--) {
+            ProducedType type = 
+                    infType.getSupertype(supertypes.get(j));
             String typename = 
                     type.getProducedTypeName(rootNode.getUnit());
             proposals[i++] = 
