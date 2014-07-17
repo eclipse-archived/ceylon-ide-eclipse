@@ -360,7 +360,10 @@ public class JDTModelLoader extends AbstractModelLoader {
                         continue;
                     }
                 } catch (JavaModelException e) {
-                    e.printStackTrace();
+                    if (! e.isDoesNotExist()) {
+                        e.printStackTrace();
+                    }
+                    continue;
                 }
                 if(!loadDeclarations) {
                     // we found the package
