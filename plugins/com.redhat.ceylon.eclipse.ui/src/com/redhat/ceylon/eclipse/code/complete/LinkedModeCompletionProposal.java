@@ -236,25 +236,39 @@ public class LinkedModeCompletionProposal
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
             Unit unit, ProducedType type, boolean includeValue, String kind) {
     	if (type==null) return new ICompletionProposal[0];
-        List<ProducedType> supertypes = isTypeUnknown(type) ?
-                Collections.<ProducedType>emptyList() :
-                    type.getSupertypes();
         TypeDeclaration td = type.getDeclaration();
-        if (td instanceof UnionType ||
+        List<TypeDeclaration> supertypes = isTypeUnknown(type) ?
+                Collections.<TypeDeclaration>emptyList() :
+                td.getSupertypeDeclarations();
+
+        int size = supertypes.size();
+        if (includeValue) size++;
+        if (td instanceof UnionType || 
             td instanceof IntersectionType) {
-            supertypes.add(0,type);
+            size++;
         }
+        
         ICompletionProposal[] typeProposals = 
-                new ICompletionProposal[supertypes.size() + (includeValue?1:0)];
+                new ICompletionProposal[size];
         int i=0;
         if (includeValue) {
             typeProposals[i++] =
                     new LinkedModeCompletionProposal(offset, kind, 0, 
                             getDecoratedImage(CEYLON_LITERAL, 0, false));
         }
-        for (int j=0; j<supertypes.size(); j++) {
-            ProducedType supertype = supertypes.get(j);
-            String typeName = supertype.getProducedTypeName(unit);
+        if (td instanceof UnionType || 
+            td instanceof IntersectionType) {
+            String typeName = 
+                    type.getProducedTypeName(unit);
+            typeProposals[i++] = 
+                    new LinkedModeCompletionProposal(offset, typeName, 0, 
+                            getImageForDeclaration(td));
+        }
+        for (int j=supertypes.size()-1; j>=0; j--) {
+            ProducedType supertype = 
+                    type.getSupertype(supertypes.get(j));
+            String typeName = 
+                    supertype.getProducedTypeName(unit);
             typeProposals[i++] = 
                     new LinkedModeCompletionProposal(offset, typeName, 0, 
                             getImageForDeclaration(supertype.getDeclaration()));
