@@ -21,7 +21,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.CeylonConfig;
-import com.redhat.ceylon.common.config.ConfigParser;
+import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.common.config.ConfigWriter;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.common.config.Repositories;
@@ -80,7 +80,7 @@ public class CeylonProjectConfig {
         File projectConfigFile = getProjectConfigFile();
         if (projectConfigFile.exists() && projectConfigFile.isFile()) {
             try {
-                projectConfig = ConfigParser.loadConfigFromFile(projectConfigFile);
+                projectConfig = CeylonConfigFinder.loadConfigFromFile(projectConfigFile);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
