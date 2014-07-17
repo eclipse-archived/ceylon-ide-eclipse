@@ -964,10 +964,10 @@ public class DocumentationHover
             Package pack) {
         StringBuilder buffer= new StringBuilder();
         addMainPackageDescription(pack, buffer);
-        Module mod = addPackageModuleInfo(pack, buffer);
         addPackageDocumentation(cpc, pack, buffer);
-        addAdditionalPackageInfo(buffer, mod);
+        addAdditionalPackageInfo(buffer, pack);
         addPackageMembers(buffer, pack);
+        addPackageModuleInfo(pack, buffer);
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addPageEpilog(buffer);
         return buffer.toString();
@@ -1006,7 +1006,8 @@ public class DocumentationHover
     }
 
     private static void addAdditionalPackageInfo(StringBuilder buffer,
-            Module mod) {
+            Package pack) {
+        Module mod = pack.getModule();
         if (mod.isJava()) {
             buffer.append("<p>This package is implemented in Java.</p>");
         }
@@ -1036,16 +1037,15 @@ public class DocumentationHover
         buffer.append("</p>");
     }
 
-    private static Module addPackageModuleInfo(Package pack,
+    private static void addPackageModuleInfo(Package pack,
             StringBuilder buffer) {
         Module mod = pack.getModule();
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
-                "in module&nbsp;&nbsp;<tt><a " + HTML.link(mod) + ">" + 
-                        getLabel(mod) +"</a></tt>", 
+                "<span style='font-size:96%'>in module&nbsp;&nbsp;<tt><a " + HTML.link(mod) + ">" + 
+                        getLabel(mod) +"</a></tt></span>", 
                 20, 2);
-        return mod;
     }
     
     private static String description(Package pack) {
