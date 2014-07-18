@@ -1549,6 +1549,9 @@ public class DocumentationHover
         if (node instanceof Tree.MemberOrTypeExpression) {
             return ((Tree.MemberOrTypeExpression) node).getTarget();
         }
+        else if (node instanceof Tree.Type) {
+            return ((Tree.Type) node).getTypeModel();
+        }
         ClassOrInterface outer = dec.isClassOrInterfaceMember() ? 
                 (ClassOrInterface) dec.getContainer() : null;
         return dec.getProducedReference(getQualifyingType(node, outer),
@@ -1663,6 +1666,9 @@ public class DocumentationHover
             if (pr!=null) {
                 return pr.getQualifyingType();
             }
+        }
+        if (node instanceof Tree.QualifiedType) {
+            return ((Tree.QualifiedType) node).getOuterType().getTypeModel();
         }
         return outer.getType();
     }
