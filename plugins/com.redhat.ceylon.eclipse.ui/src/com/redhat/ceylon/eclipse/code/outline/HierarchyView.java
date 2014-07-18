@@ -19,6 +19,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,13 +63,15 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -78,12 +81,15 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class HierarchyView extends ViewPart {
 
-    private static final Image GOTO_IMAGE = CeylonPlugin.getInstance()
-            .getImageRegistry().get(GOTO);
-    private static final Image INHERITED_IMAGE = CeylonPlugin.getInstance()
-            .getImageRegistry().get(CEYLON_INHERITED);
-    private static final Image SORT_IMAGE = CeylonPlugin.getInstance()
-            .getImageRegistry().get(TYPE_MODE);
+    private static final Image GOTO_IMAGE = 
+            CeylonPlugin.getInstance()
+                    .getImageRegistry().get(GOTO);
+    private static final Image INHERITED_IMAGE = 
+            CeylonPlugin.getInstance()
+                    .getImageRegistry().get(CEYLON_INHERITED);
+    private static final Image SORT_IMAGE = 
+            CeylonPlugin.getInstance()
+                    .getImageRegistry().get(TYPE_MODE);
     
     private CeylonHierarchyLabelProvider labelProvider;
     private CeylonHierarchyContentProvider contentProvider;
@@ -131,10 +137,12 @@ public class HierarchyView extends ViewPart {
         }
     }
 
-    private final class MembersContentProvider implements IStructuredContentProvider {
+    private final class MembersContentProvider 
+            implements IStructuredContentProvider {
         
         @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+        public void inputChanged(Viewer viewer, 
+                Object oldInput, Object newInput) {}
 
         @Override
         public void dispose() {}
@@ -142,16 +150,17 @@ public class HierarchyView extends ViewPart {
         @Override
         public Object[] getElements(Object inputElement) {
             if (inputElement instanceof TypeDeclaration) {
-                TypeDeclaration declaration = (TypeDeclaration) inputElement;
+                TypeDeclaration declaration = 
+                        (TypeDeclaration) inputElement;
                 if (showInherited) {
-                    ArrayList<Declaration> list = new ArrayList<Declaration>();
+                    ArrayList<Declaration> list = 
+                            new ArrayList<Declaration>();
                     Collection<DeclarationWithProximity> children = 
                             declaration.getMatchingMemberDeclarations(declaration, "", 0)
                                     .values();
                     for (DeclarationWithProximity dwp: children) {
                         list.add(dwp.getDeclaration());
                     }
-                    //TODO: sort by declaring type?
                     return list.toArray();
                 }
                 else {
@@ -166,7 +175,8 @@ public class HierarchyView extends ViewPart {
     }
 
     class MembersLabelProvider extends StyledCellLabelProvider 
-            implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, ILabelProvider {
+            implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, 
+                       ILabelProvider {
 
         @Override
         public void addListener(ILabelProviderListener listener) {}
@@ -191,8 +201,10 @@ public class HierarchyView extends ViewPart {
         public String getText(Object element) {
             Declaration dec = (Declaration) element;
             String desc = getDescriptionFor(dec);
-            if (showInherited && dec.getContainer() instanceof Declaration) {
-                desc += " - " + ((Declaration)dec.getContainer()).getName();
+            Scope container = dec.getContainer();
+            if (showInherited && 
+                    container instanceof Declaration) {
+                desc += " - " + ((Declaration) container).getName();
             }
             return desc;
         }
@@ -200,10 +212,13 @@ public class HierarchyView extends ViewPart {
         @Override
         public StyledString getStyledText(Object element) {
             Declaration dec = (Declaration) element;
-            StyledString desc = getStyledDescriptionFor((Declaration) element);
-            if (showInherited && dec.getContainer() instanceof Declaration) {
+            StyledString desc = 
+                    getStyledDescriptionFor((Declaration) element);
+            Scope container = dec.getContainer();
+            if (showInherited && 
+                    container instanceof Declaration) {
                 desc.append(" - ", PACKAGE_STYLER)
-                    .append(((Declaration)dec.getContainer()).getName(), 
+                    .append(((Declaration) container).getName(), 
                             TYPE_STYLER);
             }
             return desc;
@@ -235,7 +250,8 @@ public class HierarchyView extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         setContentDescription("");
-        final SashForm sash = new SashForm(parent, SWT.HORIZONTAL | SWT.SMOOTH);
+        final SashForm sash = new SashForm(parent, 
+                SWT.HORIZONTAL | SWT.SMOOTH);
         sash.addControlListener(new ControlListener() {
             boolean reentrant;
             @Override
@@ -244,8 +260,10 @@ public class HierarchyView extends ViewPart {
                 reentrant = true;
                 try {
                     Rectangle bounds = sash.getBounds();
+                    IActionBars actionBars = getViewSite()
+                        .getActionBars();
                     IToolBarManager toolBarManager = 
-                            getViewSite().getActionBars().getToolBarManager();
+                            actionBars.getToolBarManager();
                     if (bounds.height>bounds.width) {
                         if (sash.getOrientation()!=SWT.VERTICAL) {
                             sash.setOrientation(SWT.VERTICAL);
@@ -259,13 +277,14 @@ public class HierarchyView extends ViewPart {
                             sash.setOrientation(SWT.HORIZONTAL);
                             toolBarManager.removeAll();
                             toolBarManager.update(false);
-                            ToolBarManager tbm = new ToolBarManager(SWT.NONE);
+                            ToolBarManager tbm = 
+                                    new ToolBarManager(SWT.NONE);
                             createMainToolBar(tbm);
                             tbm.createControl(viewForm);
                             viewForm.setTopLeft(tbm.getControl());
                         }
                     }
-                    getViewSite().getActionBars().updateActionBars();
+                    actionBars.updateActionBars();
                 }
                 finally {
                     reentrant = false;
@@ -287,8 +306,10 @@ public class HierarchyView extends ViewPart {
         tree.setLayoutData(gd);
         viewForm.setContent(tree);
         treeViewer = new TreeViewer(tree);
-        contentProvider = new CeylonHierarchyContentProvider(getSite());
-        labelProvider = new CeylonHierarchyLabelProvider() {
+        contentProvider = 
+                new CeylonHierarchyContentProvider(getSite());
+        labelProvider = 
+                new CeylonHierarchyLabelProvider() {
             @Override
             IProject getProject() {
                 return project;
@@ -304,8 +325,10 @@ public class HierarchyView extends ViewPart {
         treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                TreeSelection selection = (TreeSelection) event.getSelection();
-                CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
+                TreeSelection selection = 
+                        (TreeSelection) event.getSelection();
+                CeylonHierarchyNode firstElement = 
+                        (CeylonHierarchyNode) selection.getFirstElement();
                 if (firstElement!=null) {
                     Declaration dec = firstElement.getDeclaration(project);
                     if (dec!=null) {
@@ -319,8 +342,10 @@ public class HierarchyView extends ViewPart {
         treeViewer.addDoubleClickListener(new IDoubleClickListener() {
             @Override
             public void doubleClick(DoubleClickEvent event) {
-                TreeSelection selection = (TreeSelection) event.getSelection();
-                CeylonHierarchyNode firstElement = (CeylonHierarchyNode) selection.getFirstElement();
+                TreeSelection selection = 
+                        (TreeSelection) event.getSelection();
+                CeylonHierarchyNode firstElement = 
+                        (CeylonHierarchyNode) selection.getFirstElement();
                 firstElement.gotoHierarchyDeclaration(project, null);
             }
         });
@@ -329,7 +354,8 @@ public class HierarchyView extends ViewPart {
 
     private Table createTable(SashForm sash) {
         ViewForm viewForm = new ViewForm(sash, SWT.FLAT);
-        tableViewer = new TableViewer(viewForm, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+        tableViewer = new TableViewer(viewForm, 
+                SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
         GridData gd = new GridData(GridData.FILL_BOTH);
 //        gd.heightHint = tableViewer.getTable().getItemHeight() * 12;
         tableViewer.getTable().setLayoutData(gd);
@@ -372,8 +398,10 @@ public class HierarchyView extends ViewPart {
         tableViewer.addDoubleClickListener(new IDoubleClickListener() {
             @Override
             public void doubleClick(DoubleClickEvent event) {
-                StructuredSelection selection = (StructuredSelection) event.getSelection();
-                Declaration firstElement = (Declaration) selection.getFirstElement();
+                StructuredSelection selection = 
+                        (StructuredSelection) event.getSelection();
+                Declaration firstElement = 
+                        (Declaration) selection.getFirstElement();
                 gotoCeylonOrJavaDeclaration(firstElement);
             }
         });
@@ -396,9 +424,13 @@ public class HierarchyView extends ViewPart {
         item.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
+                TreeSelection selection = 
+                        (TreeSelection) treeViewer.getSelection();
+                Object firstElement = selection.getFirstElement();
                 if (firstElement instanceof CeylonHierarchyNode) {
-                    Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration(project);
+                    CeylonHierarchyNode node = 
+                            (CeylonHierarchyNode) firstElement;
+                    Declaration declaration = node.getDeclaration(project);
                     treeViewer.setInput(new HierarchyInput(declaration, project));
                     setDescription(declaration);
                 }
@@ -413,9 +445,13 @@ public class HierarchyView extends ViewPart {
         item.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Object firstElement = ((TreeSelection)treeViewer.getSelection()).getFirstElement();
+                TreeSelection selection = 
+                        (TreeSelection) treeViewer.getSelection();
+                Object firstElement = selection.getFirstElement();
                 if (firstElement instanceof CeylonHierarchyNode) {
-                    Declaration declaration = ((CeylonHierarchyNode) firstElement).getDeclaration(project);
+                    CeylonHierarchyNode node = 
+                            (CeylonHierarchyNode) firstElement;
+                    Declaration declaration = node.getDeclaration(project);
                     gotoCeylonOrJavaDeclaration(declaration);
                 }
             }
@@ -433,7 +469,9 @@ public class HierarchyView extends ViewPart {
         item.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Object firstElement = ((StructuredSelection) tableViewer.getSelection()).getFirstElement();
+                StructuredSelection selection = 
+                        (StructuredSelection) tableViewer.getSelection();
+                Object firstElement = selection.getFirstElement();
                 if (firstElement instanceof Declaration) {
                     Declaration declaration = (Declaration) firstElement;
                     treeViewer.setInput(new HierarchyInput(declaration, project));
@@ -450,7 +488,9 @@ public class HierarchyView extends ViewPart {
         item.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Object firstElement = ((StructuredSelection)tableViewer.getSelection()).getFirstElement();
+                StructuredSelection selection = 
+                        (StructuredSelection) tableViewer.getSelection();
+                Object firstElement = selection.getFirstElement();
                 if (firstElement instanceof Declaration) {
                     gotoCeylonOrJavaDeclaration((Declaration) firstElement);
                 }
@@ -490,7 +530,8 @@ public class HierarchyView extends ViewPart {
 
     public void focusOnSelection(CeylonEditor editor) {
         CeylonParseController cpc = editor.getParseController();
-        Node node = findNode(cpc.getRootNode(), editor.getSelection().getOffset());
+        Node node = findNode(cpc.getRootNode(), 
+                editor.getSelection().getOffset());
         Referenceable dec = getReferencedDeclaration(node);
         if (dec instanceof Declaration) {
             focusOn(cpc.getProject(), (Declaration) dec);
@@ -515,9 +556,13 @@ public class HierarchyView extends ViewPart {
         setContentDescription(contentProvider.getDescription());
     }
 
-    public static HierarchyView showHierarchyView() throws PartInitException {
-        return (HierarchyView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                .showView(PLUGIN_ID + ".view.HierarchyView");
+    public static HierarchyView showHierarchyView() 
+            throws PartInitException {
+        IWorkbenchPage page = getWorkbench()
+                .getActiveWorkbenchWindow()
+                .getActivePage();
+        return (HierarchyView) page.showView(PLUGIN_ID + 
+                ".view.HierarchyView");
     }
     
     /*private class MembersAction extends Action {
