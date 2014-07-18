@@ -36,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
+import com.redhat.ceylon.compiler.typechecker.model.SiteVariance;
 import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
@@ -296,7 +297,7 @@ public class CodeCompletions {
             ProducedReference pr, Unit unit) {
         StringBuilder result = new StringBuilder();
         appendDeclarationHeaderDescription(d, pr, unit, result);
-        appendTypeParameters(d, result, true);
+        appendTypeParameters(d, pr, result, true, unit);
         appendParametersDescription(d, pr, unit, result);
         return result.toString();
     }
@@ -500,6 +501,55 @@ public class CodeCompletions {
                     result.append(tp.getName()).append(", ");
                 }
                 result.setLength(result.length()-2);
+                result.append(">");
+            }
+        }
+    }
+    
+    private static void appendTypeParameters(Declaration d, 
+            ProducedReference pr, StringBuilder result, 
+            boolean variances, Unit unit) {
+        if (d instanceof Generic) {
+            List<TypeParameter> types = 
+                    ((Generic) d).getTypeParameters();
+            if (!types.isEmpty()) {
+                result.append("<");
+                boolean first = true;
+                for (TypeParameter tp: types) {
+                    if (first) {
+                        first = false;
+                    }
+                    else {
+                        result.append(", ");
+                    }
+                    ProducedType arg = pr.getTypeArguments().get(tp);
+                    if (arg == null) {
+                        if (variances) {
+                            if (tp.isCovariant()) {
+                                result.append("out ");
+                            }
+                            if (tp.isContravariant()) {
+                                result.append("in ");
+                            }
+                        }
+                        result.append(tp.getName());
+                    }
+                    else {
+                        if (pr instanceof ProducedType) {
+                            if (variances) {
+                                SiteVariance variance = 
+                                        ((ProducedType) pr).getVarianceOverrides().get(tp);
+                                if (variance==SiteVariance.IN) {
+                                    result.append("in ");
+                                }
+                                if (variance==SiteVariance.OUT) {
+                                    result.append("out ");
+                                }
+                            }
+                        }
+                        result.append(arg.getProducedTypeName(unit));
+                    }
+                }
                 result.append(">");
             }
         }
