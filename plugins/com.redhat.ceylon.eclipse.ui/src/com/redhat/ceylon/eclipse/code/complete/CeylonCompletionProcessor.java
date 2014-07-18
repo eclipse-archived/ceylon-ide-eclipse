@@ -751,8 +751,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     }
                 }
                 
-                if (isProposable(dwp, ol, scope, node.getUnit(), requiredType, 
-                            previousTokenType) && 
+                if (isProposable(dwp, ol, scope, node.getUnit(), 
+                            requiredType, previousTokenType) && 
                         (definitelyRequiresType(ol) || noParamsFollow || 
                                 dwp.getDeclaration() instanceof Functional)) {
                     if (ol==DOCLINK) {
@@ -768,7 +768,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         }
                     }
                     else if (!(dec instanceof Method) || !isAbstraction(dec)) {
-                        addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope, isMember);
+                        addReferenceProposal(offset, prefix, cpc, result, 
+                                dwp, dec, scope, isMember);
                     }
                 }
                 
