@@ -832,13 +832,18 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     public static String getLabel(Package packageModel) {
         String name = packageModel.getQualifiedNameString();
-        if (name.isEmpty()) name="default package";
+        if (name.isEmpty()) {
+            name="default package";
+        }
         return name;
     }
     
     public static String getLabel(Module moduleModel) {
         String name = moduleModel.getNameAsString();
-        if (name.isEmpty() || name.equals(Module.DEFAULT_MODULE_NAME)) name="default module";
+        if (name.isEmpty() || 
+                name.equals(Module.DEFAULT_MODULE_NAME)) {
+            name="default module";
+        }
         return name;
     }
     
