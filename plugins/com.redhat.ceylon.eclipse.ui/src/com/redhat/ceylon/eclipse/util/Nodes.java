@@ -238,8 +238,9 @@ public class Nodes {
         }
         else if (node instanceof Tree.ExtendedTypeExpression) {
             //TODO: whoah! this is really ugly!
-            return ((Tree.SimpleType) ((Tree.ExtendedTypeExpression) node).getChildren().get(0))
-                    .getIdentifier();
+            return ((Tree.SimpleType) 
+                    ((Tree.ExtendedTypeExpression) node).getChildren().get(0))
+                            .getIdentifier();
         }
         else if (node instanceof Tree.SimpleType) {
             return ((Tree.SimpleType) node).getIdentifier();
@@ -261,7 +262,8 @@ public class Nodes {
         }
     }
 
-    public static Iterator<CommonToken> getTokenIterator(List<CommonToken> tokens, IRegion region) {
+    public static Iterator<CommonToken> getTokenIterator(List<CommonToken> tokens, 
+            IRegion region) {
         int regionOffset = region.getOffset();
         int regionLength = region.getLength();
         if (regionLength<=0) {
@@ -272,13 +274,15 @@ public class Nodes {
             return null;
         }
         else {
-            int firstTokIdx = getTokenIndexAtCharacter(tokens, regionOffset);
+            int firstTokIdx = 
+                    getTokenIndexAtCharacter(tokens, regionOffset);
             // getTokenIndexAtCharacter() answers the negative of the index of the
             // preceding token if the given offset is not actually within a token.
             if (firstTokIdx < 0) {
                 firstTokIdx= -firstTokIdx + 1;
             }
-            int lastTokIdx = getTokenIndexAtCharacter(tokens, regionEnd);
+            int lastTokIdx = 
+                    getTokenIndexAtCharacter(tokens, regionEnd);
             if (lastTokIdx < 0) {
                 lastTokIdx= -lastTokIdx;
             }
@@ -438,7 +442,8 @@ public class Nodes {
             return null;
         }
         else {
-            FindReferencedNodeVisitor visitor = new FindReferencedNodeVisitor(dec);
+            FindReferencedNodeVisitor visitor = 
+                    new FindReferencedNodeVisitor(dec);
             compilationUnit.visit(visitor);
             //System.out.println("referenced node: " + visitor.getDeclarationNode());
             return visitor.getDeclarationNode();
@@ -470,7 +475,8 @@ public class Nodes {
                 }
                 
                 if (unit instanceof ICrossProjectReference) {
-                    ProjectPhasedUnit requiredProjectPhasedUnit = ((ICrossProjectReference) unit).getOriginalPhasedUnit();
+                    ProjectPhasedUnit requiredProjectPhasedUnit = 
+                            ((ICrossProjectReference) unit).getOriginalPhasedUnit();
                     if (requiredProjectPhasedUnit != null 
                             && requiredProjectPhasedUnit.isFullyTyped()) {
                         pu = requiredProjectPhasedUnit;
@@ -504,7 +510,8 @@ public class Nodes {
         int length = term.getStopIndex()-start+1;
         Region region = new Region(start, length);
         StringBuilder exp = new StringBuilder();
-        for (Iterator<CommonToken> ti = getTokenIterator(theTokens, region); 
+        for (Iterator<CommonToken> ti = 
+                getTokenIterator(theTokens, region); 
                 ti.hasNext();) {
             CommonToken token = ti.next();
             int type = token.getType();
@@ -536,11 +543,13 @@ public class Nodes {
         Set<String> names = new LinkedHashSet<String>();
         Node identifyingNode = node;
         if (identifyingNode instanceof Tree.Expression) {
-            identifyingNode = ((Tree.Expression) identifyingNode).getTerm();
+            identifyingNode = 
+                    ((Tree.Expression) identifyingNode).getTerm();
         }
         if (identifyingNode instanceof Tree.InvocationExpression) {
-            identifyingNode = ((Tree.InvocationExpression) identifyingNode)
-                    .getPrimary();
+            identifyingNode = 
+                    ((Tree.InvocationExpression) identifyingNode)
+                            .getPrimary();
         }
         
         if (identifyingNode instanceof Tree.QualifiedMemberOrTypeExpression) {
@@ -591,8 +600,10 @@ public class Nodes {
                     addNameProposals(names, d, false);
                 }
                 if (node.getUnit().isIterableType(type)) {
-                    ProducedType iteratedType = node.getUnit().getIteratedType(type);
-                    TypeDeclaration itd = iteratedType.getDeclaration();
+                    ProducedType iteratedType = 
+                            node.getUnit().getIteratedType(type);
+                    TypeDeclaration itd = 
+                            iteratedType.getDeclaration();
                     if (itd instanceof ClassOrInterface || 
                         itd instanceof TypeParameter) {
                         addNameProposals(names, itd, true);
@@ -606,13 +617,13 @@ public class Nodes {
         return names.toArray(NO_STRINGS);
     }
 
-    private static void addNameProposals(Set<String> names, Declaration d,
-            boolean plural) {
+    private static void addNameProposals(Set<String> names, 
+            Declaration d, boolean plural) {
         addNameProposals(names, plural, d.getName());
     }
 
-    public static void addNameProposals(Set<String> names, boolean plural,
-            String tn) {
+    public static void addNameProposals(Set<String> names, 
+            boolean plural, String tn) {
         String name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
         Matcher matcher = IDPATTERN.matcher(name);
         while (matcher.find()) {
