@@ -70,6 +70,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -152,20 +153,27 @@ public class HierarchyView extends ViewPart {
             if (inputElement instanceof TypeDeclaration) {
                 TypeDeclaration declaration = 
                         (TypeDeclaration) inputElement;
+                ArrayList<Declaration> list = 
+                        new ArrayList<Declaration>();
                 if (showInherited) {
-                    ArrayList<Declaration> list = 
-                            new ArrayList<Declaration>();
                     Collection<DeclarationWithProximity> children = 
                             declaration.getMatchingMemberDeclarations(declaration, "", 0)
                                     .values();
                     for (DeclarationWithProximity dwp: children) {
                         list.add(dwp.getDeclaration());
                     }
-                    return list.toArray();
                 }
                 else {
-                    return declaration.getMembers().toArray();
+                    for (Declaration d: declaration.getMembers()) {
+                        if (d instanceof Functional) {
+                            if (((Functional) d).isAbstraction()) {
+                                continue;
+                            }
+                        }
+                        list.add(d);
+                    }
                 }
+                return list.toArray();
             }
             else {
                 return new Object[0];
