@@ -6,7 +6,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
@@ -83,7 +82,8 @@ class FindInvocationVisitor extends Visitor {
             //result=current;
             Term bme = that.getBaseMemberExpression();
             if (bme instanceof Tree.BaseMemberExpression) {
-                Declaration d = ((Tree.BaseMemberExpression) bme).getDeclaration();
+                Declaration d = 
+                        ((Tree.BaseMemberExpression) bme).getDeclaration();
                 if (d instanceof TypedDeclaration) {
                     parameter = (TypedDeclaration) d;
                 }
@@ -93,7 +93,21 @@ class FindInvocationVisitor extends Visitor {
     }
     @Override
     public void visit(Tree.AttributeDeclaration that) {
-        SpecifierOrInitializerExpression sie = that.getSpecifierOrInitializerExpression();
+        Tree.SpecifierOrInitializerExpression sie = 
+                that.getSpecifierOrInitializerExpression();
+        if (sie!=null) {
+            Expression e = sie.getExpression();
+            if (e!=null && node==e.getTerm()) {
+                //result=current;
+                parameter = that.getDeclarationModel();
+            }
+        }
+        super.visit(that);
+    }
+    @Override
+    public void visit(Tree.MethodDeclaration that) {
+        Tree.SpecifierOrInitializerExpression sie = 
+                that.getSpecifierExpression();
         if (sie!=null) {
             Expression e = sie.getExpression();
             if (e!=null && node==e.getTerm()) {
