@@ -23,8 +23,6 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLConte
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
@@ -949,21 +947,22 @@ public class DocumentationHover
         if (isBinary) {
             // Source attachment usually does not include Javadoc resources
             // => Always use the Javadoc location as base:
-            URL baseURL= JavaUI.getJavadocLocation(element, false);
+            URL baseURL = JavaUI.getJavadocLocation(element, false);
             if (baseURL != null) {
                 if (baseURL.getProtocol().equals("jar")) {
                     // It's a JarURLConnection, which is not known to the browser widget.
                     // Let's start the help web server:
-                    URL baseURL2= PlatformUI.getWorkbench().getHelpSystem().resolve(baseURL.toExternalForm(), true);
+                    URL baseURL2 = PlatformUI.getWorkbench().getHelpSystem()
+                            .resolve(baseURL.toExternalForm(), true);
                     if (baseURL2 != null) { // can be null if org.eclipse.help.ui is not available
-                        baseURL= baseURL2;
+                        baseURL = baseURL2;
                     }
                 }
                 return baseURL.toExternalForm();
             }
         }
         else {
-            IResource resource= element.getResource();
+            IResource resource = element.getResource();
             if (resource != null) {
                 /*
                  * Too bad: Browser widget knows nothing about EFS and custom URL handlers,
@@ -971,9 +970,10 @@ public class DocumentationHover
                  * We only support the local file system for now.
                  * A solution could be https://bugs.eclipse.org/bugs/show_bug.cgi?id=149022 .
                  */
-                IPath location= resource.getLocation();
-                if (location != null)
+                IPath location = resource.getLocation();
+                if (location != null) {
                     return location.toFile().toURI().toString();
+                }
             }
         }
         return null;
@@ -1012,16 +1012,32 @@ public class DocumentationHover
                 /*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
                     16, 16, "<tt><a " + link(dec) + ">" + 
                     dec.getName() + "</a></tt>", 20, 2);*/
-                buffer.append("<tt><a ")
-                    .append(HTML.link(dec))
-                    .append(">")
-                    .append(dec.getName())
-                    .append("</a></tt>");
+                appendLink(buffer, dec);
             }
         }
         if (!first) {
             buffer.append(".</p>");
         }
+    }
+
+    private static void appendLink(StringBuilder buffer, Referenceable dec) {
+        buffer.append("<tt><a ").append(HTML.link(dec)).append(">");
+        if (dec instanceof Declaration) {
+            buffer.append(((Declaration) dec).getName());
+        }
+        else if (dec instanceof Package) {
+            buffer.append(getLabel((Package)dec)); 
+        }
+        else if (dec instanceof Module) {
+            buffer.append(getLabel((Module)dec)); 
+        }
+        buffer.append("</a></tt>");
+    }
+    
+    private static String link(Referenceable dec) {
+        StringBuilder builder = new StringBuilder();
+        appendLink(builder, dec);
+        return builder.toString(); 
     }
 
     private static void addAdditionalPackageInfo(StringBuilder buffer,
@@ -1062,8 +1078,8 @@ public class DocumentationHover
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
-                "<span style='font-size:96%'>in module&nbsp;&nbsp;<tt><a " + HTML.link(mod) + ">" + 
-                        getLabel(mod) +"</a></tt></span>", 
+                "<span style='font-size:96%'>in module&nbsp;&nbsp;" + 
+                        link(mod) + "</span>", 
                 20, 2);
     }
     
@@ -1200,11 +1216,7 @@ public class DocumentationHover
                 /*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
                     16, 16, "<tt><a " + link(dec) + ">" + 
                     dec.getName() + "</a></tt>", 20, 2);*/
-                buffer.append("<tt><a ")
-                    .append(HTML.link(pack))
-                    .append(">")
-                    .append(pack.getNameAsString())
-                    .append("</a></tt>");
+                appendLink(buffer, pack);
             }
         }
         if (!first) {
@@ -1311,13 +1323,7 @@ public class DocumentationHover
                             buffer.append(", ");
                         }
 
-                        /*addImageAndLabel(buffer, null, fileUrl(getIcon(dec)).toExternalForm(), 
-                              16, 16, "<tt><a " + link(dec) + ">" + dec.getName() + "</a></tt>", 20, 2);*/
-                        buffer.append("<tt><a ")
-                            .append(HTML.link(mem))
-                            .append(">")
-                            .append(mem.getName()) 
-                            .append("</a></tt>");
+                        appendLink(buffer, mem);
                     }
                 }
                 if (!first) {
@@ -1369,9 +1375,9 @@ public class DocumentationHover
             HTML.addImageAndLabel(buffer, rd, 
                     HTML.fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
                     16, 16, 
-                    "refines&nbsp;&nbsp;<tt><a " + HTML.link(rd) + ">" + 
-                            rd.getName() +"</a></tt>&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
-                            producedTypeLink(sup, unit) + "</tt>", 
+                    "refines&nbsp;&nbsp;" + link(rd) + 
+                    "&nbsp;&nbsp;declared by&nbsp;&nbsp;<tt>" +
+                    producedTypeLink(sup, unit) + "</tt>", 
                     20, 2);
             buffer.append("</p>");
             if (!hasDoc) {
@@ -1441,11 +1447,8 @@ public class DocumentationHover
                     result.append(HTML.keyword("value"));
                 }
             }
-            result.append("&nbsp;<a ")
-                  .append(HTML.link(p.getModel()))
-                  .append(">")
-                  .append(p.getName())
-                  .append("</a>");
+            result.append("&nbsp;");
+            appendLink(result, p.getModel());
             appendParameters(p.getModel(), ppr, unit, result);
         }
     }
@@ -1588,8 +1591,9 @@ public class DocumentationHover
             Declaration pd = 
                     ((MethodOrValue) dec).getInitializerParameter()
                             .getDeclaration();
-            buffer.append("Parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
-                            pd.getName() +"</a></tt>.");
+            buffer.append("Parameter of&nbsp;&nbsp;<tt>");
+            appendLink(buffer, pd);
+            buffer.append(".");
 //            HTML.addImageAndLabel(buffer, pd, 
 //                    HTML.fileUrl(getIcon(pd)).toExternalForm(),
 //                    16, 16, 
@@ -1598,8 +1602,9 @@ public class DocumentationHover
         }
         else if (dec instanceof TypeParameter) {
             Declaration pd = ((TypeParameter) dec).getDeclaration();
-            buffer.append("Type parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
-                    pd.getName() +"</a></tt>.");
+            buffer.append("Type parameter of&nbsp;&nbsp;");
+            appendLink(buffer, pd);
+            buffer.append(".");
 //            HTML.addImageAndLabel(buffer, pd, 
 //                    HTML.fileUrl(getIcon(pd)).toExternalForm(),
 //                    16, 16, 
@@ -1639,8 +1644,8 @@ public class DocumentationHover
                 label = "<span style='font-size:96%'>in default package</span>";
             }
             else {
-                label = "<span style='font-size:96%'>in package&nbsp;&nbsp;<tt><a " + HTML.link(pack) + ">" + 
-                        getPackageLabel(dec) +"</a></tt></span>";
+                label = "<span style='font-size:96%'>in package&nbsp;&nbsp;" + 
+                        link(pack) + "</span>";
             }
             HTML.addImageAndLabel(buffer, pack, 
                     HTML.fileUrl(getIcon(pack)).toExternalForm(), 
@@ -1649,9 +1654,9 @@ public class DocumentationHover
             HTML.addImageAndLabel(buffer, mod, 
                     HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                     16, 16, 
-                    "<span style='font-size:96%'>in module&nbsp;&nbsp;<tt><a " + HTML.link(mod) + ">" + 
-                            getModuleLabel(dec) +"</a></tt></span>", 
-                            20, 2);
+                    "<span style='font-size:96%'>in module&nbsp;&nbsp;" + 
+                            link(mod) + "</span>", 
+                    20, 2);
         }
         buffer.append("</p>");
     }
