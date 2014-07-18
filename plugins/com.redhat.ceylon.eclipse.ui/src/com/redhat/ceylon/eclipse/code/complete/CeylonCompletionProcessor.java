@@ -739,7 +739,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 CommonToken nextToken = getNextToken(cpc, token);
                 boolean noParamsFollow = noParametersFollow(nextToken);
                 if (isInvocationProposable(dwp, ol, previousTokenType) && 
-                        !isQualifiedType(node) && 
+                        (!isQualifiedType(node)||dec.isStaticallyImportable()) && 
                         !inDoc && noParamsFollow) {
                     for (Declaration d: overloads(dec)) {
                         ProducedReference pr = isMember ? 
