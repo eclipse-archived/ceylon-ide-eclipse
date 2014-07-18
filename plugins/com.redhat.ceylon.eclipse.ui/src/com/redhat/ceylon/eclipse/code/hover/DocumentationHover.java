@@ -1739,8 +1739,16 @@ public class DocumentationHover
 
     private static void documentInheritance(TypeDeclaration dec, 
             Node node, StringBuilder buffer) {
+        ProducedReference pr = getProducedReference(dec, node);
+        ProducedType type;
+        if (pr instanceof ProducedType) {
+            type = (ProducedType) pr;
+        }
+        else {
+            type = dec.getType();
+        }
         Unit unit = node==null ? null : node.getUnit();
-        List<ProducedType> cts = ((TypeDeclaration) dec).getCaseTypes();
+        List<ProducedType> cts = type.getCaseTypes();
         if (cts!=null) {
             StringBuilder cases = new StringBuilder();
             for (ProducedType ct: cts) {
@@ -1759,7 +1767,7 @@ public class DocumentationHover
                     20, 2);
         }
         if (dec instanceof Class) {
-            ProducedType sup = ((Class) dec).getExtendedType();
+            ProducedType sup = type.getExtendedType();
             if (sup!=null) {
                 HTML.addImageAndLabel(buffer, sup.getDeclaration(), 
                         HTML.fileUrl("superclass.gif").toExternalForm(), 
@@ -1769,7 +1777,7 @@ public class DocumentationHover
                         20, 2);
             }
         }
-        List<ProducedType> sts = ((TypeDeclaration) dec).getSatisfiedTypes();
+        List<ProducedType> sts = type.getSatisfiedTypes();
         if (!sts.isEmpty()) {
             StringBuilder satisfies = new StringBuilder();
             for (ProducedType st: sts) {
