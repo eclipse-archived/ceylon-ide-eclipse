@@ -1,7 +1,9 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isAbstraction;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
@@ -70,7 +72,6 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -160,17 +161,17 @@ public class HierarchyView extends ViewPart {
                             declaration.getMatchingMemberDeclarations(declaration, "", 0)
                                     .values();
                     for (DeclarationWithProximity dwp: children) {
-                        list.add(dwp.getDeclaration());
+                        for (Declaration dec: 
+                            overloads(dwp.getDeclaration())) {
+                            list.add(dec);
+                        }
                     }
                 }
                 else {
                     for (Declaration d: declaration.getMembers()) {
-                        if (d instanceof Functional) {
-                            if (((Functional) d).isAbstraction()) {
-                                continue;
-                            }
+                        if (!isAbstraction(d)) {
+                            list.add(d);
                         }
-                        list.add(d);
                     }
                 }
                 return list.toArray();
