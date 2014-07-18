@@ -47,6 +47,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
+import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Escaping;
@@ -76,6 +77,10 @@ class NewUnitWizardPage extends WizardPage {
             Object element = selection.getFirstElement();
             if (element instanceof IFile) {
                 return JavaCore.create(((IFile) element).getParent());
+            }
+            else if (element instanceof SourceModuleNode) {
+                return ((SourceModuleNode) element)
+                        .getMainPackageFragment();
             }
             else {
                 return (IJavaElement) ((IAdaptable) element)
