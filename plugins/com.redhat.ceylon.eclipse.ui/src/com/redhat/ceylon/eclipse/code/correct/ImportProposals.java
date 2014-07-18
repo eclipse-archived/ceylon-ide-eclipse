@@ -394,17 +394,18 @@ public class ImportProposals {
         if (type==null) return;
         if (type.getDeclaration() instanceof UnionType) {
             for (ProducedType t: 
-                type.getDeclaration().getCaseTypes()) {
+                    type.getDeclaration().getCaseTypes()) {
                 importType(declarations, t, rootNode);
             }
         }
         else if (type.getDeclaration() instanceof IntersectionType) {
             for (ProducedType t: 
-                type.getDeclaration().getSatisfiedTypes()) {
+                    type.getDeclaration().getSatisfiedTypes()) {
                 importType(declarations, t, rootNode);
             }
         }
         else {
+            importType(declarations, type.getQualifyingType(), rootNode);
             TypeDeclaration td = type.getDeclaration();
             if (td instanceof ClassOrInterface && 
                     td.isToplevel()) {
