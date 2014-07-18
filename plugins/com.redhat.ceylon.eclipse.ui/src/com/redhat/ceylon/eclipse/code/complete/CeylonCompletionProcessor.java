@@ -783,10 +783,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     addSwitchProposal(offset, prefix, cpc, result, dwp, dec, node, doc);
                 }
                 
-                if (isRefinementProposable(dec, ol, scope) && 
-                        !memberOp && !isMember && !filter) {
+                if (!memberOp && !isMember && !filter) {
                     for (Declaration d: overloads(dec)) {
-                        if (d.isDefault() || d.isFormal()) {
+                        if (isRefinementProposable(d, ol, scope)) {
                             addRefinementProposal(offset, d, (ClassOrInterface) scope, 
                                     node, scope, prefix, cpc, doc, result, true);
                         }
@@ -853,11 +852,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             ProducedType t, boolean preamble) {
         for (DeclarationWithProximity dwp: set) {
             Declaration dec = dwp.getDeclaration();
-            if (isRefinementProposable(dec, ol, scope) && !filter && 
-                    dec instanceof MethodOrValue) {
+            if (!filter && dec instanceof MethodOrValue) {
                 MethodOrValue m = (MethodOrValue) dec;
                 for (Declaration d: overloads(dec)) {
-                    if ((d.isDefault() || d.isFormal()) &&
+                    if (isRefinementProposable(d, ol, scope) &&
                             t.isSubtypeOf(m.getType())) {
                         try {
                             String pfx = doc.get(node.getStartIndex(), 
@@ -936,6 +934,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     private static boolean isRefinementProposable(Declaration dec, 
             OccurrenceLocation ol, Scope scope) {
         return ol==null && 
+                (dec.isDefault() || dec.isFormal()) &&
                 (dec instanceof MethodOrValue || dec instanceof Class) && 
                 scope instanceof ClassOrInterface &&
                 ((ClassOrInterface) scope).isInheritedFromSupertype(dec);
