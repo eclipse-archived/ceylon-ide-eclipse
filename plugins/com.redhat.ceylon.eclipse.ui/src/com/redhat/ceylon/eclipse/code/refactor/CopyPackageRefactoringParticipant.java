@@ -64,7 +64,7 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
                 IPackageFragmentRoot dest = (IPackageFragmentRoot) getArguments().getDestination();
                 ReorgExecutionLog executionLog = getArguments().getExecutionLog();
                 final String newName = executionLog.getNewName(javaPackageFragment);
-                if (newName.isEmpty()) return null;
+                if (newName == null || newName.isEmpty()) return null;
                 newPackage = dest.getPackageFragment(newName).getResource();
                 final String oldName = javaPackageFragment.getElementName();
                 final IProject project = javaPackageFragment.getJavaProject().getProject();
