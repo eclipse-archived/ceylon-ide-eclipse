@@ -84,40 +84,42 @@ class ChangeTypeProposal extends CorrectionProposal {
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project) {
         if (node instanceof Tree.SimpleType) {
-            TypeDeclaration decl = ((Tree.SimpleType)node).getDeclarationModel();
+            TypeDeclaration decl = ((Tree.SimpleType) node).getDeclarationModel();
             if (decl instanceof TypeParameter) {
                 Tree.Statement statement = findStatement(cu, node);
-                if (statement instanceof Tree.AttributeDeclaration) {
-                    Tree.AttributeDeclaration ad = (Tree.AttributeDeclaration) statement;
-                    Tree.SimpleType st = (Tree.SimpleType) ad.getType();
-
-                    TypeParameter stTypeParam = null;
-                    if (st.getTypeArgumentList() != null) {
-                        List<Tree.Type> stTypeArguments = 
-                                st.getTypeArgumentList().getTypes();
-                        for (int i = 0; i < stTypeArguments.size(); i++) {
-                            Tree.SimpleType stTypeArgument = 
-                                    (Tree.SimpleType)stTypeArguments.get(i);
-                            if (decl.getName().equals(
-                                    stTypeArgument.getDeclarationModel().getName())) {
-                                TypeDeclaration stDecl = st.getDeclarationModel();
-                                if (stDecl != null) {
-                                    if (stDecl.getTypeParameters()!=null && 
-                                            stDecl.getTypeParameters().size() > i) {
-                                        stTypeParam = stDecl.getTypeParameters().get(i);
-                                        break;
-                                    }
-                                }                            
-                            }
-                        }                    
-                    }
-
-                    if (stTypeParam != null && 
-                            !stTypeParam.getSatisfiedTypes().isEmpty()) {
-                        IntersectionType it = new IntersectionType(cu.getUnit());
-                        it.setSatisfiedTypes(stTypeParam.getSatisfiedTypes());
-                        addChangeTypeProposals(proposals, problem, project, node, 
-                                it.canonicalize().getType(), decl, true);
+                if (statement instanceof Tree.TypedDeclaration) {
+                    Tree.TypedDeclaration ad = (Tree.TypedDeclaration) statement;
+                    if (ad.getType() instanceof Tree.SimpleType) {
+                        Tree.SimpleType st = (Tree.SimpleType) ad.getType();
+                        
+                        TypeParameter stTypeParam = null;
+                        if (st.getTypeArgumentList() != null) {
+                            List<Tree.Type> stTypeArguments = 
+                                    st.getTypeArgumentList().getTypes();
+                            for (int i=0; i<stTypeArguments.size(); i++) {
+                                Tree.SimpleType stTypeArgument = 
+                                        (Tree.SimpleType) stTypeArguments.get(i);
+                                if (decl.getName().equals(
+                                        stTypeArgument.getDeclarationModel().getName())) {
+                                    TypeDeclaration stDecl = st.getDeclarationModel();
+                                    if (stDecl != null) {
+                                        if (stDecl.getTypeParameters()!=null && 
+                                                stDecl.getTypeParameters().size()>i) {
+                                            stTypeParam = stDecl.getTypeParameters().get(i);
+                                            break;
+                                        }
+                                    }                            
+                                }
+                            }                    
+                        }
+                        
+                        if (stTypeParam != null && 
+                                !stTypeParam.getSatisfiedTypes().isEmpty()) {
+                            IntersectionType it = new IntersectionType(cu.getUnit());
+                            it.setSatisfiedTypes(stTypeParam.getSatisfiedTypes());
+                            addChangeTypeProposals(proposals, problem, project, node, 
+                                    it.canonicalize().getType(), decl, true);
+                        }
                     }
                 }
             }
