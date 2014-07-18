@@ -32,6 +32,8 @@ import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
 import static com.redhat.ceylon.eclipse.util.Highlights.NUMBERS;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static java.lang.Character.codePointCount;
 import static java.lang.Float.parseFloat;
@@ -456,6 +458,9 @@ public class DocumentationHover
         if (location==null) {
             return null;
         }
+        else if (location.equals("doc:ceylon.language:ceylon.language:Nothing")) {
+            return editor.getParseController().getRootNode().getUnit().getNothingDeclaration();
+        }
         TypeChecker tc = editor.getParseController().getTypeChecker();
         String[] bits = location.split(":");
         JDTModelLoader modelLoader = getModelLoader(tc);
@@ -486,8 +491,9 @@ public class DocumentationHover
             //TODO: nasty workaround for bug in model loader 
             //      where unshared parameters are not getting 
             //      persisted as members. Delete:
-            if (target==null && (scope instanceof Functional)) {
-                for (ParameterList pl: ((Functional)scope).getParameterLists()) {
+            if (target==null && scope instanceof Functional) {
+                for (ParameterList pl: 
+                    ((Functional)scope).getParameterLists()) {
                     for (Parameter p: pl.getParameters()) {
                         if (p!=null && p.getName().equals(bits[i])) {
                             target = p.getModel();
@@ -500,21 +506,24 @@ public class DocumentationHover
     }
     
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-        CeylonBrowserInput info = (CeylonBrowserInput) getHoverInfo2(textViewer, hoverRegion);
+        CeylonBrowserInput info = (CeylonBrowserInput) 
+                getHoverInfo2(textViewer, hoverRegion);
         return info!=null ? info.getHtml() : null;
     }
 
     @Override
-    public CeylonBrowserInput getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+    public CeylonBrowserInput getHoverInfo2(ITextViewer textViewer, 
+            IRegion hoverRegion) {
         return internalGetHoverInfo(editor, hoverRegion);
     }
 
-    static CeylonBrowserInput internalGetHoverInfo(final CeylonEditor editor, 
+    static CeylonBrowserInput internalGetHoverInfo(CeylonEditor editor, 
             IRegion hoverRegion) {
         if (editor==null || editor.getSelectionProvider()==null) {
             return null;
         }
-        CeylonBrowserInput result = getExpressionHover(editor, hoverRegion);
+        CeylonBrowserInput result = 
+                getExpressionHover(editor, hoverRegion);
         if (result==null) {
             result = getDeclarationHover(editor, hoverRegion);
         }
@@ -523,25 +532,30 @@ public class DocumentationHover
 
     static CeylonBrowserInput getExpressionHover(CeylonEditor editor, 
             IRegion hoverRegion) {
-        CeylonParseController parseController = editor.getParseController();
+        CeylonParseController parseController = 
+                editor.getParseController();
         if (parseController==null) {
             return null;
         }
-        Tree.CompilationUnit rn = parseController.getRootNode();
+        Tree.CompilationUnit rn = 
+                parseController.getRootNode();
         if (rn!=null) {
             int hoffset = hoverRegion.getOffset();
-            ITextSelection selection = getSelectionFromThread(editor);
+            ITextSelection selection = 
+                    getSelectionFromThread(editor);
             if (selection!=null && 
                 selection.getOffset()<=hoffset &&
                 selection.getOffset()+selection.getLength()>=hoffset) {
-                Node node = Nodes.findNode(rn, selection.getOffset(),
+                Node node = findNode(rn, 
+                        selection.getOffset(),
                         selection.getOffset()+selection.getLength()-1);
                 
                 if (node instanceof Tree.Expression) {
                     node = ((Tree.Expression) node).getTerm();
                 }
                 if (node instanceof Tree.Term) {
-                    return getTermTypeHoverInfo(node, selection.getText(), 
+                    return getTermTypeHoverInfo(node, 
+                            selection.getText(), 
                             editor.getCeylonSourceViewer().getDocument(),
                             editor.getParseController().getProject());
                 }
@@ -560,15 +574,19 @@ public class DocumentationHover
 
     static CeylonBrowserInput getDeclarationHover(CeylonEditor editor,
             IRegion hoverRegion) {
-        CeylonParseController parseController = editor.getParseController();
+        CeylonParseController parseController = 
+                editor.getParseController();
         if (parseController==null) {
             return null;
         }
-        Tree.CompilationUnit rootNode = parseController.getRootNode();
+        Tree.CompilationUnit rootNode = 
+                parseController.getRootNode();
         if (rootNode!=null) {
-            Node node = Nodes.findNode(rootNode, hoverRegion.getOffset());
+            Node node = findNode(rootNode, 
+                    hoverRegion.getOffset());
             if (node instanceof Tree.ImportPath) {
-                Referenceable r = ((Tree.ImportPath) node).getModel();
+                Referenceable r = 
+                        ((Tree.ImportPath) node).getModel();
                 if (r!=null) {
                     return getHoverInfo(r, null, editor, node);
                 }
@@ -578,15 +596,15 @@ public class DocumentationHover
             }
             else if (node instanceof Tree.LocalModifier) {
                 return getInferredTypeHoverInfo(node,
-                        editor.getParseController().getProject());
+                        parseController.getProject());
             }
             else if (node instanceof Tree.Literal) {
                 return getTermTypeHoverInfo(node, null, 
                         editor.getCeylonSourceViewer().getDocument(),
-                        editor.getParseController().getProject());
+                        parseController.getProject());
             }
             else {
-                return getHoverInfo(Nodes.getReferencedDeclaration(node), 
+                return getHoverInfo(getReferencedDeclaration(node), 
                         null, editor, node);
             }
         }
@@ -595,7 +613,8 @@ public class DocumentationHover
         }
     }
 
-    private static CeylonBrowserInput getInferredTypeHoverInfo(Node node, IProject project) {
+    private static CeylonBrowserInput getInferredTypeHoverInfo(Node node, 
+            IProject project) {
         ProducedType t = ((Tree.LocalModifier) node).getTypeModel();
         if (t==null) return null;
         StringBuilder buffer = new StringBuilder();
@@ -603,7 +622,7 @@ public class DocumentationHover
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("types.gif").toExternalForm(), 
                 16, 16, 
-                "<tt>" + /*HTML.highlightLine(*/producedTypeLink(t, node.getUnit()) + "</tt>", 
+                "<tt>" + producedTypeLink(t, node.getUnit()) + "</tt>", 
                 20, 4);
         buffer.append("<hr/>");
         if (!t.containsUnknowns()) {
@@ -636,7 +655,7 @@ public class DocumentationHover
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("types.gif").toExternalForm(), 
                 16, 16, 
-                "<tt>" + /*HTML.highlightLine(*/producedTypeLink(t, node.getUnit()) + "</tt> " + desc, 
+                "<tt>" + producedTypeLink(t, node.getUnit()) + "</tt> " + desc, 
                 20, 4);
         if (node instanceof Tree.StringLiteral) {
             buffer.append( "<hr/>")
