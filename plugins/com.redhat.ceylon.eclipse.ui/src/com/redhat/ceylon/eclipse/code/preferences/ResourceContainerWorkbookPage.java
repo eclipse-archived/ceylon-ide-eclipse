@@ -11,6 +11,8 @@
 
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_FOLDER;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +43,7 @@ import org.eclipse.jdt.internal.ui.wizards.dialogfields.TreeListDialogField;
 import org.eclipse.jdt.ui.actions.AbstractOpenWizardAction;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.layout.PixelConverter;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -52,16 +55,19 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
-import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 
 import com.redhat.ceylon.eclipse.code.wizard.AddResourceFolderWizard;
 import com.redhat.ceylon.eclipse.code.wizard.CreateMultipleResourceFoldersDialog;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 
 public class ResourceContainerWorkbookPage extends BuildPathBasePage {
     
 //    private static final String IGNORE_OPTIONAL_PROBLEMS = "ignore_optional_problems";
     
+    private static final ImageDescriptor NEW_FOLDER_ICON = 
+            CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CEYLON_NEW_FOLDER);
+
     private class OpenBuildPathWizardAction extends AbstractOpenWizardAction 
             implements IPropertyChangeListener {
 
@@ -122,7 +128,7 @@ public class ResourceContainerWorkbookPage extends BuildPathBasePage {
         AddResourceFolderWizard wizard= new AddResourceFolderWizard(existing, element, 
                 new Path(outputLocation).makeAbsolute(), false, newFolder, newFolder, 
                 newFolder?CPListElement.isProjectSourceFolder(existing, element.getJavaProject()):false, 
-                        newFolder, "Resource", IDEWorkbenchPlugin.getIDEImageDescriptor("wizban/newfolder_wiz.png"));
+                        newFolder, "Resource", NEW_FOLDER_ICON);
         wizard.setDoFlushChange(false);
         return wizard;
     }
@@ -133,7 +139,7 @@ public class ResourceContainerWorkbookPage extends BuildPathBasePage {
         AddResourceFolderWizard wizard= new AddResourceFolderWizard(existing, element, 
                 new Path(outputLocation).makeAbsolute(), true, newFolder, newFolder, 
                 newFolder?CPListElement.isProjectSourceFolder(existing, element.getJavaProject()):false, 
-                        newFolder, "Resource", IDEWorkbenchPlugin.getIDEImageDescriptor("wizban/newfolder_wiz.png"));
+                        newFolder, "Resource", NEW_FOLDER_ICON);
         wizard.setDoFlushChange(false);
         return wizard;
     }
@@ -359,7 +365,7 @@ public class ResourceContainerWorkbookPage extends BuildPathBasePage {
                     CPListElement[] existing= existingElements.toArray(new CPListElement[existingElements.size()]);
                     CreateMultipleResourceFoldersDialog dialog= new CreateMultipleResourceFoldersDialog(fCurrJProject, 
                             existing, fJavaOutputLocationField.getText(), "Resource",
-                            IDEWorkbenchPlugin.getIDEImageDescriptor("wizban/newfolder_wiz.png"), getShell());
+                            NEW_FOLDER_ICON, getShell());
                     if (dialog.open() == Window.OK) {
                         refresh(dialog.getInsertedElements(), dialog.getRemovedElements(), 
                                 dialog.getModifiedElements(), dialog.getOutputLocation());

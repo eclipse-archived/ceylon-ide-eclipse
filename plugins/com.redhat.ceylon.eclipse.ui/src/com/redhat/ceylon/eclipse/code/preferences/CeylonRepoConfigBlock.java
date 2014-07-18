@@ -587,12 +587,4 @@ public class CeylonRepoConfigBlock {
         }
     }
 
-    private IFolder getOutputFolder() {
-        String outputRepoUrl = outputRepoText.getText();
-        if (outputRepoUrl.startsWith("./") || outputRepoUrl.startsWith(".\\")) {
-            outputRepoUrl = outputRepoUrl.substring(2);
-        }
-        return project.getFolder(outputRepoUrl);
-    }    
-
 }
