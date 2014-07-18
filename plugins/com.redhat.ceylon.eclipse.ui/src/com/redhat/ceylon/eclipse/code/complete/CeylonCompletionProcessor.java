@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isAbstraction;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
@@ -766,7 +767,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                     dwp, dec, scope, isMember);
                         }
                     }
-                    else {
+                    else if (!(dec instanceof Method) || !isAbstraction(dec)) {
                         addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope, isMember);
                     }
                 }
