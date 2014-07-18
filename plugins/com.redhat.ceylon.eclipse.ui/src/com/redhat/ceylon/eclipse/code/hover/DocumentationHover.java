@@ -1591,7 +1591,7 @@ public class DocumentationHover
             Declaration pd = 
                     ((MethodOrValue) dec).getInitializerParameter()
                             .getDeclaration();
-            buffer.append("Parameter of&nbsp;&nbsp;<tt>");
+            buffer.append("Parameter of&nbsp;&nbsp;");
             appendLink(buffer, pd);
             buffer.append(".");
 //            HTML.addImageAndLabel(buffer, pd, 
