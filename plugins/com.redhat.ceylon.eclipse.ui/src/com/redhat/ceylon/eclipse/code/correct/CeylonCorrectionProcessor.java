@@ -36,6 +36,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifi
 import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeReferenceProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningParametersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeArgProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToMethodProposal.addConvertGetterToMethodProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertIfElseToThenElse.addConvertToThenElseProposal;
@@ -511,8 +512,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     project, tc, file);
             break;
         case 2100:
-        case 2102:
             addChangeTypeProposals(rootNode, node, problem, proposals, project);
+            addSatisfiesProposals(rootNode, node, proposals, project);
+            break;
+        case 2102:
+            addChangeTypeArgProposals(rootNode, node, problem, proposals, project);
             addSatisfiesProposals(rootNode, node, proposals, project);
             break;
         case 2101:

@@ -80,7 +80,7 @@ class ChangeTypeProposal extends CorrectionProposal {
                 typeName, offset+il, change));
     }
     
-    static void addChangeTypeProposals(Tree.CompilationUnit cu, Node node, 
+    static void addChangeTypeArgProposals(Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project) {
         if (node instanceof Tree.SimpleType) {
@@ -124,6 +124,11 @@ class ChangeTypeProposal extends CorrectionProposal {
                 }
             }
         }
+    }
+    
+    static void addChangeTypeProposals(Tree.CompilationUnit cu, Node node, 
+            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+            IProject project) {
         if (node instanceof Tree.SpecifierExpression) {
             Tree.Expression e = ((Tree.SpecifierExpression) node).getExpression();
             if (e!=null) {
