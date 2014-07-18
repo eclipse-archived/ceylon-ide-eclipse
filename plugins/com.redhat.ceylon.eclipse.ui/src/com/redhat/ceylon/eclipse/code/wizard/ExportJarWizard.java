@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
 import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
+import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.File;
@@ -13,15 +14,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -59,7 +57,7 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
     public void addPages() {
         super.addPages();
         if (page == null) {
-            IJavaElement selectedElement = getSelectedElement();
+            IJavaElement selectedElement = getSelectedJavaElement(selection);
             String repoPath=null;
             IJavaProject project=null;
             if (selectedElement!=null) {
@@ -107,23 +105,6 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
             repositoryPath = System.getProperty("user.home") + "/.ceylon/repo";
         }
         return repositoryPath;
-    }
-    
-    //TODO: fix copy/paste from NewUnitWizardPage
-    private IJavaElement getSelectedElement() {
-        if (selection!=null && selection.size()==1) {
-            Object element = selection.getFirstElement();
-            if (element instanceof IFile) {
-                return JavaCore.create(((IFile) element).getParent());
-            }
-            else {
-                return (IJavaElement) ((IAdaptable) element)
-                        .getAdapter(IJavaElement.class);
-            }
-        }
-        else {
-            return null;
-        }
     }
     
     private Exception ex;
