@@ -7,9 +7,13 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IUndoableOperation;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -22,7 +26,9 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.operations.IWorkbenchOperationSupport;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-class WizardUtil {
+import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
+
+public class WizardUtil {
 
     static boolean runOperation(IUndoableOperation op, 
             IWizardContainer container) {
@@ -82,6 +88,26 @@ class WizardUtil {
                 wizard);
         wd.setTitle(wizard.getWindowTitle());
         wd.open();
+    }
+
+    public static IJavaElement getSelectedJavaElement(IStructuredSelection selection) {
+        if (selection!=null && selection.size()==1) {
+            Object element = selection.getFirstElement();
+            if (element instanceof IFile) {
+                return JavaCore.create(((IFile) element).getParent());
+            }
+            else if (element instanceof SourceModuleNode) {
+                return ((SourceModuleNode) element)
+                        .getMainPackageFragment();
+            }
+            else {
+                return (IJavaElement) ((IAdaptable) element)
+                        .getAdapter(IJavaElement.class);
+            }
+        }
+        else {
+            return null;
+        }
     }
 
 }

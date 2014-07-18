@@ -1,13 +1,11 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.select.SourceFileSelectionDialog.selectSourceFile;
+import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
@@ -35,23 +33,6 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     MoveToUnitWizardPage(String title, IFile file) {
         super(title);
         this.file = file;
-    }
-
-    //TODO: fix copy/paste to ExportModuleWizard
-    private IJavaElement getSelectedElement() {
-        if (selection!=null && selection.size()==1) {
-            Object element = selection.getFirstElement();
-            if (element instanceof IFile) {
-                return JavaCore.create(((IFile) element).getParent());
-            }
-            else {
-                return (IJavaElement) ((IAdaptable) element)
-                        .getAdapter(IJavaElement.class);
-            }
-        }
-        else {
-            return null;
-        }
     }
     
     @Override
@@ -128,7 +109,7 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 IFile file = selectSourceFile(getShell(), 
-                        getSelectedElement());
+                        getSelectedJavaElement(selection));
                 if (file!=null) {
                     setUnitName(file.getFullPath()
                             .toPortableString());

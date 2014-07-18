@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
@@ -16,7 +17,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
@@ -47,7 +47,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Escaping;
@@ -71,27 +70,6 @@ class NewUnitWizardPage extends WizardPage {
         setDescription(description);
     }
 
-    //TODO: fix copy/paste to ExportModuleWizard
-    private IJavaElement getSelectedElement() {
-        if (selection!=null && selection.size()==1) {
-            Object element = selection.getFirstElement();
-            if (element instanceof IFile) {
-                return JavaCore.create(((IFile) element).getParent());
-            }
-            else if (element instanceof SourceModuleNode) {
-                return ((SourceModuleNode) element)
-                        .getMainPackageFragment();
-            }
-            else {
-                return (IJavaElement) ((IAdaptable) element)
-                        .getAdapter(IJavaElement.class);
-            }
-        }
-        else {
-            return null;
-        }
-    }
-    
     @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
@@ -557,7 +535,7 @@ class NewUnitWizardPage extends WizardPage {
     }
 
     public void initFromSelection() {
-        IJavaElement je = getSelectedElement();
+        IJavaElement je = getSelectedJavaElement(selection);
         if (je instanceof IJavaProject) {
             IJavaProject jp = (IJavaProject) je;
             if (jp.isOpen()) {
