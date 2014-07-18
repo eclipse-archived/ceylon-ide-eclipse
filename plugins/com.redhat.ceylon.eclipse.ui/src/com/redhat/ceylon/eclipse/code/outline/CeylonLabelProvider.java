@@ -802,6 +802,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             label.append("<");
             int len = tpl.getTypeParameterDeclarations().size(), i=0;
             for (Tree.TypeParameterDeclaration p: tpl.getTypeParameterDeclarations()) {
+                if (p.getTypeVariance()!=null) {
+                    label.append(p.getTypeVariance().getText(), KW_STYLER).append(" "); 
+                }
                 label.append(name(p.getIdentifier()), TYPE_STYLER);
                 if (++i<len) label.append(", ");
             }

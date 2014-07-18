@@ -286,7 +286,7 @@ public class CodeCompletions {
             if (d.isDefault()) result.append("default ");
             if (isVariable(d)) result.append("variable ");
             appendDeclarationHeaderDescription(d, d.getUnit(), result);
-            appendTypeParameters(d, result);
+            appendTypeParameters(d, result, true);
             appendParametersDescription(d, result, null);
         }
         return result.toString();
@@ -296,7 +296,7 @@ public class CodeCompletions {
             ProducedReference pr, Unit unit) {
         StringBuilder result = new StringBuilder();
         appendDeclarationHeaderDescription(d, pr, unit, result);
-        appendTypeParameters(d, result);
+        appendTypeParameters(d, result, true);
         appendParametersDescription(d, pr, unit, result);
         return result.toString();
     }
@@ -309,7 +309,7 @@ public class CodeCompletions {
             if (d.isDefault()) result.append("default ", ANN_STYLER);
             if (isVariable(d)) result.append("variable ", ANN_STYLER);
             appendDeclarationDescription(d, result);
-            appendTypeParameters(d, result);
+            appendTypeParameters(d, result, true);
             appendParametersDescription(d, result);
             if (d instanceof TypedDeclaration) {
                 if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
@@ -489,8 +489,14 @@ public class CodeCompletions {
             if (!types.isEmpty()) {
                 result.append("<");
                 for (TypeParameter tp: types) {
-                    if (tp.isCovariant()) result.append("out ");
-                    if (tp.isContravariant()) result.append("in ");
+                    if (variances) {
+                        if (tp.isCovariant()) {
+                            result.append("out ");
+                        }
+                        if (tp.isContravariant()) {
+                            result.append("in ");
+                        }
+                    }
                     result.append(tp.getName()).append(", ");
                 }
                 result.setLength(result.length()-2);
@@ -500,7 +506,7 @@ public class CodeCompletions {
     }
     
     private static void appendTypeParameters(Declaration d, 
-            StyledString result) {
+            StyledString result, boolean variances) {
         if (d instanceof Generic) {
             List<TypeParameter> types = 
                     ((Generic) d).getTypeParameters();
@@ -508,6 +514,14 @@ public class CodeCompletions {
                 result.append("<");
                 int len = types.size(), i = 0;
                 for (TypeParameter tp: types) {
+                    if (variances) {
+                        if (tp.isCovariant()) {
+                            result.append("out ", KW_STYLER);
+                        }
+                        if (tp.isContravariant()) {
+                            result.append("in ", KW_STYLER);
+                        }
+                    }
                     result.append(tp.getName(), TYPE_STYLER);
                     if (++i<len) result.append(", ");
                 }
