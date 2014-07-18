@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
@@ -26,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
@@ -46,9 +48,12 @@ class ChangeTypeProposal extends CorrectionProposal {
     static void addChangeTypeProposal(Node node, ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, Declaration dec, 
             ProducedType newType, IFile file, Tree.CompilationUnit cu) {
-        // better safe than throwing
-        if(node.getStartIndex() == null || node.getStopIndex() == null)
+        if (node.getStartIndex() == null || node.getStopIndex() == null) {
             return;
+        }
+        if (newType.isNothing()) {
+            return;
+        }
         TextFileChange change =  new TextFileChange("Change Type", file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = CorrectionUtil.getDocument(change);
@@ -61,10 +66,12 @@ class ChangeTypeProposal extends CorrectionProposal {
         change.addEdit(new ReplaceEdit(offset, length, typeName));
         String name;
         if (dec.isParameter()) {
-            name = "parameter '" + dec.getName() + "' of '" + ((Declaration) dec.getContainer()).getName() + "'";
+            name = "parameter '" + dec.getName() + "' of '" + 
+                    ((Declaration) dec.getContainer()).getName() + "'";
         }
         else if (dec.isClassOrInterfaceMember()) {
-            name = "member '" +  dec.getName() + "' of '" + ((ClassOrInterface) dec.getContainer()).getName() + "'";
+            name = "member '" +  dec.getName() + "' of '" + 
+                    ((ClassOrInterface) dec.getContainer()).getName() + "'";
         }
         else {
             name = "'" + dec.getName() + "'";
@@ -132,7 +139,10 @@ class ChangeTypeProposal extends CorrectionProposal {
             fav.visit(cu);
             TypedDeclaration td = fav.parameter;
             if (td!=null) {
-                if (node instanceof Tree.BaseMemberExpression){
+                if (node instanceof Tree.InvocationExpression) {
+                    node = ((Tree.InvocationExpression) node).getPrimary(); 
+                }
+                if (node instanceof Tree.BaseMemberExpression) {
                     TypedDeclaration d = (TypedDeclaration) 
                             ((Tree.BaseMemberExpression) node).getDeclaration();
                     addChangeTypeProposals(proposals, problem, project, node, 
@@ -165,7 +175,7 @@ class ChangeTypeProposal extends CorrectionProposal {
                     }
                     
                     if (dec instanceof TypedDeclaration) {
-                        TypedDeclaration typedDec = (TypedDeclaration)dec;
+                        TypedDeclaration typedDec = (TypedDeclaration) dec;
                         FindDeclarationNodeVisitor fdv = 
                                 new FindDeclarationNodeVisitor(typedDec);
                         getRootNode(unit).visit(fdv);
@@ -174,12 +184,19 @@ class ChangeTypeProposal extends CorrectionProposal {
                         if (decNode!=null) {
                             typeNode = decNode.getType();
                             if (typeNode!=null) {
-                                t=((Tree.Type)typeNode).getTypeModel();
+                                t= ((Tree.Type) typeNode).getTypeModel();
                             }
                         }
                     }
                     
-                    if (typeNode != null) {
+                    //TODO: fix this condition to properly distinguish
+                    //      between a method reference and an invocation
+                    if (dec instanceof Method && 
+                            node.getUnit().isCallableType(type)) {
+                        type = node.getUnit().getCallableReturnType(type);
+                    }
+                    
+                    if (typeNode != null && !isTypeUnknown(type)) {
                         addChangeTypeProposal(typeNode, problem, proposals, dec, 
                                 type, getFile(unit), unit.getCompilationUnit());
                         if (t != null) {
