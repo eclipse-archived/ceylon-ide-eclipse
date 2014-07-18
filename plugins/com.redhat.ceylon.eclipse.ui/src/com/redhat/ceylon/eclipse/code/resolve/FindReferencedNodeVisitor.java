@@ -28,12 +28,12 @@ public class FindReferencedNodeVisitor extends Visitor {
                 if (method.isOverloaded()) {
                     return method==dec;
                 }
-                else {
-                    return true;
-                }
             }
+            return true;
         }
-        return false;
+        else {
+            return false;
+        }
     }
     
     @Override
