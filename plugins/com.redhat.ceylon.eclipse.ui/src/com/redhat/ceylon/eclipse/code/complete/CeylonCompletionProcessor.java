@@ -1109,7 +1109,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         for (Map.Entry<String,DeclarationWithProximity> e: 
                 candidates.entrySet()) {
             Declaration declaration = e.getValue().getDeclaration();
-            if (declaration instanceof Method) {
+            if (declaration instanceof Method && !declaration.isAnnotation()) {
                 List<ParameterList> pls = ((Method) declaration).getParameterLists();
                 if (!pls.isEmpty()) {
                     ParameterList pl = pls.get(0);
