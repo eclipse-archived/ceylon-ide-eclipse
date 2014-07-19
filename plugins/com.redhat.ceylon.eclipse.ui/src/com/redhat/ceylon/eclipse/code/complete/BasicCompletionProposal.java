@@ -132,14 +132,15 @@ class BasicCompletionProposal extends CompletionProposal {
             arg = ((Tree.Expression) arg).getTerm(); 
         }
         final int start = arg.getStartIndex();
-        final int len = arg.getStopIndex()-start+1;
+        final int stop = arg.getStopIndex();
+        int origin = primary.getStartIndex();
         String argText;
         String prefix;
         try {
             //the argument
-            argText = doc.get(start, len);
+            argText = doc.get(start, stop-start+1);
             //the text to replace
-            prefix = doc.get(start, offset-start);
+            prefix = doc.get(origin, offset-origin);
         }
         catch (BadLocationException e) {
             return;
@@ -147,6 +148,7 @@ class BasicCompletionProposal extends CompletionProposal {
         final Declaration dec = dwp.getDeclaration();
         String text = dec.getName(arg.getUnit())
                 + "(" + argText + ")";
+        //TODO: imports!!!
         result.add(new BasicCompletionProposal(offset, prefix, 
                 getDescriptionFor(dwp) + "(...)",
                 text, dec, cpc) {
