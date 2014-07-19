@@ -4,8 +4,13 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescrip
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextForDocLink;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecorationAttributes;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FUN;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LOCAL_FUN;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.List;
@@ -13,6 +18,7 @@ import java.util.List;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
@@ -23,7 +29,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Indents;
 
 class BasicCompletionProposal extends CompletionProposal {
     
@@ -49,14 +54,15 @@ class BasicCompletionProposal extends CompletionProposal {
             if (td.getType()!=null && 
                     d.getUnit().isIterableType(td.getType())) {
                 String elemName;
-                if (d.getName().length()==1) {
+                String name = d.getName();
+                if (name.length()==1) {
                     elemName = "element";
                 }
-                else if (d.getName().endsWith("s")) {
-                    elemName = d.getName().substring(0, d.getName().length()-1);
+                else if (name.endsWith("s")) {
+                    elemName = name.substring(0, name.length()-1);
                 }
                 else {
-                    elemName = d.getName().substring(0, 1);
+                    elemName = name.substring(0, 1);
                 }
                 result.add(new BasicCompletionProposal(offset, prefix, 
                         "for (" + elemName + " in " + getDescriptionFor(dwp) + ")", 
@@ -103,13 +109,13 @@ class BasicCompletionProposal extends CompletionProposal {
                         }
                         body.append(pt.getProducedTypeName(node.getUnit()))
                             .append(") {}")
-                            .append(Indents.getDefaultLineDelimiter(doc));
+                            .append(getDefaultLineDelimiter(doc));
                     }
                     body.append(indent);
                     result.add(new BasicCompletionProposal(offset, prefix, 
                             "switch (" + getDescriptionFor(dwp) + ")", 
                             "switch (" + getTextFor(dwp) + ")" + 
-                                    Indents.getDefaultLineDelimiter(doc) + body, 
+                                    getDefaultLineDelimiter(doc) + body, 
                             d, cpc));
                 }
             }
@@ -138,12 +144,20 @@ class BasicCompletionProposal extends CompletionProposal {
         catch (BadLocationException e) {
             return;
         }
-        Declaration dec = dwp.getDeclaration();
+        final Declaration dec = dwp.getDeclaration();
         String text = dec.getName(arg.getUnit())
                 + "(" + argText + ")";
         result.add(new BasicCompletionProposal(offset, prefix, 
                 getDescriptionFor(dwp) + "(...)",
-                text, dec, cpc));
+                text, dec, cpc) {
+            @Override
+            public Image getImage() {
+                return getDecoratedImage(dec.isShared() ? 
+                                CEYLON_FUN : CEYLON_LOCAL_FUN,
+                        getDecorationAttributes(dec),
+                        false);
+            }
+        });
     }
     
     private final CeylonParseController cpc;
