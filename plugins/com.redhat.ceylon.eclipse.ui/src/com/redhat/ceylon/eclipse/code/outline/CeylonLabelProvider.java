@@ -201,17 +201,21 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     protected static Image getDecoratedImage(Object element, String key, boolean smallSize) {
         if (key==null) return null;
-        int flags = CeylonLabelProvider.getDecorationAttributes(element);
-        return getDecoratedImage(key, flags, smallSize);
+        return getDecoratedImage(key, getDecorationAttributes(element), smallSize);
     }
 
     public static Image getDecoratedImage(String key, int decorationAttributes, boolean smallSize) {
         ImageDescriptor descriptor = imageRegistry.getDescriptor(key);
-        String decoratedKey = key+'#'+decorationAttributes + (smallSize ? "#small" : "");
+        if (descriptor==null) {
+            return null;
+        }
+        String decoratedKey = key+'#'+decorationAttributes + 
+                (smallSize ? "#small" : "");
         Image image = imageRegistry.get(decoratedKey);
         if (image==null) {
             imageRegistry.put(decoratedKey, 
-                    new DecoratedImageDescriptor(descriptor, decorationAttributes, smallSize ? SMALL_SIZE : BIG_SIZE));
+                    new DecoratedImageDescriptor(descriptor, decorationAttributes, 
+                            smallSize ? SMALL_SIZE : BIG_SIZE));
             image = imageRegistry.get(decoratedKey);
         }
         return image;

@@ -25,6 +25,8 @@ public interface CeylonResources {
     public static final String CEYLON_PARAMETER = "ceylon_parameter";
     public static final String CEYLON_PARAMETER_METHOD = "ceylon_parameter_method";
     public static final String CEYLON_TYPE_PARAMETER = "ceylon_type_parameter";
+    public static final String CEYLON_FUN = "ceylon_fun";
+    public static final String CEYLON_LOCAL_FUN = "ceylon_local_fun";
     
     public static final String CEYLON_MODULE = "ceylon_module";
     public static final String CEYLON_SOURCE_ARCHIVE = "ceylon_source_archive";

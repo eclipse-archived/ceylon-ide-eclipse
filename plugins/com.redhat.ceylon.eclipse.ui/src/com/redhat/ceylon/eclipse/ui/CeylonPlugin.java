@@ -340,6 +340,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(MULTIPLE_TYPES, image("types.gif"));
         reg.put(CEYLON_ERROR, image("error_obj.gif"));
         reg.put(CEYLON_WARNING, image("warning_obj.gif"));
+        reg.put(CEYLON_FUN, image("public_fun.gif"));
+        reg.put(CEYLON_LOCAL_FUN, image("private_fun.gif"));
         
         reg.put(WARNING_IMAGE, image(WARNING_IMAGE));
         reg.put(ERROR_IMAGE, image(ERROR_IMAGE));
