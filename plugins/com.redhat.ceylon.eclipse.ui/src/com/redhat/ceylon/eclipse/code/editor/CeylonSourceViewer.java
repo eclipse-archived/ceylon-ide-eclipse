@@ -286,8 +286,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
             Clipboard clipboard = 
                     new Clipboard(getTextWidget().getDisplay());
             try {
-                String text = 
-                        (String) clipboard.getContents(SourceTransfer.INSTANCE);
+                String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
+                if (text==null) {
+                    text = (String) clipboard.getContents(TextTransfer.getInstance());
+                }
                 if (text==null) {
                     return false;
                 }
