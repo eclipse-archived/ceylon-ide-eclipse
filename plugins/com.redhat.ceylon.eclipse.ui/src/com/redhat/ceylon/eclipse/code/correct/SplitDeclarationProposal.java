@@ -34,14 +34,15 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 
 class SplitDeclarationProposal extends CorrectionProposal {
     
-	private SplitDeclarationProposal(Declaration dec, int offset, TextChange change) {
+	private SplitDeclarationProposal(Declaration dec, 
+	        int offset, TextChange change) {
         super("Split declaration of '" + dec.getName() + "'", change,
                 new Region(offset, 0));
     }
     
-	private static void addSplitDeclarationProposal(IDocument doc, Tree.CompilationUnit cu,
-            Collection<ICompletionProposal> proposals, IFile file,
-            Tree.TypedDeclaration decNode) {
+	private static void addSplitDeclarationProposal(IDocument doc, 
+	        Tree.TypedDeclaration decNode, Tree.CompilationUnit cu, 
+	        IFile file, Collection<ICompletionProposal> proposals) {
         TypedDeclaration dec = decNode.getDeclarationModel();
         if (dec==null) return;
         if (dec.isToplevel()) return;
@@ -97,8 +98,23 @@ class SplitDeclarationProposal extends CorrectionProposal {
             if (body.getStatements().contains(decNode)) {
                 return;
             }
-            String text = delim + indent + getDefaultIndent() +
-                    typeString + " " + dec.getName() + paramsString + ";";
+            Tree.AnnotationList al = decNode.getAnnotationList();
+            String annotations;
+            try {
+                int len = al.getStopIndex()-al.getStartIndex()+1;
+                if (len==0) {
+                    annotations = "";
+                }
+                else {
+                    annotations = doc.get(al.getStartIndex(), len) + " ";
+                }
+            }
+            catch (BadLocationException e) {
+                annotations = "";
+            }
+            String text = delim + indent + getDefaultIndent() + 
+                    annotations + typeString + " " + dec.getName() + 
+                    paramsString + ";";
             if (body.getStopIndex()==body.getStartIndex()+1) {
                 text += delim + indent;
             }
@@ -125,30 +141,35 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 importType(decs, infType, cu);
                 il=applyImports(change, decs, cu, doc);
             }
-            change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), explicitType));
+            change.addEdit(new ReplaceEdit(typeOffset, 
+                    type.getText().length(), explicitType));
         }
         else {
             il=0;
         }
-        proposals.add(new SplitDeclarationProposal(dec, idEndOffset+il, change));
+        proposals.add(new SplitDeclarationProposal(dec, 
+                idEndOffset+il, change));
     }
 
 	static void addSplitDeclarationProposals(
 			Collection<ICompletionProposal> proposals, IDocument doc,
 			IFile file, Tree.CompilationUnit cu, Tree.Declaration decNode) {
 		if (decNode instanceof Tree.AttributeDeclaration) {
-	        Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
+	        Tree.AttributeDeclaration attDecNode = 
+	                (Tree.AttributeDeclaration) decNode;
 	        Tree.SpecifierOrInitializerExpression sie = 
 	                attDecNode.getSpecifierOrInitializerExpression();
 	        if (sie!=null || decNode.getDeclarationModel().isParameter()) {
-	            addSplitDeclarationProposal(doc, cu, proposals, file, attDecNode);
+	            addSplitDeclarationProposal(doc, attDecNode, cu, file, proposals);
 	        }
 	    }
 	    if (decNode instanceof Tree.MethodDeclaration) {
-	        Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) decNode;
-	        Tree.SpecifierExpression sie = methDecNode.getSpecifierExpression();
+	        Tree.MethodDeclaration methDecNode = 
+	                (Tree.MethodDeclaration) decNode;
+	        Tree.SpecifierExpression sie = 
+	                methDecNode.getSpecifierExpression();
 	        if (sie!=null || decNode.getDeclarationModel().isParameter()) {
-	            addSplitDeclarationProposal(doc, cu, proposals, file, methDecNode);
+	            addSplitDeclarationProposal(doc, methDecNode, cu, file, proposals);
 	        }
 	    }
 	}
