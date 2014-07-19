@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.List;
 
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
@@ -20,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Indents;
 
@@ -113,11 +115,41 @@ class BasicCompletionProposal extends CompletionProposal {
             }
         }
     }
-
+    
+    static void addFunctionProposal(int offset,
+            CeylonParseController cpc, Tree.Primary primary,
+            List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp,
+            IDocument doc) {
+        Tree.Term arg = primary;
+        while (arg instanceof Tree.Expression) {
+            arg = ((Tree.Expression) arg).getTerm(); 
+        }
+        final int start = arg.getStartIndex();
+        final int len = arg.getStopIndex()-start+1;
+        String argText;
+        String prefix;
+        try {
+            //the argument
+            argText = doc.get(start, len);
+            //the text to replace
+            prefix = doc.get(start, offset-start);
+        }
+        catch (BadLocationException e) {
+            return;
+        }
+        Declaration dec = dwp.getDeclaration();
+        String text = dec.getName(arg.getUnit())
+                + "(" + argText + ")";
+        result.add(new BasicCompletionProposal(offset, prefix, 
+                getDescriptionFor(dwp) + "(...)",
+                text, dec, cpc));
+    }
+    
     private final CeylonParseController cpc;
     private final Declaration declaration;
     
-    private BasicCompletionProposal(int offset, String prefix, 
+    BasicCompletionProposal(int offset, String prefix, 
             String desc, String text, Declaration dec, 
             CeylonParseController cpc) {
         super(offset, prefix, getImageForDeclaration(dec), 
