@@ -355,7 +355,7 @@
             annotationType="com.redhat.ceylon.eclipse.ui.todo"
             label="Ceylon Tasks"
             symbolicIcon="task"
-            presentationLayer="1"
+            presentationLayer="3"
             contributesToHeader="true"
             includeOnPreferencePage="true"
             
@@ -382,7 +382,7 @@
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
             label="Ceylon References"
-            presentationLayer="3"
+            presentationLayer="2"
             contributesToHeader="false"
             includeOnPreferencePage="true"
             icon="icons/occ_match.gif"
@@ -414,7 +414,7 @@
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.declarationAnnotation"
             label="Ceylon Declarations"
-            presentationLayer="3"
+            presentationLayer="2"
             contributesToHeader="false"
             includeOnPreferencePage="true"
             icon="icons/occ_match.gif"
@@ -445,8 +445,8 @@
             
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.assignmentAnnotation"
-            label="Ceylon Assigments"
-            presentationLayer="3"
+            label="Ceylon Assignments"
+            presentationLayer="2"
             contributesToHeader="false"
             includeOnPreferencePage="true"
             icon="icons/occ_match.gif"
