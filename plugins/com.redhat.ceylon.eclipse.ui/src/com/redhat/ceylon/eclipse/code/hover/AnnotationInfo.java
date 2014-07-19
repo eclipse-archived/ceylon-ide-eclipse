@@ -61,10 +61,7 @@ class AnnotationInfo {
             Annotation annotation = e.getKey();
             Position position = e.getValue();
             if (annotation instanceof CeylonAnnotation) {
-                for (ICompletionProposal p: 
-                    getAnnotationFixes((CeylonAnnotation) annotation, position)) {
-                    list.add(p);
-                }
+                collectAnnotationFixes((CeylonAnnotation) annotation, position, list);
             }
             if (annotation instanceof MarkerAnnotation) {
                 for (ICompletionProposal p:
@@ -76,8 +73,8 @@ class AnnotationInfo {
         return list.toArray(NO_PROPOSALS);
     }
 
-    private ICompletionProposal[] getAnnotationFixes(CeylonAnnotation annotation, 
-            Position position) {
+    private void collectAnnotationFixes(CeylonAnnotation annotation, 
+            Position position, List<ICompletionProposal> proposals) {
         final ProblemLocation location = 
                 new ProblemLocation(position.getOffset(), 
                         position.getLength(), annotation);
@@ -99,12 +96,8 @@ class AnnotationInfo {
             }
         };
         
-        ArrayList<ICompletionProposal> proposals = 
-                new ArrayList<ICompletionProposal>();
         new CeylonCorrectionProcessor(editor)
                 .collectCorrections(quickAssistContext, location, proposals);
-        
-        return (ICompletionProposal[]) proposals.toArray(NO_PROPOSALS);
     }
 
     private ICompletionProposal[] getMarkerAnnotationFixes(MarkerAnnotation markerAnnotation, 
