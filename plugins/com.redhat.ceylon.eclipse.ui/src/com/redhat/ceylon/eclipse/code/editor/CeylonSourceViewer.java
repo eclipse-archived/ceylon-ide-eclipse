@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
@@ -56,15 +59,18 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.EditorsUI;
 
+import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -301,6 +307,27 @@ public class CeylonSourceViewer extends ProjectionViewer {
                                 ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
                     }
                     
+                    ANTLRStringStream stream = 
+                            new NewlineFixingStringStream(doc.get());
+                    CeylonLexer lexer = new CeylonLexer(stream);
+                    CommonTokenStream tokens = new CommonTokenStream(lexer);
+                    tokens.fill();
+                    CommonToken token = Nodes.getTokenStrictlyContainingOffset(offset, tokens.getTokens());
+                    boolean quoted;
+                    boolean verbatim;
+                    if (token == null) {
+                        quoted = false;
+                        verbatim = false;
+                    }
+                    else {
+                        int tt = token.getType();
+                        quoted = tt==CeylonLexer.STRING_LITERAL || 
+                                tt==CeylonLexer.STRING_END || 
+                                tt==CeylonLexer.STRING_END || 
+                                tt==CeylonLexer.STRING_MID;
+                        verbatim = token.getText().startsWith("\"\"\"");
+                    }
+                    
                     try {
                         boolean startOfLine = false;
                         try {
@@ -312,8 +339,15 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         }
                         try {
                             MultiTextEdit edit = new MultiTextEdit();
-                            if (imports!=null) {
+                            if (!quoted && imports!=null) {
                                 pasteImports(imports, edit, text, doc);
+                            }
+                            if (quoted && !verbatim) {
+                                text = text
+                                        .replace("\\", "\\\\")
+                                        .replace("\t", "\\t")
+                                        .replace("\"", "\\\"")
+                                        .replace("`", "\\`");
                             }
                             edit.addChild(new ReplaceEdit(offset, length, text));
                             edit.apply(doc);

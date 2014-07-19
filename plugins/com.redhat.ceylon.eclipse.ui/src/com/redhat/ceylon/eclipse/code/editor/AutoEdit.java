@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
@@ -470,48 +469,7 @@ class AutoEdit extends Indents {
     
     private CommonToken getTokenStrictlyContainingOffset(int offset) {
         List<CommonToken> tokens = getTokens();
-        if (tokens!=null) {
-            if (tokens.size()>1) {
-                if (tokens.get(tokens.size()-1).getStartIndex()==offset) { //at very end of file
-                    //check to see if last token is an
-                    //unterminated string or comment
-                    //Note: ANTLR sometimes sends me 2 EOFs, 
-                    //      so do this:
-                    CommonToken token = null;
-                    for (int i=1;
-                            tokens.size()>=i &&
-                            (token==null || token.getType()==EOF); 
-                            i++) {
-                        token = tokens.get(tokens.size()-i);
-                    }
-                    int type = token==null ? -1 : token.getType();
-                    if ((type==STRING_LITERAL ||
-                            type==STRING_END ||
-                            type==ASTRING_LITERAL) && 
-                            (!token.getText().endsWith("\"") ||
-                            token.getText().length()==1) ||
-                            (type==VERBATIM_STRING || type==AVERBATIM_STRING) && 
-                            (!token.getText().endsWith("\"\"\"")||
-                            token.getText().length()==3) ||
-                            (type==MULTI_COMMENT) && 
-                            (!token.getText().endsWith("*/")||
-                            token.getText().length()==2) ||
-                            type==LINE_COMMENT) {
-                        return token;
-                    }
-                }
-                else {
-                    int tokenIndex = Nodes.getTokenIndexAtCharacter(tokens, offset);
-                    if (tokenIndex>=0) {
-                        CommonToken token = tokens.get(tokenIndex);
-                        if (token.getStartIndex()<offset) {
-                            return token;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
+        return Nodes.getTokenStrictlyContainingOffset(offset, tokens);
     }
 
     private int getStringOrCommentIndent(int offset) {
