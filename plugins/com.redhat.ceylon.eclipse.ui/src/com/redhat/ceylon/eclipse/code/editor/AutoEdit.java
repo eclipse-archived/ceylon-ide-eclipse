@@ -554,7 +554,7 @@ class AutoEdit extends Indents {
             int len = command.length;
             String text = command.text;
             if (isQuoteOrCommentToken(tok.getType()) &&
-                    text.length()<len) { //reduced indent of a quoted or commented token
+                    text!=null && text.length()<len) { //reduced indent of a quoted or commented token
                 String indent = document.get(command.offset, len);
                 int line=document.getLineOfOffset(tok.getStartIndex())+1;
                 int lastLine=document.getLineOfOffset(tok.getStopIndex());
