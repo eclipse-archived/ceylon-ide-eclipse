@@ -43,6 +43,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
@@ -135,27 +137,31 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.SpecifierStatement that) {
             super.visit(that);
-            if (that.getBaseMemberExpression() instanceof Tree.MemberOrTypeExpression) {
-                Declaration d = 
-                        ((Tree.MemberOrTypeExpression) that.getBaseMemberExpression()).getDeclaration();
-                if (notResultRef(d) && hasOuterRefs(d, scope, statements)) {
-                    problem = "a specification statement for a declaration used or defined elsewhere";
+            if (result==null || !that.equals(result)) {
+                if (that.getBaseMemberExpression() instanceof Tree.MemberOrTypeExpression) {
+                    Declaration d = 
+                            ((Tree.MemberOrTypeExpression) that.getBaseMemberExpression()).getDeclaration();
+                    if (notResultRef(d) && hasOuterRefs(d, scope, statements)) {
+                        problem = "a specification statement for a declaration used or defined elsewhere";
+                    }
                 }
             }
         }
         @Override
         public void visit(Tree.AssignmentOp that) {
             super.visit(that);
-            if (that.getLeftTerm() instanceof Tree.MemberOrTypeExpression) {
-                Declaration d = 
-                        ((Tree.MemberOrTypeExpression) that.getLeftTerm()).getDeclaration();
-                if (notResultRef(d) && hasOuterRefs(d, scope, statements)) {
-                    problem = "an assignment to a declaration used or defined elsewhere";
+            if (result==null || !that.equals(result)) {
+                if (that.getLeftTerm() instanceof Tree.MemberOrTypeExpression) {
+                    Declaration d = 
+                            ((Tree.MemberOrTypeExpression) that.getLeftTerm()).getDeclaration();
+                    if (notResultRef(d) && hasOuterRefs(d, scope, statements)) {
+                        problem = "an assignment to a declaration used or defined elsewhere";
+                    }
                 }
             }
         }
         private boolean notResultRef(Declaration d) {
-            return result==null || !result.getDeclarationModel().equals(d);
+            return resultDeclaration==null || !resultDeclaration.equals(d);
         }
         @Override
         public void visit(Tree.Directive that) {
@@ -178,7 +184,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }
     
     private final class FindResultVisitor extends Visitor {
-        Tree.AttributeDeclaration result = null;
+        Node result = null;
+        TypedDeclaration resultDeclaration = null;
         final Tree.Body scope;
         final Collection<Statement> statements;
         FindResultVisitor(Tree.Body scope, 
@@ -187,13 +194,44 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             this.statements = statements;
         }
         @Override
-        public void visit(Tree.Body that) {}
+        public void visit(Tree.Body that) {
+            if (that instanceof Tree.Block) {
+                super.visit(that);
+            }
+        }
         @Override
         public void visit(Tree.AttributeDeclaration that) {
             super.visit(that);
-            if (hasOuterRefs(that.getDeclarationModel(), 
-                    scope, statements)) {
+            Value dec = that.getDeclarationModel();
+            if (hasOuterRefs(dec, scope, statements)) {
                 result = that;
+                resultDeclaration = dec;
+            }
+        }
+        @Override
+        public void visit(Tree.AssignmentOp that) {
+            super.visit(that);
+            Tree.Term leftTerm = that.getLeftTerm();
+            if (leftTerm instanceof Tree.StaticMemberOrTypeExpression) {
+                Declaration dec = 
+                        ((Tree.StaticMemberOrTypeExpression) leftTerm).getDeclaration();
+                if (hasOuterRefs(dec, scope, statements)) {
+                    result = that;
+                    resultDeclaration = (TypedDeclaration) dec;
+                }
+            }
+        }
+        @Override
+        public void visit(Tree.SpecifierStatement that) {
+            super.visit(that);
+            Tree.Term term = that.getBaseMemberExpression();
+            if (term instanceof Tree.StaticMemberOrTypeExpression) {
+                Declaration dec = 
+                        ((Tree.StaticMemberOrTypeExpression) term).getDeclaration();
+                if (hasOuterRefs(dec, scope, statements)) {
+                    result = that;
+                    resultDeclaration = (TypedDeclaration) dec;
+                }
             }
         }
     }
@@ -251,7 +289,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
     private String newName;
     private boolean explicitType;
-    private Tree.AttributeDeclaration result;
+    private Node result;
+    private TypedDeclaration resultDeclaration;
     private List<Statement> statements;
     List<Return> returns;
     private ProducedType returnType;
@@ -264,8 +303,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 init(getSelection(ce));
             }
         }
-        if (result!=null) {
-            newName = result.getDeclarationModel().getName();
+        if (resultDeclaration!=null) {
+            newName = resultDeclaration.getName();
         }
         else {
             newName = Nodes.nameProposals(node)[0];
@@ -307,6 +346,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             s.visit(v);
             if (v.result!=null) {
                 result = v.result;
+                resultDeclaration = v.resultDeclaration;
+                break;
             }
         }
         returns = new ArrayList<Return>();
@@ -619,8 +660,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
         }
         
-        if (result!=null) {
-            returnType = unit.denotableType(result.getDeclarationModel().getType());
+        if (resultDeclaration!=null) {
+            returnType = unit.denotableType(resultDeclaration.getType());
         }
         else if (!returns.isEmpty())  {
             UnionType ut = new UnionType(unit);
@@ -636,7 +677,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         String content;
         int il = 0;
-        if (result!=null||!returns.isEmpty()) {
+        if (resultDeclaration!=null || !returns.isEmpty()) {
             if (returnType.isUnknown()) {
                 content = "dynamic";
             }
@@ -677,22 +718,26 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 }
             }
         }
-        if (result!=null) {
+        if (resultDeclaration!=null) {
             content += extraIndent + "return " + 
-                    result.getDeclarationModel().getName() + ";";
+                    resultDeclaration.getName() + ";";
         }
         content += indent + "}" + indent + indent;
         
         String invocation = newName + "(" + args + ");";
-        if (result!=null) {
-            String modifs;
-            if (result.getDeclarationModel().isShared()) {
-                modifs = "shared " + returnType.getProducedTypeName(node.getUnit()) + " ";
+        if (resultDeclaration!=null) {
+            String modifs = "";
+            if (result instanceof Tree.AttributeDeclaration) {
+                if (resultDeclaration.isShared()) {
+                    modifs = "shared " + 
+                            returnType.getProducedTypeName(node.getUnit()) + 
+                            " ";
+                }
+                else {
+                    modifs = "value ";
+                }
             }
-            else {
-                modifs = "value ";
-            }
-            invocation = modifs + result.getDeclarationModel().getName() + 
+            invocation = modifs + resultDeclaration.getName() + 
                     "=" + invocation;
         }
         else if (!returns.isEmpty()) {
