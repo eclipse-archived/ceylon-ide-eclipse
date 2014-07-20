@@ -54,8 +54,7 @@ public class ModuleCompletions {
                 String versioned, ModuleDetails module,
                 boolean withBody, ModuleVersionDetails version, 
                 String name) {
-            super(offset, prefix, MODULE, 
-                    versioned.substring(0, versioned.length()-1), 
+            super(offset, prefix, MODULE, versioned, 
                     versioned.substring(len));
             this.len = len;
             this.versioned = versioned;
@@ -120,7 +119,8 @@ public class ModuleCompletions {
             List<ICompletionProposal> result, final int len, String pfp,
             final CeylonParseController cpc, final boolean withBody) {
         if (pfp.startsWith("java.")) {
-            for (final String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
+            for (String name: 
+                    new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if (name.startsWith(pfp) &&
                         !moduleAlreadyImported(cpc, name)) {
                     result.add(new JDKModuleProposal(offset, prefix, len,
@@ -133,8 +133,8 @@ public class ModuleCompletions {
             final TypeChecker tc = cpc.getTypeChecker();
             if (tc!=null) {
                 IProject project = cpc.getProject();
-                for (final ModuleDetails module: getModuleSearchResults(pfp, tc,project)
-                        .getResults()) {
+                for (ModuleDetails module: 
+                        getModuleSearchResults(pfp, tc,project).getResults()) {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
