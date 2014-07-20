@@ -584,22 +584,31 @@ public class CeylonSourceViewer extends ProjectionViewer {
 
     private void doCorrectIndentation(int offset, int len) {
         
-        IDocument doc= getDocument();
+        IDocument doc = getDocument();
         DocumentRewriteSession rewriteSession= null;
         if (doc instanceof IDocumentExtension4) {
-            rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+            rewriteSession = ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
         }
-
+        
+        
+        Point selectedRange = getSelectedRange();
+        boolean emptySelection = selectedRange==null || selectedRange.y==0;
+        
         try {
             correctSourceIndentation(offset, len, doc);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
-        } finally {
+        }
+        finally {
             if (doc instanceof IDocumentExtension4) {
                 ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
             }
             restoreSelection();
+            if (emptySelection) {
+                selectedRange = getSelectedRange();
+                setSelectedRange(selectedRange.x/*+selectedRange.y*/, 0);
+            }
         }
     }
 
