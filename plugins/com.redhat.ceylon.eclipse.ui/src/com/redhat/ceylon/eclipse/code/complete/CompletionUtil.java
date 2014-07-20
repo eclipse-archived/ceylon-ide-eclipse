@@ -310,19 +310,21 @@ public class CompletionUtil {
         if (sie!=null) {
             if (sie.getExpression()!=null) {
                 Tree.Term term = sie.getExpression().getTerm();
-                if (term instanceof Tree.Literal) {
+                if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
+                    return arrow + Nodes.toString(term, cpc.getTokens());
+                }
+                else if (term instanceof Tree.Literal) {
                     return arrow + term.getToken().getText();
                 }
                 else if (term instanceof Tree.BaseMemberOrTypeExpression) {
                     Tree.BaseMemberOrTypeExpression bme = 
                             (Tree.BaseMemberOrTypeExpression) term;
-                    if (bme.getIdentifier()!=null) {
+                    if (bme.getIdentifier()!=null && bme.getTypeArguments()==null) {
                         return arrow + bme.getIdentifier().getText();
                     }
                 }
-                else if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
-                    return arrow + Nodes.toString(term, cpc.getTokens());
-                }
+                //don't have the token stream :-/
+                //TODO: figure out where to get it from!
                 return arrow + "...";
             }
         }
