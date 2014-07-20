@@ -108,7 +108,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -1463,35 +1462,23 @@ public class DocumentationHover
                 if (!pl.getParameters().isEmpty()) {
                     buffer.append("<p>");
                     for (Parameter p: pl.getParameters()) {
-                        StringBuilder param = new StringBuilder();
-                        String def;
-                        if (p.getModel()!=null) {
+                        MethodOrValue model = p.getModel();
+                        if (model!=null) {
+                            StringBuilder param = new StringBuilder();
+                            param.append("<span style='font-size:96%'>accepts&nbsp;&nbsp;<tt>");
                         	appendParameter(param, ptr, p, unit);
-                        	def = HTML.highlightLine(getInitialValueDescription(p.getModel(), cpc));
-                        }
-                        else {
-                        	def = "";
-                        }
-                        StringBuilder doc = new StringBuilder();
-                        Tree.Declaration refNode = 
-                                (Tree.Declaration) getReferencedNode(p.getModel(), cpc);
-                        if (refNode!=null) {
-                            appendDocAnnotationContent(refNode.getAnnotationList(), 
-                                    doc, resolveScope(dec));
-                        }
-                        ProducedTypedReference tp = ptr.getTypedParameter(p);
-                        if (tp!=null) {
-                        	ProducedType type = tp.getType();
-                        	if (type==null) {
-                        		type = new UnknownType(dec.getUnit()).getType();
-                        	}
-                            HTML.addImageAndLabel(buffer, p.getModel(), 
-                        			HTML.fileUrl("methpro_obj.gif").toExternalForm(),
-                        			16, 16, 
-                        			"<span style='font-size:96%'>accepts&nbsp;&nbsp;<tt>" + 
-                        			param + def + 
-                        			"</tt>" + doc + "</span>", 
-                        			20, 2);
+                        	param.append(HTML.highlightLine(getInitialValueDescription(model, cpc)))
+                        	     .append("</tt>");
+                            Tree.Declaration refNode = 
+                                    (Tree.Declaration) getReferencedNode(model, cpc);
+                            if (refNode!=null) {
+                                appendDocAnnotationContent(refNode.getAnnotationList(), 
+                                        param, resolveScope(dec));
+                            }
+                            param.append("</span>");
+                            HTML.addImageAndLabel(buffer, model, 
+                                    HTML.fileUrl("methpro_obj.gif").toExternalForm(),
+                                    16, 16, param.toString(), 20, 2);
                         }
                     }
                     buffer.append("</p>");
