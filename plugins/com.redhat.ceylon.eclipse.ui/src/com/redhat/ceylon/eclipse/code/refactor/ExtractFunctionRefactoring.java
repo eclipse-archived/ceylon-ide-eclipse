@@ -620,18 +620,25 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         boolean nonempty = false;
         for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
             Declaration bmed = bme.getDeclaration();
-            if (done.add(bmed)) {
-                if (bmed instanceof TypedDeclaration && 
-                        ((TypedDeclaration) bmed).isDynamicallyTyped()) {
-                    params += "dynamic";
+            if (resultDeclaration==null ||
+                    !bmed.equals(resultDeclaration) || 
+                    resultDeclaration.isVariable()) { //TODO: wrong condition, check if initialized!
+                if (done.add(bmed)) {
+                    if (bmed instanceof Value && ((Value) bmed).isVariable()) {
+                        params += "variable ";
+                    }
+                    if (bmed instanceof TypedDeclaration && 
+                            ((TypedDeclaration) bmed).isDynamicallyTyped()) {
+                        params += "dynamic";
+                    }
+                    else {
+                        params += unit.denotableType(bme.getTypeModel())
+                                .getProducedTypeName(node.getUnit());
+                    }
+                    params += " " + bme.getIdentifier().getText() + ", ";
+                    args += bme.getIdentifier().getText() + ", ";
+                    nonempty = true;
                 }
-                else {
-                    params += unit.denotableType(bme.getTypeModel())
-                            .getProducedTypeName(node.getUnit());
-                }
-                params += " " + bme.getIdentifier().getText() + ", ";
-                args += bme.getIdentifier().getText() + ", ";
-                nonempty = true;
             }
         }
         if (nonempty) {
@@ -696,6 +703,12 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         content += " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " {";
+        if (resultDeclaration!=null &&
+                !resultDeclaration.isVariable()) { //TODO: wrong condition, check if initialized!
+            content += extraIndent +
+                resultDeclaration.getType().getProducedTypeName(unit) +
+                " " + resultDeclaration.getName() + ";";
+        }
         Statement last = statements.isEmpty() ?
                 null : statements.get(statements.size()-1);
         for (Statement s: statements) {
