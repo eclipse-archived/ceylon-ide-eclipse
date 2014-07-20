@@ -4,7 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -42,9 +42,9 @@ public class OpenRefinedDeclarationHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (super.isEnabled() && editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            Referenceable dec = getReferencedModel(getSelectedNode(getSelection(ce)));
+            Referenceable dec = getReferencedDeclaration(getSelectedNode(getSelection(ce)));
             if (dec instanceof Declaration) {
-                return !((Declaration)dec).getRefinedDeclaration().equals(dec);
+                return !((Declaration) dec).getRefinedDeclaration().equals(dec);
             }
             else {
                 return false;
@@ -60,7 +60,7 @@ public class OpenRefinedDeclarationHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            Referenceable dec = getReferencedModel(getSelectedNode(getSelection(ce)));
+            Referenceable dec = getReferencedDeclaration(getSelectedNode(getSelection(ce)));
             if (dec instanceof Declaration) {
                 Declaration refined = ((Declaration) dec).getRefinedDeclaration();
                 gotoDeclaration(refined, ce);
