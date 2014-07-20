@@ -52,15 +52,18 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
     
     public Declaration getDeclaration(IProject project) {
         //first handle the case of new declarations 
-        //defined in a dirty editor
+        //defined in a dirty editor, and local declarations
+        //in an external source file
         IEditorPart part = EditorUtil.getCurrentEditor();
-        if (part instanceof CeylonEditor && part.isDirty()) {
-            CompilationUnit rootNode = ((CeylonEditor) part).getParseController()
-                    .getRootNode();
+        if (part instanceof CeylonEditor /*&& part.isDirty()*/) {
+            CompilationUnit rootNode = 
+                    ((CeylonEditor) part).getParseController()
+                            .getRootNode();
             if (rootNode!=null && rootNode.getUnit()!=null) {
                 Unit unit = rootNode.getUnit();
                 if (unit.getPackage().getNameAsString().equals(packageName)) {
-                    Declaration result = getDeclarationInUnit(qualifiedName, unit);
+                    Declaration result = 
+                            getDeclarationInUnit(qualifiedName, unit);
                     if (result!=null) {
                         return result;
                     }
@@ -73,13 +76,17 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
                 .getPackage(packageName);
         for (Unit unit: pack.getUnits()) {
             if (unit.getFilename().equals(unitName)) {
-                Declaration result = getDeclarationInUnit(qualifiedName, unit);
+                Declaration result = 
+                        getDeclarationInUnit(qualifiedName, unit);
                 if (result!=null) {
                     return result;
                 }
             }
         }
-        //apparently the above approach doesn't work for Java modules
+        //the above approach doesn't work for binary modules 
+        //because the filenames are wrong for the iterated 
+        //units (.class instead of .ceylon), nor for Java
+        //modules, apparently
         for (Declaration d: pack.getMembers()) {
             String qn = d.getQualifiedNameString();
             if (qn.equals(qualifiedName)) {

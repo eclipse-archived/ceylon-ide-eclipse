@@ -45,14 +45,15 @@ abstract class CeylonHierarchyLabelProvider extends
                     .append(getStyledDescriptionFor((Declaration) d.getContainer()));
         }*/
         if (d.isClassOrInterfaceMember()) {
+            Declaration container = (Declaration) d.getContainer();
             result.append(" in ")
-                    .append(((Declaration) d.getContainer()).getName(), TYPE_ID_STYLER);
+                  .append(container.getName(), TYPE_ID_STYLER);
         }
         result.append(" - ", PACKAGE_STYLER)
-                .append(getPackageLabel(d), PACKAGE_STYLER);
+              .append(getPackageLabel(d), PACKAGE_STYLER);
         if (n.isNonUnique()) {
-            result.append(" - and other supertypes");
-            result.append(getViewInterfacesShortcut());
+            result.append(" - and other supertypes")
+                  .append(getViewInterfacesShortcut());
         }
         return result;
     }
@@ -66,7 +67,9 @@ abstract class CeylonHierarchyLabelProvider extends
 
     Declaration getDisplayedDeclaration(CeylonHierarchyNode n) {
         Declaration d = n.getDeclaration(getProject());
-        if (isShowingRefinements() && d.isClassOrInterfaceMember()) {
+        if (d!=null && 
+                isShowingRefinements() && 
+                d.isClassOrInterfaceMember()) {
             d = (ClassOrInterface) d.getContainer();
         }
         return d;
@@ -75,9 +78,11 @@ abstract class CeylonHierarchyLabelProvider extends
     
     @Override
     public void update(ViewerCell cell) {
-        CeylonHierarchyNode n = (CeylonHierarchyNode) cell.getElement();
+        CeylonHierarchyNode n = 
+                (CeylonHierarchyNode) cell.getElement();
         if (n.isMultiple()) {
-            cell.setText("multiple supertypes" + getViewInterfacesShortcut());
+            cell.setText("multiple supertypes" + 
+                    getViewInterfacesShortcut());
             cell.setStyleRanges(new StyleRange[0]);
             cell.setImage(MULTIPLE_TYPES_IMAGE);
         }
