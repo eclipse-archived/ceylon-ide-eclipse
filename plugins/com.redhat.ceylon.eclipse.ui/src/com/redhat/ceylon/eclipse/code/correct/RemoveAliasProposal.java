@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.REMOVE_CORR;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.REMOVE_CORR;
+import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 
 import java.util.Collection;
 
@@ -52,7 +53,7 @@ class RemoveAliasProposal extends CorrectionProposal {
         }
 
         private void addRemoval(Tree.Identifier id, Declaration d) {
-            if (id!=null && d!=null && dec.equals(d) && 
+            if (id!=null && d!=null && dec.equals(getAbstraction(d)) && 
                     id.getText().equals(aid.getText())) {
                 change.addEdit(new ReplaceEdit(id.getStartIndex(), 
                         id.getText().length(), dec.getName()));
