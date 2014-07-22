@@ -502,7 +502,7 @@ public class ModuleDependencies {
                         }
                         if (! rootIsExported) {
                             for (Dependency dep : dependencies) {
-                                if (isRootExportedBy((ModuleReference)dep.getTarget()) && dep.exported) {
+                                if (dep.exported && isRootExportedBy((ModuleReference)dep.getTarget())) {
                                     rootIsExported = true;
                                 }
                             }
