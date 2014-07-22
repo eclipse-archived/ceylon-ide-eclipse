@@ -17,6 +17,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaModelMarker;
 
+import com.redhat.ceylon.compiler.java.launcher.Main;
+import com.redhat.ceylon.compiler.java.launcher.Main.ExitState;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 final class CompileErrorReporter implements
@@ -32,6 +34,58 @@ final class CompileErrorReporter implements
     public void failed() {
         if (!errorReported) {
             setupMarker(project, null);
+        }
+    }
+
+    public void failed(final ExitState exitState) {
+        Diagnostic<? extends JavaFileObject> diagnostic = null;
+        if (exitState.javacExitCode == Main.EXIT_ABNORMAL) {
+            diagnostic = new Diagnostic<JavaFileObject>() {
+                @Override
+                public javax.tools.Diagnostic.Kind getKind() {
+                    return javax.tools.Diagnostic.Kind.ERROR;
+                }
+                @Override
+                public JavaFileObject getSource() {
+                    return null;
+                }
+                @Override
+                public long getPosition() {
+                    return 0;
+                }
+                @Override
+                public long getStartPosition() {
+                    return 0;
+                }
+                @Override
+                public long getEndPosition() {
+                    return 0;
+                }
+                @Override
+                public long getLineNumber() {
+                    return 0;
+                }
+                @Override
+                public long getColumnNumber() {
+                    return 0;
+                }
+                @Override
+                public String getCode() {
+                    return null;
+                }
+                @Override
+                public String getMessage(Locale locale) {
+                    return "The Ceylon Java backend compiler failed abormally" + 
+                            (exitState.ceylonCodegenExceptionCount > 0 ? "\n  with " + exitState.ceylonCodegenExceptionCount + " code generation exceptions" : "") +
+                            (exitState.ceylonCodegenErroneousCount > 0 ? "\n  with " + exitState.ceylonCodegenErroneousCount + " erroneous code generations" : "") +
+                            (exitState.ceylonCodegenGarbageCount > 0 ? "\n  with " + exitState.ceylonCodegenGarbageCount + " malformed Javac tree cases" : "") +
+                            (exitState.abortingException != null ? "\n  with a throwable : " + exitState.abortingException.toString() : "") +
+                            "";
+                }
+            };
+        }
+        if (!errorReported || diagnostic != null) {
+            setupMarker(project, diagnostic);
         }
     }
 

@@ -2247,7 +2247,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             e.printStackTrace(printWriter);
         }
         if (!success) {
-            errorReporter.failed();
+            errorReporter.failed(task.getExitState());
         }
         monitor.done();
         return success;
