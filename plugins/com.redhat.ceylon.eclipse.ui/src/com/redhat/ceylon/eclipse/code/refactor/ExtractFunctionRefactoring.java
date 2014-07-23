@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.addToUnion;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
@@ -42,7 +43,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -674,7 +674,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             UnionType ut = new UnionType(unit);
             List<ProducedType> list = new ArrayList<ProducedType>();
             for (Return r: returns) {
-                Util.addToUnion(list, r.getExpression().getTypeModel());
+                addToUnion(list, r.getExpression().getTypeModel());
             }
             ut.setCaseTypes(list);
             returnType = ut.getType();
@@ -703,7 +703,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         content += " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " {";
-        if (resultDeclaration!=null &&
+        if (resultDeclaration!=null && 
+                !(result instanceof Tree.Declaration) &&
                 !resultDeclaration.isVariable()) { //TODO: wrong condition, check if initialized!
             content += extraIndent +
                 resultDeclaration.getType().getProducedTypeName(unit) +
