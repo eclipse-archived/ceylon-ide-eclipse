@@ -33,9 +33,11 @@ public class SourceFileSelectionDialog extends ElementTreeSelectionDialog {
 		public boolean isSelectedValid(Object element) {
 		    if (element instanceof IFile) {
                 IFile file = (IFile) element;
-                return file.getFileExtension().equals("ceylon") &&
-                        !file.getName().equals("package.ceylon") &&
-                        !file.getName().equals("module.ceylon");
+                String extension = file.getFileExtension();
+                String name = file.getName();
+                return extension!=null && extension.equals("ceylon") &&
+                        !name.equals("package.ceylon") &&
+                        !name.equals("module.ceylon");
             }
 		    else {
 		        return false;
@@ -64,7 +66,9 @@ public class SourceFileSelectionDialog extends ElementTreeSelectionDialog {
 			    try {
                     for (IResource child: ((IFolder) ((IPackageFragment) element).getResource()).members()) {
                         if (child instanceof IFile) {
-                            if (child.getFileExtension().equals("ceylon")) {
+                            String extension = child.getFileExtension();
+                            if (extension!=null &&
+                                    extension.equals("ceylon")) {
                                 return true;
                             }
                         }
@@ -76,7 +80,9 @@ public class SourceFileSelectionDialog extends ElementTreeSelectionDialog {
                 }
 			}
 			if (element instanceof IFile) {
-			    return ((IFile) element).getFileExtension().equals("ceylon");
+			    String extension = ((IFile) element).getFileExtension();
+                return extension!=null &&
+                        extension.equals("ceylon");
 			}
 			return super.select(viewer, parent, element);
 		}
