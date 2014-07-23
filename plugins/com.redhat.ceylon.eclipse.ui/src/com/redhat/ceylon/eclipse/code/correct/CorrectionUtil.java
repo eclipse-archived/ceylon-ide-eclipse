@@ -128,35 +128,35 @@ public class CorrectionUtil {
         return missingSatisfiedTypesText.toString();
     }
     
-	static String defaultValue(Unit unit, ProducedType t) {
-	    if (isTypeUnknown(t)) {
-	        return "nothing";
-	    }
-	    TypeDeclaration tn = t.getDeclaration();
-	    boolean isClass = tn instanceof Class;
-	    if (unit.isOptionalType(t)) {
-	        return "null";
-	    }
-	    else if (isClass &&
-	            tn.equals(unit.getBooleanDeclaration())) {
-	        return "false";
-	    }
-	    else if (isClass &&
-	            tn.equals(unit.getIntegerDeclaration())) {
-	        return "0";
-	    }
-	    else if (isClass &&
-	            tn.equals(unit.getFloatDeclaration())) {
-	        return "0.0";
-	    }
-	    else if (isClass &&
-	            tn.equals(unit.getStringDeclaration())) {
-	        return "\"\"";
-	    }
-	    else if (isClass &&
-	            tn.equals(unit.getByteDeclaration())) {
-	        return "0.byte";
-	    }
+    static String defaultValue(Unit unit, ProducedType t) {
+        if (isTypeUnknown(t)) {
+            return "nothing";
+        }
+        TypeDeclaration tn = t.getDeclaration();
+        boolean isClass = tn instanceof Class;
+        if (unit.isOptionalType(t)) {
+            return "null";
+        }
+        else if (isClass &&
+                tn.equals(unit.getBooleanDeclaration())) {
+            return "false";
+        }
+        else if (isClass &&
+                tn.equals(unit.getIntegerDeclaration())) {
+            return "0";
+        }
+        else if (isClass &&
+                tn.equals(unit.getFloatDeclaration())) {
+            return "0.0";
+        }
+        else if (isClass &&
+                tn.equals(unit.getStringDeclaration())) {
+            return "\"\"";
+        }
+        else if (isClass &&
+                tn.equals(unit.getByteDeclaration())) {
+            return "0.byte";
+        }
         else if (isClass &&
                 tn.equals(unit.getTupleDeclaration())) {
             final int minimumLength = unit.getTupleMinimumLength(t);
