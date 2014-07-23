@@ -153,6 +153,10 @@ public class CorrectionUtil {
 	            tn.equals(unit.getStringDeclaration())) {
 	        return "\"\"";
 	    }
+	    else if (isClass &&
+	            tn.equals(unit.getByteDeclaration())) {
+	        return "0.byte";
+	    }
         else if (isClass &&
                 tn.equals(unit.getTupleDeclaration())) {
             final int minimumLength = unit.getTupleMinimumLength(t);
