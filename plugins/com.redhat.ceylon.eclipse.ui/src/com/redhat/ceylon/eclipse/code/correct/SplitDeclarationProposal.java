@@ -100,17 +100,22 @@ class SplitDeclarationProposal extends CorrectionProposal {
             }
             Tree.AnnotationList al = decNode.getAnnotationList();
             String annotations;
-            try {
-                int len = al.getStopIndex()-al.getStartIndex()+1;
-                if (len==0) {
+            if (al == null) {
+                annotations = "";
+            }
+            else {
+                try {
+                    int len = al.getStopIndex()-al.getStartIndex()+1;
+                    if (len==0) {
+                        annotations = "";
+                    }
+                    else {
+                        annotations = doc.get(al.getStartIndex(), len) + " ";
+                    }
+                }
+                catch (BadLocationException e) {
                     annotations = "";
                 }
-                else {
-                    annotations = doc.get(al.getStartIndex(), len) + " ";
-                }
-            }
-            catch (BadLocationException e) {
-                annotations = "";
             }
             String text = delim + indent + getDefaultIndent() + 
                     annotations + typeString + " " + dec.getName() + 
