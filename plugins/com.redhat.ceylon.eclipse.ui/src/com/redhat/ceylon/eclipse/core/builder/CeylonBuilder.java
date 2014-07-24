@@ -1995,6 +1995,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             IProgressMonitor monitor) throws CoreException {
         List<String> options = new ArrayList<String>();
         List<String> js_srcdir = new ArrayList<String>();
+        List<String> js_rsrcdir = new ArrayList<String>();
         List<String> js_repos = new ArrayList<String>();
         boolean js_verbose = false;
         String js_outRepo = null;
@@ -2002,7 +2003,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         String srcPath = "";
         for (IFolder sourceFolder : getSourceFolders(project)) {
             File sourcePathElement = sourceFolder.getRawLocation().toFile();
-            if (! srcPath.isEmpty()) {
+            if (!srcPath.isEmpty()) {
                 srcPath += File.pathSeparator;
             }
             srcPath += sourcePathElement.getAbsolutePath();
@@ -2016,7 +2017,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (!resPath.isEmpty()) {
                 resPath += File.pathSeparator;
             }
-            resPath += resourcePathElement;
+            resPath += resourcePathElement.getAbsolutePath();
+            js_rsrcdir.add(resourcePathElement.getAbsolutePath());
         }
         options.add("-res");
         options.add(resPath);
@@ -2073,7 +2075,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         boolean success = true;
         //Compile JS first
         if (!forJavascriptBackend.isEmpty() && compileToJs(project)) {
-            success = compileJs(project, typeChecker, js_srcdir, js_repos,
+            success = compileJs(project, typeChecker, js_srcdir, js_rsrcdir, js_repos,
                     js_verbose, js_outRepo, printWriter, ! compileToJava(project));
         }
         if (!forJavaBackend.isEmpty() && compileToJava(project)) {
@@ -2088,8 +2090,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     private boolean compileJs(IProject project, TypeChecker typeChecker,
-            List<String> js_srcdir, List<String> js_repos, boolean js_verbose,
-            String js_outRepo, PrintWriter printWriter, boolean generateSourceArchive) throws CoreException {
+            List<String> js_srcdir, List<String> js_rsrcdir, List<String> js_repos, 
+            boolean js_verbose, String js_outRepo, PrintWriter printWriter, 
+            boolean generateSourceArchive) throws CoreException {
         
         Options jsopts = new Options()
                 .repos(js_repos)
@@ -2101,6 +2104,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 .generateSourceArchive(generateSourceArchive)
                 .encoding(project.getDefaultCharset())
                 .offline(CeylonProjectConfig.get(project).isOffline());
+        jsopts.setResourceDirs(js_rsrcdir);
         JsCompiler jsc = new JsCompiler(typeChecker, jsopts) {
 
             @Override
