@@ -2054,6 +2054,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         List<File> forJavaBackend = new ArrayList<File>();
         List<File> forJavascriptBackend = new ArrayList<File>();
+        List<String> resources = new ArrayList<String>();
         for (IFile file : filesToCompile) {
             if(isCeylon(file)) {
                 forJavascriptBackend.add(file.getRawLocation().toFile());
@@ -2068,6 +2069,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (isResourceFile(file)) {
                 forJavascriptBackend.add(file.getRawLocation().toFile());
                 forJavaBackend.add(file.getRawLocation().toFile());
+                resources.add(file.getRawLocation().toFile().getAbsolutePath());
             }
         }
 
@@ -2076,7 +2078,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         //Compile JS first
         if (!forJavascriptBackend.isEmpty() && compileToJs(project)) {
             success = compileJs(project, typeChecker, js_srcdir, js_rsrcdir, js_repos,
-                    js_verbose, js_outRepo, printWriter, ! compileToJava(project));
+                    js_verbose, js_outRepo, printWriter, ! compileToJava(project),
+                    resources);
         }
         if (!forJavaBackend.isEmpty() && compileToJava(project)) {
             // For Java don't stop compiling when encountering errors
@@ -2092,7 +2095,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private boolean compileJs(IProject project, TypeChecker typeChecker,
             List<String> js_srcdir, List<String> js_rsrcdir, List<String> js_repos, 
             boolean js_verbose, String js_outRepo, PrintWriter printWriter, 
-            boolean generateSourceArchive) throws CoreException {
+            boolean generateSourceArchive, List<String> resources) 
+                    throws CoreException {
         
         Options jsopts = new Options()
                 .repos(js_repos)
@@ -2105,6 +2109,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 .encoding(project.getDefaultCharset())
                 .offline(CeylonProjectConfig.get(project).isOffline());
         jsopts.setResourceDirs(js_rsrcdir);
+        jsopts.setResources(resources);
         JsCompiler jsc = new JsCompiler(typeChecker, jsopts) {
 
             @Override
