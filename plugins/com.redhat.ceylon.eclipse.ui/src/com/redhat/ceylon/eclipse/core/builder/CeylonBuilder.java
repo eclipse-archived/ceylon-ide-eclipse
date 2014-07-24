@@ -2101,6 +2101,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         Options jsopts = new Options()
                 .repos(js_repos)
                 .sources(js_srcdir)
+                .resourceDirs(js_rsrcdir)
+                .resources(resources)
                 .systemRepo(getInterpolatedCeylonSystemRepo(project))
                 .outDir(js_outRepo)
                 .optimize(true)
@@ -2108,8 +2110,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 .generateSourceArchive(generateSourceArchive)
                 .encoding(project.getDefaultCharset())
                 .offline(CeylonProjectConfig.get(project).isOffline());
-        jsopts.setResourceDirs(js_rsrcdir);
-        jsopts.setResources(resources);
         JsCompiler jsc = new JsCompiler(typeChecker, jsopts) {
 
             @Override
