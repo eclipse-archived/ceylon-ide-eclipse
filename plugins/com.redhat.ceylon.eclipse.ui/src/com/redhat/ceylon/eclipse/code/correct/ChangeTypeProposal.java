@@ -57,7 +57,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         TextFileChange change =  new TextFileChange("Change Type", file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = CorrectionUtil.getDocument(change);
-        String typeName = newType.getProducedTypeName();
+        String typeName = newType.getProducedTypeName(cu.getUnit());
         int offset = node.getStartIndex();
         int length = node.getStopIndex()-offset+1;
         HashSet<Declaration> decs = new HashSet<Declaration>();
