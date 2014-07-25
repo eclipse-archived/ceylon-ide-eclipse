@@ -2632,6 +2632,13 @@
             properties="isInCeylonSourceFolder,isInCeylonResourceFolder"
             type="org.eclipse.core.resources.IResource">
       </propertyTester>
+      <propertyTester
+            class="com.redhat.ceylon.eclipse.core.propertyTesters.InCeylonProjectPropertyTester"
+            id="com.redhat.ceylon.eclipse.ui.javaElementInCeylonProjectPropertyTester"
+            namespace="com.redhat.ceylon.eclipse.ui"
+            properties="isInCeylonProject"
+            type="org.eclipse.jdt.core.IJavaElement">
+      </propertyTester>
    </extension>
 
 	<extension
@@ -2708,9 +2715,8 @@
 					<or>
 						<and>
 							<instanceof value="org.eclipse.jdt.core.IJavaElement" />
-							<adapt type="org.eclipse.core.resources.IResource">
-		  						<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
-	  						</adapt>
+	  						<test forcePluginActivation="true"
+	  						property="com.redhat.ceylon.eclipse.ui.isInCeylonProject"/>
 						</and>
 						<instanceof value="org.eclipse.core.resources.IStorage" />
 					    <instanceof value="com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore"/>				    				    
