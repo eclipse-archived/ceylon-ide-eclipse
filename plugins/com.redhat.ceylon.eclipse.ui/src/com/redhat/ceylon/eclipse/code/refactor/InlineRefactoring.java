@@ -429,6 +429,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             final List<CommonToken> declarationTokens, 
             final TextChange tfc) {
         new Visitor() {
+            private boolean needsParens = false;
             @Override
             public void visit(final Tree.InvocationExpression that) {
                 super.visit(that);
@@ -436,7 +437,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     Tree.MemberOrTypeExpression mte = 
                             (Tree.MemberOrTypeExpression) that.getPrimary();
                     inlineDefinition(tokens, declarationTokens, 
-                    		term, tfc, that, mte);
+                    		term, tfc, that, mte, needsParens);
                 }
             }
             @Override
@@ -459,13 +460,35 @@ public class InlineRefactoring extends AbstractRefactoring {
             				 text.toString()));
             	 }
             }
+            @Override
+            public void visit(Tree.OperatorExpression that) {
+                boolean onp = needsParens;
+                needsParens=true;
+                super.visit(that);
+                needsParens = onp;
+            }
+            @Override
+            public void visit(Tree.StatementOrArgument that) {
+                boolean onp = needsParens;
+                needsParens = false;
+                super.visit(that);
+                needsParens = onp;
+            }
+            @Override
+            public void visit(Tree.Expression that) {
+                boolean onp = needsParens;
+                needsParens = false;
+                super.visit(that);
+                needsParens = onp;
+            }
         }.visit(pu);
     }
-
+    
     private void inlineAttributeReferences(final Tree.CompilationUnit pu, 
             final List<CommonToken> tokens, final Term term, 
             final List<CommonToken> declarationTokens, final TextChange tfc) {
         new Visitor() {
+            private boolean needsParens = false;
             @Override
             public void visit(Tree.Variable that) {
                 if (that.getType() instanceof Tree.SyntheticVariable) {
@@ -483,7 +506,29 @@ public class InlineRefactoring extends AbstractRefactoring {
             @Override
             public void visit(Tree.MemberOrTypeExpression that) {
                 super.visit(that);
-                inlineDefinition(tokens, declarationTokens, term, tfc, null, that);
+                inlineDefinition(tokens, declarationTokens, term, 
+                        tfc, null, that, needsParens);
+            }
+            @Override
+            public void visit(Tree.OperatorExpression that) {
+                boolean onp = needsParens;
+                needsParens=true;
+                super.visit(that);
+                needsParens = onp;
+            }
+            @Override
+            public void visit(Tree.StatementOrArgument that) {
+                boolean onp = needsParens;
+                needsParens = false;
+                super.visit(that);
+                needsParens = onp;
+            }
+            @Override
+            public void visit(Tree.Expression that) {
+                boolean onp = needsParens;
+                needsParens = false;
+                super.visit(that);
+                needsParens = onp;
             }
         }.visit(pu);
     }
@@ -561,7 +606,8 @@ public class InlineRefactoring extends AbstractRefactoring {
             final List<CommonToken> declarationTokens,
             final Tree.Term term, final TextChange tfc,
             final Tree.InvocationExpression that,
-            final Tree.MemberOrTypeExpression mte) {
+            final Tree.MemberOrTypeExpression mte, 
+            final boolean needsParens) {
         Declaration d = mte.getDeclaration();
         if (inlineRef(mte, d)) {
             //TODO: breaks for invocations like f(f(x, y),z)
@@ -597,6 +643,10 @@ public class InlineRefactoring extends AbstractRefactoring {
             InterpolationVisitor iv = new InterpolationVisitor();
             iv.visit(term);
             iv.finish();
+            if (needsParens && 
+                    term instanceof Tree.OperatorExpression) {
+                result.insert(0,'(').append(')');
+            }
             Node node = that==null ? mte : that;
             tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
                     node.getStopIndex()-node.getStartIndex()+1, 
