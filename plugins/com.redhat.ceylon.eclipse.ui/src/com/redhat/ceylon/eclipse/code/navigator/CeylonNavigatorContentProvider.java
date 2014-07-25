@@ -208,7 +208,7 @@ public class CeylonNavigatorContentProvider implements
                     String signature = module.getSignature();
                     SourceModuleNode sourceModuleNode = sourceDirectoryModules.get(signature);
                     if (sourceModuleNode == null) {
-                        sourceModuleNode = new SourceModuleNode(sourceRoot, signature);
+                        sourceModuleNode = SourceModuleNode.createSourceModuleNode(sourceRoot, signature);
                         sourceDirectoryModules.put(signature, sourceModuleNode);
                     }
                 }

@@ -10,17 +10,21 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.internal.core.PackageFragment;
+import org.eclipse.jdt.internal.core.PackageFragmentRoot;
+import org.eclipse.jdt.internal.core.util.Util;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
-public class SourceModuleNode extends ModuleNode {
+public class SourceModuleNode extends PackageFragment implements ModuleNode {
     private IPackageFragmentRoot sourceFolder;
     private IPackageFragment mainPackageFragment;
     private Set<IPackageFragment> packageFragments = new LinkedHashSet<>();
     private List<IFile> resourceChildren = new ArrayList<>();
+    protected String moduleSignature;
         
     public List<IFile> getResourceChildren() {
         return resourceChildren;
@@ -30,18 +34,22 @@ public class SourceModuleNode extends ModuleNode {
         return sourceFolder;
     }
 
-	public SourceModuleNode(IPackageFragmentRoot sourceFolder, String moduleSignature) {
-        super(moduleSignature);
-        this.sourceFolder = sourceFolder;
-        JDTModule module = getModule();        
+    public static SourceModuleNode createSourceModuleNode(IPackageFragmentRoot sourceFolder, String moduleSignature) {
+        JDTModule module = moduleFromSignatureAndProject(moduleSignature, sourceFolder.getJavaProject().getProject());
+        String[] packageName;
         if (module.isDefaultModule()) {
-            mainPackageFragment = sourceFolder.getPackageFragment("");
+            packageName = new String[] {""};
         } else {
-            mainPackageFragment = sourceFolder.getPackageFragment(module.getNameAsString());
+            packageName = module.getName().toArray(new String[0]);
         }
-        if (mainPackageFragment != null && module.equals(CeylonBuilder.getModule(mainPackageFragment))) {
-            packageFragments.add(mainPackageFragment);
-        }        
+        return new SourceModuleNode(sourceFolder, moduleSignature, packageName);
+    }
+    
+    private SourceModuleNode(IPackageFragmentRoot sourceFolder, String moduleSignature, String[] packageName) {
+        super((PackageFragmentRoot)sourceFolder, packageName);
+        this.moduleSignature = moduleSignature;
+        this.sourceFolder = sourceFolder;
+        mainPackageFragment = this;
     }
     
     public IProject getProject() {
@@ -56,10 +64,10 @@ public class SourceModuleNode extends ModuleNode {
         return packageFragments;
     }
     
+
     
-    @Override
-    protected JDTModule searchBySignature(String signature) {
-        Modules modules = CeylonBuilder.getProjectModules(getProject());
+    private static JDTModule moduleFromSignatureAndProject(String signature, IProject project) {
+        Modules modules = CeylonBuilder.getProjectModules(project);
         if (modules != null) {
             for (Module module : modules.getListOfModules()) {
                 if (! (module instanceof JDTModule)) {
@@ -112,4 +120,8 @@ public class SourceModuleNode extends ModuleNode {
         return true;
     }
 
+    @Override
+    public JDTModule getModule() {
+        return moduleFromSignatureAndProject(moduleSignature, getProject());
+    }
 }

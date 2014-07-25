@@ -14,12 +14,13 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
-public class ExternalModuleNode extends ModuleNode {
+public class ExternalModuleNode implements ModuleNode {
     private RepositoryNode repositoryNode;
     private List<IPackageFragmentRoot> binaryArchives = new ArrayList<>();
+    protected String moduleSignature;
     
     public ExternalModuleNode(RepositoryNode repositoryNode, String moduleSignature) {
-        super(moduleSignature);
+        this.moduleSignature = moduleSignature;
         this.repositoryNode = repositoryNode;
     }
 
@@ -36,16 +37,6 @@ public class ExternalModuleNode extends ModuleNode {
                 if (sourceArchive != null && sourceArchive.exists()) {
                     return ((CeylonArchiveFileStore) ((Resource)sourceArchive).getStore()); 
                 }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    protected JDTModule searchBySignature(String signature) {
-        for (JDTModule module : CeylonBuilder.getProjectExternalModules(repositoryNode.project)) {
-            if (module.getSignature().equals(signature)) {
-                return module;
             }
         }
         return null;
@@ -90,6 +81,14 @@ public class ExternalModuleNode extends ModuleNode {
             return false;
         return true;
     }
-    
-    
+
+    @Override
+    public JDTModule getModule() {
+        for (JDTModule module : CeylonBuilder.getProjectExternalModules(repositoryNode.project)) {
+            if (module.getSignature().equals(moduleSignature)) {
+                return module;
+            }
+        }
+        return null;
+    }
 }
