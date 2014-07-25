@@ -383,7 +383,7 @@ public class CeylonBuildPathsBlock {
                             @Override
                             public boolean visit(IResource resource) 
                                     throws CoreException {
-                                if (resource.isLinked() &&
+                                if (resource.isLinked() && resource.getLocation() != null &&
                                         resource.getLocation().toOSString().equals(path)) {
                                     newResourcePath.add(new CPListElement(null,
                                             fCurrJProject, IClasspathEntry.CPE_SOURCE, 
