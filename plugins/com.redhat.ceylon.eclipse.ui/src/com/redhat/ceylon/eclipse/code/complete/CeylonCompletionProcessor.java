@@ -324,7 +324,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         boolean inDoc = isAnnotationStringLiteral(adjustedToken) &&
                 offset>adjustedToken.getStartIndex() &&
                 offset<adjustedToken.getStopIndex();
-        if (inDoc) {
+        if (inDoc && node instanceof Tree.DocLink) {
             Tree.DocLink docLink = (Tree.DocLink) node;
             int offsetInLink = offset-docLink.getStartIndex();
             String text = docLink.getToken().getText();
