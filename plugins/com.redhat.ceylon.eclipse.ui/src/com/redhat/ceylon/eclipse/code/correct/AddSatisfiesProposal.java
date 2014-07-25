@@ -29,7 +29,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SimpleType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
@@ -294,7 +293,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         else if (node instanceof Tree.Term) {
 //            ProducedType type = node.getUnit()
 //                    .denotableType(((Tree.Term)node).getTypeModel());
-            ProducedType type = ((Tree.Term)node).getTypeModel();
+            ProducedType type = ((Tree.Term) node).getTypeModel();
             if (type != null) {
                 typeDec = type.getDeclaration();
             }
@@ -326,18 +325,18 @@ public class AddSatisfiesProposal extends CorrectionProposal {
 
     private static List<ProducedType> determineMissingSatisfiedTypes(CompilationUnit cu, 
             Node node, TypeDeclaration typeDec) {
-        List<ProducedType> missingSatisfiedTypes = new ArrayList<ProducedType>();
-    
-        if( node instanceof Tree.Term ) {
+        List<ProducedType> missingSatisfiedTypes = 
+                new ArrayList<ProducedType>();
+        if (node instanceof Tree.Term) {
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
             fav.visit(cu);
-            if( fav.parameter != null ) {
+            if (fav.parameter != null) {
                 ProducedType type = fav.parameter.getType();
-                if( type != null && type.getDeclaration() != null) {
-                    if ( type.getDeclaration() instanceof ClassOrInterface ) {
+                if (type!=null && type.getDeclaration()!=null) {
+                    if (type.getDeclaration() instanceof ClassOrInterface) {
                         missingSatisfiedTypes.add(type);
                     }
-                    else if ( type.getDeclaration() instanceof IntersectionType ) {
+                    else if (type.getDeclaration() instanceof IntersectionType) {
                         for (ProducedType it: type.getDeclaration().getSatisfiedTypes()) {
                             if (!typeDec.inherits(it.getDeclaration())) {
                                 missingSatisfiedTypes.add(it);
@@ -358,8 +357,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                     substitutions.put(stTypeParam, typeParamType);
                 }
     
-                for(TypeParameter stTypeParam : stTypeParams) {
-                    for(ProducedType stTypeParamSatisfiedType: 
+                for (TypeParameter stTypeParam : stTypeParams) {
+                    for (ProducedType stTypeParamSatisfiedType: 
                             stTypeParam.getSatisfiedTypes()) {
                         stTypeParamSatisfiedType = 
                                 stTypeParamSatisfiedType.substitute(substitutions);
@@ -374,7 +373,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                             }
                         }
     
-                        if( isMissing ) {
+                        if (isMissing) {
                             for(ProducedType missingSatisfiedType: 
                                     missingSatisfiedTypes) {
                                 if( missingSatisfiedType.isExactly(stTypeParamSatisfiedType) ) {
@@ -384,7 +383,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                             }
                         }
     
-                        if( isMissing ) {
+                        if (isMissing) {
                             missingSatisfiedTypes.add(stTypeParamSatisfiedType);
                         }
                     }
@@ -400,49 +399,52 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             Tree.CompilationUnit cu, Node typeParamNode, 
             TypeDeclaration typeDec) {
         List<TypeParameter> stTypeParams = new ArrayList<TypeParameter>();
-
+        
         FindContainerVisitor fcv = new FindContainerVisitor(typeParamNode);
         fcv.visit(cu);
-
         if (fcv.getStatementOrArgument() 
                 instanceof Tree.ClassOrInterface) {
             Tree.ClassOrInterface coi = 
                     (Tree.ClassOrInterface) fcv.getStatementOrArgument();
-            if( coi.getSatisfiedTypes() != null ) {
-                for( Tree.StaticType st: 
-                        coi.getSatisfiedTypes().getTypes() ) {
+            if (coi.getSatisfiedTypes() != null) {
+                for (Tree.StaticType st: 
+                        coi.getSatisfiedTypes().getTypes()) {
                     // FIXME: gavin this needs checking
-                    if(st instanceof Tree.SimpleType)
+                    if (st instanceof Tree.SimpleType) {
                         determineSatisfiedTypesTypeParams(typeDec, 
-                                (Tree.SimpleType)st, stTypeParams);
+                                (Tree.SimpleType) st, stTypeParams);
+                    }
                 }
             }
         }
-        else if( fcv.getStatementOrArgument() 
-                instanceof Tree.AttributeDeclaration ) {
+        else if (fcv.getStatementOrArgument() 
+                instanceof Tree.AttributeDeclaration) {
             Tree.AttributeDeclaration ad = 
                     (Tree.AttributeDeclaration) fcv.getStatementOrArgument();
-            Tree.SimpleType st = (SimpleType) ad.getType();
-            determineSatisfiedTypesTypeParams(typeDec, st, stTypeParams);
+            Tree.Type at = ad.getType();
+            if (at instanceof Tree.SimpleType) {
+                Tree.SimpleType st = (Tree.SimpleType) at;
+                determineSatisfiedTypesTypeParams(typeDec, st, stTypeParams);
+            }
         }
 
         return stTypeParams;
     }
-
+    
     private static void determineSatisfiedTypesTypeParams(TypeDeclaration typeParam, 
             Tree.SimpleType st, List<TypeParameter> stTypeParams) {
-        if( st.getTypeArgumentList() != null ) {
+        if (st.getTypeArgumentList() != null) {
             List<Tree.Type> stTypeArguments = 
                     st.getTypeArgumentList().getTypes();
-            for (int i = 0; i < stTypeArguments.size(); i++) {
+            for (int i=0; i<stTypeArguments.size(); i++) {
                 ProducedType stTypeArgument = 
                         stTypeArguments.get(i).getTypeModel();
                 if (stTypeArgument!=null && 
                         typeParam.equals(stTypeArgument.getDeclaration())) {
                     TypeDeclaration stDecl = st.getDeclarationModel();
-                    if( stDecl != null ) {
-                        if( stDecl.getTypeParameters() != null && 
-                                stDecl.getTypeParameters().size() > i ) {
+                    if (stDecl!=null) {
+                        if (stDecl.getTypeParameters()!=null && 
+                                stDecl.getTypeParameters().size()>i ) {
                             stTypeParams.add(stDecl.getTypeParameters().get(i));
                         }
                     }                            
