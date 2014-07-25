@@ -100,7 +100,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
             }
             Tree.AnnotationList al = decNode.getAnnotationList();
             String annotations;
-            if (al == null) {
+            if (al==null || al.getToken()==null) {
                 annotations = "";
             }
             else {
