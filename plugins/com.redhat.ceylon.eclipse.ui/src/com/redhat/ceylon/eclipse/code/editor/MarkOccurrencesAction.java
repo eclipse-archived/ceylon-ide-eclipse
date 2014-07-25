@@ -239,16 +239,21 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     private static void removeEditedOccurrences(IDocument document, List<Node> occurrences)
             throws BadLocationException {
         for (Iterator<Node> i=occurrences.iterator(); i.hasNext();) {
-            CommonToken tok = (CommonToken) i.next().getToken();
-            try {
-                String docText = document.get(tok.getStartIndex(), 
-                        tok.getStopIndex()-tok.getStartIndex()+1);
-                if (!docText.equals(tok.getText())) {
-                    i.remove();
+            Node next = i.next();
+            if (next != null) {
+                CommonToken tok = (CommonToken) next.getToken();
+                if (tok != null) {
+                    try {
+                        String docText = document.get(tok.getStartIndex(), 
+                                tok.getStopIndex()-tok.getStartIndex()+1);
+                        if (!docText.equals(tok.getText())) {
+                            i.remove();
+                        }
+                    }
+                    catch (BadLocationException e) {
+                        i.remove();
+                    }
                 }
-            }
-            catch (BadLocationException e) {
-                i.remove();
             }
         }
     }
