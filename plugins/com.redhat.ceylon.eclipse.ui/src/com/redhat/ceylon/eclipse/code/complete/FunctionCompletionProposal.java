@@ -21,6 +21,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -106,6 +107,9 @@ final class FunctionCompletionProposal extends
         final Declaration dec = dwp.getDeclaration();
         String text = dec.getName(arg.getUnit())
                 + "(" + argText + ")";
+        if (((Functional)dec).isDeclaredVoid()) {
+            text += ";";
+        }
         result.add(new FunctionCompletionProposal(offset, prefix, 
                 getDescriptionFor(dwp) + "(...)", text, dec, cpc));
     }
