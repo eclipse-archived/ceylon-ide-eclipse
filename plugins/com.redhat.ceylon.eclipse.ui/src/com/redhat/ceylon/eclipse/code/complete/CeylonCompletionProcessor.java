@@ -33,7 +33,6 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addDocLinkProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addForProposal;
-import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addIfExistsProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addImportProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addSwitchProposal;
@@ -46,6 +45,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDes
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isPackageDescriptor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.nextTokenType;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.complete.FunctionCompletionProposal.addFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addFakeShowParametersCompletion;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addInvocationProposals;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addProgramElementReferenceProposal;
