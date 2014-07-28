@@ -2,6 +2,7 @@ package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.msg;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.extractAnonymousClassIfRequired;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProject;
@@ -215,6 +216,7 @@ public class CeylonTestLaunchConfigEntry {
         String className = parseClassName();
         if( className != null && (type == Type.CLASS || type == Type.CLASS_LOCAL || type == Type.METHOD || type == Type.METHOD_LOCAL) ) {
             Declaration member = pkg.getMember(className, null, false);
+            member = extractAnonymousClassIfRequired(member);
             if( !(member instanceof Class) ) {
                 errorMessage = msg(CeylonTestMessages.errorCanNotFindClass, modPkgDeclName, projectName);
             } else {
@@ -256,9 +258,6 @@ public class CeylonTestLaunchConfigEntry {
                 int memberSeparatorIndex = className.indexOf(MEMBER_SEPARATOR);
                 if (memberSeparatorIndex != -1) {
                     className = className.substring(0, memberSeparatorIndex);
-                }
-                if (!Character.isUpperCase(className.charAt(0))) {
-                    className = null;
                 }
             }
         }

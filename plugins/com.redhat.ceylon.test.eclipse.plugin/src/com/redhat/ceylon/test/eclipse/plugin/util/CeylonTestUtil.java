@@ -42,6 +42,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
@@ -155,15 +157,17 @@ public class CeylonTestUtil {
 			Declaration d;
 			int memberSepIndex = qualifiedName.indexOf(".", pkgSepIndex);
 			if (memberSepIndex != -1) {
-				String className = qualifiedName.substring(pkgSepIndex + 2, memberSepIndex);
+				String baseName = qualifiedName.substring(pkgSepIndex + 2, memberSepIndex);
 				String methodName = qualifiedName.substring(memberSepIndex + 1);
-				d = pkg.getMember(className, null, false);
+				d = pkg.getMember(baseName, null, false);
+				d = extractAnonymousClassIfRequired(d);
 				if (d != null) {
 					d = d.getMember(methodName, null, false);
 				}
 			} else {
-				String fceName = qualifiedName.substring(pkgSepIndex + 2);
-				d = pkg.getMember(fceName, null, false);
+				String baseName = qualifiedName.substring(pkgSepIndex + 2);
+				d = pkg.getMember(baseName, null, false);
+				d = extractAnonymousClassIfRequired(d);
 			}
 			result = d;
 		} else {
@@ -171,6 +175,17 @@ public class CeylonTestUtil {
 		}
     	
     	return result;
+    }
+    
+    public static Declaration extractAnonymousClassIfRequired(Declaration d) {
+        if (d instanceof Value) {
+            Value value = (Value) d;
+            TypeDeclaration typeDeclaration = value.getTypeDeclaration();
+            if (typeDeclaration instanceof Class && typeDeclaration.isAnonymous()) {
+                return typeDeclaration;
+            }
+        }
+        return d;
     }
     
     public static boolean isCeylonProject(IProject project) {
