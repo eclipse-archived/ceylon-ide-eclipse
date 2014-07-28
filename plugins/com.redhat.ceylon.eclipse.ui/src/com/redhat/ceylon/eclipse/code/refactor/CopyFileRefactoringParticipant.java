@@ -46,9 +46,10 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
 
     @Override
     protected boolean initialize(Object element) {
-        file= (IFile) element;
+        file = (IFile) element;
         return getProcessor() instanceof CopyProcessor && 
                 getProjectTypeChecker(file.getProject())!=null &&
+                file.getFileExtension()!=null && 
                 file.getFileExtension().equals("ceylon");
     }
     
@@ -64,98 +65,104 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
     }
 
     public Change createChange(IProgressMonitor pm) throws CoreException {
-        IFolder dest = (IFolder) getArguments().getDestination();
-        final String newName = dest.getProjectRelativePath()
-                .removeFirstSegments(1).toPortableString()
-                .replace('/', '.');
-        IFile newFile = dest.getFile(file.getName());
-        String relFilePath = file.getProjectRelativePath()
-                .removeFirstSegments(1).toPortableString();
-        String relPath = file.getProjectRelativePath()
-                .removeFirstSegments(1).removeLastSegments(1)
-                .toPortableString();
-        final String oldName = relPath.replace('/', '.');
-        final IProject project = file.getProject();
+        try {
+            IFolder dest = (IFolder) getArguments().getDestination();
+            final String newName = dest.getProjectRelativePath()
+                    .removeFirstSegments(1).toPortableString()
+                    .replace('/', '.');
+            IFile newFile = dest.getFile(file.getName());
+            String relFilePath = file.getProjectRelativePath()
+                    .removeFirstSegments(1).toPortableString();
+            String relPath = file.getProjectRelativePath()
+                    .removeFirstSegments(1).removeLastSegments(1)
+                    .toPortableString();
+            final String oldName = relPath.replace('/', '.');
+            final IProject project = file.getProject();
 
-        TypeChecker tc = getProjectTypeChecker(project);
-        if (tc==null) return null;
-        PhasedUnit phasedUnit = tc.getPhasedUnitFromRelativePath(relFilePath);
-        if (phasedUnit==null) return null;
-        final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();                
-        final List<Declaration> declarations = phasedUnit.getDeclarations();
-        final Map<Declaration,String> imports = new HashMap<Declaration,String>();
-        phasedUnit.getCompilationUnit().visit(new Visitor() {
-            @Override
-            public void visit(ImportMemberOrType that) {
-                super.visit(that);
-                visitIt(that.getIdentifier(), that.getDeclarationModel());
-            }
-            @Override
-            public void visit(BaseMemberOrTypeExpression that) {
-                super.visit(that);
-                visitIt(that.getIdentifier(), that.getDeclaration());
-            }
-            @Override
-            public void visit(BaseType that) {
-                super.visit(that);
-                visitIt(that.getIdentifier(), that.getDeclarationModel());
-            }
-            @Override
-            public void visit(ModuleDescriptor that) {
-                super.visit(that);
-                visitIt(that.getImportPath());
-            }
-            @Override
-            public void visit(PackageDescriptor that) {
-                super.visit(that);
-                visitIt(that.getImportPath());
-            }
-            private void visitIt(Tree.ImportPath importPath) {
-                if (formatPath(importPath.getIdentifiers()).equals(oldName)) {
-                    edits.add(new ReplaceEdit(importPath.getStartIndex(), 
-                            oldName.length(), newName));
+            TypeChecker tc = getProjectTypeChecker(project);
+            if (tc==null) return null;
+            PhasedUnit phasedUnit = tc.getPhasedUnitFromRelativePath(relFilePath);
+            if (phasedUnit==null) return null;
+            final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();                
+            final List<Declaration> declarations = phasedUnit.getDeclarations();
+            final Map<Declaration,String> imports = new HashMap<Declaration,String>();
+            phasedUnit.getCompilationUnit().visit(new Visitor() {
+                @Override
+                public void visit(ImportMemberOrType that) {
+                    super.visit(that);
+                    visitIt(that.getIdentifier(), that.getDeclarationModel());
                 }
-            }
-            private void visitIt(Tree.Identifier id, Declaration dec) {
-                if (dec!=null && !declarations.contains(dec)) {
-                    String pn = dec.getUnit().getPackage().getNameAsString();
-                    if (pn.equals(oldName) && !pn.isEmpty() && 
-                            !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
-                        imports.put(dec, id.getText());
+                @Override
+                public void visit(BaseMemberOrTypeExpression that) {
+                    super.visit(that);
+                    visitIt(that.getIdentifier(), that.getDeclaration());
+                }
+                @Override
+                public void visit(BaseType that) {
+                    super.visit(that);
+                    visitIt(that.getIdentifier(), that.getDeclarationModel());
+                }
+                @Override
+                public void visit(ModuleDescriptor that) {
+                    super.visit(that);
+                    visitIt(that.getImportPath());
+                }
+                @Override
+                public void visit(PackageDescriptor that) {
+                    super.visit(that);
+                    visitIt(that.getImportPath());
+                }
+                private void visitIt(Tree.ImportPath importPath) {
+                    if (formatPath(importPath.getIdentifiers()).equals(oldName)) {
+                        edits.add(new ReplaceEdit(importPath.getStartIndex(), 
+                                oldName.length(), newName));
                     }
                 }
-            }
-        });
+                private void visitIt(Tree.Identifier id, Declaration dec) {
+                    if (dec!=null && !declarations.contains(dec)) {
+                        String pn = dec.getUnit().getPackage().getNameAsString();
+                        if (pn.equals(oldName) && !pn.isEmpty() && 
+                                !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
+                            imports.put(dec, id.getText());
+                        }
+                    }
+                }
+            });
 
-        try {
-            TextFileChange change = new TextFileChange(file.getName(), newFile);
-            Tree.CompilationUnit cu = phasedUnit.getCompilationUnit();
-            change.setEdit(new MultiTextEdit());
-            for (ReplaceEdit edit: edits) {
-                change.addEdit(edit);
-            }
-            if (!imports.isEmpty()) {
-                List<InsertEdit> list = importEdits(cu, 
-                        imports.keySet(), imports.values(), 
-                        null, change.getCurrentDocument(null));
-                for (TextEdit edit: list) {
+            try {
+                TextFileChange change = new TextFileChange(file.getName(), newFile);
+                Tree.CompilationUnit cu = phasedUnit.getCompilationUnit();
+                change.setEdit(new MultiTextEdit());
+                for (ReplaceEdit edit: edits) {
                     change.addEdit(edit);
                 }
+                if (!imports.isEmpty()) {
+                    List<InsertEdit> list = importEdits(cu, 
+                            imports.keySet(), imports.values(), 
+                            null, change.getCurrentDocument(null));
+                    for (TextEdit edit: list) {
+                        change.addEdit(edit);
+                    }
+                }
+                Tree.Import toDelete = findImportNode(cu, newName);
+                if (toDelete!=null) {
+                    change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
+                            toDelete.getStopIndex()-toDelete.getStartIndex()+1));
+                }
+                if (change.getEdit().hasChildren()) {
+                    return change;
+                }
             }
-            Tree.Import toDelete = findImportNode(cu, newName);
-            if (toDelete!=null) {
-                change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
-                        toDelete.getStopIndex()-toDelete.getStartIndex()+1));
+            catch (Exception e) { 
+                e.printStackTrace(); 
             }
-            if (change.getEdit().hasChildren()) {
-                return change;
-            }
-        }
-        catch (Exception e) { 
-            e.printStackTrace(); 
-        }
 
-        return null;
+            return null;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

@@ -41,7 +41,7 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
     private IMember javaDeclaration;
 
     protected boolean initialize(Object element) {
-        javaDeclaration= (IMember) element;
+        javaDeclaration = (IMember) element;
         return getArguments().getUpdateReferences() && 
                 getProjectTypeChecker(javaDeclaration.getJavaProject().getProject())!=null;
     }
@@ -56,121 +56,126 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
     }
 
     public Change createChange(IProgressMonitor pm) throws CoreException {
-        
-        final IProject project = javaDeclaration.getJavaProject().getProject();
-        final String newName = getArguments().getNewName();
-        final String oldName = javaDeclaration.getElementName();
-        
-        final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
-        TypeChecker tc = getProjectTypeChecker(project);
-        if (tc==null) return null;
-        for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
-            final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
-            Tree.CompilationUnit cu = phasedUnit.getCompilationUnit();
-            cu.visit(new Visitor() {
-                @Override
-                public void visit(ImportMemberOrType that) {
-                    super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclarationModel());
-                }
-                @Override
-                public void visit(QualifiedMemberOrTypeExpression that) {
-                    super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclaration());
-                }
-                @Override
-                public void visit(BaseMemberOrTypeExpression that) {
-                    super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclaration());
-                }
-                @Override
-                public void visit(BaseType that) {
-                    super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclarationModel());
-                }
-                @Override
-                public void visit(QualifiedType that) {
-                    super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclarationModel());
-                }
-                protected void visitIt(Tree.Identifier id, Declaration dec) {
-                    visitIt(id.getText(), id.getStartIndex(), dec);
-                }
-                protected void visitIt(String name, int offset, Declaration dec) {
-                    if (dec!=null && dec.getQualifiedNameString()
-                            .equals(getQualifiedName(javaDeclaration)) &&
-                            name.equals(javaDeclaration.getElementName())) {
-                        edits.add(new ReplaceEdit(offset, oldName.length(), newName));
+        try {
+            final IProject project = javaDeclaration.getJavaProject().getProject();
+            final String newName = getArguments().getNewName();
+            final String oldName = javaDeclaration.getElementName();
+
+            final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
+            TypeChecker tc = getProjectTypeChecker(project);
+            if (tc==null) return null;
+            for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
+                final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
+                Tree.CompilationUnit cu = phasedUnit.getCompilationUnit();
+                cu.visit(new Visitor() {
+                    @Override
+                    public void visit(ImportMemberOrType that) {
+                        super.visit(that);
+                        visitIt(that.getIdentifier(), that.getDeclarationModel());
                     }
-                }
-                protected String getQualifiedName(IMember dec) {
-                    IJavaElement parent = dec.getParent();
-                    if (parent instanceof ICompilationUnit) {
-                        return parent.getParent().getElementName() + "::" + 
-                                dec.getElementName();
+                    @Override
+                    public void visit(QualifiedMemberOrTypeExpression that) {
+                        super.visit(that);
+                        visitIt(that.getIdentifier(), that.getDeclaration());
                     }
-                    else if (dec.getDeclaringType()!=null) {
-                        return getQualifiedName(dec.getDeclaringType()) + "." + 
-                                dec.getElementName();
+                    @Override
+                    public void visit(BaseMemberOrTypeExpression that) {
+                        super.visit(that);
+                        visitIt(that.getIdentifier(), that.getDeclaration());
                     }
-                    else {
-                        return "@";
+                    @Override
+                    public void visit(BaseType that) {
+                        super.visit(that);
+                        visitIt(that.getIdentifier(), that.getDeclarationModel());
                     }
-                }
-                @Override
-                public void visit(DocLink that) {
-                    super.visit(that);
-                    //TODO: fix copy/paste from RenameRefactoring
-                    String text = that.getText();
-                    int scopeIndex = text.indexOf("::");
-                    int start = scopeIndex<0 ? 0 : scopeIndex+2;
-                    Integer offset = that.getStartIndex();
-                    Declaration base = that.getBase();
-                    if (base!=null) {
-                        int index = text.indexOf('.', start);
-                        String name = index<0 ? 
-                                text.substring(start) : 
-                                text.substring(start, index);
-                        visitIt(name, offset+start, base);
-                        start = index;
-                        int i=0;
-                        List<Declaration> qualified = that.getQualified();
-                        if (qualified!=null) {
-                            while (start>0 && i<qualified.size()) {
-                                index = text.indexOf('.', start);
-                                name = index<0 ? 
-                                        text.substring(start) : 
-                                        text.substring(start, index);
-                                visitIt(name, offset+start, qualified.get(i++));
-                                start = index;
-                            }
+                    @Override
+                    public void visit(QualifiedType that) {
+                        super.visit(that);
+                        visitIt(that.getIdentifier(), that.getDeclarationModel());
+                    }
+                    protected void visitIt(Tree.Identifier id, Declaration dec) {
+                        visitIt(id.getText(), id.getStartIndex(), dec);
+                    }
+                    protected void visitIt(String name, int offset, Declaration dec) {
+                        if (dec!=null && dec.getQualifiedNameString()
+                                .equals(getQualifiedName(javaDeclaration)) &&
+                                name.equals(javaDeclaration.getElementName())) {
+                            edits.add(new ReplaceEdit(offset, oldName.length(), newName));
                         }
                     }
-                }
-            });
-            if (!edits.isEmpty()) {
-                try {
-                    IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                    TextFileChange change= new TextFileChange(file.getName(), file);
-                    change.setEdit(new MultiTextEdit());
-                    changes.put(file, change);
-                    for (ReplaceEdit edit: edits) {
-                        change.addEdit(edit);
+                    protected String getQualifiedName(IMember dec) {
+                        IJavaElement parent = dec.getParent();
+                        if (parent instanceof ICompilationUnit) {
+                            return parent.getParent().getElementName() + "::" + 
+                                    dec.getElementName();
+                        }
+                        else if (dec.getDeclaringType()!=null) {
+                            return getQualifiedName(dec.getDeclaringType()) + "." + 
+                                    dec.getElementName();
+                        }
+                        else {
+                            return "@";
+                        }
                     }
-                }       
-                catch (Exception e) { 
-                    e.printStackTrace(); 
+                    @Override
+                    public void visit(DocLink that) {
+                        super.visit(that);
+                        //TODO: fix copy/paste from RenameRefactoring
+                        String text = that.getText();
+                        int scopeIndex = text.indexOf("::");
+                        int start = scopeIndex<0 ? 0 : scopeIndex+2;
+                        Integer offset = that.getStartIndex();
+                        Declaration base = that.getBase();
+                        if (base!=null) {
+                            int index = text.indexOf('.', start);
+                            String name = index<0 ? 
+                                    text.substring(start) : 
+                                        text.substring(start, index);
+                                    visitIt(name, offset+start, base);
+                                    start = index;
+                                    int i=0;
+                                    List<Declaration> qualified = that.getQualified();
+                                    if (qualified!=null) {
+                                        while (start>0 && i<qualified.size()) {
+                                            index = text.indexOf('.', start);
+                                            name = index<0 ? 
+                                                    text.substring(start) : 
+                                                        text.substring(start, index);
+                                                    visitIt(name, offset+start, qualified.get(i++));
+                                                    start = index;
+                                        }
+                                    }
+                        }
+                    }
+                });
+                if (!edits.isEmpty()) {
+                    try {
+                        IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                        TextFileChange change= new TextFileChange(file.getName(), file);
+                        change.setEdit(new MultiTextEdit());
+                        changes.put(file, change);
+                        for (ReplaceEdit edit: edits) {
+                            change.addEdit(edit);
+                        }
+                    }       
+                    catch (Exception e) { 
+                        e.printStackTrace(); 
+                    }
                 }
             }
+
+            if (changes.isEmpty())
+                return null;
+
+            CompositeChange result= new CompositeChange("Ceylon source changes");
+            for (Iterator<Change> iter= changes.values().iterator(); iter.hasNext();) {
+                result.add((Change) iter.next());
+            }
+            return result;
         }
-        
-        if (changes.isEmpty())
+        catch (Exception e) {
+            e.printStackTrace();
             return null;
-        
-        CompositeChange result= new CompositeChange("Ceylon source changes");
-        for (Iterator<Change> iter= changes.values().iterator(); iter.hasNext();) {
-            result.add((Change) iter.next());
         }
-        return result;
     }
 }

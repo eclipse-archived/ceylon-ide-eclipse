@@ -38,7 +38,7 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
 
     @Override
     protected boolean initialize(Object element) {
-        javaPackageFragment= (IPackageFragment) element;
+        javaPackageFragment = (IPackageFragment) element;
         return getProcessor() instanceof CopyProcessor &&
                 getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
     }
