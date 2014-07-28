@@ -43,10 +43,11 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
         final String newName = getArguments().getNewName();
         RefactoringProcessor processor = getProcessor();
         if (processor instanceof RenamePackageProcessor) {
-            RenamePackageProcessor renamePackageProcessor = (RenamePackageProcessor) processor;
+            RenamePackageProcessor renamePackageProcessor = 
+                    (RenamePackageProcessor) processor;
+            String patterns = renamePackageProcessor.getFilePatterns();
             if (renamePackageProcessor.getUpdateQualifiedNames() &&
-                    (renamePackageProcessor.getFilePatterns().equals("*") ||
-                    renamePackageProcessor.getFilePatterns().contains("*.ceylon"))) {
+                    (patterns.equals("*") || patterns.contains("*.ceylon"))) {
                 return false;
             }
         }
@@ -70,62 +71,67 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException {
-        
-        final String newName = getArguments().getNewName();
-        final String oldName = javaPackageFragment.getElementName();
-        final IProject project = javaPackageFragment.getJavaProject().getProject();
-        
-        final List<Change> changes = new ArrayList<Change>();
-        TypeChecker tc = getProjectTypeChecker(project);
-        if (tc==null) return null;
-        for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
-            
-            final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
-            phasedUnit.getCompilationUnit().visit(new Visitor() {
-                @Override
-                public void visit(ImportPath that) {
-                    super.visit(that);
-                    if (formatPath(that.getIdentifiers()).equals(oldName)) {
-                        edits.add(new ReplaceEdit(that.getStartIndex(), 
-                                oldName.length(), newName));
+        try {
+            final String newName = getArguments().getNewName();
+            final String oldName = javaPackageFragment.getElementName();
+            final IProject project = javaPackageFragment.getJavaProject().getProject();
+
+            final List<Change> changes = new ArrayList<Change>();
+            TypeChecker tc = getProjectTypeChecker(project);
+            if (tc==null) return null;
+            for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
+
+                final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
+                phasedUnit.getCompilationUnit().visit(new Visitor() {
+                    @Override
+                    public void visit(ImportPath that) {
+                        super.visit(that);
+                        if (formatPath(that.getIdentifiers()).equals(oldName)) {
+                            edits.add(new ReplaceEdit(that.getStartIndex(), 
+                                    oldName.length(), newName));
+                        }
+                    }
+                });
+
+                if (!edits.isEmpty()) {
+                    try {
+                        final IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                        IFile movedFile = getMovedFile(file);
+                        TextFileChange change = 
+                                new MovingTextFileChange(movedFile.getName(), movedFile, file);
+                        change.setEdit(new MultiTextEdit());
+                        for (ReplaceEdit edit: edits) {
+                            change.addEdit(edit);
+                        }
+                        changes.add(change);
+                    }       
+                    catch (Exception e) { 
+                        e.printStackTrace(); 
                     }
                 }
-            });
-            
-            if (!edits.isEmpty()) {
-                try {
-                    final IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                    IFile movedFile = getMovedFile(file);
-                    TextFileChange change = 
-                            new MovingTextFileChange(movedFile.getName(), movedFile, file);
-                    change.setEdit(new MultiTextEdit());
-                    for (ReplaceEdit edit: edits) {
-                        change.addEdit(edit);
-                    }
-                    changes.add(change);
-                }       
-                catch (Exception e) { 
-                    e.printStackTrace(); 
-                }
+
             }
-            
+
+            if (changes.isEmpty()) {
+                return null;
+            }
+            else {
+                CompositeChange result = new CompositeChange("Ceylon source changes") {
+                    @Override
+                    public Change perform(IProgressMonitor pm) throws CoreException {
+                        allPackagesMoving.clear();
+                        return super.perform(pm);
+                    }
+                };
+                for (Change change: changes) {
+                    result.add(change);
+                }
+                return result;
+            }
         }
-                
-        if (changes.isEmpty()) {
+        catch (Exception e) {
+            e.printStackTrace();
             return null;
-        }
-        else {
-            CompositeChange result = new CompositeChange("Ceylon source changes") {
-                @Override
-                public Change perform(IProgressMonitor pm) throws CoreException {
-                    allPackagesMoving.clear();
-                    return super.perform(pm);
-                }
-            };
-            for (Change change: changes) {
-                result.add(change);
-            }
-            return result;
         }
     }
     

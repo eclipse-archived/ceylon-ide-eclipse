@@ -55,6 +55,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         file = (IFile) element;
         return getProcessor() instanceof MoveProcessor &&
                 getProjectTypeChecker(file.getProject())!=null &&
+                file.getFileExtension()!=null &&
                 (file.getFileExtension().equals("ceylon") ||
                 file.getFileExtension().equals("java"));
     }
@@ -73,42 +74,48 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
-        final IProject project = file.getProject();
-        final String newName = ((IFolder) getArguments().getDestination())
-                .getProjectRelativePath().removeFirstSegments(1)
-                .toPortableString().replace('/', '.');
-        String movedRelFilePath = file.getProjectRelativePath()
-                .removeFirstSegments(1).toPortableString();
-        String movedRelPath = file.getParent().getProjectRelativePath()
-                .removeFirstSegments(1).toPortableString();
-        final String oldName = movedRelPath.replace('/', '.');
-        newFile = ((IFolder) getArguments().getDestination()).getFile(file.getName());
-        
-        final List<Change> changes= new ArrayList<Change>();
-        
-        if (file.getFileExtension().equals("java")) {
-            updateRefsToMovedJavaFile(project, newName, oldName, changes);
-        }
-        else {
-            PhasedUnit movedPhasedUnit= getProjectTypeChecker(project)
-                    .getPhasedUnitFromRelativePath(movedRelFilePath);
-            if (movedPhasedUnit==null) return null;
-            final List<Declaration> declarations = movedPhasedUnit.getDeclarations();
-            if (newName.equals(oldName)) return null;
-            updateRefsFromMovedCeylonFile(project, newName, oldName, changes, 
-                    movedPhasedUnit, declarations);
-            updateRefsToMovedCeylonFile(project, newName, oldName, changes, 
-                    movedPhasedUnit, declarations);
-        }
+        try {
+            final IProject project = file.getProject();
+            final String newName = ((IFolder) getArguments().getDestination())
+                    .getProjectRelativePath().removeFirstSegments(1)
+                    .toPortableString().replace('/', '.');
+            String movedRelFilePath = file.getProjectRelativePath()
+                    .removeFirstSegments(1).toPortableString();
+            String movedRelPath = file.getParent().getProjectRelativePath()
+                    .removeFirstSegments(1).toPortableString();
+            final String oldName = movedRelPath.replace('/', '.');
+            newFile = ((IFolder) getArguments().getDestination()).getFile(file.getName());
 
-        if (changes.isEmpty())
-            return null;
-        
-        CompositeChange result= new CompositeChange("Ceylon source changes");
-        for (Change change: changes) {
-            result.add(change);
+            final List<Change> changes= new ArrayList<Change>();
+
+            if (file.getFileExtension().equals("java")) {
+                updateRefsToMovedJavaFile(project, newName, oldName, changes);
+            }
+            else {
+                PhasedUnit movedPhasedUnit= getProjectTypeChecker(project)
+                        .getPhasedUnitFromRelativePath(movedRelFilePath);
+                if (movedPhasedUnit==null) return null;
+                final List<Declaration> declarations = movedPhasedUnit.getDeclarations();
+                if (newName.equals(oldName)) return null;
+                updateRefsFromMovedCeylonFile(project, newName, oldName, changes, 
+                        movedPhasedUnit, declarations);
+                updateRefsToMovedCeylonFile(project, newName, oldName, changes, 
+                        movedPhasedUnit, declarations);
+            }
+
+            if (changes.isEmpty())
+                return null;
+
+            CompositeChange result= new CompositeChange("Ceylon source changes");
+            for (Change change: changes) {
+                result.add(change);
+            }
+            return result;
         }
-        return result;
+        catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     protected void updateRefsFromMovedCeylonFile(final IProject project,
