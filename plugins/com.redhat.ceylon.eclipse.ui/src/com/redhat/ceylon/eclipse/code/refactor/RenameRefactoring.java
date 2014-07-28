@@ -27,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
@@ -205,7 +206,10 @@ public class RenameRefactoring extends AbstractRefactoring {
         root.visit(frv);
         list.addAll(frv.getNodes());
         FindRefinementsVisitor fdv = 
-                new FindRefinementsVisitor((Declaration)frv.getDeclaration());
+                new FindRefinementsVisitor((Declaration)frv.getDeclaration()) {
+            @Override
+            public void visit(SpecifierStatement that) {}
+        };
         root.visit(fdv);
         list.addAll(fdv.getDeclarationNodes());
         return list;
