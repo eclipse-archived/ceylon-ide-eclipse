@@ -83,7 +83,7 @@ public class CeylonNavigatorLabelProvider extends
         if (element instanceof CeylonArchiveFileStore) {
             CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore)element;
             if (archiveFileStore.getParent() == null) {
-                return new StyledString("Ceylon Sources");
+                return new StyledString("Ceylon Sources").append(" - " + archiveFileStore.getArchivePath().toOSString(), QUALIFIER_STYLER);
             }
             return new StyledString(archiveFileStore.getName());
         }
@@ -91,7 +91,7 @@ public class CeylonNavigatorLabelProvider extends
         if (element instanceof JarPackageFragmentRoot) {
             JarPackageFragmentRoot jpfr = (JarPackageFragmentRoot) element;
             if (ArtifactContext.CAR.substring(1).equalsIgnoreCase(jpfr.getPath().getFileExtension())) {
-                return new StyledString("Java Binaries");
+                return new StyledString("Java Binaries").append(" - " + jpfr.getPath().toOSString(), QUALIFIER_STYLER);
             } else {
                 return getJavaNavigatorLabelProvider().getStyledText(element);
             }
