@@ -1,7 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_COMPLATE_TREE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_COMPLETE_DESCRIPTION;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProjects;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getWorkspaceRoot;
@@ -44,22 +43,23 @@ import org.eclipse.ui.dialogs.PatternFilter;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.eclipse.code.complete.CodeCompletions;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.util.MethodWithContainer;
 
 @SuppressWarnings("restriction")
 public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialog {
 
-    private static final java.lang.Class<?>[] ACCEPTED_TYPES = { IProject.class, Module.class, Package.class, Declaration.class };
+    private static final java.lang.Class<?>[] ACCEPTED_TYPES = { IProject.class, Module.class, Package.class, Declaration.class, MethodWithContainer.class };
 
     private final CeylonTestSelectionDialogLabelProvider labelProvider;
-    private final CeylonTestSelectionDialogViewerFilter viewerFilter;
     private Composite buttonPanel;
-    private Button buttonShowComplateTree;
     private Button buttonShowCompleteDescription;
 
     public CeylonTestSelectionDialog(Shell parent) {
@@ -72,7 +72,6 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
         super(parent, labelProvider, contentProvider);
 
         this.labelProvider = labelProvider;
-        this.viewerFilter = new CeylonTestSelectionDialogViewerFilter();
 
         setTitle(CeylonTestMessages.testSelectDialogTitle);
         setMessage(CeylonTestMessages.testSelectDialogMessage);
@@ -92,9 +91,9 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
         Composite composite = (Composite) super.createDialogArea(parent);
         
         createButtonPanel(composite);
-        createButtonShowComplateTree();
         createButtonShowCompleteDescription();
         loadSettings();
+        getTreeViewer().addFilter(new CeylonTestSelectionDialogViewerFilter());
         update();
         
         return composite;
@@ -104,17 +103,6 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
         buttonPanel = new Composite(composite, SWT.NONE);
         buttonPanel.setLayout(new GridLayout(1, false));
         buttonPanel.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).create());
-    }
-    
-    private void createButtonShowComplateTree() {
-        buttonShowComplateTree = new Button(buttonPanel, SWT.CHECK);
-        buttonShowComplateTree.setText(CeylonTestMessages.testSelectDialogShowComplateTree);
-        buttonShowComplateTree.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                update();
-            }
-        });
     }
 
     private void createButtonShowCompleteDescription() {
@@ -159,25 +147,16 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
 
     private void loadSettings() {
         IDialogSettings dialogSettings = CeylonTestPlugin.getDefault().getDialogSettings();
-        buttonShowComplateTree.setSelection(dialogSettings.getBoolean(PREF_SHOW_COMPLATE_TREE));
         buttonShowCompleteDescription.setSelection(dialogSettings.getBoolean(PREF_SHOW_COMPLETE_DESCRIPTION));
     }
 
     private void saveSettings() {
         IDialogSettings dialogSettings = CeylonTestPlugin.getDefault().getDialogSettings();
-        dialogSettings.put(PREF_SHOW_COMPLATE_TREE, buttonShowComplateTree.getSelection());
         dialogSettings.put(PREF_SHOW_COMPLETE_DESCRIPTION, buttonShowCompleteDescription.getSelection());
     }
 
     private void update() {
-        if( buttonShowComplateTree.getSelection() ) {
-            getTreeViewer().removeFilter(viewerFilter);
-        } else {
-            getTreeViewer().addFilter(viewerFilter);
-        }
-        
         labelProvider.setShowCompleteDescription(buttonShowCompleteDescription.getSelection());
-        
         getTreeViewer().refresh();
     }
 
@@ -198,9 +177,40 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
             } else if( parent instanceof Package ) {
                 children = ((Package) parent).getMembers();
             } else if( parent instanceof ClassOrInterface ) {
-                children = ((ClassOrInterface) parent).getMembers();
+                children = getMembers((ClassOrInterface) parent);
             }
             return children.toArray();
+        }
+        
+        private List<MethodWithContainer> getMembers(ClassOrInterface c) {
+            List<MethodWithContainer> members = new ArrayList<MethodWithContainer>();
+            getMembers(c, c, members);
+            return members;
+        }
+
+        private void getMembers(ClassOrInterface c, TypeDeclaration t, List<MethodWithContainer> members) {
+            for (Declaration d : t.getMembers()) {
+                if (d instanceof Method) {
+                    Method m = (Method) d;
+                    boolean contains = false;
+                    for (MethodWithContainer member : members) {
+                        if (member.getMethod().getName().equals(m.getName())) {
+                            contains = true;
+                            break;
+                        }
+                    }
+                    if (!contains) {
+                        members.add(new MethodWithContainer(c, m));
+                    }
+                }
+            }
+            TypeDeclaration et = t.getExtendedTypeDeclaration();
+            if (et != null) {
+                getMembers(c, et, members);
+            }
+            for (TypeDeclaration st : t.getSatisfiedTypeDeclarations()) {
+                getMembers(c, st, members);
+            }
         }
 
         @Override
@@ -251,6 +261,9 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
             if (element instanceof Declaration) {
                 return CeylonLabelProvider.getImageForDeclaration((Declaration) element);
             }
+            else if (element instanceof MethodWithContainer) {
+                return CeylonLabelProvider.getImageForDeclaration(((MethodWithContainer) element).getMethod());
+            }
             return super.getImage(element);
         }
 
@@ -265,9 +278,19 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
                 } else {
                     styledText = new StyledString(declaration.getName());
                 }
+            } else if (element instanceof MethodWithContainer) {
+                Declaration declaration = ((MethodWithContainer) element).getMethod();
+                if (showCompleteDescription) {
+                    styledText = CodeCompletions.getStyledDescriptionFor(declaration);
+                } else {
+                    styledText = new StyledString(declaration.getName());
+                }
             } else if (element instanceof Package) {
                 // default package color from CeylonLabelProvider is gray, we want black
                 styledText = new StyledString(getLabel((Package) element));
+            } else if (element instanceof Module) {
+                // default package color from CeylonLabelProvider is gray, we want black
+                styledText = new StyledString(getLabel((Module) element));
             } else {
                 styledText = super.getStyledText(element); 
             }

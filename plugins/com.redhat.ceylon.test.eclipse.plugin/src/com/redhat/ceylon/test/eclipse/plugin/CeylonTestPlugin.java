@@ -23,7 +23,6 @@ public class CeylonTestPlugin extends AbstractUIPlugin {
     public static final String LAUNCH_CONFIG_ENTRIES_KEY = PLUGIN_ID + ".entries";
     public static final String LAUNCH_CONFIG_PORT = PLUGIN_ID + ".port";
     
-    public static final String PREF_SHOW_COMPLATE_TREE = PLUGIN_ID + ".showComplateTree";
     public static final String PREF_SHOW_COMPLETE_DESCRIPTION = PLUGIN_ID + ".showCompleteDescription";
     public static final String PREF_SHOW_FAILURES_ONLY = PLUGIN_ID + ".showFailuresOnly";
     public static final String PREF_SHOW_TESTS_IN_HIERARCHY = PLUGIN_ID + ".showTestsInHierarchy";

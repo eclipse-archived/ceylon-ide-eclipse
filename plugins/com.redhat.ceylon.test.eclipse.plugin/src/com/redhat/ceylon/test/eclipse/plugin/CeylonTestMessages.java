@@ -21,7 +21,6 @@ public class CeylonTestMessages extends NLS {
 
     public static String testSelectDialogTitle;
     public static String testSelectDialogMessage;
-    public static String testSelectDialogShowComplateTree;
     public static String testSelectDialogShowComplateDescription;
     
     public static String errorDialogTitle;
@@ -30,8 +29,7 @@ public class CeylonTestMessages extends NLS {
     public static String errorCanNotFindProject;
     public static String errorCanNotFindModule;
     public static String errorCanNotFindPackage;
-    public static String errorCanNotFindClass;
-    public static String errorCanNotFindMethod;
+    public static String errorCanNotFindDeclaration;
     public static String errorCanNotFindSelectedTest;
     public static String errorNoSocket;
     public static String errorMissingCeylonTestImport;
