@@ -41,7 +41,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
@@ -141,8 +140,8 @@ public class CeylonTestUtil {
         return null;
     }
     
-    public static Referenceable getPackageOrDeclaration(IProject project, String qualifiedName) {
-    	Referenceable result = null;
+    public static Object getPackageOrDeclaration(IProject project, String qualifiedName) {
+    	Object result = null;
     	
 		String pkgName = null;
 		int pkgSepIndex = qualifiedName.indexOf("::");
@@ -162,14 +161,16 @@ public class CeylonTestUtil {
 				d = pkg.getMember(baseName, null, false);
 				d = extractAnonymousClassIfRequired(d);
 				if (d != null) {
-					d = d.getMember(methodName, null, false);
+					Declaration m = d.getMember(methodName, null, false);
+					if( m instanceof Method && d instanceof Class ) {
+					    result = new MethodWithContainer((Class)d, (Method)m);
+					}
 				}
 			} else {
 				String baseName = qualifiedName.substring(pkgSepIndex + 2);
 				d = pkg.getMember(baseName, null, false);
-				d = extractAnonymousClassIfRequired(d);
+				result = extractAnonymousClassIfRequired(d);
 			}
-			result = d;
 		} else {
 			result = pkg;
 		}
@@ -204,7 +205,11 @@ public class CeylonTestUtil {
             return isTestableClass((Class) element);
         }
         else if( element instanceof Method ) {
-            return isTestableMethod((Method) element);
+            return isTestableMethod((Method) element, null);
+        }
+        else if( element instanceof MethodWithContainer ) {
+            MethodWithContainer m = (MethodWithContainer) element;
+            return isTestableMethod(m.getMethod(), m.getContainer());
         }
         return false;
     }
@@ -220,9 +225,9 @@ public class CeylonTestUtil {
         return false;
     }
 
-    private static boolean isTestableMethod(Method method) {
+    private static boolean isTestableMethod(Method method, TypeDeclaration container) {
         boolean isTestableMethod = false;
-        if (method.isToplevel() || (method.getContainer() instanceof Class && isTestableClass((Class) method.getContainer()))) {
+        if (method.isToplevel() || (container instanceof Class && isTestableClass((Class) container))) {
             if (method.isDeclaredVoid() && !method.isFormal() && containsTestAnnotation(method) ) {
                 isTestableMethod = true;
             }

@@ -22,6 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
+import com.redhat.ceylon.test.eclipse.plugin.util.MethodWithContainer;
 
 @SuppressWarnings("unchecked")
 public class CeylonTestLaunchConfigEntry {
@@ -72,6 +73,10 @@ public class CeylonTestLaunchConfigEntry {
             Method method = (Method) lastSegment;
             entry.type = method.isShared() ? Type.METHOD : Type.METHOD_LOCAL;
             entry.modPkgDeclName = method.getQualifiedNameString();
+        } else if( lastSegment instanceof MethodWithContainer ) {
+            MethodWithContainer methodWithContainer = (MethodWithContainer) lastSegment;
+            entry.type = methodWithContainer.getMethod().isShared() ? Type.METHOD : Type.METHOD_LOCAL;
+            entry.modPkgDeclName = methodWithContainer.getContainer().getQualifiedNameString() + "." + methodWithContainer.getMethod().getName();
         }
 
         return entry;
@@ -176,13 +181,35 @@ public class CeylonTestLaunchConfigEntry {
 		if(!isValid() || type == Type.PACKAGE) {
 			return;
 		}
-        
-        Class clazz = validateClass(pkg);
-        if( !isValid() || type == Type.CLASS || type == Type.CLASS_LOCAL )
-            return;
+		
+        validateDeclaration(pkg);
+    }
 
-        Scope methodScope = (clazz != null) ? clazz : pkg;
-        validateMethod(methodScope);
+    private void validateDeclaration(Package pkg) {
+        String[] paths = parsePaths();
+        Scope scope = pkg;
+        Declaration d = null;
+        
+        if( paths == null|| paths.length == 0 || paths.length > 2 ) {
+            errorMessage = msg(CeylonTestMessages.errorCanNotFindDeclaration, modPkgDeclName, projectName);
+            return;
+        }
+        
+        d = scope.getMember(paths[0], null, false);
+        d = extractAnonymousClassIfRequired(d);
+        if (d instanceof Class) {
+            scope = (Class) d;
+        }
+        if (paths.length == 2) {
+            d = scope.getMember(paths[1], null, false);
+        }
+        
+        if( !(d instanceof Class) && (type == Type.CLASS || type == Type.CLASS_LOCAL) ) {
+            errorMessage = msg(CeylonTestMessages.errorCanNotFindDeclaration, modPkgDeclName, projectName);            
+        }
+        if( !(d instanceof Method) && (type == Type.METHOD || type == Type.METHOD_LOCAL) ) {
+            errorMessage = msg(CeylonTestMessages.errorCanNotFindDeclaration, modPkgDeclName, projectName);            
+        }
     }
 
     private IProject validateProject() {
@@ -211,31 +238,6 @@ public class CeylonTestLaunchConfigEntry {
         return pkg;
     }
 
-    private Class validateClass(Package pkg) {
-        Class clazz = null;
-        String className = parseClassName();
-        if( className != null && (type == Type.CLASS || type == Type.CLASS_LOCAL || type == Type.METHOD || type == Type.METHOD_LOCAL) ) {
-            Declaration member = pkg.getMember(className, null, false);
-            member = extractAnonymousClassIfRequired(member);
-            if( !(member instanceof Class) ) {
-                errorMessage = msg(CeylonTestMessages.errorCanNotFindClass, modPkgDeclName, projectName);
-            } else {
-                clazz = (Class) member;
-            }
-        }
-        return clazz;
-    }
-
-    private void validateMethod(Scope methodScope) {
-        String methodName = parseMethodName();
-        if( type == Type.METHOD || type == Type.METHOD_LOCAL ) {
-            Declaration member = methodScope.getMember(methodName, null, false);
-            if( !(member instanceof Method) ) {
-                errorMessage = msg(CeylonTestMessages.errorCanNotFindMethod, modPkgDeclName, projectName);
-            }
-        }
-    }
-
     private String parsePackageName() {
         String pkgName = null;
         if (type == Type.PACKAGE) {
@@ -248,38 +250,15 @@ public class CeylonTestLaunchConfigEntry {
         }
         return pkgName;
     }
-
-    private String parseClassName() {
-        String className = null;
-        if (type == Type.CLASS || type == Type.CLASS_LOCAL || type == Type.METHOD || type == Type.METHOD_LOCAL) {
-            int pkgSeparatorIndex = modPkgDeclName.indexOf(PACKAGE_SEPARATOR);
-            if (pkgSeparatorIndex != -1) {
-                className = modPkgDeclName.substring(pkgSeparatorIndex + 2);
-                int memberSeparatorIndex = className.indexOf(MEMBER_SEPARATOR);
-                if (memberSeparatorIndex != -1) {
-                    className = className.substring(0, memberSeparatorIndex);
-                }
-            }
+    
+    private String[] parsePaths() {
+        String[] paths = new String[0];
+        int pkgSeparatorIndex = modPkgDeclName.indexOf(PACKAGE_SEPARATOR);
+        if (pkgSeparatorIndex != -1) {
+            String path = modPkgDeclName.substring(pkgSeparatorIndex + 2);
+            paths = path.split("\\" + MEMBER_SEPARATOR);
         }
-        return className;
-    }
-
-    private String parseMethodName() {
-        String methodName = null;
-        if (type == Type.METHOD || type == Type.METHOD_LOCAL) {
-            int pkgSeparatorIndex = modPkgDeclName.indexOf(PACKAGE_SEPARATOR);
-            if (pkgSeparatorIndex != -1) {
-                methodName = modPkgDeclName.substring(pkgSeparatorIndex + 2);
-                int memberSeparatorIndex = methodName.indexOf(MEMBER_SEPARATOR);
-                if (memberSeparatorIndex != -1) {
-                    methodName = methodName.substring(memberSeparatorIndex + 1);
-                }
-                if (!Character.isLowerCase(methodName.charAt(0))) {
-                    methodName = null;
-                }
-            }
-        }
-        return methodName;
+        return paths;
     }
 
 }

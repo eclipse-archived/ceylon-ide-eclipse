@@ -56,6 +56,7 @@ import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.util.MethodWithContainer;
 
 public class CeylonTestLaunchShortcut implements ILaunchShortcut {
 
@@ -211,7 +212,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
 
         if (node instanceof Tree.AnyMethod) {
             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
-            if (isTestable(method)) {
+            if (method.getContainer() instanceof Class && isTestable(new MethodWithContainer((Class)method.getContainer(), method))) {
                 if (method.isMember()) {
                     name.append(((Declaration) method.getContainer()).getName()).append(".");
                 }
@@ -222,6 +223,14 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         }
         if (node instanceof Tree.AnyClass) {
             Class clazz = ((Tree.AnyClass) node).getDeclarationModel();
+            if (isTestable(clazz)) {
+                name.append(clazz.getName());
+                entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL,
+                        clazz.getQualifiedNameString()));
+            }
+        }
+        if( node instanceof Tree.ObjectDefinition ) {
+            Class clazz = ((Tree.ObjectDefinition) node).getAnonymousClass();
             if (isTestable(clazz)) {
                 name.append(clazz.getName());
                 entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL,

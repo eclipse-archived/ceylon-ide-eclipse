@@ -76,20 +76,20 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry;
 import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type;
 import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRun.TestVisitor;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestRun.TestVisitor;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 import com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
+import com.redhat.ceylon.test.eclipse.plugin.util.MethodWithContainer;
 
 public class TestsPanel extends Composite {
 
@@ -356,15 +356,18 @@ public class TestsPanel extends Composite {
         }
     }
     
-	private void gotoTest(TestElement testElement) throws CoreException {
-		IProject project = CeylonTestUtil.getProject(currentTestRun.getLaunch());
-		if (project != null) {
-			Referenceable pkgOrDecl = CeylonTestUtil.getPackageOrDeclaration(project, testElement.getQualifiedName());
-			if (pkgOrDecl instanceof Declaration) {
-				Navigation.gotoDeclaration((Declaration) pkgOrDecl, project);
-			}
-		}
-	}
+    private void gotoTest(TestElement testElement) throws CoreException {
+        IProject project = CeylonTestUtil.getProject(currentTestRun.getLaunch());
+        if (project != null) {
+            Object result = CeylonTestUtil.getPackageOrDeclaration(project, testElement.getQualifiedName());
+            if (result instanceof Declaration) {
+                Navigation.gotoDeclaration((Declaration) result, project);
+            }
+            else if (result instanceof MethodWithContainer) {
+                Navigation.gotoDeclaration(((MethodWithContainer) result).getMethod(), project);
+            }
+        }
+    }
 
     private void runTest(String launchMode) throws CoreException {
     	String launchName = null;
@@ -381,20 +384,25 @@ public class TestsPanel extends Composite {
     			qualifiedName = (String) selectedElement;
     		}
 
-    		Referenceable pkgOrDecl = CeylonTestUtil.getPackageOrDeclaration(project, qualifiedName);
-    		if( pkgOrDecl instanceof Package ) {
-    			Package pkg = (Package) pkgOrDecl;
+    		Object result = CeylonTestUtil.getPackageOrDeclaration(project, qualifiedName);
+    		if( result instanceof Package ) {
+    			Package pkg = (Package) result;
     			launchName = pkg.getNameAsString();
     			entries.add(CeylonTestLaunchConfigEntry.build(project, Type.PACKAGE, pkg.getNameAsString()));
-    		} else if (pkgOrDecl instanceof Class) {
-    			Class clazz = (Class) pkgOrDecl;
+    		} else if (result instanceof Class) {
+    			Class clazz = (Class) result;
     			launchName = clazz.getName();
     			entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL, clazz.getQualifiedNameString()));
     		}
-    		else if (pkgOrDecl instanceof Method) {
-    			Method method = (Method) pkgOrDecl;
+    		else if (result instanceof Method) {
+    			Method method = (Method) result;
     			launchName = (method.isMember() ? ((Declaration) method.getContainer()).getName() + "." : "") + method.getName();
     			entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL, method.getQualifiedNameString()));
+    		}
+    		else if( result instanceof MethodWithContainer ) {
+    		    MethodWithContainer methodWithContainer = (MethodWithContainer) result;
+                launchName = methodWithContainer.getContainer().getName() + "." + methodWithContainer.getMethod().getName();
+                entries.add(CeylonTestLaunchConfigEntry.build(project, methodWithContainer.getMethod().isShared() ? METHOD : METHOD_LOCAL, methodWithContainer.getContainer().getQualifiedNameString() + "." + methodWithContainer.getMethod().getName()));
     		}
     	}
 		
