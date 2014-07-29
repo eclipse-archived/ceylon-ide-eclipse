@@ -41,6 +41,7 @@ import javax.tools.JavaFileObject;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.FileHeader;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
@@ -3229,7 +3230,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if(moduleSrc.exists()){
                     moduleJars.add(moduleSrc);
                     try {
-                        new ZipFile(moduleSrc).removeFile(relativeFilePath);
+                        ZipFile zipFile = new ZipFile(moduleSrc);
+                        FileHeader fileHeader = zipFile.getFileHeader(relativeFilePath);
+                        if(fileHeader != null){
+                            zipFile.removeFile(fileHeader);
+                        }
                     } catch (ZipException e) {
                         e.printStackTrace();
                     }
