@@ -2,6 +2,7 @@ package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_COMPLETE_DESCRIPTION;
+import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getAllMethods;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProjects;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getWorkspaceRoot;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestable;
@@ -43,10 +44,8 @@ import org.eclipse.ui.dialogs.PatternFilter;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.eclipse.code.complete.CodeCompletions;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
@@ -177,40 +176,9 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
             } else if( parent instanceof Package ) {
                 children = ((Package) parent).getMembers();
             } else if( parent instanceof ClassOrInterface ) {
-                children = getMembers((ClassOrInterface) parent);
+                children = getAllMethods((ClassOrInterface) parent);
             }
             return children.toArray();
-        }
-        
-        private List<MethodWithContainer> getMembers(ClassOrInterface c) {
-            List<MethodWithContainer> members = new ArrayList<MethodWithContainer>();
-            getMembers(c, c, members);
-            return members;
-        }
-
-        private void getMembers(ClassOrInterface c, TypeDeclaration t, List<MethodWithContainer> members) {
-            for (Declaration d : t.getMembers()) {
-                if (d instanceof Method) {
-                    Method m = (Method) d;
-                    boolean contains = false;
-                    for (MethodWithContainer member : members) {
-                        if (member.getMethod().getName().equals(m.getName())) {
-                            contains = true;
-                            break;
-                        }
-                    }
-                    if (!contains) {
-                        members.add(new MethodWithContainer(c, m));
-                    }
-                }
-            }
-            TypeDeclaration et = t.getExtendedTypeDeclaration();
-            if (et != null) {
-                getMembers(c, et, members);
-            }
-            for (TypeDeclaration st : t.getSatisfiedTypeDeclarations()) {
-                getMembers(c, st, members);
-            }
         }
 
         @Override
