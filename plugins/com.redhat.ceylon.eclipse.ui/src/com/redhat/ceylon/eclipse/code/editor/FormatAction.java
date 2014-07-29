@@ -246,5 +246,10 @@ final class FormatAction extends Action {
         public String writeLine$line() {
             return ""; // default value for "line" parameter
         }
+        @Override
+        public Object writeBytes(ceylon.language.Iterable<? extends ceylon.language.Byte,? extends Object> bytes) {
+            // unused; ceylon.formatter never writes bytes
+            throw new UnsupportedOperationException();
+        }
     }
 }
