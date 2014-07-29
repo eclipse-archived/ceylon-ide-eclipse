@@ -36,6 +36,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import com.redhat.ceylon.compiler.typechecker.model.Annotation;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -178,6 +179,37 @@ public class CeylonTestUtil {
     	return result;
     }
     
+    public static List<MethodWithContainer> getAllMethods(ClassOrInterface c) {
+        List<MethodWithContainer> members = new ArrayList<MethodWithContainer>();
+        getAllMethods(c, c, members);
+        return members;
+    }
+
+    private static void getAllMethods(ClassOrInterface c, TypeDeclaration t, List<MethodWithContainer> members) {
+        for (Declaration d : t.getMembers()) {
+            if (d instanceof Method) {
+                Method m = (Method) d;
+                boolean contains = false;
+                for (MethodWithContainer member : members) {
+                    if (member.getMethod().getName().equals(m.getName())) {
+                        contains = true;
+                        break;
+                    }
+                }
+                if (!contains) {
+                    members.add(new MethodWithContainer(c, m));
+                }
+            }
+        }
+        TypeDeclaration et = t.getExtendedTypeDeclaration();
+        if (et != null) {
+            getAllMethods(c, et, members);
+        }
+        for (TypeDeclaration st : t.getSatisfiedTypeDeclarations()) {
+            getAllMethods(c, st, members);
+        }
+    }
+    
     public static Declaration extractAnonymousClassIfRequired(Declaration d) {
         if (d instanceof Value) {
             Value value = (Value) d;
@@ -216,8 +248,9 @@ public class CeylonTestUtil {
 
     private static boolean isTestableClass(Class clazz) {
         if (clazz.isToplevel() && !clazz.isAbstract()) {
-            for (Declaration decl : clazz.getMembers()) {
-                if (decl instanceof Method && containsTestAnnotation((Method) decl)) {
+            List<MethodWithContainer> methods = getAllMethods(clazz);
+            for (MethodWithContainer method : methods) {
+                if (containsTestAnnotation(method.getMethod())) {
                     return true;
                 }
             }
