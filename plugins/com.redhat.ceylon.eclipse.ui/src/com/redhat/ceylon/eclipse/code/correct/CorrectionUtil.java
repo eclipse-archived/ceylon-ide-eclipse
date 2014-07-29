@@ -133,6 +133,9 @@ public class CorrectionUtil {
             return "nothing";
         }
         TypeDeclaration tn = t.getDeclaration();
+        if(tn.isAlias()){
+            return defaultValue(unit, tn.getExtendedType());
+        }
         boolean isClass = tn instanceof Class;
         if (unit.isOptionalType(t)) {
             return "null";
