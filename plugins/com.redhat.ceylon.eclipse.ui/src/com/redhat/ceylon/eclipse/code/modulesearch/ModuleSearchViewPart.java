@@ -764,7 +764,7 @@ public class ModuleSearchViewPart extends ViewPart {
                     HTML.highlightLine(description(versionNode)) +
                     "</tt>", 
                     20, 4);
-            docBuilder.append("<hr/>");
+//            docBuilder.append("<br/>");
             
             if (versionNode.isFilled()) {
                 
