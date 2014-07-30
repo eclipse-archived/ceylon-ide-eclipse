@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeAliasedName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
@@ -28,7 +29,6 @@ import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.ImportableScope;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
@@ -388,10 +388,12 @@ public class CleanImportsHandler extends AbstractHandler {
     }
 
     private static String packageName(Tree.Import i) {
-        ImportableScope importedScope = i.getImportMemberOrTypeList()
-                .getImportList().getImportedScope();
-        return importedScope==null ? null : importedScope
-                .getQualifiedNameString();
+        if (i.getImportPath()!=null) {
+            return formatPath(i.getImportPath().getIdentifiers());
+        }
+        else {
+            return null;
+        }
     }
     
     @Override
