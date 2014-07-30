@@ -621,7 +621,7 @@ public class DocumentationHover
                 16, 16, 
                 "<tt>" + producedTypeLink(t, node.getUnit()) + "</tt>", 
                 20, 4);
-        buffer.append("<hr/>");
+        buffer.append("<br/>");
         if (!t.containsUnknowns()) {
             buffer.append("One quick assist available:<br/>");
             HTML.addImageAndLabel(buffer, null, 
@@ -655,7 +655,7 @@ public class DocumentationHover
                 "<tt>" + producedTypeLink(t, node.getUnit()) + "</tt> " + desc, 
                 20, 4);
         if (node instanceof Tree.StringLiteral) {
-            buffer.append( "<hr/>")
+            buffer.append( "<br/>")
                 .append("<code style='color:")
                 .append(toHex(getCurrentThemeColor(STRINGS)))
                 .append("'><pre>")
@@ -677,7 +677,7 @@ public class DocumentationHover
             }
         }
         else if (node instanceof Tree.NaturalLiteral) {
-            buffer.append( "<hr/>")
+            buffer.append("<br/>")
                 .append("<code style='color:")
                 .append(toHex(getCurrentThemeColor(NUMBERS)))
                 .append("'>");
@@ -695,7 +695,7 @@ public class DocumentationHover
             buffer.append("</code>");
         }
         else if (node instanceof Tree.FloatLiteral) {
-            buffer.append( "<hr/>")
+            buffer.append("<br/>")
                 .append("<code style='color:")
                 .append(toHex(getCurrentThemeColor(NUMBERS)))
                 .append("'>")
@@ -703,7 +703,7 @@ public class DocumentationHover
                 .append("</code>");
         }
         if (selectedText!=null) {
-            buffer.append("<hr/>")
+            buffer.append("<br/>")
                 .append("Two quick assists available:<br/>");
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("change.png").toExternalForm(), 
@@ -722,7 +722,7 @@ public class DocumentationHover
     }
 
     private static void appendCharacterHoverInfo(StringBuilder buffer, String character) {
-        buffer.append( "<hr/>")
+        buffer.append( "<br/>")
             .append("<code style='color:")
             .append(toHex(getCurrentThemeColor(CHARS)))
             .append("'>")
@@ -732,7 +732,7 @@ public class DocumentationHover
             .append("</code>");
         int codepoint = Character.codePointAt(character, 0);
         String name = Character.getName(codepoint);
-        buffer.append("<hr/>Unicode Name: <code>").append(name).append("</code>");
+        buffer.append("<br/>Unicode Name: <code>").append(name).append("</code>");
         String hex = Integer.toHexString(codepoint).toUpperCase();
         while (hex.length() < 4) {
             hex = "0" + hex;
