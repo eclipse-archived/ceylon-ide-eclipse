@@ -30,6 +30,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 public class ModuleCompletions {
     
     static final class ModuleDescriptorProposal extends CompletionProposal {
+        
         ModuleDescriptorProposal(int offset, String prefix, String moduleName) {
             super(offset, prefix, MODULE, 
                     "module " + moduleName,
@@ -39,6 +40,11 @@ public class ModuleCompletions {
         @Override
         public Point getSelection(IDocument document) {
             return new Point(offset - prefix.length() + text.indexOf('\"')+1, 5);
+        }
+        
+        @Override
+        protected boolean qualifiedNameIsPath() {
+            return true;
         }
     }
 
@@ -82,6 +88,11 @@ public class ModuleCompletions {
                     getDocumentationForModule(name, JDKUtils.jdk.version,
                             "This module forms part of the Java SDK.") :
                     getDocumentationFor(module, version.getVersion());
+        }
+        
+        @Override
+        protected boolean qualifiedNameIsPath() {
+            return true;
         }
     }
     

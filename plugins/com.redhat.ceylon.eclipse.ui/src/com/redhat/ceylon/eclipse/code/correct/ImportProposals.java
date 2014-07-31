@@ -20,6 +20,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
@@ -116,7 +117,12 @@ public class ImportProposals {
         }*/
         String description = "Add import of '" + proposedName + "'" + 
                 " in package " + declaration.getUnit().getPackage().getNameAsString();
-        return new CorrectionProposal(description, change, null, IMPORT);
+        return new CorrectionProposal(description, change, null, IMPORT) {
+            @Override
+            public StyledString getStyledDisplayString() {
+                return CorrectionUtil.styleProposal(getDisplayString(), true);
+            }
+        };
     }
     
     public static List<InsertEdit> importEdits(Tree.CompilationUnit cu,

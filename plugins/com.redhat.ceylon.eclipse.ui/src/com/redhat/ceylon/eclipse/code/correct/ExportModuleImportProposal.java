@@ -73,7 +73,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return styleProposal(getDisplayString());
+        return styleProposal(getDisplayString(), true);
     }
 
     static void addExportModuleImportProposalForSupertypes(Collection<ICompletionProposal> proposals, 

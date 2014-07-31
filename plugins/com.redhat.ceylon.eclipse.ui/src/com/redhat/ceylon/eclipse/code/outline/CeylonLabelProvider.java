@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.util.Highlights.IDENTIFIERS;
 import static com.redhat.ceylon.eclipse.util.Highlights.KEYWORDS;
+import static com.redhat.ceylon.eclipse.util.Highlights.MEMBERS;
 import static com.redhat.ceylon.eclipse.util.Highlights.OUTLINE_TYPES;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGES;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
@@ -102,6 +103,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground=color(colorRegistry, IDENTIFIERS);
+        }
+    };
+    
+    public static final Styler MEMBER_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(colorRegistry, MEMBERS);
         }
     };
     

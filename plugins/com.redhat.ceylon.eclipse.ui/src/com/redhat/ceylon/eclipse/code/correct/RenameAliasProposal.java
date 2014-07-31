@@ -58,7 +58,7 @@ class RenameAliasProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return styleProposal(getDisplayString());
+        return styleProposal(getDisplayString(), false);
     }
 
     @Override

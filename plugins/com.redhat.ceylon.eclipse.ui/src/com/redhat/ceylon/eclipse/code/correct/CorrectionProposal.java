@@ -131,7 +131,7 @@ class CorrectionProposal
 
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString());
+        return CorrectionUtil.styleProposal(getDisplayString(), false);
     }
     
     /**

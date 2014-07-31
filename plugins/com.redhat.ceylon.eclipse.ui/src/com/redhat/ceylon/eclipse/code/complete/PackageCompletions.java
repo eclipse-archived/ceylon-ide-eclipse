@@ -26,10 +26,16 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 public class PackageCompletions {
 
     static final class PackageDescriptorProposal extends CompletionProposal {
+        
         PackageDescriptorProposal(int offset, String prefix, String packageName) {
             super(offset, prefix, PACKAGE, 
                     "package " + packageName, 
                     "package " + packageName + ";");
+        }
+        
+        @Override
+        protected boolean qualifiedNameIsPath() {
+            return true;
         }
     }
 
@@ -65,6 +71,11 @@ public class PackageCompletions {
         @Override
         public String getAdditionalProposalInfo() {
             return getDocumentationFor(cpc, p);
+        }
+        
+        @Override
+        protected boolean qualifiedNameIsPath() {
+            return true;
         }
     }
 

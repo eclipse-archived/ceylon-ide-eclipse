@@ -99,11 +99,16 @@ public class CompletionProposal implements ICompletionProposal,
     public boolean isAutoInsertable() {
         return true;
     }
+    
+    protected boolean qualifiedNameIsPath() {
+        return false;
+    }
 
     @Override
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
-        styleProposal(result, getDisplayString());
+        styleProposal(result, getDisplayString(), 
+                qualifiedNameIsPath());
         return result;
     }
 

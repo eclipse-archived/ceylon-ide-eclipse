@@ -80,7 +80,7 @@ class RefineFormalMembersProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString());
+        return CorrectionUtil.styleProposal(getDisplayString(), false);
     }
 
     @Override

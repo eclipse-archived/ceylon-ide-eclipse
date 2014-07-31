@@ -229,7 +229,7 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
     
     @Override
     public StyledString getStyledDisplayString() {
-        return styleProposal(getDisplayString());
+        return styleProposal(getDisplayString(), false);
     }
 
     @Override
