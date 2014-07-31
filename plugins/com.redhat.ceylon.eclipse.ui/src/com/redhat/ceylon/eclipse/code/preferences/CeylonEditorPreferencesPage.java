@@ -28,6 +28,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.STRIP_TRAILING_WS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.setPreferenceDefaults;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndentWithSpaces;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
@@ -95,6 +96,7 @@ public class CeylonEditorPreferencesPage
     
     public CeylonEditorPreferencesPage() {
         super(GRID);
+        setPreferenceDefaults();
     }
     
     @Override
