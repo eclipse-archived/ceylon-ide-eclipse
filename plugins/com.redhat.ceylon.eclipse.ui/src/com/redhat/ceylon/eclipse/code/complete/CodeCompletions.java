@@ -355,9 +355,6 @@ public class CodeCompletions {
                         EditorsUI.getPreferenceStore().getBoolean(DISPLAY_PARAMETER_TYPES);
                 result.append("(");
                 for (Parameter p: params) {
-                    if (p.isSequenced()) {
-                        result.append("*");
-                    }
                     if (p.getModel() instanceof Functional) {
                         if (p.isDeclaredVoid()) {
                             result.append("void ");
@@ -375,8 +372,17 @@ public class CodeCompletions {
                         }
                     }
                     else {
-                        if (descriptionOnly && paramTypes && !isTypeUnknown(p.getType())) {
-                            result.append(p.getType().getProducedTypeName(unit)).append(" ");
+                        ProducedType pt = p.getType();
+                        if (descriptionOnly && paramTypes && !isTypeUnknown(pt)) {
+                            if (p.isSequenced()) pt = unit.getSequentialElementType(pt);
+                            result.append(pt.getProducedTypeName(unit));
+                            if (p.isSequenced()) {
+                                result.append(p.isAtLeastOne()?'+':'*');
+                            }
+                            result.append(" ");
+                        }
+                        else if (p.isSequenced()) {
+                            result.append("*");
                         }
                         result.append(descriptionOnly ? 
                                 p.getName() : escapeName(p.getModel()));
