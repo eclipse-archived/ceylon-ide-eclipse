@@ -17,6 +17,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
@@ -67,6 +68,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor currentBracket;
     BooleanFieldEditor autoInsert;
     BoolFieldEditor autoActivation;
+    RadioGroupFieldEditor completion;
     BooleanFieldEditor linkedMode;
     BooleanFieldEditor linkedModeRename;
     BooleanFieldEditor linkedModeExtract;
@@ -104,6 +106,7 @@ public class CeylonEditorPreferencesPage
         autoActivation.store();
         autoActivationDelay.store();
         autoActivationChars.store();
+        completion.store();
         linkedMode.store();
         linkedModeRename.store();
         linkedModeExtract.store();
@@ -138,6 +141,7 @@ public class CeylonEditorPreferencesPage
         autoInsert.loadDefault();
         autoActivationDelay.loadDefault();
         autoActivationChars.loadDefault();
+        completion.loadDefault();
         linkedMode.loadDefault();
         linkedModeRename.loadDefault();
         linkedModeExtract.loadDefault();
@@ -337,9 +341,9 @@ public class CeylonEditorPreferencesPage
         String letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         autoActivationChars = new RadioGroupFieldEditor(AUTO_ACTIVATION_CHARS, 
                 "Auto-activation characters", 3, 
-                new String[][] { new String[] {"period", "."}, 
-                                 new String[] {"letters", letters },
-                                 new String[] {"both", "." + letters } }, p1);
+                new String[][] { new String[] { "period", "." }, 
+                                 new String[] { "letters", letters },
+                                 new String[] { "both", "." + letters } }, p1);
         autoActivationChars.load();
         addField(autoActivationChars);
         final Composite p2 = getFieldEditorParent(group);
@@ -361,7 +365,14 @@ public class CeylonEditorPreferencesPage
                 autoActivationDelay.setEnabled(newValue, p2);
             }
         });
-//        addField(new SpacerFieldEditor(getFieldEditorParent()));        
+//        addField(new SpacerFieldEditor(getFieldEditorParent()));
+        final Composite p3 = getFieldEditorParent(group);
+        completion = new RadioGroupFieldEditor(COMPLETION, 
+                "Completion with trailing identifier characters", 2, 
+                new String[][] { new String[] { "inserts", "insert" }, 
+                                 new String[] { "overwrites", "overwrite" } }, p3);
+        completion.load();
+        addField(completion);
     }
 
     private void foldingSection() {

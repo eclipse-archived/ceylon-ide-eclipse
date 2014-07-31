@@ -50,7 +50,6 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -528,15 +527,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             importCallableParameterParamTypes(declaration, decs, cu);
         }
         int il=applyImports(change, decs, cu, document);
-        String str;
-        if (text.endsWith(";") && document.getChar(offset)==';') {
-            str = text.substring(0,text.length()-1);
-        }
-        else {
-            str = text;
-        }
-        change.addEdit(new ReplaceEdit(offset-prefix.length(), 
-                    prefix.length(), str));
+        change.addEdit(createEdit(document));
         offset+=il;
         return change;
     }

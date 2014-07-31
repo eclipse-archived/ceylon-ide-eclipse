@@ -17,7 +17,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
@@ -52,15 +51,7 @@ final class FunctionCompletionProposal extends
         Tree.CompilationUnit cu = cpc.getRootNode();
         importDeclaration(decs, dec, cu);
         int il=applyImports(change, decs, cu, document);
-        String str;
-        if (text.endsWith(";") && document.getChar(offset)==';') {
-            str = text.substring(0,text.length()-1);
-        }
-        else {
-            str = text;
-        }
-        change.addEdit(new ReplaceEdit(offset-prefix.length(), 
-                    prefix.length(), str));
+        change.addEdit(createEdit(document));
         offset+=il;
         return change;
     }
