@@ -94,7 +94,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     }
     
     static void addReferenceProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
+            final CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration dec, Scope scope,
             boolean isMember, boolean filter, ProducedReference pr,
             ProducedType requiredType) {
@@ -109,9 +109,9 @@ class InvocationCompletionProposal extends CompletionProposal {
             Collection<DeclarationWithProximity> members = 
                     type.getDeclaration().getMatchingMemberDeclarations(scope, "", 0).values();
             for (DeclarationWithProximity ndwp: members) {
-                Declaration m = ndwp.getDeclaration();
+                final Declaration m = ndwp.getDeclaration();
                 if (m instanceof Value) {
-                    ProducedTypedReference ptr = 
+                    final ProducedTypedReference ptr = 
                             type.getTypedMember((TypedDeclaration) m, 
                                     Collections.<ProducedType>emptyList());
                     ProducedType mt = ptr.getType();
@@ -120,7 +120,12 @@ class InvocationCompletionProposal extends CompletionProposal {
                         result.add(new InvocationCompletionProposal(offset, prefix,
                                 getDescriptionFor(dwp) + "." + m.getName(), 
                                 getTextFor(dwp) + "." + m.getName(), 
-                                dec, pr, scope, cpc, true, false, false, isMember));
+                                dec, pr, scope, cpc, true, false, false, isMember) {
+                            @Override
+                            public String getAdditionalProposalInfo() {
+                                return getDocumentationFor(cpc, m, ptr);    
+                            }
+                        });
                     }
                 }
             }
