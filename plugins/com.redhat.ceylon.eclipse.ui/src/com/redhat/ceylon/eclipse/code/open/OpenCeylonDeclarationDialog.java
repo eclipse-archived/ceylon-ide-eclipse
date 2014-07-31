@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.open;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
@@ -67,7 +68,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public boolean matchItem(Object item) {
-            return matches(getElementName(item));
+            return isNameMatching(getPattern(), 
+                    ((DeclarationWithProject) item).getDeclaration());
+//            return matches(getElementName(item));
         }
 
         @Override
