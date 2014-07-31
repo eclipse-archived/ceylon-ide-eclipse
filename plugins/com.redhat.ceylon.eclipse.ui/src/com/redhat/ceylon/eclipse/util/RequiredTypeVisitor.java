@@ -190,6 +190,14 @@ class RequiredTypeVisitor extends Visitor
     }
     
     @Override
+    public void visit(Tree.AnnotationList that) {
+        ProducedType ort = requiredType;
+        requiredType = null;
+        super.visit(that);
+        requiredType = ort;
+    }
+    
+    @Override
     public void visit(Tree.AttributeDeclaration that) {
         ProducedType ort = requiredType;
         requiredType = that.getType().getTypeModel();
