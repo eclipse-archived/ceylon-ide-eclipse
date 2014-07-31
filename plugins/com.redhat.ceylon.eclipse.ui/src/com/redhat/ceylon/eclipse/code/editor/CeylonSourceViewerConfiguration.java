@@ -63,6 +63,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String LINKED_MODE_EXTRACT = "linkedModeExtract";
     public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
     public static final String DISPLAY_RETURN_TYPES = "displayReturnTypes";
+    public static final String DISPLAY_PARAMETER_TYPES = "displayParameterTypes";
     
     public static final String CLOSE_PARENS = "closeParens";
     public static final String CLOSE_BRACKETS = "closeBrackets";
@@ -107,6 +108,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(LINKED_MODE_EXTRACT, true);
         preferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
         preferenceStore.setDefault(DISPLAY_RETURN_TYPES, false);
+        preferenceStore.setDefault(DISPLAY_PARAMETER_TYPES, false);
         preferenceStore.setDefault(NORMALIZE_WS, false);
         preferenceStore.setDefault(NORMALIZE_NL, false);
         preferenceStore.setDefault(STRIP_TRAILING_WS, false);
