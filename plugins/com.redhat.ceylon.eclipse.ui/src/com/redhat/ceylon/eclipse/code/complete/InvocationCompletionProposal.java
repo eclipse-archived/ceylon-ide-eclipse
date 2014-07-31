@@ -32,6 +32,8 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -69,6 +71,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -93,11 +96,32 @@ class InvocationCompletionProposal extends CompletionProposal {
     static void addReferenceProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration dec, Scope scope,
-            boolean isMember) {
+            boolean isMember, boolean filter, ProducedReference pr,
+            ProducedType requiredType) {
         result.add(new InvocationCompletionProposal(offset, prefix,
                 getDescriptionFor(dwp), getTextFor(dwp), 
-                dec, dec.getReference(), scope, cpc, 
-                true, false, false, isMember));
+                dec, pr, scope, cpc, true, false, false, isMember));
+        if (filter && requiredType!=null && pr!=null) {
+            //add qualified member proposals 
+            ProducedType type = pr.getType();
+            Collection<DeclarationWithProximity> members = 
+                    type.getDeclaration().getMatchingMemberDeclarations(scope, "", 0).values();
+            for (DeclarationWithProximity ndwp: members) {
+                Declaration m = ndwp.getDeclaration();
+                if (m instanceof Value) {
+                    ProducedTypedReference ptr = 
+                            type.getTypedMember((TypedDeclaration) m, 
+                                    Collections.<ProducedType>emptyList());
+                    ProducedType mt = ptr.getType();
+                    if (mt!=null && mt.isSubtypeOf(requiredType)) {
+                        result.add(new InvocationCompletionProposal(offset, prefix,
+                                getDescriptionFor(dwp) + "." + m.getName(), 
+                                getTextFor(dwp) + "." + m.getName(), 
+                                dec, pr, scope, cpc, true, false, false, isMember));
+                    }
+                }
+            }
+        }
     }
     
     static void addInvocationProposals(int offset, String prefix, 
@@ -649,7 +673,8 @@ class InvocationCompletionProposal extends CompletionProposal {
     }
     
     public String getAdditionalProposalInfo() {
-        return getDocumentationFor(cpc, declaration);    
+        return getDocumentationFor(cpc, declaration, 
+                producedReference);    
     }
     
     public void enterLinkedMode(IDocument document, 

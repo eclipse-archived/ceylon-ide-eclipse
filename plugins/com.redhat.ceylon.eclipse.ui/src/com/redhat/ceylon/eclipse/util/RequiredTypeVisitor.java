@@ -97,6 +97,10 @@ class RequiredTypeVisitor extends Visitor
                 }
             }
         }
+        if (node==that.getPositionalArgumentList() ||
+                node==that.getNamedArgumentList()) {
+            finalResult = requiredType;
+        }
         super.visit(that);
         requiredType = ort;
         namedArgTarget = onat;
