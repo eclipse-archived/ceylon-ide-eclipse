@@ -1068,10 +1068,19 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     private static ProducedReference getQualifiedProducedReference(Node node, 
             Declaration d) {
-        ProducedType pt = ((Tree.QualifiedMemberOrTypeExpression) node)
+        ProducedType pt;
+        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+            pt = ((Tree.QualifiedMemberOrTypeExpression) node)
                     .getPrimary().getTypeModel();
+        }
+        else if (node instanceof Tree.QualifiedType) {
+            pt = ((Tree.QualifiedType) node).getOuterType().getTypeModel();
+        }
+        else {
+            return null;
+        }
         if (pt!=null && d.isClassOrInterfaceMember()) {
-            pt = pt.getSupertype((TypeDeclaration)d.getContainer());
+            pt = pt.getSupertype((TypeDeclaration) d.getContainer());
         }
         return d.getProducedReference(pt, Collections.<ProducedType>emptyList());
     }
