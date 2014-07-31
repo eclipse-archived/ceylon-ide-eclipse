@@ -98,7 +98,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return reconciler;
     }
     
-    static void setPreferenceDefaults() {
+    public static void setPreferenceDefaults() {
         IPreferenceStore preferenceStore = EditorsUI.getPreferenceStore();
         preferenceStore.setDefault(AUTO_INSERT, true);
         preferenceStore.setDefault(AUTO_ACTIVATION, true);
