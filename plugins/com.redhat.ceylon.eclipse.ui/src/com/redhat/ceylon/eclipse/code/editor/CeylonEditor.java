@@ -1516,8 +1516,10 @@ public class CeylonEditor extends TextEditor {
             }
         }
         if (format) {
-            new FormatAction(this, /* respectSelection = */ false).run();
-        } else if (normalizeWs || normalizeNl || stripTrailingWs) {
+            FormatAction formatAction = new FormatAction(this, false);
+            if (formatAction.isEnabled()) formatAction.run();
+        }
+        else if (normalizeWs || normalizeNl || stripTrailingWs) {
             normalize(viewer, doc, normalizeWs, normalizeNl, stripTrailingWs);
         }
         super.doSave(progressMonitor);
