@@ -313,7 +313,7 @@ public class CeylonEditorPreferencesPage
     private void autocompletionSection() {
 //        addField(new LabelFieldEditor("Autocompletion:",
 //                getFieldEditorParent()));
-        Composite group = createGroup(1, "Autocompletion");
+        Composite group = createGroup(1, "Completion");
         linkedMode = new BooleanFieldEditor(LINKED_MODE, 
                 "Use linked mode to complete argument lists", 
                 getFieldEditorParent(group));
