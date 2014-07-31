@@ -37,6 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 
 public class CleanImportsHandler extends AbstractHandler {
     
@@ -404,8 +405,9 @@ public class CleanImportsHandler extends AbstractHandler {
                 editor.getEditorInput() instanceof IFileEditorInput) {
             CeylonParseController cpc = 
                     ((CeylonEditor) editor).getParseController();
-            return cpc==null || cpc.getRootNode()==null ? false : true;
-                //!cpc.getRootNode().getImportList().getImports().isEmpty();
+            return cpc!=null && 
+                    cpc.getStage().ordinal()>=Stage.TYPE_ANALYSIS.ordinal() && 
+                    cpc.getRootNode()!=null;
         }
         else {
             return false;

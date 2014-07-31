@@ -1,21 +1,27 @@
 package com.redhat.ceylon.eclipse.code.parse;
 
 import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
+import static com.redhat.ceylon.common.config.DefaultToolOptions.DEFAULTS_OFFLINE;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.FOR_OUTLINE;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.allClasspathContainersInitialized;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelTypeChecked;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
+import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.isTheSourceArchiveProject;
+import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.toFullPath;
+import static java.util.Arrays.asList;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
@@ -39,7 +45,6 @@ import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.common.config.CeylonConfig;
-import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -66,10 +71,8 @@ import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
@@ -139,7 +142,7 @@ public class CeylonParseController {
      */
     private TypeChecker typeChecker;
     
-    private Stage stage;
+    private Stage stage = Stage.NONE;
      
     /**
      * @param filePath        the project-relative path of file
@@ -149,10 +152,10 @@ public class CeylonParseController {
      */
     public void initialize(IPath filePath, IProject project, 
             AnnotationCreator handler) {
-        if (ExternalSourceArchiveManager.isTheSourceArchiveProject(project)) {
+        if (isTheSourceArchiveProject(project)) {
             IResource archiveEntry = project.findMember(filePath);
             if (archiveEntry instanceof IFile && archiveEntry.exists()) {
-                IPath entryPath = ExternalSourceArchiveManager.toFullPath((IFile) archiveEntry);
+                IPath entryPath = toFullPath((IFile) archiveEntry);
                 if (entryPath != null) {
                     filePath = entryPath;
                 }
@@ -202,7 +205,7 @@ public class CeylonParseController {
     @SuppressWarnings("unchecked")
     public void parse(String contents, 
             IProgressMonitor monitor, Stager stager) {
-        
+          
         IPath path = this.filePath;
         IProject project = this.project;
         IPath resolvedPath = path;
@@ -226,10 +229,11 @@ public class CeylonParseController {
             }
             
             if (path.isAbsolute()) {
-                for (final IProject p : CeylonBuilder.getProjects()) {
+                for (final IProject p: getProjects()) {
                     if (project != null && project != p) continue;
                     
-                    JDTModuleManager moduleManager = (JDTModuleManager) CeylonBuilder.getProjectTypeChecker(p).getPhasedUnits().getModuleManager();
+                    JDTModuleManager moduleManager = (JDTModuleManager) 
+                            getProjectTypeChecker(p).getPhasedUnits().getModuleManager();
                     JDTModule module = moduleManager.getArchiveModuleFromSourcePath(path);
                     if (module != null) {
                         builtPhasedUnit = module.getPhasedUnit(path);
@@ -271,7 +275,9 @@ public class CeylonParseController {
             return;
         }
         
-        CeylonLexer lexer = new CeylonLexer(new NewlineFixingStringStream(contents));
+        NewlineFixingStringStream stream = 
+                new NewlineFixingStringStream(contents);
+        CeylonLexer lexer = new CeylonLexer(stream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         tokenStream.fill();
         tokens = tokenStream.getTokens();
@@ -319,7 +325,7 @@ public class CeylonParseController {
             project = findProject(path);
         }
         
-        if (! CeylonBuilder.allClasspathContainersInitialized()) {
+        if (!allClasspathContainersInitialized()) {
             // Ceylon projects have not been setup, so don't try to typecheck 
             stage = FOR_OUTLINE;
             if (stager!=null) {
@@ -329,7 +335,7 @@ public class CeylonParseController {
         }
         
         if (project!=null) {
-            if ( CeylonNature.isEnabled(project)) {
+            if (CeylonNature.isEnabled(project)) {
                 if (!isModelTypeChecked(project)) {
                     // TypeChecking has not been performed
                     // on the main model, so don't do it 
@@ -365,7 +371,8 @@ public class CeylonParseController {
 
         VirtualFile file = createSourceCodeVirtualFile(contents, path);
         builtPhasedUnit = (IdePhasedUnit) typeChecker.getPhasedUnit(file); // TODO : refactor !
-        phasedUnit = typecheck(path, file, cu, srcDir, showWarnings, builtPhasedUnit);
+        phasedUnit = typecheck(path, file, cu, srcDir, 
+                showWarnings, builtPhasedUnit);
         rootNode = phasedUnit.getCompilationUnit();
         if (project != null && !CeylonNature.isEnabled(project)) {
             rootNode.visit(new Visitor() {
@@ -394,10 +401,10 @@ public class CeylonParseController {
             stager.afterStage(TYPE_ANALYSIS, monitor);
         }
         
-        return;
     }
 
-    private VirtualFile createSourceCodeVirtualFile(String contents, IPath path) {
+    private VirtualFile createSourceCodeVirtualFile(String contents, 
+            IPath path) {
         if (path == null) {
             return new SourceCodeVirtualFile(contents);
         } 
@@ -410,7 +417,8 @@ public class CeylonParseController {
         String pathString = path.toString();
         int lastBangIdx = pathString.lastIndexOf('!');
         if (lastBangIdx>0) {
-            String srcArchivePath= pathString.substring(0, lastBangIdx);
+            String srcArchivePath = 
+                    pathString.substring(0, lastBangIdx);
             return new TemporaryFile(srcArchivePath+'!');
         }
         else {
@@ -441,7 +449,8 @@ public class CeylonParseController {
 
     private PhasedUnit typecheck(IPath path, VirtualFile file,
             Tree.CompilationUnit cu, VirtualFile srcDir, 
-            final boolean showWarnings, final PhasedUnit builtPhasedUnit) {
+            final boolean showWarnings, 
+            final PhasedUnit builtPhasedUnit) {
         if (isExternalPath(path) && builtPhasedUnit!=null) {
             // reuse the existing AST
             phasedUnit = builtPhasedUnit;
@@ -468,17 +477,20 @@ public class CeylonParseController {
             pkg = getPackage(file, srcDir, builtPhasedUnit);
         }
         
+        JDTModuleManager moduleManager = (JDTModuleManager) 
+                typeChecker.getPhasedUnits().getModuleManager();
         if (builtPhasedUnit instanceof ProjectPhasedUnit) {
-            phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
-                    typeChecker.getPhasedUnits().getModuleManager(), 
-                    typeChecker, tokens, (ProjectPhasedUnit) builtPhasedUnit);  
+            phasedUnit = 
+                    new EditedPhasedUnit(file, srcDir, cu, pkg, 
+                            moduleManager, typeChecker, tokens, 
+                            (ProjectPhasedUnit) builtPhasedUnit);  
         }
         else {
-            JDTModuleManager moduleManager = (JDTModuleManager) typeChecker.getPhasedUnits().getModuleManager();
-            phasedUnit = new EditedPhasedUnit(file, srcDir, cu, pkg, 
-                    moduleManager, 
-                    typeChecker, tokens, null);
-            moduleManager.getModelLoader().setupSourceFileObjects(Arrays.asList(phasedUnit));
+            phasedUnit = 
+                    new EditedPhasedUnit(file, srcDir, cu, pkg, 
+                    moduleManager, typeChecker, tokens, null);
+            moduleManager.getModelLoader()
+                         .setupSourceFileObjects(asList(phasedUnit));
         }
         
         final PhasedUnit phasedUnitToTypeCheck = phasedUnit;
@@ -507,7 +519,9 @@ public class CeylonParseController {
 
     private void useTypechecker(final PhasedUnit phasedUnitToTypeCheck,
             final Runnable typecheckSteps) {
-        Job typecheckJob = new Job("Typechecking the working copy of " + phasedUnitToTypeCheck.getPathRelativeToSrcDir()) {
+        Job typecheckJob = 
+                new Job("Typechecking the working copy of " + 
+                        phasedUnitToTypeCheck.getPathRelativeToSrcDir()) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 typecheckSteps.run();
@@ -531,7 +545,8 @@ public class CeylonParseController {
     private static TypeChecker createTypeChecker(IProject project, 
             boolean showWarnings) 
             throws CoreException {
-        final IJavaProject javaProject = project != null ? JavaCore.create(project) : null;
+        final IJavaProject javaProject = 
+                project != null ? JavaCore.create(project) : null;
         TypeCheckerBuilder tcb = new TypeCheckerBuilder()
                 .verbose(false)
                 .moduleManagerFactory(new ModuleManagerFactory(){
@@ -552,8 +567,11 @@ public class CeylonParseController {
             //we use as long as it has the language
             //module.
             cwd = null;
-            systemRepo = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
-            isOffline = CeylonConfig.get().getBoolOption(DefaultToolOptions.DEFAULTS_OFFLINE, false);
+            systemRepo = CeylonPlugin.getInstance()
+                    .getCeylonRepository()
+                    .getAbsolutePath();
+            isOffline = CeylonConfig.get()
+                    .getBoolOption(DEFAULTS_OFFLINE, false);
         }
         else {
             cwd = project.getLocation().toFile();
@@ -575,10 +593,12 @@ public class CeylonParseController {
         TypeChecker tc = tcb.getTypeChecker();
         PhasedUnits phasedUnits = tc.getPhasedUnits();
 
-        JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
+        JDTModuleManager moduleManager = 
+                (JDTModuleManager) phasedUnits.getModuleManager();
         moduleManager.setTypeChecker(tc);
         Context context = tc.getContext();
-        JDTModelLoader modelLoader = (JDTModelLoader) moduleManager.getModelLoader();
+        JDTModelLoader modelLoader = 
+                (JDTModelLoader) moduleManager.getModelLoader();
 
         phasedUnits.getModuleManager().prepareForTypeChecking();
         phasedUnits.visitModules();
@@ -624,22 +644,21 @@ public class CeylonParseController {
         //search for the project by iterating all 
         //projects in the workspace
         //TODO: should we use CeylonBuilder.getProjects()?
-        for (IProject p: ResourcesPlugin.getWorkspace()
-                .getRoot().getProjects()) {
+        for (IProject p: getWorkspace().getRoot().getProjects()) {
             if (p.getLocation().isPrefixOf(path)) {
                 return p;
             }
         }
 
-        for (IProject p : CeylonBuilder.getProjects()) {
-            TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(p);
-            for (PhasedUnit unit : typeChecker.getPhasedUnits().getPhasedUnits()) {
+        for (IProject p: getProjects()) {
+            TypeChecker typeChecker = getProjectTypeChecker(p);
+            for (PhasedUnit unit: typeChecker.getPhasedUnits().getPhasedUnits()) {
                 if (unit.getUnit().getFullPath().equals(path)) {
                     return p;
                 }
             }
-            for (PhasedUnits units : typeChecker.getPhasedUnitsOfDependencies()) {
-                for (PhasedUnit unit : units.getPhasedUnits()) {
+            for (PhasedUnits units: typeChecker.getPhasedUnitsOfDependencies()) {
+                for (PhasedUnit unit: units.getPhasedUnits()) {
                     if (unit.getUnit().getFullPath().equals(path.toString())) {
                         return p;
                     }
@@ -692,7 +711,7 @@ public class CeylonParseController {
     }
 
     public boolean isExternalPath(IPath path) {
-        IWorkspaceRoot wsRoot= ResourcesPlugin.getWorkspace().getRoot();
+        IWorkspaceRoot wsRoot = getWorkspace().getRoot();
         // If the path is outside the workspace, or pointing inside the workspace, 
         // but is still file-system-absolute.
         return path!=null && path.isAbsolute() && 
@@ -744,5 +763,6 @@ public class CeylonParseController {
     public IDocument getDocument() {
         return document;
     }
+    
 }
 
