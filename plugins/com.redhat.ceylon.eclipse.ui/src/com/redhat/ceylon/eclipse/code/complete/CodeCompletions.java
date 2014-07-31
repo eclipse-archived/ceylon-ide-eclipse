@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARROW_STYLER;
@@ -350,6 +351,8 @@ public class CodeCompletions {
                 result.append("()");
             }
             else {
+                boolean paramTypes = descriptionOnly && 
+                        EditorsUI.getPreferenceStore().getBoolean(DISPLAY_PARAMETER_TYPES);
                 result.append("(");
                 for (Parameter p: params) {
                     if (p.isSequenced()) {
@@ -372,6 +375,9 @@ public class CodeCompletions {
                         }
                     }
                     else {
+                        if (descriptionOnly && paramTypes && !isTypeUnknown(p.getType())) {
+                            result.append(p.getType().getProducedTypeName(unit)).append(" ");
+                        }
                         result.append(descriptionOnly ? 
                                 p.getName() : escapeName(p.getModel()));
                     }
@@ -428,6 +434,8 @@ public class CodeCompletions {
                 result.append(" {}");
             }
             else {
+                boolean paramTypes = descriptionOnly && 
+                        EditorsUI.getPreferenceStore().getBoolean(DISPLAY_PARAMETER_TYPES);
                 result.append(" { ");
                 for (Parameter p: params) {
                     String name = descriptionOnly ? 
@@ -438,7 +446,12 @@ public class CodeCompletions {
                             result.append("void ");
                         }
                         else {
-                            result.append("function ");
+                            if (paramTypes && !isTypeUnknown(p.getType())) {
+                                result.append(p.getType().getProducedTypeName(unit)).append(" ");
+                            }
+                            else {
+                                result.append("function ");
+                            }
                         }
                         result.append(name);
                         appendParameters(p.getModel(), 
@@ -464,6 +477,9 @@ public class CodeCompletions {
 //                            result.append(" ");
                         }
                         else {
+                            if (descriptionOnly && paramTypes && !isTypeUnknown(p.getType())) {
+                                result.append(p.getType().getProducedTypeName(unit)).append(" ");
+                            }
                             result.append(name)
                                 .append(" = ")
                                 //.append(CeylonQuickFixAssistant.defaultValue(p.getUnit(), p.getType()))

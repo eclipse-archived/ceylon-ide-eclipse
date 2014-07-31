@@ -17,6 +17,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
@@ -70,6 +71,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor linkedModeRename;
     BooleanFieldEditor linkedModeExtract;
     BooleanFieldEditor displayOutlineTypes;
+    BooleanFieldEditor displayParameterTypes;
     ScaleFieldEditor autoActivationDelay;
     RadioGroupFieldEditor autoActivationChars;
     BooleanFieldEditor smartCaret;
@@ -106,6 +108,7 @@ public class CeylonEditorPreferencesPage
         linkedModeRename.store();
         linkedModeExtract.store();
         displayOutlineTypes.store();
+        displayParameterTypes.store();
         smartCaret.store();
         pasteCorrectIndent.store();
         normalizeWs.store();
@@ -139,6 +142,7 @@ public class CeylonEditorPreferencesPage
         linkedModeRename.loadDefault();
         linkedModeExtract.loadDefault();
         displayOutlineTypes.loadDefault();
+        displayParameterTypes.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
         normalizeWs.loadDefault();
@@ -425,6 +429,11 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent(group));
         displayOutlineTypes.load();
         addField(displayOutlineTypes);
+        displayParameterTypes = new BooleanFieldEditor(DISPLAY_PARAMETER_TYPES, 
+                "Display parameter types in proposals", 
+                getFieldEditorParent(group));
+        displayParameterTypes.load();
+        addField(displayParameterTypes);
     }
     
     private void onSaveSection() {
