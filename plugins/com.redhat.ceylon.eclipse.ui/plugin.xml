@@ -1856,7 +1856,16 @@
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage"
            category="org.eclipse.ui.preferencePages.Editors">
        <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="com.redhat.ceylon.eclipse.ui.keywords">
+       </keywordReference>
        </page>
+   </extension>
+   <extension point="org.eclipse.ui.keywords">
+   <keyword
+         label="completion folding typing linked mode save actions brackets braces parentheses quotes backticks imports format"
+         id="com.redhat.ceylon.eclipse.ui.keywords">
+   </keyword>
    </extension>
    <extension point="org.eclipse.core.expressions.propertyTesters">
        <propertyTester
