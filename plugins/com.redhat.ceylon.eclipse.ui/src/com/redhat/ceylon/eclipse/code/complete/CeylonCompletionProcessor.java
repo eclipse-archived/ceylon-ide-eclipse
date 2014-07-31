@@ -425,12 +425,17 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     proposals.entrySet().iterator();
             while (iter.hasNext()) {
                 Declaration d = iter.next().getValue().getDeclaration();
-                ProducedType type = getResultType(d);
-                ProducedType fullType = d.getReference().getFullType();
-                if (requiredType!=null && (type==null ||
-                        (!type.isSubtypeOf(requiredType) && !fullType.isSubtypeOf(requiredType)) || 
-                        type.isSubtypeOf(rn.getUnit().getNullDeclaration().getType()))) {
+                if (d.isAnnotation()) {
                     iter.remove();
+                }
+                else {
+                    ProducedType type = getResultType(d);
+                    ProducedType fullType = d.getReference().getFullType();
+                    if (requiredType!=null && (type==null ||
+                            (!type.isSubtypeOf(requiredType) && !fullType.isSubtypeOf(requiredType)) || 
+                            type.isSubtypeOf(rn.getUnit().getNullDeclaration().getType()))) {
+                        iter.remove();
+                    }
                 }
             }
         }
@@ -658,7 +663,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             for (DeclarationWithProximity dwp: sortedProposals) {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
-                    addReferenceProposal(offset, prefix, cpc, result, dwp, dec, scope, false);
+                    addReferenceProposal(offset, prefix, cpc, result, dwp, dec, 
+                            scope, false, filter, null, requiredType);
                 }
             }
         }
@@ -779,8 +785,12 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         }
                     }
                     else if (!(dec instanceof Method) || !isAbstraction(dec)) {
+                        ProducedReference pr = isMember ? 
+                                getQualifiedProducedReference(node, dec) :
+                                getRefinedProducedReference(scope, dec);
                         addReferenceProposal(offset, prefix, cpc, result, 
-                                dwp, dec, scope, isMember);
+                                dwp, dec, scope, isMember, filter, pr,
+                                requiredType);
                     }
                 }
                 
