@@ -76,7 +76,9 @@ final class FormatAction extends Action {
             lb = os_.get_();
         }
         return new SparseFormattingOptions(
-                /* indentMode = */ Indents.getIndentWithSpaces() ? new Spaces(Indents.getIndentSpaces()) : new Tabs(Indents.getIndentSpaces()),
+                /* indentMode = */ Indents.getIndentWithSpaces() ? 
+                        new Spaces(Indents.getIndentSpaces()) : 
+                        new Tabs(Indents.getIndentSpaces()),
                 /* maxLineLength = */ null,
                 /* lineBreakStrategy = */ null,
                 /* braceOnOwnLine = */ null,
@@ -112,6 +114,12 @@ final class FormatAction extends Action {
                 /* indentBlankLines = */ null,
                 /* lineBreak = */ lb
                 );
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        CeylonParseController cpc = editor.getParseController();
+        return super.isEnabled() && cpc!=null && cpc.getTokens()!=null;
     }
     
     @Override
@@ -165,7 +173,9 @@ final class FormatAction extends Action {
         try {
             format_.format(
                     node,
-                    new CombinedOptions(format_.format$options(node), new Singleton<SparseFormattingOptions>(SparseFormattingOptions.$TypeDescriptor$, wsOptions)),
+                    new CombinedOptions(format_.format$options(node), 
+                            new Singleton<SparseFormattingOptions>
+                                (SparseFormattingOptions.$TypeDescriptor$, wsOptions)),
                     new StringBuilderWriter(builder),
                     new BufferedTokenStream(tokens),
                     Indents.getIndent(node, document).length() / Indents.getIndentSpaces()
@@ -179,7 +189,8 @@ final class FormatAction extends Action {
         final String text;
         if (selected) {
             // remove the trailing line break
-            text = builder.substring(0, builder.length() - wsOptions.getLineBreak().toString().length());
+            text = builder.substring(0, 
+                    builder.length() - wsOptions.getLineBreak().toString().length());
         } else {
             text = builder.toString();
         }
@@ -193,7 +204,8 @@ final class FormatAction extends Action {
                                         text));
                 change.perform(new NullProgressMonitor());
                 if (selected) {
-                    editor.getSelectionProvider().setSelection(new TextSelection(startIndex, text.length()));
+                    editor.getSelectionProvider()
+                          .setSelection(new TextSelection(startIndex, text.length()));
                 }
             }
         }

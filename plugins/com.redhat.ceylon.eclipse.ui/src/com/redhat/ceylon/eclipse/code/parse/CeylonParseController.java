@@ -211,6 +211,8 @@ public class CeylonParseController {
         IPath resolvedPath = path;
         IdePhasedUnit builtPhasedUnit = null;
         
+        tokens = null;
+        
         stage = Stage.NONE;
         
         if (path!=null) {
@@ -281,7 +283,7 @@ public class CeylonParseController {
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         tokenStream.fill();
         tokens = tokenStream.getTokens();
-
+        
         stage = LEXICAL_ANALYSIS;
         if (stager!=null) {
             stager.afterStage(LEXICAL_ANALYSIS, monitor);
