@@ -55,7 +55,7 @@ public class MoveOutProposal implements ICompletionProposal, ICompletionProposal
     
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString());
+        return CorrectionUtil.styleProposal(getDisplayString(), false);
     }
     
     @Override

@@ -180,7 +180,7 @@ public class HierarchyPopup extends TreeViewPopup {
         result.append("-");
         result.append(tokens.nextToken());
         result.append("'");
-        CompletionUtil.styleProposal(result, tokens.nextToken());
+        CompletionUtil.styleProposal(result, tokens.nextToken(), false);
         result.append("'");
         return result;
     }

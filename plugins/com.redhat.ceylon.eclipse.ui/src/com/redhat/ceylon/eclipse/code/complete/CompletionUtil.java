@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MEMBER_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.VERSION_STYLER;
@@ -246,12 +247,24 @@ public class CompletionUtil {
                 !name.equals("Boolean");
     }
 
-    public static void styleProposal(StyledString result, String string) {
-        StringTokenizer tokens = new StringTokenizer(string, " ()<>.*+?,{}[]\"", true);
+    public static void styleProposal(StyledString result, 
+            String string, boolean qualifiedNameIsPath) {
+        StringTokenizer tokens = 
+                new StringTokenizer(string, 
+                        qualifiedNameIsPath ? 
+                                " ()<>*+?,{}[]\"" : 
+                                " ()<>*+?,{}[]\".", 
+                        true);
         boolean version = false;
+        boolean qualified = false;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            if (token.equals("\"")) {
+            if (token.equals(".")) {
+                qualified = true;
+                result.append(token);
+                continue;
+            }
+            else if (token.equals("\"")) {
                 version = !version;
                 result.append(token, VERSION_STYLER);
 
@@ -269,6 +282,9 @@ public class CompletionUtil {
                 else if (token.contains(".")) {
                     result.append(token, PACKAGE_STYLER);
                 }
+                else if (qualified) {
+                    result.append(token, MEMBER_STYLER);
+                }
                 else {
                     result.append(token, ID_STYLER);
                 }
@@ -276,6 +292,7 @@ public class CompletionUtil {
             else {
                 result.append(token);
             }
+            qualified = false;
         }
     }
 

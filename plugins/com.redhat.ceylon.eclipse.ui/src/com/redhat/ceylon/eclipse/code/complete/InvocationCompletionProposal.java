@@ -98,10 +98,12 @@ class InvocationCompletionProposal extends CompletionProposal {
             DeclarationWithProximity dwp, Declaration dec, Scope scope,
             boolean isMember, boolean filter, ProducedReference pr,
             ProducedType requiredType) {
-        result.add(new InvocationCompletionProposal(offset, prefix,
-                getDescriptionFor(dwp), getTextFor(dwp), 
-                dec, pr, scope, cpc, true, false, false, isMember));
-        if (filter && requiredType!=null && pr!=null) {
+        if (!filter) {
+            result.add(new InvocationCompletionProposal(offset, prefix,
+                    getDescriptionFor(dwp), getTextFor(dwp), 
+                    dec, pr, scope, cpc, true, false, false, isMember));
+        }
+        else if (pr!=null && !(dec instanceof Functional)) {
             //add qualified member proposals 
             ProducedType type = pr.getType();
             Collection<DeclarationWithProximity> members = 
@@ -113,7 +115,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                             type.getTypedMember((TypedDeclaration) m, 
                                     Collections.<ProducedType>emptyList());
                     ProducedType mt = ptr.getType();
-                    if (mt!=null && mt.isSubtypeOf(requiredType)) {
+                    if (mt!=null && 
+                            (requiredType==null || mt.isSubtypeOf(requiredType))) {
                         result.add(new InvocationCompletionProposal(offset, prefix,
                                 getDescriptionFor(dwp) + "." + m.getName(), 
                                 getTextFor(dwp) + "." + m.getName(), 

@@ -54,9 +54,10 @@ class RequiredTypeVisitor extends Visitor
         Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
         if (pal!=null) {
             int pos;
-            pos = pal.getPositionalArguments().size();
-            for (int i=0; i<pos; i++) {
-                Tree.PositionalArgument pa=pal.getPositionalArguments().get(i);
+            List<Tree.PositionalArgument> pas = pal.getPositionalArguments();
+            pos = pas.size()-1; //default to the last argument if incomplete
+            for (int i=0; i<=pos; i++) {
+                Tree.PositionalArgument pa = pas.get(i);
                 if (token!=null) {
                     if (pa.getStartIndex()>((CommonToken) token).getStopIndex()) {
                         pos = i;
@@ -65,7 +66,7 @@ class RequiredTypeVisitor extends Visitor
                 }
                 else {
                     if (node.getStartIndex()>=pa.getStartIndex() && 
-                            node.getStopIndex()<=pa.getStopIndex()) {
+                        node.getStopIndex()<=pa.getStopIndex()) {
                         pos = i;
                         break;
                     }
@@ -98,7 +99,7 @@ class RequiredTypeVisitor extends Visitor
             }
         }
         if (node==that.getPositionalArgumentList() ||
-                node==that.getNamedArgumentList()) {
+            node==that.getNamedArgumentList()) {
             finalResult = requiredType;
         }
         super.visit(that);

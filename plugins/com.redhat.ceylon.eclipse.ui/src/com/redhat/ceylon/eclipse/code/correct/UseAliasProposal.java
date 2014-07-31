@@ -53,7 +53,7 @@ class UseAliasProposal implements ICompletionProposal, ICompletionProposalExtens
 
     @Override
     public StyledString getStyledDisplayString() {
-        return styleProposal(getDisplayString());
+        return styleProposal(getDisplayString(), false);
     }
 
     @Override

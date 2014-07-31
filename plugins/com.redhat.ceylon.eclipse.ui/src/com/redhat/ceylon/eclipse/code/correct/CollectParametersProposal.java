@@ -57,7 +57,7 @@ class CollectParametersProposal implements ICompletionProposal,
     
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString());
+        return CorrectionUtil.styleProposal(getDisplayString(), false);
     }
 
     public static void add(Collection<ICompletionProposal> proposals,

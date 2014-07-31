@@ -159,7 +159,7 @@ final class PeekDefinitionPopup extends PopupDialog
                 new StringTokenizer(title.getText(), "-", false);
         styleDescription(title, result, tokens.nextToken());
         result.append("-");
-        CompletionUtil.styleProposal(result, tokens.nextToken());
+        CompletionUtil.styleProposal(result, tokens.nextToken(), false);
         return result;
     }
 

@@ -740,31 +740,31 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 Declaration dec = dwp.getDeclaration();
                 
                 if (isPackageOrModuleDescriptor && !inDoc && 
-                        ol!=META && (ol==null||!ol.reference)) {
-                    if (!dec.isAnnotation()||!(dec instanceof Method)) {
-                        continue;
-                    }
+                        ol!=META && (ol==null || !ol.reference) &&
+                    (!dec.isAnnotation() || !(dec instanceof Method))) {
+                    continue;
                 }
-                
-                if (isParameterOfNamedArgInvocation(scope, dwp)) {
-                    if (isDirectlyInsideNamedArgumentList(cpc, node, token)) {
-                        addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, scope);
-                        addInlineFunctionProposal(offset, dec, scope, node, prefix, cpc, doc, result);
-                    }
+
+                if (!filter && 
+                        isParameterOfNamedArgInvocation(scope, dwp) &&
+                        isDirectlyInsideNamedArgumentList(cpc, node, token)) {
+                    addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                    addInlineFunctionProposal(offset, dec, scope, node, prefix, cpc, doc, result);
                 }
-                
+
                 CommonToken nextToken = getNextToken(cpc, token);
                 boolean noParamsFollow = noParametersFollow(nextToken);
-                if (isInvocationProposable(dwp, ol, previousTokenType) && 
-                        (!isQualifiedType(node) || dec.isStaticallyImportable()) && 
-                        !inDoc && noParamsFollow) {
+                
+                if (!filter && !inDoc && noParamsFollow &&
+                        isInvocationProposable(dwp, ol, previousTokenType) && 
+                        (!isQualifiedType(node) || dec.isStaticallyImportable())) {
                     for (Declaration d: overloads(dec)) {
                         ProducedReference pr = isMember ? 
                                 getQualifiedProducedReference(node, d) :
-                                getRefinedProducedReference(scope, d);
-                        addInvocationProposals(offset, prefix, cpc, result, 
-                                new DeclarationWithProximity(d, dwp), 
-                                pr, scope, ol, null, isMember);
+                                    getRefinedProducedReference(scope, d);
+                                addInvocationProposals(offset, prefix, cpc, result, 
+                                        new DeclarationWithProximity(d, dwp), 
+                                        pr, scope, ol, null, isMember);
                     }
                 }
                 
@@ -788,22 +788,25 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         ProducedReference pr = isMember ? 
                                 getQualifiedProducedReference(node, dec) :
                                 getRefinedProducedReference(scope, dec);
+                                if (filter) {
+                                    pr.getFullType();
+                                }
                         addReferenceProposal(offset, prefix, cpc, result, 
                                 dwp, dec, scope, isMember, filter, pr,
                                 requiredType);
                     }
                 }
-                
-                if (isProposable(dwp, ol, scope, node.getUnit(), requiredType, 
-                            previousTokenType) && 
+
+                if (!memberOp && !filter &&
+                        isProposable(dwp, ol, scope, node.getUnit(), requiredType, 
+                                previousTokenType) && 
                         ol!=IMPORT && ol!=CASE && ol!=CATCH &&
-                        isDirectlyInsideBlock(node, cpc, scope, token) && 
-                        !memberOp && !filter) {
+                        isDirectlyInsideBlock(node, cpc, scope, token)) {
                     addForProposal(offset, prefix, cpc, result, dwp, dec);
                     addIfExistsProposal(offset, prefix, cpc, result, dwp, dec);
                     addSwitchProposal(offset, prefix, cpc, result, dwp, dec, node, doc);
                 }
-                
+
                 if (!memberOp && !isMember && !filter) {
                     for (Declaration d: overloads(dec)) {
                         if (isRefinementProposable(d, ol, scope)) {
@@ -817,7 +820,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (node instanceof Tree.QualifiedMemberExpression ||
                     memberOp && node instanceof Tree.QualifiedTypeExpression) {
                 for (DeclarationWithProximity dwp: sortedFunctionProposals) {
-                    Tree.Primary primary = ((Tree.QualifiedMemberOrTypeExpression) node).getPrimary();
+                    Tree.Primary primary = 
+                            ((Tree.QualifiedMemberOrTypeExpression) node).getPrimary();
                     addFunctionProposal(offset, cpc, primary, result, dwp, doc);
                 }
             }

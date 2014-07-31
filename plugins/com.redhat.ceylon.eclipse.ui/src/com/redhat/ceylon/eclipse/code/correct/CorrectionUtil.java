@@ -102,13 +102,16 @@ public class CorrectionUtil {
         return unit.getCompilationUnit();
     }
     
-    static StyledString styleProposal(String name) {
+    static StyledString styleProposal(String name, 
+            boolean qualifiedNameIsPath) {
         StyledString result = new StyledString();
-        StringTokenizer tokens = new StringTokenizer(name, "'", false);
+        StringTokenizer tokens = 
+                new StringTokenizer(name, "'", false);
         result.append(tokens.nextToken());
         while (tokens.hasMoreTokens()) {
             result.append('\'');
-            CompletionUtil.styleProposal(result, tokens.nextToken());
+            CompletionUtil.styleProposal(result, 
+                    tokens.nextToken(), qualifiedNameIsPath);
             result.append('\'');
             if (tokens.hasMoreTokens()) {
                 result.append(tokens.nextToken());

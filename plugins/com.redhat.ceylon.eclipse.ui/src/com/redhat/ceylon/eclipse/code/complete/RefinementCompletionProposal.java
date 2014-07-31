@@ -216,7 +216,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             result.append(string.substring(0,13), ANN_STYLER);
             string=string.substring(13);
         }
-        styleProposal(result, string);
+        styleProposal(result, string, false);
         return result;
     }
     
