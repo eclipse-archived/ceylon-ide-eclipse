@@ -237,7 +237,9 @@ public class JDTModuleManager extends LazyModuleManager {
                 if(moduleNameString.equals(Module.DEFAULT_MODULE_NAME)){
                     // Add the list of source package fragment roots
                     for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                        if (root.exists()) {
+                        if (root.exists() 
+                        		&& root.isConsistent() 
+                        		&& javaProject.isOnClasspath(root)) {
                             IClasspathEntry entry = root.getResolvedClasspathEntry();
                             if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE && !root.isExternal()) {
                                 roots.add(root);
