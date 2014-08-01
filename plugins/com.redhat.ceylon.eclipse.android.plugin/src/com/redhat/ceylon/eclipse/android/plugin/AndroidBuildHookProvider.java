@@ -238,7 +238,8 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
                                             boolean isAndroidProvidedJar = false;
                                             providerPackageFound:
                                             for (IPackageFragmentRoot root : javaProject.getAllPackageFragmentRoots()) {
-                                                if (cpe.equals(root.getResolvedClasspathEntry())) {
+                                                if (javaProject.isOnClasspath(root) && 
+                                                        cpe.equals(root.getResolvedClasspathEntry())) {
                                                     for (String providedPackage : ANDROID_PROVIDED_PACKAGES) {
                                                         if (root.getPackageFragment(providedPackage).exists()) {
                                                             isAndroidProvidedJar = true;

@@ -283,6 +283,9 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
             }
             IClasspathEntry[] oldEntries = classpathEntries;
             if (typeChecker==null) {
+                JavaCore.setClasspathContainer(getPath(), 
+                        new IJavaProject[]{javaProject}, 
+                        new IClasspathContainer[]{ new CeylonProjectModulesContainer(project)} , monitor);
                 typeChecker = parseCeylonModel(project, monitor);
             }
             
