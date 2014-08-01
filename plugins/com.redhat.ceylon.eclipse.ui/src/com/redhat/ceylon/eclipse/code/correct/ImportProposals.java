@@ -117,7 +117,7 @@ public class ImportProposals {
                     proposedName));
         }*/
         String description = "Add import of '" + proposedName + "'" + 
-                " in package " + declaration.getUnit().getPackage().getNameAsString();
+                " in package '" + declaration.getUnit().getPackage().getNameAsString() + "'";
         return new CorrectionProposal(description, change, null, IMPORT) {
             @Override
             public StyledString getStyledDisplayString() {
