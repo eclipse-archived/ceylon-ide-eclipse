@@ -18,7 +18,6 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Generic;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
@@ -54,7 +53,7 @@ public class CodeCompletions {
             //TODO: this is a pretty limited implementation 
             //      for now, but eventually we could do 
             //      something much more sophisticated to
-            //      guess is explicit type args will be
+            //      guess if explicit type args will be
             //      necessary (variance, etc)
             if (d instanceof Functional) {
                 List<ParameterList> pls = ((Functional) d).getParameterLists();
@@ -68,9 +67,8 @@ public class CodeCompletions {
     }
     
     static String getTextForDocLink(CeylonParseController cpc, 
-            DeclarationWithProximity d) {
+            Declaration decl) {
         
-        Declaration decl = d.getDeclaration();
         Package pkg = decl.getUnit().getPackage();
         String qname = decl.getQualifiedNameString();
         
@@ -98,39 +96,37 @@ public class CodeCompletions {
         
     }
     
-    static String getTextFor(DeclarationWithProximity d) {
+    public static String getTextFor(Declaration dec, Unit unit) {
         StringBuilder result = new StringBuilder();
-        result.append(escapeName(d));
-        appendTypeParameters(d.getDeclaration(), result);
+        result.append(escapeName(dec, unit));
+        appendTypeParameters(dec, result);
         return result.toString();
     }
     
     public static String getPositionalInvocationTextFor(
-            DeclarationWithProximity d, OccurrenceLocation ol, 
-            ProducedReference pr, Unit unit, 
-            boolean includeDefaulted, String typeArgs) {
-        StringBuilder result = new StringBuilder(escapeName(d));
-        Declaration dd = d.getDeclaration();
+            Declaration dec, OccurrenceLocation ol,
+            ProducedReference pr, Unit unit, boolean includeDefaulted,
+            String typeArgs) {
+        StringBuilder result = new StringBuilder(escapeName(dec, unit));
         if (typeArgs!=null) {
             result.append(typeArgs);
         }
-        else if (forceExplicitTypeArgs(dd, ol)) {
-            appendTypeParameters(dd, result);
+        else if (forceExplicitTypeArgs(dec, ol)) {
+            appendTypeParameters(dec, result);
         }
-        appendPositionalArgs(dd, pr, unit, result, includeDefaulted, false);
-        appendSemiToVoidInvocation(result, dd);
+        appendPositionalArgs(dec, pr, unit, result, includeDefaulted, false);
+        appendSemiToVoidInvocation(result, dec);
         return result.toString();
     }
 
-    static String getNamedInvocationTextFor(DeclarationWithProximity d, 
+    public static String getNamedInvocationTextFor(Declaration dec,
             ProducedReference pr, Unit unit, boolean includeDefaulted) {
-        StringBuilder result = new StringBuilder(escapeName(d));
-        Declaration dd = d.getDeclaration();
-        if (forceExplicitTypeArgs(dd, null)) {
-            appendTypeParameters(dd, result);
+        StringBuilder result = new StringBuilder(escapeName(dec, unit));
+        if (forceExplicitTypeArgs(dec, null)) {
+            appendTypeParameters(dec, result);
         }
-        appendNamedArgs(dd, pr, unit, result, includeDefaulted, false);
-        appendSemiToVoidInvocation(result, dd);
+        appendNamedArgs(dec, pr, unit, result, includeDefaulted, false);
+        appendSemiToVoidInvocation(result, dec);
         return result.toString();
     }
     
@@ -142,35 +138,35 @@ public class CodeCompletions {
         }
     }
     
-    static String getDescriptionFor(DeclarationWithProximity d) {
-        StringBuilder result = new StringBuilder(d.getName());
-        appendTypeParameters(d.getDeclaration(), result);
+    public static String getDescriptionFor(Declaration dec, Unit unit) {
+        StringBuilder result = new StringBuilder(dec.getName(unit));
+        appendTypeParameters(dec, result);
         return result.toString();
     }
     
-    static String getPositionalInvocationDescriptionFor(
-            DeclarationWithProximity d, OccurrenceLocation ol, 
-            ProducedReference pr, Unit unit, boolean includeDefaulted, 
+    public static String getPositionalInvocationDescriptionFor(
+            Declaration dec, OccurrenceLocation ol,
+            ProducedReference pr, Unit unit, boolean includeDefaulted,
             String typeArgs) {
-        StringBuilder result = new StringBuilder(d.getName());
+        StringBuilder result = new StringBuilder(dec.getName(unit));
         if (typeArgs!=null) {
             result.append(typeArgs);
         }
-        else if (forceExplicitTypeArgs(d.getDeclaration(), ol)) {
-            appendTypeParameters(d.getDeclaration(), result);
+        else if (forceExplicitTypeArgs(dec, ol)) {
+            appendTypeParameters(dec, result);
         }
-        appendPositionalArgs(d.getDeclaration(), pr, unit, result, 
+        appendPositionalArgs(dec, pr, unit, result, 
                 includeDefaulted, true);
         return result.toString();
     }
     
-    static String getNamedInvocationDescriptionFor(
-            DeclarationWithProximity d, ProducedReference pr, 
+    public static String getNamedInvocationDescriptionFor(
+            Declaration dec, ProducedReference pr, 
             Unit unit, boolean includeDefaulted) {
-        StringBuilder result = new StringBuilder(d.getName());
-        if (forceExplicitTypeArgs(d.getDeclaration(), null))
-            appendTypeParameters(d.getDeclaration(), result);
-        appendNamedArgs(d.getDeclaration(), pr, unit, result, 
+        StringBuilder result = new StringBuilder(dec.getName(unit));
+        if (forceExplicitTypeArgs(dec, null))
+            appendTypeParameters(dec, result);
+        appendNamedArgs(dec, pr, unit, result, 
                 includeDefaulted, true);
         return result.toString();
     }

@@ -55,20 +55,25 @@ class RequiredTypeVisitor extends Visitor
         if (pal!=null) {
             int pos;
             List<Tree.PositionalArgument> pas = pal.getPositionalArguments();
-            pos = pas.size()-1; //default to the last argument if incomplete
-            for (int i=0; i<=pos; i++) {
-                Tree.PositionalArgument pa = pas.get(i);
-                if (token!=null) {
-                    if (pa.getStartIndex()>((CommonToken) token).getStopIndex()) {
-                        pos = i;
-                        break;
+            if (pas.isEmpty()) {
+                pos = 0;
+            }
+            else {
+                pos = pas.size()-1; //default to the last argument if incomplete
+                for (int i=0; i<=pos; i++) {
+                    Tree.PositionalArgument pa = pas.get(i);
+                    if (token!=null) {
+                        if (pa.getStartIndex()>((CommonToken) token).getStopIndex()) {
+                            pos = i;
+                            break;
+                        }
                     }
-                }
-                else {
-                    if (node.getStartIndex()>=pa.getStartIndex() && 
-                        node.getStopIndex()<=pa.getStopIndex()) {
-                        pos = i;
-                        break;
+                    else {
+                        if (node.getStartIndex()>=pa.getStartIndex() && 
+                                node.getStopIndex()<=pa.getStopIndex()) {
+                            pos = i;
+                            break;
+                        }
                     }
                 }
             }

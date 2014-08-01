@@ -19,8 +19,8 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -75,7 +75,7 @@ final class FunctionCompletionProposal extends
             final CeylonParseController cpc, 
             Tree.Primary primary,
             List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp,
+            final Declaration dec,
             IDocument doc) {
         Tree.Term arg = primary;
         while (arg instanceof Tree.Expression) {
@@ -95,13 +95,13 @@ final class FunctionCompletionProposal extends
         catch (BadLocationException e) {
             return;
         }
-        final Declaration dec = dwp.getDeclaration();
         String text = dec.getName(arg.getUnit())
                 + "(" + argText + ")";
         if (((Functional)dec).isDeclaredVoid()) {
             text += ";";
         }
+        Unit unit = cpc.getRootNode().getUnit();
         result.add(new FunctionCompletionProposal(offset, prefix, 
-                getDescriptionFor(dwp) + "(...)", text, dec, cpc));
+                getDescriptionFor(dec, unit) + "(...)", text, dec, cpc));
     }
 }

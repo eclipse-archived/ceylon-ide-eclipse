@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -27,16 +28,16 @@ class BasicCompletionProposal extends CompletionProposal {
     
     static void addImportProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration dec, Scope scope) {
+            Declaration dec, Scope scope) {
         result.add(new BasicCompletionProposal(offset, prefix,
                 dec.getName(), escapeName(dec), dec, cpc));
     }
 
     static void addDocLinkProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration dec, Scope scope) {
+            Declaration dec, Scope scope) {
         result.add(new BasicCompletionProposal(offset, prefix,
-                dec.getName(), getTextForDocLink(cpc, dwp), dec, cpc));
+                dec.getName(), getTextForDocLink(cpc, dec), dec, cpc));
     }
 
     static void addForProposal(int offset, String prefix, 
@@ -57,9 +58,10 @@ class BasicCompletionProposal extends CompletionProposal {
                 else {
                     elemName = name.substring(0, 1);
                 }
+                Unit unit = cpc.getRootNode().getUnit();
                 result.add(new BasicCompletionProposal(offset, prefix, 
-                        "for (" + elemName + " in " + getDescriptionFor(dwp) + ")", 
-                        "for (" + elemName + " in " + getTextFor(dwp) + ") {}",
+                        "for (" + elemName + " in " + getDescriptionFor(d, unit) + ")", 
+                        "for (" + elemName + " in " + getTextFor(d, unit) + ") {}",
                         d, cpc));
             }
         }
@@ -74,9 +76,10 @@ class BasicCompletionProposal extends CompletionProposal {
                 if (v.getType()!=null &&
                         d.getUnit().isOptionalType(v.getType()) && 
                         !v.isVariable()) {
+                    Unit unit = cpc.getRootNode().getUnit();
                     result.add(new BasicCompletionProposal(offset, prefix, 
-                            "if (exists " + getDescriptionFor(dwp) + ")", 
-                            "if (exists " + getTextFor(dwp) + ") {}", 
+                            "if (exists " + getDescriptionFor(d, unit) + ")", 
+                            "if (exists " + getTextFor(d, unit) + ") {}", 
                             d, cpc));
                 }
             }
@@ -105,9 +108,10 @@ class BasicCompletionProposal extends CompletionProposal {
                             .append(getDefaultLineDelimiter(doc));
                     }
                     body.append(indent);
+                    Unit unit = cpc.getRootNode().getUnit();
                     result.add(new BasicCompletionProposal(offset, prefix, 
-                            "switch (" + getDescriptionFor(dwp) + ")", 
-                            "switch (" + getTextFor(dwp) + ")" + 
+                            "switch (" + getDescriptionFor(d, unit) + ")", 
+                            "switch (" + getTextFor(d, unit) + ")" + 
                                     getDefaultLineDelimiter(doc) + body, 
                             d, cpc));
                 }
