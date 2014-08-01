@@ -108,18 +108,14 @@ class AddModuleImportProposal implements ICompletionProposal,
                 }
             }
         }
-        ModuleQuery query = new ModuleQuery(formatPath(ids), getModuleQueryType(project));
+        ModuleQuery query = new ModuleQuery("", getModuleQueryType(project));
+        query.setMemberName(formatPath(ids));
+        query.setMemberSearchPackageOnly(true);
         query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
-        query.setCount(2l);
         ModuleSearchResult msr = tc.getContext().getRepositoryManager()
                 .searchModules(query);
-        for (int i=ids.size(); i>0; i--) {
-            String pn = formatPath(ids.subList(0, i));
-            ModuleDetails md = msr.getResult(pn);
-            if (md!=null) {
-                proposals.add(new AddModuleImportProposal(project, unit, md));
-                break;
-            }
+        for (ModuleDetails md: msr.getResults()) {
+            proposals.add(new AddModuleImportProposal(project, unit, md));
         }
     }
 
