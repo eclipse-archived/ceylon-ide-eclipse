@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.util;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.List;
 import java.util.StringTokenizer;
@@ -173,34 +174,33 @@ public class Highlights  {
         boolean qualified = false;
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            if (token.equals(".")) {
+            if (token.equals("\"")) {
+                version = !version;
+                result.append(token, VERSION_STYLER);
+            }
+            else if (version) {
+                result.append(token, VERSION_STYLER);
+            }
+            else if (token.equals(".")) {
                 qualified = true;
                 result.append(token);
                 continue;
             }
-            else if (token.equals("\"")) {
-                version = !version;
-                result.append(token, Highlights.VERSION_STYLER);
-    
-            }
-            else if (version) {
-                result.append(token, Highlights.VERSION_STYLER);
-            }
             else if (isUpperCase(token.charAt(0))) {
-                result.append(token, Highlights.TYPE_ID_STYLER);
+                result.append(token, TYPE_ID_STYLER);
             }
             else if (isLowerCase(token.charAt(0))) {
                 if (Escaping.KEYWORDS.contains(token)) {
-                    result.append(token, Highlights.KW_STYLER);
+                    result.append(token, KW_STYLER);
                 }
                 else if (token.contains(".")) {
-                    result.append(token, Highlights.PACKAGE_STYLER);
+                    result.append(token, PACKAGE_STYLER);
                 }
                 else if (qualified) {
-                    result.append(token, Highlights.MEMBER_STYLER);
+                    result.append(token, MEMBER_STYLER);
                 }
                 else {
-                    result.append(token, Highlights.ID_STYLER);
+                    result.append(token, ID_STYLER);
                 }
             }
             else {
@@ -214,15 +214,42 @@ public class Highlights  {
             boolean qualifiedNameIsPath, boolean eliminateQuotes) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(description, "'", false);
+                new StringTokenizer(description, "'\"", true);
         result.append(tokens.nextToken());
         while (tokens.hasMoreTokens()) {
-            if (!eliminateQuotes) result.append('\'');
-            styleProposal(result, 
-                    tokens.nextToken(), qualifiedNameIsPath);
-            if (!eliminateQuotes) result.append('\'');
-            if (tokens.hasMoreTokens()) {
-                result.append(tokens.nextToken());
+            String tok = tokens.nextToken();
+            if (tok.equals("\"")) {
+                result.append(tok, VERSION_STYLER);
+                if (tokens.hasMoreTokens()) {
+                    result.append(tokens.nextToken(), VERSION_STYLER);
+                }
+                if (tokens.hasMoreTokens()) {
+                    String close = tokens.nextToken();
+                    if (close.equals("\"")) {
+                        result.append(close, VERSION_STYLER);
+                    }
+                    else {
+                        result.append(close);
+                    }
+                }
+            }
+            else if (tok.equals("\'")) {
+                if (!eliminateQuotes) {
+                    result.append(tok);
+                }
+                if (tokens.hasMoreTokens()) {
+                    styleProposal(result, tokens.nextToken(), 
+                            qualifiedNameIsPath);
+                }
+                if (tokens.hasMoreTokens()) {
+                    String close = tokens.nextToken();
+                    if (!eliminateQuotes || !close.equals("\'")) {
+                        result.append(close);
+                    }
+                }
+            }
+            else {
+                result.append(tok);
             }
         }
         return result;
@@ -287,7 +314,8 @@ public class Highlights  {
             textStyle.foreground=color(Highlights.colorRegistry, IDENTIFIERS);
         }
     };
-    public static ColorRegistry colorRegistry = PlatformUI.getWorkbench()
-    .getThemeManager().getCurrentTheme().getColorRegistry();
+    
+    private static ColorRegistry colorRegistry = 
+            getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
         
 }
