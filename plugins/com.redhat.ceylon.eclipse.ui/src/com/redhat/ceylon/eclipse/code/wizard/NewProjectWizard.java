@@ -97,7 +97,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
         if (page==firstPage && !checkJre()) {
-            displayError("Please select a Java 1.7 JRE");
+            displayError("Please select a Java 1.7 or 1.8 JRE");
             return page;
         }
         else if (page==secondPage && !checkOutputPaths()) {
@@ -116,7 +116,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
     public boolean performFinish() {
         if (!checkJre()) {
-            displayError("Please select a Java 1.7 JRE");
+            displayError("Please select a Java 1.7 or 1.8 JRE");
             return false;
         }
         if (!checkOutputPaths()) {
@@ -180,13 +180,18 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 IPath path = cpe.getPath();
                 if (path.segment(0).equals(JRE_CONTAINER)) {
                     IVMInstall vm = JavaRuntime.getVMInstall(cpe.getPath());
-                    if (vm==null || !((IVMInstall2)vm).getJavaVersion().startsWith("1.7")) {
+                    if (!(vm instanceof IVMInstall2)) {
+                        return false;
+                    }
+                    String javaVersion = ((IVMInstall2)vm).getJavaVersion();
+                    if (!javaVersion.startsWith("1.7") && 
+                        !javaVersion.startsWith("1.8")) {
                         return false;
                     }
                     if (path.segmentCount()==3) {
                         String s = path.segment(2);
-                        if ((s.startsWith("JavaSE-")||s.startsWith("J2SE-")) &&
-                                !s.contains("1.7")) {
+                        if ((s.startsWith("JavaSE-") || s.startsWith("J2SE-")) &&
+                                !s.contains("1.7") && !s.contains("1.8")) {
                             return false;
                         }
                     }
