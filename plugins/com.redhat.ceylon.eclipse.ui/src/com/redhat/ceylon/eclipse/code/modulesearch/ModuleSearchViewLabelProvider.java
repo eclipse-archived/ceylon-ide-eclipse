@@ -5,6 +5,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
     
@@ -23,9 +24,9 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
     
         StyledString styledText = new StyledString();
         styledText.append(moduleNode.getName()); //really should be: CeylonLabelProvider.PACKAGE_STYLER
-        styledText.append(" \"", CeylonLabelProvider.VERSION_STYLER);
-        styledText.append(lastVersion.getVersion(), CeylonLabelProvider.VERSION_STYLER);
-        styledText.append("\"", CeylonLabelProvider.VERSION_STYLER);
+        styledText.append(" \"", Highlights.VERSION_STYLER);
+        styledText.append(lastVersion.getVersion(), Highlights.VERSION_STYLER);
+        styledText.append("\"", Highlights.VERSION_STYLER);
     
         if (lastVersion.getAuthors() != null && !lastVersion.getAuthors().isEmpty()) {
             styledText.append(" (by ", StyledString.QUALIFIER_STYLER);
@@ -40,9 +41,9 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
 
     private void updateVersionNode(ViewerCell cell, ModuleVersionNode versionNode) {
         StyledString styledText = new StyledString();
-        styledText.append(" \"", CeylonLabelProvider.VERSION_STYLER);
-        styledText.append(versionNode.getVersion(), CeylonLabelProvider.VERSION_STYLER);
-        styledText.append("\"", CeylonLabelProvider.VERSION_STYLER);
+        styledText.append(" \"", Highlights.VERSION_STYLER);
+        styledText.append(versionNode.getVersion(), Highlights.VERSION_STYLER);
+        styledText.append("\"", Highlights.VERSION_STYLER);
         cell.setText(styledText.toString());
         cell.setStyleRanges(styledText.getStyleRanges());
         cell.setImage(CeylonLabelProvider.VERSION);

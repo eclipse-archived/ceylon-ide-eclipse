@@ -29,6 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.eclipse.code.refactor.CreateUnitChange;
 import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 class CreateInNewUnitProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -148,6 +149,6 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString(), false);
+        return Highlights.styleProposal(getDisplayString(), false);
     }
 }

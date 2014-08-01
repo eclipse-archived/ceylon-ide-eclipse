@@ -15,6 +15,7 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.CollectParametersRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.CollectParametersRefactoringAction;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 class CollectParametersProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -57,7 +58,7 @@ class CollectParametersProposal implements ICompletionProposal,
     
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString(), false);
+        return Highlights.styleProposal(getDisplayString(), false);
     }
 
     public static void add(Collection<ICompletionProposal> proposals,

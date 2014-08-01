@@ -1,16 +1,22 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static java.lang.Character.isLowerCase;
+import static java.lang.Character.isUpperCase;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 
@@ -154,5 +160,134 @@ public class Highlights  {
                 }
         }
     }
+
+    public static void styleProposal(StyledString result, 
+            String string, boolean qualifiedNameIsPath) {
+        StringTokenizer tokens = 
+                new StringTokenizer(string, 
+                        qualifiedNameIsPath ? 
+                                " ()<>*+?,{}[]\"" : 
+                                " ()<>*+?,{}[]\".", 
+                        true);
+        boolean version = false;
+        boolean qualified = false;
+        while (tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            if (token.equals(".")) {
+                qualified = true;
+                result.append(token);
+                continue;
+            }
+            else if (token.equals("\"")) {
+                version = !version;
+                result.append(token, Highlights.VERSION_STYLER);
+    
+            }
+            else if (version) {
+                result.append(token, Highlights.VERSION_STYLER);
+            }
+            else if (isUpperCase(token.charAt(0))) {
+                result.append(token, Highlights.TYPE_ID_STYLER);
+            }
+            else if (isLowerCase(token.charAt(0))) {
+                if (Escaping.KEYWORDS.contains(token)) {
+                    result.append(token, Highlights.KW_STYLER);
+                }
+                else if (token.contains(".")) {
+                    result.append(token, Highlights.PACKAGE_STYLER);
+                }
+                else if (qualified) {
+                    result.append(token, Highlights.MEMBER_STYLER);
+                }
+                else {
+                    result.append(token, Highlights.ID_STYLER);
+                }
+            }
+            else {
+                result.append(token);
+            }
+            qualified = false;
+        }
+    }
+
+    public static StyledString styleProposal(String description, 
+            boolean qualifiedNameIsPath, boolean eliminateQuotes) {
+        StyledString result = new StyledString();
+        StringTokenizer tokens = 
+                new StringTokenizer(description, "'", false);
+        result.append(tokens.nextToken());
+        while (tokens.hasMoreTokens()) {
+            if (!eliminateQuotes) result.append('\'');
+            styleProposal(result, 
+                    tokens.nextToken(), qualifiedNameIsPath);
+            if (!eliminateQuotes) result.append('\'');
+            if (tokens.hasMoreTokens()) {
+                result.append(tokens.nextToken());
+            }
+        }
+        return result;
+    }
+
+    public static StyledString styleProposal(String description, 
+            boolean qualifiedNameIsPath) {
+        return styleProposal(description, qualifiedNameIsPath, false);
+    }
+
+    public static final Styler TYPE_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(Highlights.colorRegistry, TYPES);
+        }
+    };
+    public static final Styler MEMBER_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(Highlights.colorRegistry, MEMBERS);
+        }
+    };
+    public static final Styler TYPE_ID_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(Highlights.colorRegistry, TYPES);
+        }
+    };
+    public static final Styler KW_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(Highlights.colorRegistry, KEYWORDS);
+        }
+    };
+    public static final Styler VERSION_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(Highlights.colorRegistry, STRINGS);
+        }
+    };
+    public static final Styler PACKAGE_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(Highlights.colorRegistry, PACKAGES);
+        }
+    };
+    public static final Styler ARROW_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(Highlights.colorRegistry, OUTLINE_TYPES);
+        }
+    };
+    public static final Styler ANN_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(Highlights.colorRegistry, ANNOTATIONS);
+        }
+    };
+    public static final Styler ID_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(Highlights.colorRegistry, IDENTIFIERS);
+        }
+    };
+    public static ColorRegistry colorRegistry = PlatformUI.getWorkbench()
+    .getThemeManager().getCurrentTheme().getColorRegistry();
         
 }

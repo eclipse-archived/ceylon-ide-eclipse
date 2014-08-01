@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MULTIPLE_TYPES_IMAGE;
@@ -16,6 +14,7 @@ import org.eclipse.swt.custom.StyleRange;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 abstract class CeylonHierarchyLabelProvider extends
         StyledCellLabelProvider {
@@ -47,10 +46,10 @@ abstract class CeylonHierarchyLabelProvider extends
         if (d.isClassOrInterfaceMember()) {
             Declaration container = (Declaration) d.getContainer();
             result.append(" in ")
-                  .append(container.getName(), TYPE_ID_STYLER);
+                  .append(container.getName(), Highlights.TYPE_ID_STYLER);
         }
-        result.append(" - ", PACKAGE_STYLER)
-              .append(getPackageLabel(d), PACKAGE_STYLER);
+        result.append(" - ", Highlights.PACKAGE_STYLER)
+              .append(getPackageLabel(d), Highlights.PACKAGE_STYLER);
         if (n.isNonUnique()) {
             result.append(" - and other supertypes")
                   .append(getViewInterfacesShortcut());

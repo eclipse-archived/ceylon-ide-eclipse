@@ -18,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.MakeReceiverRefactoringAction;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class MakeReceiverProposal implements ICompletionProposal, ICompletionProposalExtension6 {
 
@@ -55,7 +56,7 @@ public class MakeReceiverProposal implements ICompletionProposal, ICompletionPro
     
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString(), false);
+        return Highlights.styleProposal(getDisplayString(), false);
     }
     
     @Override

@@ -16,6 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeVersionLinkedMode;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 class RenameVersionProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
@@ -46,7 +47,7 @@ class RenameVersionProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString(), true);
+        return Highlights.styleProposal(getDisplayString(), true);
     }
 
     @Override

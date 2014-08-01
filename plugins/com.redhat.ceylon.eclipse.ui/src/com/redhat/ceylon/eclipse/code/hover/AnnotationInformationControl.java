@@ -44,9 +44,9 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
-import com.redhat.ceylon.eclipse.code.correct.CorrectionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 /**
  * The annotation information control shows informations about a given
@@ -244,7 +244,8 @@ class AnnotationInformationControl extends AbstractInformationControl
                 link.addSelectionListener(new SelectionListener() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        ((RefinementAnnotation) annotation).gotoRefinedDeclaration(getAnnotationInfo().getEditor());
+                        RefinementAnnotation ra = (RefinementAnnotation) annotation;
+                        ra.gotoRefinedDeclaration(getAnnotationInfo().getEditor());
                     }
                     @Override
                     public void widgetDefaultSelected(SelectionEvent e) {}
@@ -258,8 +259,9 @@ class AnnotationInformationControl extends AbstractInformationControl
                 if (annotationText!=null && !annotationText.isEmpty()) {
                     annotationText = Character.toUpperCase(annotationText.charAt(0)) +
                             annotationText.substring(1);
-                    text.setText(annotationText);
-                    StyledString styled = CorrectionUtil.styleProposal(annotationText, true); //TODO: false, sometimes?!
+                    StyledString styled =
+                            Highlights.styleProposal(annotationText, true, true);
+                    text.setText(styled.getString());
                     text.setStyleRanges(styled.getStyleRanges());
                 }
             }

@@ -46,6 +46,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class ImportProposals {
 
@@ -120,7 +121,7 @@ public class ImportProposals {
         return new CorrectionProposal(description, change, null, IMPORT) {
             @Override
             public StyledString getStyledDisplayString() {
-                return CorrectionUtil.styleProposal(getDisplayString(), true);
+                return Highlights.styleProposal(getDisplayString(), true);
             }
         };
     }

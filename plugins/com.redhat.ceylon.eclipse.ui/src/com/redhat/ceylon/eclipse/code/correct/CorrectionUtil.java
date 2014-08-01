@@ -4,12 +4,10 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ui.IEditorPart;
 
@@ -19,7 +17,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -100,24 +97,6 @@ public class CorrectionUtil {
             }
         }       
         return unit.getCompilationUnit();
-    }
-    
-    public static StyledString styleProposal(String description, 
-            boolean qualifiedNameIsPath) {
-        StyledString result = new StyledString();
-        StringTokenizer tokens = 
-                new StringTokenizer(description, "'", false);
-        result.append(tokens.nextToken());
-        while (tokens.hasMoreTokens()) {
-            result.append('\'');
-            CompletionUtil.styleProposal(result, 
-                    tokens.nextToken(), qualifiedNameIsPath);
-            result.append('\'');
-            if (tokens.hasMoreTokens()) {
-                result.append(tokens.nextToken());
-            }
-        }
-        return result;
     }
     
     static String asIntersectionTypeString(List<ProducedType> types) {

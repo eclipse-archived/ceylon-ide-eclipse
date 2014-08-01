@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.styleProposal;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION;
 
 import org.eclipse.core.runtime.Assert;
@@ -15,6 +14,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.editors.text.EditorsUI;
+
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 
 public class CompletionProposal implements ICompletionProposal, 
@@ -107,7 +108,7 @@ public class CompletionProposal implements ICompletionProposal,
     @Override
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
-        styleProposal(result, getDisplayString(), 
+        Highlights.styleProposal(result, getDisplayString(), 
                 qualifiedNameIsPath());
         return result;
     }

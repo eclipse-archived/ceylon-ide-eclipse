@@ -13,6 +13,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 class RenameDescriptorProposal {
     
@@ -27,7 +28,7 @@ class RenameDescriptorProposal {
         proposals.add(new CorrectionProposal("Rename to '" + pn + "'", change, null, CHANGE) {
             @Override
             public StyledString getStyledDisplayString() {
-                return CorrectionUtil.styleProposal(getDisplayString(), true);
+                return Highlights.styleProposal(getDisplayString(), true);
             }
         });
     }

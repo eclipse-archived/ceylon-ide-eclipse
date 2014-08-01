@@ -78,7 +78,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
@@ -89,6 +88,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public final class ReferencesPopup extends PopupDialog 
@@ -365,7 +365,7 @@ public final class ReferencesPopup extends PopupDialog
         result.append("-");
         result.append(tokens.nextToken());
         result.append("'");
-        CompletionUtil.styleProposal(result, tokens.nextToken(), false);
+        Highlights.styleProposal(result, tokens.nextToken(), false);
         result.append("'");
         return result;
     }

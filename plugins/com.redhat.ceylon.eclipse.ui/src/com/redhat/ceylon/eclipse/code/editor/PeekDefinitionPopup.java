@@ -52,9 +52,9 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.CompletionUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class PeekDefinitionPopup extends PopupDialog 
@@ -159,7 +159,7 @@ final class PeekDefinitionPopup extends PopupDialog
                 new StringTokenizer(title.getText(), "-", false);
         styleDescription(title, result, tokens.nextToken());
         result.append("-");
-        CompletionUtil.styleProposal(result, tokens.nextToken(), false);
+        Highlights.styleProposal(result, tokens.nextToken(), false);
         return result;
     }
 

@@ -5,15 +5,6 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
-import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
-import static com.redhat.ceylon.eclipse.util.Highlights.IDENTIFIERS;
-import static com.redhat.ceylon.eclipse.util.Highlights.KEYWORDS;
-import static com.redhat.ceylon.eclipse.util.Highlights.MEMBERS;
-import static com.redhat.ceylon.eclipse.util.Highlights.OUTLINE_TYPES;
-import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGES;
-import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
-import static com.redhat.ceylon.eclipse.util.Highlights.TYPES;
-import static com.redhat.ceylon.eclipse.util.Highlights.color;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_RIGHT;
 import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
@@ -38,7 +29,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.IDecoration;
@@ -50,8 +40,6 @@ import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.TextStyle;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
@@ -78,6 +66,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 /**
  * Styled Label Provider which can be used to provide labels for Ceylon elements.
@@ -95,72 +84,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                    ILabelProvider, CeylonResources {
     
     private Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
-    
-    private static ColorRegistry colorRegistry = PlatformUI.getWorkbench()
-            .getThemeManager().getCurrentTheme().getColorRegistry();
-    
-    public static final Styler ID_STYLER = new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, IDENTIFIERS);
-        }
-    };
-    
-    public static final Styler MEMBER_STYLER = new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, MEMBERS);
-        }
-    };
-    
-    public static final Styler TYPE_ID_STYLER = new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, TYPES);
-        }
-    };
-    
-    public static final Styler TYPE_STYLER = new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, TYPES);
-        }
-    };
-    
-    public static final Styler KW_STYLER = new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, KEYWORDS);
-        }
-    };
-    
-    public static final Styler VERSION_STYLER = new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, STRINGS);
-        }
-    };
-    
-    public static final Styler PACKAGE_STYLER = new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, PACKAGES);
-        }
-    };
-    
-    public static final Styler ARROW_STYLER = new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, OUTLINE_TYPES);
-        }
-    };
-    
-    public static final Styler ANN_STYLER = new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, ANNOTATIONS);
-        }
-    };
     
     public static final Point BIG_SIZE = new Point(22,16);
     public static final Point SMALL_SIZE = new Point(16,16);
@@ -468,7 +391,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (element instanceof IPackageFragment) {
             return new StyledString(((IPackageFragment) element).getElementName(), 
-                    PACKAGE_STYLER);
+                    Highlights.PACKAGE_STYLER);
         }
         else if (element instanceof IJavaElement) {
             return new StyledString(((IJavaElement) element).getElementName());
@@ -478,11 +401,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (element instanceof Package) {
             return new StyledString(getLabel((Package) element), 
-            		PACKAGE_STYLER);
+            		Highlights.PACKAGE_STYLER);
         }
         else if (element instanceof Module) {
             return new StyledString(getLabel((Module) element), 
-            		PACKAGE_STYLER);
+            		Highlights.PACKAGE_STYLER);
         }
         else if (element instanceof Unit) {
             return new StyledString(((Unit) element).getFilename());
@@ -508,7 +431,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 ce.getVirtualFile().getPath() : 
                 file.getFullPath().toString();
         return new StyledString().append(ce.getLabel())
-                .append(pkg, PACKAGE_STYLER)
+                .append(pkg, Highlights.PACKAGE_STYLER)
                 .append(" - " + path, COUNTER_STYLER)
                 .append(":" + ce.getLocation(), COUNTER_STYLER);
     }
@@ -532,7 +455,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 ProducedType tm = type.getTypeModel();
                 if (!isTypeUnknown(tm)) {
                     label.append(" ∊ ");
-                    appendTypeName(label, tm, ARROW_STYLER);
+                    appendTypeName(label, tm, Highlights.ARROW_STYLER);
                 }
             }
         }
@@ -549,35 +472,35 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         if (n instanceof Tree.AnyClass) {
             Tree.AnyClass ac = (Tree.AnyClass) n;
-            StyledString label = new StyledString("class ", KW_STYLER);
-            label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
+            StyledString label = new StyledString("class ", Highlights.KW_STYLER);
+            label.append(name(ac.getIdentifier()), Highlights.TYPE_ID_STYLER);
             parameters(ac.getTypeParameterList(), label);
             parameters(ac.getParameterList(), label);
             return label;
         }
         else if (n instanceof Tree.AnyInterface) {
             Tree.AnyInterface ai = (Tree.AnyInterface) n;
-            StyledString label = new StyledString("interface ", KW_STYLER);
-            label.append(name(ai.getIdentifier()), TYPE_ID_STYLER);
+            StyledString label = new StyledString("interface ", Highlights.KW_STYLER);
+            label.append(name(ai.getIdentifier()), Highlights.TYPE_ID_STYLER);
             parameters(ai.getTypeParameterList(), label);
             return label;
         }
         if (n instanceof Tree.TypeAliasDeclaration) {
             Tree.TypeAliasDeclaration ac = (Tree.TypeAliasDeclaration) n;
-            StyledString label = new StyledString("alias ", KW_STYLER);
-            label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
+            StyledString label = new StyledString("alias ", Highlights.KW_STYLER);
+            label.append(name(ac.getIdentifier()), Highlights.TYPE_ID_STYLER);
             parameters(ac.getTypeParameterList(), label);
             return label;
         }
         else if (n instanceof Tree.ObjectDefinition) {
             Tree.ObjectDefinition ai = (Tree.ObjectDefinition) n;
-            return new StyledString("object ", KW_STYLER)
-                    .append(name(ai.getIdentifier()), ID_STYLER);
+            return new StyledString("object ", Highlights.KW_STYLER)
+                    .append(name(ai.getIdentifier()), Highlights.ID_STYLER);
         }
         else if (n instanceof Tree.AttributeSetterDefinition) {
             Tree.AttributeSetterDefinition ai = (Tree.AttributeSetterDefinition) n;
-            return new StyledString("assign ", KW_STYLER)
-                    .append(name(ai.getIdentifier()), ID_STYLER);
+            return new StyledString("assign ", Highlights.KW_STYLER)
+                    .append(name(ai.getIdentifier()), Highlights.ID_STYLER);
         }
         else if (n instanceof Tree.AnyMethod) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
@@ -591,9 +514,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                 kind = "function";
             }
-            StyledString label = new StyledString(kind, KW_STYLER)
+            StyledString label = new StyledString(kind, Highlights.KW_STYLER)
                     .append(" ")
-                    .append(name(td.getIdentifier()), ID_STYLER);
+                    .append(name(td.getIdentifier()), Highlights.ID_STYLER);
             Tree.AnyMethod am = (Tree.AnyMethod) n;
             parameters(am.getTypeParameterList(), label);
             for (Tree.ParameterList pl: am.getParameterLists()) { 
@@ -611,9 +534,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                 kind = "value";
             }
-            StyledString label = new StyledString(kind, KW_STYLER)
+            StyledString label = new StyledString(kind, Highlights.KW_STYLER)
                     .append(" ")
-                    .append(name(td.getIdentifier()), ID_STYLER);
+                    .append(name(td.getIdentifier()), Highlights.ID_STYLER);
             appendPostfixType(td, label);
 			return label;
         }
@@ -644,16 +567,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.ModuleDescriptor i = (Tree.ModuleDescriptor) n;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("module ", KW_STYLER)
-                        .append(toPath(p), PACKAGE_STYLER);
+                return new StyledString("module ", Highlights.KW_STYLER)
+                        .append(toPath(p), Highlights.PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.PackageDescriptor) {
             Tree.PackageDescriptor i = (Tree.PackageDescriptor) n;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("package ", KW_STYLER)
-                        .append(toPath(p), PACKAGE_STYLER);
+                return new StyledString("package ", Highlights.KW_STYLER)
+                        .append(toPath(p), Highlights.PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.ImportList) {
@@ -662,23 +585,23 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (n instanceof Tree.ImportPath) {
             Tree.ImportPath p = (Tree.ImportPath) n;
             if (isNonempty(p)) {
-                return new StyledString(toPath(p), PACKAGE_STYLER);
+                return new StyledString(toPath(p), Highlights.PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.Import) {
             Tree.Import i = (Tree.Import) n;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("import ", KW_STYLER)
-                        .append(toPath(p), PACKAGE_STYLER);
+                return new StyledString("import ", Highlights.KW_STYLER)
+                        .append(toPath(p), Highlights.PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.ImportModule) {
             Tree.ImportModule i = (Tree.ImportModule) n;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("import ", KW_STYLER)
-                        .append(toPath(p), PACKAGE_STYLER);
+                return new StyledString("import ", Highlights.KW_STYLER)
+                        .append(toPath(p), Highlights.PACKAGE_STYLER);
             }
             Tree.QuotedLiteral ql = i.getQuotedLiteral();
             if (ql!=null) {
@@ -693,7 +616,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             else {
                 return new StyledString(pn.getPackageName(), 
-                		PACKAGE_STYLER);
+                		Highlights.PACKAGE_STYLER);
             }
         }
         else if (n instanceof Tree.SpecifierStatement) {
@@ -716,9 +639,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                  throw new RuntimeException("unexpected node type");
             }
             StyledString label = new StyledString();
-            label.append(kw, KW_STYLER)
+            label.append(kw, Highlights.KW_STYLER)
                 .append(" ")
-                .append(name(id), ID_STYLER);
+                .append(name(id), Highlights.ID_STYLER);
             if (pls!=null) {
                 for (Tree.ParameterList pl: pls) { 
                     parameters(pl, label);
@@ -742,10 +665,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         StyledString result = new StyledString();
         if (type!=null) {
             if (type instanceof Tree.VoidModifier) {
-                return result.append("void", KW_STYLER);
+                return result.append("void", Highlights.KW_STYLER);
             }
             if (type instanceof Tree.DynamicModifier) {
-                return result.append("dynamic", KW_STYLER);
+                return result.append("dynamic", Highlights.KW_STYLER);
             }
             ProducedType tm = type.getTypeModel();
             if (tm!=null && !isTypeUnknown(tm)) {
@@ -763,7 +686,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
         }
         return result.append(node instanceof Tree.AnyMethod ? "function" : "value", 
-                KW_STYLER);
+                Highlights.KW_STYLER);
     }
     
     private static String name(Tree.Identifier id) {
@@ -790,7 +713,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                                 ((Tree.ParameterDeclaration) p).getTypedDeclaration();
                         label.append(type(td.getType(), td))
                             .append(" ")
-                            .append(name(td.getIdentifier()), ID_STYLER);
+                            .append(name(td.getIdentifier()), Highlights.ID_STYLER);
                         if (p instanceof Tree.FunctionalParameterDeclaration) {
                             for (Tree.ParameterList ipl: 
                                 ((Tree.MethodDeclaration) td).getParameterLists()) {
@@ -799,7 +722,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                         }
                     }
                     else if (p instanceof Tree.InitializerParameter) {
-                        label.append(name(((Tree.InitializerParameter) p).getIdentifier()), ID_STYLER);
+                        label.append(name(((Tree.InitializerParameter) p).getIdentifier()), Highlights.ID_STYLER);
                     }
                 }
                 if (++i<len) label.append(", ");
@@ -815,9 +738,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             int len = tpl.getTypeParameterDeclarations().size(), i=0;
             for (Tree.TypeParameterDeclaration p: tpl.getTypeParameterDeclarations()) {
                 if (p.getTypeVariance()!=null) {
-                    label.append(p.getTypeVariance().getText(), KW_STYLER).append(" "); 
+                    label.append(p.getTypeVariance().getText(), Highlights.KW_STYLER).append(" "); 
                 }
-                label.append(name(p.getIdentifier()), TYPE_STYLER);
+                label.append(name(p.getIdentifier()), Highlights.TYPE_STYLER);
                 if (++i<len) label.append(", ");
             }
             label.append(">");
@@ -889,7 +812,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
 
     public static void appendTypeName(StyledString result, ProducedType type) {
-        appendTypeName(result, type, TYPE_STYLER);
+        appendTypeName(result, type, Highlights.TYPE_STYLER);
     }
     
     public static void appendTypeName(StyledString result, ProducedType type, 

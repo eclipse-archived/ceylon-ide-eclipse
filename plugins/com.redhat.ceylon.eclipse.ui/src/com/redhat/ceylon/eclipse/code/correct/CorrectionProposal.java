@@ -31,6 +31,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 
+import com.redhat.ceylon.eclipse.util.Highlights;
+
 
 /**
  * A quick fix/assist proposal based on a {@link Change}.
@@ -131,7 +133,7 @@ class CorrectionProposal
 
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString(), false);
+        return Highlights.styleProposal(getDisplayString(), false);
     }
     
     /**

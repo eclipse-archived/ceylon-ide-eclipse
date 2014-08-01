@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.styleProposal;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.RENAME;
 import static com.redhat.ceylon.eclipse.code.refactor.RenameLinkedMode.useLinkedMode;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.RENAME;
 
 import java.util.Collection;
 
@@ -19,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.EnterAliasLinkedMode;
 import com.redhat.ceylon.eclipse.code.refactor.EnterAliasRefactoringAction;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 class RenameAliasProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
@@ -58,7 +58,7 @@ class RenameAliasProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return styleProposal(getDisplayString(), false);
+        return Highlights.styleProposal(getDisplayString(), false);
     }
 
     @Override
