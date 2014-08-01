@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.code.hover;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getInstance;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN_DIS;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -33,8 +35,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.LineRange;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
@@ -105,8 +105,8 @@ public class AnnotationHover
 
         public ConfigureAnnotationsAction(Annotation annotation, IInformationControl infoControl) {
             super();
-            fAnnotation= annotation;
-            fInfoControl= infoControl;
+            fAnnotation = annotation;
+            fInfoControl = infoControl;
             ImageRegistry imageRegistry = getInstance().getImageRegistry();
             setImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN));
             setDisabledImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN_DIS));
@@ -115,19 +115,19 @@ public class AnnotationHover
 
         @Override
         public void run() {
-            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
 
             Object data;
             AnnotationPreference preference = getAnnotationPreference(fAnnotation);
             if (preference != null) {
-                data= preference.getPreferenceLabel();
+                data = preference.getPreferenceLabel();
             }
             else {
                 data = null;
             }
 
             fInfoControl.dispose(); //FIXME: should have protocol to hide, rather than dispose
-            PreferencesUtil.createPreferenceDialogOn(shell, 
+            createPreferenceDialogOn(shell, 
                     "org.eclipse.ui.editors.preferencePages.Annotations", 
                     null, data).open();
         }

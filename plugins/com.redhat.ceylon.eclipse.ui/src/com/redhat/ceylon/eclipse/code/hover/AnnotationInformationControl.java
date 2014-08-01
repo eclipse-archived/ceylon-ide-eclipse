@@ -13,6 +13,7 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
@@ -43,6 +44,7 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
+import com.redhat.ceylon.eclipse.code.correct.CorrectionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 
@@ -253,9 +255,12 @@ class AnnotationInformationControl extends AbstractInformationControl
                         new StyledText(composite, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
                 text.setLayoutData(data);
                 String annotationText = annotation.getText();
-                if (annotationText != null) {
-                    text.setText(Character.toUpperCase(annotationText.charAt(0)) +
-                            annotationText.substring(1));
+                if (annotationText!=null && !annotationText.isEmpty()) {
+                    annotationText = Character.toUpperCase(annotationText.charAt(0)) +
+                            annotationText.substring(1);
+                    text.setText(annotationText);
+                    StyledString styled = CorrectionUtil.styleProposal(annotationText, true); //TODO: false, sometimes?!
+                    text.setStyleRanges(styled.getStyleRanges());
                 }
             }
         }
