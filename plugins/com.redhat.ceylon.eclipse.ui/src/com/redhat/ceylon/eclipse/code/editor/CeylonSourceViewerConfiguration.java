@@ -174,7 +174,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         contentAssistant.setRepeatedInvocationMode(true);
         KeyStroke key = KeyStroke.getInstance(SWT.CTRL, SWT.SPACE);
         contentAssistant.setRepeatedInvocationTrigger(KeySequence.getInstance(key));
-        contentAssistant.setStatusMessage(key.format() + " to toggle filter by type");
+        contentAssistant.setStatusMessage(key.format() + " to toggle second-level completions");
         contentAssistant.setStatusLineVisible(true);
         contentAssistant.setInformationControlCreator(new DocumentationHover(editor).getHoverControlCreator("Click for focus"));
         contentAssistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
