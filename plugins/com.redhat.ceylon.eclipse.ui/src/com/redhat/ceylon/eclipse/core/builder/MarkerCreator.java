@@ -1,11 +1,13 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
 import static org.eclipse.jdt.core.IJavaModelMarker.BUILDPATH_PROBLEM_MARKER;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
@@ -54,21 +56,22 @@ public class MarkerCreator extends ErrorVisitor {
                 CeylonBuilder.SOURCE
             };
         try {
-            file.createMarker(isCompilerError(message.getMessage())?
-                    BUILDPATH_PROBLEM_MARKER:PROBLEM_MARKER_ID)
+            file.createMarker(message instanceof ModuleValidator.DependencyAnalysisError ?
+                    MODULE_DEPENDENCY_PROBLEM_MARKER_ID:PROBLEM_MARKER_ID)
                 .setAttributes(attributeNames, values);
         } 
         catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    private static boolean isCompilerError(String msg) {
-        //TODO: we need a MUCH better way to distinguish 
-        //      compiler errors from typechecker errors
-        return msg.startsWith("cannot find module") || 
-                msg.startsWith("unable to read source artifact for") ||
-                msg.startsWith("invalid JDK module");
-    }
-    
+//
+//    private static boolean isCompilerError(String msg) {
+//        //TODO: we need a MUCH better way to distinguish 
+//        //      compiler errors from typechecker errors
+//        return msg.startsWith("cannot find module") || 
+//                msg.startsWith("unable to read source artifact for") ||
+//                msg.startsWith("invalid JDK module") /* ||
+//                msg.contains("compiled for an incompatible version")*/;
+//    }
+//    
 }

@@ -185,6 +185,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static final String PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonProblem";
 
     /**
+     * A marker ID that identifies Module Dependency problems
+     */
+    public static final String MODULE_DEPENDENCY_PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonModuleDependencyProblem";
+
+    /**
      * A marker ID that identifies tasks
      */
     public static final String TASK_MARKER_ID = PLUGIN_ID + ".ceylonTask";
@@ -1869,11 +1874,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         if (module instanceof JDTModule) {
                             JDTModule jdtModule = (JDTModule) module;
                             if (jdtModule.isCeylonArchive()) {
-                                getProjectRepositoryManager(project).getArtifact(
+                                File artifact = getProjectRepositoryManager(project).getArtifact(
                                         new ArtifactContext(
                                                 jdtModule.getNameAsString(), 
                                                 jdtModule.getVersion(), 
                                                 ArtifactContext.JS));
+                                if (artifact == null) {
+                                    moduleManager.attachErrorToOriginalModuleImport(jdtModule, "The module '" + module.getSignature() + "' is not available for the JavaScript backend");
+                                }
                             }
                         }
                     }

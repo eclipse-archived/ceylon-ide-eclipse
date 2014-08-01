@@ -108,6 +108,14 @@
    </extension>
    
    <extension
+         id="ceylonModuleDependencyProblem"
+         name="Ceylon Module Dependency Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="com.redhat.ceylon.eclipse.ui.ceylonProblem"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
          id="ceylonProblem.backend"
          name="Ceylon Backend Error"
          point="org.eclipse.core.resources.markers">

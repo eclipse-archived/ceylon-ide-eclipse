@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.isParseAnnotation;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.TASK_MARKER_ID;
 
 import java.util.Iterator;
@@ -49,11 +50,12 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
                         Integer markerStart = null;
                         Integer markerEnd = null;
                         boolean isProblemMarker = marker.getType().equals(PROBLEM_MARKER_ID);
+                        boolean isModuleDependencyMarker = marker.getType().equals(MODULE_DEPENDENCY_PROBLEM_MARKER_ID);
                         boolean isTaskMarker = marker.getType().equals(TASK_MARKER_ID);
                         markerStart = (Integer) marker.getAttribute(IMarker.CHAR_START);
                         markerEnd = (Integer) marker.getAttribute(IMarker.CHAR_END);
                         if (markerStart==null||markerEnd==null) continue;
-                        if (isProblemMarker||isTaskMarker) {
+                        if ((isProblemMarker && !isModuleDependencyMarker) || isTaskMarker) {
                             boolean found = false;
                             for (@SuppressWarnings("unchecked")
                             Iterator<Annotation> iter2 = model.getAnnotationIterator(); 

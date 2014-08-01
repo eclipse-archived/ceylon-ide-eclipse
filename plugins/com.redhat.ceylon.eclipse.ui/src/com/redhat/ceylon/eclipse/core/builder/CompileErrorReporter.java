@@ -105,7 +105,7 @@ final class CompileErrorReporter implements
             if(file != null) {
                 if (CeylonBuilder.isCeylon(file)){
                     try {
-                        for (IMarker m: file.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, false, DEPTH_ZERO)) {
+                        for (IMarker m: file.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, DEPTH_ZERO)) {
                             int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
                             if (sev==IMarker.SEVERITY_ERROR) {
                                 return;
