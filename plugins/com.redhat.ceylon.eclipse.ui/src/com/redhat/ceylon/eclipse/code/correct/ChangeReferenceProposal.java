@@ -17,6 +17,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -28,6 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ChangeReferenceProposal extends CorrectionProposal 
@@ -119,4 +121,9 @@ class ChangeReferenceProposal extends CorrectionProposal
         }
     }
 
+    @Override
+    public StyledString getStyledDisplayString() {
+        return Highlights.styleProposal(getDisplayString(), true);
+    }
+    
 }
