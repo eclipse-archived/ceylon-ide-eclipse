@@ -27,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 class AddModuleImportProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
@@ -84,7 +85,7 @@ class AddModuleImportProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString(), true);
+        return Highlights.styleProposal(getDisplayString(), true);
     }
 
     static void addModuleImportProposals(Collection<ICompletionProposal> proposals, 

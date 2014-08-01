@@ -18,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.MoveOutRefactoringAction;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class MoveOutProposal implements ICompletionProposal, ICompletionProposalExtension6 {
 
@@ -55,7 +56,7 @@ public class MoveOutProposal implements ICompletionProposal, ICompletionProposal
     
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString(), false);
+        return Highlights.styleProposal(getDisplayString(), false);
     }
     
     @Override

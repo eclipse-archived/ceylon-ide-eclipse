@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CASE;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 
@@ -24,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class KeywordCompletionProposal extends CompletionProposal {
     
@@ -94,7 +94,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
 
     @Override
     public StyledString getStyledDisplayString() {
-        return new StyledString(getDisplayString(), KW_STYLER);
+        return new StyledString(getDisplayString(), Highlights.KW_STYLER);
     }
     
     static void addKeywordProposal(int offset, String prefix, 

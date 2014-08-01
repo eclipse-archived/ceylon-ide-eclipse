@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.styleProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
@@ -37,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class SpecifyTypeProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -154,7 +154,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return styleProposal(getDisplayString(), false);
+        return Highlights.styleProposal(getDisplayString(), false);
     }
 
     @Override

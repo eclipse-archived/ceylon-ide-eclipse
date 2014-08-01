@@ -16,6 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeParametersRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeParametersRefactoringAction;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 class ChangeParametersProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -60,7 +61,7 @@ class ChangeParametersProposal implements ICompletionProposal,
     
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString(), false);
+        return Highlights.styleProposal(getDisplayString(), false);
     }
 
     public static void add(Collection<ICompletionProposal> proposals,

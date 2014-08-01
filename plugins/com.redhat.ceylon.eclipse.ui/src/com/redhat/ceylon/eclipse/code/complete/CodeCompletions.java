@@ -5,11 +5,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultV
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ANN_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ARROW_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.ID_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.KW_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
@@ -46,6 +41,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class CodeCompletions {
 
@@ -306,10 +302,10 @@ public class CodeCompletions {
     public static StyledString getStyledDescriptionFor(Declaration d) {
         StyledString result = new StyledString();
         if (d!=null) {
-            if (d.isActual()) result.append("actual ", ANN_STYLER);
-            if (d.isFormal()) result.append("formal ", ANN_STYLER);
-            if (d.isDefault()) result.append("default ", ANN_STYLER);
-            if (isVariable(d)) result.append("variable ", ANN_STYLER);
+            if (d.isActual()) result.append("actual ", Highlights.ANN_STYLER);
+            if (d.isFormal()) result.append("formal ", Highlights.ANN_STYLER);
+            if (d.isDefault()) result.append("default ", Highlights.ANN_STYLER);
+            if (isVariable(d)) result.append("variable ", Highlights.ANN_STYLER);
             appendDeclarationDescription(d, result);
             appendTypeParameters(d, result, true);
             appendParametersDescription(d, result);
@@ -322,7 +318,7 @@ public class CodeCompletions {
                         ProducedType t = td.getType();
                         if (t!=null) {
                             result.append(" ∊ ");
-                            appendTypeName(result, t, ARROW_STYLER);
+                            appendTypeName(result, t, Highlights.ARROW_STYLER);
                         }
                     }
                 }
@@ -588,13 +584,13 @@ public class CodeCompletions {
                 for (TypeParameter tp: types) {
                     if (variances) {
                         if (tp.isCovariant()) {
-                            result.append("out ", KW_STYLER);
+                            result.append("out ", Highlights.KW_STYLER);
                         }
                         if (tp.isContravariant()) {
-                            result.append("in ", KW_STYLER);
+                            result.append("in ", Highlights.KW_STYLER);
                         }
                     }
-                    result.append(tp.getName(), TYPE_STYLER);
+                    result.append(tp.getName(), Highlights.TYPE_STYLER);
                     if (++i<len) result.append(", ");
                 }
                 result.append(">");
@@ -706,23 +702,23 @@ public class CodeCompletions {
             StyledString result) {
         if (d instanceof Class) {
             if (d.isAnonymous()) {
-                result.append("object", KW_STYLER);
+                result.append("object", Highlights.KW_STYLER);
             }
             else {
-                result.append("class", KW_STYLER);
+                result.append("class", Highlights.KW_STYLER);
             }
         }
         else if (d instanceof Interface) {
-            result.append("interface", KW_STYLER);
+            result.append("interface", Highlights.KW_STYLER);
         }
         else if (d instanceof TypeAlias) {
-            result.append("alias", KW_STYLER);
+            result.append("alias", Highlights.KW_STYLER);
         }
         else if (d.isParameter()) {
             TypedDeclaration td = (TypedDeclaration) d;
             ProducedType type = td.getType();
             if (td.isDynamicallyTyped()) {
-                result.append("dynamic", KW_STYLER);
+                result.append("dynamic", Highlights.KW_STYLER);
             }
             else if (type!=null) {
                 boolean isSequenced = //d.isParameter() && 
@@ -737,7 +733,7 @@ public class CodeCompletions {
                 }
                 else*/ if (d instanceof Method) {
                     if (((Functional)d).isDeclaredVoid()) {
-                        result.append("void", KW_STYLER);
+                        result.append("void", Highlights.KW_STYLER);
                     }
                     else {
                         appendTypeName(result, type);
@@ -754,38 +750,38 @@ public class CodeCompletions {
         else if (d instanceof Value) {
             Value v = (Value) d;
             if (v.isDynamicallyTyped()) {
-                result.append("dynamic", KW_STYLER);
+                result.append("dynamic", Highlights.KW_STYLER);
             }
             else if (v.getTypeDeclaration().isAnonymous()) {
-                result.append("object", KW_STYLER);
+                result.append("object", Highlights.KW_STYLER);
             }
             else {
-                result.append("value", KW_STYLER);
+                result.append("value", Highlights.KW_STYLER);
             }
         }
         else if (d instanceof Method) {
             Method m = (Method) d;
             if (m.isDynamicallyTyped()) {
-                result.append("dynamic", KW_STYLER);
+                result.append("dynamic", Highlights.KW_STYLER);
             }
             else if (m.isDeclaredVoid()) {
-                result.append("void", KW_STYLER);
+                result.append("void", Highlights.KW_STYLER);
             }
             else {
-                result.append("function", KW_STYLER);
+                result.append("function", Highlights.KW_STYLER);
             }
         }
         else if (d instanceof Setter) {
-            result.append("assign", KW_STYLER);
+            result.append("assign", Highlights.KW_STYLER);
         }
         String name = d.getName();
         if (name != null) {
             result.append(" ");
             if (d instanceof TypeDeclaration) {
-                result.append(name, TYPE_STYLER);
+                result.append(name, Highlights.TYPE_STYLER);
             }
             else {
-                result.append(name, ID_STYLER);
+                result.append(name, Highlights.ID_STYLER);
             }
         }
     }

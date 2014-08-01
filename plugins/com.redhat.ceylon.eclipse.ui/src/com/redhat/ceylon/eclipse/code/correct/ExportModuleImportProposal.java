@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.styleProposal;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
@@ -25,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class ExportModuleImportProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
@@ -73,7 +73,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return styleProposal(getDisplayString(), true);
+        return Highlights.styleProposal(getDisplayString(), true);
     }
 
     static void addExportModuleImportProposalForSupertypes(Collection<ICompletionProposal> proposals, 

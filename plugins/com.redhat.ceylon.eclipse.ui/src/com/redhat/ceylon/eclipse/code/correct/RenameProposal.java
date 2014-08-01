@@ -18,6 +18,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.RenameLinkedMode;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoringAction;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 class RenameProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -68,7 +69,7 @@ class RenameProposal implements ICompletionProposal,
     
     @Override
     public StyledString getStyledDisplayString() {
-        return CorrectionUtil.styleProposal(getDisplayString(), false);
+        return Highlights.styleProposal(getDisplayString(), false);
     }
 
     public static void add(Collection<ICompletionProposal> proposals,

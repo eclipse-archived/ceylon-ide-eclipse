@@ -5,8 +5,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescrip
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE_STYLER;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
@@ -80,6 +78,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class HierarchyView extends ViewPart {
 
@@ -226,9 +225,9 @@ public class HierarchyView extends ViewPart {
             Scope container = dec.getContainer();
             if (showInherited && 
                     container instanceof Declaration) {
-                desc.append(" - ", PACKAGE_STYLER)
+                desc.append(" - ", Highlights.PACKAGE_STYLER)
                     .append(((Declaration) container).getName(), 
-                            TYPE_STYLER);
+                            Highlights.TYPE_STYLER);
             }
             return desc;
         }
