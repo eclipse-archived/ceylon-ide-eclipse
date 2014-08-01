@@ -1880,7 +1880,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                                 jdtModule.getVersion(), 
                                                 ArtifactContext.JS));
                                 if (artifact == null) {
-                                    moduleManager.attachErrorToOriginalModuleImport(jdtModule, "The module '" + module.getSignature() + "' is not available for the JavaScript backend");
+                                    moduleManager.attachErrorToOriginalModuleImport(jdtModule, 
+                                            "module not available for JavaScript platform: '" + 
+                                                    module.getNameAsString() + "' \"" + 
+                                                    module.getVersion() + "\"");
                                 }
                             }
                         }
