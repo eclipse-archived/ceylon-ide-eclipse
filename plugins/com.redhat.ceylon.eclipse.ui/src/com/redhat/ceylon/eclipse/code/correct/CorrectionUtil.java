@@ -102,11 +102,11 @@ public class CorrectionUtil {
         return unit.getCompilationUnit();
     }
     
-    static StyledString styleProposal(String name, 
+    public static StyledString styleProposal(String description, 
             boolean qualifiedNameIsPath) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(name, "'", false);
+                new StringTokenizer(description, "'", false);
         result.append(tokens.nextToken());
         while (tokens.hasMoreTokens()) {
             result.append('\'');
