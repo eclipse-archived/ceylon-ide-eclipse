@@ -239,16 +239,18 @@ public class ModuleImportUtil {
     public static void appendImportStatement(StringBuilder importModule,
             boolean shared, String moduleName, String moduleVersion, 
             String newline) {
-        importModule.append(newline)
-                .append(getDefaultIndent());
+        importModule.append(newline).append(getDefaultIndent());
         if (shared) {
             importModule.append("shared ");
         }
-        importModule.append("import ")
-                .append(moduleName)
-                .append(" \"")
-                .append(moduleVersion)
-                .append("\";");
+        importModule.append("import ");
+        if (!moduleName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$")) {
+            importModule.append('"').append(moduleName).append('"');
+        }
+        else {
+            importModule.append(moduleName);
+        }
+        importModule.append(" \"").append(moduleVersion).append("\";");
     }
 
     private static DeleteEdit createRemoveEdit(CompilationUnit unit, 

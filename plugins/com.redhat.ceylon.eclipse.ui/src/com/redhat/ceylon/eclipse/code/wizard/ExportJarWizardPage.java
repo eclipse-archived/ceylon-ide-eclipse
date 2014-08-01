@@ -79,7 +79,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 
     boolean moduleNameIsLegal(String packageName) {
         return moduleName.isEmpty() || 
-                moduleName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$");
+                moduleName.matches("^[a-z_](\\w|-)*(\\.[a-z_](\\w|-)*)*$");
     }
     
     private boolean packageNameIsLegal() {
