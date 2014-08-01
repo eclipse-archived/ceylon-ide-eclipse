@@ -488,8 +488,11 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
             throws JavaModelException {
         boolean isSource=false;
         for (IPackageFragmentRoot s: javaProject.getPackageFragmentRoots()) {
-            if (s.getKind()==IPackageFragmentRoot.K_SOURCE &&
-                s.getPackageFragment(module.getNameAsString()).exists()) {
+            if (s.exists() 
+                    && s.isConsistent() 
+                    && javaProject.isOnClasspath(s) 
+                    && s.getKind()==IPackageFragmentRoot.K_SOURCE 
+                    && s.getPackageFragment(module.getNameAsString()).exists()) {
                 isSource=true;
                 break;
             }
