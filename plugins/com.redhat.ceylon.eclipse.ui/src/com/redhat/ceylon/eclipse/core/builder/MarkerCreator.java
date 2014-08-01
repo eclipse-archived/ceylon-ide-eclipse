@@ -2,12 +2,10 @@ package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
-import static org.eclipse.jdt.core.IJavaModelMarker.BUILDPATH_PROBLEM_MARKER;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
@@ -56,7 +54,7 @@ public class MarkerCreator extends ErrorVisitor {
                 CeylonBuilder.SOURCE
             };
         try {
-            file.createMarker(message instanceof ModuleValidator.DependencyAnalysisError ?
+            file.createMarker(message instanceof ModuleManager.ModuleDependencyAnalysisError ?
                     MODULE_DEPENDENCY_PROBLEM_MARKER_ID:PROBLEM_MARKER_ID)
                 .setAttributes(attributeNames, values);
         } 
