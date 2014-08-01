@@ -50,6 +50,7 @@ import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addInvocationProposals;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addProgramElementReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addReferenceProposal;
+import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addSecondLevelProposal;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.computeParameterContextInformation;
 import static com.redhat.ceylon.eclipse.code.complete.KeywordCompletionProposal.addKeywordProposals;
 import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addMemberNameProposal;
@@ -94,7 +95,6 @@ import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -153,13 +153,13 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     private ParameterContextValidator validator;
     private CeylonEditor editor;
     
-    private boolean filter;
+    private boolean secondLevel;
     private boolean returnedParamInfo;
     private int lastOffsetAcrossSessions=-1;
     private int lastOffset=-1;
     
     public void sessionStarted() {
-        filter = false;
+        secondLevel = false;
         lastOffset=-1;
     }
     
@@ -171,7 +171,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             int offset) {
         if (offset!=lastOffsetAcrossSessions) {
             returnedParamInfo = false;
-            filter = false;
+            secondLevel = false;
         }
         try {
             if (lastOffset>=0 && offset>0 && offset!=lastOffset &&
@@ -186,14 +186,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             return NO_COMPLETIONS;
         }
         if (offset==lastOffset) {
-            filter = !filter;
+            secondLevel = !secondLevel;
         }
         lastOffset = offset;
         lastOffsetAcrossSessions = offset;
         try {
             ICompletionProposal[] contentProposals = 
                     getContentProposals(editor.getParseController(), 
-                            offset, viewer, filter, returnedParamInfo);
+                            offset, viewer, secondLevel, returnedParamInfo);
             if (contentProposals!=null && contentProposals.length==1 && 
                     contentProposals[0] instanceof 
                             InvocationCompletionProposal.ParameterInfo) {
@@ -241,7 +241,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
     
     public ICompletionProposal[] getContentProposals(CeylonParseController cpc,
-            int offset, ITextViewer viewer, boolean filter, 
+            int offset, ITextViewer viewer, boolean secondLevel, 
             boolean returnedParamInfo) {
         
         if (cpc==null || viewer==null || 
@@ -361,8 +361,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     getProposals(node, scope, prefix, isMemberOp, rn);
             Map<String, DeclarationWithProximity> functionProposals =
                     getFunctionProposals(node, scope, prefix, isMemberOp);
-            filterProposals(filter, rn, requiredType, proposals);
-            filterProposals(filter, rn, requiredType, functionProposals);
             Set<DeclarationWithProximity> sortedProposals = 
                     sortProposals(prefix, requiredType, proposals);
             Set<DeclarationWithProximity> sortedFunctionProposals = 
@@ -371,7 +369,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     constructCompletions(offset, inDoc ? qualified : fullPrefix, 
                             sortedProposals, sortedFunctionProposals, 
                             cpc, scope, node, adjustedToken, isMemberOp, 
-                            viewer.getDocument(), filter, inDoc,
+                            viewer.getDocument(), secondLevel, inDoc,
                             requiredType, previousTokenType);
         }
         return completions;
@@ -417,30 +415,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             tt==FLOAT_LITERAL ||
             tt==NATURAL_LITERAL;
     }
-
-    private void filterProposals(boolean filter, Tree.CompilationUnit rn,
-            ProducedType requiredType, Map<String, DeclarationWithProximity> proposals) {
-        if (filter) {
-            Iterator<Map.Entry<String, DeclarationWithProximity>> iter = 
-                    proposals.entrySet().iterator();
-            while (iter.hasNext()) {
-                Declaration d = iter.next().getValue().getDeclaration();
-                if (d.isAnnotation()) {
-                    iter.remove();
-                }
-                else {
-                    ProducedType type = getResultType(d);
-                    ProducedType fullType = d.getReference().getFullType();
-                    if (requiredType!=null && (type==null ||
-                            (!type.isSubtypeOf(requiredType) && !fullType.isSubtypeOf(requiredType)) || 
-                            type.isSubtypeOf(rn.getUnit().getNullDeclaration().getType()))) {
-                        iter.remove();
-                    }
-                }
-            }
-        }
-    }
-
+    
     private static boolean isAnnotationStringLiteral(CommonToken token) {
         int type = token.getType();
         return type == ASTRING_LITERAL || 
@@ -653,7 +628,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             final String prefix, Set<DeclarationWithProximity> sortedProposals, 
             Set<DeclarationWithProximity> sortedFunctionProposals, 
             CeylonParseController cpc, Scope scope, Node node, CommonToken token, 
-            boolean memberOp, IDocument doc, boolean filter, boolean inDoc,
+            boolean memberOp, IDocument doc, boolean secondLevel, boolean inDoc,
             ProducedType requiredType, int previousTokenType) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
@@ -663,8 +638,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             for (DeclarationWithProximity dwp: sortedProposals) {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
-                    addReferenceProposal(offset, prefix, cpc, result, dwp, dec, 
-                            scope, false, filter, null, requiredType);
+                    addReferenceProposal(offset, prefix, cpc, result, dec, 
+                            scope, false, null);
                 }
             }
         }
@@ -698,7 +673,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
             if (t!=null) {
                 addRefinementProposals(offset, sortedProposals, cpc, scope, node, doc,
-                        filter, result, ol, t, false);
+                        secondLevel, result, ol, t, false);
             }
             //otherwise guess something from the type
             addMemberNameProposal(offset, prefix, node, result);
@@ -713,7 +688,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (dnt!=null && dnt.getTypeModel()!=null) {
                 ProducedType t = dnt.getTypeModel();
                 addRefinementProposals(offset, sortedProposals, cpc, scope, node, doc,
-                        filter, result, ol, t, true);
+                        secondLevel, result, ol, t, true);
             }
             //otherwise guess something from the type
             addMemberNameProposal(offset, prefix, node, result);
@@ -725,7 +700,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     node instanceof Tree.MemberLiteral && 
                             ((Tree.MemberLiteral) node).getType()!=null;
             
-            if (!filter && !inDoc && !isMember) {
+            if (!secondLevel && !inDoc && !isMember) {
                 addKeywordProposals(cpc, offset, prefix, result, node, ol);
                 //addTemplateProposal(offset, prefix, result);
                 if (prefix.isEmpty() && !isTypeUnknown(requiredType) &&
@@ -745,17 +720,17 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     continue;
                 }
 
-                if (!filter && 
+                if (!secondLevel && 
                         isParameterOfNamedArgInvocation(scope, dwp) &&
                         isDirectlyInsideNamedArgumentList(cpc, node, token)) {
-                    addNamedArgumentProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                    addNamedArgumentProposal(offset, prefix, cpc, result, dec, scope);
                     addInlineFunctionProposal(offset, dec, scope, node, prefix, cpc, doc, result);
                 }
 
                 CommonToken nextToken = getNextToken(cpc, token);
                 boolean noParamsFollow = noParametersFollow(nextToken);
                 
-                if (!filter && !inDoc && noParamsFollow &&
+                if (!secondLevel && !inDoc && noParamsFollow &&
                         isInvocationProposable(dwp, ol, previousTokenType) && 
                         (!isQualifiedType(node) || dec.isStaticallyImportable())) {
                     for (Declaration d: overloads(dec)) {
@@ -763,38 +738,46 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                 getQualifiedProducedReference(node, d) :
                                     getRefinedProducedReference(scope, d);
                                 addInvocationProposals(offset, prefix, cpc, result, 
-                                        new DeclarationWithProximity(d, dwp), 
-                                        pr, scope, ol, null, isMember);
+                                        d, pr, scope, ol, null, isMember);
                     }
                 }
                 
                 if (isProposable(dwp, ol, scope, node.getUnit(), 
                             requiredType, previousTokenType) && 
                         (definitelyRequiresType(ol) || noParamsFollow || 
-                                dwp.getDeclaration() instanceof Functional)) {
+                                dec instanceof Functional)) {
                     if (ol==DOCLINK) {
-                        addDocLinkProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                        addDocLinkProposal(offset, prefix, cpc, result, dec, scope);
                     }
                     else if (ol==IMPORT) {
-                        addImportProposal(offset, prefix, cpc, result, dwp, dec, scope);
+                        addImportProposal(offset, prefix, cpc, result, dec, scope);
                     }
                     else if (ol!=null && ol.reference) {
                         if (isReferenceProposable(ol, dec)) {
                             addProgramElementReferenceProposal(offset, prefix, cpc, result, 
-                                    dwp, dec, scope, isMember);
+                                    dec, scope, isMember);
                         }
                     }
-                    else if (!(dec instanceof Method) || !isAbstraction(dec) || !noParamsFollow) {
+                    else {
                         ProducedReference pr = isMember ? 
                                 getQualifiedProducedReference(node, dec) :
                                 getRefinedProducedReference(scope, dec);
-                        addReferenceProposal(offset, prefix, cpc, result, 
-                                dwp, dec, scope, isMember, filter, pr,
-                                requiredType);
+                        if (secondLevel) {
+                            addSecondLevelProposal(offset, prefix, cpc, result, dec, 
+                                    scope, false, pr, requiredType, ol);
+                        }
+                        else {
+                            if (!(dec instanceof Method) || 
+                                    !isAbstraction(dec) || 
+                                    !noParamsFollow) {
+                                addReferenceProposal(offset, prefix, cpc, result, 
+                                        dec, scope, isMember, pr);
+                            }
+                        }
                     }
                 }
 
-                if (!memberOp && !filter &&
+                if (!memberOp && !secondLevel &&
                         isProposable(dwp, ol, scope, node.getUnit(), requiredType, 
                                 previousTokenType) && 
                         ol!=IMPORT && ol!=CASE && ol!=CATCH &&
@@ -804,7 +787,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     addSwitchProposal(offset, prefix, cpc, result, dwp, dec, node, doc);
                 }
 
-                if (!memberOp && !isMember && !filter) {
+                if (!memberOp && !isMember && !secondLevel) {
                     for (Declaration d: overloads(dec)) {
                         if (isRefinementProposable(d, ol, scope)) {
                             addRefinementProposal(offset, d, (ClassOrInterface) scope, 
@@ -819,7 +802,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 for (DeclarationWithProximity dwp: sortedFunctionProposals) {
                     Tree.Primary primary = 
                             ((Tree.QualifiedMemberOrTypeExpression) node).getPrimary();
-                    addFunctionProposal(offset, cpc, primary, result, dwp, doc);
+                    addFunctionProposal(offset, cpc, primary, result, 
+                            dwp.getDeclaration(), doc);
                 }
             }
         }

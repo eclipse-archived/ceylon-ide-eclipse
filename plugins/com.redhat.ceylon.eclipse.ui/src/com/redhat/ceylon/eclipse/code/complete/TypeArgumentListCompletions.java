@@ -9,7 +9,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
@@ -46,9 +45,8 @@ public class TypeArgumentListCompletions {
                         try {
                             String pref = document.get(that.getStartIndex(), 
                                     that.getStopIndex()-that.getStartIndex()+1);
-                            addInvocationProposals(offset, pref, cpc, result, 
-                                    new DeclarationWithProximity(d, 0), pr, 
-                                    scope, null, typeArgText, false);
+                            addInvocationProposals(offset, pref, cpc, result, d, 
+                                    pr, scope, null, typeArgText, false);
                         } 
                         catch (BadLocationException e) {
                             e.printStackTrace();
@@ -66,10 +64,9 @@ public class TypeArgumentListCompletions {
                         try {
                             String pref = document.get(that.getStartIndex(), 
                                     that.getStopIndex()-that.getStartIndex()+1);
-                            addInvocationProposals(offset, pref, cpc, result, 
-                                    new DeclarationWithProximity(d, 0), 
-                                        that.getTypeModel(), scope, 
-                                        null, typeArgText, false);
+                            addInvocationProposals(offset, pref, cpc, result, d, 
+                                    that.getTypeModel(), scope, null, typeArgText, 
+                                    false);
                         }
                         catch (BadLocationException e) {
                             e.printStackTrace();

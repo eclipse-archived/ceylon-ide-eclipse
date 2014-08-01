@@ -13,6 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 public class Escaping {
 
@@ -47,6 +48,10 @@ public class Escaping {
 
     public static String escapeName(Declaration d) {
         return escapeAliasedName(d, d.getName());
+    }
+
+    public static String escapeName(Declaration d, Unit unit) {
+        return escapeAliasedName(d, d.getName(unit));
     }
 
     public static String escapeAliasedName(Declaration d, String alias) {

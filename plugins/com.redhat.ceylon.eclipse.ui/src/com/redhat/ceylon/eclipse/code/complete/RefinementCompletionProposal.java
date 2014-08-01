@@ -123,12 +123,13 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     
     static void addNamedArgumentProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Declaration dec, Scope scope) {
+            Declaration dec, Scope scope) {
         //TODO: type argument substitution using the ProducedReference of the primary node
+        Unit unit = cpc.getRootNode().getUnit();
         result.add(new RefinementCompletionProposal(offset, prefix, 
                 dec.getReference(), //TODO: this needs to do type arg substitution
-                getDescriptionFor(dwp), 
-                getTextFor(dwp) + " = nothing;", 
+                getDescriptionFor(dec, unit), 
+                getTextFor(dec, unit) + " = nothing;", 
                 cpc, dec, scope, true, false));
     }
 
