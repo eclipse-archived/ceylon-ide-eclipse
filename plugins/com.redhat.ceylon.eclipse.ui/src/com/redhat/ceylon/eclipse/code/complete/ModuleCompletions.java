@@ -189,6 +189,9 @@ public class ModuleCompletions {
 
     private static String getModuleString(boolean withBody, 
             String name, String version) {
+        if (!name.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$")) {
+            name = '"' + name + '"';
+        }
         return withBody ? name + " \"" + version + "\";" : name;
     }
 
