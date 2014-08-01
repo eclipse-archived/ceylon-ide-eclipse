@@ -784,13 +784,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                     dwp, dec, scope, isMember);
                         }
                     }
-                    else if (!(dec instanceof Method) || !isAbstraction(dec)) {
+                    else if (!(dec instanceof Method) || !isAbstraction(dec) || !noParamsFollow) {
                         ProducedReference pr = isMember ? 
                                 getQualifiedProducedReference(node, dec) :
                                 getRefinedProducedReference(scope, dec);
-                                if (filter) {
-                                    pr.getFullType();
-                                }
                         addReferenceProposal(offset, prefix, cpc, result, 
                                 dwp, dec, scope, isMember, filter, pr,
                                 requiredType);
