@@ -57,7 +57,7 @@ public class CeylonEncodingSynchronizer {
             e.printStackTrace();
         }
         finally {
-            unsuspend(old);;
+            unsuspend(old);
         }
     }
 
@@ -121,8 +121,7 @@ public class CeylonEncodingSynchronizer {
     }
     
     private void updateEncoding(IProject project, String encoding) {
-        InternalSynchronizeJob job = new InternalSynchronizeJob(project, encoding);
-        job.schedule();
+        new InternalSynchronizeJob(project, encoding).schedule();
     }
 
     private class InternalResourceChangeListener implements IResourceChangeListener {
@@ -192,7 +191,12 @@ public class CeylonEncodingSynchronizer {
 
         @Override
         public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+            refresh(project.getFolder(".settings"), monitor);
+            refresh(project.getFolder(".ceylon"), monitor);
+            
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
+            config.refresh();
+            
             try {
                 isSuspended.set(true);
                 
