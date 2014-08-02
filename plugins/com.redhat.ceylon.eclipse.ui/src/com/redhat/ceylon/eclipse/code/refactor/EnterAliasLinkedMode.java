@@ -60,32 +60,58 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         @Override
         public void visit(Tree.StaticMemberOrTypeExpression that) {
             super.visit(that);
-            addLinkedPosition(document, that.getIdentifier(), 
+            addLinkedPosition(that.getIdentifier(), 
                     that.getDeclaration());
         }
         
         @Override
         public void visit(Tree.SimpleType that) {
             super.visit(that);
-            addLinkedPosition(document, that.getIdentifier(), 
+            addLinkedPosition(that.getIdentifier(), 
                     that.getDeclarationModel());
         }
 
         @Override
         public void visit(Tree.MemberLiteral that) {
             super.visit(that);
-            addLinkedPosition(document, that.getIdentifier(), 
+            addLinkedPosition(that.getIdentifier(), 
                     that.getDeclaration());
         }
         
-        private void addLinkedPosition(IDocument document,
-                Identifier id, Declaration d) {
-            if (id!=null && d!=null &&
+        @Override
+        public void visit(Tree.DocLink that) {
+            super.visit(that);
+            //TODO: copy/paste from EnterAliasRefactoring
+            Declaration base = that.getBase();
+            if (base!=null) {
+                String text = that.getText();
+                int offset = that.getStartIndex();
+                
+                int pipeIndex = text.indexOf("|");
+                if (pipeIndex > -1) {
+                    text = text.substring(pipeIndex + 1);
+                    offset += pipeIndex + 1;
+                }
+                
+                int scopeIndex = text.indexOf("::");
+                if (scopeIndex<0) {
+                    int index = text.indexOf('.');
+                    String name = index<0 ? text : text.substring(0, index);
+                    addLinkedPosition(offset, name.length(), base);
+                }
+            }
+        }
+
+        private void addLinkedPosition(Identifier id, Declaration d) {
+            if (id!=null) {
+                addLinkedPosition(id.getStartIndex(), id.getText().length(), d);
+            }
+        }
+        private void addLinkedPosition(int pos, int len, Declaration d) {
+            if (d!=null &&
                     refactoring.getElement().getDeclarationModel()
                             .equals(getAbstraction(d))) {
                 try {
-                    int pos = id.getStartIndex();
-                    int len = id.getText().length();
                     int offset = originalSelection.x;
                     int seq;
                     if (offset<pos || offset>pos+len) {

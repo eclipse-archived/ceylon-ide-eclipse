@@ -63,6 +63,7 @@ class RemoveAliasProposal extends CorrectionProposal {
         @Override
         public void visit(Tree.DocLink that) {
             super.visit(that);
+            //TODO: copy/paste from EnterAliasRefactoring
             Declaration base = that.getBase();
             if (base!=null && dec.equals(base)) {
                 String text = that.getText();
