@@ -25,7 +25,8 @@ public class MemberNameCompletions {
         new Visitor() {
             @Override
             public void visit(Tree.StaticMemberOrTypeExpression that) {
-                Integer startIndex = that.getTypeArguments().getStartIndex();
+                Tree.TypeArguments tal = that.getTypeArguments();
+                Integer startIndex = tal==null ? null : tal.getStartIndex();
                 if (startIndex!=null && startIndex2!=null &&
                     startIndex.intValue()==startIndex2.intValue()) {
                     addMemberNameProposal(offset, "", that, result);
@@ -33,7 +34,8 @@ public class MemberNameCompletions {
                 super.visit(that);
             }
             public void visit(Tree.SimpleType that) {
-                Integer startIndex = that.getTypeArgumentList().getStartIndex();
+                Tree.TypeArgumentList tal = that.getTypeArgumentList();
+                Integer startIndex = tal==null ? null : tal.getStartIndex();
                 if (startIndex!=null && startIndex2!=null &&
                     startIndex.intValue()==startIndex2.intValue()) {
                     addMemberNameProposal(offset, "", that, result);
