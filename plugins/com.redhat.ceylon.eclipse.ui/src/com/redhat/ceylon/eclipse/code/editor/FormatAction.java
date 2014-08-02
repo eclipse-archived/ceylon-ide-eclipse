@@ -14,6 +14,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
@@ -33,6 +34,7 @@ import ceylon.language.Singleton;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -57,8 +59,7 @@ final class FormatAction extends Action {
      * <li>{@link SparseFormattingOptions#getLineBreak() lineBreak} from document newline character</li>
      * </ul>
      */
-    private SparseFormattingOptions getWsOptions() {
-        IDocument document = editor.getCeylonSourceViewer().getDocument();
+    private static SparseFormattingOptions getWsOptions(IDocument document) {
         LineBreak lb;
         if (document instanceof IDocumentExtension4) {
             switch(((IDocumentExtension4)document).getDefaultLineDelimiter()){
@@ -119,7 +120,13 @@ final class FormatAction extends Action {
     @Override
     public boolean isEnabled() {
         CeylonParseController cpc = editor.getParseController();
-        return super.isEnabled() && cpc!=null && cpc.getTokens()!=null;
+        return isEnabled(cpc);
+    }
+
+    public static boolean isEnabled(CeylonParseController cpc) {
+        return cpc!=null && 
+                cpc.getStage().ordinal()>=Stage.SYNTACTIC_ANALYSIS.ordinal() &&
+                cpc.getRootNode()!=null;
     }
     
     @Override
@@ -128,6 +135,13 @@ final class FormatAction extends Action {
         final ITextSelection ts = getSelection(editor);
         final boolean selected = respectSelection && ts.getLength() > 0;
         final CeylonParseController pc = editor.getParseController();
+        format(pc, document, ts, selected, editor.getSelectionProvider());
+    }
+
+    public static void format(final CeylonParseController pc, 
+            IDocument document, final ITextSelection ts, 
+            final boolean selected, ISelectionProvider selectionProvider) {
+        if (!isEnabled(pc)) return;
         final List<CommonToken> tokenList = pc.getTokens();
         final Node node;
         final CommonToken startToken, endToken;
@@ -169,7 +183,7 @@ final class FormatAction extends Action {
         };
         
         final StringBuilder builder = new StringBuilder(document.getLength());
-        final SparseFormattingOptions wsOptions = getWsOptions();
+        final SparseFormattingOptions wsOptions = getWsOptions(document);
         try {
             format_.format(
                     node,
@@ -204,8 +218,7 @@ final class FormatAction extends Action {
                                         text));
                 change.perform(new NullProgressMonitor());
                 if (selected) {
-                    editor.getSelectionProvider()
-                          .setSelection(new TextSelection(startIndex, text.length()));
+                    selectionProvider.setSelection(new TextSelection(startIndex, text.length()));
                 }
             }
         }

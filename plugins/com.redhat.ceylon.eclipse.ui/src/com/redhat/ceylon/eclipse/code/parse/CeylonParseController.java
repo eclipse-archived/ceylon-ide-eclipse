@@ -162,9 +162,9 @@ public class CeylonParseController {
                 project = null;
             }
         }
-        this.project= project;
-        this.filePath= filePath;
-        this.handler= handler;
+        this.project = project;
+        this.filePath = filePath;
+        this.handler = handler;
     }
     
     public AnnotationCreator getHandler() {
@@ -210,8 +210,6 @@ public class CeylonParseController {
         IProject project = this.project;
         IPath resolvedPath = path;
         IdePhasedUnit builtPhasedUnit = null;
-        
-        tokens = null;
         
         stage = Stage.NONE;
         
