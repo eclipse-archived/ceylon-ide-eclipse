@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterContextInfo;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
@@ -76,7 +77,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -128,7 +128,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             //add qualified member proposals 
             Unit unit = cpc.getRootNode().getUnit();
             ProducedType type = pr.getType();
-            if (Util.isTypeUnknown(type)) return;
+            if (isTypeUnknown(type)) return;
             Collection<DeclarationWithProximity> members = 
                     type.getDeclaration().getMatchingMemberDeclarations(scope, "", 0).values();
             for (DeclarationWithProximity ndwp: members) {
@@ -164,7 +164,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                 ParameterList parameterList = pls.get(0);
                 List<Parameter> ps = parameterList.getParameters();
                 String inexactMatches = EditorsUI.getPreferenceStore().getString(INEXACT_MATCHES);
-                boolean exact = prefix.equalsIgnoreCase(dec.getName(unit));
+                boolean exact = (typeArgs==null ? prefix : prefix.substring(0,prefix.length()-typeArgs.length()))
+                        .equalsIgnoreCase(dec.getName(unit));
                 boolean positional = exact ||
                                      "both".equals(inexactMatches) || 
                                      "positional".equals(inexactMatches);
@@ -185,19 +186,19 @@ class InvocationCompletionProposal extends CompletionProposal {
                 }
                 if (named && 
                         (!isAbstractClass && ol!=EXTENDS && ol!=CLASS_ALIAS &&
-                                !fd.isOverloaded() && typeArgs==null)) {
+                                !fd.isOverloaded())) {
                     //if there is at least one parameter, 
                     //suggest a named argument invocation
                     if (ps.size()!=getParameters(parameterList, false, true).size()) {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
-                                getNamedInvocationDescriptionFor(dec, pr, unit, false), 
-                                getNamedInvocationTextFor(dec, pr, unit, false), dec,
+                                getNamedInvocationDescriptionFor(dec, pr, unit, false, typeArgs), 
+                                getNamedInvocationTextFor(dec, pr, unit, false, typeArgs), dec,
                                 pr, scope, cpc, false, false, true, isMember, null));
                     }
                     if (!ps.isEmpty()) {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
-                                getNamedInvocationDescriptionFor(dec, pr, unit, true), 
-                                getNamedInvocationTextFor(dec, pr, unit, true), dec,
+                                getNamedInvocationDescriptionFor(dec, pr, unit, true, typeArgs), 
+                                getNamedInvocationTextFor(dec, pr, unit, true, typeArgs), dec,
                                 pr, scope, cpc, true, false, true, isMember, null));
                     }
                 }
