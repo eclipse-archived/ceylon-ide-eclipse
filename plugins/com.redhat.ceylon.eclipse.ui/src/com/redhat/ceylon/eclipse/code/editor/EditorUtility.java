@@ -170,11 +170,12 @@ public class EditorUtility {
 //        }
 //    }
 
-    private static IEditorPart openInEditor(IFile file, boolean activate) throws PartInitException {
+    private static IEditorPart openInEditor(IFile file, boolean activate) 
+            throws PartInitException {
         if (file!=null) {
-            IWorkbenchPage p= getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IWorkbenchPage p = getWorkbench().getActiveWorkbenchWindow().getActivePage();
             if (p!=null) {
-                IEditorPart editorPart= IDE.openEditor(p, file, activate);
+                IEditorPart editorPart = IDE.openEditor(p, file, activate);
                 initializeHighlightRange(editorPart);
                 return editorPart;
             }
@@ -182,11 +183,12 @@ public class EditorUtility {
         return null;
     }
 
-    private static IEditorPart openInEditor(IEditorInput input, String editorID, boolean activate) throws PartInitException {
+    private static IEditorPart openInEditor(IEditorInput input, String editorID, boolean activate) 
+            throws PartInitException {
         if (input!=null) {
-            IWorkbenchPage p= getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IWorkbenchPage p = getWorkbench().getActiveWorkbenchWindow().getActivePage();
             if (p!=null) {
-                IEditorPart editorPart= p.openEditor(input, editorID, activate);
+                IEditorPart editorPart = p.openEditor(input, editorID, activate);
                 initializeHighlightRange(editorPart);
                 return editorPart;
             }
@@ -196,7 +198,7 @@ public class EditorUtility {
 
     private static void initializeHighlightRange(IEditorPart editorPart) {
         if (editorPart instanceof ITextEditor) {
-            IAction toggleAction= editorPart.getEditorSite().getActionBars()
+            IAction toggleAction = editorPart.getEditorSite().getActionBars()
                     .getGlobalActionHandler(TOGGLE_SHOW_SELECTED_ELEMENT_ONLY);
             boolean enable= toggleAction!=null;
             if (enable && editorPart instanceof CeylonEditor)
@@ -336,7 +338,7 @@ public class EditorUtility {
      *            The file store to provide the editor input for
      * @return The editor input associated with the given file store
      */
-    private static IEditorInput getEditorInput(IFileStore fileStore) {
+    public static IEditorInput getEditorInput(IFileStore fileStore) {
         IFile workspaceFile = getWorkspaceFile(fileStore);
         if (workspaceFile!=null)
             return new FileEditorInput(workspaceFile);
