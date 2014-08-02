@@ -144,10 +144,10 @@ public class StackTracePanel extends Composite {
 
                 String file = text.substring(i + 1, j);
                 String line = text.substring(j + 1, text.length() - 1);
-                String[] elems = text.substring(k + 3, i).split("\\.");
+                String pack = text.substring(k + 3, i);
 
                 if (file.endsWith(".ceylon")) {
-                    gotoFileAndLine(file, line, elems);
+                    gotoFileAndLine(file, line, pack);
                 } else if (file.endsWith(".java")) {
                     new InternalJavaStackTraceHyperlink(text.substring(k + 3)).linkActivated();
                 }
