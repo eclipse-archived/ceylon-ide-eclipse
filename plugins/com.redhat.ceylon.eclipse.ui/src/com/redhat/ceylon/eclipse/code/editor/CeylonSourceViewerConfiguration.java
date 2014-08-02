@@ -106,7 +106,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
         preferenceStore.setDefault(AUTO_ACTIVATION_CHARS, ".");
         preferenceStore.setDefault(COMPLETION, "insert");
-        preferenceStore.setDefault(INEXACT_MATCHES, "both");
+        preferenceStore.setDefault(INEXACT_MATCHES, "positional");
         preferenceStore.setDefault(LINKED_MODE, true);
         preferenceStore.setDefault(LINKED_MODE_RENAME, true);
         preferenceStore.setDefault(LINKED_MODE_EXTRACT, true);
