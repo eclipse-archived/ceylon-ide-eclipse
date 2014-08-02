@@ -59,6 +59,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String AUTO_ACTIVATION_CHARS = "autoActivationChars";
     public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
     public static final String COMPLETION = "completion";
+    public static final String INEXACT_MATCHES = "inexactMatches";
     public static final String LINKED_MODE = "linkedModeCompletion";
     public static final String LINKED_MODE_RENAME = "linkedModeRename";
     public static final String LINKED_MODE_EXTRACT = "linkedModeExtract";
@@ -105,6 +106,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
         preferenceStore.setDefault(AUTO_ACTIVATION_CHARS, ".");
         preferenceStore.setDefault(COMPLETION, "insert");
+        preferenceStore.setDefault(INEXACT_MATCHES, "both");
         preferenceStore.setDefault(LINKED_MODE, true);
         preferenceStore.setDefault(LINKED_MODE_RENAME, true);
         preferenceStore.setDefault(LINKED_MODE_EXTRACT, true);

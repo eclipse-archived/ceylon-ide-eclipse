@@ -639,7 +639,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
                     addReferenceProposal(offset, prefix, cpc, result, dec, 
-                            scope, false, null);
+                            scope, false, null, ol);
                 }
             }
         }
@@ -771,7 +771,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                     !isAbstraction(dec) || 
                                     !noParamsFollow) {
                                 addReferenceProposal(offset, prefix, cpc, result, 
-                                        dec, scope, isMember, pr);
+                                        dec, scope, isMember, pr, ol);
                             }
                         }
                     }

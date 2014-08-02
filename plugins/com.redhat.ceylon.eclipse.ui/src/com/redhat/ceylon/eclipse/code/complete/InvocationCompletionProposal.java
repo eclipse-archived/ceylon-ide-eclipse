@@ -18,10 +18,13 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.SATISFIES;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importCallableParameterParamTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.INEXACT_MATCHES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
@@ -96,11 +99,24 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     static void addReferenceProposal(int offset, String prefix, 
             final CeylonParseController cpc, List<ICompletionProposal> result, 
-            Declaration dec, Scope scope, boolean isMember, ProducedReference pr) {
+            Declaration dec, Scope scope, boolean isMember, 
+            ProducedReference pr, OccurrenceLocation ol) {
         Unit unit = cpc.getRootNode().getUnit();
-        result.add(new InvocationCompletionProposal(offset, prefix,
-                getDescriptionFor(dec, unit), getTextFor(dec, unit), 
-                dec, pr, scope, cpc, true, false, false, isMember, null));
+        boolean isAbstractClass = 
+                dec instanceof Class && ((Class) dec).isAbstract();
+        if ((!isAbstractClass && 
+                ol!=EXTENDS && ol!=SATISFIES && 
+                ol!=CLASS_ALIAS && ol!=TYPE_ALIAS)) {
+            result.add(new InvocationCompletionProposal(offset, prefix,
+                    dec.getName(unit), escapeName(dec, unit), 
+                    dec, pr, scope, cpc, true, false, false, isMember, null));
+        }
+        if (dec instanceof Functional && 
+                !((Functional) dec).getTypeParameters().isEmpty()) {
+            result.add(new InvocationCompletionProposal(offset, prefix,
+                    getDescriptionFor(dec, unit), getTextFor(dec, unit), 
+                    dec, pr, scope, cpc, true, false, false, isMember, null));
+        }
     }
     
     static void addSecondLevelProposal(int offset, String prefix, 
@@ -147,12 +163,19 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (!pls.isEmpty()) {
                 ParameterList parameterList = pls.get(0);
                 List<Parameter> ps = parameterList.getParameters();
-                if (!isAbstractClass ||
-                        ol==EXTENDS || ol==CLASS_ALIAS) {
+                String inexactMatches = EditorsUI.getPreferenceStore().getString(INEXACT_MATCHES);
+                boolean exact = prefix.equalsIgnoreCase(dec.getName(unit));
+                boolean positional = exact ||
+                                     "both".equals(inexactMatches) || 
+                                     "positional".equals(inexactMatches);
+                boolean named = exact ||
+                                "both".equals(inexactMatches);
+                if (positional && 
+                        (!isAbstractClass || ol==EXTENDS || ol==CLASS_ALIAS)) {
                     if (ps.size()!=getParameters(parameterList, false, false).size()) {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
-                                getPositionalInvocationDescriptionFor(dec, ol, pr, unit, false, null), 
-                                getPositionalInvocationTextFor(dec, ol, pr, unit, false, null), dec,
+                                getPositionalInvocationDescriptionFor(dec, ol, pr, unit, false, typeArgs), 
+                                getPositionalInvocationTextFor(dec, ol, pr, unit, false, typeArgs), dec,
                                 pr, scope, cpc, false, true, false, isMember, null));
                     }
                     result.add(new InvocationCompletionProposal(offset, prefix, 
@@ -160,9 +183,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                             getPositionalInvocationTextFor(dec, ol, pr, unit, true, typeArgs), dec,
                             pr, scope, cpc, true, true, false, isMember, null));
                 }
-                if (!isAbstractClass &&
-                        ol!=EXTENDS && ol!=CLASS_ALIAS &&
-                        !fd.isOverloaded() && typeArgs==null) {
+                if (named && 
+                        (!isAbstractClass && ol!=EXTENDS && ol!=CLASS_ALIAS &&
+                                !fd.isOverloaded() && typeArgs==null)) {
                     //if there is at least one parameter, 
                     //suggest a named argument invocation
                     if (ps.size()!=getParameters(parameterList, false, true).size()) {
