@@ -103,11 +103,14 @@ class InvocationCompletionProposal extends CompletionProposal {
             ProducedReference pr, OccurrenceLocation ol) {
         Unit unit = cpc.getRootNode().getUnit();
         //proposal with type args
-        if (dec instanceof Generic && 
-                !((Generic) dec).getTypeParameters().isEmpty()) {
+        if (dec instanceof Generic) {
             result.add(new InvocationCompletionProposal(offset, prefix,
                     getDescriptionFor(dec, unit), getTextFor(dec, unit), 
                     dec, pr, scope, cpc, true, false, false, isMember, null));
+            if (((Generic) dec).getTypeParameters().isEmpty()) {
+                //don't add another proposal below!
+                return;
+            }
         }
         //proposal without type args
         boolean isAbstract = 
