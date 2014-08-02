@@ -120,9 +120,13 @@ public class CodeCompletions {
     }
 
     public static String getNamedInvocationTextFor(Declaration dec,
-            ProducedReference pr, Unit unit, boolean includeDefaulted) {
+            ProducedReference pr, Unit unit, boolean includeDefaulted,
+            String typeArgs) {
         StringBuilder result = new StringBuilder(escapeName(dec, unit));
-        if (forceExplicitTypeArgs(dec, null)) {
+        if (typeArgs!=null) {
+            result.append(typeArgs);
+        }
+        else if (forceExplicitTypeArgs(dec, null)) {
             appendTypeParameters(dec, result);
         }
         appendNamedArgs(dec, pr, unit, result, includeDefaulted, false);
@@ -162,10 +166,14 @@ public class CodeCompletions {
     
     public static String getNamedInvocationDescriptionFor(
             Declaration dec, ProducedReference pr, 
-            Unit unit, boolean includeDefaulted) {
+            Unit unit, boolean includeDefaulted, String typeArgs) {
         StringBuilder result = new StringBuilder(dec.getName(unit));
-        if (forceExplicitTypeArgs(dec, null))
+        if (typeArgs!=null) {
+            result.append(typeArgs);
+        }
+        else if (forceExplicitTypeArgs(dec, null)) {
             appendTypeParameters(dec, result);
+        }
         appendNamedArgs(dec, pr, unit, result, 
                 includeDefaulted, true);
         return result.toString();
