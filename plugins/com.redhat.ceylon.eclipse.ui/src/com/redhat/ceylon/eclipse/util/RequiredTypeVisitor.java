@@ -52,6 +52,7 @@ class RequiredTypeVisitor extends Visitor
         ProducedType ort = requiredType;
         ProducedReference onat = namedArgTarget;
         Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
+        Unit unit = that.getUnit();
         if (pal!=null) {
             int pos;
             List<Tree.PositionalArgument> pas = pal.getPositionalArguments();
@@ -80,11 +81,20 @@ class RequiredTypeVisitor extends Visitor
             ProducedReference pr = getTarget(that);
             if (pr!=null) {
                 List<Parameter> params = getParameters(pr);
-                if (params!=null && params.size()>pos) {
-                    Parameter param = params.get(pos);
-                    requiredType = pr.getTypedParameter(param).getFullType();
-                    if (param.isSequenced()) {
-                        requiredType = that.getUnit().getIteratedType(requiredType);
+                if (params!=null) { 
+                    if (params.size()>pos) {
+                        Parameter param = params.get(pos);
+                        requiredType = pr.getTypedParameter(param).getFullType();
+                        if (param.isSequenced()) {
+                            requiredType = unit.getIteratedType(requiredType);
+                        }
+                    }
+                    else if (!params.isEmpty()) {
+                        Parameter param = params.get(params.size()-1);
+                        if (param.isSequenced()) {
+                            requiredType = pr.getTypedParameter(param).getFullType();
+                            requiredType = unit.getIteratedType(requiredType);
+                        }
                     }
                 }
             }
@@ -96,9 +106,9 @@ class RequiredTypeVisitor extends Visitor
                 List<Parameter> params = getParameters(namedArgTarget);
                 if (params!=null && !params.isEmpty()) {
                     Parameter param = params.get(params.size()-1);
-                    if (param.isSequenced()) {
+                    if (unit.isIterableType(param.getType())) {
                         requiredType = namedArgTarget.getTypedParameter(param).getFullType();
-                        requiredType = that.getUnit().getIteratedType(requiredType);
+                        requiredType = unit.getIteratedType(requiredType);
                     }
                 }
             }
