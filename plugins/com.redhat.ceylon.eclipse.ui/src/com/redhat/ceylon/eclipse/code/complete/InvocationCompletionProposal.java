@@ -102,19 +102,22 @@ class InvocationCompletionProposal extends CompletionProposal {
             Declaration dec, Scope scope, boolean isMember, 
             ProducedReference pr, OccurrenceLocation ol) {
         Unit unit = cpc.getRootNode().getUnit();
-        boolean isAbstractClass = 
-                dec instanceof Class && ((Class) dec).isAbstract();
-        if ((!isAbstractClass && 
+        //proposal with type args
+        if (dec instanceof Generic && 
+                !((Generic) dec).getTypeParameters().isEmpty()) {
+            result.add(new InvocationCompletionProposal(offset, prefix,
+                    getDescriptionFor(dec, unit), getTextFor(dec, unit), 
+                    dec, pr, scope, cpc, true, false, false, isMember, null));
+        }
+        //proposal without type args
+        boolean isAbstract = 
+                dec instanceof Class && ((Class) dec).isAbstract() ||
+                dec instanceof Interface;
+        if ((!isAbstract && 
                 ol!=EXTENDS && ol!=SATISFIES && 
                 ol!=CLASS_ALIAS && ol!=TYPE_ALIAS)) {
             result.add(new InvocationCompletionProposal(offset, prefix,
                     dec.getName(unit), escapeName(dec, unit), 
-                    dec, pr, scope, cpc, true, false, false, isMember, null));
-        }
-        if (dec instanceof Functional && 
-                !((Functional) dec).getTypeParameters().isEmpty()) {
-            result.add(new InvocationCompletionProposal(offset, prefix,
-                    getDescriptionFor(dec, unit), getTextFor(dec, unit), 
                     dec, pr, scope, cpc, true, false, false, isMember, null));
         }
     }
