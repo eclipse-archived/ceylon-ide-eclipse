@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getEditorInput;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
@@ -358,7 +358,7 @@ final class PeekDefinitionPopup extends PopupDialog
         }*/
         if (referencedNode instanceof Tree.Declaration) {
             Declaration model = ((Tree.Declaration) referencedNode).getDeclarationModel();
-            setTitleText("Peek Definition - " + getDescriptionFor(model));
+            setTitleText("Peek Definition - " + getLabelDescriptionFor(model));
         }
     }
 

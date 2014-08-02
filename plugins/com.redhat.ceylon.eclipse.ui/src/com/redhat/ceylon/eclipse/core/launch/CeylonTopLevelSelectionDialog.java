@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
@@ -152,7 +152,7 @@ public class CeylonTopLevelSelectionDialog extends FilteredItemsSelectionDialog 
         @Override
         public String getText(Object element) {
             Declaration d = (Declaration) element;
-            return d==null ? null : getDescriptionFor(d);
+            return d==null ? null : getLabelDescriptionFor(d);
         }
         
         @Override
