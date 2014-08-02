@@ -59,11 +59,11 @@ class RequiredTypeVisitor extends Visitor
                 pos = 0;
             }
             else {
-                pos = pas.size()-1; //default to the last argument if incomplete
-                for (int i=0; i<=pos; i++) {
+                pos = pas.size(); //default to the last argument if incomplete
+                for (int i=0; i<pas.size(); i++) {
                     Tree.PositionalArgument pa = pas.get(i);
                     if (token!=null) {
-                        if (pa.getStartIndex()>((CommonToken) token).getStopIndex()) {
+                        if (pa.getStopIndex()>=((CommonToken) token).getStopIndex()) {
                             pos = i;
                             break;
                         }
