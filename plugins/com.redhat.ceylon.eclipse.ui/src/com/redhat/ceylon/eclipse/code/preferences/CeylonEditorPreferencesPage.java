@@ -384,7 +384,7 @@ public class CeylonEditorPreferencesPage
                 "For inexact matches propose", 3, 
                 new String[][] { new String[] { "no arguments", "none" }, 
                                  new String[] { "positional arguments", "positional" },
-                                 new String[] { "positional  and named arguments", "both" } }, p4);
+                                 new String[] { "positional and named arguments", "both" } }, p4);
         inexactMatches.load();
         addField(inexactMatches);
     }
