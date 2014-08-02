@@ -750,7 +750,7 @@ public class CeylonParseController {
     
     public void parse(IDocument doc, IProgressMonitor monitor, 
             Stager stager) {
-        document= doc;
+        document = doc;
         parse(document.get(), monitor, stager);
     }
 
@@ -764,6 +764,10 @@ public class CeylonParseController {
 
     public IDocument getDocument() {
         return document;
+    }
+
+    public void scheduled() {
+        stage = Stage.NONE;
     }
     
 }

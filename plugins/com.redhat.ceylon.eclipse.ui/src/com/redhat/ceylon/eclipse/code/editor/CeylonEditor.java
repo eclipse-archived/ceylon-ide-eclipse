@@ -1143,6 +1143,7 @@ public class CeylonEditor extends TextEditor {
                 if (parserScheduler!=null && !backgroundParsingPaused) {
                     parserScheduler.cancel();
                     parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+                    parseController.scheduled();
                 }
             }
         }
