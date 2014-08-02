@@ -21,6 +21,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.INEXACT_MATCHES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
@@ -70,6 +71,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor autoInsert;
     BoolFieldEditor autoActivation;
     RadioGroupFieldEditor completion;
+    RadioGroupFieldEditor inexactMatches;
     BooleanFieldEditor linkedMode;
     BooleanFieldEditor linkedModeRename;
     BooleanFieldEditor linkedModeExtract;
@@ -109,6 +111,7 @@ public class CeylonEditorPreferencesPage
         autoActivationDelay.store();
         autoActivationChars.store();
         completion.store();
+        inexactMatches.store();
         linkedMode.store();
         linkedModeRename.store();
         linkedModeExtract.store();
@@ -144,6 +147,7 @@ public class CeylonEditorPreferencesPage
         autoActivationDelay.loadDefault();
         autoActivationChars.loadDefault();
         completion.loadDefault();
+        inexactMatches.loadDefault();
         linkedMode.loadDefault();
         linkedModeRename.loadDefault();
         linkedModeExtract.loadDefault();
@@ -375,6 +379,14 @@ public class CeylonEditorPreferencesPage
                                  new String[] { "overwrites", "overwrite" } }, p3);
         completion.load();
         addField(completion);
+        final Composite p4 = getFieldEditorParent(group);
+        inexactMatches = new RadioGroupFieldEditor(INEXACT_MATCHES, 
+                "For inexact matches propose", 3, 
+                new String[][] { new String[] { "no arguments", "none" }, 
+                                 new String[] { "positional arguments", "positional" },
+                                 new String[] { "positional  and named arguments", "both" } }, p4);
+        inexactMatches.load();
+        addField(inexactMatches);
     }
 
     private void foldingSection() {
