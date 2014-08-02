@@ -59,6 +59,29 @@ class RemoveAliasProposal extends CorrectionProposal {
                         id.getText().length(), dec.getName()));
             }
         }
+        
+        @Override
+        public void visit(Tree.DocLink that) {
+            super.visit(that);
+            Declaration base = that.getBase();
+            if (base!=null && dec.equals(base)) {
+                String text = that.getText();
+                int offset = that.getStartIndex();
+                
+                int pipeIndex = text.indexOf("|");
+                if (pipeIndex > -1) {
+                    text = text.substring(pipeIndex + 1);
+                    offset += pipeIndex + 1;
+                }
+                
+                int scopeIndex = text.indexOf("::");
+                if (scopeIndex<0) {
+                    int index = text.indexOf('.');
+                    String name = index<0 ? text : text.substring(0, index);
+                    change.addEdit(new ReplaceEdit(offset, name.length(), dec.getName()));
+                }
+            }
+        }
     }
 
     private RemoveAliasProposal(IFile file, Declaration dec, 

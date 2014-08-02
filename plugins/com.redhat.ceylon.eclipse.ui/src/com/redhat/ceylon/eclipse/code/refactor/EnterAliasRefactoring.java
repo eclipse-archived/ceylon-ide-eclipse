@@ -23,6 +23,70 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class EnterAliasRefactoring extends AbstractRefactoring {
     
+    private final class EnterAliasVisitor extends Visitor {
+        private final TextChange change;
+        private final Declaration dec;
+
+        private EnterAliasVisitor(TextChange change, Declaration dec) {
+            this.change = change;
+            this.dec = dec;
+        }
+
+        @Override
+        public void visit(Tree.StaticMemberOrTypeExpression that) {
+            super.visit(that);
+            addEdit(document, that.getIdentifier(), 
+                    that.getDeclaration());
+        }
+
+        @Override
+        public void visit(Tree.SimpleType that) {
+            super.visit(that);
+            addEdit(document, that.getIdentifier(), 
+                    that.getDeclarationModel());
+        }
+
+        @Override
+        public void visit(Tree.MemberLiteral that) {
+            super.visit(that);
+            addEdit(document, that.getIdentifier(), 
+                    that.getDeclaration());
+        }
+
+        @Override
+        public void visit(Tree.DocLink that) {
+            super.visit(that);
+            Declaration base = that.getBase();
+            if (base!=null && dec.equals(base)) {
+                String text = that.getText();
+                int offset = that.getStartIndex();
+                
+                int pipeIndex = text.indexOf("|");
+                if (pipeIndex > -1) {
+                    text = text.substring(pipeIndex + 1);
+                    offset += pipeIndex + 1;
+                }
+                
+                int scopeIndex = text.indexOf("::");
+                if (scopeIndex<0) {
+                    int index = text.indexOf('.');
+                    String name = index<0 ? text : text.substring(0, index);
+                    change.addEdit(new ReplaceEdit(offset, name.length(), newName));
+                }
+            }
+        }
+
+        private void addEdit(IDocument document, Tree.Identifier id, 
+                Declaration d) {
+            if (id!=null && d!=null && 
+                    dec.equals(getAbstraction(d))) {
+                int pos = id.getStartIndex();
+                int len = id.getText().length();
+                change.addEdit(new ReplaceEdit(pos, len, newName));
+            }
+        }
+    }
+
     private String newName;
     private Tree.ImportMemberOrType element;
     
@@ -84,8 +148,8 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         return tfc;
     }
     
-    int renameInFile(final TextChange tfc) throws CoreException {
-        tfc.setEdit(new MultiTextEdit());
+    int renameInFile(final TextChange change) throws CoreException {
+        change.setEdit(new MultiTextEdit());
         Tree.Alias alias = element.getAlias();
         final Declaration dec = element.getDeclarationModel();
         
@@ -93,7 +157,7 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         boolean same = newName.equals(dec.getName());
         if (alias==null) {
 //            if (!same) {
-                tfc.addEdit(new InsertEdit(element.getStartIndex(), 
+                change.addEdit(new InsertEdit(element.getStartIndex(), 
                         newName + "="));
                 adjust = newName.length()+1;
 //            }
@@ -106,44 +170,16 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
             int length = alias.getIdentifier().getText().length();
             if (same) {
                 int stop = element.getIdentifier().getStartIndex();
-                tfc.addEdit(new DeleteEdit(start, stop-start));
+                change.addEdit(new DeleteEdit(start, stop-start));
                 adjust = start - stop; 
             }
             else {
-                tfc.addEdit(new ReplaceEdit(start, length, newName));
+                change.addEdit(new ReplaceEdit(start, length, newName));
                 adjust = newName.length()-length;
             }
         }
         
-        new Visitor() {
-            @Override
-            public void visit(Tree.StaticMemberOrTypeExpression that) {
-                super.visit(that);
-                addEdit(document, that.getIdentifier(), 
-                        that.getDeclaration());
-            }
-            @Override
-            public void visit(Tree.SimpleType that) {
-                super.visit(that);
-                addEdit(document, that.getIdentifier(), 
-                        that.getDeclarationModel());
-            }
-            @Override
-            public void visit(Tree.MemberLiteral that) {
-                super.visit(that);
-                addEdit(document, that.getIdentifier(), 
-                        that.getDeclaration());
-            }
-            private void addEdit(IDocument document, Tree.Identifier id, 
-                    Declaration d) {
-                if (id!=null && d!=null && 
-                        dec.equals(getAbstraction(d))) {
-                    int pos = id.getStartIndex();
-                    int len = id.getText().length();
-                    tfc.addEdit(new ReplaceEdit(pos, len, newName));
-                }
-            }
-        }.visit(rootNode);
+        new EnterAliasVisitor(change, dec).visit(rootNode);
         
         return adjust;
         
