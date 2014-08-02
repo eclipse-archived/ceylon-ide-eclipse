@@ -50,11 +50,15 @@ class DetectUnusedImportsVisitor extends Visitor {
         }
     }
         
+    private boolean isAliased(final Declaration d, Tree.Identifier id) {
+        return id==null || d!=null && !d.getName().equals(id.getText());
+    }
+
     @Override
     public void visit(Tree.QualifiedMemberOrTypeExpression that) {
         super.visit(that);
         final Declaration d = that.getDeclaration();
-        if (!d.getName().equals(that.getIdentifier().getText())) {
+        if (isAliased(d, that.getIdentifier())) {
             remove(getAbstraction(d));
         }
     }
@@ -68,8 +72,8 @@ class DetectUnusedImportsVisitor extends Visitor {
     @Override
     public void visit(Tree.QualifiedType that) {
         super.visit(that);
-        final TypeDeclaration d = that.getDeclarationModel();
-        if (!d.getName().equals(that.getIdentifier().getText())) {
+        TypeDeclaration d = that.getDeclarationModel();
+        if (isAliased(d, that.getIdentifier())) {
             remove(getAbstraction(d));
         }
     } 
