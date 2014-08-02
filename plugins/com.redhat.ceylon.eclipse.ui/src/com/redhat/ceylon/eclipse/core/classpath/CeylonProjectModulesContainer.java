@@ -145,8 +145,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     public IClasspathEntry addNewClasspathEntryIfNecessary(IPath modulePath) {
         synchronized (classpathEntries) {
             for (IClasspathEntry cpEntry : classpathEntries) {
-                if (cpEntry!=null && //TODO: why do I have a null entry?!
-                        cpEntry.getPath().equals(modulePath)) {
+                if (cpEntry.getPath().equals(modulePath)) {
                     return null;
                 }
             }
@@ -294,8 +293,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                     }
                 }
                 
-                IClasspathEntry[] resetEntries = explodeFolderEntry != null ? 
-                        new IClasspathEntry[] {explodeFolderEntry} : 
+                IClasspathEntry[] resetEntries = explodeFolderEntry == null ? 
+                        new IClasspathEntry[] {} : 
                             new IClasspathEntry[] {explodeFolderEntry};
                 
                 JavaCore.setClasspathContainer(getPath(), 
