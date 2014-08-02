@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isAbstraction;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
@@ -208,7 +208,7 @@ public class HierarchyView extends ViewPart {
         @Override
         public String getText(Object element) {
             Declaration dec = (Declaration) element;
-            String desc = getDescriptionFor(dec);
+            String desc = getLabelDescriptionFor(dec);
             Scope container = dec.getContainer();
             if (showInherited && 
                     container instanceof Declaration) {

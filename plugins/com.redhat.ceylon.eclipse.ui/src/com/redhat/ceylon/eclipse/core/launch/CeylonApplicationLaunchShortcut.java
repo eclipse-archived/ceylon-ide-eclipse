@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.compiler.java.Util.declClassName;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_APPLICATION;
@@ -343,7 +343,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         @Override
         public String getText(Object element) {
             Declaration d = (Declaration) element;
-            return d==null ? null : getDescriptionFor(d);
+            return d==null ? null : getLabelDescriptionFor(d);
         }
         
         @Override

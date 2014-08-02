@@ -273,7 +273,7 @@ public class CodeCompletions {
         return result.toString();
     }
     
-    public static String getDescriptionFor(Declaration d) {
+    public static String getLabelDescriptionFor(Declaration d) {
         StringBuilder result = new StringBuilder();
         if (d!=null) {
             if (d.isFormal()) result.append("formal ");
@@ -286,7 +286,7 @@ public class CodeCompletions {
         return result.toString();
     }
     
-    public static String getDescriptionFor(Declaration d, 
+    public static String getDocDescriptionFor(Declaration d, 
             ProducedReference pr, Unit unit) {
         StringBuilder result = new StringBuilder();
         appendDeclarationHeaderDescription(d, pr, unit, result);

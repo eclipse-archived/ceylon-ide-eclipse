@@ -13,7 +13,7 @@ package com.redhat.ceylon.eclipse.code.hover;
  *******************************************************************************/
 
 import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.isAvailable;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDocDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.isVariable;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitialValueDescription;
 import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectionFromThread;
@@ -1837,7 +1837,7 @@ public class DocumentationHover
             pr = getProducedReference(dec, node);
         }
         Unit unit = node==null ? dec.getUnit() : node.getUnit();
-        String description = getDescriptionFor(dec, pr, unit);
+        String description = getDocDescriptionFor(dec, pr, unit);
         if (dec instanceof TypeDeclaration) {
             TypeDeclaration td = (TypeDeclaration) dec;
             if (td.isAlias() && td.getExtendedType()!=null) {

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
@@ -204,7 +204,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 DeclarationWithProject dwp = 
                         (DeclarationWithProject) element;
                 return dwp==null ? null : 
-                    getDescriptionFor(dwp.getDeclaration());
+                    getLabelDescriptionFor(dwp.getDeclaration());
             }
             else {
                 return "";
