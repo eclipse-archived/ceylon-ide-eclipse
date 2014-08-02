@@ -73,6 +73,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -110,6 +111,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             //add qualified member proposals 
             Unit unit = cpc.getRootNode().getUnit();
             ProducedType type = pr.getType();
+            if (Util.isTypeUnknown(type)) return;
             Collection<DeclarationWithProximity> members = 
                     type.getDeclaration().getMatchingMemberDeclarations(scope, "", 0).values();
             for (DeclarationWithProximity ndwp: members) {
