@@ -225,19 +225,20 @@ public class RenameRefactoring extends AbstractRefactoring {
             }
             @Override
             public void visit(Tree.DocLink that) {
-                String text = that.getText();
-                Integer offset = that.getStartIndex();
-                
-                int pipeIndex = text.indexOf("|");
-                if (pipeIndex > -1) {
-                    text = text.substring(pipeIndex + 1);
-                    offset += pipeIndex + 1;
-                }
-                
-                int scopeIndex = text.indexOf("::");
-                int start = scopeIndex<0 ? 0 : scopeIndex+2;
                 Declaration base = that.getBase();
+                List<Declaration> qualified = that.getQualified();
                 if (base!=null) {
+                    String text = that.getText();
+                    int offset = that.getStartIndex();
+
+                    int pipeIndex = text.indexOf("|");
+                    if (pipeIndex > -1) {
+                        text = text.substring(pipeIndex + 1);
+                        offset += pipeIndex + 1;
+                    }
+
+                    int scopeIndex = text.indexOf("::");
+                    int start = scopeIndex<0 ? 0 : scopeIndex+2;
                     int index = text.indexOf('.', start);
                     String name = index<0 ? 
                             text.substring(start) : 
@@ -245,7 +246,6 @@ public class RenameRefactoring extends AbstractRefactoring {
                     visitIt(name, offset+start, base);
                     start = index+1;
                     int i=0;
-                    List<Declaration> qualified = that.getQualified();
                     if (qualified!=null) {
                         while (start>0 && i<qualified.size()) {
                             index = text.indexOf('.', start);
