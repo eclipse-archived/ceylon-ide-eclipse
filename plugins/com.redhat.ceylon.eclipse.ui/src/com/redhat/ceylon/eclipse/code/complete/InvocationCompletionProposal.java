@@ -98,7 +98,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             Declaration dec, Scope scope, boolean isMember, ProducedReference pr) {
         Unit unit = cpc.getRootNode().getUnit();
         result.add(new InvocationCompletionProposal(offset, prefix,
-                getDescriptionFor(dec), getTextFor(dec, unit), 
+                getDescriptionFor(dec, unit), getTextFor(dec, unit), 
                 dec, pr, scope, cpc, true, false, false, isMember, null));
     }
     
