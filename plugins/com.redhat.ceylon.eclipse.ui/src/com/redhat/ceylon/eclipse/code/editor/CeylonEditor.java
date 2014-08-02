@@ -12,10 +12,10 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.STRIP_TRAILING_WS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.configCompletionPopup;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
@@ -56,7 +56,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -1137,13 +1136,16 @@ public class CeylonEditor extends TextEditor {
     
     private IDocumentListener documentListener = 
             new IDocumentListener() {
-        public void documentAboutToBeChanged(DocumentEvent event) {}
+        public void documentAboutToBeChanged(DocumentEvent event) {
+            if (parseController!=null) {
+                parseController.scheduled();
+            }
+        }
         public void documentChanged(DocumentEvent event) {
             synchronized (CeylonEditor.this) {
                 if (parserScheduler!=null && !backgroundParsingPaused) {
                     parserScheduler.cancel();
                     parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
-                    parseController.scheduled();
                 }
             }
         }
@@ -1510,15 +1512,20 @@ public class CeylonEditor extends TextEditor {
         boolean format = prefs.getBoolean(FORMAT);
         if (cleanImports) {
             try {
-                CleanImportsHandler.cleanImports(this, doc);
+                CleanImportsHandler.cleanImports(parseController, doc);
             }
-            catch (ExecutionException e) {
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }
         if (format) {
-            FormatAction formatAction = new FormatAction(this, false);
-            if (formatAction.isEnabled()) formatAction.run();
+            try {
+                FormatAction.format(parseController, viewer.getDocument(), 
+                        EditorUtil.getSelection(this), false, getSelectionProvider());
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         else if (normalizeWs || normalizeNl || stripTrailingWs) {
             normalize(viewer, doc, normalizeWs, normalizeNl, stripTrailingWs);

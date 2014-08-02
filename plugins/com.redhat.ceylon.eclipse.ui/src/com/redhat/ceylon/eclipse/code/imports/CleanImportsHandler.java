@@ -48,14 +48,13 @@ public class CleanImportsHandler extends AbstractHandler {
             throws ExecutionException {
         CeylonEditor editor = (CeylonEditor) getCurrentEditor();
         IDocument doc = editor.getCeylonSourceViewer().getDocument();
-        cleanImports(editor, doc);
+        cleanImports(editor.getParseController(), doc);
         return null;
     }
 
-    public static void cleanImports(CeylonEditor editor, IDocument doc)
-            throws ExecutionException {
-        Tree.CompilationUnit rootNode = editor.getParseController()
-                .getRootNode();
+    public static void cleanImports(CeylonParseController cpc, IDocument doc) {
+        if (!isEnabled(cpc)) return;
+        Tree.CompilationUnit rootNode = cpc.getRootNode();
         if (rootNode!=null) {
             String imports = imports(rootNode, doc);
             if (imports!=null && 
@@ -405,13 +404,17 @@ public class CleanImportsHandler extends AbstractHandler {
                 editor.getEditorInput() instanceof IFileEditorInput) {
             CeylonParseController cpc = 
                     ((CeylonEditor) editor).getParseController();
-            return cpc!=null && 
-                    cpc.getStage().ordinal()>=Stage.TYPE_ANALYSIS.ordinal() && 
-                    cpc.getRootNode()!=null;
+            return isEnabled(cpc);
         }
         else {
             return false;
         }
+    }
+
+    public static boolean isEnabled(CeylonParseController cpc) {
+        return cpc!=null && 
+                cpc.getStage().ordinal()>=Stage.TYPE_ANALYSIS.ordinal() && 
+                cpc.getRootNode()!=null;
     }
     
     public static Declaration select(List<Declaration> proposals) {
