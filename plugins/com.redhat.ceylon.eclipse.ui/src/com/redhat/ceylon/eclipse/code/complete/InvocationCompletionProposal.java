@@ -107,7 +107,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             final CeylonParseController cpc, List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember, ProducedReference pr,
             ProducedType requiredType, OccurrenceLocation ol) {
-        if (!(dec instanceof Functional)) {
+        if (!(dec instanceof Functional) && 
+            !(dec instanceof TypeDeclaration)) {
             //add qualified member proposals 
             Unit unit = cpc.getRootNode().getUnit();
             ProducedType type = pr.getType();
