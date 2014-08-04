@@ -340,7 +340,7 @@ public class JDTModelLoader extends AbstractModelLoader {
             IPackageFragment packageFragment = null;
             for (IPackageFragmentRoot root : roots) {
                 // skip packages that are not present
-                if(!root.exists())
+                if(! root.exists() || ! javaProject.isOnClasspath(root))
                     continue;
                 try {
                     IClasspathEntry entry = root.getRawClasspathEntry();
@@ -453,11 +453,13 @@ public class JDTModelLoader extends AbstractModelLoader {
             } else if (jdtModule.isProjectModule()) {
                 for (IPackageFragmentRoot root : jdtModule.getPackageFragmentRoots()) {
                     try {
-                        IFolder sourceFolder = (IFolder) root.getCorrespondingResource();
-                        if (sourceFolder != null && 
-                                (sourceFolder.exists(new Path(className + ".java")) || 
-                                        sourceFolder.exists(new Path(className + "_.java")))) {
-                            return true;
+                        if (root.exists() && javaProject.isOnClasspath(root)) {
+                            IFolder sourceFolder = (IFolder) root.getCorrespondingResource();
+                            if (sourceFolder != null && 
+                                    (sourceFolder.exists(new Path(className + ".java")) || 
+                                            sourceFolder.exists(new Path(className + "_.java")))) {
+                                return true;
+                            }
                         }
                     } catch (JavaModelException e) {
                         e.printStackTrace();
