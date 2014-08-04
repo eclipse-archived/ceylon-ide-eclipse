@@ -17,7 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-public class CorrectionUtil {
+class CorrectionUtil {
     
     static int getLevenshteinDistance(String x, String y) {
         
