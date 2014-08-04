@@ -503,7 +503,6 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         boolean isSource=false;
         for (IPackageFragmentRoot s: javaProject.getPackageFragmentRoots()) {
             if (s.exists() 
-                    && s.isConsistent() 
                     && javaProject.isOnClasspath(s) 
                     && s.getKind()==IPackageFragmentRoot.K_SOURCE 
                     && s.getPackageFragment(module.getNameAsString()).exists()) {
