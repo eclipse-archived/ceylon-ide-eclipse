@@ -35,6 +35,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -454,10 +455,8 @@ public class JDTModelLoader extends AbstractModelLoader {
                 for (IPackageFragmentRoot root : jdtModule.getPackageFragmentRoots()) {
                     try {
                         if (root.exists() && javaProject.isOnClasspath(root)) {
-                            IFolder sourceFolder = (IFolder) root.getCorrespondingResource();
-                            if (sourceFolder != null && 
-                                    (sourceFolder.exists(new Path(className + ".java")) || 
-                                            sourceFolder.exists(new Path(className + "_.java")))) {
+                            if (javaProject.findType(name, (IProgressMonitor) null) != null ||
+                                    javaProject.findType(name + "_", (IProgressMonitor) null) != null) {
                                 return true;
                             }
                         }
