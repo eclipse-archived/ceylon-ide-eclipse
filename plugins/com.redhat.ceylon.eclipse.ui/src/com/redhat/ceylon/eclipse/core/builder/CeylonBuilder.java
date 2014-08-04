@@ -2006,8 +2006,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             Collection<IFile> filesToCompile, TypeChecker typeChecker, 
             IProgressMonitor monitor) throws CoreException {
         List<String> options = new ArrayList<String>();
-        List<String> js_srcdir = new ArrayList<String>();
-        List<String> js_rsrcdir = new ArrayList<String>();
+        List<File> js_srcdir = new ArrayList<File>();
+        List<File> js_rsrcdir = new ArrayList<File>();
         List<String> js_repos = new ArrayList<String>();
         boolean js_verbose = false;
         String js_outRepo = null;
@@ -2019,7 +2019,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 srcPath += File.pathSeparator;
             }
             srcPath += sourcePathElement.getAbsolutePath();
-            js_srcdir.add(sourcePathElement.getAbsolutePath());
+            js_srcdir.add(sourcePathElement);
         }
         options.add("-src");
         options.add(srcPath);
@@ -2030,7 +2030,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 resPath += File.pathSeparator;
             }
             resPath += resourcePathElement.getAbsolutePath();
-            js_rsrcdir.add(resourcePathElement.getAbsolutePath());
+            js_rsrcdir.add(resourcePathElement);
         }
         options.add("-res");
         options.add(resPath);
@@ -2066,7 +2066,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         List<File> forJavaBackend = new ArrayList<File>();
         List<File> forJavascriptBackend = new ArrayList<File>();
-        List<String> resources = new ArrayList<String>();
+        List<File> resources = new ArrayList<File>();
         for (IFile file : filesToCompile) {
             if(isCeylon(file)) {
                 forJavascriptBackend.add(file.getRawLocation().toFile());
@@ -2081,7 +2081,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (isResourceFile(file)) {
                 forJavascriptBackend.add(file.getRawLocation().toFile());
                 forJavaBackend.add(file.getRawLocation().toFile());
-                resources.add(file.getRawLocation().toFile().getAbsolutePath());
+                resources.add(file.getRawLocation().toFile());
             }
         }
 
@@ -2105,18 +2105,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     private boolean compileJs(IProject project, TypeChecker typeChecker,
-            List<String> js_srcdir, List<String> js_rsrcdir, List<String> js_repos, 
+            List<File> js_srcdir, List<File> js_rsrcdir, List<String> js_repos, 
             boolean js_verbose, String js_outRepo, PrintWriter printWriter, 
-            boolean generateSourceArchive, List<String> resources) 
+            boolean generateSourceArchive, List<File> resources) 
                     throws CoreException {
         
         Options jsopts = new Options()
                 .repos(js_repos)
-                .sources(js_srcdir)
+                .sourceDirs(js_srcdir)
                 .resourceDirs(js_rsrcdir)
-                .resources(resources)
                 .systemRepo(getInterpolatedCeylonSystemRepo(project))
-                .outDir(js_outRepo)
+                .outRepo(js_outRepo)
                 .optimize(true)
                 .verbose(js_verbose ? "all" : null)
                 .generateSourceArchive(generateSourceArchive)
@@ -2138,16 +2137,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return true;
             }
             
-            public String getFullPath(PhasedUnit pu) {
+            public File getFullPath(PhasedUnit pu) {
                 VirtualFile virtualFile = pu.getUnitFile();
                 if (virtualFile instanceof ResourceVirtualFile) {
-                    return ((IFileVirtualFile) virtualFile).getFile().getLocation().toOSString();
+                    return ((IFileVirtualFile) virtualFile).getFile().getLocation().toFile();
                 } else {
-                    return virtualFile.getPath();
+                    return new File(virtualFile.getPath());
                 }
             };
         }.stopOnErrors(false);
         try {
+            jsc.setResourceFiles(resources);
             if (!jsc.generate()) {
                 CompileErrorReporter errorReporter = null;
                 //Report backend errors
