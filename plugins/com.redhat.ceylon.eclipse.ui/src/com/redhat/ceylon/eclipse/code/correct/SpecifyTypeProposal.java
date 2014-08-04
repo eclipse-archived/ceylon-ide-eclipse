@@ -148,7 +148,16 @@ public class SpecifyTypeProposal implements ICompletionProposal,
             }            
         };
         itv.visit(cu);
-        return itv.inferredType;
+        if (isTypeUnknown(itv.inferredType)) {
+            return itv.generalizedType;
+        }
+        else if (isTypeUnknown(itv.generalizedType)) {
+            return itv.inferredType;
+        }
+        else {
+            return itv.inferredType.isSubtypeOf(itv.generalizedType) ?
+                    itv.generalizedType : itv.inferredType;
+        }
     }
 
     @Override
