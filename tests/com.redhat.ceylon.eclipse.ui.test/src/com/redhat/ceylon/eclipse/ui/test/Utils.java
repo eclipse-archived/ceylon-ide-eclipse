@@ -52,7 +52,8 @@ import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 import org.junit.Assert;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
 
@@ -78,7 +79,7 @@ public class Utils {
         Display.getDefault().syncExec(new Runnable() {
             public void run() {
                 try {
-                	EditorUtil.gotoLocation(runFile, 0);
+                	Navigation.gotoLocation(runFile, 0);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
