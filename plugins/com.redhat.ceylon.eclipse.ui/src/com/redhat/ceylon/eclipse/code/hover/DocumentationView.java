@@ -191,8 +191,10 @@ public class DocumentationView extends ViewPart {
         else if (location.startsWith("stp:")) {
             CompilationUnit rn = editor.getParseController().getRootNode();
             Node node = Nodes.findNode(rn, Integer.parseInt(location.substring(4)));
-            SpecifyTypeProposal.createProposal(rn, node, editor)
-                    .apply(editor.getParseController().getDocument());
+            for (SpecifyTypeProposal stp: SpecifyTypeProposal.createProposals(rn, node, editor)) {
+                stp.apply(editor.getParseController().getDocument());
+                break;
+            }
         }
         else if (location.startsWith("exv:")) {
             new ExtractValueProposal(editor).apply(editor.getParseController().getDocument());

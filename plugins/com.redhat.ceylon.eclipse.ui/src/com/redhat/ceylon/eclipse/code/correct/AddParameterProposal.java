@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.inferType;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
@@ -134,7 +133,7 @@ class AddParameterProposal extends InitializerProposal {
             ProducedType paramType;
             if (type instanceof Tree.LocalModifier) {
                 Integer typeOffset = type.getStartIndex();
-                paramType = inferType(cu, type); //TODO: is it really necessary to infer the type here?
+                paramType = type.getTypeModel();
                 String explicitType;
                 if (paramType==null) {
                     explicitType = "Object";

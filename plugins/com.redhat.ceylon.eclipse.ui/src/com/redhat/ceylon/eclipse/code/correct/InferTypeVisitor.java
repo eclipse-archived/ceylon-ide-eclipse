@@ -17,10 +17,15 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-class InferTypeVisitor extends Visitor {
+class InferredType {
     
-    Unit unit;
-    Declaration dec;
+    private Unit unit;
+
+    InferredType(Unit unit) {
+        this.unit = unit;
+        
+    }
+    
     ProducedType inferredType;
     ProducedType generalizedType;
     
@@ -49,6 +54,19 @@ class InferTypeVisitor extends Visitor {
         }
     }
     
+}
+
+class InferTypeVisitor extends Visitor {
+    
+    Unit unit;
+    Declaration dec;
+    InferredType result;
+    
+    InferTypeVisitor(Unit unit) {
+        this.unit = unit;
+        result = new InferredType(unit);
+    }
+    
     @Override public void visit(Tree.AttributeDeclaration that) {
         super.visit(that);
         Term term = that.getSpecifierOrInitializerExpression()==null ? 
@@ -56,12 +74,12 @@ class InferTypeVisitor extends Visitor {
         if (term instanceof Tree.BaseMemberExpression) {
             Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
             if (d!=null && d.equals(dec)) {
-                intersect(that.getType().getTypeModel());
+                result.intersect(that.getType().getTypeModel());
             }
         }
         else if (term!=null) {
             if (that.getDeclarationModel().equals(dec)) {
-                union(term.getTypeModel());
+                result.union(term.getTypeModel());
             }
         }
     }
@@ -73,12 +91,12 @@ class InferTypeVisitor extends Visitor {
         if (term instanceof Tree.BaseMemberExpression) {
             Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
             if (d!=null && d.equals(dec)) {
-                intersect(that.getType().getTypeModel());
+                result.intersect(that.getType().getTypeModel());
             }
         }
         else if (term!=null) {
             if (that.getDeclarationModel().equals(dec)) {
-                union(term.getTypeModel());
+                result.union(term.getTypeModel());
             }
         }
     }
@@ -91,13 +109,15 @@ class InferTypeVisitor extends Visitor {
         if (bme instanceof Tree.BaseMemberExpression) {
             Declaration d = ((Tree.BaseMemberExpression) bme).getDeclaration();
             if (d!=null && d.equals(dec)) {
-                if (term!=null) union(term.getTypeModel());
+                if (term!=null)
+                    result.union(term.getTypeModel());
             }
         } 
         if (term instanceof Tree.BaseMemberExpression) {
             Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
             if (d!=null && d.equals(dec)) {
-                if (bme!=null) intersect(bme.getTypeModel());
+                if (bme!=null)
+                    result.intersect(bme.getTypeModel());
             }
         }
     }
@@ -108,12 +128,14 @@ class InferTypeVisitor extends Visitor {
         Term lt = that.getLeftTerm();
         if (lt instanceof Tree.BaseMemberExpression) {
             if (((Tree.BaseMemberExpression) lt).getDeclaration().equals(dec)) {
-                if (rt!=null) union(rt.getTypeModel());
+                if (rt!=null)
+                    result.union(rt.getTypeModel());
             }
         }
         if (rt instanceof Tree.BaseMemberExpression) {
             if (((Tree.BaseMemberExpression) rt).getDeclaration().equals(dec)) {
-                if (lt!=null) intersect(lt.getTypeModel());
+                if (lt!=null)
+                    result.intersect(lt.getTypeModel());
             }
         }
     }
@@ -146,7 +168,7 @@ class InferTypeVisitor extends Visitor {
                     if (p.isSequenced()) {
                         ft = unit.getIteratedType(ft);
                     }
-                    intersect(ft);
+                    result.intersect(ft);
                 }
             }
         }
@@ -164,7 +186,7 @@ class InferTypeVisitor extends Visitor {
                     //TODO: is this correct?
                     ProducedType ft = pr.getTypedParameter(p)
                             .getFullType();
-                    intersect(unit.getIterableType(unit.getIteratedType(ft)));
+                    result.intersect(unit.getIterableType(unit.getIteratedType(ft)));
                 }
             }
         }
@@ -181,7 +203,7 @@ class InferTypeVisitor extends Visitor {
                 if (p!=null && pr!=null) {
                     ProducedType ft = pr.getTypedParameter(p)
                             .getFullType();
-                    intersect(ft);
+                    result.intersect(ft);
                 }
             }
         }
@@ -195,13 +217,13 @@ class InferTypeVisitor extends Visitor {
             if (bmed!=null && bmed.equals(dec)) {
                 Declaration d = that.getDeclaration();
                 if (d instanceof TypedDeclaration) {
-                    intersect(((TypedDeclaration) d).getType());
+                    result.intersect(((TypedDeclaration) d).getType());
                 }
             }
         }
         else if (bme!=null) {
             if (that.getDeclaration().equals(dec)) {
-                union(bme.getTypeModel());
+                result.union(bme.getTypeModel());
             }
         }
     }
@@ -214,7 +236,7 @@ class InferTypeVisitor extends Visitor {
             Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
                 TypeDeclaration td = (TypeDeclaration) that.getDeclaration().getRefinedDeclaration().getContainer();
-                intersect(that.getTarget().getQualifyingType().getSupertype(td));
+                result.intersect(that.getTarget().getQualifyingType().getSupertype(td));
             }
         }
     }
@@ -228,7 +250,7 @@ class InferTypeVisitor extends Visitor {
             if (bmed!=null && bmed.equals(dec)) {
                 ProducedType kt = that.getKeyVariable().getType().getTypeModel();
                 ProducedType vt = that.getValueVariable().getType().getTypeModel();
-                intersect(that.getUnit().getIterableType(that.getUnit().getEntryType(kt, vt)));
+                result.intersect(that.getUnit().getIterableType(that.getUnit().getEntryType(kt, vt)));
             }
         }
     }
@@ -241,7 +263,7 @@ class InferTypeVisitor extends Visitor {
             Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
                 ProducedType vt = that.getVariable().getType().getTypeModel();
-                intersect(that.getUnit().getIterableType(vt));
+                result.intersect(that.getUnit().getIterableType(vt));
             }
         }
     }
@@ -253,7 +275,7 @@ class InferTypeVisitor extends Visitor {
         if (primary instanceof Tree.BaseMemberExpression) {
             Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
-                intersect(that.getUnit().getBooleanDeclaration().getType());
+                result.intersect(that.getUnit().getBooleanDeclaration().getType());
             }
         }
     }
@@ -266,7 +288,7 @@ class InferTypeVisitor extends Visitor {
             Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
                 ProducedType et = that.getUnit().getSequentialElementType(that.getVariable().getType().getTypeModel());
-                intersect(that.getUnit().getSequentialType(et));
+                result.intersect(that.getUnit().getSequentialType(et));
             }
         }
     }
@@ -369,7 +391,7 @@ class InferTypeVisitor extends Visitor {
         if (lhs instanceof Tree.BaseMemberExpression) {
             Declaration bmed = ((Tree.BaseMemberExpression) lhs).getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
-                intersect(sd.getType());
+                result.intersect(sd.getType());
             }
         }
     }
@@ -378,7 +400,7 @@ class InferTypeVisitor extends Visitor {
         if (lhs instanceof Tree.BaseMemberExpression) {
             Declaration bmed = ((Tree.BaseMemberExpression) lhs).getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
-                intersect(lhs.getTypeModel().getSupertype(sd).getTypeArguments().get(0));
+                result.intersect(lhs.getTypeModel().getSupertype(sd).getTypeArguments().get(0));
             }
         }
     }
