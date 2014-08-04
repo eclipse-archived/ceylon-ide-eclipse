@@ -95,7 +95,7 @@ public class CeylonPatternMatchListenerDelegate
                                 IPath sourceAttachmentPath = pfr.getSourceAttachmentPath();
                                 if (sourceAttachmentPath!=null) {
                                     String ext = sourceAttachmentPath.getFileExtension();
-                                    if (ext!=null && ext.equals("src")) {
+                                    if (ext!=null && ext.equalsIgnoreCase("src")) {
                                         String packagePath = packageName.replace('.', '/'); //TODO: I *think* this works on windows
                                         IFileStore archiveFileStore = 
                                                 EFS.getStore(URIUtil.toURI(sourceAttachmentPath));
