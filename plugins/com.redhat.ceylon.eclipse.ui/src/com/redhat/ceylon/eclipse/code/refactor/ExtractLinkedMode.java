@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getSupertypeProposals;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -17,6 +16,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 public abstract class ExtractLinkedMode extends RefactorLinkedMode {
 
@@ -87,7 +87,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
                         getSupertypeProposals(offset, unit, type,
                                 canBeInferred(), getKind()));
         try {
-            addLinkedPosition(linkedModeModel, linkedPosition);
+            LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();

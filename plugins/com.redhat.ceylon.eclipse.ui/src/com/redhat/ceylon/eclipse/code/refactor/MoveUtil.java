@@ -1,11 +1,9 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
@@ -47,8 +45,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class MoveUtil {
 
@@ -290,7 +288,7 @@ public class MoveUtil {
         }
         if (!foundMoved) {
             String text = "import " + targetPackage + " { " + name + " }" + 
-                    getDefaultLineDelimiter(getDocument(tc));
+                    getDefaultLineDelimiter(EditorUtil.getDocument(tc));
             tc.addEdit(new InsertEdit(0, text));
         }
     }
@@ -308,7 +306,7 @@ public class MoveUtil {
     }
 
     public static boolean canMoveDeclaration(CeylonEditor editor) {
-        Node node = getSelectedNode(editor);
+        Node node = editor.getSelectedNode();
         if (node instanceof Tree.Declaration) {
             Declaration d = ((Tree.Declaration) node).getDeclarationModel();
             return d!=null && d.isToplevel();
@@ -319,7 +317,7 @@ public class MoveUtil {
     }
 
     public static String getDeclarationName(CeylonEditor editor) {
-        Node node = getSelectedNode(editor);
+        Node node = editor.getSelectedNode();
         if (node instanceof Tree.Declaration) {
             return ((Tree.Declaration) node).getIdentifier().getText();
         }

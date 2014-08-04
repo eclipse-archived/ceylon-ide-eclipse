@@ -57,7 +57,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
 
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonEditorPreferencesPage 
         extends FieldEditorPreferencePage 

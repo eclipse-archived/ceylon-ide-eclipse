@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -38,6 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 public class AddAnnotionProposal extends CorrectionProposal {
@@ -107,7 +107,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
         TextEdit edit = createReplaceAnnotationEdit(annotation, node, change);
         if (edit==null) {
         	edit = createInsertAnnotationEdit(annotation, decNode, 
-        			getDocument(change));
+        			EditorUtil.getDocument(change));
         }
         change.addEdit(edit);
         if (decNode instanceof Tree.TypedDeclaration &&

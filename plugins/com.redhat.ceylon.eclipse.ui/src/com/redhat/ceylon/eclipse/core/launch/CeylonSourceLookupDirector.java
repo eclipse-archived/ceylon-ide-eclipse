@@ -18,7 +18,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
-import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSourceLookupDirector extends JavaSourceLookupDirector implements ISourcePresentation {
 
@@ -43,7 +43,7 @@ public class CeylonSourceLookupDirector extends JavaSourceLookupDirector impleme
             if (((ZipEntryStorage) item).getName().endsWith(".ceylon")) {
                 ZipEntryStorage zes = (ZipEntryStorage) item;
                 IPath archivePath = Path.fromOSString(zes.getArchive().getName() + "!");            
-                IEditorInput input = EditorUtility.getEditorInput(archivePath.append(zes.getZipEntry().getName()));
+                IEditorInput input = EditorUtil.getEditorInput(archivePath.append(zes.getZipEntry().getName()));
                 return input;
             } else {
                 return new ZipEntryStorageEditorInput((ZipEntryStorage)item);
@@ -57,7 +57,7 @@ public class CeylonSourceLookupDirector extends JavaSourceLookupDirector impleme
                 return null;
             }
         }
-        return EditorUtility.getEditorInput(item);
+        return EditorUtil.getEditorInput(item);
     }
 
     @Override

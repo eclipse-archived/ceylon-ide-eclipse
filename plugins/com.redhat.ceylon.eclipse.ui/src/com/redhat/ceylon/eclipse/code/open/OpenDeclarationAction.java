@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.open;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectionText;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelectionText;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.jface.action.Action;

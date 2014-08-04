@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.gotoLocation;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.READ_ACCESSES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
@@ -36,6 +35,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
@@ -154,7 +154,7 @@ public class JavaQueryParticipant implements IQueryParticipant {
                     boolean activate) throws PartInitException {
                 CeylonElement element = (CeylonElement) match.getElement();
                 IFile file = element.getFile();
-                gotoLocation(file, offset, length);
+                Navigation.gotoLocation(file, offset, length);
             }
             @Override
             public ILabelProvider createLabelProvider() {

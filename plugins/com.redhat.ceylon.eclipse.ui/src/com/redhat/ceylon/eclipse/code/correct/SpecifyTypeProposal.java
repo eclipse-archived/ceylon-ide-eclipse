@@ -5,8 +5,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.TypeProposal.getTypeProposals;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
@@ -35,8 +33,9 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 public class SpecifyTypeProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -96,8 +95,8 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                     getTypeProposals(document, offset, length, 
                             infType, rootNode, null);
             try {
-                addLinkedPosition(linkedModeModel, linkedPosition);
-                installLinkedMode(editor, document, linkedModeModel, 
+                LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
+                LinkedMode.installLinkedMode(editor, document, linkedModeModel, 
                         this, NO_STOP, -1);
             } 
             catch (BadLocationException e) {

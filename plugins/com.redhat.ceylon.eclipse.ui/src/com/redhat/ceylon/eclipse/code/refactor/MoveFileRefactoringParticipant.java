@@ -44,6 +44,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class MoveFileRefactoringParticipant extends MoveParticipant {
 
@@ -275,12 +276,13 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             final Map<Declaration, String> imports) {
         try {
             CompilationUnit cu = movedPhasedUnit.getCompilationUnit();
-            TextFileChange change = new MovingTextFileChange(newFile.getName(), newFile, file);
+            TextFileChange change = 
+                    new MovingTextFileChange(newFile.getName(), newFile, file);
             change.setEdit(new MultiTextEdit());
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = importEdits(cu, 
                         imports.keySet(), imports.values(), null, 
-                        change.getCurrentDocument(null));
+                        EditorUtil.getDocument(change));
                 for (TextEdit edit: edits) {
                     change.addEdit(edit);
                 }
@@ -302,11 +304,15 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             final Map<Declaration, String> imports) {
         try {
             if (!imports.isEmpty()) {
-                IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                TextFileChange change = new TextFileChange(file.getName(), file);
-                List<TextEdit> edits = importEditForMove(phasedUnit.getCompilationUnit(), 
-                        imports.keySet(), imports.values(), newName, oldName, 
-                        change.getCurrentDocument(null));
+                IFile file = 
+                        ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                TextFileChange change = 
+                        new TextFileChange(file.getName(), file);
+                List<TextEdit> edits = 
+                        importEditForMove(phasedUnit.getCompilationUnit(), 
+                                imports.keySet(), imports.values(), 
+                                newName, oldName, 
+                                EditorUtil.getDocument(change));
                 if (!edits.isEmpty()) {
                     change.setEdit(new MultiTextEdit());
                     for (TextEdit edit: edits) {

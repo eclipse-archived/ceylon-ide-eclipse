@@ -34,6 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class ChangeTypeProposal extends CorrectionProposal {
@@ -56,7 +57,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         }
         TextFileChange change =  new TextFileChange("Change Type", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = CorrectionUtil.getDocument(change);
+        IDocument doc = EditorUtil.getDocument(change);
         String typeName = newType.getProducedTypeName(cu.getUnit());
         int offset = node.getStartIndex();
         int length = node.getStopIndex()-offset+1;

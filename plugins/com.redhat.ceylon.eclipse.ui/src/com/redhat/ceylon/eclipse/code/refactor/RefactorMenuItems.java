@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_CHANGE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_COMPOSITE_CHANGE;
@@ -9,6 +8,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_IMPORT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MOVE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_RENAME;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REORDER;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;

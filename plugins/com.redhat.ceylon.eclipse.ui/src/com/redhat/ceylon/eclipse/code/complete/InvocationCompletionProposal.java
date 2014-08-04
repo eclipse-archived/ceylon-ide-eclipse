@@ -27,8 +27,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importCalla
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.INEXACT_MATCHES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -82,8 +80,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 class InvocationCompletionProposal extends CompletionProposal {
     
@@ -765,7 +764,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     ProposalPosition linkedPosition = 
                             new ProposalPosition(document, start, len, seq, 
                                     props.toArray(NO_COMPLETIONS));
-                    addLinkedPosition(linkedModeModel, linkedPosition);
+                    LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
                     first = first+next+1;
                     next = getNextPosition(document, first);
                     seq++;
@@ -773,7 +772,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 param++; 
             }
             if (seq>0) {
-                installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(), 
+                LinkedMode.installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(), 
                         document, linkedModeModel, this, seq, loc+text.length());
             }
 

@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertToNamedArgumentsProposal extends CorrectionProposal {
@@ -38,7 +39,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
             int length = pal.getStopIndex()-start+1;
             StringBuilder result = new StringBuilder();
             try {
-                if (!Character.isWhitespace(CorrectionUtil.getDocument(tc).getChar(start-1))) {
+                if (!Character.isWhitespace(EditorUtil.getDocument(tc).getChar(start-1))) {
                     result.append(" ");
                 }
             }

@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelection;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
@@ -38,6 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class CreateParameterProposal extends InitializerProposal {
@@ -59,7 +59,7 @@ class CreateParameterProposal extends InitializerProposal {
         TextFileChange change = 
                 new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = getDocument(change);
+        IDocument doc = EditorUtil.getDocument(change);
         int offset = paramList.getStopIndex();
         int il = applyImports(change, imports, 
                 unit.getCompilationUnit(), doc);
@@ -79,7 +79,7 @@ class CreateParameterProposal extends InitializerProposal {
                 new TextFileChange("Add Attribute", file);
         change.setEdit(new MultiTextEdit());
         int offset = paramList.getStopIndex();
-        IDocument doc = getDocument(change);
+        IDocument doc = EditorUtil.getDocument(change);
         String indent;
         String indentAfter;
         int offset2;

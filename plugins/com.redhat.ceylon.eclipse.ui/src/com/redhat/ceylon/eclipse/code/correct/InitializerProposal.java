@@ -6,8 +6,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
@@ -42,7 +40,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 class InitializerProposal extends CorrectionProposal {
 
@@ -190,13 +189,13 @@ class InitializerProposal extends CorrectionProposal {
                             new ProposalPosition(document, point.x, point.y, 0, 
                                     proposals);
                     try {
-                        addLinkedPosition(linkedModeModel, linkedPosition);
+                        LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
                         int adjustedExitPos = exitPos;
                         if (exitPos>=0 && exitPos>point.x) {
                             adjustedExitPos += lenAfter-lenBefore;
                         }
                         int exitSeq = exitPos>=0 ? 1 : NO_STOP;
-                        installLinkedMode(editor, document, linkedModeModel, 
+                        LinkedMode.installLinkedMode(editor, document, linkedModeModel, 
                                 this, exitSeq, adjustedExitPos);
                     } 
                     catch (BadLocationException e) {

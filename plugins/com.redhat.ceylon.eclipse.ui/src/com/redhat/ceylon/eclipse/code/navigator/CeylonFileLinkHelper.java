@@ -12,9 +12,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
 import com.redhat.ceylon.eclipse.code.editor.SourceArchiveEditorInput;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 @SuppressWarnings("restriction")
 public class CeylonFileLinkHelper extends JavaFileLinkHelper {
@@ -23,7 +23,7 @@ public class CeylonFileLinkHelper extends JavaFileLinkHelper {
     public void activateEditor(IWorkbenchPage page,
             IStructuredSelection selection) {
         if (selection.getFirstElement() instanceof CeylonArchiveFileStore) {
-            IEditorInput input = EditorUtility.getEditorInput(selection.getFirstElement());
+            IEditorInput input = EditorUtil.getEditorInput(selection.getFirstElement());
             IWorkbenchPage p= JavaPlugin.getActivePage();
             if (p != null) {
                 IEditorPart editor = p.findEditor(input);

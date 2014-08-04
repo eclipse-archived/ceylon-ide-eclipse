@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -32,6 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class CreateTypeParameterProposal extends CorrectionProposal {
@@ -48,7 +48,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = getDocument(change);
+        IDocument doc = EditorUtil.getDocument(change);
         HashSet<Declaration> decs = new HashSet<Declaration>();
         CompilationUnit cu = unit.getCompilationUnit();
         int il = applyImports(change, decs, cu, doc);

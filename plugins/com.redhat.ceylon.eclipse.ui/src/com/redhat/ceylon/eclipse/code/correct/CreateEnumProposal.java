@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ATTRIBUTE;
@@ -24,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -95,7 +95,7 @@ class CreateEnumProposal extends CorrectionProposal {
             Tree.Statement statement) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange("Create Enumerated", file);
-        IDocument doc = getDocument(change);
+        IDocument doc = EditorUtil.getDocument(change);
         String indent = getIndent(statement, doc);
         String s = indent + def + Indents.getDefaultLineDelimiter(doc);
         int offset = statement.getStopIndex()+2;

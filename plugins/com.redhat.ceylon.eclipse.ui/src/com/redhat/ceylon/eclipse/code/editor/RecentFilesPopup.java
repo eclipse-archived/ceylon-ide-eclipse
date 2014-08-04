@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getActivePage;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getDirtyEditors;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDirtyEditors;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +40,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
+import com.redhat.ceylon.eclipse.util.EditorUtil;
+
 public class RecentFilesPopup extends PopupDialog {
     
     public static List<IFile> recents = new ArrayList<IFile>();
@@ -70,7 +72,7 @@ public class RecentFilesPopup extends PopupDialog {
         list.setLabelProvider(new StorageLabelProvider() {
             @Override
             public String getText(Object element) {
-                for (IEditorPart part: EditorUtility.getDirtyEditors()) {
+                for (IEditorPart part: EditorUtil.getDirtyEditors()) {
                     if (getFile(part.getEditorInput())==element) {
                         return "*" + super.getText(element);
                     }

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;

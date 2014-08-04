@@ -46,6 +46,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class ImportProposals {
@@ -101,7 +102,7 @@ public class ImportProposals {
             IFile file, Declaration declaration) {
         TextFileChange change = 
                 new TextFileChange("Add Import", file);
-        IDocument doc = CorrectionUtil.getDocument(change);
+        IDocument doc = EditorUtil.getDocument(change);
         List<InsertEdit> ies = 
                 importEdits(cu, singleton(declaration), 
                         null, null, doc);

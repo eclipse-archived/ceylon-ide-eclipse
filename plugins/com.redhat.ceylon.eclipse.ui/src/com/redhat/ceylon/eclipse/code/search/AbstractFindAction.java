@@ -1,9 +1,8 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getProject;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnit;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getProject;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 
@@ -107,7 +106,7 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             declaration = 
-                    getReferencedExplicitDeclaration(getSelectedNode(ce), 
+                    getReferencedExplicitDeclaration(ce.getSelectedNode(), 
                             ce.getParseController().getRootNode());
             setEnabled(isValidSelection());
         }

@@ -19,6 +19,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 class FixMultilineStringIndentationProposal 
@@ -30,7 +31,7 @@ class FixMultilineStringIndentationProposal
         if (node instanceof Tree.StringLiteral) {
             TextFileChange change = 
                     new TextFileChange("Fix Multiline String", file);
-            IDocument doc = CorrectionUtil.getDocument(change);
+            IDocument doc = EditorUtil.getDocument(change);
             Tree.StringLiteral literal = (Tree.StringLiteral) node;
             int offset = literal.getStartIndex();
             int length = literal.getStopIndex() - 

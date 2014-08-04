@@ -35,7 +35,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.editors.text.TextEditor;
 
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSearchDialogPage extends DialogPage 
         implements ISearchPage {

@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDocument;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -20,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
@@ -39,7 +38,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                 new TextFileChange("Convert to Positional Arguments", file);
         Integer start = nal.getStartIndex();
         try {
-            if (getDocument(tc).getChar(start-1)==' ') {
+            if (EditorUtil.getDocument(tc).getChar(start-1)==' ') {
                 start--;
             }
         }
