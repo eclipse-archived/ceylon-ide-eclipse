@@ -84,8 +84,8 @@ public abstract class AbstractInformationControl implements IInformationControl,
 
     /** Composite containing the status line content or <code>null</code> if none. */
     private Composite fStatusComposite;
-    /** Separator between content and status line or <code>null</code> if none. */
-    private Label fSeparator;
+//    /** Separator between content and status line or <code>null</code> if none. */
+//    private Label fSeparator;
     /** Label in the status line or <code>null</code> if none. */
     private Label fStatusLabel;
     /**
