@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.intersectionType;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -10,7 +11,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -22,7 +22,7 @@ class InferTypeVisitor extends Visitor {
     ProducedType inferredType;
     
     void intersect(ProducedType pt) {
-        if (pt!=null && !(pt.getDeclaration() instanceof UnknownType)) {
+        if (!isTypeUnknown(pt)) {
             if (inferredType==null) {
                 inferredType = pt;
             }
@@ -36,7 +36,7 @@ class InferTypeVisitor extends Visitor {
     }
     
     void union(ProducedType pt) {
-        if (pt!=null && !(pt.getDeclaration() instanceof UnknownType)) {
+        if (!isTypeUnknown(pt)) {
             if (inferredType==null) {
                 inferredType = pt;
             }

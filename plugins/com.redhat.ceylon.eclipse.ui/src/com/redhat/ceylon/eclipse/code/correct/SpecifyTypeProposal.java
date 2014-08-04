@@ -142,7 +142,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
             public void visit(Tree.TypedDeclaration that) {
                 if (that.getType()==type) {
                     dec = that.getDeclarationModel();
-                    union(that.getType().getTypeModel());
+//                    union(that.getType().getTypeModel());
                 }
                 super.visit(that);
             }            
