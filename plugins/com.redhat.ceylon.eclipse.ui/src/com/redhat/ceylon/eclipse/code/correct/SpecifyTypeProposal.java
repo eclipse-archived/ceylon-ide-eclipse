@@ -8,8 +8,10 @@ import static com.redhat.ceylon.eclipse.code.correct.TypeProposal.getTypeProposa
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -107,37 +109,43 @@ public class SpecifyTypeProposal implements ICompletionProposal,
 
     static void addSpecifyTypeProposal(Tree.CompilationUnit cu, Node node,
             Collection<ICompletionProposal> proposals, CeylonEditor editor) {
-        SpecifyTypeProposal proposal = 
-                createProposal(cu, node, editor);
-        if (proposal!=null) {
+        for (SpecifyTypeProposal proposal: createProposals(cu, node, editor)) {
             proposals.add(proposal);
         }
     }
 
-    public static SpecifyTypeProposal createProposal(Tree.CompilationUnit cu, 
+    public static List<SpecifyTypeProposal> createProposals(Tree.CompilationUnit cu, 
             Node node, CeylonEditor editor) {
         final Tree.Type type = (Tree.Type) node;
-        String desc;
+        InferredType result = inferType(cu, type);
+        List<SpecifyTypeProposal> list = new ArrayList<SpecifyTypeProposal>(2);
+        if (!isTypeUnknown(result.generalizedType) &&
+                (isTypeUnknown(result.inferredType) || 
+                        !result.generalizedType.isSubtypeOf(result.inferredType)) &&
+                !result.generalizedType.isSubtypeOf(type.getTypeModel())) {
+            list.add(new SpecifyTypeProposal("Widen type to", 
+                    type, cu, result.generalizedType, editor));
+        }
+        if (!isTypeUnknown(result.inferredType)) {
+            if (!result.inferredType.isSubtypeOf(type.getTypeModel())) {
+                list.add(new SpecifyTypeProposal("Change type to", type, cu,
+                        result.inferredType, editor));
+            }
+            else if (!type.getTypeModel().isSubtypeOf(result.inferredType)) {
+                list.add(new SpecifyTypeProposal("Narrow type to", type, cu,
+                        result.inferredType, editor));
+            }
+        }
         if (type instanceof Tree.LocalModifier) {
-            desc = "Specify explicit type";
+            list.add(new SpecifyTypeProposal("Declare explicit type", 
+                    type, cu, type.getTypeModel(), editor));
         }
-        else {
-            desc = "Generalize type";
-        }
-        ProducedType infType = inferType(cu, type);
-        if (isTypeUnknown(infType)) {
-            return null;
-        }
-        else {
-            return new SpecifyTypeProposal(desc, type, cu,
-                    infType, editor);
-        }
+        return list;
     }
 
-    static ProducedType inferType(Tree.CompilationUnit cu,
+    static InferredType inferType(Tree.CompilationUnit cu,
             final Tree.Type type) {
-        InferTypeVisitor itv = new InferTypeVisitor() {
-            { unit = type.getUnit(); }
+        InferTypeVisitor itv = new InferTypeVisitor(type.getUnit()) {
             @Override 
             public void visit(Tree.TypedDeclaration that) {
                 if (that.getType()==type) {
@@ -148,16 +156,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
             }            
         };
         itv.visit(cu);
-        if (isTypeUnknown(itv.inferredType)) {
-            return itv.generalizedType;
-        }
-        else if (isTypeUnknown(itv.generalizedType)) {
-            return itv.inferredType;
-        }
-        else {
-            return itv.inferredType.isSubtypeOf(itv.generalizedType) ?
-                    itv.generalizedType : itv.inferredType;
-        }
+        return itv.result;
     }
 
     @Override

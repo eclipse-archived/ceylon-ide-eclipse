@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.inferType;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -134,7 +133,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
         int il;
         if (type instanceof Tree.LocalModifier) {
             Integer typeOffset = type.getStartIndex();
-            ProducedType infType = inferType(cu, type);
+            ProducedType infType = type.getTypeModel();
             String explicitType;
             if (infType==null) {
                 explicitType = "Object";
@@ -159,22 +158,25 @@ class SplitDeclarationProposal extends CorrectionProposal {
 	static void addSplitDeclarationProposals(
 			Collection<ICompletionProposal> proposals, IDocument doc,
 			IFile file, Tree.CompilationUnit cu, Tree.Declaration decNode) {
-		if (decNode instanceof Tree.AttributeDeclaration) {
-	        Tree.AttributeDeclaration attDecNode = 
-	                (Tree.AttributeDeclaration) decNode;
-	        Tree.SpecifierOrInitializerExpression sie = 
-	                attDecNode.getSpecifierOrInitializerExpression();
-	        if (sie!=null || decNode.getDeclarationModel().isParameter()) {
-	            addSplitDeclarationProposal(doc, attDecNode, cu, file, proposals);
+	    Declaration dec = decNode.getDeclarationModel();
+	    if (dec!=null) {
+	        if (decNode instanceof Tree.AttributeDeclaration) {
+	            Tree.AttributeDeclaration attDecNode = 
+	                    (Tree.AttributeDeclaration) decNode;
+	            Tree.SpecifierOrInitializerExpression sie = 
+	                    attDecNode.getSpecifierOrInitializerExpression();
+	            if (sie!=null || dec.isParameter()) {
+	                addSplitDeclarationProposal(doc, attDecNode, cu, file, proposals);
+	            }
 	        }
-	    }
-	    if (decNode instanceof Tree.MethodDeclaration) {
-	        Tree.MethodDeclaration methDecNode = 
-	                (Tree.MethodDeclaration) decNode;
-	        Tree.SpecifierExpression sie = 
-	                methDecNode.getSpecifierExpression();
-	        if (sie!=null || decNode.getDeclarationModel().isParameter()) {
-	            addSplitDeclarationProposal(doc, methDecNode, cu, file, proposals);
+	        if (decNode instanceof Tree.MethodDeclaration) {
+	            Tree.MethodDeclaration methDecNode = 
+	                    (Tree.MethodDeclaration) decNode;
+	            Tree.SpecifierExpression sie = 
+	                    methDecNode.getSpecifierExpression();
+	            if (sie!=null || dec.isParameter()) {
+	                addSplitDeclarationProposal(doc, methDecNode, cu, file, proposals);
+	            }
 	        }
 	    }
 	}
