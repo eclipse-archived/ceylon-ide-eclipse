@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.unregisterEditingSupport;
 import static org.eclipse.core.commands.operations.OperationHistoryFactory.getOperationHistory;
 
 import java.lang.reflect.InvocationTargetException;
@@ -32,6 +30,7 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.eclipse.code.editor.AbstractLinkedModeListener;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.FocusEditingSupport;
+import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 public abstract class AbstractLinkedMode {
 
@@ -79,7 +78,7 @@ public abstract class AbstractLinkedMode {
                 return super.ownsFocusShell();
             }
         };
-        installLinkedMode(editor, linkedModeModel, this, 
+        LinkedMode.installLinkedMode(editor, linkedModeModel, this, 
                 exitSequenceNumber, exitPosition, 
                 editingSupport, createExitPolicy(document), 
                 new AbstractLinkedModeListener(editor, this) {
@@ -101,7 +100,7 @@ public abstract class AbstractLinkedMode {
                             }
                             cancel();
                         }
-                        unregisterEditingSupport(editor, editingSupport);
+                        LinkedMode.unregisterEditingSupport(editor, editingSupport);
                     }
                 });
         

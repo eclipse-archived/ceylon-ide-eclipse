@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.getDocument;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtility.openInEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 
 import java.util.ArrayList;
 
@@ -18,6 +18,8 @@ import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 
 public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
         IMarkerResolutionGenerator2 {
@@ -47,7 +49,7 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
 
         public void run(IMarker marker) {
             try {
-                IEditorPart part = openInEditor(marker.getResource());
+                IEditorPart part = Navigation.openInEditor(marker.getResource());
                 if (part instanceof ITextEditor) {
                     ((ITextEditor) part).selectAndReveal(fOffset, fLength);
                 }
@@ -87,7 +89,7 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
             };
 
             ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-            IDocument doc = getDocument(marker.getResource());
+            IDocument doc = getDocument(getEditorInput(marker.getResource()));
             new CeylonCorrectionProcessor(marker).collectCorrections(quickAssistContext, 
                     new ProblemLocation(marker), proposals);
 

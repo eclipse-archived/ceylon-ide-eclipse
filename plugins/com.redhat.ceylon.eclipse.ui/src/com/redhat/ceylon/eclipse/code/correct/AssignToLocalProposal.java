@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
 import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getSupertypeProposals;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 
@@ -32,10 +31,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalExtension6 {
@@ -89,8 +89,8 @@ class AssignToLocalProposal implements ICompletionProposal, ICompletionProposalE
                 		new ProposalPosition(document, offset+6, initialName.length(), 0, 
                 				getNameProposals(offset, 1, nameProposals));
                 
-                addLinkedPosition(linkedModeModel, typePosition);
-                addLinkedPosition(linkedModeModel, namePosition);
+                LinkedMode.addLinkedPosition(linkedModeModel, typePosition);
+                LinkedMode.addLinkedPosition(linkedModeModel, namePosition);
                 
                 enterLinkedMode(document, 2, exitPos + initialName.length() + 9);
                 openPopup();

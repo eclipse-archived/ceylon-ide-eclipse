@@ -18,8 +18,8 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.editor.RecentFilesPopup;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonStartup implements IStartup {
 

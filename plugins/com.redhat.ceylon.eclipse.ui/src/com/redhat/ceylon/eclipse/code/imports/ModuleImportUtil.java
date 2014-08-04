@@ -13,9 +13,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -33,6 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -64,12 +63,7 @@ public class ModuleImportUtil {
         if (edit!=null) {
             textFileChange.addEdit(edit);
         }
-        try {
-            textFileChange.perform(new NullProgressMonitor());
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
+        EditorUtil.performChange(textFileChange);
     }
     
     public static void removeModuleImports(IFile file, CompilationUnit cu, 
@@ -83,12 +77,7 @@ public class ModuleImportUtil {
                 textFileChange.addEdit(edit);
             }
         }
-        try {
-            textFileChange.perform(new NullProgressMonitor());
-        }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
+        EditorUtil.performChange(textFileChange);
     }
     
     public static void addModuleImport(IProject project, Module target, 
@@ -111,36 +100,36 @@ public class ModuleImportUtil {
                         getFile(unit));
         textFileChange.setEdit(new MultiTextEdit());
         Tree.CompilationUnit compilationUnit = unit.getCompilationUnit();
-        try {
-            IDocument doc = textFileChange.getCurrentDocument(null);
-            for (String moduleName: moduleNames) {
-                for (Tree.ImportModule im: compilationUnit.getModuleDescriptors().get(0)
-                        .getImportModuleList().getImportModules()) {
-                    if (im.getImportPath().getModel().getNameAsString().equals(moduleName)) {
-                        if (!removeSharedAnnotation(textFileChange, doc, im.getAnnotationList())) {
-                            textFileChange.addEdit(new InsertEdit(im.getStartIndex(), 
-                                    "shared "));
-                        }
+        IDocument doc = EditorUtil.getDocument(textFileChange);
+        for (String moduleName: moduleNames) {
+            for (Tree.ImportModule im: compilationUnit.getModuleDescriptors().get(0)
+                    .getImportModuleList().getImportModules()) {
+                String importedName = im.getImportPath().getModel().getNameAsString();
+                if (importedName.equals(moduleName)) {
+                    if (!removeSharedAnnotation(textFileChange, doc, im.getAnnotationList())) {
+                        textFileChange.addEdit(new InsertEdit(im.getStartIndex(), 
+                                "shared "));
                     }
                 }
             }
-            textFileChange.perform(new NullProgressMonitor());
         }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        EditorUtil.performChange(textFileChange);
     }
 
     public static boolean removeSharedAnnotation(TextFileChange textFileChange,
-            IDocument doc, Tree.AnnotationList al) throws BadLocationException {
+            IDocument doc, Tree.AnnotationList al) {
         boolean result = false;
         for (Tree.Annotation a: al.getAnnotations()) {
             if (((Tree.BaseMemberExpression) a.getPrimary()).getDeclaration()
                     .getName().equals("shared")) {
                 int stop = a.getStopIndex()+1;
                 int start = a.getStartIndex();
-                while (Character.isWhitespace(doc.getChar(stop))) {
-                    stop++;
+                try {
+                    while (Character.isWhitespace(doc.getChar(stop))) {
+                        stop++;
+                    }
+                } catch (BadLocationException e) {
+                    e.printStackTrace();
                 }
                 textFileChange.addEdit(new DeleteEdit(start, stop-start));
                 result = true;
@@ -163,21 +152,16 @@ public class ModuleImportUtil {
         TextFileChange textFileChange = 
                 new TextFileChange("Add Module Imports", file);
         textFileChange.setEdit(new MultiTextEdit());
-        try {
-            for (Map.Entry<String, String> entry: 
-                moduleNamesAndVersions.entrySet()) {
-                InsertEdit edit = createAddEdit(cu, entry.getKey(), 
-                        entry.getValue(), 
-                        textFileChange.getCurrentDocument(null));
-                if (edit!=null) {
-                    textFileChange.addEdit(edit);
-                }
+        for (Map.Entry<String, String> entry: 
+            moduleNamesAndVersions.entrySet()) {
+            InsertEdit edit = createAddEdit(cu, entry.getKey(), 
+                    entry.getValue(), 
+                    EditorUtil.getDocument(textFileChange));
+            if (edit!=null) {
+                textFileChange.addEdit(edit);
             }
-            textFileChange.perform(new NullProgressMonitor());
         }
-        catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
+        EditorUtil.performChange(textFileChange);
         return textFileChange.getEdit().getOffset();
     }
 

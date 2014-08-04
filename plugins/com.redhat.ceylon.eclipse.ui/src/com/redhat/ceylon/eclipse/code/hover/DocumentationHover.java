@@ -16,7 +16,6 @@ import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.i
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDocDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.isVariable;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitialValueDescription;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectionFromThread;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
@@ -539,7 +538,7 @@ public class DocumentationHover
         if (rn!=null) {
             int hoffset = hoverRegion.getOffset();
             ITextSelection selection = 
-                    getSelectionFromThread(editor);
+                    editor.getSelectionFromThread();
             if (selection!=null && 
                 selection.getOffset()<=hoffset &&
                 selection.getOffset()+selection.getLength()>=hoffset) {

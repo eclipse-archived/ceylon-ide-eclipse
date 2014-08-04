@@ -40,8 +40,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
@@ -341,7 +341,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
             if (cpc!=null) {
                 Tree.CompilationUnit cu = cpc.getRootNode();
                 if (cu!=null) {
-                    ITextSelection selection = EditorUtil.getSelectionFromThread(ce);
+                    ITextSelection selection = ce.getSelectionFromThread();
                     Node node = Nodes.findToplevelStatement(cu, 
                             Nodes.findNode(cu,selection));
                     if (node instanceof Tree.AnyMethod) {

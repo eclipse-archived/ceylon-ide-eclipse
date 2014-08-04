@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelection;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 
 import java.util.List;
 

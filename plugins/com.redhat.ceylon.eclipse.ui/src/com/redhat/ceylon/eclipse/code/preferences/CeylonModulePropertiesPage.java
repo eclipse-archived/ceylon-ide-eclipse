@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
@@ -59,11 +58,12 @@ import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonModulePropertiesPage extends PropertyPage 
         implements IWorkbenchPropertyPage {
@@ -127,7 +127,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
             @Override
             public void widgetSelected(SelectionEvent e) {
                 getShell().close();
-                EditorUtil.gotoLocation(moduleDescriptor, 0);
+                Navigation.gotoLocation(moduleDescriptor, 0);
             }
         });
     }
@@ -374,22 +374,17 @@ public class CeylonModulePropertiesPage extends PropertyPage
                     new TextFileChange("Make Package Import Shared", 
                             getFile(phasedUnit));
             textFileChange.setEdit(new MultiTextEdit());
-            try {
-                IDocument doc = textFileChange.getCurrentDocument(null);
-                Tree.PackageDescriptor pd = phasedUnit.getCompilationUnit()
-                        .getPackageDescriptors().get(0);
-                if (pkg.isShared()) {
-                    removeSharedAnnotation(textFileChange, doc, pd.getAnnotationList());
-                }
-                else {
-                    textFileChange.addEdit(new InsertEdit(pd.getStartIndex(), "shared "));
-                }
-                textFileChange.perform(new NullProgressMonitor());
-                item.setText(1, !pkg.isShared() ? "shared" : "");
+            IDocument doc = EditorUtil.getDocument(textFileChange);
+            Tree.PackageDescriptor pd = phasedUnit.getCompilationUnit()
+                    .getPackageDescriptors().get(0);
+            if (pkg.isShared()) {
+                removeSharedAnnotation(textFileChange, doc, pd.getAnnotationList());
             }
-            catch (Exception ce) {
-                ce.printStackTrace();
+            else {
+                textFileChange.addEdit(new InsertEdit(pd.getStartIndex(), "shared "));
             }
+            EditorUtil.performChange(textFileChange);
+            item.setText(1, !pkg.isShared() ? "shared" : "");
         }
     }
     

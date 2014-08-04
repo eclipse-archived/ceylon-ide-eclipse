@@ -29,6 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -49,7 +50,7 @@ class ChangeReferenceProposal extends CorrectionProposal
         TextFileChange change = 
                 new TextFileChange("Change Reference", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = CorrectionUtil.getDocument(change);
+        IDocument doc = EditorUtil.getDocument(change);
         Declaration dec = dwp.getDeclaration();
         String pkg = "";
         if (dec.isToplevel() && 

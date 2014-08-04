@@ -42,7 +42,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
@@ -135,7 +135,7 @@ public class CeylonOpenAction extends OpenAction {
                         }
                     }
                     
-                    IEditorPart part= EditorUtility.openInEditor(elementToOpen, activateOnOpen);
+                    IEditorPart part= Navigation.openInEditor(elementToOpen, activateOnOpen);
                     
                     if (elementToOpen instanceof IJavaElement) {
                         if (part instanceof CeylonEditor) {

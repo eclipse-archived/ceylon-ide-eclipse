@@ -66,8 +66,8 @@ import org.eclipse.ui.commands.HandlerSubmission;
 import org.eclipse.ui.commands.Priority;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
  * Abstract class for Show hierarchy in light-weight controls.

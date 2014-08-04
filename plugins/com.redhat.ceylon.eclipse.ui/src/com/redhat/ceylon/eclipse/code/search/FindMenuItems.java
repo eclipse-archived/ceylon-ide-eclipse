@@ -2,10 +2,10 @@ package com.redhat.ceylon.eclipse.code.search;
 
 
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;

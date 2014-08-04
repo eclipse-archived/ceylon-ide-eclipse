@@ -31,8 +31,8 @@ import org.eclipse.ui.console.TextConsole;
 import org.eclipse.ui.part.FileEditorInput;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtility;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonPatternMatchListenerDelegate 
         implements IPatternMatchListenerDelegate {
@@ -104,7 +104,7 @@ public class CeylonPatternMatchListenerDelegate
                                                     new CeylonArchiveFileStore(archiveFileStore, 
                                                             new Path(packagePath).append(fileName));
                                             if (sourceFileStore.fetchInfo().exists()) {
-                                                input = EditorUtility.getEditorInput(sourceFileStore);
+                                                input = EditorUtil.getEditorInput(sourceFileStore);
                                                 open(line, input);
                                                 return;
                                             }

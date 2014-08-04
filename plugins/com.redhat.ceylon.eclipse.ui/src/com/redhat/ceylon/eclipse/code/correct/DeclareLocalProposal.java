@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.TypeProposal.getTypeProposals;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.addLinkedPosition;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.installLinkedMode;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.util.Collection;
@@ -23,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class DeclareLocalProposal extends CorrectionProposal {
@@ -55,8 +54,8 @@ final class DeclareLocalProposal extends CorrectionProposal {
                             type, rootNode, "value");
 
             try {
-                addLinkedPosition(linkedModeModel, typePosition);
-                installLinkedMode(editor, document, linkedModeModel, 
+                LinkedMode.addLinkedPosition(linkedModeModel, typePosition);
+                LinkedMode.installLinkedMode(editor, document, linkedModeModel, 
                         this, NO_STOP, -1);
             } 
             catch (BadLocationException ble) {

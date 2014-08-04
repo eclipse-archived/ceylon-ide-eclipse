@@ -18,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -41,7 +42,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
                 change.addEdit(new ReplaceEdit(offset, 
                         node.getStartIndex()-offset,
                         "value " + name + " = "));
-                IDocument doc = CorrectionUtil.getDocument(change);
+                IDocument doc = EditorUtil.getDocument(change);
                 change.addEdit(new InsertEdit(node.getStopIndex()+1, ";" + 
                         Indents.getDefaultLineDelimiter(doc) + 
                         getIndent(statement, doc) +

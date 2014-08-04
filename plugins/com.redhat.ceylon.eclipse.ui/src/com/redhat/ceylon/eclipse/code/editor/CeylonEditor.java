@@ -32,6 +32,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImag
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -96,6 +97,7 @@ import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
@@ -133,6 +135,7 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.outline.NavigateMenuItems;
@@ -143,6 +146,7 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage;
 import com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems;
 import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
  * An editor for Ceylon source code.
@@ -1614,7 +1618,7 @@ public class CeylonEditor extends TextEditor {
                 if (ExternalSourceArchiveManager.isInSourceArchive(file)) {
                     IPath fullPath = ExternalSourceArchiveManager.toFullPath(file);
                     if (fullPath != null) {
-                        input = EditorUtility.getEditorInput(fullPath);
+                        input = EditorUtil.getEditorInput(fullPath);
                     } else {
                         // Problem => close the editor
                         input = null;
@@ -1716,4 +1720,31 @@ public class CeylonEditor extends TextEditor {
         return getPreferenceStore().getBoolean(EDITOR_FOLDING_ENABLED);
     }
 
+    public ITextSelection getSelectionFromThread() {
+        final class GetSelection implements Runnable {
+            ITextSelection selection;
+            @Override
+            public void run() {
+                ISelectionProvider sp = 
+                        CeylonEditor.this.getSelectionProvider();
+                selection = sp==null ? 
+                        null : (ITextSelection) sp.getSelection();
+            }
+            ITextSelection getSelection() {
+                Display.getDefault().syncExec(this);
+                return selection;
+            }
+        }
+        return new GetSelection().getSelection();
+    }
+    
+    public Node getSelectedNode() {
+        CeylonParseController cpc = getParseController();
+        if (cpc==null || cpc.getRootNode()==null) {
+            return null;
+        }
+        ITextSelection selection = EditorUtil.getSelection(this);
+        return findNode(cpc.getRootNode(), selection);
+    }
+    
 }

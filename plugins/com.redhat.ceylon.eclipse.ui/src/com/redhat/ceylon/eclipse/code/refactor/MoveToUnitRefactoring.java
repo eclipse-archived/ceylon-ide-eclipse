@@ -1,12 +1,15 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.addImportEdits;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.createEditorChange;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorImports;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectImports;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.removeImport;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getFile;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -62,7 +65,7 @@ public class MoveToUnitRefactoring extends Refactoring {
                 .getDocument(editor.getEditorInput());
         originalFile = getFile(editor.getEditorInput());
         if (rootNode!=null) {
-            Node node = getSelectedNode(editor);
+            Node node = editor.getSelectedNode();
             if (node instanceof Tree.Declaration) {
                 this.node = (Tree.Declaration) node;
             }

@@ -16,7 +16,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getPreferences;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static java.lang.Character.isWhitespace;
 
 import java.util.Iterator;

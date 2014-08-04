@@ -2,10 +2,10 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LAST_EDIT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.NEXT_ANN;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PREV_ANN;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;

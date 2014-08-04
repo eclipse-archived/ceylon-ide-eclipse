@@ -36,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -60,7 +61,7 @@ class CreateProposal extends InitializerProposal {
         TextFileChange change = 
                 new TextFileChange("Create Member", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = CorrectionUtil.getDocument(change);
+        IDocument doc = EditorUtil.getDocument(change);
         String indentBefore;
         String indentAfter;
         String indent;
@@ -150,7 +151,7 @@ class CreateProposal extends InitializerProposal {
         TextFileChange change = new TextFileChange(local ? 
                 "Create Local" : "Create Toplevel", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = CorrectionUtil.getDocument(change);
+        IDocument doc = EditorUtil.getDocument(change);
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
         String delim = getDefaultLineDelimiter(doc);

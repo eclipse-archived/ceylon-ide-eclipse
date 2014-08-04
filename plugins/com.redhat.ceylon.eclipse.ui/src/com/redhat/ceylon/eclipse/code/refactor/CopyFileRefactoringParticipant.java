@@ -39,6 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CopyFileRefactoringParticipant extends CopyParticipant {
 
@@ -139,7 +140,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                 if (!imports.isEmpty()) {
                     List<InsertEdit> list = importEdits(cu, 
                             imports.keySet(), imports.values(), 
-                            null, change.getCurrentDocument(null));
+                            null, EditorUtil.getDocument(change));
                     for (TextEdit edit: list) {
                         change.addEdit(edit);
                     }

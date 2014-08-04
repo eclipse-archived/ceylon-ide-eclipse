@@ -39,10 +39,10 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class HierarchyPopup extends TreeViewPopup {
@@ -283,8 +283,7 @@ public class HierarchyPopup extends TreeViewPopup {
     }
     
     private HierarchyInput getInformation() {
-        Node selectedNode = 
-                EditorUtil.getSelectedNode(editor);
+        Node selectedNode = editor.getSelectedNode();
         Referenceable declaration = 
                 getReferencedDeclaration(selectedNode);
         if (declaration==null) {

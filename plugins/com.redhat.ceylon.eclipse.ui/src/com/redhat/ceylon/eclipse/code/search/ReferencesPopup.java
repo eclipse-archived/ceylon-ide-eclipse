@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getSelectedNode;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,17 +79,16 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.EditorUtil;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.TreeNodeLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.TreeViewMouseListener;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public final class ReferencesPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
@@ -708,9 +707,8 @@ public final class ReferencesPopup extends PopupDialog
     @Override
     public void setInput(Object input) {
         CeylonParseController pc = editor.getParseController();
-//        IProject project = getProject(editor);
         Referenceable declaration = 
-                Nodes.getReferencedExplicitDeclaration(getSelectedNode(editor), 
+                getReferencedExplicitDeclaration(editor.getSelectedNode(), 
                         pc.getRootNode());
         if (declaration==null) {
             return;

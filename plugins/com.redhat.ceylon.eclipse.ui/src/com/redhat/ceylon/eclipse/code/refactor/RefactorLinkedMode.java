@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorUtil.getCommandBinding;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
