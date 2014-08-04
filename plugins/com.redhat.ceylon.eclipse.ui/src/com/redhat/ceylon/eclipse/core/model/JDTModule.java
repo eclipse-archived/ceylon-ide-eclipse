@@ -356,7 +356,6 @@ public class JDTModule extends LazyModule {
                         if (runtimeClasspathEntry != null) {
                             for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
                                     if (root.exists() && 
-                                            root.isConsistent() && 
                                             javaProject.isOnClasspath(root) &&
                                             root.getRawClasspathEntry().equals(runtimeClasspathEntry)) {
                                         packageFragmentRoots.add(root);
