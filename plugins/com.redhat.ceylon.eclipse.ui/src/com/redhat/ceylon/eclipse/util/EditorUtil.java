@@ -31,6 +31,7 @@ import org.eclipse.jdt.internal.core.JarEntryFile;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jdt.internal.ui.javaeditor.JarEntryEditorInput;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.bindings.keys.KeySequence;
@@ -334,7 +335,7 @@ public class EditorUtil {
                 }
             }
 
-            return org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.getEditorInput((IJavaElement) input);
+            return EditorUtility.getEditorInput((IJavaElement) input);
         }
 
         if (JavaModelUtil.isOpenableStorage(input)) {
