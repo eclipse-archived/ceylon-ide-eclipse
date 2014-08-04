@@ -55,21 +55,5 @@ public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
             proposals.add(new SpecifyTypeArgumentsProposal(builder.toString(), change));
         }
     }
-
-    static ProducedType inferType(Tree.CompilationUnit cu,
-            final Tree.Type type) {
-        InferTypeVisitor itv = new InferTypeVisitor() {
-            { unit = type.getUnit(); }
-            @Override public void visit(Tree.TypedDeclaration that) {
-                if (that.getType()==type) {
-                    dec = that.getDeclarationModel();
-                    union(that.getType().getTypeModel());
-                }
-                super.visit(that);
-            }            
-        };
-        itv.visit(cu);
-        return itv.inferredType;
-    }
     
 }

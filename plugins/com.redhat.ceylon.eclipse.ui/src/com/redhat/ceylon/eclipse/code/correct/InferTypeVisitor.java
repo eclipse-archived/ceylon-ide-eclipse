@@ -5,10 +5,12 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.unionType;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -20,16 +22,17 @@ class InferTypeVisitor extends Visitor {
     Unit unit;
     Declaration dec;
     ProducedType inferredType;
+    ProducedType generalizedType;
     
     void intersect(ProducedType pt) {
         if (!isTypeUnknown(pt)) {
-            if (inferredType==null) {
-                inferredType = pt;
+            if (generalizedType==null) {
+                generalizedType = pt;
             }
             else {
-                ProducedType it = intersectionType(inferredType, pt, unit);
+                ProducedType it = intersectionType(generalizedType, pt, unit);
                 if (!(it.getDeclaration() instanceof NothingType)) {
-                    inferredType = it;
+                    generalizedType = it;
                 }
             }
         }
@@ -56,6 +59,11 @@ class InferTypeVisitor extends Visitor {
                 intersect(that.getType().getTypeModel());
             }
         }
+        else if (term!=null) {
+            if (that.getDeclarationModel().equals(dec)) {
+                union(term.getTypeModel());
+            }
+        }
     }
     
     @Override public void visit(Tree.MethodDeclaration that) {
@@ -66,6 +74,11 @@ class InferTypeVisitor extends Visitor {
             Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
             if (d!=null && d.equals(dec)) {
                 intersect(that.getType().getTypeModel());
+            }
+        }
+        else if (term!=null) {
+            if (that.getDeclarationModel().equals(dec)) {
+                union(term.getTypeModel());
             }
         }
     }
@@ -186,6 +199,189 @@ class InferTypeVisitor extends Visitor {
                 }
             }
         }
+        else if (bme!=null) {
+            if (that.getDeclaration().equals(dec)) {
+                union(bme.getTypeModel());
+            }
+        }
     }
-    //TODO: MethodDeclarations
+    
+    @Override
+    public void visit(Tree.QualifiedMemberOrTypeExpression that) {
+        super.visit(that);
+        Tree.Primary primary = that.getPrimary();
+        if (primary instanceof Tree.BaseMemberExpression) {
+            Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
+            if (bmed!=null && bmed.equals(dec)) {
+                TypeDeclaration td = (TypeDeclaration) that.getDeclaration().getRefinedDeclaration().getContainer();
+                intersect(that.getTarget().getQualifyingType().getSupertype(td));
+            }
+        }
+    }
+    
+    @Override
+    public void visit(Tree.KeyValueIterator that) {
+        super.visit(that);
+        Tree.Term primary = that.getSpecifierExpression().getExpression().getTerm();
+        if (primary instanceof Tree.BaseMemberExpression) {
+            Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
+            if (bmed!=null && bmed.equals(dec)) {
+                ProducedType kt = that.getKeyVariable().getType().getTypeModel();
+                ProducedType vt = that.getValueVariable().getType().getTypeModel();
+                intersect(that.getUnit().getIterableType(that.getUnit().getEntryType(kt, vt)));
+            }
+        }
+    }
+    
+    @Override
+    public void visit(Tree.ValueIterator that) {
+        super.visit(that);
+        Tree.Term primary = that.getSpecifierExpression().getExpression().getTerm();
+        if (primary instanceof Tree.BaseMemberExpression) {
+            Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
+            if (bmed!=null && bmed.equals(dec)) {
+                ProducedType vt = that.getVariable().getType().getTypeModel();
+                intersect(that.getUnit().getIterableType(vt));
+            }
+        }
+    }
+    
+    @Override
+    public void visit(Tree.BooleanCondition that) {
+        super.visit(that);
+        Tree.Term primary = that.getExpression().getTerm();
+        if (primary instanceof Tree.BaseMemberExpression) {
+            Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
+            if (bmed!=null && bmed.equals(dec)) {
+                intersect(that.getUnit().getBooleanDeclaration().getType());
+            }
+        }
+    }
+
+    @Override
+    public void visit(Tree.NonemptyCondition that) {
+        super.visit(that);
+        Tree.Term primary = that.getVariable().getSpecifierExpression().getExpression().getTerm();
+        if (primary instanceof Tree.BaseMemberExpression) {
+            Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
+            if (bmed!=null && bmed.equals(dec)) {
+                ProducedType et = that.getUnit().getSequentialElementType(that.getVariable().getType().getTypeModel());
+                intersect(that.getUnit().getSequentialType(et));
+            }
+        }
+    }
+    
+    @Override
+    public void visit(Tree.ArithmeticOp that) {
+        super.visit(that);
+        Interface sd = getArithmeticDeclaration(that);
+        genericOperatorTerm(sd, that.getLeftTerm());
+        genericOperatorTerm(sd, that.getRightTerm());
+    }
+
+    @Override
+    public void visit(Tree.NegativeOp that) {
+        super.visit(that);
+        Interface sd = unit.getInvertableDeclaration();
+        genericOperatorTerm(sd, that.getTerm());
+    }
+
+    @Override
+    public void visit(Tree.PrefixOperatorExpression that) {
+        super.visit(that);
+        Interface sd = unit.getOrdinalDeclaration();
+        genericOperatorTerm(sd, that.getTerm());
+    }
+
+    @Override
+    public void visit(Tree.PostfixOperatorExpression that) {
+        super.visit(that);
+        Interface sd = unit.getOrdinalDeclaration();
+        genericOperatorTerm(sd, that.getTerm());
+    }
+
+    @Override
+    public void visit(Tree.BitwiseOp that) {
+        super.visit(that);
+        Interface sd = unit.getSetDeclaration();
+        genericOperatorTerm(sd, that.getLeftTerm());
+        genericOperatorTerm(sd, that.getRightTerm());
+    }
+
+    @Override
+    public void visit(Tree.ComparisonOp that) {
+        super.visit(that);
+        Interface sd = unit.getComparableDeclaration();
+        genericOperatorTerm(sd, that.getLeftTerm());
+        genericOperatorTerm(sd, that.getRightTerm());
+    }
+
+    @Override
+    public void visit(Tree.CompareOp that) {
+        super.visit(that);
+        Interface sd = unit.getComparableDeclaration();
+        genericOperatorTerm(sd, that.getLeftTerm());
+        genericOperatorTerm(sd, that.getRightTerm());
+    }
+
+    @Override
+    public void visit(Tree.LogicalOp that) {
+        super.visit(that);
+        TypeDeclaration sd = unit.getBooleanDeclaration();
+        operatorTerm(sd, that.getLeftTerm());
+        operatorTerm(sd, that.getRightTerm());
+    }
+
+    @Override
+    public void visit(Tree.NotOp that) {
+        super.visit(that);
+        TypeDeclaration sd = unit.getBooleanDeclaration();
+        operatorTerm(sd, that.getTerm());
+    }
+
+    @Override
+    public void visit(Tree.EntryOp that) {
+        super.visit(that);
+        TypeDeclaration sd = unit.getObjectDeclaration();
+        operatorTerm(sd, that.getLeftTerm());
+        operatorTerm(sd, that.getRightTerm());
+    }
+
+    private Interface getArithmeticDeclaration(Tree.ArithmeticOp that) {
+        if (that instanceof Tree.PowerOp) {
+            return unit.getExponentiableDeclaration();
+        }
+        else if (that instanceof Tree.SumOp) {
+            return unit.getSummableDeclaration();
+        }
+        else if (that instanceof Tree.DifferenceOp) {
+            return unit.getInvertableDeclaration();
+        }
+        else if (that instanceof Tree.RemainderOp) {
+            return unit.getIntegralDeclaration();
+        }
+        else {
+            return unit.getNumericDeclaration();
+        }
+    }
+
+    public void operatorTerm(TypeDeclaration sd, Tree.Term lhs) {
+        if (lhs instanceof Tree.BaseMemberExpression) {
+            Declaration bmed = ((Tree.BaseMemberExpression) lhs).getDeclaration();
+            if (bmed!=null && bmed.equals(dec)) {
+                intersect(sd.getType());
+            }
+        }
+    }
+    
+    public void genericOperatorTerm(TypeDeclaration sd, Tree.Term lhs) {
+        if (lhs instanceof Tree.BaseMemberExpression) {
+            Declaration bmed = ((Tree.BaseMemberExpression) lhs).getDeclaration();
+            if (bmed!=null && bmed.equals(dec)) {
+                intersect(lhs.getTypeModel().getSupertype(sd).getTypeArguments().get(0));
+            }
+        }
+    }
+    
+    //TODO: more operator expressions!
 }
