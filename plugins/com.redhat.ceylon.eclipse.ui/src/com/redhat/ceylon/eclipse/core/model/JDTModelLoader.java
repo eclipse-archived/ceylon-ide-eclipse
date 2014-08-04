@@ -606,7 +606,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
-            if (! jdtModule.equals(getLanguageModule()) && jdtModule.isCeylonBinaryArchive()) {
+            if (! jdtModule.equals(getLanguageModule()) && (jdtModule.isCeylonBinaryArchive() || jdtModule.isJavaBinaryArchive())) {
                 CeylonProjectModulesContainer container = CeylonClasspathUtil.getCeylonProjectModulesClasspathContainer(javaProject);
 
                 if (container != null) {
@@ -623,7 +623,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                         refreshNameEnvironment();
                     }
                 }
-            } // We don't need to add simple Java Jars progressively on the classpath
+            }
         }
     }
     
