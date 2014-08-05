@@ -216,6 +216,14 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
    }
 
    @Test
+   public void removeAndRestore_PureJavaSecondaryClass_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "javaSrc/mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java", 
+               "JavaSecondaryClassInCeylonModule_Main_Ceylon_Project", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'JavaSecondaryClassInCeylonModule_Main_Ceylon_Project'")));
+   }
+
+   @Test
    public void removeAndRestore_CeylonClass_Method_InSameProject() throws InterruptedException, CoreException {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
