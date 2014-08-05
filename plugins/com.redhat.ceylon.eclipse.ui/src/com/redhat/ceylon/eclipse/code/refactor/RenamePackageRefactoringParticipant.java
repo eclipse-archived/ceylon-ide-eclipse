@@ -27,6 +27,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
@@ -88,6 +89,25 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                         super.visit(that);
                         if (formatPath(that.getIdentifiers()).equals(oldName)) {
                             edits.add(new ReplaceEdit(that.getStartIndex(), 
+                                    oldName.length(), newName));
+                        }
+                    }
+                    @Override
+                    public void visit(DocLink that) {
+                        super.visit(that);
+                        //TODO: fix copy/paste from RenameRefactoring
+                        String text = that.getText();
+                        int offset = that.getStartIndex();
+                        
+                        int pipeIndex = text.indexOf("|");
+                        if (pipeIndex > -1) {
+                            text = text.substring(pipeIndex + 1);
+                            offset += pipeIndex + 1;
+                        }
+                        
+                        int scopeIndex = text.indexOf("::");
+                        if (scopeIndex>=0 && text.substring(scopeIndex).endsWith(oldName)) {
+                            edits.add(new ReplaceEdit(offset, 
                                     oldName.length(), newName));
                         }
                     }
