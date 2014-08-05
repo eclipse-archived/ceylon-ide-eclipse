@@ -146,6 +146,9 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         change.add(originalUnitChange);
         
         refactorProjectImports(node, originalFile, targetFile, change, original, moved);
+        
+        //TODO: DocLinks
+        
         return change;
     }
     

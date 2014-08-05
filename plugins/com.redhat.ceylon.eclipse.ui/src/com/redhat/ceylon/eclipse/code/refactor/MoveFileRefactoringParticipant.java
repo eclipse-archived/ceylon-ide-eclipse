@@ -157,6 +157,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                     imports.put(dec, id.getText());
                 }
             }
+            //TODO: DocLinks!!
         });
         collectEditsToMovedFile(newName, oldName, changes, movedPhasedUnit, imports);
     }
@@ -171,7 +172,8 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             if (phasedUnit==movedPhasedUnit) {
                 continue;
             }
-            final Map<Declaration,String> imports = new HashMap<Declaration,String>();
+            final Map<Declaration,String> imports = 
+                    new HashMap<Declaration,String>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
                 @Override
                 public void visit(ImportMemberOrType that) {
@@ -203,6 +205,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                         imports.put(dec, id.getText());
                     }
                 }
+              //TODO: DocLinks!!
             });
             collectEdits(newName, oldName, changes, phasedUnit, imports);
         }
@@ -217,7 +220,8 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         TypeChecker tc = getProjectTypeChecker(project);
         if (tc==null) return;
         for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
-            final Map<Declaration,String> imports = new HashMap<Declaration,String>();
+            final Map<Declaration,String> imports = 
+                    new HashMap<Declaration,String>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
                 @Override
                 public void visit(ImportMemberOrType that) {
