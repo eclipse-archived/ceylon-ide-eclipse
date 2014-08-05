@@ -164,7 +164,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
                "CeylonTopLevelClass_Main_Ceylon_Project", "Z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: CeylonTopLevelClass_Main_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'CeylonTopLevelClass_Main_Ceylon_Project'")));
    }
 
    @Test
@@ -172,7 +172,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
                "ceylonTopLevelObject_Main_Ceylon_Project", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: ceylonTopLevelObject_Main_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: 'ceylonTopLevelObject_Main_Ceylon_Project'")));
    }
 
    @Test
@@ -180,7 +180,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
                "ceylonTopLevelMethod_Main_Ceylon_Project", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: ceylonTopLevelMethod_Main_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: 'ceylonTopLevelMethod_Main_Ceylon_Project'")));
    }
 
    @Test
@@ -188,7 +188,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "javaSrc/mainModule/JavaCeylonTopLevelClass_Main_Ceylon_Project.java", 
                "JavaCeylonTopLevelClass_Main_Ceylon_Project", "Z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: JavaCeylonTopLevelClass_Main_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'JavaCeylonTopLevelClass_Main_Ceylon_Project'")));
    }
 
    @Test
@@ -196,7 +196,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "javaSrc/mainModule/javaCeylonTopLevelObject_Main_Ceylon_Project_.java", 
                "javaCeylonTopLevelObject_Main_Ceylon_Project_", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: javaCeylonTopLevelObject_Main_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: 'javaCeylonTopLevelObject_Main_Ceylon_Project'")));
    }
 
    @Test
@@ -204,7 +204,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "javaSrc/mainModule/javaCeylonTopLevelMethod_Main_Ceylon_Project_.java", 
                "javaCeylonTopLevelMethod_Main_Ceylon_Project_", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: javaCeylonTopLevelMethod_Main_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: 'javaCeylonTopLevelMethod_Main_Ceylon_Project'")));
    }
 
    @Test
@@ -212,7 +212,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "javaSrc/mainModule/JavaClassInCeylonModule_Main_Ceylon_Project.java", 
                "JavaClassInCeylonModule_Main_Ceylon_Project", "Z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: JavaClassInCeylonModule_Main_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'JavaClassInCeylonModule_Main_Ceylon_Project'")));
    }
 
    @Test
@@ -220,7 +220,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
                "method", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: method")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'method'")));
    }
 
    @Test
@@ -228,7 +228,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
                "attribute", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: attribute")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'attribute'")));
    }
 
    @Test
@@ -236,7 +236,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
                "InnerClass", "Z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: InnerClass")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'InnerClass'")));
    }
 
    @Test
@@ -244,7 +244,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
                "obj {}", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: obj")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'obj'")));
    }
    
    
@@ -253,7 +253,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                "CeylonTopLevelClass_Referenced_Ceylon_Project", "Z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: CeylonTopLevelClass_Referenced_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'CeylonTopLevelClass_Referenced_Ceylon_Project'")));
    }
 
    @Test
@@ -261,7 +261,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                "ceylonTopLevelObject_Referenced_Ceylon_Project", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: ceylonTopLevelObject_Referenced_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: 'ceylonTopLevelObject_Referenced_Ceylon_Project'")));
    }
 
    @Test
@@ -269,7 +269,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                "ceylonTopLevelMethod_Referenced_Ceylon_Project", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: ceylonTopLevelMethod_Referenced_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: 'ceylonTopLevelMethod_Referenced_Ceylon_Project'")));
    }
 
    @Test
@@ -277,7 +277,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "javaSrc/referencedCeylonProject/JavaCeylonTopLevelClass_Referenced_Ceylon_Project.java", 
                "JavaCeylonTopLevelClass_Referenced_Ceylon_Project", "Z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: JavaCeylonTopLevelClass_Referenced_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'JavaCeylonTopLevelClass_Referenced_Ceylon_Project'")));
    }
 
    @Test
@@ -285,7 +285,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "javaSrc/referencedCeylonProject/javaCeylonTopLevelObject_Referenced_Ceylon_Project_.java", 
                "javaCeylonTopLevelObject_Referenced_Ceylon_Project_", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: javaCeylonTopLevelObject_Referenced_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: 'javaCeylonTopLevelObject_Referenced_Ceylon_Project'")));
    }
 
    @Test
@@ -293,7 +293,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "javaSrc/referencedCeylonProject/javaCeylonTopLevelMethod_Referenced_Ceylon_Project_.java", 
                "javaCeylonTopLevelMethod_Referenced_Ceylon_Project_", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: javaCeylonTopLevelMethod_Referenced_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "function or value does not exist: 'javaCeylonTopLevelMethod_Referenced_Ceylon_Project'")));
    }
 
    @Test
@@ -301,7 +301,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "javaSrc/referencedCeylonProject/JavaClassInCeylonModule_Referenced_Ceylon_Project.java", 
                "JavaClassInCeylonModule_Referenced_Ceylon_Project", "Z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: JavaClassInCeylonModule_Referenced_Ceylon_Project")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'JavaClassInCeylonModule_Referenced_Ceylon_Project'")));
    }
 
    @Test
@@ -309,7 +309,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                "method", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: method")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'method'")));
    }
 
    @Test
@@ -317,7 +317,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                "attribute", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: attribute")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'attribute'")));
    }
 
    @Test
@@ -325,7 +325,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                "InnerClass", "Z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: InnerClass")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'InnerClass'")));
    }
 
    @Test
@@ -333,6 +333,6 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                "obj {}", "z_", 
-               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: obj")));
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'obj'")));
    }
 }
