@@ -1338,6 +1338,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         } 
         else {
             Unit unit = getJavaUnit(currentFileProject, srcFile);
+            // TODO : is currentFileProject the right thing ? 
+            // This shoud be review when fixing https://github.com/ceylon/ceylon-ide-eclipse/issues/1067
             if (unit instanceof JavaCompilationUnit) {
                 return unit.getDependentsOf();
             }
