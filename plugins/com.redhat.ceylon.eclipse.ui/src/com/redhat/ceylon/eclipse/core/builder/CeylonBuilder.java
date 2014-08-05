@@ -3143,13 +3143,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (openable instanceof ITypeRoot) {
             Package p = getPackage((IPackageFragment)((ITypeRoot)openable).getParent());
             if (p != null) {
-                if (javaElement.getElementName().equals(Naming.PACKAGE_DESCRIPTOR_CLASS_NAME+".class")) {
+                String className = ((ITypeRoot)openable).getElementName();
+                if (className.equals(Naming.PACKAGE_DESCRIPTOR_CLASS_NAME+".class") ||
+                		className.equals(Naming.PACKAGE_DESCRIPTOR_CLASS_NAME.substring(1)+".class")) {
                     Unit packageUnit = p.getUnit();
                     if (packageUnit instanceof IJavaModelAware && ((IJavaModelAware) packageUnit).getTypeRoot().equals(openable)) {
                         return (IJavaModelAware) packageUnit;
                     }
                 }
-                if (javaElement.getElementName().equals(Naming.MODULE_DESCRIPTOR_CLASS_NAME+".class")) {
+                if (className.equals(Naming.MODULE_DESCRIPTOR_CLASS_NAME+".class") ||
+                		className.equals(Naming.OLD_MODULE_DESCRIPTOR_CLASS_NAME+".class")) {
                     Unit moduleUnit = p.getModule().getUnit();
                     if (moduleUnit instanceof IJavaModelAware && ((IJavaModelAware) moduleUnit).getTypeRoot().equals(openable)) {
                         return (IJavaModelAware) moduleUnit;
