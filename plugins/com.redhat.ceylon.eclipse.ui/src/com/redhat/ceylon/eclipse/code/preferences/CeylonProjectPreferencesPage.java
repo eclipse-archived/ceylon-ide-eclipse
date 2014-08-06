@@ -2,8 +2,10 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IProject;
@@ -27,7 +29,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -71,15 +72,22 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     
     private void store() {
         IProject project = getSelectedProject();
-        String systemRepo = CeylonBuilder.getCeylonSystemRepo(project);
-        new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
-                backendJava, backendJs).addToProject(project);
-        
-        CeylonProjectConfig config = CeylonProjectConfig.get(project);
-        if (offlineOption!=null) {
-            config.setProjectOffline(offlineOption);
+        try {
+            if (project.hasNature(NATURE_ID)) {
+                String systemRepo = getCeylonSystemRepo(project);
+                new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
+                        backendJava, backendJs).addToProject(project);
+
+                CeylonProjectConfig config = CeylonProjectConfig.get(project);
+                if (offlineOption!=null) {
+                    config.setProjectOffline(offlineOption);
+                }
+                config.save();
+            }
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
         }
-        config.save();
     }
 
     private IProject getSelectedProject() {
