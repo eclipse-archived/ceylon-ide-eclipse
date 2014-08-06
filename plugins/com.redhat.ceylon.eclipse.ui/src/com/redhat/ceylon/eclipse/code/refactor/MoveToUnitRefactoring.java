@@ -2,8 +2,9 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.addImportEdits;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.createEditorChange;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorDocLinks;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorImports;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectImports;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectImportsAndDocLinks;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.removeImport;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
@@ -102,8 +103,8 @@ public class MoveToUnitRefactoring extends Refactoring {
     }
 
     @Override
-    public Change createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         IProject project = targetFile.getProject();
         String relpath = targetFile.getProjectRelativePath()
                 .removeFirstSegments(1)
@@ -111,8 +112,10 @@ public class MoveToUnitRefactoring extends Refactoring {
         PhasedUnit npu = getProjectTypeChecker(project)
                 .getPhasedUnitFromRelativePath(relpath);
         Tree.CompilationUnit ncu = npu.getCompilationUnit();
-        String original = rootNode.getUnit().getPackage().getNameAsString();
-        String moved = ncu.getUnit().getPackage().getNameAsString();
+        String original = rootNode.getUnit()
+                .getPackage().getNameAsString();
+        String moved = ncu.getUnit()
+                .getPackage().getNameAsString();
         
         Declaration dec = node.getDeclarationModel();
         int start = getNodeStartOffset(node);
@@ -145,14 +148,19 @@ public class MoveToUnitRefactoring extends Refactoring {
         targetUnitChange.setTextType("ceylon");
         change.add(targetUnitChange);
         
-        TextChange originalUnitChange = createEditorChange(editor, document);
+        TextChange originalUnitChange = 
+                createEditorChange(editor, document);
         originalUnitChange.setEdit(new MultiTextEdit());
-        refactorImports(node, originalUnitChange, original, moved, rootNode);
+        refactorImports(node, original, 
+                moved, rootNode, originalUnitChange);
+        refactorDocLinks(node, moved, rootNode, 
+                originalUnitChange);
         originalUnitChange.addEdit(new DeleteEdit(start, length));
         originalUnitChange.setTextType("ceylon");
         change.add(originalUnitChange);
         
-        refactorProjectImports(node, originalFile, targetFile, change, original, moved);
+        refactorProjectImportsAndDocLinks(node, originalFile, targetFile, 
+                change, original, moved);
         
         //TODO: DocLinks
         
