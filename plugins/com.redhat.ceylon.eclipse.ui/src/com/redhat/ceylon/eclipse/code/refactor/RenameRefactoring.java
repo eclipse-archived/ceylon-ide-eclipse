@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -218,9 +219,9 @@ public class RenameRefactoring extends AbstractRefactoring {
     public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
         final List<Region> result = new ArrayList<Region>();
         new Visitor() {
-            private void visitIt(String name, int offset, Declaration dec) {
+            private void visitIt(Region region, Declaration dec) {
                 if (dec!=null && dec.equals(declaration)) {
-                    result.add(new Region(offset, name.length()));
+                    result.add(region);
                 }
             }
             @Override
@@ -228,32 +229,11 @@ public class RenameRefactoring extends AbstractRefactoring {
                 Declaration base = that.getBase();
                 List<Declaration> qualified = that.getQualified();
                 if (base!=null) {
-                    String text = that.getText();
-                    int offset = that.getStartIndex();
-
-                    int pipeIndex = text.indexOf("|");
-                    if (pipeIndex > -1) {
-                        text = text.substring(pipeIndex + 1);
-                        offset += pipeIndex + 1;
-                    }
-
-                    int scopeIndex = text.indexOf("::");
-                    int start = scopeIndex<0 ? 0 : scopeIndex+2;
-                    int index = text.indexOf('.', start);
-                    String name = index<0 ? 
-                            text.substring(start) : 
-                            text.substring(start, index);
-                    visitIt(name, offset+start, base);
-                    start = index+1;
-                    int i=0;
+                    visitIt(nameRegion(that, 0), base);
                     if (qualified!=null) {
-                        while (start>0 && i<qualified.size()) {
-                            index = text.indexOf('.', start);
-                            name = index<0 ? 
-                                    text.substring(start) : 
-                                    text.substring(start, index);
-                            visitIt(name, offset+start, qualified.get(i++));
-                            start = index+1;
+                        for (int i=0; i<qualified.size(); i++) {
+                            visitIt(nameRegion(that, i+1),
+                                    qualified.get(i));
                         }
                     }
                 }
