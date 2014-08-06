@@ -41,8 +41,6 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 
 public class CleanImportsHandler extends AbstractHandler {
     
-    private static final String indent = getDefaultIndent();
-    
     @Override
     public Object execute(ExecutionEvent event) 
             throws ExecutionException {
@@ -206,6 +204,7 @@ public class CleanImportsHandler extends AbstractHandler {
             List<Tree.ImportMemberOrType> elements, List<Declaration> unused, 
             List<Declaration> proposed, boolean hasWildcard, 
             StringBuilder builder, IDocument doc) {
+        String indent = getDefaultIndent();
         for (Tree.ImportMemberOrType i: elements) {
             if (i.getDeclarationModel()!=null && 
                     i.getIdentifier().getErrors().isEmpty() &&
@@ -244,6 +243,7 @@ public class CleanImportsHandler extends AbstractHandler {
 
     private static void appendNestedImportElements(Tree.ImportMemberOrType imt,
             List<Declaration> unused, StringBuilder builder, IDocument doc) {
+        String indent = getDefaultIndent();
         if (imt.getImportMemberOrTypeList()!=null) {
             builder.append(" {");
             boolean found=false;

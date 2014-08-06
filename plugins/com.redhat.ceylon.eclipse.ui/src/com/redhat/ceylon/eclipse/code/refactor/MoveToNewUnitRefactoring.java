@@ -2,8 +2,9 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.createEditorChange;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorDocLinks;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorImports;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectImports;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectImportsAndDocLinks;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
@@ -106,9 +107,10 @@ public class MoveToNewUnitRefactoring extends Refactoring {
     }
 
     @Override
-    public Change createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
-        String original = rootNode.getUnit().getPackage().getNameAsString();
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
+        String original = rootNode.getUnit()
+                .getPackage().getNameAsString();
         String moved = targetPackage.getElementName();
         int start = getNodeStartOffset(node);
         int length = getNodeLength(node);
@@ -130,22 +132,29 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         String importText = getImportText(node, moved, delim);
         String text = importText.isEmpty() ? 
                 contents : importText + delim + contents;
-        offset = importText.isEmpty() ? 0 : (importText + delim).length();
+        offset = importText.isEmpty() ? 
+                0 : (importText + delim).length();
         CreateUnitChange newUnitChange = 
                 new CreateUnitChange(targetFile, includePreamble, 
                         text, targetProject, 
-                        "Create source file '" + targetFile.getProjectRelativePath() + "'");
+                        "Create source file '" + 
+                        targetFile.getProjectRelativePath() + "'");
         change.add(newUnitChange);
 //        newUnitChange.setTextType("ceylon");
         
-        TextChange originalUnitChange = createEditorChange(editor, document);
+        TextChange originalUnitChange = 
+                createEditorChange(editor, document);
         originalUnitChange.setEdit(new MultiTextEdit());
-        refactorImports(node, originalUnitChange, original, moved, rootNode);
+        refactorImports(node, original, 
+                moved, rootNode, originalUnitChange);
+        refactorDocLinks(node, moved, rootNode, 
+                originalUnitChange);
         originalUnitChange.addEdit(new DeleteEdit(start, length));
         originalUnitChange.setTextType("ceylon");
         change.add(originalUnitChange);
         
-        refactorProjectImports(node, originalFile, targetFile, change, original, moved);
+        refactorProjectImportsAndDocLinks(node, originalFile, targetFile, 
+                change, original, moved);
         
         //TODO: DocLinks
         

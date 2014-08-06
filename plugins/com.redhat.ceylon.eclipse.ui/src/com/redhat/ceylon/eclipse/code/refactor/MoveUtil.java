@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -21,6 +22,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
@@ -30,6 +32,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -42,10 +45,13 @@ import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class MoveUtil {
@@ -132,7 +138,7 @@ public class MoveUtil {
         return sb.toString();
     }
 
-    public static void refactorProjectImports(Tree.Declaration node,
+    public static void refactorProjectImportsAndDocLinks(Tree.Declaration node,
             IFile originalFile, IFile targetFile, CompositeChange change, 
             String originalPackage, String targetPackage) {
         if (!originalPackage.equals(targetPackage)) {
@@ -142,8 +148,10 @@ public class MoveUtil {
                     if (!file.equals(originalFile) && !file.equals(targetFile)) {
                         TextFileChange tfc = new TextFileChange("Fix Import", file);
                         tfc.setEdit(new MultiTextEdit());
-                        refactorImports(node, tfc, originalPackage, targetPackage, 
-                                pu.getCompilationUnit());
+                        CompilationUnit rootNode = pu.getCompilationUnit();
+                        refactorImports(node, originalPackage, targetPackage, 
+                                rootNode, tfc);
+                        refactorDocLinks(node, targetPackage, rootNode, tfc);
                         if (tfc.getEdit().hasChildren()) {
                             change.add(tfc);
                         }
@@ -153,10 +161,10 @@ public class MoveUtil {
         }
     }
 
-    public static void refactorImports(Tree.Declaration node, TextChange tc, 
-            String originalPackage, String targetPackage,
-            Tree.CompilationUnit cu) {
-        Declaration dec = node.getDeclarationModel();
+    public static void refactorImports(Tree.Declaration node, 
+            final String originalPackage, final String targetPackage, 
+            Tree.CompilationUnit cu, final TextChange tc) {
+        final Declaration dec = node.getDeclarationModel();
         String pn = cu.getUnit().getPackage().getNameAsString();
         boolean inOriginalPackage = pn.equals(originalPackage);
         boolean inNewPackage = pn.equals(targetPackage);
@@ -168,6 +176,43 @@ public class MoveUtil {
                         isUsedInUnit(cu, dec)) {
             addImport(targetPackage, dec, cu, tc);
         }
+    }
+
+    public static void refactorDocLinks(Tree.Declaration node,
+            final String targetPackage, Tree.CompilationUnit cu, 
+            final TextChange tc) {
+        final Declaration dec = node.getDeclarationModel();
+        cu.visit(new Visitor() {
+            @Override
+            public void visit(DocLink that) {
+                super.visit(that);
+                if (that.getBase()!=null &&
+                        that.getBase().equals(dec)) {
+                    boolean inTargetPackage = 
+                            that.getUnit().getPackage()
+                            .getQualifiedNameString()
+                            .equals(targetPackage);
+                    if (that.getPkg() == null) {
+                        if (!inTargetPackage) {
+                            Region region = DocLinks.nameRegion(that,0);
+                            tc.addEdit(new InsertEdit(region.getOffset(), 
+                                    targetPackage + "::"));
+                        }
+                    }
+                    else {
+                        Region region = DocLinks.packageRegion(that);
+                        if (inTargetPackage) {
+                            tc.addEdit(new DeleteEdit(region.getOffset(), 
+                                    region.getLength()+2));
+                        }
+                        else {
+                            tc.addEdit(new ReplaceEdit(region.getOffset(), 
+                                    region.getLength(), targetPackage));
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public static boolean isUsedInUnit(Tree.CompilationUnit rootNode, 
@@ -257,6 +302,8 @@ public class MoveUtil {
     private static void addImport(String targetPackage, Declaration dec, 
             Tree.CompilationUnit cu, TextChange tc) {
         String name = dec.getName();
+        String delim = getDefaultLineDelimiter(getDocument(tc));
+        String indent = getDefaultIndent();
         boolean foundMoved = false;
         Tree.ImportList il = cu.getImportList();
         for (Tree.Import i: il.getImports()) {
@@ -271,12 +318,16 @@ public class MoveUtil {
                         List<Tree.ImportMemberOrType> imts = 
                                 imtl.getImportMemberOrTypes();
                         if (imts.isEmpty()) {
-                            offset = getNodeStartOffset(imtl);
-                            addition = " " + name;
+                            offset = getNodeStartOffset(imtl)+1;
+                            addition = delim + indent + name;
+                            int len = getNodeLength(imtl);
+                            if (len==2) {
+                                addition += delim;
+                            }
                         }
                         else {
                             offset = getNodeEndOffset(imts.get(imts.size()-1));
-                            addition = ", " + name;
+                            addition = "," + delim + indent + name;
                         }
                         //TODO: the alias!
                         tc.addEdit(new InsertEdit(offset, addition));
@@ -287,8 +338,8 @@ public class MoveUtil {
             }
         }
         if (!foundMoved) {
-            String text = "import " + targetPackage + " { " + name + " }" + 
-                    getDefaultLineDelimiter(EditorUtil.getDocument(tc));
+            String text = "import " + targetPackage + 
+                    " {" + delim + indent + name + delim + "}" + delim;
             tc.addEdit(new InsertEdit(0, text));
         }
     }
