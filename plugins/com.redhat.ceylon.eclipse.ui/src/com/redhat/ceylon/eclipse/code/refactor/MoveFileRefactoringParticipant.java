@@ -68,35 +68,46 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
 
     @Override
     public RefactoringStatus checkConditions(IProgressMonitor pm,
-            CheckConditionsContext context) throws OperationCanceledException {
+            CheckConditionsContext context) 
+                    throws OperationCanceledException {
         return new RefactoringStatus();
     }
 
     @Override
-    public Change createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         try {
-            final IProject project = file.getProject();
-            final String newName = ((IFolder) getArguments().getDestination())
-                    .getProjectRelativePath().removeFirstSegments(1)
-                    .toPortableString().replace('/', '.');
+            IProject project = file.getProject();
+            IFolder folder = (IFolder) getArguments().getDestination();
+            String newName = folder.getProjectRelativePath()
+                    .removeFirstSegments(1)
+                    .toPortableString()
+                    .replace('/', '.');
             String movedRelFilePath = file.getProjectRelativePath()
-                    .removeFirstSegments(1).toPortableString();
-            String movedRelPath = file.getParent().getProjectRelativePath()
-                    .removeFirstSegments(1).toPortableString();
-            final String oldName = movedRelPath.replace('/', '.');
-            newFile = ((IFolder) getArguments().getDestination()).getFile(file.getName());
+                    .removeFirstSegments(1)
+                    .toPortableString();
+            String movedRelPath = file.getParent()
+                    .getProjectRelativePath()
+                    .removeFirstSegments(1)
+                    .toPortableString();
+            String oldName = movedRelPath.replace('/', '.');
+            newFile = folder.getFile(file.getName());
 
-            final List<Change> changes= new ArrayList<Change>();
+            List<Change> changes = new ArrayList<Change>();
 
             if (file.getFileExtension().equals("java")) {
                 updateRefsToMovedJavaFile(project, newName, oldName, changes);
             }
             else {
-                PhasedUnit movedPhasedUnit= getProjectTypeChecker(project)
-                        .getPhasedUnitFromRelativePath(movedRelFilePath);
-                if (movedPhasedUnit==null) return null;
-                final List<Declaration> declarations = movedPhasedUnit.getDeclarations();
+                PhasedUnit movedPhasedUnit = 
+                        getProjectTypeChecker(project)
+                            .getPhasedUnitFromRelativePath(movedRelFilePath);
+                if (movedPhasedUnit==null) {
+                    return null;
+                }
+                
+                List<Declaration> declarations = 
+                        movedPhasedUnit.getDeclarations();
                 if (newName.equals(oldName)) return null;
                 updateRefsFromMovedCeylonFile(project, newName, oldName, changes, 
                         movedPhasedUnit, declarations);
@@ -107,7 +118,8 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             if (changes.isEmpty())
                 return null;
 
-            CompositeChange result= new CompositeChange("Ceylon source changes");
+            CompositeChange result = 
+                    new CompositeChange("Ceylon source changes");
             for (Change change: changes) {
                 result.add(change);
             }
@@ -123,12 +135,14 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             final String newName, final String oldName,
             final List<Change> changes, final PhasedUnit movedPhasedUnit,
             final List<Declaration> declarations) {
-        final Map<Declaration,String> imports = new HashMap<Declaration,String>();
+        final Map<Declaration,String> imports = 
+                new HashMap<Declaration,String>();
         movedPhasedUnit.getCompilationUnit().visit(new Visitor() {
             @Override
             public void visit(ImportMemberOrType that) {
                 super.visit(that);
-                visitIt(that.getIdentifier(), that.getDeclarationModel());
+                visitIt(that.getIdentifier(), 
+                        that.getDeclarationModel());
             }
 //            @Override
 //            public void visit(QualifiedMemberOrTypeExpression that) {
@@ -138,12 +152,14 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             @Override
             public void visit(BaseMemberOrTypeExpression that) {
                 super.visit(that);
-                visitIt(that.getIdentifier(), that.getDeclaration());
+                visitIt(that.getIdentifier(), 
+                        that.getDeclaration());
             }
             @Override
             public void visit(BaseType that) {
                 super.visit(that);
-                visitIt(that.getIdentifier(), that.getDeclarationModel());
+                visitIt(that.getIdentifier(), 
+                        that.getDeclarationModel());
             }
 //            @Override
 //            public void visit(QualifiedType that) {
@@ -159,7 +175,8 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             }
             //TODO: DocLinks!!
         });
-        collectEditsToMovedFile(newName, oldName, changes, movedPhasedUnit, imports);
+        collectEditsToMovedFile(newName, oldName, changes, 
+                movedPhasedUnit, imports);
     }
     
     protected void updateRefsToMovedCeylonFile(final IProject project,
@@ -178,7 +195,8 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 @Override
                 public void visit(ImportMemberOrType that) {
                     super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclarationModel());
+                    visitIt(that.getIdentifier(), 
+                            that.getDeclarationModel());
                 }
 //                    @Override
 //                    public void visit(QualifiedMemberOrTypeExpression that) {
@@ -188,12 +206,14 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 @Override
                 public void visit(BaseMemberOrTypeExpression that) {
                     super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclaration());
+                    visitIt(that.getIdentifier(), 
+                            that.getDeclaration());
                 }
                 @Override
                 public void visit(BaseType that) {
                     super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclarationModel());
+                    visitIt(that.getIdentifier(), 
+                            that.getDeclarationModel());
                 }
 //                    @Override
 //                    public void visit(QualifiedType that) {
@@ -226,7 +246,8 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 @Override
                 public void visit(ImportMemberOrType that) {
                     super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclarationModel());
+                    visitIt(that.getIdentifier(), 
+                            that.getDeclarationModel());
                 }
 //                    @Override
 //                    public void visit(QualifiedMemberOrTypeExpression that) {
@@ -236,12 +257,14 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 @Override
                 public void visit(BaseMemberOrTypeExpression that) {
                     super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclaration());
+                    visitIt(that.getIdentifier(), 
+                            that.getDeclaration());
                 }
                 @Override
                 public void visit(BaseType that) {
                     super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclarationModel());
+                    visitIt(that.getIdentifier(), 
+                            that.getDeclarationModel());
                 }
 //                    @Override
 //                    public void visit(QualifiedType that) {
@@ -275,13 +298,16 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         }
     }
     
-    private void collectEditsToMovedFile(final String newName, final String oldName,
-            final List<Change> changes, PhasedUnit movedPhasedUnit,
+    private void collectEditsToMovedFile(final String newName, 
+            final String oldName, final List<Change> changes, 
+            PhasedUnit movedPhasedUnit, 
             final Map<Declaration, String> imports) {
         try {
-            CompilationUnit cu = movedPhasedUnit.getCompilationUnit();
+            CompilationUnit cu = 
+                    movedPhasedUnit.getCompilationUnit();
             TextFileChange change = 
-                    new MovingTextFileChange(newFile.getName(), newFile, file);
+                    new MovingTextFileChange(newFile.getName(), 
+                            newFile, file);
             change.setEdit(new MultiTextEdit());
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = importEdits(cu, 
