@@ -355,7 +355,15 @@ public class CeylonProjectConfig {
     }
 
     private void createNewOutputFolder() {
-        IFolder newOutputRepoFolder = project.getFolder(removeCurrentDirPrefix(transientOutputRepo));
+        IFolder newOutputRepoFolder = 
+                project.getFolder(removeCurrentDirPrefix(transientOutputRepo));
+        try {
+            newOutputRepoFolder.refreshLocal(IResource.DEPTH_ONE, 
+                    new NullProgressMonitor());
+        }
+        catch (CoreException ce) {
+            ce.printStackTrace();
+        }
         if (!newOutputRepoFolder.exists()) {
             try {
                 CoreUtility.createDerivedFolder(newOutputRepoFolder, true, true, null);
