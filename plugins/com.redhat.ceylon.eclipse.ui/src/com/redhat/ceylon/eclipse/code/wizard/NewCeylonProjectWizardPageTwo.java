@@ -81,8 +81,8 @@ import org.eclipse.ui.actions.WorkspaceModifyDelegatingOperation;
  */
 public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 
-    private static final String FILENAME_PROJECT= ".project"; //$NON-NLS-1$
-    private static final String FILENAME_CLASSPATH= ".classpath"; //$NON-NLS-1$
+    private static final String FILENAME_PROJECT = ".project"; //$NON-NLS-1$
+    private static final String FILENAME_CLASSPATH = ".classpath"; //$NON-NLS-1$
 
     private final NewCeylonProjectWizardPageOne fFirstPage;
 
@@ -102,14 +102,14 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
      * @param mainPage the first page of the wizard
      */
     public NewCeylonProjectWizardPageTwo(NewCeylonProjectWizardPageOne mainPage) {
-        fFirstPage= mainPage;
-        fCurrProjectLocation= null;
-        fCurrProject= null;
-        fKeepContent= false;
+        fFirstPage = mainPage;
+        fCurrProjectLocation = null;
+        fCurrProject = null;
+        fKeepContent = false;
 
-        fDotProjectBackup= null;
-        fDotClasspathBackup= null;
-        fIsAutobuild= null;
+        fDotProjectBackup = null;
+        fDotClasspathBackup = null;
+        fIsAutobuild = null;
     }
 
     /* (non-Javadoc)
@@ -126,7 +126,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
      */
     @Override
     public void setVisible(boolean visible) {
-        boolean isShownFirstTime= visible && fCurrProject == null;
+        boolean isShownFirstTime = visible && fCurrProject == null;
         if (visible) {
             if (isShownFirstTime) { // entering from the first page
                 createProvisonalProject();
@@ -144,10 +144,10 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 
     @Override
     public void createControl(Composite parent) {
-        Composite composite= new Composite(parent, SWT.NONE);
+        Composite composite = new Composite(parent, SWT.NONE);
         composite.setFont(parent.getFont());
         composite.setLayout(new GridLayout(1, false));
-        Control control= getBuildPathsBlock().createControl(composite);
+        Control control = getBuildPathsBlock().createControl(composite);
         control.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         Dialog.applyDialogFont(composite);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(composite, 
@@ -156,21 +156,21 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     }
 
     private boolean hasExistingContent(URI realLocation) throws CoreException {
-        IFileStore file= EFS.getStore(realLocation);
+        IFileStore file = EFS.getStore(realLocation);
         return file.fetchInfo().exists();
     }
 
     private IStatus changeToNewProject() {
         class UpdateRunnable implements IRunnableWithProgress {
-            public IStatus infoStatus= Status.OK_STATUS;
+            public IStatus infoStatus = Status.OK_STATUS;
 
             public void run(IProgressMonitor monitor) 
                     throws InvocationTargetException, InterruptedException {
                 try {
                     if (fIsAutobuild == null) {
-                        fIsAutobuild= Boolean.valueOf(CoreUtility.setAutoBuilding(false));
+                        fIsAutobuild = Boolean.valueOf(CoreUtility.setAutoBuilding(false));
                     }
-                    infoStatus= updateProject(monitor);
+                    infoStatus = updateProject(monitor);
                 } catch (CoreException e) {
                     throw new InvocationTargetException(e);
                 } catch (OperationCanceledException e) {
@@ -180,13 +180,13 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
                 }
             }
         }
-        UpdateRunnable op= new UpdateRunnable();
+        UpdateRunnable op = new UpdateRunnable();
         try {
             getContainer().run(true, false, new WorkspaceModifyDelegatingOperation(op));
             return op.infoStatus;
         } catch (InvocationTargetException e) {
-            final String title= NewWizardMessages.NewJavaProjectWizardPageTwo_error_title;
-            final String message= NewWizardMessages.NewJavaProjectWizardPageTwo_error_message;
+            final String title = NewWizardMessages.NewJavaProjectWizardPageTwo_error_title;
+            final String message = NewWizardMessages.NewJavaProjectWizardPageTwo_error_message;
             ExceptionHandler.handle(e, getShell(), title, message);
         } catch  (InterruptedException e) {
             // cancel pressed
@@ -197,9 +197,9 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     private static URI getRealLocation(String projectName, URI location) {
         if (location == null) {  // inside workspace
             try {
-                URI rootLocation= ResourcesPlugin.getWorkspace().getRoot().getLocationURI();
+                URI rootLocation = ResourcesPlugin.getWorkspace().getRoot().getLocationURI();
 
-                location= new URI(rootLocation.getScheme(), null,
+                location = new URI(rootLocation.getScheme(), null,
                         Path.fromPortableString(rootLocation.getPath()).append(projectName).toString(),
                         null);
             } catch (URISyntaxException e) {
@@ -211,9 +211,9 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 
     private final IStatus updateProject(IProgressMonitor monitor) 
             throws CoreException, InterruptedException {
-        IStatus result= StatusInfo.OK_STATUS;
+        IStatus result = StatusInfo.OK_STATUS;
         if (monitor == null) {
-            monitor= new NullProgressMonitor();
+            monitor = new NullProgressMonitor();
         }
         try {
             monitor.beginTask(NewWizardMessages.NewJavaProjectWizardPageTwo_operation_initialize, 7);
@@ -221,13 +221,13 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
                 throw new OperationCanceledException();
             }
 
-            String projectName= fFirstPage.getProjectName();
+            String projectName = fFirstPage.getProjectName();
 
-            fCurrProject= ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-            fCurrProjectLocation= fFirstPage.getProjectLocationURI();
+            fCurrProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+            fCurrProjectLocation = fFirstPage.getProjectLocationURI();
 
-            URI realLocation= getRealLocation(projectName, fCurrProjectLocation);
-            fKeepContent= hasExistingContent(realLocation);
+            URI realLocation = getRealLocation(projectName, fCurrProjectLocation);
+            fKeepContent = hasExistingContent(realLocation);
 
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
@@ -246,7 +246,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
                 createProject(fCurrProject, fCurrProjectLocation, new SubProgressMonitor(monitor, 2));
             } catch (CoreException e) {
                 if (e.getStatus().getCode() == IResourceStatus.FAILED_READ_METADATA) {
-                    result= new StatusInfo(IStatus.INFO, 
+                    result = new StatusInfo(IStatus.INFO, 
                             Messages.format(NewWizardMessages.NewJavaProjectWizardPageTwo_DeleteCorruptProjectFile_message, 
                                     e.getLocalizedMessage()));
 
@@ -285,36 +285,36 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     protected void initializeBuildPath(IJavaProject javaProject, IProgressMonitor monitor) 
             throws CoreException {
         if (monitor == null) {
-            monitor= new NullProgressMonitor();
+            monitor = new NullProgressMonitor();
         }
         monitor.beginTask(NewWizardMessages.NewJavaProjectWizardPageTwo_monitor_init_build_path, 2);
 
         try {
 
-            IClasspathEntry[] entries= null;
-            IPath outputJavaLocation= null;
-            IProject project= javaProject.getProject();
+            IClasspathEntry[] entries = null;
+            IPath outputJavaLocation = null;
+            IProject project = javaProject.getProject();
 
             if (fKeepContent) {
                 if (!project.getFile(FILENAME_CLASSPATH).exists()) {
-                    final ClassPathDetector detector= new ClassPathDetector(fCurrProject, 
+                    final ClassPathDetector detector = new ClassPathDetector(fCurrProject, 
                             new SubProgressMonitor(monitor, 2));
-                    entries= detector.getClasspath();
-                    outputJavaLocation= detector.getOutputLocation();
+                    entries = detector.getClasspath();
+                    outputJavaLocation = detector.getOutputLocation();
                     if (entries.length == 0)
-                        entries= null;
+                        entries = null;
                 } else {
                     monitor.worked(2);
                 }
             } else {
-                List<IClasspathEntry> cpEntries= new ArrayList<IClasspathEntry>();
-                IWorkspaceRoot root= project.getWorkspace().getRoot();
+                List<IClasspathEntry> cpEntries = new ArrayList<IClasspathEntry>();
+                IWorkspaceRoot root = project.getWorkspace().getRoot();
 
-                IClasspathEntry[] sourceClasspathEntries= fFirstPage.getSourceClasspathEntries();
-                for (int i= 0; i < sourceClasspathEntries.length; i++) {
-                    IPath path= sourceClasspathEntries[i].getPath();
+                IClasspathEntry[] sourceClasspathEntries = fFirstPage.getSourceClasspathEntries();
+                for (int i=0; i < sourceClasspathEntries.length; i++) {
+                    IPath path = sourceClasspathEntries[i].getPath();
                     if (path.segmentCount() > 1) {
-                        IFolder folder= root.getFolder(path);
+                        IFolder folder = root.getFolder(path);
                         CoreUtility.createFolder(folder, true, true, 
                                 new SubProgressMonitor(monitor, 1));
                     }
@@ -323,9 +323,9 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 
                 cpEntries.addAll(Arrays.asList(fFirstPage.getDefaultClasspathEntries()));
 
-                entries= cpEntries.toArray(new IClasspathEntry[cpEntries.size()]);
+                entries = cpEntries.toArray(new IClasspathEntry[cpEntries.size()]);
 
-                outputJavaLocation= fFirstPage.getJavaOutputLocation();
+                outputJavaLocation = fFirstPage.getJavaOutputLocation();
                 if (outputJavaLocation.segmentCount() > 1) {
                     CoreUtility.createDerivedFolder(root.getFolder(outputJavaLocation), 
                             true, true, new SubProgressMonitor(monitor, 1));
@@ -343,9 +343,9 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     }
 
     private void deleteProjectFile(URI projectLocation) throws CoreException {
-        IFileStore file= EFS.getStore(projectLocation);
+        IFileStore file = EFS.getStore(projectLocation);
         if (file.fetchInfo().exists()) {
-            IFileStore projectFile= file.getChild(FILENAME_PROJECT);
+            IFileStore projectFile = file.getChild(FILENAME_PROJECT);
             if (projectFile.fetchInfo().exists()) {
                 projectFile.delete(EFS.NONE, null);
             }
@@ -353,13 +353,13 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     }
 
     private void rememberExisitingFolders(URI projectLocation) {
-        fOrginalFolders= new HashSet<IFileStore>();
+        fOrginalFolders = new HashSet<IFileStore>();
 
         try {
-            IFileStore[] children= EFS.getStore(projectLocation).childStores(EFS.NONE, null);
-            for (int i= 0; i < children.length; i++) {
-                IFileStore child= children[i];
-                IFileInfo info= child.fetchInfo();
+            IFileStore[] children = EFS.getStore(projectLocation).childStores(EFS.NONE, null);
+            for (int i=0; i < children.length; i++) {
+                IFileStore child = children[i];
+                IFileInfo info = child.fetchInfo();
                 if (info.isDirectory() && info.exists() && !fOrginalFolders.contains(child.getName())) {
                     fOrginalFolders.add(child);
                 }
@@ -372,18 +372,18 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     private void restoreExistingFolders(URI projectLocation) {
         if (fOrginalFolders==null) return;
         try {
-            IFileStore[] children= EFS.getStore(projectLocation).childStores(EFS.NONE, null);
-            for (int i= 0; i < children.length; i++) {
-                IFileStore child= children[i];
-                IFileInfo info= child.fetchInfo();
+            IFileStore[] children = EFS.getStore(projectLocation).childStores(EFS.NONE, null);
+            for (int i=0; i < children.length; i++) {
+                IFileStore child = children[i];
+                IFileInfo info = child.fetchInfo();
                 if (info.isDirectory() && info.exists() && !fOrginalFolders.contains(child)) {
                     child.delete(EFS.NONE, null);
                     fOrginalFolders.remove(child);
                 }
             }
 
-            for (Iterator<IFileStore> iterator= fOrginalFolders.iterator(); iterator.hasNext();) {
-                IFileStore deleted= iterator.next();
+            for (Iterator<IFileStore> iterator = fOrginalFolders.iterator(); iterator.hasNext();) {
+                IFileStore deleted = iterator.next();
                 deleted.mkdir(EFS.NONE, null);
             }
         } catch (CoreException e) {
@@ -392,44 +392,44 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     }
 
     private void rememberExistingFiles(URI projectLocation) throws CoreException {
-        fDotProjectBackup= null;
-        fDotClasspathBackup= null;
+        fDotProjectBackup = null;
+        fDotClasspathBackup = null;
 
-        IFileStore file= EFS.getStore(projectLocation);
+        IFileStore file = EFS.getStore(projectLocation);
         if (file.fetchInfo().exists()) {
-            IFileStore projectFile= file.getChild(FILENAME_PROJECT);
+            IFileStore projectFile = file.getChild(FILENAME_PROJECT);
             if (projectFile.fetchInfo().exists()) {
-                fDotProjectBackup= createBackup(projectFile, "project-desc"); //$NON-NLS-1$
+                fDotProjectBackup = createBackup(projectFile, "project-desc"); //$NON-NLS-1$
             }
-            IFileStore classpathFile= file.getChild(FILENAME_CLASSPATH);
+            IFileStore classpathFile = file.getChild(FILENAME_CLASSPATH);
             if (classpathFile.fetchInfo().exists()) {
-                fDotClasspathBackup= createBackup(classpathFile, "classpath-desc"); //$NON-NLS-1$
+                fDotClasspathBackup = createBackup(classpathFile, "classpath-desc"); //$NON-NLS-1$
             }
         }
     }
 
     private void restoreExistingFiles(URI projectLocation, IProgressMonitor monitor) throws CoreException {
-        int ticks= ((fDotProjectBackup != null ? 1 : 0) + (fDotClasspathBackup != null ? 1 : 0)) * 2;
+        int ticks = ((fDotProjectBackup != null ? 1 : 0) + (fDotClasspathBackup != null ? 1 : 0)) * 2;
         monitor.beginTask("", ticks); //$NON-NLS-1$
         try {
-            IFileStore projectFile= EFS.getStore(projectLocation).getChild(FILENAME_PROJECT);
+            IFileStore projectFile = EFS.getStore(projectLocation).getChild(FILENAME_PROJECT);
             projectFile.delete(EFS.NONE, new SubProgressMonitor(monitor, 1));
             if (fDotProjectBackup != null) {
                 copyFile(fDotProjectBackup, projectFile, new SubProgressMonitor(monitor, 1));
             }
         } catch (IOException e) {
-            IStatus status= new Status(IStatus.ERROR, JavaUI.ID_PLUGIN, IStatus.ERROR, 
+            IStatus status = new Status(IStatus.ERROR, JavaUI.ID_PLUGIN, IStatus.ERROR, 
                     NewWizardMessages.NewJavaProjectWizardPageTwo_problem_restore_project, e);
             throw new CoreException(status);
         }
         try {
-            IFileStore classpathFile= EFS.getStore(projectLocation).getChild(FILENAME_CLASSPATH);
+            IFileStore classpathFile = EFS.getStore(projectLocation).getChild(FILENAME_CLASSPATH);
             classpathFile.delete(EFS.NONE, new SubProgressMonitor(monitor, 1));
             if (fDotClasspathBackup != null) {
                 copyFile(fDotClasspathBackup, classpathFile, new SubProgressMonitor(monitor, 1));
             }
         } catch (IOException e) {
-            IStatus status= new Status(IStatus.ERROR, JavaUI.ID_PLUGIN, IStatus.ERROR, 
+            IStatus status = new Status(IStatus.ERROR, JavaUI.ID_PLUGIN, IStatus.ERROR, 
                     NewWizardMessages.NewJavaProjectWizardPageTwo_problem_restore_classpath, e);
             throw new CoreException(status);
         }
@@ -437,26 +437,26 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
 
     private File createBackup(IFileStore source, String name) throws CoreException {
         try {
-            File bak= File.createTempFile("eclipse-" + name, ".bak");  //$NON-NLS-1$//$NON-NLS-2$
+            File bak = File.createTempFile("eclipse-" + name, ".bak");  //$NON-NLS-1$//$NON-NLS-2$
             copyFile(source, bak);
             return bak;
         } catch (IOException e) {
-            IStatus status= new Status(IStatus.ERROR, JavaUI.ID_PLUGIN, IStatus.ERROR, 
+            IStatus status = new Status(IStatus.ERROR, JavaUI.ID_PLUGIN, IStatus.ERROR, 
                     Messages.format(NewWizardMessages.NewJavaProjectWizardPageTwo_problem_backup, name), e);
             throw new CoreException(status);
         }
     }
 
     private void copyFile(IFileStore source, File target) throws IOException, CoreException {
-        InputStream is= source.openInputStream(EFS.NONE, null);
-        FileOutputStream os= new FileOutputStream(target);
+        InputStream is = source.openInputStream(EFS.NONE, null);
+        FileOutputStream os = new FileOutputStream(target);
         copyFile(is, os);
     }
 
     private void copyFile(File source, IFileStore target, IProgressMonitor monitor) 
             throws IOException, CoreException {
-        FileInputStream is= new FileInputStream(source);
-        OutputStream os= target.openOutputStream(EFS.NONE, monitor);
+        FileInputStream is = new FileInputStream(source);
+        OutputStream os = target.openOutputStream(EFS.NONE, monitor);
         copyFile(is, os);
     }
 
@@ -464,7 +464,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
         try {
             byte[] buffer = new byte[8192];
             while (true) {
-                int bytesRead= is.read(buffer);
+                int bytesRead = is.read(buffer);
                 if (bytesRead == -1)
                     break;
 
@@ -492,15 +492,15 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
             if (fCurrProject == null) {
                 updateProject(new SubProgressMonitor(monitor, 1));
             }
-            String newProjectCompliance= fKeepContent ? null : fFirstPage.getCompilerCompliance();
+            String newProjectCompliance = fKeepContent ? null : fFirstPage.getCompilerCompliance();
             configureJavaProject(newProjectCompliance, new SubProgressMonitor(monitor, 2));
             
         } finally {
             monitor.done();
-            fCurrProject= null;
+            fCurrProject = null;
             if (fIsAutobuild != null) {
                 CoreUtility.setAutoBuilding(fIsAutobuild.booleanValue());
-                fIsAutobuild= null;
+                fIsAutobuild = null;
             }
         }
     }
@@ -512,7 +512,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
      * @return the provisional project
      */
     protected IProject createProvisonalProject() {
-        IStatus status= changeToNewProject();
+        IStatus status = changeToNewProject();
         if (status != null && !status.isOK()) {
             ErrorDialog.openError(getShell(), 
                     NewWizardMessages.NewJavaProjectWizardPageTwo_error_title, 
@@ -527,11 +527,11 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
      */
     protected void removeProvisonalProject() {
         if (!fCurrProject.exists()) {
-            fCurrProject= null;
+            fCurrProject = null;
             return;
         }
 
-        IRunnableWithProgress op= new IRunnableWithProgress() {
+        IRunnableWithProgress op = new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor) 
                     throws InvocationTargetException, InterruptedException {
                 doRemoveProject(monitor);
@@ -541,8 +541,8 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
         try {
             getContainer().run(true, true, new WorkspaceModifyDelegatingOperation(op));
         } catch (InvocationTargetException e) {
-            final String title= NewWizardMessages.NewJavaProjectWizardPageTwo_error_remove_title;
-            final String message= NewWizardMessages.NewJavaProjectWizardPageTwo_error_remove_message;
+            final String title = NewWizardMessages.NewJavaProjectWizardPageTwo_error_remove_title;
+            final String message = NewWizardMessages.NewJavaProjectWizardPageTwo_error_remove_message;
             ExceptionHandler.handle(e, getShell(), title, message);
         } catch  (InterruptedException e) {
             // cancel pressed
@@ -554,16 +554,16 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     }
 
     private final void doRemoveProject(IProgressMonitor monitor) throws InvocationTargetException {
-        final boolean noProgressMonitor= (fCurrProjectLocation == null); // inside workspace
+        final boolean noProgressMonitor = (fCurrProjectLocation == null); // inside workspace
         if (monitor == null || noProgressMonitor) {
-            monitor= new NullProgressMonitor();
+            monitor = new NullProgressMonitor();
         }
         monitor.beginTask(NewWizardMessages.NewJavaProjectWizardPageTwo_operation_remove, 3);
         try {
             try {
-                URI projLoc= fCurrProject.getLocationURI();
+                URI projLoc = fCurrProject.getLocationURI();
 
-                boolean removeContent= !fKeepContent && fCurrProject.isSynchronized(IResource.DEPTH_INFINITE);
+                boolean removeContent = !fKeepContent && fCurrProject.isSynchronized(IResource.DEPTH_INFINITE);
                 if (!removeContent) {
                     restoreExistingFolders(projLoc);
                 }
@@ -572,14 +572,14 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
                 restoreExistingFiles(projLoc, new SubProgressMonitor(monitor, 1));
             } finally {
                 CoreUtility.setAutoBuilding(fIsAutobuild.booleanValue()); // fIsAutobuild must be set
-                fIsAutobuild= null;
+                fIsAutobuild = null;
             }
         } catch (CoreException e) {
             throw new InvocationTargetException(e);
         } finally {
             monitor.done();
-            fCurrProject= null;
-            fKeepContent= false;
+            fCurrProject = null;
+            fKeepContent = false;
         }
     }
 
