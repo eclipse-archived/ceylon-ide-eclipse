@@ -13,7 +13,6 @@ public class CeylonTestMessages extends NLS {
     public static String configTabTestColumnLabel;
 
     public static String launchDialogInfoTitle;
-    public static String launchSelectionSize;
     public static String launchNoTestsFound;
     public static String launchSelectLaunchConfigTitle;
     public static String launchSelectLaunchConfigMessage;
@@ -25,7 +24,6 @@ public class CeylonTestMessages extends NLS {
     
     public static String errorDialogTitle;
     public static String errorNoTests;
-    public static String errorMultipleProjectsAreNotAllowed;
     public static String errorCanNotFindProject;
     public static String errorCanNotFindModule;
     public static String errorCanNotFindPackage;

@@ -58,9 +58,6 @@
             <enablement>
                <with
                      variable="selection">
-                  <count
-                        value="1">
-                  </count>
                   <iterate>
                      <test
                            property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaModule">
@@ -95,9 +92,6 @@
             <enablement>
                <with
                      variable="selection">
-                  <count
-                        value="1">
-                  </count>
                   <iterate>
                      <test
                            property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaScriptModule">

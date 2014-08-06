@@ -235,9 +235,6 @@ public class CeylonTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
         if (errorMessage == null) {
             errorMessage = validateEntries();
         }
-        if (errorMessage == null) {
-            errorMessage = validateMultipleProjects();
-        }
         setErrorMessage(errorMessage);
         update();
     }
@@ -254,18 +251,6 @@ public class CeylonTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
             entry.validate();
             if (!entry.isValid()) {
                 return entry.getErrorMessage();
-            }
-        }
-        return null;
-    }
-
-    private String validateMultipleProjects() {
-        String projectName = null;
-        for (CeylonTestLaunchConfigEntry entry : entries) {
-            if (projectName == null || projectName.equals(entry.getProjectName())) {
-                projectName = entry.getProjectName();
-            } else {
-                return CeylonTestMessages.errorMultipleProjectsAreNotAllowed;
             }
         }
         return null;
