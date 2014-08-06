@@ -138,7 +138,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                         for (int i=0; i<selectedModules.length; i++) {
                             String name = selectedModules[i];
                             String version = selectedVersions[i];
-                            String glob = name + '-' + version + ".*";
+                            String glob = name + '-' + version + "*";
                             String dir = name.replace('.', File.separatorChar) + File.separatorChar + version;
                             Path repoOutputPath = outputPath.resolve(dir);
                             Path repoModulePath = repoPath.resolve(dir);
