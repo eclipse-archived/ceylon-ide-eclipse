@@ -40,7 +40,7 @@ public class CeylonTestDependencyStatusHandler implements IStatusHandler {
         Set<Module> modules = getTestedModules(config);
         Set<Module> modulesWithoutDependency = getTestedModulesWithoutDependency(modules);
 
-        if (!modulesWithoutDependency.isEmpty()) {
+        if (modules.size() == modulesWithoutDependency.size()) {
             boolean answer = showMissingCeylonTestDependencyDialog(project, modulesWithoutDependency);
             if (answer) {
                 addCeylonTestImport(project, modulesWithoutDependency);

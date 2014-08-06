@@ -20,7 +20,11 @@ public class CeylonRunPropertyTester extends PropertyTester {
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (CAN_LAUNCH_AS_CEYLON_JAVA_MODULE.equals(property) || 
             CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE.equals(property)) {
-            if (receiver instanceof IJavaProject) {
+        	if (receiver instanceof IProject) {
+        		IProject project = (IProject) receiver;
+                return isCeylonProject(project) && LaunchHelper.isBuilderEnabled(project, property);
+        	}
+        	else if (receiver instanceof IJavaProject) {
                 IProject project = ((IJavaProject) receiver).getProject();
                 return isCeylonProject(project) && LaunchHelper.isBuilderEnabled(project, property);
             }

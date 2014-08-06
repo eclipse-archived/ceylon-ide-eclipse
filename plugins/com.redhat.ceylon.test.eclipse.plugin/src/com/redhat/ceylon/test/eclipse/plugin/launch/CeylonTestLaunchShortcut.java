@@ -29,8 +29,11 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.ILaunchShortcut;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
@@ -56,6 +59,7 @@ import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
 import com.redhat.ceylon.test.eclipse.plugin.util.MethodWithContainer;
 
 public class CeylonTestLaunchShortcut implements ILaunchShortcut {
@@ -75,44 +79,32 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structuredSelection = (IStructuredSelection) selection;
 
-            if (structuredSelection.size() != 1) {
-                MessageDialog.openInformation(getShell(), CeylonTestMessages.launchDialogInfoTitle, CeylonTestMessages.launchSelectionSize);
-            } else {
-                Object selectedElement = structuredSelection.getFirstElement();
-                launch(selectedElement, mode);
+            List<String> names = new ArrayList<String>();
+            List<CeylonTestLaunchConfigEntry> entries = new ArrayList<CeylonTestLaunchConfigEntry>();
+
+            Object[] selectedElements = structuredSelection.toArray();
+            for (Object selectedElement : selectedElements) {
+                processSelectedElement(selectedElement, mode, names, entries);
             }
+            
+            launch(getLaunchName(names), entries, mode, configTypeId);
         }
     }
 
     @Override
     public void launch(IEditorPart editor, String mode) {
-        StringBuilder name = new StringBuilder();
+        List<String> names = new ArrayList<String>();
         List<CeylonTestLaunchConfigEntry> entries = new ArrayList<CeylonTestLaunchConfigEntry>();
 
         if (editor instanceof CeylonEditor) {
-            processCeylonEditorSelection(name, entries, (CeylonEditor) editor);
+            processCeylonEditorSelection(names, entries, (CeylonEditor) editor);
         }
         if (entries.isEmpty()) {
             IFile file = EditorUtil.getFile(editor.getEditorInput());
-            processFile(name, entries, file);
+            processFile(names, entries, file);
         }
 
-        launch(name.toString(), entries, mode, configTypeId);
-    }
-
-    private void launch(Object element, String mode) {
-        StringBuilder name = new StringBuilder();
-        List<CeylonTestLaunchConfigEntry> entries = new ArrayList<CeylonTestLaunchConfigEntry>();
-
-        if (element instanceof IJavaProject) {
-            processProject(name, entries, ((IJavaProject) element).getProject());
-        } else if (element instanceof IPackageFragment) {
-            processPackage(name, entries, (IPackageFragment) element);
-        } else if (element instanceof IFile) {
-            processFile(name, entries, (IFile) element);
-        }
-
-        launch(name.toString(), entries, mode, configTypeId);
+        launch(getLaunchName(names), entries, mode, configTypeId);
     }
 
     public static void launch(String name, List<CeylonTestLaunchConfigEntry> entries, String mode, String configTypeId) {
@@ -134,17 +126,52 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         }
     }
 
-    private void processProject(StringBuilder name, List<CeylonTestLaunchConfigEntry> entries, IProject project) {
-        if (isCeylonProject(project)) {
-            name.append(project.getName());
-            entries.add(CeylonTestLaunchConfigEntry.build(project, PROJECT, null));
+    private void processSelectedElement(Object selectedElement, String mode, List<String> names, List<CeylonTestLaunchConfigEntry> entries) {
+        if( selectedElement instanceof IProject ) {
+            processProject(names, entries, (IProject) selectedElement);
+        } else if (selectedElement instanceof IJavaProject) {
+            processProject(names, entries, ((IJavaProject) selectedElement).getProject());
+        } else if (selectedElement instanceof IPackageFragmentRoot) {
+            processPackageFragmentRoot(names, entries, (IPackageFragmentRoot) selectedElement);
+        } else if (selectedElement instanceof IPackageFragment) {
+            processPackage(names, entries, (IPackageFragment) selectedElement);
+        } else if (selectedElement instanceof IFile) {
+            processFile(names, entries, (IFile) selectedElement);
         }
     }
 
-    private void processPackage(StringBuilder name, List<CeylonTestLaunchConfigEntry> entries, IPackageFragment packageFragment) {
+    private void processProject(List<String> names, List<CeylonTestLaunchConfigEntry> entries, IProject project) {
+        if (isCeylonProject(project)) {
+            names.add(project.getName());
+            entries.add(CeylonTestLaunchConfigEntry.build(project, PROJECT, null));
+        }
+    }
+    
+    private void processPackageFragmentRoot(List<String> names, List<CeylonTestLaunchConfigEntry> entries, IPackageFragmentRoot packageFragmentRoot) {
+        try {
+            IProject project = packageFragmentRoot.getJavaProject().getProject();
+            if (isCeylonProject(project)) {
+                names.add(packageFragmentRoot.getElementName());
+                IJavaElement[] children = packageFragmentRoot.getChildren();
+                for (IJavaElement child : children) {
+                    if (child instanceof IPackageFragment) {
+                        IPackageFragment packageFragment = (IPackageFragment) child;
+                        Module module = getModule(project, packageFragment.getElementName());
+                        if (CeylonTestUtil.containsCeylonTestImport(module)) {
+                            entries.add(CeylonTestLaunchConfigEntry.build(project, MODULE, packageFragment.getElementName()));
+                        }
+                    }
+                }
+            }
+        } catch (JavaModelException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void processPackage(List<String> names, List<CeylonTestLaunchConfigEntry> entries, IPackageFragment packageFragment) {
         IProject project = packageFragment.getJavaProject().getProject();
         if (isCeylonProject(project)) {
-            name.append(packageFragment.getElementName());
+            names.add(packageFragment.getElementName());
             Module module = getModule(project, packageFragment.getElementName());
             if (module != null) {
                 entries.add(CeylonTestLaunchConfigEntry.build(project, MODULE, packageFragment.getElementName()));
@@ -154,7 +181,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         }
     }
 
-    private void processFile(StringBuilder name, List<CeylonTestLaunchConfigEntry> entries, IFile file) {
+    private void processFile(List<String> names, List<CeylonTestLaunchConfigEntry> entries, IFile file) {
         if (!isCeylonFile(file)) {
             return;
         }
@@ -166,7 +193,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         }
 
         String fileName = file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
-        name.append(fileName);
+        names.add(fileName);
 
         PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(file));
         if (phasedUnit != null) {
@@ -192,7 +219,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         }
     }
 
-    private void processCeylonEditorSelection(StringBuilder name, List<CeylonTestLaunchConfigEntry> entries, CeylonEditor ce) {
+    private void processCeylonEditorSelection(List<String> names, List<CeylonTestLaunchConfigEntry> entries, CeylonEditor ce) {
         CeylonParseController cpc = ce.getParseController();
         if (cpc == null) {
             return;
@@ -214,9 +241,10 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
             if (method.getContainer() instanceof Class && isTestable(new MethodWithContainer((Class)method.getContainer(), method))) {
                 if (method.isMember()) {
-                    name.append(((Declaration) method.getContainer()).getName()).append(".");
+                    names.add(((Declaration) method.getContainer()).getName() + "." + method.getName());
+                } else {
+                    names.add(method.getName());
                 }
-                name.append(method.getName());
                 entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL,
                         method.getQualifiedNameString()));
             }
@@ -224,7 +252,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         if (node instanceof Tree.AnyClass) {
             Class clazz = ((Tree.AnyClass) node).getDeclarationModel();
             if (isTestable(clazz)) {
-                name.append(clazz.getName());
+                names.add(clazz.getName());
                 entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL,
                         clazz.getQualifiedNameString()));
             }
@@ -232,7 +260,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         if( node instanceof Tree.ObjectDefinition ) {
             Class clazz = ((Tree.ObjectDefinition) node).getAnonymousClass();
             if (isTestable(clazz)) {
-                name.append(clazz.getName());
+                names.add(clazz.getName());
                 entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL,
                         clazz.getQualifiedNameString()));
             }
@@ -285,6 +313,18 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
 
     private static ILaunchManager getLaunchManager() {
         return DebugPlugin.getDefault().getLaunchManager();
+    }
+
+    private String getLaunchName(List<String> names) {
+        StringBuilder nameBuilder = new StringBuilder();
+        for (String name : names) {
+            nameBuilder.append(name);
+            nameBuilder.append(",");
+        }
+        if (nameBuilder.length() != 0) {
+            nameBuilder.setLength(nameBuilder.length() - 1);
+        }
+        return nameBuilder.toString();
     }
 
 }

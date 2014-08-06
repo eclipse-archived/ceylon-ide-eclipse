@@ -1,5 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_PORT;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
@@ -23,6 +24,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.launch.ModuleLaunchDelegate;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
@@ -49,18 +51,22 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
     }
 
     @Override
-    protected void prepareArguments(List<String> args, List<IPath> workingRepos, IProject project, ILaunch launch, boolean runAsJs) throws CoreException {
+    protected void prepareArguments(List<String> args, List<IPath> workingRepos, IProject p, ILaunch launch, boolean runAsJs) throws CoreException {
         runAsJs = DebugPlugin.getDefault().getLaunchManager()
                 .getLaunchConfigurationType(LAUNCH_CONFIG_TYPE_JS).equals(launch.getLaunchConfiguration().getType());
         
         LinkedHashSet<String> moduleArgs = new LinkedHashSet<String>();
         LinkedHashSet<String> testArgs = new LinkedHashSet<String>();
+        LinkedHashSet<IProject> projects = new LinkedHashSet<IProject>();
 
         List<CeylonTestLaunchConfigEntry> entries = CeylonTestLaunchConfigEntry.buildFromLaunchConfig(launch.getLaunchConfiguration());
         for (CeylonTestLaunchConfigEntry entry : entries) {
+            IProject project = null;
             Module module = null;
             switch (entry.getType()) {
             case PROJECT:
+                project = CeylonTestUtil.getProject(entry.getProjectName());
+                projects.add(project);
                 for (Module m : getProjectDeclaredSourceModules(project)) {
                     if (CeylonTestUtil.containsCeylonTestImport(m)) {
                         moduleArgs.add(m.getNameAsString() + "/" + m.getVersion());
@@ -69,23 +75,31 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
                 }
                 break;
             case MODULE:
+                project = CeylonTestUtil.getProject(entry.getProjectName());
+                projects.add(project);
                 module = CeylonTestUtil.getModule(project, entry.getModPkgDeclName());
                 moduleArgs.add(module.getNameAsString() + "/" + module.getVersion());
                 testArgs.add("module " + module.getNameAsString());
                 break;
             case PACKAGE:
+                project = CeylonTestUtil.getProject(entry.getProjectName());
+                projects.add(project);
                 module = CeylonTestUtil.getModule(project, entry.getModuleName());
                 moduleArgs.add(module.getNameAsString() + "/" + module.getVersion());
                 testArgs.add("package " + entry.getModPkgDeclName());
                 break;
             case CLASS:
             case CLASS_LOCAL:
+                project = CeylonTestUtil.getProject(entry.getProjectName());
+                projects.add(project);
                 module = CeylonTestUtil.getModule(project, entry.getModuleName());
                 moduleArgs.add(module.getNameAsString() + "/" + module.getVersion());
                 testArgs.add("class " + entry.getModPkgDeclName());
                 break;
             case METHOD:
             case METHOD_LOCAL:
+                project = CeylonTestUtil.getProject(entry.getProjectName());
+                projects.add(project);
                 module = CeylonTestUtil.getModule(project, entry.getModuleName());
                 moduleArgs.add(module.getNameAsString() + "/" + module.getVersion());
                 testArgs.add("function " + entry.getModPkgDeclName());
@@ -93,6 +107,7 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
             }
         }
 
+        
         if(runAsJs) {
             args.add("test-js");
         }
@@ -101,8 +116,23 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
         }
         args.add("--port="+portThreadLocal.get());
 
-        prepareRepositoryArguments(args, project, workingRepos);
-        prepareOfflineArgument(args, project);
+        
+        for (IPath workingRepo : workingRepos) {
+            args.add("--rep");
+            args.add(workingRepo.toOSString());
+        }
+        for (IProject project : projects) {
+            IPath outputFolder = getCeylonModulesOutputFolder(project).getLocation();
+            if (!workingRepos.contains(outputFolder)) {
+                args.add("--rep");
+                args.add(outputFolder.toOSString());
+            }
+            for (String repo : CeylonProjectConfig.get(project).getProjectLocalRepos()) {
+                args.add("--rep");
+                args.add(repo);
+            }
+        }
+        
 
         for (String testArg : testArgs) {
             args.add("--test");
