@@ -4,8 +4,10 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
@@ -26,20 +28,25 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
         }
 
         IProject project = getSelectedProject();
-        boolean explodeModules = isExplodeModulesEnabled(project);
-        boolean showCompilerWarnings = showWarnings(project);
-        boolean compileJs = compileToJs(project);
-        boolean compileJava = compileToJava(project);
-
         CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
         projectConfig.setOutputRepo(block.getOutputRepo());
         projectConfig.setProjectLocalRepos(block.getProjectLocalRepos());
         projectConfig.setProjectRemoteRepos(block.getProjectRemoteRepos());
         projectConfig.save();
-
-        new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings, 
-                compileJava, compileJs).addToProject(project);      
-
+        
+        try {
+            if (project.hasNature(NATURE_ID)) {
+                boolean explodeModules = isExplodeModulesEnabled(project);
+                boolean showCompilerWarnings = showWarnings(project);
+                boolean compileJs = compileToJs(project);
+                boolean compileJava = compileToJava(project);
+                new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings, 
+                        compileJava, compileJs).addToProject(project);      
+            }
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
         return true;
     }
 
