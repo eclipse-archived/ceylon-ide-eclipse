@@ -20,6 +20,7 @@ import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
@@ -33,6 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
 
@@ -81,24 +83,11 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         @Override
         public void visit(Tree.DocLink that) {
             super.visit(that);
-            //TODO: copy/paste from EnterAliasRefactoring
             Declaration base = that.getBase();
             if (base!=null) {
-                String text = that.getText();
-                int offset = that.getStartIndex();
-                
-                int pipeIndex = text.indexOf("|");
-                if (pipeIndex > -1) {
-                    text = text.substring(pipeIndex + 1);
-                    offset += pipeIndex + 1;
-                }
-                
-                int scopeIndex = text.indexOf("::");
-                if (scopeIndex<0) {
-                    int index = text.indexOf('.');
-                    String name = index<0 ? text : text.substring(0, index);
-                    addLinkedPosition(offset, name.length(), base);
-                }
+                Region region = DocLinks.nameRegion(that, 0);
+                addLinkedPosition(region.getOffset(), 
+                        region.getLength(), base);
             }
         }
 

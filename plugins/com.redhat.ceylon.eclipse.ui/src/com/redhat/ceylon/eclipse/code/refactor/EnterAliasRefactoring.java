@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
@@ -8,6 +9,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.DeleteEdit;
@@ -58,21 +60,9 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
             super.visit(that);
             Declaration base = that.getBase();
             if (base!=null && dec.equals(base)) {
-                String text = that.getText();
-                int offset = that.getStartIndex();
-                
-                int pipeIndex = text.indexOf("|");
-                if (pipeIndex > -1) {
-                    text = text.substring(pipeIndex + 1);
-                    offset += pipeIndex + 1;
-                }
-                
-                int scopeIndex = text.indexOf("::");
-                if (scopeIndex<0) {
-                    int index = text.indexOf('.');
-                    String name = index<0 ? text : text.substring(0, index);
-                    change.addEdit(new ReplaceEdit(offset, name.length(), newName));
-                }
+                Region region = nameRegion(that, 0);
+                change.addEdit(new ReplaceEdit(region.getOffset(), 
+                        region.getLength(), newName));
             }
         }
 

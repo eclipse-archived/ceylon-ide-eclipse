@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.util.DocLinks.packageName;
+import static com.redhat.ceylon.eclipse.util.DocLinks.packageRegion;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.internal.corext.refactoring.rename.RenamePackageProcessor;
+import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -36,7 +39,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
     private IPackageFragment javaPackageFragment;
     
-    private static Map<IPackageFragment,String> allPackagesMoving = new HashMap<IPackageFragment,String>();
+    private static Map<IPackageFragment,String> allPackagesMoving = 
+            new HashMap<IPackageFragment,String>();
 
     @Override
     protected boolean initialize(Object element) {
@@ -71,7 +75,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
     }
 
     @Override
-    public Change createChange(IProgressMonitor pm) throws CoreException {
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException {
         try {
             final String newName = getArguments().getNewName();
             final String oldName = javaPackageFragment.getElementName();
@@ -95,30 +100,24 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                     @Override
                     public void visit(DocLink that) {
                         super.visit(that);
-                        //TODO: fix copy/paste from RenameRefactoring
-                        String text = that.getText();
-                        int offset = that.getStartIndex();
-                        
-                        int pipeIndex = text.indexOf("|");
-                        if (pipeIndex > -1) {
-                            text = text.substring(pipeIndex + 1);
-                            offset += pipeIndex + 1;
-                        }
-                        
-                        int scopeIndex = text.indexOf("::");
-                        if (scopeIndex>=0 && text.substring(scopeIndex).endsWith(oldName)) {
-                            edits.add(new ReplaceEdit(offset, 
-                                    oldName.length(), newName));
+                        String packageName = packageName(that);
+                        if (packageName!=null && 
+                                packageName.equals(oldName)) { //TODO: should it be packageName.startsWith(oldName)??
+                            Region region = packageRegion(that);
+                            edits.add(new ReplaceEdit(region.getOffset(), 
+                                    region.getLength(), newName));
                         }
                     }
                 });
 
                 if (!edits.isEmpty()) {
                     try {
-                        final IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                        final IFile file = 
+                                ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
                         IFile movedFile = getMovedFile(file);
                         TextFileChange change = 
-                                new MovingTextFileChange(movedFile.getName(), movedFile, file);
+                                new MovingTextFileChange(movedFile.getName(), 
+                                        movedFile, file);
                         change.setEdit(new MultiTextEdit());
                         for (ReplaceEdit edit: edits) {
                             change.addEdit(edit);
@@ -136,9 +135,11 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                 return null;
             }
             else {
-                CompositeChange result = new CompositeChange("Ceylon source changes") {
+                CompositeChange result = 
+                        new CompositeChange("Ceylon source changes") {
                     @Override
-                    public Change perform(IProgressMonitor pm) throws CoreException {
+                    public Change perform(IProgressMonitor pm) 
+                            throws CoreException {
                         allPackagesMoving.clear();
                         return super.perform(pm);
                     }

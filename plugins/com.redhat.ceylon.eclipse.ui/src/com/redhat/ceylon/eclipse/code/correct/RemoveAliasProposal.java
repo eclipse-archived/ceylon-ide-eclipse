@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
@@ -16,6 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.DocLinks;
 
 class RemoveAliasProposal extends CorrectionProposal {
         
@@ -66,21 +68,9 @@ class RemoveAliasProposal extends CorrectionProposal {
             //TODO: copy/paste from EnterAliasRefactoring
             Declaration base = that.getBase();
             if (base!=null && dec.equals(base)) {
-                String text = that.getText();
-                int offset = that.getStartIndex();
-                
-                int pipeIndex = text.indexOf("|");
-                if (pipeIndex > -1) {
-                    text = text.substring(pipeIndex + 1);
-                    offset += pipeIndex + 1;
-                }
-                
-                int scopeIndex = text.indexOf("::");
-                if (scopeIndex<0) {
-                    int index = text.indexOf('.');
-                    String name = index<0 ? text : text.substring(0, index);
-                    change.addEdit(new ReplaceEdit(offset, name.length(), dec.getName()));
-                }
+                Region region = DocLinks.nameRegion(that, 0);
+                change.addEdit(new ReplaceEdit(region.getOffset(), 
+                        region.getLength(), dec.getName()));
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
+import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -35,6 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExp
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.util.DocLinks;
 
 public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 
@@ -97,9 +100,10 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                         visitIt(id.getText(), id.getStartIndex(), dec);
                     }
                     protected void visitIt(String name, int offset, Declaration dec) {
-                        if (dec!=null && dec.getQualifiedNameString()
-                                .equals(getQualifiedName(javaDeclaration)) &&
-                                name.equals(javaDeclaration.getElementName())) {
+                        if (dec!=null && 
+                                dec.getQualifiedNameString()
+                                    .equals(getQualifiedName(javaDeclaration)) &&
+                                name.equals(javaDeclaration.getElementName())) { //don't rename if aliased
                             edits.add(new ReplaceEdit(offset, oldName.length(), newName));
                         }
                     }
@@ -120,36 +124,16 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                     @Override
                     public void visit(DocLink that) {
                         super.visit(that);
-                        //TODO: fix copy/paste from RenameRefactoring
-                        String text = that.getText();
-                        int offset = that.getStartIndex();
-                        
-                        int pipeIndex = text.indexOf("|");
-                        if (pipeIndex > -1) {
-                            text = text.substring(pipeIndex + 1);
-                            offset += pipeIndex + 1;
-                        }
-                        
-                        int scopeIndex = text.indexOf("::");
-                        int start = scopeIndex<0 ? 0 : scopeIndex+2;
                         Declaration base = that.getBase();
+                        List<Declaration> qualified = that.getQualified();
                         if (base!=null) {
-                            int index = text.indexOf('.', start);
-                            String name = index<0 ? 
-                                    text.substring(start) : 
-                                    text.substring(start, index);
-                            visitIt(name, offset+start, base);
-                            start = index;
-                            int i=0;
-                            List<Declaration> qualified = that.getQualified();
+                            Region region = nameRegion(that, 0);
+                            visitIt(DocLinks.name(that, 0), region.getOffset(), base);
                             if (qualified!=null) {
-                                while (start>0 && i<qualified.size()) {
-                                    index = text.indexOf('.', start);
-                                    name = index<0 ? 
-                                            text.substring(start) : 
-                                            text.substring(start, index);
-                                    visitIt(name, offset+start, qualified.get(i++));
-                                    start = index;
+                                for (int i=0; i<qualified.size(); i++) {
+                                    visitIt(DocLinks.name(that, i+1), 
+                                            nameRegion(that, i+1).getOffset(), 
+                                            qualified.get(i));
                                 }
                             }
                         }
