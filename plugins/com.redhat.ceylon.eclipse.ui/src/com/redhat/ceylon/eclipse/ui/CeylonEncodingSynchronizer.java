@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
+import static org.eclipse.core.resources.IResource.DEPTH_ONE;
 import static org.eclipse.core.resources.IResourceDelta.CONTENT;
 import static org.eclipse.core.resources.IResourceDelta.ENCODING;
 import static org.eclipse.core.resources.IResourceDelta.OPEN;
@@ -8,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -22,9 +25,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 
@@ -75,8 +80,11 @@ public class CeylonEncodingSynchronizer {
         }
         
         try {
+            removeProblemMarker(project);
+            
             String eclipseEncoding = project.getDefaultCharset();
-            String configEncoding = CeylonProjectConfig.get(project).getProjectEncoding();
+            String configEncoding = 
+                    CeylonProjectConfig.get(project).getProjectEncoding();
 
             if (forceEclipseEncoding) {
                 updateEncoding(project, eclipseEncoding);
@@ -85,12 +93,56 @@ public class CeylonEncodingSynchronizer {
             
             if (configEncoding == null) {
                 updateEncoding(project, eclipseEncoding);
-            } else if (!configEncoding.equalsIgnoreCase(eclipseEncoding)) {
-                showSynchronizationDialog(project, eclipseEncoding, configEncoding);
+            }
+            else if (!configEncoding.equalsIgnoreCase(eclipseEncoding)) {
+                createProblemMarker(project, eclipseEncoding, configEncoding);
+//                showSynchronizationDialog(project, eclipseEncoding, configEncoding);
             }
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void removeProblemMarker(final IProject project) {
+        Job job = new Job("Remove character encoding problem marker") {                    
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    project.deleteMarkers(CHARSET_PROBLEM_MARKER_ID, false, DEPTH_ONE);
+                }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.setRule(project);
+        job.schedule();
+    }
+
+    private void createProblemMarker(final IProject project,
+            final String eclipseEncoding, final String configEncoding) {
+        Job job = new Job("Create character encoding problem marker") {                    
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+//                    project.deleteMarkers(CHARSET_PROBLEM_MARKER_ID, false, DEPTH_ONE);
+                    IMarker marker = project.createMarker(CHARSET_PROBLEM_MARKER_ID);
+                    marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                    marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                    marker.setAttribute(IMarker.SOURCE_ID, CeylonBuilder.SOURCE);
+                    marker.setAttribute(IMarker.MESSAGE, getMessage(project, 
+                            eclipseEncoding, configEncoding));
+                }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.setRule(project);
+        job.schedule();
     }
 
     private void showSynchronizationDialog(final IProject project, final String eclipseEncoding, final String configEncoding) {
@@ -99,12 +151,8 @@ public class CeylonEncodingSynchronizer {
             public void run() {
                 MessageDialog dialog = new MessageDialog(
                         null, "Encoding settings synchronization?",
-                        null, "Encoding settings for project '" + project.getName()
-                                + "' is out of sync. Eclipse configuration is set to '"
-                                + eclipseEncoding.toLowerCase() +
-                                "', but in ceylon configuration file is '"
-                                + configEncoding.toLowerCase() +
-                                "'. \n\nWhich encoding do you want to use?",
+                        null, getMessage(project, eclipseEncoding, configEncoding) +
+                        ". \n\nWhich encoding do you want to use?",
                         MessageDialog.QUESTION,
                         new String[] {
                                 "Use '" + eclipseEncoding.toLowerCase() + "'",
@@ -117,7 +165,17 @@ public class CeylonEncodingSynchronizer {
                     updateEncoding(project, configEncoding);
                 }                                
             }
+
         });
+    }
+    
+    private static String getMessage(final IProject project,
+            final String eclipseEncoding, final String configEncoding) {
+        return "character encoding is out of sync: project " 
+                + project.getName() + " is "
+                + eclipseEncoding +
+                " but " + project.getFullPath() + "/.ceylon/config specifies "
+                + configEncoding;
     }
     
     private void updateEncoding(IProject project, String encoding) {
