@@ -97,6 +97,8 @@
 
 1.  First make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
 
+1b. Make sure that your ant (latest version) and maven (Version in Range from 3.0.5 to 3.2.1) can also be run on the command line.
+
 2.  Make sure that your JAVA_HOME is set to the right JDK 7 installation
 
 3.  Make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
