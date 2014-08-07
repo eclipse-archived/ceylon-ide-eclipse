@@ -369,9 +369,10 @@ public class CeylonBuildPathsBlock {
         if (projectExists) {
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
             for (final String path: config.getProjectResourceDirectories()) {
+                final IPath iPath = Path.fromOSString(path);
                 if (path.startsWith(".")) {
                     IFolder folder = fCurrJProject.getProject()
-                            .getFolder(Path.fromOSString(path));
+                            .getFolder(iPath);
                     newResourcePath.add(new CPListElement(fCurrJProject, 
                             IClasspathEntry.CPE_SOURCE, 
                             folder.getFullPath(), 
@@ -384,7 +385,7 @@ public class CeylonBuildPathsBlock {
                             public boolean visit(IResource resource) 
                                     throws CoreException {
                                 if (resource.isLinked() && resource.getLocation() != null &&
-                                        resource.getLocation().toOSString().equals(path)) {
+                                        resource.getLocation().equals(iPath)) {
                                     newResourcePath.add(new CPListElement(null,
                                             fCurrJProject, IClasspathEntry.CPE_SOURCE, 
                                             resource.getFullPath(), 
@@ -1144,7 +1145,7 @@ public class CeylonBuildPathsBlock {
     private static String configFilePath(IProject project, CPListElement cpe) {
         IPath linkTarget = cpe.getLinkTarget();
         if (linkTarget==null) {
-            return "." + File.separator + cpe.getPath().makeRelativeTo(project.getFullPath()).toOSString();
+            return "./" + cpe.getPath().makeRelativeTo(project.getFullPath()).toString();
         }
         else {
             return cpe.getLinkTarget().toOSString();
