@@ -116,6 +116,14 @@
    </extension>
    
    <extension
+         id="ceylonCharsetProblem"
+         name="Ceylon Character Encoding Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
          id="ceylonProblem.backend"
          name="Ceylon Backend Error"
          point="org.eclipse.core.resources.markers">
