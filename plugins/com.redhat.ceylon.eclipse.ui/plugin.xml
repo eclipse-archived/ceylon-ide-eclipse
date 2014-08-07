@@ -147,6 +147,14 @@
       </markerResolutionGenerator>
     </extension>
  
+   <extension 
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator 
+            class="com.redhat.ceylon.eclipse.code.correct.MarkerResolutionGenerator"
+            markerType="com.redhat.ceylon.eclipse.ui.ceylonCharsetProblem">
+      </markerResolutionGenerator>
+    </extension>
+ 
    <extension
          point="org.eclipse.search.searchResultViewPages">
       <viewPage
