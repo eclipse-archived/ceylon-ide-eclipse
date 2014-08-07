@@ -756,7 +756,8 @@ public class CodeCompletions {
             if (v.isDynamicallyTyped()) {
                 result.append("dynamic", Highlights.KW_STYLER);
             }
-            else if (v.getTypeDeclaration().isAnonymous()) {
+            else if (v.getTypeDeclaration()!=null &&
+                    v.getTypeDeclaration().isAnonymous()) {
                 result.append("object", Highlights.KW_STYLER);
             }
             else {
