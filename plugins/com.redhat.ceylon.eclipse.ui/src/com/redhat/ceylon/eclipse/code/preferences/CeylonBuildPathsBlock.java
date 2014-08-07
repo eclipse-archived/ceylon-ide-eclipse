@@ -370,7 +370,7 @@ public class CeylonBuildPathsBlock {
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
             for (final String path: config.getProjectResourceDirectories()) {
                 final IPath iPath = Path.fromOSString(path);
-                if (path.startsWith(".")) {
+                if (! iPath.isAbsolute()) {
                     IFolder folder = fCurrJProject.getProject()
                             .getFolder(iPath);
                     newResourcePath.add(new CPListElement(fCurrJProject, 
@@ -379,7 +379,7 @@ public class CeylonBuildPathsBlock {
                             folder));
                 }
                 else {
-                    try {
+                    try {   
                         project.accept(new IResourceVisitor() {
                             @Override
                             public boolean visit(IResource resource) 
@@ -1144,8 +1144,9 @@ public class CeylonBuildPathsBlock {
 
     private static String configFilePath(IProject project, CPListElement cpe) {
         IPath linkTarget = cpe.getLinkTarget();
-        if (linkTarget==null) {
-            return "./" + cpe.getPath().makeRelativeTo(project.getFullPath()).toString();
+        if (linkTarget==null) { 
+            // It's a relative path
+            return cpe.getPath().makeRelativeTo(project.getFullPath()).toString();
         }
         else {
             return cpe.getLinkTarget().toOSString();
