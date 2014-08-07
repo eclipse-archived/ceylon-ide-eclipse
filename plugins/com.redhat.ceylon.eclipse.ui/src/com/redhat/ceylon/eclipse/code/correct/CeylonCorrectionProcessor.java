@@ -30,6 +30,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddParenthesesProposal.addA
 import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProposal.addAssertExistsDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
@@ -609,6 +610,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     declaration, currentOffset);
             
             addConvertToClassProposal(proposals, declaration, editor);
+            addAssertExistsDeclarationProposals(proposals, doc, file, cu, declaration);
             addSplitDeclarationProposals(proposals, doc, file, cu, declaration);
             addParameterProposals(proposals, file, cu, declaration, editor);
             
