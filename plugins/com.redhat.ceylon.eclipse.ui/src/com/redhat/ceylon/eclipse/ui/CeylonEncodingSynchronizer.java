@@ -5,6 +5,7 @@ import static org.eclipse.core.resources.IResource.DEPTH_ONE;
 import static org.eclipse.core.resources.IResourceDelta.CONTENT;
 import static org.eclipse.core.resources.IResourceDelta.ENCODING;
 import static org.eclipse.core.resources.IResourceDelta.OPEN;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,15 +20,12 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
@@ -67,11 +65,11 @@ public class CeylonEncodingSynchronizer {
     }
 
     public void install() {
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceChangeListener);
+        getWorkspace().addResourceChangeListener(resourceChangeListener);
     }
 
     public void uninstall() {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceChangeListener);
+        getWorkspace().removeResourceChangeListener(resourceChangeListener);
     }
     
     private void synchronizeEncoding(IProject project, boolean forceEclipseEncoding) {
@@ -130,7 +128,7 @@ public class CeylonEncodingSynchronizer {
                     IMarker marker = project.createMarker(CHARSET_PROBLEM_MARKER_ID);
                     marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                     marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                    marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                    marker.setAttribute(IMarker.LOCATION, project.getName());
                     marker.setAttribute(IMarker.SOURCE_ID, CeylonBuilder.SOURCE);
                     marker.setAttribute(IMarker.MESSAGE, getMessage(project, 
                             eclipseEncoding, configEncoding));
@@ -145,29 +143,29 @@ public class CeylonEncodingSynchronizer {
         job.schedule();
     }
 
-    private void showSynchronizationDialog(final IProject project, final String eclipseEncoding, final String configEncoding) {
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                MessageDialog dialog = new MessageDialog(
-                        null, "Encoding settings synchronization?",
-                        null, getMessage(project, eclipseEncoding, configEncoding) +
-                        ". \n\nWhich encoding do you want to use?",
-                        MessageDialog.QUESTION,
-                        new String[] {
-                                "Use '" + eclipseEncoding.toLowerCase() + "'",
-                                "Use '" + configEncoding.toLowerCase() + "'" }, 0);
-                
-                int result = dialog.open();
-                if (result == 0) {
-                    updateEncoding(project, eclipseEncoding);
-                } else {
-                    updateEncoding(project, configEncoding);
-                }                                
-            }
-
-        });
-    }
+//    private void showSynchronizationDialog(final IProject project, final String eclipseEncoding, final String configEncoding) {
+//        Display.getDefault().asyncExec(new Runnable() {
+//            @Override
+//            public void run() {
+//                MessageDialog dialog = new MessageDialog(
+//                        null, "Encoding settings synchronization?",
+//                        null, getMessage(project, eclipseEncoding, configEncoding) +
+//                        ". \n\nWhich encoding do you want to use?",
+//                        MessageDialog.QUESTION,
+//                        new String[] {
+//                                "Use '" + eclipseEncoding.toLowerCase() + "'",
+//                                "Use '" + configEncoding.toLowerCase() + "'" }, 0);
+//                
+//                int result = dialog.open();
+//                if (result == 0) {
+//                    updateEncoding(project, eclipseEncoding);
+//                } else {
+//                    updateEncoding(project, configEncoding);
+//                }                                
+//            }
+//
+//        });
+//    }
     
     private static String getMessage(final IProject project,
             final String eclipseEncoding, final String configEncoding) {
@@ -178,7 +176,7 @@ public class CeylonEncodingSynchronizer {
                 + configEncoding;
     }
     
-    private void updateEncoding(IProject project, String encoding) {
+    public void updateEncoding(IProject project, String encoding) {
         new InternalSynchronizeJob(project, encoding).schedule();
     }
 

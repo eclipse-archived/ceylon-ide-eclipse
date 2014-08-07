@@ -1,11 +1,13 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -20,11 +22,46 @@ import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.ui.CeylonEncodingSynchronizer;
 
 public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
         IMarkerResolutionGenerator2 {
 
     private static final IMarkerResolution[] NO_RESOLUTIONS = new IMarkerResolution[0];
+
+    private static final class CharsetCorrection implements IMarkerResolution, IMarkerResolution2 {
+        private final IProject project;
+        private final String encoding;
+
+        private CharsetCorrection(IProject project, String encoding) {
+            this.project = project;
+            this.encoding = encoding;
+        }
+
+        @Override
+        public void run(IMarker marker) {
+            CeylonEncodingSynchronizer.getInstance()
+                    .updateEncoding(project, encoding);
+        }
+
+        @Override
+        public String getLabel() {
+            return "change project character encoding to " + 
+                    encoding;
+        }
+
+        @Override
+        public String getDescription() {
+            return null;
+        }
+
+        @Override
+        public Image getImage() {
+            return CeylonLabelProvider.MINOR_CHANGE;
+        }
+    }
 
     private static class CorrectionMarkerResolution implements
             IMarkerResolution, IMarkerResolution2 {
@@ -74,8 +111,18 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
         if (!hasResolutions(marker)) {
             return NO_RESOLUTIONS;
         }
-
+        
         try {
+            if (marker.getType().equals(CHARSET_PROBLEM_MARKER_ID)) {
+                IProject project = (IProject) marker.getResource();
+                String encoding = project.getDefaultCharset();
+                String ceylonEncoding = CeylonProjectConfig.get(project).getEncoding();
+                return new IMarkerResolution[] {
+                    new CharsetCorrection(project, encoding),
+                    new CharsetCorrection(project, ceylonEncoding),
+                };
+            }
+
             IQuickAssistInvocationContext quickAssistContext = 
                     new IQuickAssistInvocationContext() {
                 public ISourceViewer getSourceViewer() { return null; }
@@ -110,6 +157,13 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
     }
 
     public boolean hasResolutions(IMarker marker) {
-        return CeylonCorrectionProcessor.canFix(marker);
+        try {
+            return CeylonCorrectionProcessor.canFix(marker) ||
+                    marker.getType().equals(CHARSET_PROBLEM_MARKER_ID);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

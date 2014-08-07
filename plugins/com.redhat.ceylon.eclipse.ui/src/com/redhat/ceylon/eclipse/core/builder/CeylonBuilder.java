@@ -663,7 +663,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         " (try running Enable Ceylon Builder on the project)");
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                marker.setAttribute(IMarker.LOCATION, project.getName());
                 marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
                 return project.getReferencedProjects();
             }
@@ -674,7 +674,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         " (try running Enable Ceylon Builder on the project)");
                 marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                marker.setAttribute(IMarker.LOCATION, project.getName());
                 marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
                 return project.getReferencedProjects();
             }
