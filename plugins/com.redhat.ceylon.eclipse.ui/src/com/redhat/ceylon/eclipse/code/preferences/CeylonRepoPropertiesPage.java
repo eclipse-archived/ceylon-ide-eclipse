@@ -4,10 +4,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
@@ -34,18 +32,13 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
         projectConfig.setProjectRemoteRepos(block.getProjectRemoteRepos());
         projectConfig.save();
         
-        try {
-            if (project.hasNature(NATURE_ID)) {
-                boolean explodeModules = isExplodeModulesEnabled(project);
-                boolean showCompilerWarnings = showWarnings(project);
-                boolean compileJs = compileToJs(project);
-                boolean compileJava = compileToJava(project);
-                new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings, 
-                        compileJava, compileJs).addToProject(project);      
-            }
-        }
-        catch (CoreException e) {
-            e.printStackTrace();
+        if (CeylonNature.isEnabled(project)) {
+            boolean explodeModules = isExplodeModulesEnabled(project);
+            boolean showCompilerWarnings = showWarnings(project);
+            boolean compileJs = compileToJs(project);
+            boolean compileJava = compileToJava(project);
+            new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings, 
+                    compileJava, compileJs).addToProject(project);      
         }
         return true;
     }

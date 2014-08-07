@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Set;
@@ -34,6 +33,7 @@ import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
@@ -136,7 +136,7 @@ public class CeylonNavigatorLabelProvider extends
         if (stringToDisplay == null) {
             try {
                 for (IProject referencedProject: repoNode.project.getReferencedProjects()) {
-                    if (referencedProject.isOpen() && referencedProject.hasNature(NATURE_ID)) {
+                    if (referencedProject.isOpen() && CeylonNature.isEnabled(referencedProject)) {
                         if (CeylonBuilder.getCeylonModulesOutputDirectory(referencedProject).getAbsolutePath().equals(displayString)) {
                             stringToDisplay = "Modules of Referenced Project : " + referencedProject.getName() + "";
                             break;

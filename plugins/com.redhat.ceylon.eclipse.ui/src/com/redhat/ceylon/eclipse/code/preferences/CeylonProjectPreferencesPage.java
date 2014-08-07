@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IProject;
@@ -72,21 +71,16 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     
     private void store() {
         IProject project = getSelectedProject();
-        try {
-            if (project.hasNature(NATURE_ID)) {
-                String systemRepo = getCeylonSystemRepo(project);
-                new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
-                        backendJava, backendJs).addToProject(project);
+        if (CeylonNature.isEnabled(project)) {
+            String systemRepo = getCeylonSystemRepo(project);
+            new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
+                    backendJava, backendJs).addToProject(project);
 
-                CeylonProjectConfig config = CeylonProjectConfig.get(project);
-                if (offlineOption!=null) {
-                    config.setProjectOffline(offlineOption);
-                }
-                config.save();
+            CeylonProjectConfig config = CeylonProjectConfig.get(project);
+            if (offlineOption!=null) {
+                config.setProjectOffline(offlineOption);
             }
-        } 
-        catch (CoreException e) {
-            e.printStackTrace();
+            config.save();
         }
     }
 

@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static java.lang.Integer.parseInt;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -31,6 +30,7 @@ import org.eclipse.ui.console.TextConsole;
 import org.eclipse.ui.part.FileEditorInput;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -83,10 +83,9 @@ public class CeylonPatternMatchListenerDelegate
         String packageName = extractPackageName(qualifiedName);
         IWorkspaceRoot root = getWorkspace().getRoot();
         IEditorInput input = null;
-        //TODO: only look in Ceylon projects
         for (IProject p: root.getProjects()) {
             try {
-                if (p.isAccessible() && p.hasNature(NATURE_ID)) {
+                if (p.isAccessible() && CeylonNature.isEnabled(p)) {
                     IPackageFragmentRoot[] roots = 
                             JavaCore.create(p).getAllPackageFragmentRoots();
                     for (IPackageFragmentRoot pfr: roots) {

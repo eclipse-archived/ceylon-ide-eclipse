@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.window.Window;
@@ -46,14 +45,9 @@ public class ProjectSelectionDialog extends ElementListSelectionDialog {
     public int open() {
         List<IProject> elements = new ArrayList<IProject>();
         for (IProject project: getWorkspace().getRoot().getProjects()) {
-            try {
-                if (project.isOpen() &&
-                        project.hasNature(CeylonNature.NATURE_ID)) {
-                    elements.add(project);
-                }
-            }
-            catch (CoreException e) {
-                e.printStackTrace();
+            if (project.isOpen() &&
+                    CeylonNature.isEnabled(project)) {
+                elements.add(project);
             }
         }
         /*Collections.sort(elements, new Comparator<IPackageFragment>() {
