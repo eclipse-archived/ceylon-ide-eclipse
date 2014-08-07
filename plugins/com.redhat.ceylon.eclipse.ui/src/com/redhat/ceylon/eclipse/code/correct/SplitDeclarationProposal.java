@@ -132,7 +132,6 @@ class SplitDeclarationProposal extends CorrectionProposal {
         Type type = decNode.getType();
         int il;
         if (type instanceof Tree.LocalModifier) {
-            Integer typeOffset = type.getStartIndex();
             ProducedType infType = type.getTypeModel();
             String explicitType;
             if (infType==null) {
@@ -145,8 +144,10 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 importType(decs, infType, cu);
                 il=applyImports(change, decs, cu, doc);
             }
-            change.addEdit(new ReplaceEdit(typeOffset, 
-                    type.getText().length(), explicitType));
+            Integer typeOffset = type.getStartIndex();
+            Integer typeLen = type.getStopIndex()-typeOffset+1;
+            change.addEdit(new ReplaceEdit(typeOffset, typeLen, 
+                    explicitType));
         }
         else {
             il=0;
