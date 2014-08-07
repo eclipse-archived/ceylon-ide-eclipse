@@ -1743,8 +1743,10 @@ public class CeylonEditor extends TextEditor {
         if (cpc==null || cpc.getRootNode()==null) {
             return null;
         }
-        ITextSelection selection = EditorUtil.getSelection(this);
-        return findNode(cpc.getRootNode(), selection);
+        else {
+            return findNode(cpc.getRootNode(), 
+                    EditorUtil.getSelection(this));
+        }
     }
     
 }

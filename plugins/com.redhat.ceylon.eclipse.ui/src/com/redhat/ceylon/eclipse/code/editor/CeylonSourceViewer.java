@@ -15,6 +15,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
+import static com.redhat.ceylon.eclipse.util.Nodes.getTokenStrictlyContainingOffset;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
@@ -70,7 +71,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -238,6 +238,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
     
     private void afterCopyCut(String selection, Map<Declaration,String> imports) {
         if (imports!=null && !editor.isBlockSelectionModeEnabled()) {
+            char c = 
+                    editor.getSelectedNode() 
+                        instanceof Tree.Literal ? 
+                            '"' : '{';
             Clipboard clipboard = 
                     new Clipboard(getTextWidget().getDisplay());
             try {
@@ -250,7 +254,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     Object[] data;
                     Transfer[] dataTypes;
                     if (rtf==null) {
-                        data = new Object[] { text, imports, selection };
+                        data = new Object[] { text, imports, c + selection };
                         dataTypes = new Transfer[] {
                                 TextTransfer.getInstance(),
                                 ImportsTransfer.INSTANCE, 
@@ -258,7 +262,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                             };
                     }
                     else {
-                        data = new Object[] { text, rtf, imports, selection };
+                        data = new Object[] { text, rtf, imports, c + selection };
                         dataTypes = new Transfer[] {
                                 TextTransfer.getInstance(),
                                 RTFTransfer.getInstance(),
@@ -287,8 +291,14 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     new Clipboard(getTextWidget().getDisplay());
             try {
                 String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
+                boolean fromStringLiteral;
                 if (text==null) {
+                    fromStringLiteral = false;
                     text = (String) clipboard.getContents(TextTransfer.getInstance());
+                }
+                else {
+                    fromStringLiteral = text.charAt(0)=='"';
+                    text = text.substring(1);
                 }
                 if (text==null) {
                     return false;
@@ -314,7 +324,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     CeylonLexer lexer = new CeylonLexer(stream);
                     CommonTokenStream tokens = new CommonTokenStream(lexer);
                     tokens.fill();
-                    CommonToken token = Nodes.getTokenStrictlyContainingOffset(offset, tokens.getTokens());
+                    CommonToken token = getTokenStrictlyContainingOffset(offset, 
+                            tokens.getTokens());
                     boolean quoted;
                     boolean verbatim;
                     if (token == null) {
@@ -344,7 +355,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                             if (!quoted && imports!=null) {
                                 pasteImports(imports, edit, text, doc);
                             }
-                            if (quoted && !verbatim) {
+                            if (quoted && !verbatim && !fromStringLiteral) {
                                 text = text
                                         .replace("\\", "\\\\")
                                         .replace("\t", "\\t")
