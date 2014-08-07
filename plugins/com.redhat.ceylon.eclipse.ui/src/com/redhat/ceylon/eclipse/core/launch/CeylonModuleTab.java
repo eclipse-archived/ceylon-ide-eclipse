@@ -57,9 +57,6 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
     private Button fTopLevelSearchButton;
     private Button verboseCheck;
     
-    /* (non-Javadoc)
-     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse.swt.widgets.Composite)
-     */
     public void createControl(Composite parent) {
         Composite comp = SWTFactory.createComposite(parent, parent.getFont(), 1, 1, GridData.FILL_BOTH);
         ((GridLayout)comp.getLayout()).verticalSpacing = 0;
@@ -72,17 +69,10 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
     }
 
-
-    /* (non-Javadoc)
-     * @see org.eclipse.debug.ui.AbstractLaunchConfigurationTab#getImage()
-     */
     public Image getImage() {
         return JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_JAR);
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getName()
-     */
     public String getName() {
         return "Module";
     }
@@ -137,9 +127,6 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         }
     }   
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jdt.internal.debug.ui.launcher.AbstractJavaMainTab#initializeFrom(org.eclipse.debug.core.ILaunchConfiguration)
-     */
     public void initializeFrom(ILaunchConfiguration config) {
         super.initializeFrom(config); // sets project
 
@@ -155,9 +142,6 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         }
     }   
 
-    /* (non-Javadoc)
-     * @see org.eclipse.debug.ui.AbstractLaunchConfigurationTab#isValid(org.eclipse.debug.core.ILaunchConfiguration)
-     */
     public boolean isValid(ILaunchConfiguration config) {
         setErrorMessage(null);
         setMessage(null);
@@ -234,10 +218,6 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         return true;
     }
 
-
-    /* (non-Javadoc)
-     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#performApply(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
-     */
     public void performApply(ILaunchConfigurationWorkingCopy config) {
 
         config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
@@ -247,9 +227,6 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         mapResources(config);
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
-     */
     public void setDefaults(ILaunchConfigurationWorkingCopy config) {
         IJavaElement javaElement = getContext();
         if (javaElement != null) {

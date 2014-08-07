@@ -5,7 +5,6 @@ import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.compiler.typechecker.model.Module.LANGUAGE_MODULE_NAME;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonNature.NATURE_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchives;
@@ -185,9 +184,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static final String PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonProblem";
 
     /**
-     * A marker ID that identifies Module Dependency problems
+     * A marker ID that identifies module dependency problems
      */
     public static final String MODULE_DEPENDENCY_PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonModuleDependencyProblem";
+
+    /**
+     * A marker ID that identifies character encoding problems
+     */
+    public static final String CHARSET_PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonCharsetProblem";
 
     /**
      * A marker ID that identifies tasks
@@ -2437,7 +2441,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         List<String> repos = new ArrayList<String>();
         if (project != null) {
             for (IProject referencedProject: project.getReferencedProjects()) {
-                if (referencedProject.isOpen() && referencedProject.hasNature(NATURE_ID)) {
+                if (referencedProject.isOpen() && CeylonNature.isEnabled(referencedProject)) {
                     repos.add(getCeylonModulesOutputDirectory(referencedProject).getAbsolutePath());
                 }
             }

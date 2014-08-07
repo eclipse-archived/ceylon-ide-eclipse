@@ -33,24 +33,18 @@ public class ProjectChangeListener implements IResourceChangeListener {
                     }
                     else if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
                         final IProject project = (IProject) resource;
-                        try {
-                            if (! project.isOpen()) {
-                                CeylonBuilder.removeProject(project);
+                        if (!project.isOpen()) {
+                            CeylonBuilder.removeProject(project);
+                        }
+                        else if (CeylonNature.isEnabled(project)) {
+                            IJavaProject javaProject = JavaCore.create(project);
+                            if (javaProject != null) {
+                                //List<CeylonApplicationModulesContainer> cpContainers = 
+                                getCeylonClasspathContainers(javaProject);
+                                /*for (CeylonApplicationModulesContainer container : cpContainers) {
+                                    container.launchResolve(false, null);
+                                }*/
                             }
-                            else {
-                                if (project.hasNature(CeylonNature.NATURE_ID)) {
-                                    IJavaProject javaProject = JavaCore.create(project);
-                                    if (javaProject != null) {
-                                        //List<CeylonApplicationModulesContainer> cpContainers = 
-                                        getCeylonClasspathContainers(javaProject);
-                                        /*for (CeylonApplicationModulesContainer container : cpContainers) {
-                                            container.launchResolve(false, null);
-                                        }*/
-                                    }
-                                }
-                            }
-                        } catch (CoreException e) {
-                            e.printStackTrace();
                         }
                     }
                     return false;
