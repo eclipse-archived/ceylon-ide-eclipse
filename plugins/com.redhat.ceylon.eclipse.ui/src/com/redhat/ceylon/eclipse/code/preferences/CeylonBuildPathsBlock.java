@@ -16,10 +16,13 @@ import static com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard.DEFAULT_RES
 import static com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +114,8 @@ import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
 import com.redhat.ceylon.common.Constants;
+import com.redhat.ceylon.common.config.CeylonConfig;
+import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
@@ -140,6 +145,7 @@ public class CeylonBuildPathsBlock {
     private StringButtonDialogField fJavaBuildPathDialogField;
     private Link fNotInSyncText;
     private boolean wasInSyncWhenOpening;
+    private boolean someFoldersNeedToBeCreated;
 
     private StatusInfo fClassPathStatus;
     private StatusInfo fOutputFolderStatus;
@@ -351,6 +357,11 @@ public class CeylonBuildPathsBlock {
                     }
                 } else if ("here".equals(e.text)) {
                     refreshSourcePathsFromConfigFile();
+                    if (fSourceContainerPage != null) {
+                        fSourceContainerPage.init(fCurrJProject);
+                    }
+                    updateUI();
+                    
                 }
             }
         });
@@ -450,9 +461,30 @@ public class CeylonBuildPathsBlock {
             IClasspathEntry[] classpathEntries, boolean javaCompilationEnabled) {
         fCurrJProject= jproject;
         boolean projectExists= false;
+        someFoldersNeedToBeCreated = false;
         final List<CPListElement> newClassPath;
         IProject project= fCurrJProject.getProject();
         projectExists= (project.exists() && project.getFile(".classpath").exists()); //$NON-NLS-1$
+
+        List<String> configSourceDirectories;
+        List<String> configResourceDirectories;
+        if (projectExists) {
+            CeylonProjectConfig config = CeylonProjectConfig.get(project);
+            configSourceDirectories = config.getProjectSourceDirectories();
+            configResourceDirectories = config.getProjectResourceDirectories();
+        } else {
+            File configFile = jproject.getProject().getFile(".ceylon/config").getLocation().toFile();
+            CeylonConfig ceylonConfig;
+            try {
+                ceylonConfig = CeylonConfigFinder.DEFAULT.loadConfigFromFile(configFile);
+                configSourceDirectories = CeylonProjectConfig.getConfigSourceDirectories(ceylonConfig);
+                configResourceDirectories = CeylonProjectConfig.getConfigResourceDirectories(ceylonConfig);
+            } catch (IOException e) {
+                configSourceDirectories = Collections.emptyList();
+                configResourceDirectories = Collections.emptyList();
+            }
+        }
+        
         IClasspathEntry[] existingEntries= null;
         if  (projectExists) {
             if (javaOutputLocation == null) {
@@ -475,10 +507,11 @@ public class CeylonBuildPathsBlock {
             newClassPath= getDefaultClassPath(jproject);
         }
         
+        Set<String> newFolderNames = new HashSet<>();
         final List<CPListElement> newResourcePath = new ArrayList<CPListElement>();
-        if (projectExists) {
-            CeylonProjectConfig config = CeylonProjectConfig.get(project);
-            for (final String path: config.getProjectResourceDirectories()) {
+
+        if (!configResourceDirectories.isEmpty()) {
+            for (final String path: configResourceDirectories) {
                 final IPath iPath = Path.fromOSString(path);
                 if (! iPath.isAbsolute()) {
                     IFolder folder = fCurrJProject.getProject()
@@ -487,24 +520,50 @@ public class CeylonBuildPathsBlock {
                             IClasspathEntry.CPE_SOURCE, 
                             folder.getFullPath(), 
                             folder));
+                    if (!folder.exists()) {
+                        someFoldersNeedToBeCreated = true;
+                    }
                 }
                 else {
                     try {   
+                        class CPListElementHolder {
+                            public CPListElement value = null;
+                        }
+                        final CPListElementHolder cpListElement = new CPListElementHolder();
                         project.accept(new IResourceVisitor() {
                             @Override
                             public boolean visit(IResource resource) 
                                     throws CoreException {
-                                if (resource.isLinked() && resource.getLocation() != null &&
+                                if (resource instanceof IFolder &&
+                                        resource.isLinked() && 
+                                        resource.getLocation() != null &&
                                         resource.getLocation().equals(iPath)) {
-                                    newResourcePath.add(new CPListElement(null,
+                                    cpListElement.value = new CPListElement(null,
                                             fCurrJProject, IClasspathEntry.CPE_SOURCE, 
                                             resource.getFullPath(), 
-                                            resource, resource.getLocation()));
+                                            resource, resource.getLocation());
+                                    return false;
                                 }
                                 return resource instanceof IFolder || 
                                         resource instanceof IProject;
                             }
                         });
+                        if (cpListElement.value == null) {
+                            String newFolderName = iPath.lastSegment();
+                            IFolder newFolder = project.getFolder(newFolderName);
+                            int counter = 1;
+                            while (newFolderNames.contains(newFolderName) || newFolder.exists()) {
+                                newFolderName = iPath.lastSegment() + "_" + counter++;
+                                newFolder = project.getFolder(newFolderName);
+                            }
+                            newFolderNames.add(newFolderName);
+                            cpListElement.value = new CPListElement(null,
+                                    fCurrJProject, IClasspathEntry.CPE_SOURCE, 
+                                    newFolder.getFullPath(), 
+                                    newFolder, iPath);
+                            someFoldersNeedToBeCreated = true;
+                        }
+                        newResourcePath.add(cpListElement.value);
                     }
                     catch (CoreException e) {
                         e.printStackTrace();
@@ -536,6 +595,12 @@ public class CeylonBuildPathsBlock {
         fClassPathList.setElements(newClassPath);
         fClassPathList.setCheckedElements(exportedEntries);
 
+        if (! projectExists) {
+            IPreferenceStore store= PreferenceConstants.getPreferenceStore();
+            if (!configSourceDirectories.isEmpty() && store.getBoolean(PreferenceConstants.SRCBIN_FOLDERS_IN_NEWPROJ)) {
+                updateClassPathsFromConfigFile(configSourceDirectories, newFolderNames);
+            }
+        }
         fClassPathList.selectFirstElement();
 
         fResourcePathList.setElements(newResourcePath);
@@ -610,7 +675,7 @@ public class CeylonBuildPathsBlock {
 
     public boolean hasChangesInDialog() {
         String currSettings= getEncodedSettings();
-        return !currSettings.equals(fUserSettingsTimeStamp);
+        return !currSettings.equals(fUserSettingsTimeStamp) || someFoldersNeedToBeCreated;
     }
 
     public boolean hasChangesInClasspathFile() {
@@ -1483,36 +1548,68 @@ public class CeylonBuildPathsBlock {
     }
 
     private void refreshSourcePathsFromConfigFile() {
-        final List<CPListElement> newSourcePath = new ArrayList<CPListElement>();
         final IProject project = fCurrJProject.getProject();
         CeylonProjectConfig config = CeylonProjectConfig.get(project);
-        for (final String path: config.getProjectSourceDirectories()) {
+        List<String> sourceDirectories = config.getProjectSourceDirectories();
+
+        updateClassPathsFromConfigFile(sourceDirectories, new HashSet<String>());
+    }
+
+    private void updateClassPathsFromConfigFile(List<String> sourceDirectories, final Set<String> newFolderNames) {
+        final IProject project = fCurrJProject.getProject();
+        final List<CPListElement> newSourcePath = new ArrayList<CPListElement>();
+        for (final String path : sourceDirectories) {
             final IPath iPath = Path.fromOSString(path);
             if (!iPath.isAbsolute()) {
-                IFolder folder = fCurrJProject.getProject()
-                        .getFolder(iPath);
+                IFolder folder = project.getFolder(iPath);
                 newSourcePath.add(new CPListElement(fCurrJProject, 
                         IClasspathEntry.CPE_SOURCE, 
                         folder.getFullPath(), 
                         folder));
+                if (!folder.exists()) {
+                    someFoldersNeedToBeCreated = true;
+                }
             }
             else {
                 try {
+                    class CPListElementHolder {
+                        public CPListElement value = null;
+                    }
+                    final CPListElementHolder cpListElement = new CPListElementHolder();
                     project.accept(new IResourceVisitor() {
                         @Override
                         public boolean visit(IResource resource) 
                                 throws CoreException {
-                            if (resource.isLinked() && resource.getLocation() != null &&
+                            if (resource instanceof IFolder &&
+                                    resource.isLinked() && 
+                                    resource.getLocation() != null &&
                                     resource.getLocation().equals(iPath)) {
-                                newSourcePath.add(new CPListElement(null,
+                                cpListElement.value = new CPListElement(null,
                                         fCurrJProject, IClasspathEntry.CPE_SOURCE, 
                                         resource.getFullPath(), 
-                                        resource, resource.getLocation()));
+                                        resource, resource.getLocation());
+                                return false;
                             }
                             return resource instanceof IFolder || 
                                     resource instanceof IProject;
                         }
                     });
+                    if (cpListElement.value == null) {
+                        String newFolderName = iPath.lastSegment();
+                        IFolder newFolder = project.getFolder(newFolderName);
+                        int counter = 1;
+                        while (newFolderNames.contains(newFolderName) || newFolder.exists()) {
+                            newFolderName = iPath.lastSegment() + "_" + counter++;
+                            newFolder = project.getFolder(newFolderName);
+                        }
+                        newFolderNames.add(newFolderName);
+                        cpListElement.value = new CPListElement(null,
+                                fCurrJProject, IClasspathEntry.CPE_SOURCE, 
+                                newFolder.getFullPath(), 
+                                newFolder, iPath);
+                        someFoldersNeedToBeCreated = true;
+                    }
+                    newSourcePath.add(cpListElement.value);
                 }
                 catch (CoreException ex) {
                     ex.printStackTrace();
@@ -1544,13 +1641,6 @@ public class CeylonBuildPathsBlock {
 
         fClassPathList.setElements(newClassPath);
         fClassPathList.setCheckedElements(exportedEntries);
-
         fClassPathList.selectFirstElement();
-
-        if (fSourceContainerPage != null) {
-            fSourceContainerPage.init(fCurrJProject);
-        }
-
-        updateUI();
     }
 }

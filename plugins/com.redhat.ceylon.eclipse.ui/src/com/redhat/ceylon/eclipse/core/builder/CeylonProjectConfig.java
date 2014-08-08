@@ -177,7 +177,7 @@ public class CeylonProjectConfig {
         return getConfigSourceDirectories(projectConfig);
     }
 
-    private List<String> getConfigSourceDirectories(CeylonConfig config) {
+    public static List<String> getConfigSourceDirectories(CeylonConfig config) {
         return getConfigValuesAsList(config, DefaultToolOptions.COMPILER_SOURCE, Constants.DEFAULT_SOURCE_DIR);
     }
 
@@ -193,7 +193,7 @@ public class CeylonProjectConfig {
         return getConfigResourceDirectories(projectConfig);
     }
 
-    private List<String> getConfigResourceDirectories(CeylonConfig config) {
+    public static List<String> getConfigResourceDirectories(CeylonConfig config) {
         return getConfigValuesAsList(config, DefaultToolOptions.COMPILER_RESOURCE, Constants.DEFAULT_RESOURCE_DIR);
     }
 
@@ -378,7 +378,7 @@ public class CeylonProjectConfig {
         return url.startsWith("./") || url.startsWith(".\\") ? url.substring(2) : url;
     }
 
-    private List<String> getConfigValuesAsList(CeylonConfig config, String optionKey, String defaultKey) {
+    private static List<String> getConfigValuesAsList(CeylonConfig config, String optionKey, String defaultKey) {
         String[] values = config.getOptionValues(optionKey);
         if (values != null) {
             return Arrays.asList(values);
