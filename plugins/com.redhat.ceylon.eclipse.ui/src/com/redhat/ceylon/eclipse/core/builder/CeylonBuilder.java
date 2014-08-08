@@ -57,6 +57,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -2871,14 +2872,39 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static List<IFolder> getResourceFolders(IProject project) {
         LinkedList<IFolder> resourceFolers = new LinkedList<>();
         if (project.exists()) {
-            for (String resourceFolder : CeylonProjectConfig.get(project).getResourceDirectories()) {
-                if (resourceFolder.startsWith("." + File.separator)) {
-                    resourceFolder = project.getLocation().toOSString() + resourceFolder.substring(1);
+            for (String resourceInConfig : CeylonProjectConfig.get(project).getResourceDirectories()) {
+                class FolderHolder {
+                    IFolder resourceFolder;
                 }
-                IPath resourceDirFullPath = Path.fromOSString(resourceFolder);
-                IPath projectLocation = project.getLocation();
-                if (projectLocation.isPrefixOf(resourceDirFullPath)) {
-                    resourceFolers.add(project.getFolder(resourceDirFullPath.makeRelativeTo(projectLocation)));
+                final FolderHolder folderHolder = new FolderHolder();;
+                final IPath path = Path.fromOSString(resourceInConfig);
+                if (! path.isAbsolute()) {
+                    folderHolder.resourceFolder = project.getFolder(path);
+                } else {
+                    try {   
+                        project.accept(new IResourceVisitor() {
+                            @Override
+                            public boolean visit(IResource resource) 
+                                    throws CoreException {
+                                if (resource instanceof IFolder &&
+                                        resource.isLinked() && 
+                                        resource.getLocation() != null &&
+                                        resource.getLocation().equals(path)) {
+                                    folderHolder.resourceFolder = (IFolder) resource;
+                                    return false;
+                                }
+                                return resource instanceof IFolder || 
+                                        resource instanceof IProject;
+                            }
+                        });
+                    }
+                    catch (CoreException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (folderHolder.resourceFolder != null && 
+                        folderHolder.resourceFolder.exists()) {
+                    resourceFolers.add(folderHolder.resourceFolder);
                 }
             }
         }
