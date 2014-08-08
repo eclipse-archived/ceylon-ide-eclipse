@@ -53,7 +53,19 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
     public boolean performOk() {
         if (fBuildPathsBlock != null) {
             getSettings().put(INDEX, fBuildPathsBlock.getPageIndex());
-            if (fBuildPathsBlock.hasChangesInDialog() || fBuildPathsBlock.isClassfileMissing()) {
+            boolean overwriteCeylonConfig = false;
+            if (!fBuildPathsBlock.isInSyncWithCeylonConfig()) {
+                if ( !MessageDialog.openQuestion(getShell(),
+                        "Setting Ceylon Build Path", 
+                        "The Ceylon configuration file (.ceylon/config) is not synchronized with the current build path settings.\n" +
+                        "Do you want to overwrite the configuration file with the settings defined here ?")) {
+                    return false;
+                }
+                overwriteCeylonConfig = true;
+            }
+            if (fBuildPathsBlock.hasChangesInDialog() || 
+                    fBuildPathsBlock.isClassfileMissing() ||
+                    overwriteCeylonConfig) {
                 IWorkspaceRunnable runnable= new IWorkspaceRunnable() {
                     public void run(IProgressMonitor monitor)   throws CoreException, OperationCanceledException {
                         fBuildPathsBlock.configureJavaProject(monitor);
