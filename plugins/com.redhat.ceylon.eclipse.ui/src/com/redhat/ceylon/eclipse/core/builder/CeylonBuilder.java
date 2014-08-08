@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 import javax.tools.DiagnosticListener;
@@ -646,110 +647,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             List<IClasspathContainer> cpContainers = getCeylonClasspathContainers(javaProject);
             
-            boolean languageModuleContainerFound = false;
-            boolean applicationModulesContainerFound = false;
-            for (IClasspathContainer container : cpContainers) {
-                if (container instanceof CeylonLanguageModuleContainer) {
-                    languageModuleContainerFound = true;
-                }
-                if (container instanceof CeylonProjectModulesContainer) {
-                    applicationModulesContainerFound = true;
-                }
-            }
-            if (! languageModuleContainerFound) {
-                //if the ClassPathContainer is missing, add an error
-                IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
-                marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container for the language module is not set on the project " + 
-                        " (try running Enable Ceylon Builder on the project)");
-                marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.LOCATION, project.getName());
-                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
-                return project.getReferencedProjects();
-            }
-            if (! applicationModulesContainerFound) {
-                //if the ClassPathContainer is missing, add an error
-                IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
-                marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container for application modules is not set on the project " + 
-                        " (try running Enable Ceylon Builder on the project)");
-                marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.LOCATION, project.getName());
-                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
-                return project.getReferencedProjects();
-            }
-            
-            /* Begin issue #471 */
-            ICommand[] builders = project.getDescription().getBuildSpec();
-            int javaOrder=0, ceylonOrder = 0;
-            for (int n=0; n<builders.length; n++) {
-                if (builders[n].getBuilderName().equals(JavaCore.BUILDER_ID)) {
-                    javaOrder = n;
-                }
-                else if (builders[n].getBuilderName().equals(CeylonBuilder.BUILDER_ID)) {
-                    ceylonOrder = n;
-                }
-            }
-            if (ceylonOrder < javaOrder) {
-                //if the build order is not correct, add an error and return
-                IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
-                marker.setAttribute(IMarker.MESSAGE, "The Ceylon Builder should run after the Java Builder. Change the order of builders in the project properties");
-                marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
-                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
-                return project.getReferencedProjects();
-            }
-            /* End issue #471 */
-            
-            boolean sourceDirectoryInProjectFolder = false;
-            boolean outputDirectoryInProjectFolder = javaProject.getOutputLocation().equals(javaProject.getPath());
-            
-            for (IPackageFragmentRoot root : javaProject.getAllPackageFragmentRoots()) {
-                if (root.getRawClasspathEntry().getEntryKind() == IClasspathEntry.CPE_SOURCE
-                        && root.getResource().getLocation().equals(project.getLocation())) {
-                    sourceDirectoryInProjectFolder = true;
-                    break;
-                }
-            }
-            
-            if (sourceDirectoryInProjectFolder || outputDirectoryInProjectFolder) {
-                if (sourceDirectoryInProjectFolder) {
-                    IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
-                    marker.setAttribute(IMarker.MESSAGE, "One source directory is the root folder of the project, which is not supported for Ceylon projects." + 
-                            " Change it in the project properties");
-                    marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                    marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
-                    marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
-                }
-                if (outputDirectoryInProjectFolder) {
-                    IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
-                    marker.setAttribute(IMarker.MESSAGE, "The project Java class directory is the root folder of the project, which is not supported for Ceylon projects." + 
-                            " Change it in the project properties");
-                    marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                    marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
-                    marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
-                }
-                return project.getReferencedProjects();
-            }
-            
-            IPath modulesOutputFolderPath = getCeylonModulesOutputFolder(project).getRawLocation();
-            IPath jdtOutputFolderPath = javaProject.getOutputLocation();
-            IFolder jdtOutputFolder = project.getWorkspace().getRoot().getFolder(jdtOutputFolderPath);
-            if (jdtOutputFolder.exists()) {
-                jdtOutputFolderPath = jdtOutputFolder.getRawLocation();
-            }
-            if (modulesOutputFolderPath.isPrefixOf(jdtOutputFolderPath) || jdtOutputFolderPath.isPrefixOf(modulesOutputFolderPath)) {
-                //if the build order is not correct, add an error and return
-                IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
-                marker.setAttribute(IMarker.MESSAGE, "The Ceylon modules output directory and Java class directory shoudln't collide." + 
-                        " Change one of them in the project properties");
-                marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
-                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+            if (! preBuildChecks(project, javaProject, cpContainers)) {
                 return project.getReferencedProjects();
             }
             
@@ -1006,6 +904,171 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             monitor.done();
             buildHook.endBuild();
         }
+    }
+
+    /*
+     * Checks for global build error and add the relevant markers.
+     * 
+     * Returns true if the build can continue, and false if the build should stop.
+     * 
+     */
+    private boolean preBuildChecks(final IProject project,
+            final IJavaProject javaProject,
+            List<IClasspathContainer> cpContainers) throws CoreException,
+            JavaModelException {
+        boolean languageModuleContainerFound = false;
+        boolean applicationModulesContainerFound = false;
+        
+        boolean buildCanContinue = true;
+        
+        for (IClasspathContainer container : cpContainers) {
+            if (container instanceof CeylonLanguageModuleContainer) {
+                languageModuleContainerFound = true;
+            }
+            if (container instanceof CeylonProjectModulesContainer) {
+                applicationModulesContainerFound = true;
+            }
+        }
+        if (! languageModuleContainerFound) {
+            //if the ClassPathContainer is missing, add an error
+            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+            marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container for the language module is not set on the project " + 
+                    " (try running Enable Ceylon Builder on the project)");
+            marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.LOCATION, project.getName());
+            marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+            buildCanContinue = false;
+        }
+        if (! applicationModulesContainerFound) {
+            //if the ClassPathContainer is missing, add an error
+            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+            marker.setAttribute(IMarker.MESSAGE, "The Ceylon classpath container for application modules is not set on the project " + 
+                    " (try running Enable Ceylon Builder on the project)");
+            marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.LOCATION, project.getName());
+            marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+            buildCanContinue = false;
+        }
+        
+        /* Begin issue #471 */
+        ICommand[] builders = project.getDescription().getBuildSpec();
+        int javaOrder=0, ceylonOrder = 0;
+        for (int n=0; n<builders.length; n++) {
+            if (builders[n].getBuilderName().equals(JavaCore.BUILDER_ID)) {
+                javaOrder = n;
+            }
+            else if (builders[n].getBuilderName().equals(CeylonBuilder.BUILDER_ID)) {
+                ceylonOrder = n;
+            }
+        }
+        if (ceylonOrder < javaOrder) {
+            //if the build order is not correct, add an error and return
+            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+            marker.setAttribute(IMarker.MESSAGE, "The Ceylon Builder should run after the Java Builder. Change the order of builders in the project properties");
+            marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+            marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+            buildCanContinue = false;
+        }
+        /* End issue #471 */
+        
+        boolean sourceDirectoryInProjectFolder = false;
+        boolean outputDirectoryInProjectFolder = javaProject.getOutputLocation().equals(javaProject.getPath());
+        
+        for (IPackageFragmentRoot root : javaProject.getAllPackageFragmentRoots()) {
+            if (root.getRawClasspathEntry().getEntryKind() == IClasspathEntry.CPE_SOURCE
+                    && root.getResource().getLocation().equals(project.getLocation())) {
+                sourceDirectoryInProjectFolder = true;
+                break;
+            }
+        }
+        
+        if (sourceDirectoryInProjectFolder || outputDirectoryInProjectFolder) {
+            if (sourceDirectoryInProjectFolder) {
+                IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+                marker.setAttribute(IMarker.MESSAGE, "One source directory is the root folder of the project, which is not supported for Ceylon projects." + 
+                        " Change it in the project properties");
+                marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+            }
+            if (outputDirectoryInProjectFolder) {
+                IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+                marker.setAttribute(IMarker.MESSAGE, "The project Java class directory is the root folder of the project, which is not supported for Ceylon projects." + 
+                        " Change it in the project properties");
+                marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+            }
+            buildCanContinue = false;
+        }
+        
+        IPath modulesOutputFolderPath = getCeylonModulesOutputFolder(project).getRawLocation();
+        IPath jdtOutputFolderPath = javaProject.getOutputLocation();
+        IFolder jdtOutputFolder = project.getWorkspace().getRoot().getFolder(jdtOutputFolderPath);
+        if (jdtOutputFolder.exists()) {
+            jdtOutputFolderPath = jdtOutputFolder.getRawLocation();
+        }
+        if (modulesOutputFolderPath.isPrefixOf(jdtOutputFolderPath) || jdtOutputFolderPath.isPrefixOf(modulesOutputFolderPath)) {
+            //if the build order is not correct, add an error and return
+            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+            marker.setAttribute(IMarker.MESSAGE, "The Ceylon modules output directory and Java class directory shoudln't collide." + 
+                    " Change one of them in the project properties");
+            marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+            marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+            buildCanContinue = false;
+        }
+        
+        if (! isInSyncWithCeylonConfig(project)) {
+            //if the build order is not correct, add an error and return
+            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+            marker.setAttribute(IMarker.MESSAGE, "The Ceylon Build Paths are not in sync with those in the ceylon configuration file (" 
+                                                    + "./ceylon/config)\n"
+                                                    + "Either modify this file or change the build paths accordingly in the project properties");
+            marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+            marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
+            buildCanContinue = false;
+        }
+        return buildCanContinue;
+    }
+
+    public static boolean isInSyncWithCeylonConfig(final IProject project) {
+        Set<String> sourceFoldersFromCeylonConfig = new TreeSet<String>();
+        Set<String> sourceFoldersFromEclipseProject = new TreeSet<String>();
+        Set<String> resourceFoldersFromCeylonConfig = new TreeSet<String>();
+        Set<String> resourceFoldersFromEclipseProject = new TreeSet<String>();
+        CeylonProjectConfig ceylonConfig = CeylonProjectConfig.get(project);
+        for (String path : ceylonConfig.getProjectSourceDirectories()) {
+            sourceFoldersFromCeylonConfig.add(Path.fromOSString(path).toString());
+        }
+        for (String path : ceylonConfig.getProjectResourceDirectories()) {
+            resourceFoldersFromCeylonConfig.add(Path.fromOSString(path).toString());
+        }
+        for (IFolder folder : getSourceFolders(project)) {
+            IPath path = folder.isLinked() ? folder.getLocation() : folder.getProjectRelativePath();
+            sourceFoldersFromEclipseProject.add(path.toString());
+        }
+        for (IFolder folder : getResourceFolders(project)) {
+            IPath path = folder.isLinked() ? folder.getLocation() : folder.getProjectRelativePath();
+            resourceFoldersFromEclipseProject.add(path.toString());
+        }
+        if (sourceFoldersFromEclipseProject.isEmpty()) {
+            sourceFoldersFromEclipseProject.add(Constants.DEFAULT_SOURCE_DIR);
+        }
+        if (resourceFoldersFromEclipseProject.isEmpty()) {
+            resourceFoldersFromEclipseProject.add(Constants.DEFAULT_RESOURCE_DIR);
+        }
+        return sourceFoldersFromCeylonConfig.equals(sourceFoldersFromEclipseProject) &&
+                resourceFoldersFromCeylonConfig.equals(resourceFoldersFromEclipseProject);
     }
     
     private void warmupCompletionProcessor(final IProject project,
