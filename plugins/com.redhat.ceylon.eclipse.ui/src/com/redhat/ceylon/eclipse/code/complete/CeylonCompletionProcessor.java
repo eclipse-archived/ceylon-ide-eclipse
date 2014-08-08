@@ -1218,7 +1218,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else {
             if (scope instanceof ImportList) {
-                return ((ImportList) scope).getMatchingDeclarations(null, prefix, 0);
+                return ((ImportList) scope).getMatchingDeclarations(node.getUnit(), prefix, 0);
             }
             else {
                 return scope==null ? //a null scope occurs when we have not finished parsing the file
