@@ -54,7 +54,8 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
         if (fBuildPathsBlock != null) {
             getSettings().put(INDEX, fBuildPathsBlock.getPageIndex());
             boolean overwriteCeylonConfig = false;
-            if (!fBuildPathsBlock.isInSyncWithCeylonConfig()) {
+            if (!fBuildPathsBlock.wasInSyncWithCeylonConfigWhenOpening()
+                    && !fBuildPathsBlock.isInSyncWithCeylonConfig()) {
                 if ( !MessageDialog.openQuestion(getShell(),
                         "Setting Ceylon Build Path", 
                         "The Ceylon configuration file (.ceylon/config) is not synchronized with the current build path settings.\n" +

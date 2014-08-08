@@ -139,6 +139,7 @@ public class CeylonBuildPathsBlock {
     private CheckedListDialogField<CPListElement> fResourcePathList;
     private StringButtonDialogField fJavaBuildPathDialogField;
     private Link fNotInSyncText;
+    private boolean wasInSyncWhenOpening;
 
     private StatusInfo fClassPathStatus;
     private StatusInfo fOutputFolderStatus;
@@ -246,6 +247,10 @@ public class CeylonBuildPathsBlock {
         fCurrJProject= null;
     }
 
+    public boolean wasInSyncWithCeylonConfigWhenOpening() {
+        return wasInSyncWhenOpening;
+    }
+    
     public boolean isInSyncWithCeylonConfig() {
         if (fCurrJProject == null) {
             return true;
@@ -266,18 +271,22 @@ public class CeylonBuildPathsBlock {
         }
         for (CPListElement elem : fClassPathList.getElements()) {
             if (elem.getClasspathEntry().getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                IPath path = elem.getClasspathEntry().getPath();
+                IPath path = null;
                 if (elem.getLinkTarget() == null) {
-                    path = path.makeRelativeTo(project.getFullPath());
+                    path = elem.getPath().makeRelativeTo(project.getFullPath());
+                } else {
+                    path = elem.getLinkTarget();
                 }
                 sourceFoldersFromEclipseProject.add(path.toString());
             }
         }
         for (CPListElement elem : fResourcePathList.getElements()) {
             if (elem.getClasspathEntry().getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                IPath path = elem.getClasspathEntry().getPath();
+                IPath path = null;
                 if (elem.getLinkTarget() == null) {
-                    path = path.makeRelativeTo(project.getFullPath());
+                    path = elem.getPath().makeRelativeTo(project.getFullPath());
+                } else {
+                    path = elem.getLinkTarget();
                 }
                 resourceFoldersFromEclipseProject.add(path.toString());
             }
@@ -307,10 +316,10 @@ public class CeylonBuildPathsBlock {
         composite.setLayout(layout);
 
         fNotInSyncText = new Link(composite, SWT.NONE);
-        boolean isInSync = isInSyncWithCeylonConfig();
-        fNotInSyncText.setVisible(! isInSync);
+        wasInSyncWhenOpening = isInSyncWithCeylonConfig();
+        fNotInSyncText.setVisible(! wasInSyncWhenOpening);
         GridData notInSyncLayoutData = new GridData(GridData.FILL_HORIZONTAL);
-        notInSyncLayoutData.exclude = isInSync;
+        notInSyncLayoutData.exclude = wasInSyncWhenOpening;
         fNotInSyncText.setLayoutData(notInSyncLayoutData);
         fNotInSyncText.setText("The Ceylon configuration file (<a>.ceylon/config</a>) is not in sync with the current\n"
                                  + "Ceylon Build Paths.\nClick <a>here</a> to use the configuration file settings.");
