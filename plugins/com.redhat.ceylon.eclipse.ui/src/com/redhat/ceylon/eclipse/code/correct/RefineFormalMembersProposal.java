@@ -164,25 +164,35 @@ class RefineFormalMembersProposal implements ICompletionProposal,
                 getProposals(node, ci, rootNode).values()) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
-                if (d.isFormal() && 
-                        ci.isInheritedFromSupertype(d)) {
-                    appendRefinementText(isInterface, indent, result, ci, unit, d);
-                    importSignatureTypes(d, rootNode, already);
-                    ambiguousNames.add(d.getName());
+                try {
+                    if (d.isFormal() && 
+                            ci.isInheritedFromSupertype(d)) {
+                        appendRefinementText(isInterface, indent, result, ci, unit, d);
+                        importSignatureTypes(d, rootNode, already);
+                        ambiguousNames.add(d.getName());
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
         for (TypeDeclaration superType: ci.getSupertypeDeclarations()) {
             for (Declaration m: superType.getMembers()) {
-                if (m.isShared()) {
-                    Declaration r = ci.getMember(m.getName(), null, false);
-                    if ((r==null || 
-                            !r.refines(m) && 
-                            !r.getContainer().equals(ci)) && 
-                            ambiguousNames.add(m.getName())) {
-                        appendRefinementText(isInterface, indent, result, ci, unit, m);
-                        importSignatureTypes(m, rootNode, already);
+                try {
+                    if (m.isShared()) {
+                        Declaration r = ci.getMember(m.getName(), null, false);
+                        if ((r==null || 
+                                !r.refines(m) && 
+                                !r.getContainer().equals(ci)) && 
+                                ambiguousNames.add(m.getName())) {
+                            appendRefinementText(isInterface, indent, result, ci, unit, m);
+                            importSignatureTypes(m, rootNode, already);
+                        }
                     }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
