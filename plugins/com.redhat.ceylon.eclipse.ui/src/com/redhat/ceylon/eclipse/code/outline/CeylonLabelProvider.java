@@ -832,41 +832,54 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
 
     public static int getDecorationAttributes(Object entity) {
-        if (entity instanceof IProject) {
-            int decorationAttributes = CEYLON_NATURE;
-            switch (getMaxProblemMarkerSeverity((IProject) entity, 
-                    IResource.DEPTH_INFINITE)) {
-            case IMarker.SEVERITY_ERROR:
-                decorationAttributes &= ERROR;
-                break;
-            case IMarker.SEVERITY_WARNING:
-                decorationAttributes &= WARNING;
-                break;
+        try {
+            if (entity instanceof IProject) {
+                int decorationAttributes = CEYLON_NATURE;
+                switch (getMaxProblemMarkerSeverity((IProject) entity, 
+                        IResource.DEPTH_INFINITE)) {
+                        case IMarker.SEVERITY_ERROR:
+                            decorationAttributes &= ERROR;
+                            break;
+                        case IMarker.SEVERITY_WARNING:
+                            decorationAttributes &= WARNING;
+                            break;
+                }
+                return decorationAttributes;
             }
-            return decorationAttributes;
-        }
-        if (entity instanceof IPackageFragment) {
-            IFolder folder = null;
-            try {
-                folder = (IFolder) ((IPackageFragment) entity).getCorrespondingResource();
-            } catch (JavaModelException e) {
-            }
-            if (folder != null) {
-                final JDTModule moduleOfRootPackage = CeylonBuilder.getModule(folder);
-                int sev = getMaxProblemMarkerSeverity(folder, 
-                        IResource.DEPTH_INFINITE,
-                        new IMarkerFilter() {
-                            @Override
-                            public boolean select(IMarker marker) {
-                                if (marker.getResource() instanceof IFile) {
-                                    Package currentPackage = CeylonBuilder.getPackage((IFile) marker.getResource());
-                                    if (moduleOfRootPackage != null) {
-                                        return moduleOfRootPackage.equals(currentPackage.getModule());
-                                    }
+            if (entity instanceof IPackageFragment) {
+                IFolder folder = null;
+                try {
+                    folder = (IFolder) ((IPackageFragment) entity).getCorrespondingResource();
+                } catch (JavaModelException e) {
+                }
+                if (folder != null) {
+                    final JDTModule moduleOfRootPackage = CeylonBuilder.getModule(folder);
+                    int sev = getMaxProblemMarkerSeverity(folder, 
+                            IResource.DEPTH_INFINITE,
+                            new IMarkerFilter() {
+                        @Override
+                        public boolean select(IMarker marker) {
+                            if (marker.getResource() instanceof IFile) {
+                                Package currentPackage = CeylonBuilder.getPackage((IFile) marker.getResource());
+                                if (moduleOfRootPackage != null) {
+                                    return moduleOfRootPackage.equals(currentPackage.getModule());
                                 }
-                                return false;
                             }
-                        });
+                            return false;
+                        }
+                    });
+                    switch (sev) {
+                    case IMarker.SEVERITY_ERROR:
+                        return ERROR;
+                    case IMarker.SEVERITY_WARNING:
+                        return WARNING;
+                    default: 
+                        return 0;
+                    }
+                }
+            }
+            if (entity instanceof IResource) {
+                int sev = getMaxProblemMarkerSeverity((IResource) entity, IResource.DEPTH_ONE);
                 switch (sev) {
                 case IMarker.SEVERITY_ERROR:
                     return ERROR;
@@ -876,29 +889,21 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                     return 0;
                 }
             }
-        }
-        if (entity instanceof IResource) {
-            int sev = getMaxProblemMarkerSeverity((IResource) entity, IResource.DEPTH_ONE);
-            switch (sev) {
-            case IMarker.SEVERITY_ERROR:
-                return ERROR;
-            case IMarker.SEVERITY_WARNING:
-                return WARNING;
-            default: 
-                return 0;
+            if (entity instanceof CeylonOutlineNode) {
+                return ((CeylonOutlineNode) entity).getDecorations();
+            }
+            if (entity instanceof CeylonElement) {
+                return ((CeylonElement) entity).getDecorations();
+            }
+            if (entity instanceof Declaration) {
+                return getDecorationAttributes((Declaration) entity);
+            }
+            if (entity instanceof Node) {
+                return getNodeDecorationAttributes((Node) entity);
             }
         }
-        if (entity instanceof CeylonOutlineNode) {
-            return ((CeylonOutlineNode) entity).getDecorations();
-        }
-        if (entity instanceof CeylonElement) {
-            return ((CeylonElement) entity).getDecorations();
-        }
-        if (entity instanceof Declaration) {
-            return getDecorationAttributes((Declaration) entity);
-        }
-        if (entity instanceof Node) {
-            return getNodeDecorationAttributes((Node) entity);
+        catch (Exception e) {
+            e.printStackTrace();
         }
         return 0;
     }
