@@ -1,7 +1,10 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.jdt.core.IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
 
 import java.util.Locale;
 
@@ -15,11 +18,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.IJavaModelMarker;
 
 import com.redhat.ceylon.compiler.java.launcher.Main;
 import com.redhat.ceylon.compiler.java.launcher.Main.ExitState;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 final class CompileErrorReporter implements
         DiagnosticListener<JavaFileObject> {
@@ -105,7 +106,7 @@ final class CompileErrorReporter implements
             if(file != null) {
                 if (CeylonBuilder.isCeylon(file)){
                     try {
-                        for (IMarker m: file.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, DEPTH_ZERO)) {
+                        for (IMarker m: file.findMarkers(PROBLEM_MARKER_ID, true, DEPTH_ZERO)) {
                             int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
                             if (sev==IMarker.SEVERITY_ERROR) {
                                 return;
@@ -119,7 +120,7 @@ final class CompileErrorReporter implements
                 }
                 if (CeylonBuilder.isJava(file)){
                     try {
-                        for (IMarker m: file.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, false, DEPTH_ZERO)) {
+                        for (IMarker m: file.findMarkers(JAVA_MODEL_PROBLEM_MARKER, false, DEPTH_ZERO)) {
                             int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
                             if (sev==IMarker.SEVERITY_ERROR) {
                                 return;
@@ -137,24 +138,32 @@ final class CompileErrorReporter implements
         }
     }
 
-    private void setupMarker(IResource r, Diagnostic<? extends JavaFileObject> diagnostic) {
+    private void setupMarker(IResource resource, Diagnostic<? extends JavaFileObject> diagnostic) {
         try {
-            String markerId = CeylonBuilder.PROBLEM_MARKER_ID+".backend";
-            if (r instanceof IFile) {
-                if (CeylonBuilder.isJava((IFile)r)) {
-                    markerId = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
-                }
-            }
-            IMarker marker = r.createMarker(markerId);
             long line = diagnostic==null ? -1 : diagnostic.getLineNumber();
+            String markerId = PROBLEM_MARKER_ID + ".backend";
+            if (resource instanceof IFile) {
+                if (CeylonBuilder.isJava((IFile)resource)) {
+                    markerId = JAVA_MODEL_PROBLEM_MARKER;
+                }
+//                if (line<0) {
+                    //TODO: use the Symbol to get a location for the javac error
+//                    String name = ((Symbol)((JCDiagnostic) diagnostic).getArgs()[0]).name.toString();
+//                    Declaration member = CeylonBuilder.getPackage((IFile)resource).getDirectMember(name, null, false);
+//                }
+
+            }
+            IMarker marker = resource.createMarker(markerId);
             if (line>=0) {
                 //Javac doesn't have line number info for certain errors
                 marker.setAttribute(IMarker.LINE_NUMBER, (int) line);
-                marker.setAttribute(IMarker.CHAR_START, (int) diagnostic.getStartPosition());
-                marker.setAttribute(IMarker.CHAR_END, (int) diagnostic.getEndPosition());
+                marker.setAttribute(IMarker.CHAR_START, 
+                        (int) diagnostic.getStartPosition());
+                marker.setAttribute(IMarker.CHAR_END, 
+                        (int) diagnostic.getEndPosition());
             }
-            if (markerId.equals(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER)) {
-                marker.setAttribute(IMarker.SOURCE_ID, CeylonPlugin.PLUGIN_ID);
+            if (markerId.equals(JAVA_MODEL_PROBLEM_MARKER)) {
+                marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
             }
             String message = diagnostic==null ? 
                     "unexplained compilation problem" : 
