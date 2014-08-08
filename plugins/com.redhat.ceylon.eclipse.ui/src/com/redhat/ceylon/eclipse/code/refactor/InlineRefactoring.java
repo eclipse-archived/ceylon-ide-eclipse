@@ -552,54 +552,55 @@ public class InlineRefactoring extends AbstractRefactoring {
                     interpolateNamedArguments(result, 
                     		ie, it, sequenced, tokens);
                 }
+                return; //NOTE: early exit!
             }
         }
-        else {
-            String expressionText = Nodes.toString(it, declarationTokens);
-            if (re instanceof Tree.QualifiedMemberOrTypeExpression) {
-                Tree.QualifiedMemberOrTypeExpression qmtre = 
-                		(Tree.QualifiedMemberOrTypeExpression) re;
-				String prim = Nodes.toString(qmtre.getPrimary(), tokens);
-                if (it instanceof Tree.QualifiedMemberOrTypeExpression) {
-                    //TODO: handle more depth, for example, foo.bar.baz
-                    Tree.QualifiedMemberOrTypeExpression qmte = 
-                    		(Tree.QualifiedMemberOrTypeExpression) it;
-                    Tree.Primary p = qmte.getPrimary();
-                    if (p instanceof Tree.This) {
-                        result.append(prim)
-                             .append(qmte.getMemberOperator().getText())
-                             .append(qmte.getIdentifier().getText());
-                    }
-                    else {
-                        String primaryText = Nodes.toString(p, declarationTokens);
-                        if (p instanceof Tree.MemberOrTypeExpression) {
-                            if (((Tree.MemberOrTypeExpression) p).getDeclaration()
-                            		.isClassOrInterfaceMember()) {
-                                result.append(prim)
-                                    .append(".")
-                                    .append(primaryText);
-                            }
-                        }
-                        else {
-                            result.append(primaryText);
-                        }
-                    }
+
+        String expressionText = Nodes.toString(it, declarationTokens);
+        if (re instanceof Tree.QualifiedMemberOrTypeExpression) {
+            Tree.QualifiedMemberOrTypeExpression qmtre = 
+                    (Tree.QualifiedMemberOrTypeExpression) re;
+            String prim = Nodes.toString(qmtre.getPrimary(), tokens);
+            if (it instanceof Tree.QualifiedMemberOrTypeExpression) {
+                //TODO: handle more depth, for example, foo.bar.baz
+                Tree.QualifiedMemberOrTypeExpression qmte = 
+                        (Tree.QualifiedMemberOrTypeExpression) it;
+                Tree.Primary p = qmte.getPrimary();
+                if (p instanceof Tree.This) {
+                    result.append(prim)
+                    .append(qmte.getMemberOperator().getText())
+                    .append(qmte.getIdentifier().getText());
                 }
                 else {
-                    if (it.getDeclaration().isClassOrInterfaceMember()) {
-                        result.append(prim)
+                    String primaryText = Nodes.toString(p, declarationTokens);
+                    if (p instanceof Tree.MemberOrTypeExpression) {
+                        if (((Tree.MemberOrTypeExpression) p).getDeclaration()
+                                .isClassOrInterfaceMember()) {
+                            result.append(prim)
                             .append(".")
-                            .append(expressionText);
+                            .append(primaryText);
+                        }
                     }
                     else {
-                        result.append(expressionText);
+                        result.append(primaryText);
                     }
                 }
             }
             else {
-                result.append(expressionText);
+                if (it.getDeclaration().isClassOrInterfaceMember()) {
+                    result.append(prim)
+                    .append(".")
+                    .append(expressionText);
+                }
+                else {
+                    result.append(expressionText);
+                }
             }
         }
+        else {
+            result.append(expressionText);
+        }
+
     }
     
     private void inlineDefinition(final List<CommonToken> tokens,
@@ -673,13 +674,12 @@ public class InlineRefactoring extends AbstractRefactoring {
                 .getPositionalArguments()) {
             if (it.getDeclaration().equals(arg.getParameter().getModel())) {
                 if (arg.getParameter().isSequenced() &&
-                        (arg instanceof Tree.ListedArgument)) {
+                        arg instanceof Tree.ListedArgument) {
                     if (first) result.append(" ");
                     if (!first) result.append(", ");
                     first = false;
                 }
-                result.append(Nodes.toString(arg, 
-                        tokens));
+                result.append(Nodes.toString(arg, tokens));
                 found = true;
             }
         }
