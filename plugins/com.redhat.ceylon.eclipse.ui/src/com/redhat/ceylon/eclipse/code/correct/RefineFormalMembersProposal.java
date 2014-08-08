@@ -160,8 +160,12 @@ class RefineFormalMembersProposal implements ICompletionProposal,
         ClassOrInterface ci = (ClassOrInterface) node.getScope();
         Unit unit = node.getUnit();
         Set<String> ambiguousNames = new HashSet<String>();
-        for (DeclarationWithProximity dwp: 
-                getProposals(node, ci, rootNode).values()) {
+        //TODO: does not return unrefined overloaded  
+        //      versions of a method with one overlaad
+        //      already refined
+        Collection<DeclarationWithProximity> proposals = 
+                getProposals(node, ci, rootNode).values();
+        for (DeclarationWithProximity dwp: proposals) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
                 try {
