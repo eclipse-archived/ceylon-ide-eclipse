@@ -23,6 +23,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -85,19 +89,32 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.ISelectionStatusValidator;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.model.WorkbenchContentProvider;
@@ -105,8 +122,12 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
+import com.redhat.ceylon.common.Constants;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonBuildPathsBlock {
 
@@ -131,6 +152,7 @@ public class CeylonBuildPathsBlock {
     private CheckedListDialogField<CPListElement> fClassPathList;
     private CheckedListDialogField<CPListElement> fResourcePathList;
     private StringButtonDialogField fJavaBuildPathDialogField;
+    private Link fNotInSyncText;
 
     private StatusInfo fClassPathStatus;
     private StatusInfo fOutputFolderStatus;
@@ -179,6 +201,7 @@ public class CeylonBuildPathsBlock {
         fPageIndex= pageToShow;
 
         fSourceContainerPage= null;
+        fNotInSyncText = null;
         fResourceContainerPage=null;
 //        fLibrariesPage= null;
         fProjectsPage= null;
@@ -207,6 +230,13 @@ public class CeylonBuildPathsBlock {
         fClassPathList.setDownButtonIndex(IDX_DOWN);
         fClassPathList.setCheckAllButtonIndex(IDX_SELECT_ALL);
         fClassPathList.setUncheckAllButtonIndex(IDX_UNSELECT_ALL);
+        fClassPathList.setDialogFieldListener(new IDialogFieldListener() {
+            
+            @Override
+            public void dialogFieldChanged(DialogField field) {
+                System.out.print("");
+            }
+        });
 
         fResourcePathList= new CheckedListDialogField<CPListElement>(jadapter, buttonLabels, 
                 new ResourceListLabelProvider());
@@ -230,6 +260,52 @@ public class CeylonBuildPathsBlock {
         fCurrJProject= null;
     }
 
+    public boolean isInSyncWithCeylonConfig() {
+        if (fCurrJProject == null) {
+            return true;
+        }
+        IProject project = fCurrJProject.getProject();
+        
+        Set<String> sourceFoldersFromCeylonConfig = new TreeSet<String>();
+        Set<String> sourceFoldersFromEclipseProject = new TreeSet<String>();
+        Set<String> resourceFoldersFromCeylonConfig = new TreeSet<String>();
+        Set<String> resourceFoldersFromEclipseProject = new TreeSet<String>();
+        
+        CeylonProjectConfig ceylonConfig = CeylonProjectConfig.get(project);
+        for (String path : ceylonConfig.getProjectSourceDirectories()) {
+            sourceFoldersFromCeylonConfig.add(Path.fromOSString(path).toString());
+        }
+        for (String path : ceylonConfig.getProjectResourceDirectories()) {
+            resourceFoldersFromCeylonConfig.add(Path.fromOSString(path).toString());
+        }
+        for (CPListElement elem : fClassPathList.getElements()) {
+            if (elem.getClasspathEntry().getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+                IPath path = elem.getClasspathEntry().getPath();
+                if (elem.getLinkTarget() == null) {
+                    path = path.makeRelativeTo(project.getFullPath());
+                }
+                sourceFoldersFromEclipseProject.add(path.toString());
+            }
+        }
+        for (CPListElement elem : fResourcePathList.getElements()) {
+            if (elem.getClasspathEntry().getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+                IPath path = elem.getClasspathEntry().getPath();
+                if (elem.getLinkTarget() == null) {
+                    path = path.makeRelativeTo(project.getFullPath());
+                }
+                resourceFoldersFromEclipseProject.add(path.toString());
+            }
+        }
+        if (sourceFoldersFromEclipseProject.isEmpty()) {
+            sourceFoldersFromEclipseProject.add(Constants.DEFAULT_SOURCE_DIR);
+        }
+        if (resourceFoldersFromEclipseProject.isEmpty()) {
+            resourceFoldersFromEclipseProject.add(Constants.DEFAULT_RESOURCE_DIR);
+        }
+        return sourceFoldersFromCeylonConfig.equals(sourceFoldersFromEclipseProject) &&
+                resourceFoldersFromCeylonConfig.equals(resourceFoldersFromEclipseProject);
+    }
+
     // -------- UI creation ---------
 
     public Control createControl(Composite parent) {
@@ -244,6 +320,46 @@ public class CeylonBuildPathsBlock {
         layout.numColumns= 1;
         composite.setLayout(layout);
 
+        fNotInSyncText = new Link(composite, SWT.NONE);
+        boolean isInSync = isInSyncWithCeylonConfig();
+        fNotInSyncText.setVisible(! isInSync);
+        GridData notInSyncLayoutData = new GridData(GridData.FILL_HORIZONTAL);
+        notInSyncLayoutData.exclude = isInSync;
+        fNotInSyncText.setLayoutData(notInSyncLayoutData);
+        fNotInSyncText.setText("The Ceylon configuration file (<a>.ceylon/config</a>) is not in sync with the current\n"
+                                 + "Ceylon Build Paths.\nClick <a>here</a> to use the configuration file settings.");
+        Font parentFont = parent.getFont();
+        fNotInSyncText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_DARK_RED));
+        fNotInSyncText.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (".ceylon/config".equals(e.text)) {
+                    IFile configFile= fCurrJProject.getProject().getFile(".ceylon/config");
+                    if (configFile.exists()) {
+                        if (! configFile.isSynchronized(IResource.DEPTH_ZERO)) {
+                            try {
+                                configFile.refreshLocal(IResource.DEPTH_ZERO, null);
+                            } catch (CoreException e1) {
+                            }
+                        }
+                        try {
+                            Navigation.openInEditor(configFile);
+                        } catch (PartInitException e1) {
+                        }
+                    } else {
+                        MessageDialog.openInformation(getShell(), 
+                                "Ceylon Configuration File", 
+                                "No configuration file exist\n"
+                                + "Default vaues apply :\n"
+                                + "  'source' for source files\n"
+                                + "  'resource' for resource files");
+                    }
+                } else if ("here".equals(e.text)) {
+                    refreshSourcePathsFromConfigFile();
+                }
+            }
+        });
+        
         TabFolder folder= new TabFolder(composite, SWT.NONE);
         folder.setLayoutData(new GridData(GridData.FILL_BOTH));
         folder.setFont(composite.getFont());
@@ -463,11 +579,19 @@ public class CeylonBuildPathsBlock {
     }
 
     protected void doUpdateUI() {
+        boolean isInSync = isInSyncWithCeylonConfig();
+        boolean notInSyncWasVisible = fNotInSyncText.isVisible();
+        fNotInSyncText.setVisible(! isInSync);
+        GridData notInSyncLayoutData = (GridData) fNotInSyncText.getLayoutData();
+        notInSyncLayoutData.exclude = isInSync;
         fJavaBuildPathDialogField.refresh();
         fClassPathList.refresh();
         fResourcePathList.refresh();
         
         doStatusLineUpdate();
+        if (notInSyncWasVisible && isInSync) {
+            fNotInSyncText.getParent().layout(true);
+        }
     }
 
     private String getEncodedSettings() {
@@ -1361,5 +1485,77 @@ public class CeylonBuildPathsBlock {
 
     public void setFocus() {
         fSourceContainerPage.setFocus();
+    }
+
+    private void refreshSourcePathsFromConfigFile() {
+        final List<CPListElement> newSourcePath = new ArrayList<CPListElement>();
+        final IProject project = fCurrJProject.getProject();
+        CeylonProjectConfig config = CeylonProjectConfig.get(project);
+        for (final String path: config.getProjectSourceDirectories()) {
+            final IPath iPath = Path.fromOSString(path);
+            if (!iPath.isAbsolute()) {
+                IFolder folder = fCurrJProject.getProject()
+                        .getFolder(iPath);
+                newSourcePath.add(new CPListElement(fCurrJProject, 
+                        IClasspathEntry.CPE_SOURCE, 
+                        folder.getFullPath(), 
+                        folder));
+            }
+            else {
+                try {
+                    project.accept(new IResourceVisitor() {
+                        @Override
+                        public boolean visit(IResource resource) 
+                                throws CoreException {
+                            if (resource.isLinked() && resource.getLocation() != null &&
+                                    resource.getLocation().equals(iPath)) {
+                                newSourcePath.add(new CPListElement(null,
+                                        fCurrJProject, IClasspathEntry.CPE_SOURCE, 
+                                        resource.getFullPath(), 
+                                        resource, resource.getLocation()));
+                            }
+                            return resource instanceof IFolder || 
+                                    resource instanceof IProject;
+                        }
+                    });
+                }
+                catch (CoreException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        ArrayList<CPListElement> exportedEntries = new ArrayList<>();
+        ArrayList<CPListElement> newClassPath = new ArrayList<>();
+        // Don't change all the non-source classpath entries
+        for (CPListElement elem : fClassPathList.getElements()) {
+            if (elem.getClasspathEntry().getEntryKind() != IClasspathEntry.CPE_SOURCE) {
+                newClassPath.add(elem);
+            }
+        }
+        for (CPListElement elem : fClassPathList.getCheckedElements()) {
+            if (elem.getClasspathEntry().getEntryKind() != IClasspathEntry.CPE_SOURCE) {
+                exportedEntries.add(elem);
+            }
+        }
+
+        // Now all the new source entries
+        newClassPath.addAll(newSourcePath);
+        
+        for (CPListElement elem : fClassPathList.getCheckedElements()) {
+            if (newSourcePath.contains(elem)) {
+                exportedEntries.add(elem);
+            }
+        }
+
+        fClassPathList.setElements(newClassPath);
+        fClassPathList.setCheckedElements(exportedEntries);
+
+        fClassPathList.selectFirstElement();
+
+        if (fSourceContainerPage != null) {
+            fSourceContainerPage.init(fCurrJProject);
+        }
+
+        updateUI();
     }
 }
