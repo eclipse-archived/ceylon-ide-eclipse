@@ -205,7 +205,8 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
         
     @Override
     public void visit(Tree.SpecifiedArgument that) {
-        if (that.getIdentifier().getToken()!=null &&
+        if (that.getIdentifier()!=null &&
+                that.getIdentifier().getToken()!=null &&
                 isReference(that.getParameter())) {
             nodes.add(that);
         }
