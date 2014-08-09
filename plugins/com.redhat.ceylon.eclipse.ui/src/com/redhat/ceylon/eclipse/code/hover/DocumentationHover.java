@@ -1372,7 +1372,7 @@ public class DocumentationHover
             Declaration dec, Node node, StringBuilder buffer, 
             boolean hasDoc) {
         Declaration rd = dec.getRefinedDeclaration();
-        if (dec!=rd) {
+        if (dec!=rd && rd!=null) {
             buffer.append("<p>");
             TypeDeclaration superclass = (TypeDeclaration) rd.getContainer();
             ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
