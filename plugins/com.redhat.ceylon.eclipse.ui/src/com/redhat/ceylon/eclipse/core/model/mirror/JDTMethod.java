@@ -161,6 +161,13 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                     return true;
                 }
             }
+            if (CharOperation.equals(declaringClass.qualifiedSourceName(), "ceylon.language.Object".toCharArray())) {
+                if (CharOperation.equals(method.selector, "equals".toCharArray()) 
+                        || CharOperation.equals(method.selector, "hashCode".toCharArray())
+                        || CharOperation.equals(method.selector, "toString".toCharArray())) {
+                    return false;
+                }
+            }
                 
             // try the superclass first
             if (isDefinedInSuperClasses(declaringClass)) {
