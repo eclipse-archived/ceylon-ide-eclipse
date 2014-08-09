@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.compiler.typechecker.analyzer.Util.getLastExecutableStatement;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.getInterveningRefinements;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.getSignature;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isAbstraction;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.addTaskAnnotation;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
@@ -20,6 +23,8 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -116,54 +121,47 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         }
     }
     
-    public static Declaration getRefinedDeclaration(Declaration dec) {
-        if (!dec.isClassOrInterfaceMember() || !dec.isShared()) {
-            return null;
-        }
-        else {
-            //TODO: this algorithm is a bit arbitrary
-            //first get the superclass of the declaring class 
-            ClassOrInterface td = (ClassOrInterface) dec.getContainer();
-            ClassOrInterface etd = td.getExtendedTypeDeclaration();
-            if (etd==null) {
-                return null;
-            }
-            else {
-                //then the declaration might refine a member 
-                //of a superclass or satisfied interface
-                List<Declaration> allRefined = td.getInheritedMembers(dec.getName());
-                if (allRefined.isEmpty()) {
-                    //the declaration does not refine
-                    //anything
-                    return null;
+    public static Declaration getRefinedDeclaration(Declaration declaration) {
+        //Reproduces the algorithm used to build the type hierarchy
+        //first walk up the superclass hierarchy
+        if (declaration.isClassOrInterfaceMember() && declaration.isShared()) {
+            TypeDeclaration dec = (TypeDeclaration) declaration.getContainer();
+            List<ProducedType> signature = getSignature(declaration);
+            while (dec!=null) {
+                ClassOrInterface superDec = dec.getExtendedTypeDeclaration();
+                if (superDec!=null) {
+                    Declaration superMemberDec = 
+                            superDec.getDirectMember(declaration.getName(), signature, false);
+                    if (superMemberDec!=null && 
+                            !isAbstraction(superMemberDec) &&
+                            superMemberDec.getRefinedDeclaration()
+                                .equals(declaration.getRefinedDeclaration())) {
+                        return superMemberDec;
+                    }
                 }
-                else if (allRefined.size()==1) {
-                    //the declaration refines exactly one
-                    //member of a superclass or satisfied 
-                    //interface 
-                    return allRefined.get(0);
+                dec = superDec;
+            }
+            //now look at the very top of the hierarchy, even if it is an interface
+            Declaration refinedDeclaration = declaration.getRefinedDeclaration();
+            if (!declaration.equals(refinedDeclaration)) {
+                List<Declaration> directlyInheritedMembers = 
+                        getInterveningRefinements(declaration.getName(), signature, 
+                                (TypeDeclaration) declaration.getContainer(), 
+                                (TypeDeclaration) refinedDeclaration.getContainer());
+                directlyInheritedMembers.remove(refinedDeclaration);
+                //TODO: do something for the case of
+                //      multiple intervening interfaces?
+                if (directlyInheritedMembers.size()==1) {
+                    //exactly one intervening interface
+                    return directlyInheritedMembers.get(0);
                 }
                 else {
-                    //the declaration directly refines two 
-                    //different supertype members
-                    //look for a member declared or inherited by 
-                    //the superclass
-                    Declaration refined = etd.getMember(dec.getName(), null, false); //TODO: pass signature?
-                    if (refined==null) {
-                        //nothing; they are all declared by 
-                        //satisfied interfaces :-(
-                        //lets just return the topmost refined
-                        //declaration, because at least we know
-                        //it is something unique!                            
-                        refined = dec.getRefinedDeclaration();
-                        if (refined!=null && refined.equals(dec)) {
-                            refined = null;
-                        }
-                    }
-                    return refined;
+                    //no intervening interfaces
+                    return refinedDeclaration;
                 }
             }
         }
+        return null;
     }
     
     private void addRefinementAnnotation(IAnnotationModel model, 
