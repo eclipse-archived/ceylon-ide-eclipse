@@ -155,13 +155,13 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
             isOverriding = Boolean.FALSE;
 
             ReferenceBinding declaringClass = method.declaringClass;
-            if (CharOperation.equals(declaringClass.qualifiedSourceName(), "ceylon.language.Identifiable".toCharArray())) {
+            if (CharOperation.equals(declaringClass.readableName(), "ceylon.language.Identifiable".toCharArray())) {
                 if (CharOperation.equals(method.selector, "equals".toCharArray()) 
                         || CharOperation.equals(method.selector, "hashCode".toCharArray())) {
                     return true;
                 }
             }
-            if (CharOperation.equals(declaringClass.qualifiedSourceName(), "ceylon.language.Object".toCharArray())) {
+            if (CharOperation.equals(declaringClass.readableName(), "ceylon.language.Object".toCharArray())) {
                 if (CharOperation.equals(method.selector, "equals".toCharArray()) 
                         || CharOperation.equals(method.selector, "hashCode".toCharArray())
                         || CharOperation.equals(method.selector, "toString".toCharArray())) {
