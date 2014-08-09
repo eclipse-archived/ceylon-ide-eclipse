@@ -67,6 +67,7 @@ class AssertExistsDeclarationProposal extends CorrectionProposal {
 	static void addAssertExistsDeclarationProposals(
 			Collection<ICompletionProposal> proposals, IDocument doc,
 			IFile file, Tree.CompilationUnit cu, Tree.Declaration decNode) {
+	    if (decNode==null) return;
 	    Declaration dec = decNode.getDeclarationModel();
 	    if (dec!=null) {
 	        if (decNode instanceof Tree.AttributeDeclaration) {
