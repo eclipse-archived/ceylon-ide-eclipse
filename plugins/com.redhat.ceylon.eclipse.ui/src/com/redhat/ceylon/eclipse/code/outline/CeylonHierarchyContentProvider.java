@@ -280,6 +280,7 @@ public final class CeylonHierarchyContentProvider
                 List<ProducedType> signature = getSignature(declaration);
                 depthInHierarchy++;
                 root = memberDec;
+                //first walk up the superclass hierarchy
                 while (dec!=null) {
                     ClassOrInterface superDec = dec.getExtendedTypeDeclaration();
                     if (superDec!=null) {
@@ -304,6 +305,7 @@ public final class CeylonHierarchyContentProvider
                     }
                     dec = superDec;
                 }
+                //now look at the very top of the hierarchy, even if it is an interface
                 Declaration refinedDeclaration = declaration.getRefinedDeclaration();
                 if (!memberDec.equals(refinedDeclaration)) {
                     List<Declaration> directlyInheritedMembers = 
@@ -312,6 +314,7 @@ public final class CeylonHierarchyContentProvider
                                     (TypeDeclaration) refinedDeclaration.getContainer());
                     directlyInheritedMembers.remove(refinedDeclaration);
                     if (directlyInheritedMembers.size()>1) {
+                        //multiple intervening interfaces
                         CeylonHierarchyNode n = 
                                 new CeylonHierarchyNode(memberDec);
                         n.setMultiple(true);
@@ -319,11 +322,13 @@ public final class CeylonHierarchyContentProvider
                         getSubtypePathNode(refinedDeclaration).addChild(n);
                     }
                     else if (directlyInheritedMembers.size()==1) {
+                        //exactly one intervening interface
                         Declaration idec = directlyInheritedMembers.get(0);
                         getSubtypePathNode(idec).addChild(getSubtypePathNode(memberDec));
                         getSubtypePathNode(refinedDeclaration).addChild(getSubtypePathNode(idec));
                     }
                     else {
+                        //no intervening interfaces
                         getSubtypePathNode(refinedDeclaration).addChild(getSubtypePathNode(memberDec));
                     }
                     root = refinedDeclaration;
