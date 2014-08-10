@@ -88,6 +88,11 @@ public class KeywordCompletionProposal extends CompletionProposal {
     }
     
     @Override
+    public int length(IDocument document) {
+        return prefix.length();
+    }
+    
+    @Override
     public Image getImage() {
         return getDecoratedImage(CEYLON_LITERAL, 0, false);
     }
