@@ -32,10 +32,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIF
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addDocLinkProposal;
-import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addForProposal;
-import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addIfExistsProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addImportProposal;
-import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addSwitchProposal;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getLine;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getRealScope;
@@ -45,6 +42,11 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDes
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isPackageDescriptor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.nextTokenType;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addForProposal;
+import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addIfExistsProposal;
+import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addIfNonemptyProposal;
+import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addSwitchProposal;
+import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addTryProposal;
 import static com.redhat.ceylon.eclipse.code.complete.FunctionCompletionProposal.addFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addFakeShowParametersCompletion;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addInvocationProposals;
@@ -784,6 +786,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         isDirectlyInsideBlock(node, cpc, scope, token)) {
                     addForProposal(offset, prefix, cpc, result, dwp, dec);
                     addIfExistsProposal(offset, prefix, cpc, result, dwp, dec);
+                    addIfNonemptyProposal(offset, prefix, cpc, result, dwp, dec);
+                    addTryProposal(offset, prefix, cpc, result, dwp, dec);
                     addSwitchProposal(offset, prefix, cpc, result, dwp, dec, node, doc);
                 }
 
