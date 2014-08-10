@@ -30,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
@@ -277,75 +278,78 @@ public final class CeylonHierarchyContentProvider
             else if (declaration instanceof TypedDeclaration) {
                 Declaration memberDec = declaration;
                 Declaration refinedDeclaration = declaration.getRefinedDeclaration();
-                TypeDeclaration dec = (TypeDeclaration) declaration.getContainer();
-                List<ProducedType> signature = getSignature(declaration);
-                depthInHierarchy++;
-                root = memberDec;
-                //first walk up the superclass hierarchy
-                while (dec!=null) {
-                    ClassOrInterface superDec = dec.getExtendedTypeDeclaration();
-                    if (superDec!=null) {
-                        Declaration superMemberDec = 
-                                superDec.getDirectMember(declaration.getName(), signature, false);
-                        if (superMemberDec!=null && 
-                                !isAbstraction(superMemberDec) &&
-                                superMemberDec.getRefinedDeclaration()
+                Scope container = declaration.getContainer();
+                if (container instanceof TypeDeclaration) {
+                    TypeDeclaration dec = (TypeDeclaration) container;
+                    List<ProducedType> signature = getSignature(declaration);
+                    depthInHierarchy++;
+                    root = memberDec;
+                    //first walk up the superclass hierarchy
+                    while (dec!=null) {
+                        ClassOrInterface superDec = dec.getExtendedTypeDeclaration();
+                        if (superDec!=null) {
+                            Declaration superMemberDec = 
+                                    superDec.getDirectMember(declaration.getName(), signature, false);
+                            if (superMemberDec!=null && 
+                                    !isAbstraction(superMemberDec) &&
+                                    superMemberDec.getRefinedDeclaration()
                                     .equals(refinedDeclaration)) {
-                            List<Declaration> directlyInheritedMembers = 
-                                    getInterveningRefinements(declaration.getName(), signature, 
-                                            refinedDeclaration,
-                                            (TypeDeclaration) memberDec.getContainer(), superDec);
-                            List<Declaration> all = 
-                                    getInterveningRefinements(declaration.getName(), signature, 
-                                            refinedDeclaration,
-                                            (TypeDeclaration) memberDec.getContainer(), 
-                                            (TypeDeclaration) refinedDeclaration.getContainer());
-                            for (Declaration d: all) {
-                                TypeDeclaration dtd = (TypeDeclaration) d.getContainer();
-                                if (!superDec.inherits(dtd)) {
+                                List<Declaration> directlyInheritedMembers = 
+                                        getInterveningRefinements(declaration.getName(), signature, 
+                                                refinedDeclaration,
+                                                (TypeDeclaration) memberDec.getContainer(), superDec);
+                                List<Declaration> all = 
+                                        getInterveningRefinements(declaration.getName(), signature, 
+                                                refinedDeclaration,
+                                                (TypeDeclaration) memberDec.getContainer(), 
+                                                (TypeDeclaration) refinedDeclaration.getContainer());
+                                for (Declaration d: all) {
+                                    TypeDeclaration dtd = (TypeDeclaration) d.getContainer();
+                                    if (!superDec.inherits(dtd)) {
+                                        getSubtypePathNode(superMemberDec).setNonUnique(true);
+                                    }
+                                }
+                                directlyInheritedMembers.remove(superMemberDec);
+                                if (directlyInheritedMembers.size()>0) {
                                     getSubtypePathNode(superMemberDec).setNonUnique(true);
                                 }
+                                getSubtypePathNode(superMemberDec).addChild(getSubtypePathNode(memberDec));
+                                depthInHierarchy++;
+                                root = superMemberDec;
+                                memberDec = superMemberDec;
                             }
-                            directlyInheritedMembers.remove(superMemberDec);
-                            if (directlyInheritedMembers.size()>0) {
-                                getSubtypePathNode(superMemberDec).setNonUnique(true);
-                            }
-                            getSubtypePathNode(superMemberDec).addChild(getSubtypePathNode(memberDec));
-                            depthInHierarchy++;
-                            root = superMemberDec;
-                            memberDec = superMemberDec;
+                            //TODO else add an "empty" node to the hierarchy like in JDT
                         }
-                        //TODO else add an "empty" node to the hierarchy like in JDT
+                        dec = superDec;
                     }
-                    dec = superDec;
-                }
-                //now look at the very top of the hierarchy, even if it is an interface
-                if (!memberDec.equals(refinedDeclaration)) {
-                    List<Declaration> directlyInheritedMembers = 
-                            getInterveningRefinements(declaration.getName(), signature, 
-                                    declaration.getRefinedDeclaration(),
-                                    (TypeDeclaration) memberDec.getContainer(), 
-                                    (TypeDeclaration) refinedDeclaration.getContainer());
-                    directlyInheritedMembers.remove(refinedDeclaration);
-                    if (directlyInheritedMembers.size()>1) {
-                        //multiple intervening interfaces
-                        CeylonHierarchyNode n = 
-                                new CeylonHierarchyNode(memberDec);
-                        n.setMultiple(true);
-                        n.addChild(getSubtypePathNode(memberDec));
-                        getSubtypePathNode(refinedDeclaration).addChild(n);
+                    //now look at the very top of the hierarchy, even if it is an interface
+                    if (!memberDec.equals(refinedDeclaration)) {
+                        List<Declaration> directlyInheritedMembers = 
+                                getInterveningRefinements(declaration.getName(), signature, 
+                                        declaration.getRefinedDeclaration(),
+                                        (TypeDeclaration) memberDec.getContainer(), 
+                                        (TypeDeclaration) refinedDeclaration.getContainer());
+                        directlyInheritedMembers.remove(refinedDeclaration);
+                        if (directlyInheritedMembers.size()>1) {
+                            //multiple intervening interfaces
+                            CeylonHierarchyNode n = 
+                                    new CeylonHierarchyNode(memberDec);
+                            n.setMultiple(true);
+                            n.addChild(getSubtypePathNode(memberDec));
+                            getSubtypePathNode(refinedDeclaration).addChild(n);
+                        }
+                        else if (directlyInheritedMembers.size()==1) {
+                            //exactly one intervening interface
+                            Declaration idec = directlyInheritedMembers.get(0);
+                            getSubtypePathNode(idec).addChild(getSubtypePathNode(memberDec));
+                            getSubtypePathNode(refinedDeclaration).addChild(getSubtypePathNode(idec));
+                        }
+                        else {
+                            //no intervening interfaces
+                            getSubtypePathNode(refinedDeclaration).addChild(getSubtypePathNode(memberDec));
+                        }
+                        root = refinedDeclaration;
                     }
-                    else if (directlyInheritedMembers.size()==1) {
-                        //exactly one intervening interface
-                        Declaration idec = directlyInheritedMembers.get(0);
-                        getSubtypePathNode(idec).addChild(getSubtypePathNode(memberDec));
-                        getSubtypePathNode(refinedDeclaration).addChild(getSubtypePathNode(idec));
-                    }
-                    else {
-                        //no intervening interfaces
-                        getSubtypePathNode(refinedDeclaration).addChild(getSubtypePathNode(memberDec));
-                    }
-                    root = refinedDeclaration;
                 }
             }
 
