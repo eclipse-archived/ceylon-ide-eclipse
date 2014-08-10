@@ -39,6 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
@@ -542,6 +543,9 @@ public class Nodes {
     }
 
     public static String[] nameProposals(Node node) {
+        return nameProposals(node, false);
+    }
+    public static String[] nameProposals(Node node, boolean unplural) {
     	if (node instanceof Tree.FunctionArgument) {
     		Tree.FunctionArgument fa = (Tree.FunctionArgument) node;
 			if (fa.getExpression()!=null) {
@@ -563,9 +567,21 @@ public class Nodes {
         if (identifyingNode instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = 
                     (Tree.QualifiedMemberOrTypeExpression) identifyingNode;
-            Declaration d = qmte.getDeclaration();
-            if (d!=null) {
-                addNameProposals(names, d, false);
+            Declaration declaration = qmte.getDeclaration();
+            if (declaration!=null) {
+                addNameProposals(names, false, declaration.getName());
+                //TODO: propose a compound name like personName for person.name
+            }
+        }
+        if (identifyingNode instanceof Tree.BaseMemberOrTypeExpression) {
+            BaseMemberOrTypeExpression bmte = 
+                    (Tree.BaseMemberOrTypeExpression) identifyingNode;
+            Declaration declaration = bmte.getDeclaration();
+            if (unplural) {
+                String name = declaration.getName();
+                if (name.endsWith("s")) {
+                    addNameProposals(names, false, name.substring(0, name.length()-1));
+                }
             }
         }
         if (identifyingNode instanceof Tree.SumOp) {
@@ -602,10 +618,12 @@ public class Nodes {
         if (identifyingNode instanceof Tree.Term) {
             ProducedType type = ((Tree.Term) node).getTypeModel();
             if (!Util.isTypeUnknown(type)) {
-                TypeDeclaration d = type.getDeclaration();
-                if (d instanceof ClassOrInterface || 
-                    d instanceof TypeParameter) {
-                    addNameProposals(names, d, false);
+                if (!unplural) {
+                    TypeDeclaration d = type.getDeclaration();
+                    if (d instanceof ClassOrInterface || 
+                            d instanceof TypeParameter) {
+                        addNameProposals(names, false, d.getName());
+                    }
                 }
                 if (node.getUnit().isIterableType(type)) {
                     ProducedType iteratedType = 
@@ -614,7 +632,8 @@ public class Nodes {
                             iteratedType.getDeclaration();
                     if (itd instanceof ClassOrInterface || 
                         itd instanceof TypeParameter) {
-                        addNameProposals(names, itd, true);
+                        addNameProposals(names, true&&!unplural, 
+                                itd.getName());
                     }
                 }
             }
@@ -623,11 +642,6 @@ public class Nodes {
             names.add("it");
         }
         return names.toArray(NO_STRINGS);
-    }
-
-    private static void addNameProposals(Set<String> names, 
-            Declaration d, boolean plural) {
-        addNameProposals(names, plural, d.getName());
     }
 
     public static void addNameProposals(Set<String> names, 
