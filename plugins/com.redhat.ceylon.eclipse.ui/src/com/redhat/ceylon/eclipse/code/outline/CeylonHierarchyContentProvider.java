@@ -276,6 +276,7 @@ public final class CeylonHierarchyContentProvider
             }
             else if (declaration instanceof TypedDeclaration) {
                 Declaration memberDec = declaration;
+                Declaration refinedDeclaration = declaration.getRefinedDeclaration();
                 TypeDeclaration dec = (TypeDeclaration) declaration.getContainer();
                 List<ProducedType> signature = getSignature(declaration);
                 depthInHierarchy++;
@@ -289,11 +290,22 @@ public final class CeylonHierarchyContentProvider
                         if (superMemberDec!=null && 
                                 !isAbstraction(superMemberDec) &&
                                 superMemberDec.getRefinedDeclaration()
-                                    .equals(declaration.getRefinedDeclaration())) {
+                                    .equals(refinedDeclaration)) {
                             List<Declaration> directlyInheritedMembers = 
                                     getInterveningRefinements(declaration.getName(), signature, 
-                                            declaration.getRefinedDeclaration(),
+                                            refinedDeclaration,
                                             (TypeDeclaration) memberDec.getContainer(), superDec);
+                            List<Declaration> all = 
+                                    getInterveningRefinements(declaration.getName(), signature, 
+                                            refinedDeclaration,
+                                            (TypeDeclaration) memberDec.getContainer(), 
+                                            (TypeDeclaration) refinedDeclaration.getContainer());
+                            for (Declaration d: all) {
+                                TypeDeclaration dtd = (TypeDeclaration) d.getContainer();
+                                if (!superDec.inherits(dtd)) {
+                                    getSubtypePathNode(superMemberDec).setNonUnique(true);
+                                }
+                            }
                             directlyInheritedMembers.remove(superMemberDec);
                             if (directlyInheritedMembers.size()>0) {
                                 getSubtypePathNode(superMemberDec).setNonUnique(true);
@@ -303,11 +315,11 @@ public final class CeylonHierarchyContentProvider
                             root = superMemberDec;
                             memberDec = superMemberDec;
                         }
+                        //TODO else add an "empty" node to the hierarchy like in JDT
                     }
                     dec = superDec;
                 }
                 //now look at the very top of the hierarchy, even if it is an interface
-                Declaration refinedDeclaration = declaration.getRefinedDeclaration();
                 if (!memberDec.equals(refinedDeclaration)) {
                     List<Declaration> directlyInheritedMembers = 
                             getInterveningRefinements(declaration.getName(), signature, 
