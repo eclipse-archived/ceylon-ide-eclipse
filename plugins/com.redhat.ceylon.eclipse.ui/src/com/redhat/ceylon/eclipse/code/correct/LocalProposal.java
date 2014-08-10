@@ -217,11 +217,34 @@ public abstract class LocalProposal extends AbstractLinkedMode
         this.node = node;
         this.currentOffset = currentOffset;
     }
+    
+    boolean isEnabled(ProducedType resultType) {
+        return true;
+    }
 
     boolean isEnabled() {
         Tree.Statement st = findStatement(rootNode, node);
         if (st instanceof Tree.ExpressionStatement) {
-            return true;
+            Tree.Expression e = 
+                    ((Tree.ExpressionStatement) st).getExpression();
+            ProducedType resultType = e.getTypeModel();
+            if (e.getTerm() instanceof Tree.InvocationExpression) {
+                Primary primary = 
+                        ((Tree.InvocationExpression) e.getTerm()).getPrimary();
+                if (primary instanceof Tree.QualifiedMemberExpression) {
+                    Tree.QualifiedMemberExpression prim = 
+                            (Tree.QualifiedMemberExpression) primary;
+                    if (prim.getMemberOperator().getToken()==null) {
+                        //an expression followed by two annotations 
+                        //can look like a named operator expression
+                        //even though that is disallowed as an
+                        //expression statement
+                        Tree.Primary p = prim.getPrimary();
+                        resultType = p.getTypeModel();
+                    }
+                }
+            }
+            return isEnabled(resultType);
         }
         else if (st instanceof Tree.Declaration) {
             Tree.Declaration dec = (Tree.Declaration) st;
@@ -233,20 +256,32 @@ public abstract class LocalProposal extends AbstractLinkedMode
             List<Annotation> annotations = 
                     dec.getAnnotationList().getAnnotations();
             Tree.AnonymousAnnotation aa = 
-            		dec.getAnnotationList().getAnonymousAnnotation();
-            if ((aa!=null || !annotations.isEmpty()) &&
-            		currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
-            	return true;
+                    dec.getAnnotationList().getAnonymousAnnotation();
+            ProducedType resultType;
+            if (aa!=null && currentOffset<=aa.getStopIndex()+1) {
+                resultType = aa.getUnit().getStringDeclaration().getType();
+            }
+            else if (!annotations.isEmpty() && 
+                    currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
+                Tree.Annotation a = annotations.get(0);
+                resultType = a.getTypeModel();
             }
             else if (st instanceof Tree.TypedDeclaration) {
                 //some expressions look like a type declaration
                 //when they appear right in front of an annotation
                 //or function invocations
                 Tree.Type type = ((Tree.TypedDeclaration) st).getType();
-                if (type!=null && currentOffset<=type.getStopIndex()+1) {
-                	return type instanceof Tree.SimpleType;
+                if (type instanceof Tree.SimpleType) {
+                    resultType = type.getTypeModel();
+                }
+                else {
+                    return false;
                 }
             }
+            else {
+                return false;
+            }
+            return isEnabled(resultType);
         }
         return false;
     }
