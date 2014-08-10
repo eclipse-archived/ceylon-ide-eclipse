@@ -28,11 +28,9 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
     
     private final class EnterAliasVisitor extends Visitor {
         private final TextChange change;
-        private final Declaration dec;
 
-        private EnterAliasVisitor(TextChange change, Declaration dec) {
+        private EnterAliasVisitor(TextChange change) {
             this.change = change;
-            this.dec = dec;
         }
 
         @Override
@@ -60,8 +58,7 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         public void visit(Tree.DocLink that) {
             super.visit(that);
             Declaration base = that.getBase();
-            if (base!=null && dec.equals(base) && 
-                    !hasPackage(that)) {
+            if (!hasPackage(that) && isReference(base)) {
                 Region region = nameRegion(that, 0);
                 change.addEdit(new ReplaceEdit(region.getOffset(), 
                         region.getLength(), newName));
@@ -70,8 +67,7 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
 
         private void addEdit(IDocument document, Tree.Identifier id, 
                 Declaration d) {
-            if (id!=null && d!=null && 
-                    dec.equals(getAbstraction(d))) {
+            if (id!=null && isReference(d)) {
                 int pos = id.getStartIndex();
                 int len = id.getText().length();
                 change.addEdit(new ReplaceEdit(pos, len, newName));
@@ -81,6 +77,12 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
 
     private String newName;
     private Tree.ImportMemberOrType element;
+    
+    boolean isReference(Declaration declaration) {
+        return declaration!=null && 
+                getElement().getDeclarationModel()
+                    .equals(getAbstraction(declaration));
+    }
     
     public Tree.ImportMemberOrType getElement() {
         return element;
@@ -171,7 +173,7 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
             }
         }
         
-        new EnterAliasVisitor(change, dec).visit(rootNode);
+        new EnterAliasVisitor(change).visit(rootNode);
         
         return adjust;
         
