@@ -292,6 +292,7 @@ public final class CeylonHierarchyContentProvider
                                     .equals(declaration.getRefinedDeclaration())) {
                             List<Declaration> directlyInheritedMembers = 
                                     getInterveningRefinements(declaration.getName(), signature, 
+                                            declaration.getRefinedDeclaration(),
                                             (TypeDeclaration) memberDec.getContainer(), superDec);
                             directlyInheritedMembers.remove(superMemberDec);
                             if (directlyInheritedMembers.size()>0) {
@@ -310,6 +311,7 @@ public final class CeylonHierarchyContentProvider
                 if (!memberDec.equals(refinedDeclaration)) {
                     List<Declaration> directlyInheritedMembers = 
                             getInterveningRefinements(declaration.getName(), signature, 
+                                    declaration.getRefinedDeclaration(),
                                     (TypeDeclaration) memberDec.getContainer(), 
                                     (TypeDeclaration) refinedDeclaration.getContainer());
                     directlyInheritedMembers.remove(refinedDeclaration);
@@ -343,12 +345,15 @@ public final class CeylonHierarchyContentProvider
             
             IEditorPart part = site.getPage().getActiveEditor();
             
+            List<ProducedType> signature = getSignature(declaration);
             int ps = packages.size();
             for (Package p: packages) { //workaround CME
                 int ms = p.getMembers().size();
                 monitor.subTask("Building hierarchy - scanning " + p.getNameAsString());
                 for (Unit u: p.getUnits()) {
                     try {
+                        //TODO: unshared inner types get 
+                        //      missed for binary modules
                         for (Declaration d: u.getDeclarations()) {
                             d = replaceWithCurrentEditorDeclaration(part, p, d); //TODO: not enough to catch *new* subtypes in the dirty editor
                             if (d instanceof ClassOrInterface || 
@@ -367,18 +372,27 @@ public final class CeylonHierarchyContentProvider
                                         }
                                     }
                                     else if (declaration instanceof TypedDeclaration) {
+                                        Declaration refinedDeclaration = declaration.getRefinedDeclaration();
                                         TypeDeclaration td = (TypeDeclaration) d;
-                                        //TODO: keep the directly refined declarations in the model
-                                        //      (get the typechecker to set this up)
-                                        Declaration mem = 
-                                                td.getDirectMember(declaration.getName(), 
-                                                        null, false);
-                                        if (mem!=null) {
-                                            for (Declaration id: 
-                                                td.getInheritedMembers(declaration.getName())) {
-                                                add(mem, id);
+                                        Declaration dec = td.getDirectMember(declaration.getName(), 
+                                                signature, false);
+                                        if (dec!=null && dec.getRefinedDeclaration()!=null &&
+                                                dec.getRefinedDeclaration().equals(refinedDeclaration)) {
+                                            List<Declaration> refinements = 
+                                                    getInterveningRefinements(declaration.getName(), signature,
+                                                            refinedDeclaration, td,
+                                                            (TypeDeclaration) refinedDeclaration.getContainer());
+                                            //TODO: keep the directly refined declarations in the model
+                                            //      (get the typechecker to set this up)
+                                            for (Declaration candidate: refinements) {
+                                                if (getInterveningRefinements(declaration.getName(), signature,
+                                                        refinedDeclaration, td,
+                                                        (TypeDeclaration) candidate.getContainer())
+                                                                .size()==1) {
+                                                    add(dec, candidate);
+                                                }
                                             }
-                                        }                               
+                                        }
                                     }
                                 }
                                 catch (Exception e) {
