@@ -36,6 +36,8 @@ class BasicCompletionProposal extends CompletionProposal {
     static void addDocLinkProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             Declaration dec, Scope scope) {
+        //for doc links, propose both aliases and unaliased qualified form
+        //we don't need to do this in code b/c there is no fully-qualified form
         String name = dec.getName();
         String aliasedName = dec.getName(cpc.getRootNode().getUnit());
         if (!name.equals(aliasedName)) {
