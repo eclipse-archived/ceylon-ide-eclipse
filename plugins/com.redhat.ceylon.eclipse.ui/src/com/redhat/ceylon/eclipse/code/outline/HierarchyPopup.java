@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 
 import java.util.StringTokenizer;
@@ -58,12 +59,12 @@ public class HierarchyPopup extends TreeViewPopup {
         public void keyReleased(KeyEvent e) {}
         @Override
         public void keyPressed(KeyEvent e) {
-            if (EditorUtil.triggersBinding(e, getCommandBinding())) {
+            if (triggersBinding(e, getCommandBinding())) {
                 contentProvider.setMode(contentProvider.getMode().next());
                 switchMode();
                 e.doit=false;
             }
-            if (EditorUtil.triggersBinding(e, hierarchyBinding)) {
+            if (triggersBinding(e, hierarchyBinding)) {
                 IProject project = editor.getParseController().getProject();
                 try {
                     showHierarchyView().focusOn(project, 

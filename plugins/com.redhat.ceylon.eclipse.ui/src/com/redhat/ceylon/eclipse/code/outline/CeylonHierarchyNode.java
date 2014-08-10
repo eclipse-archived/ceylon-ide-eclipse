@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static java.util.Collections.singletonList;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,8 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
     private final String moduleName;
     private final String name;
     
+    private final SoftReference<Declaration> declaration;
+    
     private boolean nonUnique;
     private boolean multiple;
     
@@ -44,13 +47,17 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
     CeylonHierarchyNode(Declaration declaration) {
         this.name = declaration.getName();
         this.qualifiedName = declaration.getQualifiedNameString();
+        //TODO: persist the signature somehow, to handle overloads
         Unit unit = declaration.getUnit();
         this.unitName = unit.getFilename();
         this.packageName = unit.getPackage().getNameAsString();
         this.moduleName = unit.getPackage().getModule().getNameAsString();
+        this.declaration = new SoftReference<Declaration>(declaration);
     }
     
     public Declaration getDeclaration(IProject project) {
+        Declaration dec = this.declaration.get();
+        if (dec!=null) return dec;
         //first handle the case of new declarations 
         //defined in a dirty editor, and local declarations
         //in an external source file
