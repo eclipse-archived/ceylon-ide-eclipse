@@ -23,9 +23,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 class AssertExistsDeclarationProposal extends CorrectionProposal {
     
 	private AssertExistsDeclarationProposal(Declaration dec, 
-	        int offset, TextChange change) {
-        super("Change to 'assert (exists " + dec.getName() + ")'", change,
-                new Region(offset, 0));
+	        String existsOrNonempty, int offset, TextChange change) {
+        super("Change to 'assert (" + existsOrNonempty + " " + dec.getName() + ")'", 
+                change, new Region(offset, 0));
     }
     
 	private static void addSplitDeclarationProposal(IDocument doc, 
@@ -39,8 +39,20 @@ class AssertExistsDeclarationProposal extends CorrectionProposal {
             return;
         }
         ProducedType siet = sie.getExpression().getTypeModel();
-        ProducedType nvt = cu.getUnit().getNullValueDeclaration().getType();
-        if (isTypeUnknown(siet) || !nvt.isSubtypeOf(siet)) {
+        String existsOrNonempty;
+        String desc;
+        if (isTypeUnknown(siet)) {
+            return;
+        }
+        else if (cu.getUnit().isOptionalType(siet)) {
+            existsOrNonempty = "exists";
+            desc = "Assert Exists";
+        }
+        else if (cu.getUnit().isPossiblyEmptyType(siet)) {
+            existsOrNonempty = "nonempty";
+            desc = "Assert Nonempty";
+        }
+        else {
             return;
         }
         Tree.Identifier id = decNode.getIdentifier();
@@ -51,17 +63,19 @@ class AssertExistsDeclarationProposal extends CorrectionProposal {
         int idEndOffset = id.getStopIndex()+1;
         int semiOffset = decNode.getStopIndex();
         
-        TextChange change = new TextFileChange("Assert Exists Declaration", file);
+        TextChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
 
         Type type = decNode.getType();
         Integer typeOffset = type.getStartIndex();
         Integer typeLen = type.getStopIndex()-typeOffset+1;
         change.addEdit(new ReplaceEdit(typeOffset, typeLen, 
-                "assert (exists"));
+                "assert (" + existsOrNonempty));
         change.addEdit(new InsertEdit(semiOffset, ")"));
         proposals.add(new AssertExistsDeclarationProposal(dec, 
-                idEndOffset + 14 - typeLen, change));
+                existsOrNonempty,
+                idEndOffset + 8 + existsOrNonempty.length() - typeLen, 
+                change));
     }
 
 	static void addAssertExistsDeclarationProposals(
@@ -76,7 +90,8 @@ class AssertExistsDeclarationProposal extends CorrectionProposal {
 	            Tree.SpecifierOrInitializerExpression sie = 
 	                    attDecNode.getSpecifierOrInitializerExpression();
 	            if (sie!=null || dec.isParameter()) {
-	                addSplitDeclarationProposal(doc, attDecNode, cu, file, proposals);
+	                addSplitDeclarationProposal(doc, 
+	                        attDecNode, cu, file, proposals);
 	            }
 	        }
 	    }
