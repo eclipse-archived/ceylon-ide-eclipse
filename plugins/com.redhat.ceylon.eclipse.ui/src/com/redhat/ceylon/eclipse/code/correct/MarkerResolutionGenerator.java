@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.openInEditor;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
@@ -21,17 +22,19 @@ import org.eclipse.ui.IMarkerResolutionGenerator;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonEncodingSynchronizer;
 
-public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
-        IMarkerResolutionGenerator2 {
+public class MarkerResolutionGenerator 
+        implements IMarkerResolutionGenerator, IMarkerResolutionGenerator2 {
 
-    private static final IMarkerResolution[] NO_RESOLUTIONS = new IMarkerResolution[0];
+    private static final IMarkerResolution[] NO_RESOLUTIONS = 
+            new IMarkerResolution[0];
 
-    private static final class CharsetCorrection implements IMarkerResolution, IMarkerResolution2 {
+    private static final class CharsetCorrection 
+            implements IMarkerResolution, IMarkerResolution2 {
+        
         private final IProject project;
         private final String encoding;
 
@@ -63,8 +66,8 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
         }
     }
 
-    private static class CorrectionMarkerResolution implements
-            IMarkerResolution, IMarkerResolution2 {
+    private static class CorrectionMarkerResolution 
+            implements IMarkerResolution, IMarkerResolution2 {
 
         private int fOffset;
         private int fLength;
@@ -86,7 +89,7 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
 
         public void run(IMarker marker) {
             try {
-                IEditorPart part = Navigation.openInEditor(marker.getResource());
+                IEditorPart part = openInEditor(marker.getResource());
                 if (part instanceof ITextEditor) {
                     ((ITextEditor) part).selectAndReveal(fOffset, fLength);
                 }
@@ -116,7 +119,8 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
             if (marker.getType().equals(CHARSET_PROBLEM_MARKER_ID)) {
                 IProject project = (IProject) marker.getResource();
                 String encoding = project.getDefaultCharset();
-                String ceylonEncoding = CeylonProjectConfig.get(project).getEncoding();
+                String ceylonEncoding = 
+                        CeylonProjectConfig.get(project).getEncoding();
                 return new IMarkerResolution[] {
                     new CharsetCorrection(project, encoding),
                     new CharsetCorrection(project, ceylonEncoding),
@@ -135,17 +139,23 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator,
                 }
             };
 
-            ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-            IDocument doc = getDocument(getEditorInput(marker.getResource()));
-            new CeylonCorrectionProcessor(marker).collectCorrections(quickAssistContext, 
-                    new ProblemLocation(marker), proposals);
+            ArrayList<ICompletionProposal> proposals = 
+                    new ArrayList<ICompletionProposal>();
+            IDocument doc = 
+                    getDocument(getEditorInput(marker.getResource()));
+            new CeylonCorrectionProcessor(marker)
+                    .collectCorrections(quickAssistContext, 
+                            new ProblemLocation(marker), proposals);
 
-            IMarkerResolution[] resolutions = new IMarkerResolution[proposals.size()];
+            IMarkerResolution[] resolutions = 
+                    new IMarkerResolution[proposals.size()];
             int i = 0;
             for (ICompletionProposal proposal: proposals) {
-                resolutions[i++] = new CorrectionMarkerResolution(
-                        quickAssistContext.getOffset(), quickAssistContext.getLength(), 
-                        proposal, marker, doc);
+                resolutions[i++] = 
+                        new CorrectionMarkerResolution(
+                                quickAssistContext.getOffset(), 
+                                quickAssistContext.getLength(), 
+                                proposal, marker, doc);
             }
             return resolutions;
 
