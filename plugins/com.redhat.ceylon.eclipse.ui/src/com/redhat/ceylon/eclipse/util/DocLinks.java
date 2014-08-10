@@ -13,7 +13,11 @@ public class DocLinks {
     
     private static final Pattern packagePattern = compile("^([^|]\\|)?([^:]*)::");
     private static final Pattern namePattern = compile("^([^|]\\|)?([^:]*::)?(.*)");
-
+    
+    public static boolean hasPackage(DocLink docLink) {
+        return docLink.getText().contains("::");
+    }
+    
     public static Region packageRegion(DocLink docLink) {
         Matcher matcher = packagePattern.matcher(docLink.getText());
         if (matcher.find()) {

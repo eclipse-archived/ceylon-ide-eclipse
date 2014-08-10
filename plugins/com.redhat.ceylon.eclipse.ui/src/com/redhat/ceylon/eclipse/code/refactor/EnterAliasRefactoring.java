@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.DocLinks.hasPackage;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
@@ -59,7 +60,8 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         public void visit(Tree.DocLink that) {
             super.visit(that);
             Declaration base = that.getBase();
-            if (base!=null && dec.equals(base)) {
+            if (base!=null && dec.equals(base) && 
+                    !hasPackage(that)) {
                 Region region = nameRegion(that, 0);
                 change.addEdit(new ReplaceEdit(region.getOffset(), 
                         region.getLength(), newName));
