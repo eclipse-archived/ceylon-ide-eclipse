@@ -111,6 +111,8 @@ class AddModuleImportProposal implements ICompletionProposal,
         ModuleQuery query = new ModuleQuery("", getModuleQueryType(project));
         query.setMemberName(formatPath(ids));
         query.setMemberSearchPackageOnly(true);
+        query.setMemberSearchExact(true);
+        query.setCount(1l);
         query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
         ModuleSearchResult msr = tc.getContext().getRepositoryManager()
                 .searchModules(query);
