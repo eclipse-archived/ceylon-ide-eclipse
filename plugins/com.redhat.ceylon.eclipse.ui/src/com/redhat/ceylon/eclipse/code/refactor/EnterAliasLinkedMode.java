@@ -13,7 +13,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
+import static com.redhat.ceylon.eclipse.util.DocLinks.hasPackage;
+import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
@@ -34,7 +35,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
 
@@ -84,8 +84,8 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         public void visit(Tree.DocLink that) {
             super.visit(that);
             Declaration base = that.getBase();
-            if (base!=null) {
-                Region region = DocLinks.nameRegion(that, 0);
+            if (base!=null && !hasPackage(that)) {
+                Region region = nameRegion(that, 0);
                 addLinkedPosition(region.getOffset(), 
                         region.getLength(), base);
             }
@@ -93,13 +93,12 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
 
         private void addLinkedPosition(Identifier id, Declaration d) {
             if (id!=null) {
-                addLinkedPosition(id.getStartIndex(), id.getText().length(), d);
+                addLinkedPosition(id.getStartIndex(), 
+                        id.getText().length(), d);
             }
         }
         private void addLinkedPosition(int pos, int len, Declaration d) {
-            if (d!=null &&
-                    refactoring.getElement().getDeclarationModel()
-                            .equals(getAbstraction(d))) {
+            if (d!=null && refactoring.isReference(d)) {
                 try {
                     int offset = originalSelection.x;
                     int seq;
