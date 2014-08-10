@@ -13,6 +13,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -67,6 +68,11 @@ class AssignToIfExistsProposal extends LocalProposal {
     @Override
     public String getDisplayString() {
         return "Assign expression to 'if (exists)' condition";
+    }
+
+    @Override
+    boolean isEnabled(ProducedType resultType) {
+        return rootNode.getUnit().isOptionalType(resultType);
     }
 
     static void addAssignToIfExistsProposal(Tree.CompilationUnit cu, 
