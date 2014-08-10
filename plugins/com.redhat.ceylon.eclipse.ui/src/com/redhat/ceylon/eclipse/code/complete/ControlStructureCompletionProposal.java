@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
@@ -20,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 class ControlStructureCompletionProposal extends CompletionProposal {
@@ -148,7 +148,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
     private ControlStructureCompletionProposal(int offset, String prefix, 
             String desc, String text, Declaration dec, 
             CeylonParseController cpc) {
-        super(offset, prefix, getImageForDeclaration(dec), 
+        super(offset, prefix, CeylonLabelProvider.MINOR_CHANGE, 
                 desc, text);
         this.cpc = cpc;
         this.declaration = dec;
