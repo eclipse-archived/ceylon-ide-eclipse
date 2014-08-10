@@ -111,6 +111,11 @@ public class ModuleCompletions {
             return getDocumentationForModule(name, JDKUtils.jdk.version, 
                     "This module forms part of the Java SDK.");
         }
+
+        @Override
+        protected boolean qualifiedNameIsPath() {
+            return true;
+        }
     }
 
     private static final SortedSet<String> JDK_MODULE_VERSION_SET = new TreeSet<String>();
