@@ -92,6 +92,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -264,9 +265,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext context) {
         ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         ISourceViewer viewer = context.getSourceViewer();
+        List<Annotation> annotations = 
+                getAnnotationsForLine(viewer, getLine(context, viewer));
         collectProposals(context, viewer.getAnnotationModel(),
-                getAnnotationsForLine(viewer, getLine(context, viewer)), 
-                        true, true, proposals);
+                annotations, true, true, proposals);
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
     }
 
@@ -298,12 +300,15 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             if (loc.getOffset()<=viewer.getSelectedRange().x) {
                 for (int j=i; j>=0; j--) {
                     ProblemLocation location = locations[j];
-                    if (location.getOffset()!=loc.getOffset()) break;
+                    if (location.getOffset()!=loc.getOffset()) {
+                        break;
+                    }
                     addProposals(context, location, getFile(), 
                             rootNode, proposals);
                 }
                 if (!proposals.isEmpty()) {
-                    viewer.setSelectedRange(loc.getOffset(), loc.getLength());
+                    viewer.setSelectedRange(loc.getOffset(), 
+                            loc.getLength());
                     return;
                 }
             }
@@ -317,7 +322,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                         rootNode, proposals);
             }
             if (!proposals.isEmpty()) {
-                viewer.setSelectedRange(loc.getOffset(), loc.getLength());
+                viewer.setSelectedRange(loc.getOffset(), 
+                        loc.getLength());
                 return;
             }
         }
