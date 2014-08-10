@@ -145,7 +145,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             Declaration refinedDeclaration = declaration.getRefinedDeclaration();
             if (!declaration.equals(refinedDeclaration)) {
                 List<Declaration> directlyInheritedMembers = 
-                        getInterveningRefinements(declaration.getName(), signature, 
+                        getInterveningRefinements(declaration.getName(), signature,
+                                refinedDeclaration,
                                 (TypeDeclaration) declaration.getContainer(), 
                                 (TypeDeclaration) refinedDeclaration.getContainer());
                 directlyInheritedMembers.remove(refinedDeclaration);
