@@ -50,8 +50,8 @@ public class CompletionProposal implements ICompletionProposal,
     
     public void apply(IDocument document) {
         try {
-            document.replace(offset-prefix.length(), 
-                    prefix.length(), text);
+            document.replace(start(), length(document), 
+                    withoutDupeSemi(document));
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -59,17 +59,11 @@ public class CompletionProposal implements ICompletionProposal,
     }
     
     protected ReplaceEdit createEdit(IDocument document) {
-        int start = offset-prefix.length();
-        String str = text;
-        try {
-            if (text.endsWith(";") && 
-                    document.getChar(offset)==';') {
-                str = text.substring(0,text.length()-1);
-            }
-        }
-        catch (BadLocationException e) {
-            e.printStackTrace();
-        }
+        return new ReplaceEdit(start(), length(document), 
+                withoutDupeSemi(document));
+    }
+
+    public int length(IDocument document) {
         int length = prefix.length();
         String overwrite = EditorsUI.getPreferenceStore().getString(COMPLETION);
         if ("overwrite".equals(overwrite)) {
@@ -85,7 +79,24 @@ public class CompletionProposal implements ICompletionProposal,
                 e.printStackTrace();
             }
         }
-        return new ReplaceEdit(start, length, str);
+        return length;
+    }
+
+    public int start() {
+        return offset-prefix.length();
+    }
+
+    public String withoutDupeSemi(IDocument document) {
+        try {
+            if (text.endsWith(";") && 
+                    document.getChar(offset)==';') {
+                return text.substring(0,text.length()-1);
+            }
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+        return text;
     }
     
     public String getDisplayString() {
