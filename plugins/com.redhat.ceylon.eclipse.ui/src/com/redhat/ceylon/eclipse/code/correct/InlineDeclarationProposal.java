@@ -4,15 +4,19 @@ import java.util.Collection;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.InlineRefactoringAction;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
-class InlineDeclarationProposal implements ICompletionProposal {
+class InlineDeclarationProposal implements ICompletionProposal,
+        ICompletionProposalExtension6 {
 
     private final InlineRefactoringAction action;
     
@@ -59,6 +63,11 @@ class InlineDeclarationProposal implements ICompletionProposal {
         if (prop.isEnabled()) {
             proposals.add(prop);
         }
+    }
+
+    @Override
+    public StyledString getStyledDisplayString() {
+        return Highlights.styleProposal(getDisplayString(), false);
     }
 
 }
