@@ -4,12 +4,16 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension4;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -19,7 +23,7 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 
 
 public class CompletionProposal implements ICompletionProposal, 
-        /*ICompletionProposalExtension,*/ ICompletionProposalExtension4, 
+        ICompletionProposalExtension2, ICompletionProposalExtension4, 
         ICompletionProposalExtension6 {
     
     protected final String text;
@@ -27,6 +31,7 @@ public class CompletionProposal implements ICompletionProposal,
     protected final String prefix;
     private final String description;
     protected int offset;
+    private boolean toggleOverwrite;
     
     public CompletionProposal(int offset, String prefix, Image image,
             String desc, String text) {
@@ -66,7 +71,7 @@ public class CompletionProposal implements ICompletionProposal,
     public int length(IDocument document) {
         int length = prefix.length();
         String overwrite = EditorsUI.getPreferenceStore().getString(COMPLETION);
-        if ("overwrite".equals(overwrite)) {
+        if ("overwrite".equals(overwrite)!=toggleOverwrite) {
             try {
                 for (int i=offset; 
                         i<document.getLength() && 
@@ -127,6 +132,24 @@ public class CompletionProposal implements ICompletionProposal,
     @Override
     public IContextInformation getContextInformation() {
         return null;
+    }
+
+    @Override
+    public void apply(ITextViewer viewer, char trigger, int stateMask,
+            int offset) {
+        toggleOverwrite = (stateMask&SWT.CTRL)!=0;
+        apply(viewer.getDocument());
+    }
+
+    @Override
+    public void selected(ITextViewer viewer, boolean smartToggle) {}
+
+    @Override
+    public void unselected(ITextViewer viewer) {}
+
+    @Override
+    public boolean validate(IDocument document, int offset, DocumentEvent event) {
+        return true;
     }
     
 }
