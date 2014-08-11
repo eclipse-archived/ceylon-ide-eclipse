@@ -33,6 +33,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal
 import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProposal.addAssertExistsDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToForProposal.addAssignToForProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfExistsProposal.addAssignToIfExistsProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAssignToIfIsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
@@ -540,6 +541,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addAssignToIfExistsProposal(rootNode, proposals, node, offset);
             addAssignToIfNonemptyProposal(rootNode, proposals, node, offset);
             addAssignToTryProposal(rootNode, proposals, node, offset);
+            addAssignToIfIsProposal(rootNode, proposals, node, offset);
             addPrintProposal(rootNode, proposals, node, offset);
             break;
         case 3100:
@@ -607,6 +609,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addAssignToIfExistsProposal(cu, proposals, node, currentOffset);
             addAssignToIfNonemptyProposal(cu, proposals, node, currentOffset);
             addAssignToTryProposal(cu, proposals, node, currentOffset);
+            addAssignToIfIsProposal(cu, proposals, node, currentOffset);
             addPrintProposal(cu, proposals, node, currentOffset);
             
             addConvertToNamedArgumentsProposal(proposals, file, cu, 

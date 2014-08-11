@@ -235,7 +235,9 @@ public class LinkedModeCompletionProposal
 
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
             Unit unit, ProducedType type, boolean includeValue, String kind) {
-    	if (type==null) return new ICompletionProposal[0];
+    	if (type==null) {
+    	    return new ICompletionProposal[0];
+    	}
         TypeDeclaration td = type.getDeclaration();
         List<TypeDeclaration> supertypes = isTypeUnknown(type) ?
                 Collections.<TypeDeclaration>emptyList() :
@@ -276,4 +278,24 @@ public class LinkedModeCompletionProposal
         return typeProposals;
     }
 
+    public static ICompletionProposal[] getCaseTypeProposals(int offset, Unit unit, ProducedType type) {
+        if (type==null) {
+            return new ICompletionProposal[0];
+        }
+        List<ProducedType> caseTypes = type.getCaseTypes();
+        if (caseTypes==null) {
+            return new ICompletionProposal[0];
+        }
+        ICompletionProposal[] typeProposals = 
+                new ICompletionProposal[caseTypes.size()];
+        for (int i=0; i<caseTypes.size(); i++) {
+            ProducedType ct = caseTypes.get(i);
+            String typeName = 
+                    ct.getProducedTypeName(unit);
+            typeProposals[i] = 
+                    new LinkedModeCompletionProposal(offset, typeName, 0, 
+                            getImageForDeclaration(ct.getDeclaration()));
+        }
+        return typeProposals;
+    }
 }

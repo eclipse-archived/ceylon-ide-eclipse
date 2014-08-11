@@ -72,7 +72,8 @@ class AssignToIfNonemptyProposal extends LocalProposal {
 
     @Override
     boolean isEnabled(ProducedType resultType) {
-        return rootNode.getUnit().isPossiblyEmptyType(resultType);
+        return resultType!=null &&
+                rootNode.getUnit().isPossiblyEmptyType(resultType);
     }
 
     static void addAssignToIfNonemptyProposal(Tree.CompilationUnit cu, 

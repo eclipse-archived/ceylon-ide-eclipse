@@ -72,7 +72,8 @@ class AssignToTryProposal extends LocalProposal {
     
     @Override
     boolean isEnabled(ProducedType resultType) {
-        return rootNode.getUnit().isUsableType(resultType);
+        return resultType!=null && 
+                rootNode.getUnit().isUsableType(resultType);
     }
 
     static void addAssignToTryProposal(Tree.CompilationUnit cu, 
