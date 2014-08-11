@@ -63,6 +63,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreateProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DeclareLocalProposal.addDeclareLocalProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
@@ -660,6 +661,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertFromVerbatimProposal(proposals, file, cu, node, doc);
             addConvertToConcatenationProposal(proposals, file, cu, node, doc);
             addConvertToInterpolationProposal(proposals, file, cu, node, doc);
+            
+            addExpandTypeProposal(editor, cu, file, doc, proposals);
         }
         
     }
