@@ -196,6 +196,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static final String CHARSET_PROBLEM_MARKER_ID = PLUGIN_ID + ".ceylonCharsetProblem";
 
     /**
+     * A marker ID that identifies character encoding problems
+     */
+    public static final String CEYLON_CONFIG_NOT_IN_SYNC_MARKER = PLUGIN_ID + ".ceylonConfigProblem";
+        
+    /**
      * A marker ID that identifies tasks
      */
     public static final String TASK_MARKER_ID = PLUGIN_ID + ".ceylonTask";
@@ -1029,13 +1034,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         if (! isInSyncWithCeylonConfig(project)) {
             //if the build order is not correct, add an error and return
-            IMarker marker = project.createMarker(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER);
+            IMarker marker = project.createMarker(CEYLON_CONFIG_NOT_IN_SYNC_MARKER);
             marker.setAttribute(IMarker.MESSAGE, "The Ceylon Build Paths are not in sync with those in the ceylon configuration file (" 
                                                     + "./ceylon/config)\n"
                                                     + "Either modify this file or change the build paths accordingly in the project properties");
             marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
             marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-            marker.setAttribute(IMarker.LOCATION, "Project " + project.getName());
+            marker.setAttribute(IMarker.LOCATION, project.getName());
             marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
             buildCanContinue = false;
         }
