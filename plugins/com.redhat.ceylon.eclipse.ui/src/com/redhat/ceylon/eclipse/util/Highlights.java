@@ -257,7 +257,7 @@ public class Highlights  {
 
     public static StyledString styleProposal(String description, 
             boolean qualifiedNameIsPath) {
-        return styleProposal(description, qualifiedNameIsPath, false);
+        return styleProposal(description, qualifiedNameIsPath, true);
     }
 
     public static final Styler TYPE_STYLER = new Styler() {
