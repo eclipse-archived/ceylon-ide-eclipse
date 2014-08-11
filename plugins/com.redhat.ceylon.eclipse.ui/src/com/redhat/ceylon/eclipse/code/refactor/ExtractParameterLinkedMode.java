@@ -107,7 +107,7 @@ public final class ExtractParameterLinkedMode
             }
             @Override
             public RefactoringWizard createWizard(Refactoring refactoring) {
-                return new ExtractValueWizard((ExtractValueRefactoring) refactoring) {
+                return new ExtractParameterWizard((ExtractParameterRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };

@@ -96,9 +96,28 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         return node instanceof Tree.Term && 
                 methodOrClass!=null &&
                 methodOrClass.getDeclarationModel()!=null &&
-                !methodOrClass.getDeclarationModel().isActual();
+                !methodOrClass.getDeclarationModel().isActual() &&
+                !isWithinParameterList();
     }
 
+    private boolean isWithinParameterList() {
+        Tree.ParameterList pl1, pl2;
+        if (methodOrClass instanceof Tree.AnyClass) {
+            pl1 = pl2 = ((Tree.AnyClass) methodOrClass).getParameterList();
+        }
+        else if (methodOrClass instanceof Tree.AnyMethod) {
+            List<Tree.ParameterList> pls = 
+                    ((Tree.AnyMethod) methodOrClass).getParameterLists();
+            pl1 = pls.get(0);
+            pl2 = pls.get(pls.size()-1);
+        }
+        else {
+            return false;
+        }
+        return node.getStartIndex()>=pl1.getStartIndex() && 
+                node.getStopIndex()<=pl2.getStopIndex();
+    }
+    
     public String getName() {
         return "Extract Parameter";
     }
