@@ -758,7 +758,7 @@ public class RefactorInformationPopup
                 fLinkedMode.cancel();
                 String linkedModePrefPageID= 
                         "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
-                String refactoringPrefPageID= CeylonEditorPreferencesPage.ID;
+                String refactoringPrefPageID = CeylonEditorPreferencesPage.ID;
                 PreferencesUtil.createPreferenceDialogOn(fEditor.getSite().getShell(), 
                         refactoringPrefPageID, 
                         new String[] { linkedModePrefPageID, refactoringPrefPageID }, 
