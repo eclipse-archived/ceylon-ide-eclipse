@@ -588,9 +588,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         IProject project = EditorUtil.getProject(editor.getEditorInput());
         IFile file = EditorUtil.getFile(editor.getEditorInput());
         
-        Tree.CompilationUnit cu = editor.getParseController().getRootNode();
-        if (cu!=null) {
-            Node node = Nodes.findNode(cu, context.getOffset(), 
+        Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
+        if (rootNode!=null) {
+            Node node = Nodes.findNode(rootNode, context.getOffset(), 
                     context.getOffset() + context.getLength());
             int currentOffset = editor.getSelection().getOffset();
             
@@ -605,64 +605,64 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             MakeReceiverProposal.add(proposals, editor, node);
             InvertBooleanProposal.add(proposals, editor);
                     
-            addAssignToLocalProposal(cu, proposals, node, currentOffset);
-            addAssignToForProposal(cu, proposals, node, currentOffset);
-            addAssignToIfExistsProposal(cu, proposals, node, currentOffset);
-            addAssignToIfNonemptyProposal(cu, proposals, node, currentOffset);
-            addAssignToTryProposal(cu, proposals, node, currentOffset);
-            addAssignToIfIsProposal(cu, proposals, node, currentOffset);
-            addPrintProposal(cu, proposals, node, currentOffset);
+            addAssignToLocalProposal(rootNode, proposals, node, currentOffset);
+            addAssignToForProposal(rootNode, proposals, node, currentOffset);
+            addAssignToIfExistsProposal(rootNode, proposals, node, currentOffset);
+            addAssignToIfNonemptyProposal(rootNode, proposals, node, currentOffset);
+            addAssignToTryProposal(rootNode, proposals, node, currentOffset);
+            addAssignToIfIsProposal(rootNode, proposals, node, currentOffset);
+            addPrintProposal(rootNode, proposals, node, currentOffset);
             
-            addConvertToNamedArgumentsProposal(proposals, file, cu, 
+            addConvertToNamedArgumentsProposal(proposals, file, rootNode, 
                     editor, currentOffset);
-            addConvertToPositionalArgumentsProposal(proposals, file, cu, 
+            addConvertToPositionalArgumentsProposal(proposals, file, rootNode, 
                     editor, currentOffset);
             
-            Tree.Statement statement = findStatement(cu, node);
-            Tree.Declaration declaration = findDeclaration(cu, node);
-            Tree.NamedArgument argument = findArgument(cu, node);
-            Tree.ImportMemberOrType imp = findImport(cu, node);
+            Tree.Statement statement = findStatement(rootNode, node);
+            Tree.Declaration declaration = findDeclaration(rootNode, node);
+            Tree.NamedArgument argument = findArgument(rootNode, node);
+            Tree.ImportMemberOrType imp = findImport(rootNode, node);
                         
-            addVerboseRefinementProposal(proposals, file, statement, cu);
+            addVerboseRefinementProposal(proposals, file, statement, rootNode);
             
             addAnnotationProposals(proposals, project, declaration,
                     doc, currentOffset);
-            addTypingProposals(proposals, file, cu, node, declaration, editor);
+            addTypingProposals(proposals, file, rootNode, node, declaration, editor);
             
-            addDeclarationProposals(editor, proposals, doc, file, cu, 
+            addDeclarationProposals(editor, proposals, doc, file, rootNode, 
                     declaration, currentOffset);
             
             addConvertToClassProposal(proposals, declaration, editor);
-            addAssertExistsDeclarationProposals(proposals, doc, file, cu, declaration);
-            addSplitDeclarationProposals(proposals, doc, file, cu, declaration);
-            addParameterProposals(proposals, file, cu, declaration, editor);
+            addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
+            addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration);
+            addParameterProposals(proposals, file, rootNode, declaration, editor);
             
             addArgumentProposals(proposals, doc, file, argument);
             addUseAliasProposal(imp, proposals, editor);
             addRenameAliasProposal(imp, proposals, editor);
             addRemoveAliasProposal(imp, proposals, file, editor);            
-            addRenameVersionProposals(node, proposals, cu, editor);
+            addRenameVersionProposals(node, proposals, rootNode, editor);
             
             addConvertToIfElseProposal(doc, proposals, file, statement);
-            addConvertToThenElseProposal(cu, doc, proposals, file, statement);
-            addReverseIfElseProposal(doc, proposals, file, statement, cu);
+            addConvertToThenElseProposal(rootNode, doc, proposals, file, statement);
+            addReverseIfElseProposal(doc, proposals, file, statement, rootNode);
             
             addConvertGetterToMethodProposal(proposals, editor, file, statement);
             addConvertMethodToGetterProposal(proposals, editor, file, statement);
             
-            addThrowsAnnotationProposal(proposals, statement, cu, file, doc);            
+            addThrowsAnnotationProposal(proposals, statement, rootNode, file, doc);            
             
             MoveToNewUnitProposal.add(proposals, editor);
             MoveToUnitProposal.add(proposals, editor);
             
-            addRefineFormalMembersProposal(proposals, node, cu, false);
+            addRefineFormalMembersProposal(proposals, node, rootNode, false);
             
-            addConvertToVerbatimProposal(proposals, file, cu, node, doc);
-            addConvertFromVerbatimProposal(proposals, file, cu, node, doc);
-            addConvertToConcatenationProposal(proposals, file, cu, node, doc);
-            addConvertToInterpolationProposal(proposals, file, cu, node, doc);
+            addConvertToVerbatimProposal(proposals, file, rootNode, node, doc);
+            addConvertFromVerbatimProposal(proposals, file, rootNode, node, doc);
+            addConvertToConcatenationProposal(proposals, file, rootNode, node, doc);
+            addConvertToInterpolationProposal(proposals, file, rootNode, node, doc);
             
-            addExpandTypeProposal(editor, cu, file, doc, proposals);
+            addExpandTypeProposal(editor, statement, file, doc, proposals);
         }
         
     }
