@@ -254,6 +254,7 @@ public class CeylonEditorPreferencesPage
     @Override
     protected void createFieldEditors() {
         otherSection();
+        linkedModeSection();
 //        autocompletionSection();
         autocloseSection();
         bracketHighlightingSection();        
@@ -455,16 +456,6 @@ public class CeylonEditorPreferencesPage
 //        addField(new LabelFieldEditor("Other:",
 //                getFieldEditorParent()));
         Composite group = createGroup(1, "General");
-        linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
-                "Use linked mode for rename", 
-                getFieldEditorParent(group));
-        linkedModeRename.load();
-        addField(linkedModeRename);
-        linkedModeExtract = new BooleanFieldEditor(LINKED_MODE_EXTRACT, 
-                "Use linked mode for extract refactorings", 
-                getFieldEditorParent(group));
-        linkedModeExtract.load();
-        addField(linkedModeExtract);
         smartCaret = new BooleanFieldEditor(SUB_WORD_NAVIGATION, 
                 "Smart caret positioning inside identifiers", 
                 getFieldEditorParent(group));
@@ -480,6 +471,20 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent(group));
         displayOutlineTypes.load();
         addField(displayOutlineTypes);
+    }
+    
+    private void linkedModeSection() {
+        Composite group = createGroup(1, "Linked mode");
+        linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
+                "Use linked mode for rename", 
+                getFieldEditorParent(group));
+        linkedModeRename.load();
+        addField(linkedModeRename);
+        linkedModeExtract = new BooleanFieldEditor(LINKED_MODE_EXTRACT, 
+                "Use linked mode for extract refactorings", 
+                getFieldEditorParent(group));
+        linkedModeExtract.load();
+        addField(linkedModeExtract);
     }
     
     /*private void onSaveSection() {
