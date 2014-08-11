@@ -1,46 +1,47 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_COMMENTS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.ENCLOSING_BRACKETS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.MATCHING_BRACKET;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SELECTED_BRACKET;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SUB_WORD_NAVIGATION;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_INSERT;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.INEXACT_MATCHES;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.STRIP_TRAILING_WS;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_COMMENTS;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.ENCLOSING_BRACKETS;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.MATCHING_BRACKET;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SELECTED_BRACKET;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SUB_WORD_NAVIGATION;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_INSERT;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.INEXACT_MATCHES;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
+//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.STRIP_TRAILING_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.setPreferenceDefaults;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndentWithSpaces;
-import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
+//import static com.redhat.ceylon.eclipse.util.Indents.getIndentWithSpaces;
+//import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
-import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
+//import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
+import org.eclipse.jface.preference.ScaleFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -57,116 +58,116 @@ import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
-public class CeylonEditorPreferencesPage 
+public class CeylonCompletionPreferencesPage 
         extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
     
-    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.editor";
+    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.completion";
     
-    BooleanFieldEditor enclosingBrackets;
-    BoolFieldEditor matchingBracket;
-    BooleanFieldEditor currentBracket;
-//    BooleanFieldEditor autoInsert;
-//    BoolFieldEditor autoActivation;
-//    RadioGroupFieldEditor completion;
-//    RadioGroupFieldEditor inexactMatches;
-//    BooleanFieldEditor linkedMode;
-//    ScaleFieldEditor autoActivationDelay;
-//    RadioGroupFieldEditor autoActivationChars;
-    BooleanFieldEditor linkedModeRename;
-    BooleanFieldEditor linkedModeExtract;
-    BooleanFieldEditor displayOutlineTypes;
-//    BooleanFieldEditor displayParameterTypes;
-    BooleanFieldEditor smartCaret;
-    BooleanFieldEditor pasteCorrectIndent;
-    BooleanFieldEditor normalizeWs;
-    BooleanFieldEditor normalizeNl;
-    BooleanFieldEditor stripTrailingWs;
-    BooleanFieldEditor cleanImports;
-    BooleanFieldEditor format;
-    BooleanFieldEditor autoFoldImports;
-    BooleanFieldEditor autoFoldComments;
-    BooleanFieldEditor closeParens;
-    BooleanFieldEditor closeBrackets;
-    BooleanFieldEditor closeBraces;
-    BooleanFieldEditor closeAngles;
-    BooleanFieldEditor closeBackticks;
-    BooleanFieldEditor closeQuotes;
-    BoolFieldEditor enableFolding;
+//    BooleanFieldEditor enclosingBrackets;
+//    BoolFieldEditor matchingBracket;
+//    BooleanFieldEditor currentBracket;
+    BooleanFieldEditor autoInsert;
+    BoolFieldEditor autoActivation;
+    RadioGroupFieldEditor completion;
+    RadioGroupFieldEditor inexactMatches;
+    BooleanFieldEditor linkedMode;
+    ScaleFieldEditor autoActivationDelay;
+    RadioGroupFieldEditor autoActivationChars;
+//    BooleanFieldEditor linkedModeRename;
+//    BooleanFieldEditor linkedModeExtract;
+//    BooleanFieldEditor displayOutlineTypes;
+    BooleanFieldEditor displayParameterTypes;
+//    BooleanFieldEditor smartCaret;
+//    BooleanFieldEditor pasteCorrectIndent;
+//    BooleanFieldEditor normalizeWs;
+//    BooleanFieldEditor normalizeNl;
+//    BooleanFieldEditor stripTrailingWs;
+//    BooleanFieldEditor cleanImports;
+//    BooleanFieldEditor format;
+//    BooleanFieldEditor autoFoldImports;
+//    BooleanFieldEditor autoFoldComments;
+//    BooleanFieldEditor closeParens;
+//    BooleanFieldEditor closeBrackets;
+//    BooleanFieldEditor closeBraces;
+//    BooleanFieldEditor closeAngles;
+//    BooleanFieldEditor closeBackticks;
+//    BooleanFieldEditor closeQuotes;
+//    BoolFieldEditor enableFolding;
     
-    public CeylonEditorPreferencesPage() {
+    public CeylonCompletionPreferencesPage() {
         super(GRID);
         setPreferenceDefaults();
     }
     
     @Override
     public boolean performOk() {
-        enclosingBrackets.store();
-        matchingBracket.store();
-        currentBracket.store();
-//        autoInsert.store();
-//        autoActivation.store();
-//        autoActivationDelay.store();
-//        autoActivationChars.store();
-//        completion.store();
-//        inexactMatches.store();
-//        linkedMode.store();
-        linkedModeRename.store();
-        linkedModeExtract.store();
-        displayOutlineTypes.store();
-//        displayParameterTypes.store();
-        smartCaret.store();
-        pasteCorrectIndent.store();
-        normalizeWs.store();
-        normalizeNl.store();
-        stripTrailingWs.store();
-        cleanImports.store();
-        format.store();
-        autoFoldImports.store();
-        autoFoldComments.store();
-        closeAngles.store();
-        closeBackticks.store();
-        closeBraces.store();
-        closeBrackets.store();
-        closeParens.store();
-        closeQuotes.store();
-        enableFolding.store();
+//        enclosingBrackets.store();
+//        matchingBracket.store();
+//        currentBracket.store();
+        autoInsert.store();
+        autoActivation.store();
+        autoActivationDelay.store();
+        autoActivationChars.store();
+        completion.store();
+        inexactMatches.store();
+        linkedMode.store();
+//        linkedModeRename.store();
+//        linkedModeExtract.store();
+//        displayOutlineTypes.store();
+        displayParameterTypes.store();
+//        smartCaret.store();
+//        pasteCorrectIndent.store();
+//        normalizeWs.store();
+//        normalizeNl.store();
+//        stripTrailingWs.store();
+//        cleanImports.store();
+//        format.store();
+//        autoFoldImports.store();
+//        autoFoldComments.store();
+//        closeAngles.store();
+//        closeBackticks.store();
+//        closeBraces.store();
+//        closeBrackets.store();
+//        closeParens.store();
+//        closeQuotes.store();
+//        enableFolding.store();
         return true;
     }
     
     @Override
     protected void performDefaults() {
         super.performDefaults();
-        enclosingBrackets.loadDefault();
-        matchingBracket.loadDefault();
-        currentBracket.loadDefault();
-//        autoActivation.loadDefault();
-//        autoInsert.loadDefault();
-//        autoActivationDelay.loadDefault();
-//        autoActivationChars.loadDefault();
-//        completion.loadDefault();
-//        inexactMatches.loadDefault();
-//        linkedMode.loadDefault();
-        linkedModeRename.loadDefault();
-        linkedModeExtract.loadDefault();
-        displayOutlineTypes.loadDefault();
-//        displayParameterTypes.loadDefault();
-        smartCaret.loadDefault();
-        pasteCorrectIndent.loadDefault();
-        normalizeWs.loadDefault();
-        normalizeNl.loadDefault();
-        stripTrailingWs.loadDefault();
-        cleanImports.loadDefault();
-        format.loadDefault();
-        autoFoldImports.loadDefault();
-        autoFoldComments.loadDefault();
-        closeAngles.loadDefault();
-        closeBackticks.loadDefault();
-        closeBraces.loadDefault();
-        closeBrackets.loadDefault();
-        closeParens.loadDefault();
-        closeQuotes.loadDefault();
-        enableFolding.store();
+//        enclosingBrackets.loadDefault();
+//        matchingBracket.loadDefault();
+//        currentBracket.loadDefault();
+        autoActivation.loadDefault();
+        autoInsert.loadDefault();
+        autoActivationDelay.loadDefault();
+        autoActivationChars.loadDefault();
+        completion.loadDefault();
+        inexactMatches.loadDefault();
+        linkedMode.loadDefault();
+//        linkedModeRename.loadDefault();
+//        linkedModeExtract.loadDefault();
+//        displayOutlineTypes.loadDefault();
+        displayParameterTypes.loadDefault();
+//        smartCaret.loadDefault();
+//        pasteCorrectIndent.loadDefault();
+//        normalizeWs.loadDefault();
+//        normalizeNl.loadDefault();
+//        stripTrailingWs.loadDefault();
+//        cleanImports.loadDefault();
+//        format.loadDefault();
+//        autoFoldImports.loadDefault();
+//        autoFoldComments.loadDefault();
+//        closeAngles.loadDefault();
+//        closeBackticks.loadDefault();
+//        closeBraces.loadDefault();
+//        closeBrackets.loadDefault();
+//        closeParens.loadDefault();
+//        closeQuotes.loadDefault();
+//        enableFolding.store();
     }
     
     @Override
@@ -183,43 +184,12 @@ public class CeylonEditorPreferencesPage
     protected Control createContents(Composite parent) {
         Link textEditorsLink = new Link(parent, 0);
         textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        textEditorsLink.setText("See '<a>Text Editors</a>' for general editor preferences.");
+        textEditorsLink.setText("See '<a>Ceylon Editor</a>' for more Ceylon editor preferences.");
         textEditorsLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        "org.eclipse.ui.preferencePages.GeneralTextEditor", null, null);
-            }
-        });
-        Link completionLink = new Link(parent, 0);
-        completionLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        completionLink.setText("See '<a>Ceylon Completion</a>' for completion preferences.");
-        completionLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createPreferenceDialogOn(getShell(), 
-                        CeylonCompletionPreferencesPage.ID, null, null);
-            }
-        });
-        Link colorsAndFontsLink = new Link(parent, 0);
-        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize appearance and syntax highlighting.");
-        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createPreferenceDialogOn(getShell(), 
-                        "org.eclipse.ui.preferencePages.ColorsAndFonts", null, 
-                        "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
-            }
-        });
-        Link annotationsLink = new Link(parent, 0);
-        annotationsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        annotationsLink.setText("See '<a>Annotations</a>' to customize annotation appearance.");
-        annotationsLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createPreferenceDialogOn(getShell(), 
-                        "org.eclipse.ui.editors.preferencePages.Annotations", null, null);
+                        CeylonEditorPreferencesPage.ID, null, null);
             }
         });
         
@@ -240,12 +210,12 @@ public class CeylonEditorPreferencesPage
 
     @Override
     protected void createFieldEditors() {
-        otherSection();
-//        autocompletionSection();
-        autocloseSection();
-        bracketHighlightingSection();        
-        foldingSection();
-        onSaveSection();
+//        otherSection();
+        autocompletionSection();
+//        autocloseSection();
+//        bracketHighlightingSection();        
+//        foldingSection();
+//        onSaveSection();
     }
 
     private Composite createGroup(int cols, String text) {
@@ -295,7 +265,7 @@ public class CeylonEditorPreferencesPage
         }
     }
     
-    private void bracketHighlightingSection() {
+    /*private void bracketHighlightingSection() {
 //        addField(new LabelFieldEditor("Bracket highlighting:",
 //                getFieldEditorParent()));
         Composite group = createGroup(2, "Bracket highlighting");
@@ -330,9 +300,9 @@ public class CeylonEditorPreferencesPage
         });
 //        super.createDescriptionLabel(getFieldEditorParent()).setText("Autocompletion");
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
-    }
+    }*/
 
-    /*private void autocompletionSection() {
+    private void autocompletionSection() {
 //        addField(new LabelFieldEditor("Autocompletion:",
 //                getFieldEditorParent()));
         Composite group = createGroup(1, "Completion");
@@ -346,6 +316,23 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent(group));
         displayParameterTypes.load();
         addField(displayParameterTypes);
+        final Composite p3 = getFieldEditorParent(group);
+        completion = new RadioGroupFieldEditor(COMPLETION, 
+                "Completion with trailing identifier characters", 2, 
+                new String[][] { new String[] { "inserts", "insert" }, 
+                                 new String[] { "overwrites", "overwrite" } }, p3);
+        completion.load();
+        addField(completion);
+        final Composite p4 = getFieldEditorParent(group);
+        inexactMatches = new RadioGroupFieldEditor(INEXACT_MATCHES, 
+                "For inexact matches propose", 3, 
+                new String[][] { new String[] { "no arguments", "none" }, 
+                                 new String[] { "positional arguments", "positional" },
+                                 new String[] { "positional and named arguments", "both" } }, p4);
+        inexactMatches.load();
+        addField(inexactMatches);
+        
+        group = createGroup(1, "Auto-activation and auto-activation");
         autoInsert = new BooleanFieldEditor(AUTO_INSERT, 
                 "Auto-insert unique completions", 
                 getFieldEditorParent(group));
@@ -385,24 +372,9 @@ public class CeylonEditorPreferencesPage
             }
         });
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
-        final Composite p3 = getFieldEditorParent(group);
-        completion = new RadioGroupFieldEditor(COMPLETION, 
-                "Completion with trailing identifier characters", 2, 
-                new String[][] { new String[] { "inserts", "insert" }, 
-                                 new String[] { "overwrites", "overwrite" } }, p3);
-        completion.load();
-        addField(completion);
-        final Composite p4 = getFieldEditorParent(group);
-        inexactMatches = new RadioGroupFieldEditor(INEXACT_MATCHES, 
-                "For inexact matches propose", 3, 
-                new String[][] { new String[] { "no arguments", "none" }, 
-                                 new String[] { "positional arguments", "positional" },
-                                 new String[] { "positional and named arguments", "both" } }, p4);
-        inexactMatches.load();
-        addField(inexactMatches);
-    }*/
+    }
 
-    private void foldingSection() {
+    /*private void foldingSection() {
 //        addField(new LabelFieldEditor("Folding:",
 //                getFieldEditorParent()));
         final Composite group = createGroup(2, "Source Folding");
@@ -436,9 +408,9 @@ public class CeylonEditorPreferencesPage
             }
         });
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
-    }
+    }*/
 
-    private void otherSection() {
+    /*private void otherSection() {
 //        addField(new LabelFieldEditor("Other:",
 //                getFieldEditorParent()));
         Composite group = createGroup(1, "General");
@@ -467,9 +439,9 @@ public class CeylonEditorPreferencesPage
                 getFieldEditorParent(group));
         displayOutlineTypes.load();
         addField(displayOutlineTypes);
-    }
+    }*/
     
-    private void onSaveSection() {
+    /*private void onSaveSection() {
         Composite group = createGroup(1, "On save");
         final Composite parent = getFieldEditorParent(group);
         normalizeWs = new BooleanFieldEditor(NORMALIZE_WS, 
@@ -507,7 +479,7 @@ public class CeylonEditorPreferencesPage
                 parent);
         format.load();
         addField(format);
-    }
+    }*/
     
     protected Composite getFieldEditorParent(Composite group) {
         Composite parent = new Composite(group, SWT.NULL);
@@ -515,7 +487,7 @@ public class CeylonEditorPreferencesPage
         return parent;
     }
 
-    private void autocloseSection() {
+    /*private void autocloseSection() {
 //        addField(new LabelFieldEditor("Automatically close:",
 //                getFieldEditorParent()));
         Composite group = createGroup(3, "Automatically close");
@@ -550,7 +522,7 @@ public class CeylonEditorPreferencesPage
         closeQuotes.load();
         addField(closeQuotes);
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
-    }
+    }*/
     
     private IPropertyChangeListener listener;
     

@@ -1881,14 +1881,28 @@
            category="org.eclipse.ui.preferencePages.Editors">
        <keywordReference id="org.eclipse.ui.editors.general"/>
        <keywordReference
-             id="com.redhat.ceylon.eclipse.ui.keywords">
+             id="com.redhat.ceylon.eclipse.ui.keywords.editor">
+       </keywordReference>
+       </page>
+       <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.completion"
+           name="Ceylon Completion"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonCompletionPreferencesPage"
+           category="com.redhat.ceylon.eclipse.ui.preferences.editor">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="com.redhat.ceylon.eclipse.ui.keywords.completion">
        </keywordReference>
        </page>
    </extension>
    <extension point="org.eclipse.ui.keywords">
    <keyword
-         label="completion folding typing linked mode save actions brackets braces parentheses quotes backticks imports format"
-         id="com.redhat.ceylon.eclipse.ui.keywords">
+         label="folding typing linked mode save actions brackets braces parentheses quotes backticks imports format"
+         id="com.redhat.ceylon.eclipse.ui.keywords.editor">
+   </keyword>
+   <keyword
+         label="completion linked mode"
+         id="com.redhat.ceylon.eclipse.ui.keywords.completion">
    </keyword>
    </extension>
    <extension point="org.eclipse.core.expressions.propertyTesters">
