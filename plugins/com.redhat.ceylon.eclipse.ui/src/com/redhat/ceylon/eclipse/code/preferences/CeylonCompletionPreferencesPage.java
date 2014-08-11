@@ -318,6 +318,7 @@ public class CeylonCompletionPreferencesPage
                                  new String[] { "overwrites", "overwrite" } }, p3);
         completion.load();
         addField(completion);
+        new Label(group, SWT.NONE).setText("   Press 'Ctrl' when selecting a proposal to toggle");
         final Composite p4 = getFieldEditorParent(group);
         inexactMatches = new RadioGroupFieldEditor(INEXACT_MATCHES, 
                 "For inexact matches propose", 3, 
