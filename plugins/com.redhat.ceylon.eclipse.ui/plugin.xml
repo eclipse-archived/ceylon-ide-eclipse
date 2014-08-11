@@ -1894,16 +1894,27 @@
              id="com.redhat.ceylon.eclipse.ui.keywords.completion">
        </keywordReference>
        </page>
+       <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.save"
+           name="Ceylon Save Actions"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonSavePreferencesPage"
+           category="com.redhat.ceylon.eclipse.ui.preferences.editor">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="com.redhat.ceylon.eclipse.ui.keywords.save">
+       </keywordReference>
+       </page>
    </extension>
    <extension point="org.eclipse.ui.keywords">
    <keyword
-         label="folding typing linked mode save actions brackets braces parentheses quotes backticks imports format"
-         id="com.redhat.ceylon.eclipse.ui.keywords.editor">
-   </keyword>
+         label="folding typing linked mode brackets braces parentheses quotes backticks"
+         id="com.redhat.ceylon.eclipse.ui.keywords.editor"/>>
    <keyword
          label="completion linked mode"
-         id="com.redhat.ceylon.eclipse.ui.keywords.completion">
-   </keyword>
+         id="com.redhat.ceylon.eclipse.ui.keywords.completion"/>>
+   <keyword
+         label="save actions imports format"
+         id="com.redhat.ceylon.eclipse.ui.keywords.save"/>>
    </extension>
    <extension point="org.eclipse.core.expressions.propertyTesters">
        <propertyTester
