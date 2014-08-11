@@ -13,6 +13,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.util.ProducedTypeNamePrinter;
@@ -31,8 +32,8 @@ public class ExpandTypeProposal extends CorrectionProposal {
         @Override
         public void visit(Tree.Type that) {
             super.visit(that);
-            if (region.getOffset()>=that.getStartIndex() &&
-                    region.getOffset()+region.getLength()<=that.getStopIndex()+1) {
+            if (region.getOffset()<=that.getStartIndex() &&
+                    region.getOffset()+region.getLength()>=that.getStopIndex()+1) {
                 result = that;
             }
         }
@@ -43,11 +44,10 @@ public class ExpandTypeProposal extends CorrectionProposal {
     }
     
     public static void addExpandTypeProposal(CeylonEditor editor, 
-            final Tree.CompilationUnit rootNode, 
-            IFile file, IDocument doc,
+            Node node, IFile file, IDocument doc,
             Collection<ICompletionProposal> proposals) {
         FindTypeVisitor ftv = new FindTypeVisitor(editor.getSelection());
-        ftv.visit(rootNode);
+        node.visit(ftv);
         Tree.Type result = ftv.result;
         if (result!=null) {
             ProducedType type = result.getTypeModel();
@@ -63,7 +63,7 @@ public class ExpandTypeProposal extends CorrectionProposal {
             }
             String unabbreviated = 
                     new ProducedTypeNamePrinter(false)
-                        .getProducedTypeName(type, rootNode.getUnit());
+                        .getProducedTypeName(type, node.getUnit());
             if (!unabbreviated.equals(text)) {
                 TextChange change = new TextFileChange("Expand Type", file);
                 change.setEdit(new ReplaceEdit(start, len, unabbreviated));
