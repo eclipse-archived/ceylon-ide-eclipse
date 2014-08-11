@@ -73,7 +73,8 @@ class AssignToForProposal extends LocalProposal {
     
     @Override
     boolean isEnabled(ProducedType resultType) {
-        return rootNode.getUnit().isIterableType(resultType);
+        return resultType!=null &&
+                rootNode.getUnit().isIterableType(resultType);
     }
 
     static void addAssignToForProposal(Tree.CompilationUnit cu, 
