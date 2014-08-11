@@ -306,11 +306,6 @@ public class CeylonCompletionPreferencesPage
 //        addField(new LabelFieldEditor("Autocompletion:",
 //                getFieldEditorParent()));
         Composite group = createGroup(1, "Completion");
-        linkedMode = new BooleanFieldEditor(LINKED_MODE, 
-                "Use linked mode to complete argument lists", 
-                getFieldEditorParent(group));
-        linkedMode.load();
-        addField(linkedMode);
         displayParameterTypes = new BooleanFieldEditor(DISPLAY_PARAMETER_TYPES, 
                 "Display parameter types in proposals", 
                 getFieldEditorParent(group));
@@ -332,7 +327,14 @@ public class CeylonCompletionPreferencesPage
         inexactMatches.load();
         addField(inexactMatches);
         
-        group = createGroup(1, "Auto-activation and auto-activation");
+        group = createGroup(1, "Linked mode");
+        linkedMode = new BooleanFieldEditor(LINKED_MODE, 
+                "Use linked mode to complete argument lists", 
+                getFieldEditorParent(group));
+        linkedMode.load();
+        addField(linkedMode);
+        
+        group = createGroup(1, "Auto-insertion and auto-activation");
         autoInsert = new BooleanFieldEditor(AUTO_INSERT, 
                 "Auto-insert unique completions", 
                 getFieldEditorParent(group));
