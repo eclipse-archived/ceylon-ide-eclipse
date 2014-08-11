@@ -124,6 +124,14 @@
    </extension>
    
    <extension
+         id="ceylonConfigProblem"
+         name="Ceylon Config Synchronization Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.jdt.core.buildpath_problem"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
          id="ceylonProblem.backend"
          name="Ceylon Backend Error"
          point="org.eclipse.core.resources.markers">
@@ -154,7 +162,15 @@
             markerType="com.redhat.ceylon.eclipse.ui.ceylonCharsetProblem">
       </markerResolutionGenerator>
     </extension>
- 
+
+   <extension 
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator 
+            class="com.redhat.ceylon.eclipse.code.correct.MarkerResolutionGenerator"
+            markerType="com.redhat.ceylon.eclipse.ui.ceylonConfigProblem">
+      </markerResolutionGenerator>
+    </extension>
+
    <extension
          point="org.eclipse.search.searchResultViewPages">
       <viewPage

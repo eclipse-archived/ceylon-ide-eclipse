@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.openInEditor;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CEYLON_CONFIG_NOT_IN_SYNC_MARKER;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
@@ -20,14 +22,32 @@ import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonEncodingSynchronizer;
 
 public class MarkerResolutionGenerator 
         implements IMarkerResolutionGenerator, IMarkerResolutionGenerator2 {
+
+    private static class OpenBuildPathsCorrection implements IMarkerResolution {
+        @Override
+        public String getLabel() {
+            return "Resolve the conflict in the 'Ceylon Build Paths' properties page";
+        }
+
+        @Override
+        public void run(IMarker marker) {
+            IProject project = (IProject) marker.getResource();
+            PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(null, 
+                    project, CeylonBuildPathsPropertiesPage.ID, new String[0], null);
+            dialog.open();
+        }
+
+    }
 
     private static final IMarkerResolution[] NO_RESOLUTIONS = 
             new IMarkerResolution[0];
@@ -127,6 +147,12 @@ public class MarkerResolutionGenerator
                 };
             }
 
+            if (marker.getType().equals(CEYLON_CONFIG_NOT_IN_SYNC_MARKER)) {
+                return new IMarkerResolution[] {
+                    new OpenBuildPathsCorrection()
+                };
+            }
+
             IQuickAssistInvocationContext quickAssistContext = 
                     new IQuickAssistInvocationContext() {
                 public ISourceViewer getSourceViewer() { return null; }
@@ -169,7 +195,8 @@ public class MarkerResolutionGenerator
     public boolean hasResolutions(IMarker marker) {
         try {
             return CeylonCorrectionProcessor.canFix(marker) ||
-                    marker.getType().equals(CHARSET_PROBLEM_MARKER_ID);
+                    marker.getType().equals(CHARSET_PROBLEM_MARKER_ID) ||
+                    marker.getType().equals(CEYLON_CONFIG_NOT_IN_SYNC_MARKER);
         }
         catch (Exception e) {
             e.printStackTrace();
