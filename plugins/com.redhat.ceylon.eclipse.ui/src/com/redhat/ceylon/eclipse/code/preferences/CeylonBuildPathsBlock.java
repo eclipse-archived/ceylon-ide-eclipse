@@ -18,6 +18,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModu
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.compare.CompareConfiguration;
+import org.eclipse.compare.CompareEditorInput;
+import org.eclipse.compare.CompareUI;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -81,17 +85,30 @@ import org.eclipse.jdt.internal.ui.wizards.dialogfields.ListDialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.StringButtonDialogField;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ui.PreferenceConstants;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuCreator;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.HelpListener;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -99,11 +116,19 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.ISelectionStatusValidator;
@@ -121,6 +146,285 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 
 public class CeylonBuildPathsBlock {
+
+    private final class CeylonConfigNotInSyncListener extends SelectionAdapter {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            if (".ceylon/config".equals(e.text)) {
+                IFile configFile= fCurrJProject.getProject().getFile(".ceylon/config");
+                if (configFile.exists()) {
+                    if (! configFile.isSynchronized(IResource.DEPTH_ZERO)) {
+                        try {
+                            configFile.refreshLocal(IResource.DEPTH_ZERO, null);
+                        } catch (CoreException e1) {
+                        }
+                    }
+                    try {
+                        Navigation.openInEditor(configFile);
+                    } catch (PartInitException e1) {
+                    }
+                } else {
+                    MessageDialog.openInformation(getShell(), 
+                            "Ceylon Configuration File", 
+                            "No configuration file exist\n"
+                            + "Default vaues apply :\n"
+                            + "  'source' for source files\n"
+                            + "  'resource' for resource files");
+                }
+            } else if ("use".equals(e.text)) {
+                refreshSourcePathsFromConfigFile();
+                if (fSourceContainerPage != null) {
+                    fSourceContainerPage.init(fCurrJProject);
+                }
+                updateUI();
+                
+            } else if ("resolve".equals(e.text)) {
+                final Set<String> sourceFoldersFromCeylonConfig = new TreeSet<String>();
+                final Set<String> sourceFoldersFromEclipseProject = new TreeSet<String>();
+                final Set<String> resourceFoldersFromCeylonConfig = new TreeSet<String>();
+                final Set<String> resourceFoldersFromEclipseProject = new TreeSet<String>();
+                fillBuildPathsSetsForComparison(fCurrJProject.getProject(), sourceFoldersFromCeylonConfig,
+                        sourceFoldersFromEclipseProject,
+                        resourceFoldersFromCeylonConfig,
+                        resourceFoldersFromEclipseProject);
+                
+                class BuildPathsComparisonDialog extends Dialog {
+                    Set<String> resultSourcesSet = new TreeSet<>();
+                    Set<String> resultResourcesSet = new TreeSet<>();
+                    Tree resultPathsTree;
+                    TreeItem resultSources;
+                    TreeItem resultResources;
+
+                    final String CONFLICTING = "conflicting";
+                    final String RESULT_FOLDER_SET = "resultFolderSet";
+
+                    protected BuildPathsComparisonDialog() {
+                        super(fSWTWidget.getShell());
+                    }
+                    
+                    @Override
+                    protected void configureShell(Shell newShell) {
+                        super.configureShell(newShell);
+                        newShell.setText("Ceylon Build Paths Conflict Resolution");
+                        newShell.setMinimumSize(700, 700);
+                    }
+                    
+                    @Override
+                    protected Control createDialogArea(Composite parent) {
+                        Color red = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+                        Composite composite = (Composite) super.createDialogArea(parent);
+                        GridLayout layout = (GridLayout) composite.getLayout();
+                        layout.numColumns = 1;
+
+                        Group comparisonArea = new Group(composite, SWT.NONE);
+                        comparisonArea.setText("Conflicting build paths");
+                        comparisonArea.setLayoutData(new GridData(GridData.FILL_BOTH));
+                        GridLayout comparisonLayout = new GridLayout();
+                        comparisonLayout.numColumns = 2;
+                        comparisonLayout.makeColumnsEqualWidth= true;
+                        comparisonLayout.verticalSpacing = 5;
+                        comparisonArea.setLayout(comparisonLayout);
+
+                        Label explanationLabel = new Label(comparisonArea, SWT.NONE);
+                        explanationLabel.setText("The red entries show conflicts.\n"
+                                + "You can decide what to do with them through the context menu.");
+                        explanationLabel.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+                        GridData explanationGridData = new GridData(GridData.FILL_HORIZONTAL);
+                        explanationGridData.horizontalSpan = 2;
+                        explanationLabel.setLayoutData(explanationGridData);
+                        
+                        Group resultArea = new Group(composite, SWT.NONE);
+                        resultArea.setText("Merged build paths");
+                        resultArea.setLayoutData(new GridData(GridData.FILL_BOTH));
+                        GridLayout resultLayout = new GridLayout();
+                        resultLayout.numColumns = 1;
+                        resultArea.setLayout(resultLayout);
+
+                        resultPathsTree = new Tree(resultArea, SWT.NONE);
+                        resultPathsTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+                        Label label = new Label(comparisonArea, SWT.NONE);
+                        label.setText("Eclipse project");
+                        label = new Label(comparisonArea, SWT.NONE);
+                        label.setText("Ceylon configuration file");
+                        final Tree projectBasedPathsTree = new Tree(comparisonArea, SWT.NONE);
+                        projectBasedPathsTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+                        projectBasedPathsTree.addFocusListener(new FocusListener() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                projectBasedPathsTree.setSelection(new TreeItem[0]);
+                            }
+                            
+                            @Override
+                            public void focusGained(FocusEvent e) {
+                            }
+                        });
+                        final Tree configBasedPathsTree = new Tree(comparisonArea, SWT.NONE);
+                        configBasedPathsTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+                        configBasedPathsTree.addFocusListener(new FocusListener() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                configBasedPathsTree.setSelection(new TreeItem[0]);
+                            }
+                            
+                            @Override
+                            public void focusGained(FocusEvent e) {
+                            }
+                        });
+                        
+                        final TreeItem projectBasedSources = new TreeItem(projectBasedPathsTree, SWT.NONE);
+                        projectBasedSources.setText("Sources");
+
+                        final TreeItem projectBasedResources = new TreeItem(projectBasedPathsTree, SWT.NONE);
+                        projectBasedResources.setText("Resources");
+
+                        final TreeItem configBasedSources = new TreeItem(configBasedPathsTree, SWT.NONE);
+                        configBasedSources.setText("Sources");
+
+                        final TreeItem configBasedResources = new TreeItem(configBasedPathsTree, SWT.NONE);
+                        configBasedResources.setText("Resources");
+
+                        resultSources = new TreeItem(resultPathsTree, SWT.NONE);
+                        resultSources.setText("Sources");
+
+                        resultResources = new TreeItem(resultPathsTree, SWT.NONE);
+                        resultResources.setText("Resources");
+
+                        TreeItem pathItem = null;
+                        for (String folder : sourceFoldersFromEclipseProject) {
+                            pathItem = new TreeItem(projectBasedSources, SWT.NONE);
+                            pathItem.setText(folder);
+                            if (! sourceFoldersFromCeylonConfig.contains(folder)) {
+                                pathItem.setForeground(red);
+                                pathItem.setData(CONFLICTING, true);
+                            } else {
+                                resultSourcesSet.add(folder);
+                                pathItem.setData(CONFLICTING, false);
+                            }
+                            pathItem.setData(RESULT_FOLDER_SET, resultSourcesSet);
+                        }
+
+                        for (String folder : resourceFoldersFromEclipseProject) {
+                            pathItem = new TreeItem(projectBasedResources, SWT.NONE);
+                            pathItem.setText(folder);
+                            if (! resourceFoldersFromCeylonConfig.contains(folder)) {
+                                pathItem.setForeground(red);
+                                pathItem.setData(CONFLICTING, true);
+                            } else {
+                                resultResourcesSet.add(folder);
+                                pathItem.setData(CONFLICTING, false);
+                            }
+                            pathItem.setData(RESULT_FOLDER_SET, resultResourcesSet);
+                        }
+
+                        for (String folder : sourceFoldersFromCeylonConfig) {
+                            pathItem = new TreeItem(configBasedSources, SWT.NONE);
+                            pathItem.setText(folder);
+                            if (! sourceFoldersFromEclipseProject.contains(folder)) {
+                                pathItem.setForeground(red);
+                                pathItem.setData(CONFLICTING, true);
+                            } else {
+                                resultSourcesSet.add(folder);
+                                pathItem.setData(CONFLICTING, false);
+                            }
+                            pathItem.setData(RESULT_FOLDER_SET, resultSourcesSet);
+                        }
+
+                        for (String folder : resourceFoldersFromCeylonConfig) {
+                            pathItem = new TreeItem(configBasedResources, SWT.NONE);
+                            pathItem.setText(folder);
+                            if (! resourceFoldersFromEclipseProject.contains(folder)) {
+                                pathItem.setForeground(red);
+                                pathItem.setData(CONFLICTING, true);
+                            } else {
+                                resultResourcesSet.add(folder);
+                                pathItem.setData(CONFLICTING, false);
+                            }
+                            pathItem.setData(RESULT_FOLDER_SET, resultResourcesSet);
+                        }
+
+                        updateResultTree();
+                        
+                        projectBasedSources.setExpanded(true);
+                        projectBasedResources.setExpanded(true);
+                        configBasedSources.setExpanded(true);
+                        configBasedResources.setExpanded(true);
+
+                        setupMenu(projectBasedPathsTree);
+                        setupMenu(configBasedPathsTree);
+                        
+                        return composite;
+                    }
+
+                    private void setupMenu(final Tree projectBasedPathsTree) {
+                        final Menu projectBasedMenu = new Menu(projectBasedPathsTree);
+                        projectBasedPathsTree.setMenu(projectBasedMenu);
+                        projectBasedMenu.addMenuListener(new MenuAdapter()
+                        {
+                            public void menuShown(MenuEvent e)
+                            {
+                                MenuItem[] items = projectBasedMenu.getItems();
+                                for (int i = 0; i < items.length; i++)
+                                {
+                                    items[i].dispose();
+                                }
+                                TreeItem[] selection = projectBasedPathsTree.getSelection();
+                                if (selection.length > 0) {
+                                    final TreeItem selectedItem = selection[0];
+                                    if ((Boolean)selectedItem.getData(CONFLICTING)) {
+                                        MenuItem newItem = new MenuItem(projectBasedMenu, SWT.NONE);
+                                        @SuppressWarnings("unchecked")
+                                        final Set<String> resultFolderSet = (Set<String>)selectedItem.getData(RESULT_FOLDER_SET);
+                                        final boolean alreadyInResult = resultFolderSet.contains(selectedItem.getText());
+                                        newItem.setText((alreadyInResult ? "Remove from" : "Add to") 
+                                                + " merged build paths");
+                                        newItem.addSelectionListener(new SelectionAdapter() {
+                                            @Override
+                                            public void widgetSelected(
+                                                    SelectionEvent e) {
+                                                if (alreadyInResult) {
+                                                    resultFolderSet.remove(selectedItem.getText());
+                                                } else {
+                                                    resultFolderSet.add(selectedItem.getText());
+                                                }
+                                                updateResultTree();
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    private void updateResultTree() {
+                        TreeItem pathItem;
+                        resultSources.removeAll();
+                        for (String folder : resultSourcesSet) {
+                            pathItem = new TreeItem(resultSources, SWT.NONE);
+                            pathItem.setText(folder);
+                        }
+                        resultResources.removeAll();
+                        for (String folder : resultResourcesSet) {
+                            pathItem = new TreeItem(resultResources, SWT.NONE);
+                            pathItem.setText(folder);
+                        }
+                        resultSources.setExpanded(true);
+                        resultResources.setExpanded(true);
+                    }
+                }
+                BuildPathsComparisonDialog dialog = new BuildPathsComparisonDialog();
+                if (dialog.open() == Dialog.OK &&
+                        ! (dialog.resultSourcesSet.equals(sourceFoldersFromEclipseProject) 
+                                && dialog.resultResourcesSet.equals(resourceFoldersFromEclipseProject))) {
+                    updateClassPathsFromConfigFile(Arrays.asList(dialog.resultSourcesSet.toArray(new String[0])), new HashSet<String>());
+                    if (fSourceContainerPage != null) {
+                        fSourceContainerPage.init(fCurrJProject);
+                    }
+                    updateUI();
+                }
+            }
+        }
+    }
 
     public static interface IRemoveOldBinariesQuery {
 
@@ -267,7 +571,19 @@ public class CeylonBuildPathsBlock {
         Set<String> sourceFoldersFromEclipseProject = new TreeSet<String>();
         Set<String> resourceFoldersFromCeylonConfig = new TreeSet<String>();
         Set<String> resourceFoldersFromEclipseProject = new TreeSet<String>();
-        
+        fillBuildPathsSetsForComparison(project, sourceFoldersFromCeylonConfig,
+                sourceFoldersFromEclipseProject,
+                resourceFoldersFromCeylonConfig,
+                resourceFoldersFromEclipseProject);
+        return sourceFoldersFromCeylonConfig.equals(sourceFoldersFromEclipseProject) &&
+                resourceFoldersFromCeylonConfig.equals(resourceFoldersFromEclipseProject);
+    }
+
+    private void fillBuildPathsSetsForComparison(IProject project,
+            Set<String> sourceFoldersFromCeylonConfig,
+            Set<String> sourceFoldersFromEclipseProject,
+            Set<String> resourceFoldersFromCeylonConfig,
+            Set<String> resourceFoldersFromEclipseProject) {
         CeylonProjectConfig ceylonConfig = CeylonProjectConfig.get(project);
         for (String path : ceylonConfig.getProjectSourceDirectories()) {
             sourceFoldersFromCeylonConfig.add(Path.fromOSString(path).toString());
@@ -275,6 +591,7 @@ public class CeylonBuildPathsBlock {
         for (String path : ceylonConfig.getProjectResourceDirectories()) {
             resourceFoldersFromCeylonConfig.add(Path.fromOSString(path).toString());
         }
+        
         for (CPListElement elem : fClassPathList.getElements()) {
             if (elem.getClasspathEntry().getEntryKind() == IClasspathEntry.CPE_SOURCE) {
                 IPath path = null;
@@ -303,8 +620,6 @@ public class CeylonBuildPathsBlock {
         if (resourceFoldersFromEclipseProject.isEmpty()) {
             resourceFoldersFromEclipseProject.add(Constants.DEFAULT_RESOURCE_DIR);
         }
-        return sourceFoldersFromCeylonConfig.equals(sourceFoldersFromEclipseProject) &&
-                resourceFoldersFromCeylonConfig.equals(resourceFoldersFromEclipseProject);
     }
 
     // -------- UI creation ---------
@@ -328,43 +643,12 @@ public class CeylonBuildPathsBlock {
         notInSyncLayoutData.exclude = wasInSyncWhenOpening;
         fNotInSyncText.setLayoutData(notInSyncLayoutData);
         fNotInSyncText.setText("The Ceylon configuration file (<a>.ceylon/config</a>) is not in sync with the current\n"
-                                 + "Ceylon Build Paths.\nClick <a>here</a> to use the configuration file settings.");
-        Font parentFont = parent.getFont();
+                                 + "Ceylon Build Paths. You can :\n"
+                                 + "  - simply overwrite the Ceylon configuration with OK\n"
+                                 + "  - <a>use</a> the original configuration file settings\n"
+                                 + "  - <a>resolve</a> the conflicts yourself.");
         fNotInSyncText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_DARK_RED));
-        fNotInSyncText.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (".ceylon/config".equals(e.text)) {
-                    IFile configFile= fCurrJProject.getProject().getFile(".ceylon/config");
-                    if (configFile.exists()) {
-                        if (! configFile.isSynchronized(IResource.DEPTH_ZERO)) {
-                            try {
-                                configFile.refreshLocal(IResource.DEPTH_ZERO, null);
-                            } catch (CoreException e1) {
-                            }
-                        }
-                        try {
-                            Navigation.openInEditor(configFile);
-                        } catch (PartInitException e1) {
-                        }
-                    } else {
-                        MessageDialog.openInformation(getShell(), 
-                                "Ceylon Configuration File", 
-                                "No configuration file exist\n"
-                                + "Default vaues apply :\n"
-                                + "  'source' for source files\n"
-                                + "  'resource' for resource files");
-                    }
-                } else if ("here".equals(e.text)) {
-                    refreshSourcePathsFromConfigFile();
-                    if (fSourceContainerPage != null) {
-                        fSourceContainerPage.init(fCurrJProject);
-                    }
-                    updateUI();
-                    
-                }
-            }
-        });
+        fNotInSyncText.addSelectionListener(new CeylonConfigNotInSyncListener());
         
         TabFolder folder= new TabFolder(composite, SWT.NONE);
         folder.setLayoutData(new GridData(GridData.FILL_BOTH));
