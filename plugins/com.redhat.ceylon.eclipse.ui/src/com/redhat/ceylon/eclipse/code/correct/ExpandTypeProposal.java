@@ -30,11 +30,12 @@ public class ExpandTypeProposal extends CorrectionProposal {
 
         @Override
         public void visit(Tree.Type that) {
-            super.visit(that);
+            // don't visit subtypes - we always want the complete type
             if (region.getOffset()>=that.getStartIndex() &&
                     region.getOffset()+region.getLength()<=that.getStopIndex()+1) {
                 result = that;
             }
+            // if the complete type doesn't match the region, the subtypes won't either
         }
     }
 
