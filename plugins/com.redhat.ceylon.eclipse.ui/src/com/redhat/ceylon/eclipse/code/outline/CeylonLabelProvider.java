@@ -817,18 +817,23 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     public static void appendTypeName(StyledString result, ProducedType type, 
             Styler styler) {
-    	String typeName = type.getProducedTypeName();
-    	StringTokenizer tokens = 
-    			new StringTokenizer(typeName,"|&?[]{}*+=-<>(), ",true);
-    	while (tokens.hasMoreTokens()) {
-    		String token = tokens.nextToken();
-    		if (Character.isLetter(token.charAt(0))) {
-    			result.append(token, styler);
-    		}
-    		else {
-    			result.append(token);
-    		}
-    	}
+        try {
+            String typeName = type.getProducedTypeName();
+            StringTokenizer tokens = 
+                    new StringTokenizer(typeName,"|&?[]{}*+=-<>(), ",true);
+            while (tokens.hasMoreTokens()) {
+                String token = tokens.nextToken();
+                if (Character.isLetter(token.charAt(0))) {
+                    result.append(token, styler);
+                }
+                else {
+                    result.append(token);
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static int getDecorationAttributes(Object entity) {
