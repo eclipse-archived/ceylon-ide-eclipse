@@ -171,7 +171,8 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         TypeDeclaration td = getDefaultedSupertype();
         Set<String> ambiguousNames = new HashSet<String>();
         Collection<DeclarationWithProximity> members = 
-                td.getMatchingMemberDeclarations(null, "", 0).values();
+                td.getMatchingMemberDeclarations(rootNode.getUnit(), 
+                        null, "", 0).values();
         for (DeclarationWithProximity dwp: members) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
@@ -201,7 +202,8 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         TypeDeclaration td = getDefaultedSupertype();
         Set<String> ambiguousNames = new HashSet<String>();
         Collection<DeclarationWithProximity> members = 
-                td.getMatchingMemberDeclarations(null, "", 0).values();
+                td.getMatchingMemberDeclarations(rootNode.getUnit(),
+                        null, "", 0).values();
         for (DeclarationWithProximity dwp: members) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {

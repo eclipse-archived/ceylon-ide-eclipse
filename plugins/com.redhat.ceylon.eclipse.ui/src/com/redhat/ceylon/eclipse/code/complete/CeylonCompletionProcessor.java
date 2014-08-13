@@ -1142,13 +1142,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
     private static Map<String, DeclarationWithProximity> getProposals(Node node, 
             Scope scope, String prefix, boolean memberOp, Tree.CompilationUnit cu) {
+        Unit unit = node.getUnit();
         if (node instanceof MemberLiteral) { //this case is rather ugly!
             Tree.StaticType mlt = ((Tree.MemberLiteral) node).getType();
             if (mlt!=null) {
                 ProducedType type = mlt.getTypeModel();
                 if (type!=null) {
                     return type.resolveAliases().getDeclaration()
-                            .getMatchingMemberDeclarations(scope, prefix, 0);
+                            .getMatchingMemberDeclarations(unit, scope, prefix, 0);
                 }
                 else {
                     return emptyMap();
@@ -1160,11 +1161,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     (Tree.QualifiedMemberOrTypeExpression) node;
             ProducedType type = getPrimaryType(qmte);
             if (qmte.getStaticMethodReference()) {
-                type = node.getUnit().getCallableReturnType(type);
+                type = unit.getCallableReturnType(type);
             }
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
-                           .getMatchingMemberDeclarations(scope, prefix, 0);
+                           .getMatchingMemberDeclarations(unit, scope, prefix, 0);
             }
             else if (qmte.getPrimary() instanceof Tree.MemberOrTypeExpression) {
                 //it might be a qualified type or even a static method reference
@@ -1174,7 +1175,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     type = ((TypeDeclaration) pmte).getType();
                     if (type!=null) {
                         return type.resolveAliases().getDeclaration()
-                                .getMatchingMemberDeclarations(scope, prefix, 0);
+                                .getMatchingMemberDeclarations(unit, scope, prefix, 0);
                     }
                 }
             }
@@ -1185,7 +1186,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     ((Tree.QualifiedType) node).getOuterType().getTypeModel();
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
-                        .getMatchingMemberDeclarations(scope, prefix, 0);
+                        .getMatchingMemberDeclarations(unit, scope, prefix, 0);
             }
             else {
                 return emptyMap();
@@ -1214,7 +1215,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
-                        .getMatchingMemberDeclarations(scope, prefix, 0);
+                        .getMatchingMemberDeclarations(unit, scope, prefix, 0);
             }
             else {
                 return emptyMap();
@@ -1222,12 +1223,12 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else {
             if (scope instanceof ImportList) {
-                return ((ImportList) scope).getMatchingDeclarations(node.getUnit(), prefix, 0);
+                return ((ImportList) scope).getMatchingDeclarations(unit, prefix, 0);
             }
             else {
                 return scope==null ? //a null scope occurs when we have not finished parsing the file
                         getUnparsedProposals(cu, prefix) :
-                        scope.getMatchingDeclarations(node.getUnit(), prefix, 0);
+                        scope.getMatchingDeclarations(unit, prefix, 0);
             }
         }
     }

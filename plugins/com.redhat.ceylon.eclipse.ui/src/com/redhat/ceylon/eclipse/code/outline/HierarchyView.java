@@ -157,7 +157,9 @@ public class HierarchyView extends ViewPart {
                         new ArrayList<Declaration>();
                 if (showInherited) {
                     Collection<DeclarationWithProximity> children = 
-                            declaration.getMatchingMemberDeclarations(declaration, "", 0)
+                            declaration.getMatchingMemberDeclarations(
+                                    declaration.getUnit(), //TODO: is this correct??
+                                    declaration, "", 0)
                                     .values();
                     for (DeclarationWithProximity dwp: children) {
                         for (Declaration dec: 
