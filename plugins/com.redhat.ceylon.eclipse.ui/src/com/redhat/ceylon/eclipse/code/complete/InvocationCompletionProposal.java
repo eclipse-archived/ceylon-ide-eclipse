@@ -135,7 +135,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             ProducedType type = pr.getType();
             if (isTypeUnknown(type)) return;
             Collection<DeclarationWithProximity> members = 
-                    type.getDeclaration().getMatchingMemberDeclarations(scope, "", 0).values();
+                    type.getDeclaration().getMatchingMemberDeclarations(unit, scope, "", 0).values();
             for (DeclarationWithProximity ndwp: members) {
                 final Declaration m = ndwp.getDeclaration();
                 if (m instanceof TypedDeclaration) { //TODO: member Class would also be useful! 
