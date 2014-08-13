@@ -46,6 +46,7 @@ public class ExpandTypeProposal extends CorrectionProposal {
     public static void addExpandTypeProposal(CeylonEditor editor, 
             Node node, IFile file, IDocument doc,
             Collection<ICompletionProposal> proposals) {
+        if (node==null) return;
         FindTypeVisitor ftv = new FindTypeVisitor(editor.getSelection());
         node.visit(ftv);
         Tree.Type result = ftv.result;
