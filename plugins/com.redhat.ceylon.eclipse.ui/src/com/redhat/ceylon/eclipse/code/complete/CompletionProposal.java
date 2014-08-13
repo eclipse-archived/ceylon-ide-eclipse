@@ -149,7 +149,16 @@ public class CompletionProposal implements ICompletionProposal,
 
     @Override
     public boolean validate(IDocument document, int offset, DocumentEvent event) {
-        return true;
+        if (offset<this.offset) {
+            return false;
+        }
+        try {
+            return text.substring(prefix.length())
+                    .startsWith(document.get(this.offset, offset-this.offset));
+        }
+        catch (BadLocationException e) {
+            return false;
+        }
     }
     
 }
