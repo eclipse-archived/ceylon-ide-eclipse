@@ -31,6 +31,7 @@ public class CompletionProposal implements ICompletionProposal,
     protected final String prefix;
     private final String description;
     protected int offset;
+    private int length;
     private boolean toggleOverwrite;
     
     public CompletionProposal(int offset, String prefix, Image image,
@@ -39,6 +40,7 @@ public class CompletionProposal implements ICompletionProposal,
         this.image = image;
         this.offset = offset;
         this.prefix = prefix;
+        this.length = prefix.length();
         this.description = desc;
         Assert.isNotNull(description);
     }
@@ -69,9 +71,9 @@ public class CompletionProposal implements ICompletionProposal,
     }
 
     public int length(IDocument document) {
-        int length = prefix.length();
         String overwrite = EditorsUI.getPreferenceStore().getString(COMPLETION);
         if ("overwrite".equals(overwrite)!=toggleOverwrite) {
+            int length = prefix.length();
             try {
                 for (int i=offset; 
                         i<document.getLength() && 
@@ -83,8 +85,11 @@ public class CompletionProposal implements ICompletionProposal,
             catch (BadLocationException e) {
                 e.printStackTrace();
             }
+            return length;
         }
-        return length;
+        else {
+            return this.length;
+        }
     }
 
     public int start() {
@@ -138,6 +143,7 @@ public class CompletionProposal implements ICompletionProposal,
     public void apply(ITextViewer viewer, char trigger, int stateMask,
             int offset) {
         toggleOverwrite = (stateMask&SWT.CTRL)!=0;
+        length = prefix.length() + offset - this.offset;
         apply(viewer.getDocument());
     }
 
