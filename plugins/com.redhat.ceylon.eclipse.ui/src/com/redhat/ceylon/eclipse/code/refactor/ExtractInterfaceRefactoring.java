@@ -324,9 +324,14 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
                 content.append(toString(anonymousAnnotation)).append(delim).append(indent);
             }
             content.append("shared formal ");
+            if(member.getDeclarationModel().isVariable()){
+                content.append("variable ");
+            }
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
                 String annotationText = toString(annotation);
                 if (annotationText.equals("shared") ||
+                        annotationText.equals("variable") ||
+                        annotationText.equals("late") ||
                         annotationText.equals("default") ||
                         annotationText.equals("actual") ||
                         annotationText.equals("formal")) {
