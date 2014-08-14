@@ -759,10 +759,6 @@ public class JDTModule extends LazyModule {
                     public Repository repository() {
                         return null;
                     }
-                    @Override
-                    public ArtifactContext getSiblingArtifact(String... suffixes) {
-                        return null;
-                    }
                 });
             }
         } catch (Exception e) {
