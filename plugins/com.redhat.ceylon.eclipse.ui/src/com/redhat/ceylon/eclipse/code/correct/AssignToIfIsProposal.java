@@ -68,7 +68,7 @@ class AssignToIfIsProposal extends LocalProposal {
     
     @Override
     public String getDisplayString() {
-        return "Assign expression to 'if (exists)' condition";
+        return "Assign expression to 'if (is)' condition";
     }
 
     @Override
