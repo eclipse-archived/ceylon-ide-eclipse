@@ -21,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 
 class PrintProposal implements ICompletionProposal {
@@ -179,6 +180,11 @@ class PrintProposal implements ICompletionProposal {
         }
         else if (st instanceof Tree.Declaration) {
             Tree.Declaration dec = (Tree.Declaration) st;
+            Identifier id = dec.getIdentifier();
+            if (id==null) {
+                return false;
+            }
+            int line = id.getToken().getLine();
 			Declaration d = dec.getDeclarationModel();
             if (d==null || d.isToplevel()) {
                 return false;
@@ -190,7 +196,7 @@ class PrintProposal implements ICompletionProposal {
             		dec.getAnnotationList().getAnonymousAnnotation();
             if ((aa!=null || !annotations.isEmpty()) &&
             		currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
-            	return true;
+                return aa.getEndToken().getLine()!=line;
             }
             else if (st instanceof Tree.TypedDeclaration) {
                 //some expressions look like a type declaration
@@ -198,7 +204,10 @@ class PrintProposal implements ICompletionProposal {
                 //or function invocations
                 Tree.Type type = ((Tree.TypedDeclaration) st).getType();
                 if (currentOffset<=type.getStopIndex()+1) {
-                	return type instanceof Tree.SimpleType;
+                	return type instanceof Tree.SimpleType && 
+                            currentOffset<=type.getStopIndex()+1 &&
+                            currentOffset>=type.getStartIndex() &&
+                	        type.getEndToken().getLine()!=line;
                 }
             }
         }
