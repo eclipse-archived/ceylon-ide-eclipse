@@ -23,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -210,8 +211,8 @@ public abstract class LocalProposal extends AbstractLinkedMode
         return null;
     }
 
-    public LocalProposal(Tree.CompilationUnit cu, 
-            Node node, int currentOffset) {
+    public LocalProposal(Tree.CompilationUnit cu, Node node, 
+            int currentOffset) {
         super((CeylonEditor) EditorUtil.getCurrentEditor());
         this.rootNode = cu;
         this.node = node;
@@ -248,6 +249,11 @@ public abstract class LocalProposal extends AbstractLinkedMode
         }
         else if (st instanceof Tree.Declaration) {
             Tree.Declaration dec = (Tree.Declaration) st;
+            Identifier id = dec.getIdentifier();
+            if (id==null) {
+                return false;
+            }
+            int line = id.getToken().getLine();
     		Declaration d = dec.getDeclarationModel();
             if (d==null || d.isToplevel()) {
                 return false;
@@ -259,11 +265,17 @@ public abstract class LocalProposal extends AbstractLinkedMode
                     dec.getAnnotationList().getAnonymousAnnotation();
             ProducedType resultType;
             if (aa!=null && currentOffset<=aa.getStopIndex()+1) {
+                if (aa.getEndToken().getLine()==line) {
+                    return false;
+                }
                 resultType = aa.getUnit().getStringDeclaration().getType();
             }
             else if (!annotations.isEmpty() && 
                     currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
                 Tree.Annotation a = annotations.get(0);
+                if (a.getEndToken().getLine()==line) {
+                    return false;
+                }
                 resultType = a.getTypeModel();
             }
             else if (st instanceof Tree.TypedDeclaration) {
@@ -271,7 +283,12 @@ public abstract class LocalProposal extends AbstractLinkedMode
                 //when they appear right in front of an annotation
                 //or function invocations
                 Tree.Type type = ((Tree.TypedDeclaration) st).getType();
-                if (type instanceof Tree.SimpleType) {
+                if (type instanceof Tree.SimpleType && 
+                        currentOffset<=type.getStopIndex()+1 &&
+                        currentOffset>=type.getStartIndex()) {
+                    if (type.getEndToken().getLine()==line) {
+                        return false;
+                    }
                     resultType = type.getTypeModel();
                 }
                 else {
