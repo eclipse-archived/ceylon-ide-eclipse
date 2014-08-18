@@ -247,26 +247,30 @@ public class JDTModuleManager extends LazyModuleManager {
                     }
                 } else {
                     for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                        if(JDKUtils.isJDKModule(moduleNameString)){
-                            // find the first package that exists in this root
-                            for(String pkg : JDKUtils.getJDKPackagesByModule(moduleNameString)){
-                                if (root.getPackageFragment(pkg).exists()) {
-                                    roots.add(root);
-                                    break;
+                        if (root.exists()
+                                && javaProject.isOnClasspath(root)) {
+                            if(JDKUtils.isJDKModule(moduleNameString)){
+                                // find the first package that exists in this root
+                                for(String pkg : JDKUtils.getJDKPackagesByModule(moduleNameString)){
+                                    if (root.getPackageFragment(pkg).exists()) {
+                                        roots.add(root);
+                                        break;
+                                    }
                                 }
-                            }
-                        }else if(JDKUtils.isOracleJDKModule(moduleNameString)){
-                            // find the first package that exists in this root
-                            for(String pkg : JDKUtils.getOracleJDKPackagesByModule(moduleNameString)){
-                                if (root.getPackageFragment(pkg).exists()) {
-                                    roots.add(root);
-                                    break;
+                            }else if(JDKUtils.isOracleJDKModule(moduleNameString)){
+                                // find the first package that exists in this root
+                                for(String pkg : JDKUtils.getOracleJDKPackagesByModule(moduleNameString)){
+                                    if (root.getPackageFragment(pkg).exists()) {
+                                        roots.add(root);
+                                        break;
+                                    }
                                 }
-                            }
-                        }else if (! (root instanceof JarPackageFragmentRoot)) {
-                            String packageToSearch = moduleNameString;
-                            if (root.getPackageFragment(packageToSearch).exists()) {
-                                roots.add(root);
+                            }else if (! (root instanceof JarPackageFragmentRoot)
+                                    && ! CeylonBuilder.isInCeylonClassesOutputFolder(root.getPath())) {
+                                String packageToSearch = moduleNameString;
+                                if (root.getPackageFragment(packageToSearch).exists()) {
+                                    roots.add(root);
+                                }
                             }
                         }
                     }
