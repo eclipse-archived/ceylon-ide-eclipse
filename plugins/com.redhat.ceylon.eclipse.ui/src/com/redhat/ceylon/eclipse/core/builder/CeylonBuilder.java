@@ -143,6 +143,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
+import com.redhat.ceylon.eclipse.core.model.JavaUnit;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
@@ -1146,10 +1147,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (pkg != null) {
                     for (Unit unitToTest: pkg.getUnits()) {
                         if (unitToTest.getFilename().equals(fileToRemove.getName())) {
-                            pkg.removeUnit(unitToTest);
-                            assert (pkg.getModule() instanceof JDTModule);
-                            JDTModule module = (JDTModule) pkg.getModule();
-                            module.removedOriginalUnit(unitToTest.getRelativePath());
+                            assert(unitToTest instanceof JavaUnit);
+                            JavaUnit javaUnit = (JavaUnit) unitToTest;
+                            javaUnit.remove();
                             break;
                         }
                     }
@@ -1508,12 +1508,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if(!isCeylon(fileToUpdate)) {
                 if (isJava(fileToUpdate)) {
                     Unit toRemove = getJavaUnit(project, fileToUpdate);
-                    if(toRemove != null) { // If the unit is not null, the package should never be null
-                        Package p = toRemove.getPackage();
-                        p.removeUnit(toRemove);
-                        assert (p.getModule() instanceof JDTModule);
-                        JDTModule module = (JDTModule) p.getModule();
-                        module.removedOriginalUnit(toRemove.getRelativePath());
+                    if(toRemove instanceof JavaUnit) {
+                        ((JavaUnit) toRemove).remove();
                     }
                     else {
                         String packageName = getPackageName(fileToUpdate);
