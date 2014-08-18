@@ -57,4 +57,12 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
         }
         return null;
     }
+
+    public void remove() {
+        Package p = getPackage();
+        p.removeUnit(this);
+        assert (p.getModule() instanceof JDTModule);
+        JDTModule module = (JDTModule) p.getModule();
+        module.removedOriginalUnit(getRelativePath());
+    }
 }
