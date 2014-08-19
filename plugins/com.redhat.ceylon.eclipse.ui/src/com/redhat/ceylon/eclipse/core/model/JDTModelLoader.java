@@ -34,7 +34,6 @@ import java.util.TreeMap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathContainer;
@@ -587,24 +586,41 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     @Override
     public boolean searchAgain(Module module, String name) {
-        String classRelativePath = name.replace('.', '/');
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
             if (jdtModule.isCeylonBinaryArchive() || jdtModule.isJavaBinaryArchive()) {
+                String classRelativePath = name.replace('.', '/');
                 return jdtModule.containsClass(classRelativePath + ".class") || jdtModule.containsClass(classRelativePath + "_.class");
             } else if (jdtModule.isProjectModule()) {
-                ModelLoaderNameEnvironment nameEnvironment = getNameEnvironment();
-                int pathLength = classRelativePath.length();
-                int packageEnd = classRelativePath.lastIndexOf('/');
+                int nameLength = name.length();
+                int packageEnd = name.lastIndexOf('.');
                 int classNameStart = packageEnd + 1;
-                String packageName = packageEnd > 0 ? classRelativePath.substring(0, packageEnd) : "";
-                String className = classNameStart < pathLength ? classRelativePath.substring(classNameStart) : "";
-
-                if (nameEnvironment.findTypeInNameLookup(className, packageName) != null ||
-                        nameEnvironment.findTypeInNameLookup(className + "_", packageName) != null) {
-                    return true;
+                String packageName = packageEnd > 0 ? name.substring(0, packageEnd) : "";
+                String className = classNameStart < nameLength ? name.substring(classNameStart) : "";
+                boolean moduleContainsJava = false;
+                for (IPackageFragmentRoot root : jdtModule.getPackageFragmentRoots()) {
+                    try {
+                        IPackageFragment pf = root.getPackageFragment(packageName);
+                        if (pf.exists() && 
+                                javaProject.isOnClasspath(pf)) {
+                            if (((IPackageFragment)pf).containsJavaResources()) {
+                                moduleContainsJava = true;
+                                break;
+                            }
+                        }
+                    } catch (JavaModelException e) {
+                        e.printStackTrace();
+                        moduleContainsJava = true; // Just in case ...
+                    }
                 }
-                return jdtModule.containsClass(classRelativePath + ".class") || jdtModule.containsClass(classRelativePath + "_.class");
+                if (moduleContainsJava) {
+                    ModelLoaderNameEnvironment nameEnvironment = getNameEnvironment();
+                    if (nameEnvironment.findTypeInNameLookup(className, packageName) != null ||
+                            nameEnvironment.findTypeInNameLookup(className + "_", packageName) != null) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
         return false;
@@ -695,7 +711,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                     }
                     binaryTypeBinding = (BinaryTypeBinding) existingType;
                 }
-                return new JDTClass(binaryTypeBinding, theLookupEnvironment);
+                return new JDTClass(binaryTypeBinding, theLookupEnvironment, type);
             } else {
                 ReferenceBinding referenceBinding = theLookupEnvironment.getType(compoundName);
                 if (referenceBinding != null  && ! (referenceBinding instanceof BinaryTypeBinding)) {
@@ -709,7 +725,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                             return null;
                         }
                     }
-                    return new JDTClass(referenceBinding, theLookupEnvironment);
+                    return new JDTClass(referenceBinding, theLookupEnvironment, type);
                 }
             }
         } catch (JavaModelException e) {
@@ -845,8 +861,8 @@ public class JDTModelLoader extends AbstractModelLoader {
     private Unit newCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
         Unit unit;
         JDTClass jdtClass = (JDTClass) classMirror;
-        IType type = null;
-        if (javaProject != null) {
+        IType type = jdtClass.useCachedType();
+        if (type == null && javaProject != null) {
             String packageName = jdtClass.getPackage().getQualifiedName();
             String className = jdtClass.getQualifiedName().substring(packageName.length() +1 );
             type = getNameEnvironment().findTypeInNameLookup(className, packageName);

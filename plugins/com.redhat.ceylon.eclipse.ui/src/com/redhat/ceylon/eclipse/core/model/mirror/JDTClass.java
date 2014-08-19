@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
@@ -69,12 +70,20 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     private JDTClass enclosingClass;
     private boolean enclosingClassSet;
 
-
+    private IType type = null; 
     
 
     public JDTClass(ReferenceBinding klass, LookupEnvironment lookupEnvironment) {
         this.klass = klass;
         this.lookupEnvironment = lookupEnvironment;
+    }
+
+    /*
+     *  This constructor is only used by the model loader for optimization and should not used by clients
+     */
+    public JDTClass(ReferenceBinding klass, LookupEnvironment lookupEnvironment, IType type) {
+        this(klass, lookupEnvironment);
+        this.type = type;
     }
 
     @Override
@@ -371,5 +380,14 @@ public class JDTClass implements ClassMirror, IBindingProvider {
             cacheKey = AbstractModelLoader.getCacheKeyByModule(module, className);
         }
         return cacheKey;
+    }
+
+    /*
+     *  This method is only used by the model loader for optimization and should not used by clients
+     */
+    public IType useCachedType() {
+        IType typeToReturn = type;
+        type = null;
+        return typeToReturn;
     }
 }
