@@ -477,7 +477,12 @@ public class JDTModelLoader extends AbstractModelLoader {
             for (IPackageFragment pf : packagesToSearchIn) {
 
                 // We use considerSecondTypes = false because we will do it explicitly afterwards, in order to use waitForIndexes=true
-                type = nameLookup.findType(typeName, pf, false, NameLookup.ACCEPT_ALL, false);
+            	// TODO : when migrating to Luna only (removing Kepler support), we will be able to simply call :
+            	//        nameLookup.findType(typeName, pf, false, NameLookup.ACCEPT_ALL, 
+            	//                            true /* waitForIndices */,
+            	//                            true /* considerSecondaryTypes */)
+            	// But unfortunately, Kepler doesn't provide the ability to set the 'waitForIndexes' parameter to true.
+                type = nameLookup.findType(typeName, pf, false, NameLookup.ACCEPT_ALL);
                 if (type == null) {
                     JavaModelManager manager = JavaModelManager.getJavaModelManager();
                     try {
