@@ -62,14 +62,4 @@ public class MarkerCreator extends ErrorVisitor {
             e.printStackTrace();
         }
     }
-//
-//    private static boolean isCompilerError(String msg) {
-//        //TODO: we need a MUCH better way to distinguish 
-//        //      compiler errors from typechecker errors
-//        return msg.startsWith("cannot find module") || 
-//                msg.startsWith("unable to read source artifact for") ||
-//                msg.startsWith("invalid JDK module") /* ||
-//                msg.contains("compiled for an incompatible version")*/;
-//    }
-//    
 }
