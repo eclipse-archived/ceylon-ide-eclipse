@@ -105,16 +105,6 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                 mustDoFullBuild.value = true;
                 mustResolveClasspathContainer.value = true;
             }
-            if (isJava(file) && 
-                    ! file.getProject().equals(project)) {
-                //a Java source file in a project we depend
-                //on was modified - we must do a full build, 
-                //'cos we don't know what Ceylon units in 
-                //this project depend on it
-                //TODO: fix that by tracking cross-project 
-                //      dependencies to Java!
-                mustDoFullBuild.value = true;
-            }
             if (isSourceFile(file) || 
                     isResourceFile(file)) {
                 // a source file or a resource was modified, 

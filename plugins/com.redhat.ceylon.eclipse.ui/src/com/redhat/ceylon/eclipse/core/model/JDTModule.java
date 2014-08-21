@@ -76,6 +76,7 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -658,13 +659,16 @@ public class JDTModule extends LazyModule {
                 synchronized (phasedUnitMap) {
                     for (String relativePathToRemove : originalUnitsToRemove) {
                         if (isCeylonBinaryArchive() || JavaCore.isJavaLikeFileName(relativePathToRemove)) {
-                            for (String relativePathOfClassToRemove : toBinaryUnitRelativePaths(relativePathToRemove)) {
-                                Package p = getPackageFromRelativePath(relativePathOfClassToRemove);
+                        	List<String> unitPathsToSearch = new ArrayList<>();
+                        	unitPathsToSearch.add(relativePathToRemove);
+                        	unitPathsToSearch.addAll(toBinaryUnitRelativePaths(relativePathToRemove));
+                            for (String relativePathOfUnitToRemove : unitPathsToSearch) {
+                                Package p = getPackageFromRelativePath(relativePathOfUnitToRemove);
                                 if (p != null) {
                                     Set<Unit> units = new HashSet<>();
                                     for(Declaration d : p.getMembers()) {
                                         Unit u = d.getUnit();
-                                        if (u.getRelativePath().equals(relativePathOfClassToRemove)) {
+                                        if (u.getRelativePath().equals(relativePathOfUnitToRemove)) {
                                             units.add(u);
                                         }
                                     }
@@ -674,7 +678,7 @@ public class JDTModule extends LazyModule {
                                         // same relative path, we can add a break.
                                     }
                                 } else {
-                                    System.out.println("WARNING : The package of the following binary unit (" + relativePathOfClassToRemove + ") "
+                                    System.out.println("WARNING : The package of the following binary unit (" + relativePathOfUnitToRemove + ") "
                                             + "cannot be found in module " + getNameAsString() + 
                                             artifact != null ? " (artifact=" + artifact.getAbsolutePath() + ")" : "");
                                 }
@@ -976,4 +980,35 @@ public class JDTModule extends LazyModule {
         if (resolutionException instanceof RuntimeException)
         this.resolutionException = resolutionException;
     }
+    
+    public List<JDTModule> getModuleInReferencingProjects() {
+    	if (! isProjectModule()) {
+    		return Collections.emptyList();
+    	}
+        IProject project = moduleManager.getJavaProject().getProject();
+        IProject[] referencingProjects = project.getReferencingProjects();
+    	if (referencingProjects.length == 0) {
+    		return Collections.emptyList();
+    	}
+        
+        List<JDTModule> result = new ArrayList<>();
+        for(IProject referencingProject : referencingProjects) {
+            JDTModule referencingModule = null;
+            Modules referencingProjectModules = CeylonBuilder.getProjectModules(referencingProject);
+            if (referencingProjectModules != null) {
+                for (Module m : referencingProjectModules.getListOfModules()) {
+                    if (m.getSignature().equals(getSignature())) {
+                        assert(m instanceof JDTModule);
+                        referencingModule = (JDTModule) m;
+                        break;
+                    }
+                }
+            }
+            if (referencingModule != null) {
+                result.add(referencingModule);
+            }
+        }
+        return result;
+    }
+    
 }

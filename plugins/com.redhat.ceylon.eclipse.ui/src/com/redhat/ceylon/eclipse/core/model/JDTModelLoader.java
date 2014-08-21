@@ -23,6 +23,7 @@ package com.redhat.ceylon.eclipse.core.model;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -930,9 +931,15 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public synchronized void removeDeclarations(List<Declaration> declarations) {
         List<Declaration> allDeclarations = new ArrayList<Declaration>(declarations.size());
+        Set<Package> changedPackages = new HashSet<Package>();
+        
         allDeclarations.addAll(declarations);
 
         for (Declaration declaration : declarations) {
+        	Unit unit = declaration.getUnit();
+        	if (unit != null) {
+            	changedPackages.add(unit.getPackage());
+        	}
             retrieveInnerDeclarations(declaration, allDeclarations);
         }
         
@@ -942,12 +949,20 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
         
         super.removeDeclarations(allDeclarations);
+        for (Package changedPackage : changedPackages) {
+        	loadedPackages.remove(cacheKeyByModule(changedPackage.getModule(), changedPackage.getNameAsString()));
+        }
         mustResetLookupEnvironment = true;
     }
 
     private void retrieveInnerDeclarations(Declaration declaration,
             List<Declaration> allDeclarations) {
-        List<Declaration> members = declaration.getMembers();
+    	List<Declaration> members;
+    	try {
+            members = declaration.getMembers();
+    	} catch(Exception e) {
+    		members = Collections.emptyList();
+    	}
         allDeclarations.addAll(members);
         for (Declaration member : members) {
             retrieveInnerDeclarations(member, allDeclarations);
@@ -1040,7 +1055,8 @@ public class JDTModelLoader extends AbstractModelLoader {
         for (String keyToRemove : keysToRemove) {
             classMirrorCache.remove(keyToRemove);
         }
-        loadedPackages.remove(packageName);
+        Package pkg = findPackage(packageName);
+        loadedPackages.remove(cacheKeyByModule(pkg.getModule(), packageName));
         mustResetLookupEnvironment = true;
     }
 

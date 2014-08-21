@@ -63,6 +63,8 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
         p.removeUnit(this);
         assert (p.getModule() instanceof JDTModule);
         JDTModule module = (JDTModule) p.getModule();
-        module.removedOriginalUnit(getRelativePath());
+        for (JDTModule moduleInReferencingProject : module.getModuleInReferencingProjects()) {
+        	moduleInReferencingProject.removedOriginalUnit(getRelativePath());
+        }
     }
 }
