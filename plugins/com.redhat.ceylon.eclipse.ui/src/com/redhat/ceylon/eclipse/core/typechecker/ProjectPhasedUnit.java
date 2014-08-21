@@ -77,28 +77,6 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         return workingCopies.keySet().iterator();
     }
 
-    private List<JDTModule> getReferencingModules() {
-        List<JDTModule> result = new ArrayList<>();
-        Module currentModule = getUnit().getPackage().getModule();        
-        for(IProject referencingProject : getProjectResource().getReferencingProjects()) {
-            JDTModule referencingSourceModule = null;
-            Modules referencingProjectModules = CeylonBuilder.getProjectModules(referencingProject);
-            if (referencingProjectModules != null) {
-                for (Module m : referencingProjectModules.getListOfModules()) {
-                    if (m.getNameAsString().equals(currentModule.getNameAsString())) {
-                        assert(m instanceof JDTModule);
-                        referencingSourceModule = (JDTModule) m;
-                        break;
-                    }
-                }
-            }
-            if (referencingSourceModule != null) {
-                result.add(referencingSourceModule);
-            }
-        }
-        return result;
-    }
-
     public void install() {
         TypeChecker typechecker = getTypeChecker();
         if (typechecker == null) {
@@ -125,8 +103,9 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         }
         
         phasedUnits.addPhasedUnit(getUnitFile(), this);
-        for (JDTModule referencingModule : getReferencingModules()) {
-            referencingModule.addedOriginalUnit(getPathRelativeToSrcDir());
+        JDTModule module = (JDTModule) getPackage().getModule();
+        for (JDTModule moduleInReferencingProject : module.getModuleInReferencingProjects()) {
+        	moduleInReferencingProject.addedOriginalUnit(getPathRelativeToSrcDir());
         }
         
         // Pour tous les projets dépendants, on appelle addPhasedUnit () sur le module correspondant, qui doit être un module source externe
@@ -140,8 +119,9 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         }
         PhasedUnits phasedUnits = typechecker.getPhasedUnits();
         phasedUnits.removePhasedUnitForRelativePath(getPathRelativeToSrcDir()); // remove also the ProjectSourceFile (unit) from the Package
-        for (JDTModule referencingModule : getReferencingModules()) {
-            referencingModule.removedOriginalUnit(getPathRelativeToSrcDir());
+        JDTModule module = (JDTModule) getPackage().getModule();
+        for (JDTModule moduleInReferencingProject : module.getModuleInReferencingProjects()) {
+        	moduleInReferencingProject.removedOriginalUnit(getPathRelativeToSrcDir());
         }
     }
 }
