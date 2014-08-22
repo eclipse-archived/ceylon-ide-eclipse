@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.ui.navigator.IExtensionStateConstants.Values;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer.RequiredProjectWrapper;
 import org.eclipse.jdt.internal.ui.packageview.LibraryContainer;
@@ -55,6 +56,12 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 public class CeylonNavigatorContentProvider implements
         IPipelinedTreeContentProvider2, ICeylonModelListener {
     
+	private org.eclipse.ui.navigator.IExtensionStateModel javaNavigatorStateModel;
+
+	private boolean isFlatLayout() {
+		return javaNavigatorStateModel.getBooleanProperty(Values.IS_LAYOUT_FLAT);
+	}
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void getPipelinedChildren(Object aParent, Set theCurrentChildren) {
@@ -110,15 +117,6 @@ public class CeylonNavigatorContentProvider implements
                 for (Object child : theCurrentChildren) {
                     if (child instanceof IPackageFragment) {
                         toRemove.add(child);
-                        IFolder pkgFolder = (IFolder) ((IPackageFragment) child).getResource();
-                        Package pkg = CeylonBuilder.getPackage(pkgFolder);
-                        if (pkg != null) {
-                            String signature = pkg.getModule().getSignature();
-                            SourceModuleNode moduleNode = moduleNodes.get(signature);
-                            if (moduleNode != null) {
-                                moduleNode.getPackageFragments().add((IPackageFragment) child);
-                            }
-                        }
                     } else {
                         if (child instanceof IFile) {
                             toRemove.add(child);
@@ -126,6 +124,30 @@ public class CeylonNavigatorContentProvider implements
                     }
                 }
                 theCurrentChildren.removeAll(toRemove);
+
+                try {
+					for (IJavaElement pfElement : root.getChildren()) {
+						IPackageFragment child = (IPackageFragment) pfElement;
+					    IFolder pkgFolder = (IFolder) ((IPackageFragment) child).getResource();
+					    Package pkg = CeylonBuilder.getPackage(pkgFolder);
+					    if (pkg != null) {
+					    	Module module = pkg.getModule();
+					        String signature = module.getSignature();
+					        SourceModuleNode moduleNode = moduleNodes.get(signature);
+					        if (moduleNode != null) {
+					        	if (! isFlatLayout() 
+					        			&& ! module.isDefault()
+					        			&& ! pkg.getNameAsString().equals(module.getNameAsString())) {
+					        		continue;
+					        	}
+					            moduleNode.getPackageFragments().add((IPackageFragment) child);
+					        }
+					    }
+					}
+				} catch (JavaModelException e) {
+					e.printStackTrace();
+				}
+                
                 for (SourceModuleNode moduleNode : moduleNodes.values()) {
                     theCurrentChildren.add(moduleNode);
                 }
@@ -425,16 +447,20 @@ public class CeylonNavigatorContentProvider implements
     @Override
     public void init(ICommonContentExtensionSite aConfig) {
         CeylonBuilder.addModelListener(this);
+    	INavigatorContentExtension javaNavigatorExtension = null;
         @SuppressWarnings("unchecked")
         Set<INavigatorContentExtension> set = aConfig.getService().findContentExtensionsByTriggerPoint(JavaCore.create(ResourcesPlugin.getWorkspace().getRoot()));
         for (INavigatorContentExtension extension : set) {
             if (extension.getDescriptor().equals(aConfig.getExtension().getDescriptor().getOverriddenDescriptor())) {
-                ITreeContentProvider javaContentProvider = extension.getContentProvider();
-                if (javaContentProvider instanceof PackageExplorerContentProvider) {
-                    ((PackageExplorerContentProvider) javaContentProvider).setShowLibrariesNode(true);
-                }
+                javaNavigatorExtension = extension;
+                break;
             }
         }
+        ITreeContentProvider javaContentProvider = javaNavigatorExtension.getContentProvider();
+        if (javaContentProvider instanceof PackageExplorerContentProvider) {
+            ((PackageExplorerContentProvider) javaContentProvider).setShowLibrariesNode(true);
+        }
+    	javaNavigatorStateModel = javaNavigatorExtension.getStateModel();
         
         final INavigatorFilterService filterService = aConfig.getService().getFilterService();
         final List<String> filtersToActivate = new ArrayList<>();
@@ -573,14 +599,10 @@ public class CeylonNavigatorContentProvider implements
 
     @Override
     public void restoreState(IMemento aMemento) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void saveState(IMemento aMemento) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
