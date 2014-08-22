@@ -6,5 +6,5 @@ lookup=./imported_modules
 encoding=UTF-8
 
 [compiler]
-source=./src
-source=./javaSrc
+source=src
+source=javaSrc

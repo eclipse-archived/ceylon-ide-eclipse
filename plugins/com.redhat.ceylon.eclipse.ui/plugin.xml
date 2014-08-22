@@ -2788,6 +2788,25 @@
 				</enablement>
 		    </actionProvider> 
 
+			<actionProvider
+					class="com.redhat.ceylon.eclipse.code.navigator.CeylonNavigatorStandardActionsProvider"
+					id="com.redhat.ceylon.eclipse.code.navigator.actions.StandardActions"
+					overrides="org.eclipse.jdt.ui.navigator.actions.StandardActions"> 
+				<enablement>
+					<or>   
+						<and>
+							<instanceof value="org.eclipse.core.resources.IResource" />
+							<test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+						</and>
+						<and>
+							<instanceof value="org.eclipse.jdt.core.IJavaElement" />
+	  						<test forcePluginActivation="true"
+	  						property="com.redhat.ceylon.eclipse.ui.isInCeylonProject"/>
+						</and>
+					</or>
+				</enablement>
+			</actionProvider> 
+
 			<override
 					policy="InvokeAlwaysRegardlessOfSuppressedExt"
 					suppressedExtensionId="org.eclipse.jdt.java.ui.javaContent"/>
