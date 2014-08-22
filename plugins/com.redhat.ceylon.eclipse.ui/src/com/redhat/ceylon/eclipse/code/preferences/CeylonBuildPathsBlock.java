@@ -18,7 +18,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModu
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,9 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.compare.CompareConfiguration;
-import org.eclipse.compare.CompareEditorInput;
-import org.eclipse.compare.CompareUI;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -85,17 +81,10 @@ import org.eclipse.jdt.internal.ui.wizards.dialogfields.ListDialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.StringButtonDialogField;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ui.PreferenceConstants;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuCreator;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -103,20 +92,17 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.HelpListener;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.MenuAdapter;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
@@ -128,7 +114,6 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
-import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.ISelectionStatusValidator;
@@ -795,65 +780,8 @@ public class CeylonBuildPathsBlock {
         final List<CPListElement> newResourcePath = new ArrayList<CPListElement>();
 
         if (!configResourceDirectories.isEmpty()) {
-            for (final String path: configResourceDirectories) {
-                final IPath iPath = Path.fromOSString(path);
-                if (! iPath.isAbsolute()) {
-                    IFolder folder = fCurrJProject.getProject()
-                            .getFolder(iPath);
-                    newResourcePath.add(new CPListElement(fCurrJProject, 
-                            IClasspathEntry.CPE_SOURCE, 
-                            folder.getFullPath(), 
-                            folder));
-                    if (!folder.exists()) {
-                        someFoldersNeedToBeCreated = true;
-                    }
-                }
-                else {
-                    try {   
-                        class CPListElementHolder {
-                            public CPListElement value = null;
-                        }
-                        final CPListElementHolder cpListElement = new CPListElementHolder();
-                        project.accept(new IResourceVisitor() {
-                            @Override
-                            public boolean visit(IResource resource) 
-                                    throws CoreException {
-                                if (resource instanceof IFolder &&
-                                        resource.isLinked() && 
-                                        resource.getLocation() != null &&
-                                        resource.getLocation().equals(iPath)) {
-                                    cpListElement.value = new CPListElement(null,
-                                            fCurrJProject, IClasspathEntry.CPE_SOURCE, 
-                                            resource.getFullPath(), 
-                                            resource, resource.getLocation());
-                                    return false;
-                                }
-                                return resource instanceof IFolder || 
-                                        resource instanceof IProject;
-                            }
-                        });
-                        if (cpListElement.value == null) {
-                            String newFolderName = iPath.lastSegment();
-                            IFolder newFolder = project.getFolder(newFolderName);
-                            int counter = 1;
-                            while (newFolderNames.contains(newFolderName) || newFolder.exists()) {
-                                newFolderName = iPath.lastSegment() + "_" + counter++;
-                                newFolder = project.getFolder(newFolderName);
-                            }
-                            newFolderNames.add(newFolderName);
-                            cpListElement.value = new CPListElement(null,
-                                    fCurrJProject, IClasspathEntry.CPE_SOURCE, 
-                                    newFolder.getFullPath(), 
-                                    newFolder, iPath);
-                            someFoldersNeedToBeCreated = true;
-                        }
-                        newResourcePath.add(cpListElement.value);
-                    }
-                    catch (CoreException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+            someFoldersNeedToBeCreated = resourcePathsFromStrings(fCurrJProject, configResourceDirectories,
+					newFolderNames, newResourcePath);
         }
         else {
             IFolder defaultResourceFolder = fCurrJProject.getProject().getFolder(DEFAULT_RESOURCE_FOLDER);
@@ -903,6 +831,72 @@ public class CeylonBuildPathsBlock {
         updateUI();
     }
 
+	public static boolean resourcePathsFromStrings(final IJavaProject javaProject,
+			List<String> configResourceDirectories, Set<String> newFolderNames,
+			final List<CPListElement> newResourcePath) {
+		boolean someFoldersNeedToBeCreated = false;
+		IProject project = javaProject.getProject();
+		for (final String path: configResourceDirectories) {
+		    final IPath iPath = Path.fromOSString(path);
+		    if (! iPath.isAbsolute()) {
+		        IFolder folder = project.getFolder(iPath);
+		        newResourcePath.add(new CPListElement(javaProject, 
+		                IClasspathEntry.CPE_SOURCE, 
+		                folder.getFullPath(), 
+		                folder));
+		        if (!folder.exists()) {
+		            someFoldersNeedToBeCreated = true;
+		        }
+		    }
+		    else {
+		        try {   
+		            class CPListElementHolder {
+		                public CPListElement value = null;
+		            }
+		            final CPListElementHolder cpListElement = new CPListElementHolder();
+		            project.accept(new IResourceVisitor() {
+		                @Override
+		                public boolean visit(IResource resource) 
+		                        throws CoreException {
+		                    if (resource instanceof IFolder &&
+		                            resource.isLinked() && 
+		                            resource.getLocation() != null &&
+		                            resource.getLocation().equals(iPath)) {
+		                        cpListElement.value = new CPListElement(null,
+		                                javaProject, IClasspathEntry.CPE_SOURCE, 
+		                                resource.getFullPath(), 
+		                                resource, resource.getLocation());
+		                        return false;
+		                    }
+		                    return resource instanceof IFolder || 
+		                            resource instanceof IProject;
+		                }
+		            });
+		            if (cpListElement.value == null) {
+		                String newFolderName = iPath.lastSegment();
+		                IFolder newFolder = project.getFolder(newFolderName);
+		                int counter = 1;
+		                while (newFolderNames.contains(newFolderName) || newFolder.exists()) {
+		                    newFolderName = iPath.lastSegment() + "_" + counter++;
+		                    newFolder = project.getFolder(newFolderName);
+		                }
+		                newFolderNames.add(newFolderName);
+		                cpListElement.value = new CPListElement(null,
+		                        javaProject, IClasspathEntry.CPE_SOURCE, 
+		                        newFolder.getFullPath(), 
+		                        newFolder, iPath);
+		                someFoldersNeedToBeCreated = true;
+		            }
+		            newResourcePath.add(cpListElement.value);
+		        }
+		        catch (CoreException e) {
+		            e.printStackTrace();
+		        }
+		    }
+		}
+		return someFoldersNeedToBeCreated;
+	}
+
     protected void updateUI() {
         if (fSWTWidget == null || fSWTWidget.isDisposed()) {
             return;
@@ -937,7 +931,7 @@ public class CeylonBuildPathsBlock {
             fNotInSyncText.getParent().layout(true);
         }
     }
-
+    
     private String getEncodedSettings() {
         StringBuffer buf= new StringBuffer();
         CPListElement.appendEncodePath(fJavaOutputLocationPath, buf).append(';');
