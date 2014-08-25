@@ -11,8 +11,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 
 public class DocLinks {
     
-    private static final Pattern packagePattern = compile("^([^|]\\|)?([^:]*)::");
-    private static final Pattern namePattern = compile("^([^|]\\|)?([^:]*::)?(.*)");
+    private static final Pattern packagePattern = compile("^([^|]*\\|)?([^:]*)::");
+    private static final Pattern namePattern = compile("^([^|]*\\|)?([^:]*::)?(.*)");
     
     public static boolean hasPackage(DocLink docLink) {
         return docLink.getText().contains("::");
