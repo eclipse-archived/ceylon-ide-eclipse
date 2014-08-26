@@ -1577,9 +1577,14 @@ public class DocumentationHover
             Declaration pd = 
                     ((MethodOrValue) dec).getInitializerParameter()
                             .getDeclaration();
-            buffer.append("Parameter of&nbsp;&nbsp;");
-            appendLink(buffer, pd);
-            buffer.append(".");
+            if (pd.getName().startsWith("anonymous#")) {
+                buffer.append("Parameter of anonymous function.");
+            }
+            else {
+                buffer.append("Parameter of&nbsp;&nbsp;");
+                appendLink(buffer, pd);
+                buffer.append(".");
+            }
 //            HTML.addImageAndLabel(buffer, pd, 
 //                    HTML.fileUrl(getIcon(pd)).toExternalForm(),
 //                    16, 16, 
