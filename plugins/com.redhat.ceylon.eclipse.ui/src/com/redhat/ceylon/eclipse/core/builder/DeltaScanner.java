@@ -4,11 +4,13 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInSourceFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isSourceFile;
 
+
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -18,6 +20,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -28,6 +31,8 @@ final class DeltaScanner implements IResourceDeltaVisitor {
     private final IProject project;
     private final BooleanHolder somethingToBuild;
     private final BooleanHolder mustResolveClasspathContainer;
+	private IPath explodedDirPath;
+	private Map<IProject, IPath> modulesDirPathByProject = new HashMap<>();
 
     DeltaScanner(BooleanHolder mustDoFullBuild, IProject project,
             BooleanHolder somethingToBuild,
@@ -36,6 +41,19 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         this.project = project;
         this.somethingToBuild = somethingToBuild;
         this.mustResolveClasspathContainer = mustResolveClasspathContainer;
+        IFolder explodedFolder = CeylonBuilder.getCeylonClassesOutputFolder(project);
+        explodedDirPath = explodedFolder != null ? explodedFolder.getFullPath() : null;
+        IFolder modulesFolder = CeylonBuilder.getCeylonModulesOutputFolder(project);
+        IPath modulesDirPath = modulesFolder != null ? modulesFolder.getFullPath() : null;
+        modulesDirPathByProject.put(project, modulesDirPath);
+        try {
+			for (IProject referencedProject : project.getReferencedProjects()) {
+		        modulesFolder = CeylonBuilder.getCeylonModulesOutputFolder(referencedProject);
+		        modulesDirPath = modulesFolder != null ? modulesFolder.getFullPath() : null;
+		        modulesDirPathByProject.put(referencedProject, modulesDirPath);
+			}
+		} catch (CoreException e) {
+		}
     }
 
     @Override
@@ -65,6 +83,22 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                 if (pkg!=null) {
                     //a package has been removed
                     mustDoFullBuild.value = true;
+                } 
+                
+                IPath fullPath = resource.getFullPath();
+                if (fullPath != null) {
+            		if (explodedDirPath != null && explodedDirPath.isPrefixOf(fullPath)) {
+                        mustDoFullBuild.value = true;
+                        mustResolveClasspathContainer.value = true;
+            		}
+
+                	for (Map.Entry<IProject, IPath> entry : modulesDirPathByProject.entrySet()) {
+                		IPath modulesDirPath = entry.getValue();
+                		if (modulesDirPath != null && modulesDirPath.isPrefixOf(fullPath)) {
+	                        mustDoFullBuild.value = true;
+	                        mustResolveClasspathContainer.value = true;
+                		}
+                	}
                 }
             } else {
                 if (folder.exists() && folder.getProject().equals(project)) {
