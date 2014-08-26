@@ -125,7 +125,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                                 for (Object obj: expanded) {
                                     viewer.expandToLevel(obj, 1);
                                 }
-                                viewer.refresh();
+//                                viewer.refresh();
                                 expandCaretedNode(sourceViewer.getSelectedRange().x);
                             }
                         }
