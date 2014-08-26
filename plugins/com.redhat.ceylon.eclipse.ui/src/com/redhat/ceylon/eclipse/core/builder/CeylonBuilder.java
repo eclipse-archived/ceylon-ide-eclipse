@@ -2137,16 +2137,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         List<File> forJavascriptBackend = new ArrayList<File>();
         List<File> resources = new ArrayList<File>();
         for (IFile file : filesToCompile) {
-            if(isCeylon(file)) {
-                forJavascriptBackend.add(file.getRawLocation().toFile());
-                forJavaBackend.add(file.getRawLocation().toFile());
-            }
-            if(isJava(file)) {
-                forJavaBackend.add(file.getRawLocation().toFile());
-            }
-            if (isJavascript(file)) {
-                forJavascriptBackend.add(file.getRawLocation().toFile());
-            }
+        	if (isInSourceFolder(file)) {
+                if(isCeylon(file)) {
+                    forJavascriptBackend.add(file.getRawLocation().toFile());
+                    forJavaBackend.add(file.getRawLocation().toFile());
+                }
+                if(isJava(file)) {
+                    forJavaBackend.add(file.getRawLocation().toFile());
+                }
+                if (isJavascript(file)) {
+                    forJavascriptBackend.add(file.getRawLocation().toFile());
+                }
+        	}
             if (isResourceFile(file)) {
                 forJavascriptBackend.add(file.getRawLocation().toFile());
                 forJavaBackend.add(file.getRawLocation().toFile());
