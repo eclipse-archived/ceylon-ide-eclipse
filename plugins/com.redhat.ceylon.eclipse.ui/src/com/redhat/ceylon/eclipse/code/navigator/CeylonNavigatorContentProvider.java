@@ -84,7 +84,8 @@ public class CeylonNavigatorContentProvider implements
                             IPackageFragmentRoot pfr = (IPackageFragmentRoot) entry;
                             for (RepositoryNode rn : repositories.values()) {
                                 for (ExternalModuleNode emn : rn.getModules()) {
-                                    if (emn.getModule()
+                                    if (emn.getModule() != null &&
+                                    		emn.getModule()
                                             .getPackageFragmentRoots()
                                             .contains(pfr)) {
                                         emn.getBinaryArchives().add(pfr);
