@@ -133,6 +133,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                     Declaration superMemberDec = 
                             superDec.getDirectMember(declaration.getName(), signature, false);
                     if (superMemberDec!=null && 
+                            superMemberDec.getRefinedDeclaration()!=null &&
+                            declaration.getRefinedDeclaration()!=null &&
                             !isAbstraction(superMemberDec) &&
                             superMemberDec.getRefinedDeclaration()
                                 .equals(declaration.getRefinedDeclaration())) {
