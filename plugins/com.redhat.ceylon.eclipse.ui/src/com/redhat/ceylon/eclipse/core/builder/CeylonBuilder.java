@@ -90,6 +90,8 @@ import com.redhat.ceylon.cmr.api.ArtifactCallback;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.cmr.api.SourceArchiveCreator;
+import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.log.Logger;
@@ -2171,6 +2173,44 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             // and they won't end up in the archives (src/car)
             success = success & compile(project, javaProject, options, 
                     forJavaBackend, typeChecker, printWriter, monitor);
+        }
+        
+        if (! compileToJs(project) &&
+        		! compileToJava(project) &&
+        		modulesOutputDir != null) {
+        	EclipseLogger logger = new EclipseLogger();
+			RepositoryManager outRepo = repoManager()
+            .offline(CeylonProjectConfig.get(project).isOffline())
+            .cwd(project.getLocation().toFile())
+            .outRepo(js_outRepo)
+            .logger(logger)
+            .buildOutputManager();
+        	
+            for (Module m : getProjectDeclaredSourceModules(project)) {
+            	if (m instanceof JDTModule) {
+                	SourceArchiveCreator sac;
+					try {
+						sac = CeylonUtils.makeSourceArchiveCreator(outRepo, js_srcdir,
+						        m.getNameAsString(), m.getVersion(), js_verbose, logger);
+	                	List<String> moduleFiles = new ArrayList<>();
+	                	for (IFile file : filesToCompile) {
+	                		IContainer container = file.getParent();
+	                		if (container instanceof IFolder) {
+	                    		if (isSourceFile(file)) {
+	                    			Module fileModule = getModule(((IFolder)container));
+	                    			if (m.equals(fileModule)) {
+	                    				moduleFiles.add(file.getLocation().toFile().getPath());
+	                    			}
+	                    		}                			
+	                		}
+	                	}
+	                    sac.copySourceFiles(moduleFiles);
+					} catch (IOException e) {
+						e.printStackTrace();
+						success = false;
+					}
+            	}
+            }
         }
         return success;
     }
