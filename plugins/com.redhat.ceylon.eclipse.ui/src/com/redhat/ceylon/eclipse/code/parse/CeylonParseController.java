@@ -764,7 +764,7 @@ public class CeylonParseController {
         return document;
     }
 
-    public void scheduled() {
+    public void resetStage() {
         stage = Stage.NONE;
     }
     
