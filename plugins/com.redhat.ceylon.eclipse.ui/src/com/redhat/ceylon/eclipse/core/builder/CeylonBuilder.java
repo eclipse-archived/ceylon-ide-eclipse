@@ -2249,6 +2249,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
                 if (u instanceof CeylonBinaryUnit) {
                     CeylonBinaryUnit ceylonBinaryUnit = (CeylonBinaryUnit) u;
+                	Module module = u.getPackage().getModule();
+                	if (module != null) {
+                		if (module.equals(module.getLanguageModule())) {
+                			return false;
+                		}
+                	}
                     if (ceylonBinaryUnit.getCeylonSourceRelativePath() != null) {
                         return false;
                     }
