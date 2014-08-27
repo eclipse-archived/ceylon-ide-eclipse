@@ -124,17 +124,19 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
                 sb.append(" ")
                   .append(toString(fa.getBlock()));
             }
+            else if (fa.getExpression()!=null) {
+                sb.append(" => ")
+                  .append(toString(fa.getExpression()))
+                  .append(";");
+            }
             else {
                 sb.append(" => ");
-            }
-            if (fa.getExpression()!=null) {
-                sb.append(toString(fa.getExpression()));
             }
             exp = sb.toString();
         }
         else {
             mod = "value";
-        	exp = toString(unparened);
+        	exp = toString(unparened) + ";";
         }
         int il;
         String typeDec;
@@ -156,7 +158,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         String dec = 
         		typeDec + " " +  newName + 
         		(anonFunction ? "" : (getter ? " => "  : " = ")) + 
-        		exp  + ";";
+        		exp;
         
         String text = dec + getDefaultLineDelimiter(doc) + 
         		getIndent(statement, doc);
