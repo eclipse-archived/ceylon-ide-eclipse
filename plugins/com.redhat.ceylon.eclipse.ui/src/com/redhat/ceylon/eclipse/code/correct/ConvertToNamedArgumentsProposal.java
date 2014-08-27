@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static java.lang.Character.isWhitespace;
 
@@ -18,7 +17,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
-import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
@@ -98,37 +97,19 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                                     result.append("function ");
                                 }
                                 result.append(param.getName());
-                                for (Tree.ParameterList pl: fa.getParameterLists()) {
-                                    result.append('(');
-                                    boolean first=true;
-                                    for (Tree.Parameter p: pl.getParameters()) {
-                                        if (first) {
-                                            first=false;
-                                        }
-                                        else {
-                                            result.append(", ");
-                                        }
-                                        if (p instanceof Tree.InitializerParameter) {
-                                            ProducedType type = 
-                                                    p.getParameterModel().getType();
-                                            if (!isTypeUnknown(type)) {
-                                                result.append(type.getProducedTypeName(cu.getUnit()))
-                                                      .append(" ");
-                                            }
-                                        }
-                                        result.append(Nodes.toString(p, tokens));
-                                    }
-                                    result.append(')');
-                                }
+                                Unit unit = cu.getUnit();
+                                Nodes.appendParameters(result, fa, unit, tokens);
                                 if (fa.getBlock()!=null) {
                                     result.append(" ")
-                                        .append(Nodes.toString(fa.getBlock(), tokens))
-                                        .append(" ");
+                                          .append(Nodes.toString(fa.getBlock(), tokens))
+                                          .append(" ");
                                 }
-                                else if (fa.getExpression()!=null) {
-                                    result.append(" => ")
-                                        .append(Nodes.toString(fa.getExpression(), tokens))
-                                        .append("; ");
+                                else {
+                                    result.append(" => ");
+                                }
+                                if (fa.getExpression()!=null) {
+                                    result.append(Nodes.toString(fa.getExpression(), tokens))
+                                          .append("; ");
                                 }
                                 continue;
                             }

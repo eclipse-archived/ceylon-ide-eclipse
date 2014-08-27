@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
@@ -41,7 +42,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.FunctionArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.InitializerParameter;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -729,6 +733,32 @@ public class Nodes {
             }
         }
         return null;
+    }
+
+    public static void appendParameters(StringBuilder result,
+            Tree.FunctionArgument fa, Unit unit, List<CommonToken> tokens) {
+        for (Tree.ParameterList pl: fa.getParameterLists()) {
+            result.append('(');
+            boolean first=true;
+            for (Tree.Parameter p: pl.getParameters()) {
+                if (first) {
+                    first=false;
+                }
+                else {
+                    result.append(", ");
+                }
+                if (p instanceof Tree.InitializerParameter) {
+                    ProducedType type = 
+                            p.getParameterModel().getType();
+                    if (!isTypeUnknown(type)) {
+                        result.append(type.getProducedTypeName(unit))
+                              .append(" ");
+                    }
+                }
+                result.append(toString(p, tokens));
+            }
+            result.append(')');
+        }
     }
 
 }

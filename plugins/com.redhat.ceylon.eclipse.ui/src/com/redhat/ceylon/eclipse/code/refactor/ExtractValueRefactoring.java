@@ -96,16 +96,45 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         Tree.Statement statement = findStatement(rootNode, node);
         boolean toplevel;
         if (statement instanceof Tree.Declaration) {
-            toplevel = ((Tree.Declaration) statement).getDeclarationModel().isToplevel();
+            Tree.Declaration d = (Tree.Declaration) statement;
+            toplevel = d.getDeclarationModel().isToplevel();
         }
         else {
             toplevel = false;
         }
-        String exp = toString(unparenthesize(term));
-        boolean anonFunction = term instanceof Tree.FunctionArgument;
-		type = unit.denotableType(term.getTypeModel());
+        type = unit.denotableType(term.getTypeModel());
+        Tree.Term unparened = unparenthesize(term);
+        String exp;
+        boolean anonFunction = 
+                unparened instanceof Tree.FunctionArgument;
+        String mod;
         if (anonFunction) {
-        	type = unit.getCallableReturnType(type);
+            type = unit.getCallableReturnType(type);
+            Tree.FunctionArgument fa = 
+                    (Tree.FunctionArgument) unparened;
+            StringBuilder sb = new StringBuilder();
+            if (fa.getType() instanceof Tree.VoidModifier) {
+                mod = "void ";
+            }
+            else {
+                mod = "function";
+            }
+            Nodes.appendParameters(sb, fa, unit, tokens);
+            if (fa.getBlock()!=null) {
+                sb.append(" ")
+                  .append(toString(fa.getBlock()));
+            }
+            else {
+                sb.append(" => ");
+            }
+            if (fa.getExpression()!=null) {
+                sb.append(toString(fa.getExpression()));
+            }
+            exp = sb.toString();
+        }
+        else {
+            mod = "value";
+        	exp = toString(unparened);
         }
         int il;
         String typeDec;
@@ -121,7 +150,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         }
         else {
             canBeInferred = true;
-            typeDec = anonFunction ? "function" : "value";
+            typeDec = mod;
             il = 0;
         }
         String dec = 
