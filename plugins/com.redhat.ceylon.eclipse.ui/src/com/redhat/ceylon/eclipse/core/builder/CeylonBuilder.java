@@ -2141,38 +2141,46 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (IFile file : filesToCompile) {
         	if (isInSourceFolder(file)) {
                 if(isCeylon(file)) {
-                    forJavascriptBackend.add(file.getRawLocation().toFile());
-                    forJavaBackend.add(file.getRawLocation().toFile());
+                    forJavaBackend.add(file.getLocation().toFile());
                 }
                 if(isJava(file)) {
-                    forJavaBackend.add(file.getRawLocation().toFile());
-                }
-                if (isJavascript(file)) {
-                    forJavascriptBackend.add(file.getRawLocation().toFile());
+                    forJavaBackend.add(file.getLocation().toFile());
                 }
         	}
             if (isResourceFile(file)) {
-                forJavascriptBackend.add(file.getRawLocation().toFile());
-                forJavaBackend.add(file.getRawLocation().toFile());
-                resources.add(file.getRawLocation().toFile());
+                resources.add(file.getLocation().toFile());
+            }
+        }
+
+        // For the moment the JSCompiler doesn't support partial compilation of a module
+        // so we add all the files to the source files list.
+        // TODO : When JS partial module compilation is supported, re-integrate these lines 
+        // in the loop above
+        if (compileToJs(project)) {
+            for (IFile file : getProjectFiles(project)) {
+            	if (isInSourceFolder(file)) {
+                    if(isCeylon(file) || isJavascript(file)) {
+                        forJavascriptBackend.add(file.getLocation().toFile());
+                    }
+            	}
             }
         }
 
         PrintWriter printWriter = new PrintWriter(System.out);//(getConsoleErrorStream(), true);
         boolean success = true;
         //Compile JS first
-        if (!forJavascriptBackend.isEmpty() && compileToJs(project)) {
+        if ((forJavascriptBackend.size() + resources.size() > 0) && compileToJs(project)) {
             success = compileJs(project, typeChecker, js_srcdir, js_rsrcdir, js_repos,
                     js_verbose, js_outRepo, printWriter, ! compileToJava(project),
-                    resources);
+                    forJavascriptBackend, resources);
         }
-        if (!forJavaBackend.isEmpty() && compileToJava(project)) {
+        if ((forJavaBackend.size() + resources.size() > 0) && compileToJava(project)) {
             // For Java don't stop compiling when encountering errors
             options.add("-continue");
             // always add the java files, otherwise ceylon code won't see them 
             // and they won't end up in the archives (src/car)
             success = success & compile(project, javaProject, options, 
-                    forJavaBackend, typeChecker, printWriter, monitor);
+                    forJavaBackend, resources, typeChecker, printWriter, monitor);
         }
         
         if (! compileToJs(project) &&
@@ -2218,7 +2226,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private boolean compileJs(IProject project, TypeChecker typeChecker,
             List<File> js_srcdir, List<File> js_rsrcdir, List<String> js_repos, 
             boolean js_verbose, String js_outRepo, PrintWriter printWriter, 
-            boolean generateSourceArchive, List<File> resources) 
+            boolean generateSourceArchive, List<File> sources, List<File> resources) 
                     throws CoreException {
         
         Options jsopts = new Options()
@@ -2258,6 +2266,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             };
         }.stopOnErrors(false);
         try {
+        	jsc.setSourceFiles(sources);
             jsc.setResourceFiles(resources);
             if (!jsc.generate()) {
                 CompileErrorReporter errorReporter = null;
@@ -2289,7 +2298,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     @SuppressWarnings("deprecation")
     private boolean compile(final IProject project, IJavaProject javaProject, 
-            List<String> options, java.util.List<File> sourceFiles, 
+            List<String> options, List<File> sources, List<File> resources,
             final TypeChecker typeChecker, PrintWriter printWriter,
             IProgressMonitor mon) 
                     throws VerifyError {
@@ -2297,7 +2306,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         int numberOfJavaFiles = 0;
         int numberOfCeylonFiles = 0;
         
-        for (File file : sourceFiles) {
+        for (File file : sources) {
             if (JavaCore.isJavaLikeFileName(file.getName())) {
                 numberOfJavaFiles ++;
             } else if (file.getName().endsWith(".ceylon")){
@@ -2331,18 +2340,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         computeCompilerClasspath(project, javaProject, options);
         
-        Iterable<? extends JavaFileObject> compilationUnits =
-                fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+        List<File> allFiles = new ArrayList<>(sources.size()+ resources.size());
+        allFiles.addAll(sources);
+        allFiles.addAll(resources);
+        Iterable<? extends JavaFileObject> unitsToCompile =
+                fileManager.getJavaFileObjectsFromFiles(allFiles);
         
         if (reuseEclipseModelInCompilation(project)) {
             setupJDTModelLoader(project, typeChecker, context);
         }
         
-//        ZipFileIndexCache.getSharedInstance().clearCache();
-        
         CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
                 fileManager, errorReporter, options, null, 
-                compilationUnits);
+                unitsToCompile);
         task.setTaskListener(new TaskListener() {
             @Override
             public void started(TaskEvent ta) {
