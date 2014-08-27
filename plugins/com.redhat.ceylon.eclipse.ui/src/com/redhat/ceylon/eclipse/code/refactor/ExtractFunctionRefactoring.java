@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static java.util.Collections.singletonList;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
@@ -466,7 +467,27 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         Tree.Term term = (Tree.Term) node;
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;
-        String exp = toString(unparenthesize(term));
+        Tree.Term unparened = unparenthesize(term);
+        String body;
+        if (unparened instanceof Tree.FunctionArgument) {
+            Tree.FunctionArgument fa = 
+                    (Tree.FunctionArgument) unparened;
+            returnType = fa.getType().getTypeModel();
+            if (fa.getBlock()!=null) {
+                body = toString(fa.getBlock());
+            }
+            else if (fa.getExpression()!=null) {
+                body = "=> " + toString(fa.getExpression()) + ";";
+            }
+            else {
+                body = "=>;";
+            }
+        }
+        else {
+            returnType = node.getUnit()
+                    .denotableType(term.getTypeModel());
+            body = "=> " + toString(unparened) + ";";
+        }
         FindContainerVisitor fsv = new FindContainerVisitor(term);
         rootNode.visit(fsv);
         Tree.Declaration decNode = fsv.getDeclaration();
@@ -482,84 +503,105 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     localTypes, new ArrayList<ProducedType>());
         }
         
-        String params = "";
-        String args = "";
+        StringBuilder params = new StringBuilder();
+        StringBuilder args = new StringBuilder();
         if (!flrv.getLocalReferences().isEmpty()) {
+            boolean first = true;
             for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+                if (first) {
+                    first = false;
+                }
+                else {
+                    params.append(", ");
+                    args.append(", ");
+                }
                 Declaration pdec = bme.getDeclaration();
                 if (pdec instanceof TypedDeclaration && 
                         ((TypedDeclaration) pdec).isDynamicallyTyped()) {
-                    params += "dynamic";
+                    params.append("dynamic");
                 }
                 else {
-                    params += node.getUnit().denotableType(bme.getTypeModel())
-                            .getProducedTypeName(node.getUnit());
+                    params.append(node.getUnit().denotableType(bme.getTypeModel())
+                            .getProducedTypeName(node.getUnit()));
                 }
-                params += " " + bme.getIdentifier().getText() + ", ";
-                args += bme.getIdentifier().getText() + ", ";
+                params.append(" ").append(bme.getIdentifier().getText());
+                args.append(bme.getIdentifier().getText());
             }
-            params = params.substring(0, params.length()-2);
-            args = args.substring(0, args.length()-2);
         }
         
-        String indent = Indents.getDefaultLineDelimiter(doc) + 
+        String indent = 
+                getDefaultLineDelimiter(doc) + 
                 getIndent(decNode, doc);
         String extraIndent = indent + getDefaultIndent();
 
-        String typeParams = "";
-        String constraints = "";
+        StringBuilder typeParams = new StringBuilder();
+        StringBuilder constraints = new StringBuilder();
         if (!localTypes.isEmpty()) {
+            typeParams.append("<");
+            boolean first = true;
             for (TypeDeclaration t: localTypes) {
-                typeParams += t.getName() + ", ";
+                if (first) {
+                    first = false;
+                }
+                else {
+                    typeParams.append(", ");
+                }
+                typeParams.append(t.getName());
                 if (!t.getSatisfiedTypes().isEmpty()) {
-                    constraints += extraIndent + getDefaultIndent() + 
-                            "given " + t.getName() + " satisfies ";
+                    constraints.append(extraIndent).append(getDefaultIndent()) 
+                            .append("given ").append(t.getName()).append(" satisfies ");
+                    boolean firstConstraint = true;
                     for (ProducedType pt: t.getSatisfiedTypes()) {
-                        constraints += pt.getProducedTypeName(node.getUnit()) + "&";
+                        if (firstConstraint) {
+                            firstConstraint = false;
+                        }
+                        else {
+                            constraints.append("&");
+                        }
+                        constraints.append(pt.getProducedTypeName(node.getUnit()));
                     }
-                    constraints = constraints.substring(0, constraints.length()-1);
                 }
             }
-            typeParams = "<" + typeParams.substring(0, typeParams.length()-2) + ">";
+            typeParams.append(">");
         }
         
         int il;
         String type;
-        returnType = node.getUnit()
-                .denotableType(term.getTypeModel());
         if (returnType==null || returnType.isUnknown()) {
             type = "dynamic";
             il = 0;
         }
         else {
-            boolean isVoid = (returnType.getDeclaration() instanceof Class) && 
-                    returnType.getDeclaration().equals(term.getUnit().getAnythingDeclaration());
+            TypeDeclaration rtd = returnType.getDeclaration();
+            boolean isVoid = 
+                    rtd instanceof Class && 
+                    rtd.equals(term.getUnit().getAnythingDeclaration());
             if (isVoid) {
                 type = "void";
                 il = 0;
             }
+            else if (explicitType || dec.isToplevel()) {
+                type = returnType.getProducedTypeName(node.getUnit());
+                HashSet<Declaration> decs = new HashSet<Declaration>();
+                importType(decs, returnType, rootNode);
+                il = applyImports(tfc, decs, rootNode, doc);
+            }
             else {
-                if (explicitType || dec.isToplevel()) {
-                    type = returnType.getProducedTypeName(node.getUnit());
-                    HashSet<Declaration> decs = new HashSet<Declaration>();
-                    importType(decs, returnType, rootNode);
-                    il = applyImports(tfc, decs, rootNode, doc);
-                }
-                else {
-                    type = "function";
-                    il = 0;
-                    canBeInferred = true;
-                }
+                type = "function";
+                il = 0;
+                canBeInferred = true;
             }
         }
 
-        String text = type + " " + newName + typeParams + "(" + params + ")" + 
-                constraints + 
-                " => " + exp + ";" 
-                + indent + indent;
+        String text = 
+                type + " " + newName + typeParams + "(" + params + ")" + 
+                constraints + " " + body + indent + indent;
+        String invocation = 
+                unparened instanceof Tree.FunctionArgument ?
+                        newName : newName + "(" + args + ")";
         Integer decStart = decNode.getStartIndex();
         tfc.addEdit(new InsertEdit(decStart, text));
-        tfc.addEdit(new ReplaceEdit(start, length, newName + "(" + args + ")"));
+        tfc.addEdit(new ReplaceEdit(start, length, invocation));
         typeRegion = new Region(decStart, type.length());
         decRegion = new Region(decStart+type.length()+1, newName.length());
         refRegion = new Region(start+text.length()+il, newName.length());
