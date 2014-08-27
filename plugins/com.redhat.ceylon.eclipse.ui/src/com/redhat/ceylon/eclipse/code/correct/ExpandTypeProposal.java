@@ -32,8 +32,11 @@ public class ExpandTypeProposal extends CorrectionProposal {
         @Override
         public void visit(Tree.Type that) {
             super.visit(that);
-            if (region.getOffset()<=that.getStartIndex() &&
-                    region.getOffset()+region.getLength()>=that.getStopIndex()+1) {
+            Integer start = that.getStartIndex();
+            Integer stop = that.getStopIndex();
+            if (start!=null && stop!=null &&
+                    region.getOffset()<=start &&
+                    region.getOffset()+region.getLength()>=stop+1) {
                 result = that;
             }
         }
