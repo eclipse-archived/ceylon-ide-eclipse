@@ -12,7 +12,6 @@ import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
@@ -157,6 +156,9 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     IRegion refRegion;
     IRegion typeRegion;
 
+    private boolean isParameterOfMethodOrClass(Declaration d) {
+        return d.isParameter()&&d.getContainer().equals(methodOrClass.getDeclarationModel());
+    }
     void extractInFile(TextChange tfc) 
             throws CoreException {
         tfc.setEdit(new MultiTextEdit());
@@ -180,19 +182,23 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         else {
             return;
         }
-        String text;
-        try {
-            text = doc.get(Nodes.getNodeStartOffset(node),
-                    Nodes.getNodeLength(node));
-        }
-        catch (BadLocationException e) {
-            e.printStackTrace();
-            return;
-        }
+        
         Tree.Term term = (Tree.Term) node;
+        boolean anonfun = node instanceof Tree.FunctionArgument &&
+                ((Tree.FunctionArgument) node).getExpression()!=null;
+        String text;
         int il = 0;
-        type = node.getUnit()
-                .denotableType(term.getTypeModel());
+        if (anonfun) {
+            Tree.FunctionArgument fa = (Tree.FunctionArgument) node;
+            type = fa.getType().getTypeModel();
+            text = Nodes.toString(fa.getExpression(), tokens);
+        }
+        else {
+            type = node.getUnit()
+                    .denotableType(term.getTypeModel());
+            text = Nodes.toString(node, tokens);
+        }
+        
         String typeDec;
         if (type==null || type.isUnknown()) {
             typeDec = "dynamic";
@@ -202,6 +208,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
             il+=addType(tfc, doc, type, builder);
             typeDec = builder.toString();
         }
+        
         final List<Tree.BaseMemberExpression> localRefs = 
                 new ArrayList<Tree.BaseMemberExpression>();
         node.visit(new Visitor() {
@@ -210,13 +217,16 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
             public void visit(Tree.BaseMemberExpression that) {
                 super.visit(that);
                 Declaration d = that.getDeclaration();
-                if (d!=null && !d.isParameter() && !decs.contains(d) &&
-                        d.getContainer().equals(methodOrClass.getDeclarationModel())) {
+                if (d!=null && !isParameterOfMethodOrClass(d) && 
+                        !decs.contains(d) &&
+                        d.isDefinedInScope(node.getScope()) && 
+                        !d.isDefinedInScope(methodOrClass.getScope().getContainer())) {
                     localRefs.add(that);
                     decs.add(d);
                 }
             }
         });
+        
         String decl;
         String call;
         if (localRefs.isEmpty()) {
@@ -237,12 +247,14 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
                 args.append(n);
             }
             decl = typeDec + " " + newName + "(" + params + ") => " + text;
-            call = newName + "(" + args + ")";
+            call = anonfun ? newName : newName + "(" + args + ")";
         }
+        
         Integer start = pl.getStopIndex();
         String dectext = (pl.getParameters().isEmpty()?"":", ") + decl;
         tfc.addEdit(new InsertEdit(start, dectext));
-        tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), Nodes.getNodeLength(node), call));
+        tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), 
+                Nodes.getNodeLength(node), call));
         int buffer = pl.getParameters().isEmpty()?0:2;
         decRegion = new Region(start+typeDec.length()+buffer+1, newName.length());
         refRegion = new Region(Nodes.getNodeStartOffset(node)+dectext.length()+il, call.length());
