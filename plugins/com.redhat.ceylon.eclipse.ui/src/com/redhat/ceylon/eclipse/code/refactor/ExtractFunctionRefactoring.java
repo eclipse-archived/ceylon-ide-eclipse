@@ -496,7 +496,6 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 new FindLocalReferencesVisitor(node.getScope(), 
                 getContainingScope(decNode));
         term.visit(flrv);
-        //TODO: add all anon function params!
         List<TypeDeclaration> localTypes = 
                 new ArrayList<TypeDeclaration>();
         for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
