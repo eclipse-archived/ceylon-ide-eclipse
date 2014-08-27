@@ -1146,15 +1146,12 @@ public class CeylonEditor extends TextEditor {
             new IDocumentListener() {
         public void documentAboutToBeChanged(DocumentEvent event) {
             if (parseController!=null) {
-                parseController.scheduled();
+                parseController.resetStage();
             }
         }
         public void documentChanged(DocumentEvent event) {
             synchronized (CeylonEditor.this) {
-                if (parserScheduler!=null && !backgroundParsingPaused) {
-                    parserScheduler.cancel();
-                    parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
-                }
+            	scheduleParsing();
             }
         }
     };
@@ -1503,8 +1500,12 @@ public class CeylonEditor extends TextEditor {
         return bracketMatcher;
     }
     
+    private void doSaveInternal(IProgressMonitor progressMonitor) {
+        super.doSave(progressMonitor);
+    }
+
     public void saveWithoutActions() {
-        super.doSave(getProgressMonitor());
+        doSaveInternal(getProgressMonitor());
     }
     
     @Override
@@ -1538,7 +1539,7 @@ public class CeylonEditor extends TextEditor {
         else if (normalizeWs || normalizeNl || stripTrailingWs) {
             normalize(viewer, doc, normalizeWs, normalizeNl, stripTrailingWs);
         }
-        super.doSave(progressMonitor);
+        doSaveInternal(progressMonitor);
     }
 
     private static void normalize(CeylonSourceViewer viewer, IDocument doc,
