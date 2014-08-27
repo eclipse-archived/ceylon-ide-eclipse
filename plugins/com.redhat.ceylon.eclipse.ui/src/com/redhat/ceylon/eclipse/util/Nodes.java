@@ -42,10 +42,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.FunctionArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.InitializerParameter;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -518,13 +515,13 @@ public class Nodes {
         }
     }
 
-    public static String toString(Node term, List<CommonToken> theTokens) {
+    public static String toString(Node term, List<CommonToken> tokens) {
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;
         Region region = new Region(start, length);
         StringBuilder exp = new StringBuilder();
         for (Iterator<CommonToken> ti = 
-                getTokenIterator(theTokens, region); 
+                getTokenIterator(tokens, region); 
                 ti.hasNext();) {
             CommonToken token = ti.next();
             int type = token.getType();
