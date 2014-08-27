@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static java.lang.Character.isWhitespace;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -14,12 +18,12 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertToNamedArgumentsProposal extends CorrectionProposal {
@@ -28,8 +32,10 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
         super("Convert to named arguments", change, new Region(offset, 0));
     }
     
-    public static void addConvertToNamedArgumentsProposal(Collection<ICompletionProposal> proposals, 
-            IFile file, Tree.CompilationUnit cu, CeylonEditor editor, int currentOffset) {
+    public static void addConvertToNamedArgumentsProposal(
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Tree.CompilationUnit cu, 
+            CeylonEditor editor, int currentOffset) {
         Tree.PositionalArgumentList pal = 
                 findPositionalArgumentList(currentOffset, cu);
         if (canConvert(pal)) {
@@ -39,7 +45,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
             int length = pal.getStopIndex()-start+1;
             StringBuilder result = new StringBuilder();
             try {
-                if (!Character.isWhitespace(EditorUtil.getDocument(tc).getChar(start-1))) {
+                if (!isWhitespace(getDocument(tc).getChar(start-1))) {
                     result.append(" ");
                 }
             }
@@ -48,8 +54,10 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
             }
             result.append("{ ");
             boolean sequencedArgs = false;
-            List<CommonToken> tokens = editor.getParseController().getTokens();
-            final List<Tree.PositionalArgument> args = pal.getPositionalArguments();
+            List<CommonToken> tokens = 
+                    editor.getParseController().getTokens();
+            final List<Tree.PositionalArgument> args = 
+                    pal.getPositionalArguments();
             int i=0;
             for (Tree.PositionalArgument arg: args) {
                 Parameter param = arg.getParameter();
@@ -76,11 +84,13 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                         return;
                     }
                     if (arg instanceof Tree.ListedArgument) {
-                        final Expression e = ((Tree.ListedArgument) arg).getExpression();
+                        final Expression e = 
+                                ((Tree.ListedArgument) arg).getExpression();
                         if (e!=null) {
                             Tree.Term term = e.getTerm();
                             if (term instanceof Tree.FunctionArgument) {
-                                Tree.FunctionArgument fa = (Tree.FunctionArgument) term;
+                                Tree.FunctionArgument fa = 
+                                        (Tree.FunctionArgument) term;
                                 if (fa.getType() instanceof Tree.VoidModifier) {
                                     result.append("void ");
                                 }
@@ -89,7 +99,26 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                                 }
                                 result.append(param.getName());
                                 for (Tree.ParameterList pl: fa.getParameterLists()) {
-                                    result.append(Nodes.toString(pl, tokens));
+                                    result.append('(');
+                                    boolean first=true;
+                                    for (Tree.Parameter p: pl.getParameters()) {
+                                        if (first) {
+                                            first=false;
+                                        }
+                                        else {
+                                            result.append(", ");
+                                        }
+                                        if (p instanceof Tree.InitializerParameter) {
+                                            ProducedType type = 
+                                                    p.getParameterModel().getType();
+                                            if (!isTypeUnknown(type)) {
+                                                result.append(type.getProducedTypeName(cu.getUnit()))
+                                                      .append(" ");
+                                            }
+                                        }
+                                        result.append(Nodes.toString(p, tokens));
+                                    }
+                                    result.append(')');
                                 }
                                 if (fa.getBlock()!=null) {
                                     result.append(" ")
@@ -105,7 +134,8 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                             }
                             if (++i==args.size() && 
                                     term instanceof Tree.SequenceEnumeration) {
-                                Tree.SequenceEnumeration se = (Tree.SequenceEnumeration) term;
+                                Tree.SequenceEnumeration se = 
+                                        (Tree.SequenceEnumeration) term;
                                 result.append(Nodes.toString(se.getSequencedArgument(), tokens))
                                     .append(" ");
                                 continue;
