@@ -7,7 +7,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.InitializerParameter;
 
 public class FindReferencedNodeVisitor extends Visitor {
     
