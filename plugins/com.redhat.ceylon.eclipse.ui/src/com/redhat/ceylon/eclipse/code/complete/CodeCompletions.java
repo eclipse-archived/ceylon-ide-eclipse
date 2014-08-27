@@ -384,7 +384,7 @@ public class CodeCompletions {
                         else if (p.isSequenced()) {
                             result.append("*");
                         }
-                        result.append(descriptionOnly ? 
+                        result.append(descriptionOnly || p.getModel()==null ? 
                                 p.getName() : escapeName(p.getModel()));
                     }
                     result.append(", ");
