@@ -7,6 +7,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.InitializerParameter;
 
 public class FindReferencedNodeVisitor extends Visitor {
     
@@ -90,8 +91,17 @@ public class FindReferencedNodeVisitor extends Visitor {
         super.visit(that);
     }
     
+    @Override
+    public void visit(Tree.InitializerParameter that) {
+        if (isDeclaration(that.getParameterModel().getModel())) {
+            declarationNode = that;
+        }
+        super.visit(that);
+    }
+    
     public void visitAny(Node node) {
-        if (declarationNode==null) {
+        if (declarationNode==null ||
+                declarationNode instanceof Tree.InitializerParameter) {
             super.visitAny(node);
         }
     }
