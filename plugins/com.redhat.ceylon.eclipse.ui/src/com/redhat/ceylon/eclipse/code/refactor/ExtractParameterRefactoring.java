@@ -184,19 +184,20 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         }
         
         Tree.Term term = (Tree.Term) node;
-        boolean anonfun = node instanceof Tree.FunctionArgument &&
-                ((Tree.FunctionArgument) node).getExpression()!=null;
+        Tree.Term unparened = unparenthesize(term);
+        boolean anonfun = unparened instanceof Tree.FunctionArgument &&
+                ((Tree.FunctionArgument) unparened).getExpression()!=null;
         String text;
         int il = 0;
         if (anonfun) {
-            Tree.FunctionArgument fa = (Tree.FunctionArgument) node;
+            Tree.FunctionArgument fa = (Tree.FunctionArgument) unparened;
             type = fa.getType().getTypeModel();
             text = Nodes.toString(fa.getExpression(), tokens);
         }
         else {
             type = node.getUnit()
                     .denotableType(term.getTypeModel());
-            text = Nodes.toString(node, tokens);
+            text = Nodes.toString(unparened, tokens);
         }
         
         String typeDec;
