@@ -229,9 +229,11 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         
         String decl;
         String call;
+        int refStart;
         if (localRefs.isEmpty()) {
             decl = typeDec + " " + newName + " = " + text;
             call = newName;
+            refStart = 0;
         }
         else {
             StringBuilder params = new StringBuilder();
@@ -252,14 +254,17 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
                 Tree.ParameterList cpl = fa.getParameterLists().get(0);
                 if (cpl.getParameters().size()==localRefs.size()) {
                     call = newName;
+                    refStart = 0;
                 }
                 else {
-                    call = Nodes.toString(cpl, tokens) + 
-                            " => " + newName + "(" + args + ")";
+                    String header = Nodes.toString(cpl, tokens) + " => ";
+                    call = header + newName + "(" + args + ")";
+                    refStart = header.length();
                 }
             }
             else {
                 call = newName + "(" + args + ")";
+                refStart = 0;
             }
         }
         
@@ -270,7 +275,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
                 Nodes.getNodeLength(node), call));
         int buffer = pl.getParameters().isEmpty()?0:2;
         decRegion = new Region(start+typeDec.length()+buffer+1, newName.length());
-        refRegion = new Region(Nodes.getNodeStartOffset(node)+dectext.length()+il, call.length());
+        refRegion = new Region(Nodes.getNodeStartOffset(node)+dectext.length()+il+refStart, newName.length());
         typeRegion = new Region(start+buffer, typeDec.length());
     }
 

@@ -600,26 +600,30 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 type + " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " " + body + indent + indent;
         String invocation;
+        int refStart;
         if (unparened instanceof Tree.FunctionArgument) {
             Tree.FunctionArgument fa = (Tree.FunctionArgument) node;
             Tree.ParameterList cpl = fa.getParameterLists().get(0);
             if (cpl.getParameters().size()==localRefs.size()) {
                 invocation = newName;
+                refStart = start;
             }
             else {
-                invocation = Nodes.toString(cpl, tokens) + 
-                        " => " + newName + "(" + args + ")";
+                String header = Nodes.toString(cpl, tokens) + " => ";
+                invocation = header + newName + "(" + args + ")";
+                refStart = start + header.length();
             }
         }
         else {
             invocation = newName + "(" + args + ")";
+            refStart = start;
         }
         Integer decStart = decNode.getStartIndex();
         tfc.addEdit(new InsertEdit(decStart, text));
         tfc.addEdit(new ReplaceEdit(start, length, invocation));
         typeRegion = new Region(decStart, type.length());
         decRegion = new Region(decStart+type.length()+1, newName.length());
-        refRegion = new Region(start+text.length()+il, newName.length());
+        refRegion = new Region(refStart+text.length()+il, newName.length());
     }
 
     private Scope getContainingScope(Tree.Declaration decNode) {
