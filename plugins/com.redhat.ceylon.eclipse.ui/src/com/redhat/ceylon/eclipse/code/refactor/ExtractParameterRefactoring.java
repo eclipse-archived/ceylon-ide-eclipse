@@ -247,7 +247,20 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
                 args.append(n);
             }
             decl = typeDec + " " + newName + "(" + params + ") => " + text;
-            call = anonfun ? newName : newName + "(" + args + ")";
+            if (anonfun) {
+                Tree.FunctionArgument fa = (Tree.FunctionArgument) node;
+                Tree.ParameterList cpl = fa.getParameterLists().get(0);
+                if (cpl.getParameters().size()==localRefs.size()) {
+                    call = newName;
+                }
+                else {
+                    call = Nodes.toString(cpl, tokens) + 
+                            " => " + newName + "(" + args + ")";
+                }
+            }
+            else {
+                call = newName + "(" + args + ")";
+            }
         }
         
         Integer start = pl.getStopIndex();

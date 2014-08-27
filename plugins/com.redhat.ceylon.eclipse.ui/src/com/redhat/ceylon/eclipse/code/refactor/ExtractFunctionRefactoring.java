@@ -47,6 +47,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
@@ -488,6 +489,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     .denotableType(term.getTypeModel());
             body = "=> " + toString(unparened) + ";";
         }
+        
         FindContainerVisitor fsv = new FindContainerVisitor(term);
         rootNode.visit(fsv);
         Tree.Declaration decNode = fsv.getDeclaration();
@@ -496,18 +498,19 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 new FindLocalReferencesVisitor(node.getScope(), 
                 getContainingScope(decNode));
         term.visit(flrv);
+        List<BaseMemberExpression> localRefs = flrv.getLocalReferences();
         List<TypeDeclaration> localTypes = 
                 new ArrayList<TypeDeclaration>();
-        for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+        for (Tree.BaseMemberExpression bme: localRefs) {
             addLocalType(dec, node.getUnit().denotableType(bme.getTypeModel()), 
                     localTypes, new ArrayList<ProducedType>());
         }
         
         StringBuilder params = new StringBuilder();
         StringBuilder args = new StringBuilder();
-        if (!flrv.getLocalReferences().isEmpty()) {
+        if (!localRefs.isEmpty()) {
             boolean first = true;
-            for (Tree.BaseMemberExpression bme: flrv.getLocalReferences()) {
+            for (Tree.BaseMemberExpression bme: localRefs) {
                 if (first) {
                     first = false;
                 }
@@ -596,9 +599,21 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         String text = 
                 type + " " + newName + typeParams + "(" + params + ")" + 
                 constraints + " " + body + indent + indent;
-        String invocation = 
-                unparened instanceof Tree.FunctionArgument ?
-                        newName : newName + "(" + args + ")";
+        String invocation;
+        if (unparened instanceof Tree.FunctionArgument) {
+            Tree.FunctionArgument fa = (Tree.FunctionArgument) node;
+            Tree.ParameterList cpl = fa.getParameterLists().get(0);
+            if (cpl.getParameters().size()==localRefs.size()) {
+                invocation = newName;
+            }
+            else {
+                invocation = Nodes.toString(cpl, tokens) + 
+                        " => " + newName + "(" + args + ")";
+            }
+        }
+        else {
+            invocation = newName + "(" + args + ")";
+        }
         Integer decStart = decNode.getStartIndex();
         tfc.addEdit(new InsertEdit(decStart, text));
         tfc.addEdit(new ReplaceEdit(start, length, invocation));
