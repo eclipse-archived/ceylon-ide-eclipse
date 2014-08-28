@@ -112,22 +112,28 @@ public class CeylonOutlinePage extends ContentOutlinePage
                     TreeViewer viewer = getTreeViewer();
                     if (viewer!=null && 
                             !viewer.getTree().isDisposed()) {
-                        boolean noInput = viewer.getInput()==null;
-                        Object[] expanded = viewer.getExpandedElements();
-                        if (parseController.getStage().ordinal() >= getStage().ordinal()) {
-                            CeylonOutlineNode rootNode = new CeylonOutlineBuilder()
-                                    .buildTree(parseController);
-                            viewer.setInput(rootNode);
-                            if (noInput) {
-                                expand(viewer, rootNode);
-                            }
-                            else {
-                                for (Object obj: expanded) {
-                                    viewer.expandToLevel(obj, 1);
+                        viewer.getTree().setRedraw(false);
+                        try {
+                            boolean noInput = viewer.getInput()==null;
+                            Object[] expanded = viewer.getExpandedElements();
+                            if (parseController.getStage().ordinal() >= getStage().ordinal()) {
+                                CeylonOutlineNode rootNode = new CeylonOutlineBuilder()
+                                .buildTree(parseController);
+                                viewer.setInput(rootNode);
+                                if (noInput) {
+                                    expand(viewer, rootNode);
                                 }
-//                                viewer.refresh();
-                                expandCaretedNode(sourceViewer.getSelectedRange().x);
+                                else {
+                                    for (Object obj: expanded) {
+                                        viewer.expandToLevel(obj, 1);
+                                    }
+                                    //                                viewer.refresh();
+                                    expandCaretedNode(sourceViewer.getSelectedRange().x);
+                                }
                             }
+                        }
+                        finally {
+                            viewer.getTree().setRedraw(true);
                         }
                     }
                 }
