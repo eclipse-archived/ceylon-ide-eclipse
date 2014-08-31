@@ -40,11 +40,13 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 
     static final String CLEAN_BUILD_BEFORE_EXPORT = "cleanBuildBeforeExport";
+    static final String RECURSIVE_EXPORT = "recursiveExport";
     //private IStructuredSelection selection;
     private String repositoryPath;
     private IProject project;
     private IJavaElement selection;
     private boolean clean = true;
+    private boolean recursive = false;
     
     ExportModuleWizardPage(String defaultRepositoryPath, 
             IProject project, IJavaElement selection) {
@@ -159,6 +161,23 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 clean = !clean;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        
+        new Label(composite, SWT.NONE);
+        new Label(composite, SWT.NONE);
+        new Label(composite, SWT.NONE);
+        
+        final Button rt = new Button(composite, SWT.CHECK);
+        rt.setText("Recursively export dependencies");
+        recursive = getDialogSettings().getBoolean(RECURSIVE_EXPORT);
+        rt.setSelection(recursive);
+        rt.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                recursive = !recursive;
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
@@ -334,6 +353,10 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     
     public boolean isClean() {
         return clean;
+    }
+    
+    public boolean isRecursive() {
+        return recursive;
     }
     
 }

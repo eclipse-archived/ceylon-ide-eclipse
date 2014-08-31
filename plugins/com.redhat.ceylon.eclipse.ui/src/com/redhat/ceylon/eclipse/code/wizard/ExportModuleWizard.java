@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.cmr.api.ArtifactContext.allSuffixes;
 import static com.redhat.ceylon.eclipse.code.wizard.ExportModuleWizardPage.CLEAN_BUILD_BEFORE_EXPORT;
+import static com.redhat.ceylon.eclipse.code.wizard.ExportModuleWizardPage.RECURSIVE_EXPORT;
 import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
@@ -120,6 +121,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                     protected IStatus run(IProgressMonitor monitor) {
                         monitor.setTaskName("Exporting modules to repository");
                         getDialogSettings().put(CLEAN_BUILD_BEFORE_EXPORT, page.isClean());
+                        getDialogSettings().put(RECURSIVE_EXPORT, page.isRecursive());
                         if (page.isClean()) {
                             try {
                                 project.build(CLEAN_BUILD, monitor);
@@ -136,7 +138,8 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                             String systemRepo = getInterpolatedCeylonSystemRepo(project);
                             boolean offline = CeylonProjectConfig.get(project).isOffline();
                             String output = getCeylonModulesOutputDirectory(project).getAbsolutePath();
-                            List<String> outputRepositories = getReferencedProjectsOutputRepositories(project);
+                            List<String> outputRepositories = 
+                                    getReferencedProjectsOutputRepositories(project);
                             outputRepositories.add(output);
                             CeylonUtils.CeylonRepoManagerBuilder rmb = 
                                     CeylonUtils.repoManager()
@@ -161,7 +164,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                                 String version = selectedVersions[i];
                                 ArtifactContext artifactContext = 
                                         new ArtifactContext(name, version, allSuffixes());
-                                artifactContext.setFetchSingleArtifact(true); //TODO!
+                                artifactContext.setFetchSingleArtifact(!page.isRecursive());
                                 copycat.copyModule(artifactContext);
                             }
                         }
