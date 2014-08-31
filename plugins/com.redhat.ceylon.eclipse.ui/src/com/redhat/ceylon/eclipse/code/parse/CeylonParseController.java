@@ -559,7 +559,7 @@ public class CeylonParseController {
         
         File cwd;
         String systemRepo;
-        boolean isOffline;
+        boolean offline;
         if (project == null) {
             //I believe this case can only happen
             //in the structure compare editor, so
@@ -570,17 +570,17 @@ public class CeylonParseController {
             systemRepo = CeylonPlugin.getInstance()
                     .getCeylonRepository()
                     .getAbsolutePath();
-            isOffline = CeylonConfig.get()
+            offline = CeylonConfig.get()
                     .getBoolOption(DEFAULTS_OFFLINE, false);
         }
         else {
             cwd = project.getLocation().toFile();
             systemRepo = getInterpolatedCeylonSystemRepo(project);
-            isOffline = CeylonProjectConfig.get(project).isOffline();
+            offline = CeylonProjectConfig.get(project).isOffline();
         }
         
         RepositoryManager repositoryManager = repoManager()
-                .offline(isOffline)
+                .offline(offline)
                 .cwd(cwd)
                 .systemRepo(systemRepo)
                 .extraUserRepos(getReferencedProjectsOutputRepositories(project))

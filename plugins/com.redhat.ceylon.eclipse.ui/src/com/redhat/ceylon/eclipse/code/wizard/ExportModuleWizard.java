@@ -1,19 +1,17 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.cmr.api.ArtifactContext.allSuffixes;
 import static com.redhat.ceylon.eclipse.code.wizard.ExportModuleWizardPage.CLEAN_BUILD_BEFORE_EXPORT;
 import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.io.File;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -30,7 +28,13 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
+import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
+import com.redhat.ceylon.cmr.ceylon.ModuleCopycat;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EclipseLogger;
 
 public class ExportModuleWizard extends Wizard implements IExportWizard {
 
@@ -127,7 +131,46 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                             }
                             yieldRule(monitor);
                         }
-                        File outputDir = getCeylonModulesOutputDirectory(project);
+                        try {
+                            File cwd = project.getLocation().toFile();
+                            String systemRepo = getInterpolatedCeylonSystemRepo(project);
+                            boolean offline = CeylonProjectConfig.get(project).isOffline();
+                            String output = getCeylonModulesOutputDirectory(project).getAbsolutePath();
+                            List<String> outputRepositories = getReferencedProjectsOutputRepositories(project);
+                            outputRepositories.add(output);
+                            CeylonUtils.CeylonRepoManagerBuilder rmb = 
+                                    CeylonUtils.repoManager()
+                                    .cwd(cwd)
+                                    .systemRepo(systemRepo)
+                                    .extraUserRepos(outputRepositories)
+                                    .offline(offline)
+                                    .logger(new EclipseLogger());
+                            RepositoryManager repo = rmb.buildManager();
+                            RepositoryManager outRepo = 
+                                    CeylonUtils.repoManager()
+                                    .noDefaultRepos(true)
+                                    .systemRepo(systemRepo)
+                                    .outRepo(repositoryPath)
+                                    .offline(offline)
+                                    .logger(new EclipseLogger())
+                                    //.user(user).password(pass)  //TODO!
+                                    .buildOutputManager();
+                            ModuleCopycat copycat = new ModuleCopycat(repo,outRepo);
+                            for (int i=0; i<selectedModules.length; i++) {
+                                String name = selectedModules[i];
+                                String version = selectedVersions[i];
+                                ArtifactContext artifactContext = 
+                                        new ArtifactContext(name, version, allSuffixes());
+                                artifactContext.setFetchSingleArtifact(true); //TODO!
+                                copycat.copyModule(artifactContext);
+                            }
+                        }
+                        catch (Exception e) {
+                            ex = e;
+//                            e.printStackTrace();
+                            return Status.CANCEL_STATUS;
+                        }
+                        /*File outputDir = getCeylonModulesOutputDirectory(project);
                         Path outputPath = Paths.get(outputDir.getAbsolutePath());
                         Path repoPath = Paths.get(repositoryPath);
                         if (!Files.exists(repoPath)) {
@@ -159,7 +202,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                                 ex = e;
                                 return Status.CANCEL_STATUS;
                             }
-                        }
+                        }*/
                         return Status.OK_STATUS;
                     }
                 };
