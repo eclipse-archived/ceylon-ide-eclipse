@@ -164,7 +164,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                                 String version = selectedVersions[i];
                                 ArtifactContext artifactContext = 
                                         new ArtifactContext(name, version, allSuffixes());
-                                artifactContext.setFetchSingleArtifact(!page.isRecursive());
+                                artifactContext.setIgnoreDependencies(!page.isRecursive());
                                 copycat.copyModule(artifactContext);
                             }
                         }
