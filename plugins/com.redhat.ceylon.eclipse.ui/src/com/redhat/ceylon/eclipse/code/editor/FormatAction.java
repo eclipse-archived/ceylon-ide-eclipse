@@ -29,6 +29,7 @@ import ceylon.formatter.options.Tabs;
 import ceylon.formatter.options.crlf_;
 import ceylon.formatter.options.lf_;
 import ceylon.formatter.options.os_;
+import ceylon.formatter.options.loadProfile_;
 import ceylon.language.AssertionError;
 import ceylon.language.Singleton;
 
@@ -187,7 +188,11 @@ final class FormatAction extends Action {
         try {
             format_.format(
                     node,
-                    new CombinedOptions(format_.format$options(node), 
+                    new CombinedOptions(
+                            loadProfile_.loadProfile(
+                                    "default", // TODO profile management
+                                    /* inherit = */ false,
+                                    /* baseDir = */ pc.getProject().getLocation().toOSString()),
                             new Singleton<SparseFormattingOptions>
                                 (SparseFormattingOptions.$TypeDescriptor$, wsOptions)),
                     new StringBuilderWriter(builder),
