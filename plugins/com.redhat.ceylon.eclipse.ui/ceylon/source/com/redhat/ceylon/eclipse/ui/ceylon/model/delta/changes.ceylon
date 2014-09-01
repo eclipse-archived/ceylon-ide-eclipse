@@ -7,7 +7,8 @@ shared abstract class ImpactingChange()
  - extended type of a class,
  - the name or version of a module in module descriptor,
  - etc ..."
-shared class StructuralChange() extends ImpactingChange() {}
+shared abstract class StructuralChange() of structuralChange extends ImpactingChange() {}
+object structuralChange extends StructuralChange() {}
 
 "The [[changed element|AbstractDelta.changedElement]] is top-level and it has been made shared.
  
@@ -21,7 +22,8 @@ shared class StructuralChange() extends ImpactingChange() {}
  module dependencies may have greatly changed. However this doesn't change anything
  for the current module compilation units
  "
-shared class MadeVisibleOutsideScope() extends ImpactingChange() {}
+shared abstract class MadeVisibleOutsideScope() of madeVisibleOutsideScope extends ImpactingChange() {}
+object madeVisibleOutsideScope extends MadeVisibleOutsideScope() {}
 
 "The [[changed element|AbstractDelta.changedElement]] is top-level and it has been made unshared
  
@@ -34,8 +36,8 @@ shared class MadeVisibleOutsideScope() extends ImpactingChange() {}
  unresolved problems in other modules, but also that the graph of 
  module dependencies may have greatly changed. However this doesn't change anything
  for the current module compilation units"
-shared class MadeInvisibleOutsideScope() extends ImpactingChange() {}
-
+shared abstract class MadeInvisibleOutsideScope() of madeInvisibleOutsideScope extends ImpactingChange() {}
+object madeInvisibleOutsideScope extends MadeInvisibleOutsideScope() {}
 
 "The [[changed element|AbstractDelta.changedElement]] is not visible anymore from any other 
  compilation unit.
@@ -44,7 +46,8 @@ shared class MadeInvisibleOutsideScope() extends ImpactingChange() {}
  - a top-level declaration that has been removed,
  - a nested declaration that has been removed or made unshared,
  - a module import that has been removed"
-shared class Removed() extends ImpactingChange() {}
+shared abstract class Removed() of removed extends ImpactingChange() {}
+object removed extends Removed() {}
 
 "A member has been added to [[changed element|AbstractDelta.changedElement]], and is visible
  from some other compilation units.
@@ -86,7 +89,7 @@ shared abstract class ScopedMemberAdded(String name, visibleOutsideScope) of Mod
 
 "A top-level declaration (shared or not) has been added
  to the compilation unit"
-shared abstract class TopLevelDeclarationAdded(String name, Boolean visibleOutsideScope)  extends ScopedMemberAdded(name, visibleOutsideScope) {
+shared class TopLevelDeclarationAdded(String name, Boolean visibleOutsideScope)  extends ScopedMemberAdded(name, visibleOutsideScope) {
 }
 
 "A module import (shared or unshared) that has been
