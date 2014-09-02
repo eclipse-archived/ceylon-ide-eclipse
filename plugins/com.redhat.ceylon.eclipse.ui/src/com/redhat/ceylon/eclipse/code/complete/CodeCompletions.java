@@ -544,7 +544,8 @@ public class CodeCompletions {
                     else {
                         result.append(", ");
                     }
-                    ProducedType arg = pr.getTypeArguments().get(tp);
+                    ProducedType arg = pr==null ? 
+                            null : pr.getTypeArguments().get(tp);
                     if (arg == null) {
                         if (variances) {
                             if (tp.isCovariant()) {
