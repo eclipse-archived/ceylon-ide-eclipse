@@ -209,7 +209,7 @@ final class FormatAction extends Action {
         if (selected) {
             // remove the trailing line break
             text = builder.substring(0, 
-                    builder.length() - wsOptions.getLineBreak().toString().length());
+                    builder.length() - wsOptions.getLineBreak().getText().length());
         } else {
             text = builder.toString();
         }
