@@ -8,7 +8,9 @@ shared abstract class ImpactingChange()
  - the name or version of a module in module descriptor,
  - etc ..."
 shared abstract class StructuralChange() of structuralChange extends ImpactingChange() {}
-object structuralChange extends StructuralChange() {}
+object structuralChange extends StructuralChange() {
+    string => "structuralChange";
+}
 
 "The [[changed element|AbstractDelta.changedElement]] is top-level and it has been made shared.
  
@@ -23,7 +25,9 @@ object structuralChange extends StructuralChange() {}
  for the current module compilation units
  "
 shared abstract class MadeVisibleOutsideScope() of madeVisibleOutsideScope extends ImpactingChange() {}
-object madeVisibleOutsideScope extends MadeVisibleOutsideScope() {}
+object madeVisibleOutsideScope extends MadeVisibleOutsideScope() {
+    string => "madeVisibleOutsideScope";
+}
 
 "The [[changed element|AbstractDelta.changedElement]] is top-level and it has been made unshared
  
@@ -37,7 +41,9 @@ object madeVisibleOutsideScope extends MadeVisibleOutsideScope() {}
  module dependencies may have greatly changed. However this doesn't change anything
  for the current module compilation units"
 shared abstract class MadeInvisibleOutsideScope() of madeInvisibleOutsideScope extends ImpactingChange() {}
-object madeInvisibleOutsideScope extends MadeInvisibleOutsideScope() {}
+object madeInvisibleOutsideScope extends MadeInvisibleOutsideScope() {
+    string => "madeInvisibleOutsideScope";
+}
 
 "The [[changed element|AbstractDelta.changedElement]] is not visible anymore from any other 
  compilation unit.
@@ -47,7 +53,9 @@ object madeInvisibleOutsideScope extends MadeInvisibleOutsideScope() {}
  - a nested declaration that has been removed or made unshared,
  - a module import that has been removed"
 shared abstract class Removed() of removed extends ImpactingChange() {}
-object removed extends Removed() {}
+shared object removed extends Removed() {
+    string => "removed";
+}
 
 "A member has been added to [[changed element|AbstractDelta.changedElement]], and is visible
  from some other compilation units.
@@ -69,6 +77,15 @@ shared abstract class MemberAdded(name) of ScopedMemberAdded | DeclarationMember
  or a nested shared declaration. So it's visible in every scope where 
  the parent declaration is visible."
 shared class DeclarationMemberAdded(String name) extends MemberAdded(name) {
+    string => "declarationMemberAdded (`` name ``)";
+    shared actual Boolean equals(Object that) {
+        if (is DeclarationMemberAdded that) {
+            return name==that.name;
+        }
+        else {
+            return false;
+        }
+    }
 }
 
 "A member has been added to the [[changed element|AbstractDelta.changedElement]], and is visible
@@ -90,6 +107,16 @@ shared abstract class ScopedMemberAdded(String name, visibleOutsideScope) of Mod
 "A top-level declaration (shared or not) has been added
  to the compilation unit"
 shared class TopLevelDeclarationAdded(String name, Boolean visibleOutsideScope)  extends ScopedMemberAdded(name, visibleOutsideScope) {
+    string => "topLevelDeclarationMemberAdded (`` name ``, `` visibleOutsideScope then "visibleOutside" else "invisibleOutside" ``)";
+    shared actual Boolean equals(Object that) {
+        if (is TopLevelDeclarationAdded that) {
+            return name==that.name && 
+                visibleOutsideScope==that.visibleOutsideScope;
+        }
+        else {
+            return false;
+        }
+    }
 }
 
 "A module import (shared or unshared) that has been
@@ -97,4 +124,15 @@ shared class TopLevelDeclarationAdded(String name, Boolean visibleOutsideScope) 
 shared class ModuleImportAdded(String name, Boolean visibleOutsideScope, version) extends ScopedMemberAdded(name, visibleOutsideScope) {
     "The version of the added module import"
     shared String version;
+    string => "moduleImportAdded (`` name ``/`` version ``, `` visibleOutsideScope then "visibleOutside" else "invisibleOutside" ``)";
+    shared actual Boolean equals(Object that) {
+        if (is ModuleImportAdded that) {
+            return name==that.name && 
+                visibleOutsideScope==that.visibleOutsideScope && 
+                version==that.version;
+        }
+        else {
+            return false;
+        }
+    }
 }
