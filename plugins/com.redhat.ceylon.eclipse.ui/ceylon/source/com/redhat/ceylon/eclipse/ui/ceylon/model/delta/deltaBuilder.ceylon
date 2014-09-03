@@ -74,7 +74,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
         
     shared formal void addRemovedChange();
     shared formal void calculateStructuralChanges();
-    shared formal void addChildDelta(AstNode oldChild, AstNode? newChild);
+    shared formal void manageChildDelta(AstNode oldChild, AstNode? newChild);
     shared formal void addMemberAddedChange(AstNode newChild);
     
     shared default void recurse() {
@@ -132,7 +132,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
                 value oldChild = oldChildrenSet?.get(keyChild) else null;
                 value newChild = newChildrenSet?.get(keyChild) else null;
                 if (exists oldChild) {
-                    addChildDelta(oldChild, newChild);
+                    manageChildDelta(oldChild, newChild);
                 } else {
                     assert(exists newChild);
                     addMemberAddedChange(newChild);
@@ -154,16 +154,21 @@ class RegularCompilationUnitDeltaBuilder(AstCompilationUnit oldNode, AstCompilat
             changedElement => oldNode.unit;
             shared actual {RegularCompilationUnitDelta.PossibleChange*} changes => outer.changes;
             shared actual {TopLevelDeclarationDelta*} childrenDeltas => outer.childrenDeltas;
+            shared actual Boolean equals(Object that) => (super of AbstractDelta).equals(that);
         }
         return delta;
     }
     
-    shared actual void addChildDelta(AstNode oldChild, AstNode? newChild) {
+    shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
         assert(is AstDeclaration oldChild, 
                 is AstDeclaration? newChild, 
                 oldChild.declarationModel.toplevel);
         value builder = TopLevelDeclarationDeltaBuilder(oldChild, newChild);
-        childrenDeltas.add(builder.buildDelta());
+        value delta = builder.buildDelta();
+        if (delta.changes.empty && childrenDeltas.empty) {
+            return;
+        }
+        childrenDeltas.add(delta);
     }
     
     shared actual void addMemberAddedChange(AstNode newChild) {
@@ -187,7 +192,7 @@ class RegularCompilationUnitDeltaBuilder(AstCompilationUnit oldNode, AstCompilat
     }
     
     shared actual AstDeclaration[] getChildren(AstNode astNode) {
-        value children = ArrayList<AstDeclaration>(5, 0.5);
+        value children = ArrayList<AstDeclaration>(5);
         object visitor extends Visitor() {
             shared actual void visit(AstDeclaration declaration) {
                 assert(declaration.declarationModel.toplevel);
@@ -211,11 +216,12 @@ class TopLevelDeclarationDeltaBuilder(AstDeclaration oldNode, AstDeclaration? ne
             changedElement => oldNode.declarationModel;
             shared actual {TopLevelDeclarationDelta.PossibleChange*} changes => outer.changes;
             shared actual {NestedDeclarationDelta*} childrenDeltas => outer.childrenDeltas;
+            shared actual Boolean equals(Object that) => (super of AbstractDelta).equals(that);
         }
         return delta;
     }
     
-    shared actual void addChildDelta(AstNode oldChild, AstNode? newChild) {
+    shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
         assert(is AstDeclaration oldChild, 
             is AstDeclaration? newChild, 
             ! oldChild.declarationModel.toplevel);
@@ -233,6 +239,16 @@ class TopLevelDeclarationDeltaBuilder(AstDeclaration oldNode, AstDeclaration? ne
     }
     
     shared actual void calculateStructuralChanges() {
+        assert(exists oldDeclaration = oldNode.declarationModel);
+        assert(exists newDeclaration = newNode?.declarationModel);
+        if (oldDeclaration.shared && !newDeclaration.shared) {
+            changes.add(madeInvisibleOutsideScope);
+        }
+        if (!oldDeclaration.shared && newDeclaration.shared) {
+            changes.add(madeVisibleOutsideScope);
+        }
+        
+        
         // No structural change can occur within a compilation unit
         // Well ... is it true ? What about the initialization order of toplevel declarations ?
         // TODO consider the declaration order of top-levels inside a compilation unit as a structural change ?
@@ -242,11 +258,13 @@ class TopLevelDeclarationDeltaBuilder(AstDeclaration oldNode, AstDeclaration? ne
     }
     
     shared actual AstDeclaration[] getChildren(AstNode astNode) {
-        value children = ArrayList<AstDeclaration>(5, 0.5);
+        value children = ArrayList<AstDeclaration>(5);
         object visitor extends Visitor() {
             shared actual void visit(AstDeclaration declaration) {
                 assert(!declaration.declarationModel.toplevel);
-                children.add(declaration);
+                if (declaration.declarationModel.shared) {
+                    children.add(declaration);
+                }
             }
         }
         astNode.visitChildren(visitor);
@@ -266,11 +284,13 @@ class NestedDeclarationDeltaBuilder(AstDeclaration oldNode, AstDeclaration? newN
             changedElement => oldNode.declarationModel;
             shared actual {NestedDeclarationDelta.PossibleChange*} changes => outer.changes;
             shared actual {NestedDeclarationDelta*} childrenDeltas => outer.childrenDeltas;
+            shared actual Boolean equals(Object that) => (super of AbstractDelta).equals(that);
+            
         }
         return delta;
     }
     
-    shared actual void addChildDelta(AstNode oldChild, AstNode? newChild) {
+    shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
         assert(is AstDeclaration oldChild, 
             is AstDeclaration? newChild, 
             ! oldChild.declarationModel.toplevel);
@@ -297,11 +317,13 @@ class NestedDeclarationDeltaBuilder(AstDeclaration oldNode, AstDeclaration? newN
     }
     
     shared actual AstDeclaration[] getChildren(AstNode astNode) {
-        value children = ArrayList<AstDeclaration>(5, 0.5);
+        value children = ArrayList<AstDeclaration>(5);
         object visitor extends Visitor() {
             shared actual void visit(AstDeclaration declaration) {
                 assert(!declaration.declarationModel.toplevel);
-                children.add(declaration);
+                if (declaration.declarationModel.shared) {
+                    children.add(declaration);
+                }
             }
         }
         astNode.visitChildren(visitor);
