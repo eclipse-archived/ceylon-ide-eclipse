@@ -74,6 +74,13 @@
 		
 	Each time you will rebuild one of the projects required by the Ceylon IDE plugin (distribution, SDK, formatter, ...), you only need to _Refresh_ the `ceylon-dist-osgi` project, as well as the bundle proxy projects related to the rebuilt required projects, in order to be able to see the changes in the Ceylon IDE projects.
 
+Notes:
+
+If you update the dependencies of libs in the Ceylon distrib repo, you must update your `Ceylon Distribution Binary Dependencies Feature`
+plugin from the `.../ceylon-dist/osgi/build/dist` update site.
+
+If you update the sdk, ceylon.formatter or Ceylon distrib, you need to redo the `ant clean publish ide` in each project and
+refresh them in Eclipse and possible clean their proxy bundle projects and the `ceylon-dist-osgi` project.
 	
 6. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
     - Add the SWTBot Eclipse features, which are required to compile and run the Ceylon IDE 
