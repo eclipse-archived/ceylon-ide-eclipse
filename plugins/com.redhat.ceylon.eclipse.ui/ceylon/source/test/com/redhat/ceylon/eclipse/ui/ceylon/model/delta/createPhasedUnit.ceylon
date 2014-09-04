@@ -51,7 +51,7 @@ abstract class TestVirtualFile(path) satisfies VirtualFile {
 class TestSourceFile(String path, String contents) extends TestVirtualFile(path) {
     shared actual JList<VirtualFile> children => emptyList<VirtualFile>();
     shared actual Boolean folder => false;
-    shared actual InputStream inputStream => ByteArrayInputStream(javaString(contents).bytes);
+    shared actual InputStream inputStream => ByteArrayInputStream(javaString(contents + " ").bytes);
 }
 
 class TestSourceDirectory(String path, {VirtualFile*} theChildren) extends TestVirtualFile(path) {
