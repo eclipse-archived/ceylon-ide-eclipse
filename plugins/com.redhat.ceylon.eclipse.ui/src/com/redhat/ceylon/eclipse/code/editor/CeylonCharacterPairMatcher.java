@@ -7,7 +7,6 @@ import java.util.List;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
@@ -16,11 +15,11 @@ import org.eclipse.jface.text.source.ICharacterPairMatcherExtension;
 
 import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonCharacterPairMatcher 
-implements ICharacterPairMatcher, ICharacterPairMatcherExtension {
+        implements ICharacterPairMatcher, 
+                   ICharacterPairMatcherExtension {
     
     int anchor = -1;
     
@@ -71,12 +70,7 @@ implements ICharacterPairMatcher, ICharacterPairMatcherExtension {
         CeylonLexer lexer = new CeylonLexer(stream);
         CommonTokenStream ts = new CommonTokenStream(lexer);
         ts.fill();
-        try {
-            new CeylonParser(ts).compilationUnit();
-        } 
-        catch (RecognitionException e) {}
-        List<CommonToken> tokens = ts.getTokens();
-        return tokens;
+        return ts.getTokens();
     }
 
     private IRegion getRegion(List<CommonToken> tokens, int index,
