@@ -18,15 +18,18 @@ import ceylon.collection {
     MutableMap,
     MutableSet,
     ArrayList,
-    MutableList
+    MutableList,
+    StringBuilder
 }
 import com.redhat.ceylon.compiler.typechecker.model {
     ModelDeclaration = Declaration,
-    ModelUnit = Unit
+    ModelUnit = Unit,
+    ProducedType
 }
 import ceylon.interop.java {
     CeylonIterable,
-    javaClassFromInstance
+    javaClassFromInstance,
+    CeylonIterator
 }
 
 "Builds a [[model delta|AbstractDelta]] that describes the model differences 
@@ -220,8 +223,30 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
     }
     
     Boolean nodeChanged(AstAbstractNode? oldNode, AstAbstractNode? newNode) {
+        
+        class NodeSigner(AstAbstractNode node) extends Visitor() {
+            variable value builder = StringBuilder();
+            shared String signature() {
+                node.visit(this);
+                print(builder.string);
+                return builder.string;
+            }
+            
+            shared actual void visit(Ast.Type node) {
+                if (exists type = node.typeModel) {
+                    builder.append(type.producedTypeName);
+                }
+            }
+
+            shared actual void visitAny(AstAbstractNode node) {
+                builder.append("``node.nodeType``<<");
+                super.visitAny(node);
+                builder.append(">>");
+            }
+        }
+        
         if(exists oldNode, exists newNode) {
-            return oldNode.text != newNode.text;
+            return NodeSigner(oldNode).signature() != NodeSigner(newNode).signature();
         } 
         return !(oldNode is Null && newNode is Null);
     }
@@ -239,13 +264,10 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
                 annotations(oldDeclaration) != annotations(newDeclaration),
                 lookForChanges {
                     function changed(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
-                        print(oldTyped.type?.text);
                         return any {
                             nodeChanged(oldTyped.type, newTyped.type),
                             lookForChanges {
                                 function changed(Ast.AnyMethod oldMethod, Ast.AnyMethod newMethod) {
-                                    print(oldMethod.typeConstraintList?.text);
-                                    print(oldMethod.typeParameterList?.text);
                                     return any {
                                         nodeChanged(oldMethod.typeConstraintList, newMethod.typeConstraintList),
                                         nodeChanged(oldMethod.typeParameterList, newMethod.typeParameterList),
@@ -253,7 +275,6 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
                                             firstIterable => CeylonIterable(oldMethod.parameterLists);
                                             secondIterable => CeylonIterable(newMethod.parameterLists);
                                             Boolean selecting(Ast.ParameterList oldParamList, Ast.ParameterList newParamlist) {
-                                                print(oldParamList.text);
                                                 return nodeChanged(oldParamList, newParamlist);
                                             }
                                         }
@@ -262,8 +283,6 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
                             },
                             lookForChanges {
                                 function changed(Ast.ObjectDefinition oldObject, Ast.ObjectDefinition newObject) {
-                                    print(oldObject.extendedType?.text);
-                                    print(oldObject.satisfiedTypes?.text);
                                     return any {
                                         nodeChanged(oldObject.extendedType, newObject.extendedType),
                                         nodeChanged(oldObject.satisfiedTypes, newObject.satisfiedTypes)
@@ -276,7 +295,6 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
                                         firstIterable => CeylonIterable(oldVariable.parameterLists);
                                         secondIterable => CeylonIterable(newVariable.parameterLists);
                                         Boolean selecting(Ast.ParameterList oldParamList, Ast.ParameterList newParamlist) {
-                                            print(oldParamList.text);
                                             return nodeChanged(oldParamList, newParamlist);
                                         }
                                     };
@@ -287,17 +305,12 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
                 },
                 lookForChanges {
                     function changed(Ast.TypeDeclaration oldType, Ast.TypeDeclaration newType) {
-                        print(oldType.caseTypes?.text);
-                        print(oldType.satisfiedTypes?.text);
-                        print(oldType.typeParameterList?.text);
                         return any {
                             nodeChanged(oldType.caseTypes, newType.caseTypes),
                             nodeChanged(oldType.satisfiedTypes, newType.satisfiedTypes),
                             nodeChanged(oldType.typeParameterList, newType.typeParameterList),
                             lookForChanges {
                                 function changed(Ast.TypeParameterDeclaration oldTypeParameter, Ast.TypeParameterDeclaration newTypeParameter) {
-                                    print(oldTypeParameter.typeSpecifier?.text);
-                                    print(oldTypeParameter.typeVariance?.text);
                                     return any {
                                         nodeChanged(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier),
                                         nodeChanged(oldTypeParameter.typeVariance, newTypeParameter.typeVariance)
