@@ -8,13 +8,7 @@ import com.redhat.ceylon.compiler.typechecker.analyzer {
     }
 }
 import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree {
-        AstDeclaration=Declaration,
-        AstCompilationUnit=CompilationUnit,
-        AstModuleDescriptor=ModuleDescriptor,
-        AstImportModule=ImportModule,
-        AstPackageDescriptor=PackageDescriptor
-    },
+    Ast = Tree,
     AstAbstractNode=Node,
     Visitor
 }
@@ -23,11 +17,16 @@ import ceylon.collection {
     HashMap,
     MutableMap,
     MutableSet,
-    ArrayList
+    ArrayList,
+    MutableList
 }
 import com.redhat.ceylon.compiler.typechecker.model {
-    Declaration,
-    Unit
+    ModelDeclaration = Declaration,
+    ModelUnit = Unit
+}
+import ceylon.interop.java {
+    CeylonIterable,
+    javaClassFromInstance
 }
 
 "Builds a [[model delta|AbstractDelta]] that describes the model differences 
@@ -65,7 +64,7 @@ RegularCompilationUnitDelta buildCompilationUnitDeltas(PhasedUnit referencePhase
     return builder.buildDelta();
 }
 
-alias AstNode => <AstDeclaration | AstCompilationUnit | AstModuleDescriptor | AstImportModule | AstPackageDescriptor> & AstAbstractNode;
+alias AstNode => <Ast.Declaration | Ast.CompilationUnit | Ast.ModuleDescriptor | Ast.ImportModule | Ast.PackageDescriptor> & AstAbstractNode;
 
 abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
     
@@ -100,19 +99,20 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
                     for (child in children) {
                         String childKey;
                         switch (child)
-                        case(is AstDeclaration) {
-                            childKey = child.declarationModel.qualifiedNameString;
+                        case(is Ast.Declaration) {
+                            value model = child.declarationModel;
+                            childKey = "``javaClassFromInstance(model).simpleName``[``model.qualifiedNameString``]";
                         }
-                        case(is AstModuleDescriptor) {
+                        case(is Ast.ModuleDescriptor) {
                             childKey = child.unit.fullPath;
                         }
-                        case(is AstPackageDescriptor) {
+                        case(is Ast.PackageDescriptor) {
                             childKey = child.unit.fullPath;
                         }
-                        case(is AstCompilationUnit) {
+                        case(is Ast.CompilationUnit) {
                             childKey = child.unit.fullPath;
                         }
-                        case(is AstImportModule) {
+                        case(is Ast.ImportModule) {
                             childKey = "/".join {child.quotedLiteral.string, child.version.string};
                         }
                         
@@ -142,7 +142,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
     }
 }
 
-class RegularCompilationUnitDeltaBuilder(AstCompilationUnit oldNode, AstCompilationUnit newNode)
+class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.CompilationUnit newNode)
         extends DeltaBuilder(oldNode, newNode) {
 
     variable value changes = ArrayList<RegularCompilationUnitDelta.PossibleChange>();
@@ -160,8 +160,8 @@ class RegularCompilationUnitDeltaBuilder(AstCompilationUnit oldNode, AstCompilat
     }
     
     shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
-        assert(is AstDeclaration oldChild, 
-                is AstDeclaration? newChild, 
+        assert(is Ast.Declaration oldChild, 
+                is Ast.Declaration? newChild, 
                 oldChild.declarationModel.toplevel);
         value builder = TopLevelDeclarationDeltaBuilder(oldChild, newChild);
         value delta = builder.buildDelta();
@@ -172,7 +172,7 @@ class RegularCompilationUnitDeltaBuilder(AstCompilationUnit oldNode, AstCompilat
     }
     
     shared actual void addMemberAddedChange(AstNode newChild) {
-        assert(is AstDeclaration newChild, newChild.declarationModel.toplevel);
+        assert(is Ast.Declaration newChild, newChild.declarationModel.toplevel);
         changes.add(TopLevelDeclarationAdded(newChild.declarationModel.nameAsString, newChild.declarationModel.shared));
     }
     
@@ -191,10 +191,10 @@ class RegularCompilationUnitDeltaBuilder(AstCompilationUnit oldNode, AstCompilat
         
     }
     
-    shared actual AstDeclaration[] getChildren(AstNode astNode) {
-        value children = ArrayList<AstDeclaration>(5);
+    shared actual Ast.Declaration[] getChildren(AstNode astNode) {
+        value children = ArrayList<Ast.Declaration>(5);
         object visitor extends Visitor() {
-            shared actual void visit(AstDeclaration declaration) {
+            shared actual void visit(Ast.Declaration declaration) {
                 assert(declaration.declarationModel.toplevel);
                 children.add(declaration);
             }
@@ -204,11 +204,153 @@ class RegularCompilationUnitDeltaBuilder(AstCompilationUnit oldNode, AstCompilat
     }
 }
     
-class TopLevelDeclarationDeltaBuilder(AstDeclaration oldNode, AstDeclaration? newNode)
-        extends DeltaBuilder(oldNode, newNode) {
+Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
+    function lookForChanges<NodeType>(Boolean changed(NodeType oldNode, NodeType newNode))
+            given NodeType satisfies AstAbstractNode {
+        if (is NodeType oldNode) {
+            if (is NodeType newNode) {
+                if (changed(oldNode, newNode)) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
     
-    variable value changes = ArrayList<TopLevelDeclarationDelta.PossibleChange>();
-    variable value childrenDeltas = ArrayList<NestedDeclarationDelta>();
+    Boolean nodeChanged(AstAbstractNode? oldNode, AstAbstractNode? newNode) {
+        if(exists oldNode, exists newNode) {
+            return oldNode.text != newNode.text;
+        } 
+        return !(oldNode is Null && newNode is Null);
+    }
+    
+    return lookForChanges {
+        function changed(Ast.Declaration oldNode, Ast.Declaration newNode) {
+            assert(exists oldDeclaration = oldNode.declarationModel);
+            assert(exists newDeclaration = newNode.declarationModel);
+            function annotations(ModelDeclaration declaration) {
+                return HashSet {
+                    for (annotation in CeylonIterable(declaration.annotations)) if (annotation.name != "shared") annotation.string
+                };
+            }
+            return any {
+                annotations(oldDeclaration) != annotations(newDeclaration),
+                lookForChanges {
+                    function changed(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
+                        print(oldTyped.type?.text);
+                        return any {
+                            nodeChanged(oldTyped.type, newTyped.type),
+                            lookForChanges {
+                                function changed(Ast.AnyMethod oldMethod, Ast.AnyMethod newMethod) {
+                                    print(oldMethod.typeConstraintList?.text);
+                                    print(oldMethod.typeParameterList?.text);
+                                    return any {
+                                        nodeChanged(oldMethod.typeConstraintList, newMethod.typeConstraintList),
+                                        nodeChanged(oldMethod.typeParameterList, newMethod.typeParameterList),
+                                        anyPair {
+                                            firstIterable => CeylonIterable(oldMethod.parameterLists);
+                                            secondIterable => CeylonIterable(newMethod.parameterLists);
+                                            Boolean selecting(Ast.ParameterList oldParamList, Ast.ParameterList newParamlist) {
+                                                print(oldParamList.text);
+                                                return nodeChanged(oldParamList, newParamlist);
+                                            }
+                                        }
+                                    };
+                                }
+                            },
+                            lookForChanges {
+                                function changed(Ast.ObjectDefinition oldObject, Ast.ObjectDefinition newObject) {
+                                    print(oldObject.extendedType?.text);
+                                    print(oldObject.satisfiedTypes?.text);
+                                    return any {
+                                        nodeChanged(oldObject.extendedType, newObject.extendedType),
+                                        nodeChanged(oldObject.satisfiedTypes, newObject.satisfiedTypes)
+                                    };
+                                }
+                            },
+                            lookForChanges {
+                                function changed(Ast.Variable oldVariable, Ast.Variable newVariable) {
+                                    return anyPair {
+                                        firstIterable => CeylonIterable(oldVariable.parameterLists);
+                                        secondIterable => CeylonIterable(newVariable.parameterLists);
+                                        Boolean selecting(Ast.ParameterList oldParamList, Ast.ParameterList newParamlist) {
+                                            print(oldParamList.text);
+                                            return nodeChanged(oldParamList, newParamlist);
+                                        }
+                                    };
+                                }
+                            }
+                        };
+                    }
+                },
+                lookForChanges {
+                    function changed(Ast.TypeDeclaration oldType, Ast.TypeDeclaration newType) {
+                        print(oldType.caseTypes?.text);
+                        print(oldType.satisfiedTypes?.text);
+                        print(oldType.typeParameterList?.text);
+                        return any {
+                            nodeChanged(oldType.caseTypes, newType.caseTypes),
+                            nodeChanged(oldType.satisfiedTypes, newType.satisfiedTypes),
+                            nodeChanged(oldType.typeParameterList, newType.typeParameterList),
+                            lookForChanges {
+                                function changed(Ast.TypeParameterDeclaration oldTypeParameter, Ast.TypeParameterDeclaration newTypeParameter) {
+                                    print(oldTypeParameter.typeSpecifier?.text);
+                                    print(oldTypeParameter.typeVariance?.text);
+                                    return any {
+                                        nodeChanged(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier),
+                                        nodeChanged(oldTypeParameter.typeVariance, newTypeParameter.typeVariance)
+                                    };
+                                }
+                            }
+                        };
+                    }
+                }
+            };
+        }
+    };
+}
+
+abstract class DeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode)
+        of TopLevelDeclarationDeltaBuilder | NestedDeclarationDeltaBuilder
+        extends DeltaBuilder(oldNode, newNode) {
+
+    shared variable MutableList<NestedDeclarationDelta> childrenDeltas = ArrayList<NestedDeclarationDelta>();
+    shared formal {ImpactingChange*} changes;
+
+    shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
+        assert(is Ast.Declaration oldChild, 
+            is Ast.Declaration? newChild, 
+            ! oldChild.declarationModel.toplevel);
+        value builder = NestedDeclarationDeltaBuilder(oldChild, newChild);
+        value delta = builder.buildDelta();
+        if (delta.changes.empty && childrenDeltas.empty) {
+            return;
+        }
+        childrenDeltas.add(delta);
+    }
+    
+    shared actual Ast.Declaration[] getChildren(AstNode astNode) {
+        value children = ArrayList<Ast.Declaration>(5);
+        object visitor extends Visitor() {
+            shared actual void visit(Ast.Declaration declaration) {
+                assert(!declaration.declarationModel.toplevel);
+                if (declaration.declarationModel.shared) {
+                    children.add(declaration);
+                }
+            }
+        }
+        astNode.visitChildren(visitor);
+        return children.sequence();
+    }
+}
+
+class TopLevelDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode)
+        extends DeclarationDeltaBuilder(oldNode, newNode) {
+    
+    variable value _changes = ArrayList<TopLevelDeclarationDelta.PossibleChange>();
+    shared actual {TopLevelDeclarationDelta.PossibleChange*} changes => _changes;
     
     shared actual TopLevelDeclarationDelta buildDelta() {
         recurse();
@@ -221,62 +363,39 @@ class TopLevelDeclarationDeltaBuilder(AstDeclaration oldNode, AstDeclaration? ne
         return delta;
     }
     
-    shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
-        assert(is AstDeclaration oldChild, 
-            is AstDeclaration? newChild, 
-            ! oldChild.declarationModel.toplevel);
-        value builder = NestedDeclarationDeltaBuilder(oldChild, newChild);
-        childrenDeltas.add(builder.buildDelta());
-    }
-    
     shared actual void addMemberAddedChange(AstNode newChild) {
-        assert(is AstDeclaration newChild);
-        changes.add(DeclarationMemberAdded(newChild.declarationModel.nameAsString));
+        assert(is Ast.Declaration newChild);
+        _changes.add(DeclarationMemberAdded(newChild.declarationModel.nameAsString));
     }
     
     shared actual void addRemovedChange() {
-        changes.add(removed);
+        _changes.add(removed);
     }
     
     shared actual void calculateStructuralChanges() {
+        assert(exists newNode);
+
         assert(exists oldDeclaration = oldNode.declarationModel);
-        assert(exists newDeclaration = newNode?.declarationModel);
+        assert(exists newDeclaration = newNode.declarationModel);
         if (oldDeclaration.shared && !newDeclaration.shared) {
-            changes.add(madeInvisibleOutsideScope);
+            _changes.add(madeInvisibleOutsideScope);
         }
         if (!oldDeclaration.shared && newDeclaration.shared) {
-            changes.add(madeVisibleOutsideScope);
+            _changes.add(madeVisibleOutsideScope);
         }
         
-        
-        // No structural change can occur within a compilation unit
-        // Well ... is it true ? What about the initialization order of toplevel declarations ?
-        // TODO consider the declaration order of top-levels inside a compilation unit as a structural change ?
-        // TODO extend this question to the order of declaration inside the initialization section : 
-        //      we should check that the initialization section of a class is not changed
-        // TODO more generally : where is the order of declaration important ? and when an order change can trigger compilation errors ?
-    }
-    
-    shared actual AstDeclaration[] getChildren(AstNode astNode) {
-        value children = ArrayList<AstDeclaration>(5);
-        object visitor extends Visitor() {
-            shared actual void visit(AstDeclaration declaration) {
-                assert(!declaration.declarationModel.toplevel);
-                if (declaration.declarationModel.shared) {
-                    children.add(declaration);
-                }
-            }
+        if (hasStructuralChanges(oldNode, newNode)) {
+            _changes.add(structuralChange);
         }
-        astNode.visitChildren(visitor);
-        return children.sequence();
     }
 }
     
-class NestedDeclarationDeltaBuilder(AstDeclaration oldNode, AstDeclaration? newNode)
-        extends DeltaBuilder(oldNode, newNode) {
     
-    variable value changes = ArrayList<NestedDeclarationDelta.PossibleChange>();
-    variable value childrenDeltas = ArrayList<NestedDeclarationDelta>();
+class NestedDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode)
+        extends DeclarationDeltaBuilder(oldNode, newNode) {
+    
+    variable value _changes = ArrayList<NestedDeclarationDelta.PossibleChange>();
+    shared actual {NestedDeclarationDelta.PossibleChange*} changes => _changes;
     
     shared actual NestedDeclarationDelta buildDelta() {
         recurse();
@@ -290,43 +409,19 @@ class NestedDeclarationDeltaBuilder(AstDeclaration oldNode, AstDeclaration? newN
         return delta;
     }
     
-    shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
-        assert(is AstDeclaration oldChild, 
-            is AstDeclaration? newChild, 
-            ! oldChild.declarationModel.toplevel);
-        value builder = NestedDeclarationDeltaBuilder(oldChild, newChild);
-        childrenDeltas.add(builder.buildDelta());
-    }
-    
     shared actual void addMemberAddedChange(AstNode newChild) {
-        assert(is AstDeclaration newChild);
-        changes.add(DeclarationMemberAdded(newChild.declarationModel.nameAsString));
+        assert(is Ast.Declaration newChild);
+        _changes.add(DeclarationMemberAdded(newChild.declarationModel.nameAsString));
     }
     
     shared actual void addRemovedChange() {
-        changes.add(removed);
+        _changes.add(removed);
     }
     
     shared actual void calculateStructuralChanges() {
-        // No structural change can occur within a compilation unit
-        // Well ... is it true ? What about the initialization order of toplevel declarations ?
-        // TODO consider the declaration order of top-levels inside a compilation unit as a structural change ?
-        // TODO extend this question to the order of declaration inside the initialization section : 
-        //      we should check that the initialization section of a class is not changed
-        // TODO more generally : where is the order of declaration important ? and when an order change can trigger compilation errors ?
-    }
-    
-    shared actual AstDeclaration[] getChildren(AstNode astNode) {
-        value children = ArrayList<AstDeclaration>(5);
-        object visitor extends Visitor() {
-            shared actual void visit(AstDeclaration declaration) {
-                assert(!declaration.declarationModel.toplevel);
-                if (declaration.declarationModel.shared) {
-                    children.add(declaration);
-                }
-            }
+        assert(exists newNode);
+        if (hasStructuralChanges(oldNode, newNode)) {
+            _changes.add(structuralChange);
         }
-        astNode.visitChildren(visitor);
-        return children.sequence();
     }
 }
