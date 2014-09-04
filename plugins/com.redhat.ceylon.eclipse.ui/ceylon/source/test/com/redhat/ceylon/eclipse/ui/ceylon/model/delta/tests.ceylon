@@ -22,13 +22,13 @@ test void firstTest() {
         path = "dir/test.ceylon";
         oldContents = 
             "shared abstract class Test() {
-                shared formal List<Set<Integer>> test0(Boolean functional(Integer arg) functional, Integer a);
+                shared formal List<Set<Integer>> test0(Boolean functional(Integer arg), Integer a);
                 shared formal {Integer*} test();
                 shared formal void test2();
              }";
         newContents =
             "shared abstract class Test() {
-                shared formal List<Set<Integer>> test0(Boolean functional(Integer arg1) functional, Float|Integer a);
+                shared formal List<Set<Integer>> test0(Boolean functional(Integer arg1), Float|Integer a);
                 shared formal {<Float> * } test();
                 shared formal void test3();
              }";
