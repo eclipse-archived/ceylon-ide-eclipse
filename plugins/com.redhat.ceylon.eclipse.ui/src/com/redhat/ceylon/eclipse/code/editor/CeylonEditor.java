@@ -87,7 +87,6 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.source.CompositeRuler;
-import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -1481,19 +1480,11 @@ public class CeylonEditor extends TextEditor {
         store.setDefault(MATCHING_BRACKET, true);
         store.setDefault(ENCLOSING_BRACKETS, false);
         store.setDefault(SELECTED_BRACKET, false);
-        String[][] fences= getFences();
-        if (fences != null) {
-            StringBuilder sb= new StringBuilder();
-            for (int i=0; i<fences.length; i++) {
-                sb.append(fences[i][0]);
-                sb.append(fences[i][1]);
-            }
-            bracketMatcher = new DefaultCharacterPairMatcher(sb.toString().toCharArray());
-            support.setCharacterPairMatcher(bracketMatcher);
-            support.setMatchingCharacterPainterPreferenceKeys(
-                    MATCHING_BRACKET, MATCHING_BRACKETS_COLOR, 
-                    SELECTED_BRACKET, ENCLOSING_BRACKETS);
-        }
+        bracketMatcher = new CeylonCharacterPairMatcher();
+        support.setCharacterPairMatcher(bracketMatcher);
+        support.setMatchingCharacterPainterPreferenceKeys(
+                MATCHING_BRACKET, MATCHING_BRACKETS_COLOR, 
+                SELECTED_BRACKET, ENCLOSING_BRACKETS);
     }
     
     public ICharacterPairMatcher getBracketMatcher() {
