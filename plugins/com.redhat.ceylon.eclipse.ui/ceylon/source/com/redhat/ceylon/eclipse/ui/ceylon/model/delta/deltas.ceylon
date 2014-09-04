@@ -5,6 +5,9 @@ import com.redhat.ceylon.compiler.typechecker.model {
     Package,
     ModuleImport
 }
+import ceylon.interop.java {
+    javaClassFromInstance
+}
 
 shared alias DifferencedModelElement => Module | ModuleImport | Package | Unit | Declaration;
 
@@ -23,7 +26,7 @@ shared interface AbstractDelta of CompilationUnitDelta | ModuleImportDelta | Dec
     
     shared actual String string {
         return "`` changedElementString `` {
-                  changes = `` changes ``
+                  changes = {`` ", ".join(changes) ``}
                   childrenDeltas = {`` ((childrenDeltas.empty) then "}" else "
                   ") + operatingSystem.newline.join {
                           for (childDelta in childrenDeltas) for (line in childDelta.string.lines) "    " + line
@@ -36,7 +39,9 @@ shared interface AbstractDelta of CompilationUnitDelta | ModuleImportDelta | Dec
     shared default actual Boolean equals(Object that) {
         if (is AbstractDelta that) {
             return 
-                changedElementString==that.changedElementString && 
+                changedElementString == that.changedElementString && 
+                childrenDeltas.size == that.childrenDeltas.size &&
+                changes.size == that.changes.size &&
                 ! anyPair((AbstractDelta first, AbstractDelta second) => first != second, childrenDeltas, that.childrenDeltas) &&
                 ! anyPair((ImpactingChange first, ImpactingChange second) => first != second, changes, that.changes);
         }
@@ -71,6 +76,7 @@ shared interface PackageDescriptorDelta satisfies CompilationUnitDelta {
 
 shared interface DeclarationDelta of TopLevelDeclarationDelta | NestedDeclarationDelta satisfies AbstractDelta {
     shared formal actual Declaration changedElement;
+    shared default actual String changedElementString => "``javaClassFromInstance(changedElement).simpleName``[``changedElement.nameAsString ``]";
     shared formal actual {NestedDeclarationDelta*} childrenDeltas;
 }
 
