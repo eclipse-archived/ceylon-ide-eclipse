@@ -172,7 +172,7 @@ class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.Compil
                 oldChild.declarationModel.toplevel);
         value builder = TopLevelDeclarationDeltaBuilder(oldChild, newChild, nodeComparisonListener);
         value delta = builder.buildDelta();
-        if (delta.changes.empty && childrenDeltas.empty) {
+        if (delta.changes.empty && delta.childrenDeltas.empty) {
             return;
         }
         childrenDeltas.add(delta);
@@ -382,7 +382,7 @@ abstract class DeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration?
             ! oldChild.declarationModel.toplevel);
         value builder = NestedDeclarationDeltaBuilder(oldChild, newChild, nodeComparisonListener);
         value delta = builder.buildDelta();
-        if (delta.changes.empty && childrenDeltas.empty) {
+        if (delta.changes.empty && delta.childrenDeltas.empty) {
             return;
         }
         childrenDeltas.add(delta);
