@@ -1,15 +1,16 @@
 package com.redhat.ceylon.eclipse.util;
 
-import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IEditingSupport;
 import org.eclipse.jface.text.IEditingSupportRegistry;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedModeUI;
+import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedModeUI.IExitPolicy;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
 import com.redhat.ceylon.eclipse.code.editor.AbstractLinkedModeListener;
@@ -18,7 +19,15 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.editor.FocusEditingSupport;
 
 public class LinkedMode {
-
+    
+    public static class NullExitPolicy implements IExitPolicy {
+        @Override
+        public ExitFlags doExit(LinkedModeModel model, VerifyEvent event,
+                int offset, int length) {
+            return null;
+        }
+    }
+    
     public static void installLinkedMode(final CeylonEditor editor,
             LinkedModeModel linkedModeModel, Object linkedModeOwner,
             int exitSequenceNumber, int exitPosition,
@@ -42,13 +51,12 @@ public class LinkedMode {
 
     public static void installLinkedMode(final CeylonEditor editor, 
             IDocument document, LinkedModeModel linkedModeModel, 
-            Object linkedModeOwner,
+            Object linkedModeOwner, IExitPolicy exitPolicy,
             int exitSequenceNumber, int exitPosition)
                     throws BadLocationException {
         final IEditingSupport editingSupport = new FocusEditingSupport(editor);
         installLinkedMode(editor, linkedModeModel, linkedModeOwner,
-                exitSequenceNumber, exitPosition, editingSupport,
-                new DeleteBlockingExitPolicy(document), 
+                exitSequenceNumber, exitPosition, editingSupport, exitPolicy, 
                 new AbstractLinkedModeListener(editor, 
                         linkedModeOwner) {
                     @Override

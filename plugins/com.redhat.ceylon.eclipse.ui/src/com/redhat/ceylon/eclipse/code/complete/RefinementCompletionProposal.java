@@ -295,7 +295,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                                 props.toArray(NO_COMPLETIONS));
                 LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
                 LinkedMode.installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(),
-                        document, linkedModeModel, this, 1, loc+text.length());
+                        document, linkedModeModel, this, new LinkedMode.NullExitPolicy(), 
+                        1, loc+text.length());
             }
 
         }
