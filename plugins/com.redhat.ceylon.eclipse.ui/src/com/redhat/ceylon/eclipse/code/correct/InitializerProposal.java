@@ -12,6 +12,7 @@ import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -196,7 +197,8 @@ class InitializerProposal extends CorrectionProposal {
                         }
                         int exitSeq = exitPos>=0 ? 1 : NO_STOP;
                         LinkedMode.installLinkedMode(editor, document, linkedModeModel, 
-                                this, exitSeq, adjustedExitPos);
+                                this, new DeleteBlockingExitPolicy(document), 
+                                exitSeq, adjustedExitPos);
                     } 
                     catch (BadLocationException e) {
                         e.printStackTrace();

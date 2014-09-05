@@ -6,6 +6,7 @@ import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -56,7 +57,7 @@ final class DeclareLocalProposal extends CorrectionProposal {
             try {
                 LinkedMode.addLinkedPosition(linkedModeModel, typePosition);
                 LinkedMode.installLinkedMode(editor, document, linkedModeModel, 
-                        this, NO_STOP, -1);
+                        this, new DeleteBlockingExitPolicy(document), NO_STOP, -1);
             } 
             catch (BadLocationException ble) {
                 ble.printStackTrace();

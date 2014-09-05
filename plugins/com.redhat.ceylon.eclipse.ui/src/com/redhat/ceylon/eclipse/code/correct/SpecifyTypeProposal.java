@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -99,7 +100,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
             try {
                 LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
                 LinkedMode.installLinkedMode(editor, document, linkedModeModel, 
-                        this, NO_STOP, -1);
+                        this, new DeleteBlockingExitPolicy(document), NO_STOP, -1);
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
